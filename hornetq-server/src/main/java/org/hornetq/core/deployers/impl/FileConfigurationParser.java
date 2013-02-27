@@ -209,24 +209,16 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setScheduledThreadPoolMaxSize(getInteger(e, "scheduled-thread-pool-max-size",
                                                       config.getScheduledThreadPoolMaxSize(), Validators.GT_ZERO));
 
-      config.setThreadPoolMaxSize(getInteger(e,
-                                                                  "thread-pool-max-size",
-                                                                  config.getThreadPoolMaxSize(),
+      config.setThreadPoolMaxSize(getInteger(e, "thread-pool-max-size", config.getThreadPoolMaxSize(),
                                                                   Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setSecurityEnabled(getBoolean(e, "security-enabled", config.isSecurityEnabled()));
 
-      config.setJMXManagementEnabled(getBoolean(e,
-                                                                     "jmx-management-enabled",
-                                                                     config.isJMXManagementEnabled()));
+      config.setJMXManagementEnabled(getBoolean(e, "jmx-management-enabled", config.isJMXManagementEnabled()));
 
-      config.setJMXDomain(getString(e,
-                                                         "jmx-domain",
-                                                         config.getJMXDomain(),
-                                                         Validators.NOT_NULL_OR_EMPTY));
+      config.setJMXDomain(getString(e, "jmx-domain", config.getJMXDomain(), Validators.NOT_NULL_OR_EMPTY));
 
-      config.setSecurityInvalidationInterval(getLong(e,
-                                                                          "security-invalidation-interval",
+      config.setSecurityInvalidationInterval(getLong(e, "security-invalidation-interval",
                                                                           config.getSecurityInvalidationInterval(),
                                                                           Validators.GT_ZERO));
 
@@ -318,7 +310,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          {
             if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
             {
-               String clazz = interceptors.item(i).getTextContent();
+               String clazz = getTrimmedTextContent(interceptors.item(i));
 
                incomingInterceptorList.add(clazz);
             }
@@ -335,7 +327,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          {
             if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
             {
-               String clazz = interceptors.item(i).getTextContent();
+               String clazz = getTrimmedTextContent(interceptors.item(i));
 
                incomingInterceptorList.add(clazz);
             }
@@ -471,10 +463,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                                   "create-bindings-dir",
                                                                   config.isCreateBindingsDir()));
 
-      config.setJournalDirectory(getString(e,
-                                                                "journal-directory",
-                                                                config.getJournalDirectory(),
-                                                                Validators.NOT_NULL_OR_EMPTY));
+      config.setJournalDirectory(getString(e, "journal-directory", config.getJournalDirectory(),
+                                           Validators.NOT_NULL_OR_EMPTY));
 
 
       config.setPageMaxConcurrentIO(getInteger(e,
@@ -565,15 +555,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          config.setJournalMaxIO_NIO(journalMaxIO);
       }
 
-      config.setJournalMinFiles(getInteger(e,
-                                                                "journal-min-files",
-                                                                config.getJournalMinFiles(),
-                                                                Validators.GT_ZERO));
+      config.setJournalMinFiles(getInteger(e, "journal-min-files", config.getJournalMinFiles(), Validators.GT_ZERO));
 
-      config.setJournalCompactMinFiles(getInteger(e,
-                                                                       "journal-compact-min-files",
-                                                                       config.getJournalCompactMinFiles(),
-                                                                       Validators.GE_ZERO));
+      config.setJournalCompactMinFiles(getInteger(e, "journal-compact-min-files", config.getJournalCompactMinFiles(),
+                                                  Validators.GE_ZERO));
 
       config.setJournalCompactPercentage(getInteger(e,
                                                                          "journal-compact-percentage",
@@ -591,28 +576,20 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       config.setRunSyncSpeedTest(getBoolean(e, "run-sync-speed-test", config.isRunSyncSpeedTest()));
 
-      config.setWildcardRoutingEnabled(getBoolean(e,
-                                                                       "wild-card-routing-enabled",
-                                                                       config.isWildcardRoutingEnabled()));
+      config.setWildcardRoutingEnabled(getBoolean(e, "wild-card-routing-enabled", config.isWildcardRoutingEnabled()));
 
-      config.setMessageCounterEnabled(getBoolean(e,
-                                                                      "message-counter-enabled",
-                                                                      config.isMessageCounterEnabled()));
+      config.setMessageCounterEnabled(getBoolean(e, "message-counter-enabled", config.isMessageCounterEnabled()));
 
-      config.setMessageCounterSamplePeriod(getLong(e,
-                                                                        "message-counter-sample-period",
-                                                                        config.getMessageCounterSamplePeriod(),
+      config.setMessageCounterSamplePeriod(getLong(e, "message-counter-sample-period",
+                                                   config.getMessageCounterSamplePeriod(),
                                                                         Validators.GT_ZERO));
 
-      config.setMessageCounterMaxDayHistory(getInteger(e,
-                                                                            "message-counter-max-day-history",
+      config.setMessageCounterMaxDayHistory(getInteger(e, "message-counter-max-day-history",
                                                                             config.getMessageCounterMaxDayHistory(),
                                                                             Validators.GT_ZERO));
 
-      config.setServerDumpInterval(getLong(e,
-                                                                "server-dump-interval",
-                                                                config.getServerDumpInterval(),
-                                                                Validators.MINUS_ONE_OR_GT_ZERO)); // in
+      config.setServerDumpInterval(getLong(e, "server-dump-interval", config.getServerDumpInterval(),
+                                           Validators.MINUS_ONE_OR_GT_ZERO)); // in
       // milliseconds
 
       config.setMemoryWarningThreshold(getInteger(e,
@@ -711,7 +688,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
     */
    protected Pair<String, Set<Role>> parseSecurityRoles(final Node node)
    {
-      String match = node.getAttributes().getNamedItem("match").getNodeValue();
+      final String match = node.getAttributes().getNamedItem("match").getNodeValue();
 
       HashSet<Role> securityRoles = new HashSet<Role>();
 
@@ -729,49 +706,47 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       for (int i = 0; i < children.getLength(); i++)
       {
          Node child = children.item(i);
-
-         if (FileConfigurationParser.PERMISSION_ELEMENT_NAME.equalsIgnoreCase(child.getNodeName()))
+         final String name = child.getNodeName();
+         if (PERMISSION_ELEMENT_NAME.equalsIgnoreCase(name))
          {
-            String type = child.getAttributes().getNamedItem(FileConfigurationParser.TYPE_ATTR_NAME).getNodeValue();
-            String roleString = child.getAttributes()
-                                     .getNamedItem(FileConfigurationParser.ROLES_ATTR_NAME)
-                                     .getNodeValue();
+            final String type = getAttributeValue(child, TYPE_ATTR_NAME);
+            final String roleString = getAttributeValue(child, ROLES_ATTR_NAME);
             String[] roles = roleString.split(",");
             for (String role : roles)
             {
-               if (FileConfigurationParser.SEND_NAME.equals(type))
+               if (SEND_NAME.equals(type))
                {
                   send.add(role.trim());
                }
-               else if (FileConfigurationParser.CONSUME_NAME.equals(type))
+               else if (CONSUME_NAME.equals(type))
                {
                   consume.add(role.trim());
                }
-               else if (FileConfigurationParser.CREATEDURABLEQUEUE_NAME.equals(type))
+               else if (CREATEDURABLEQUEUE_NAME.equals(type))
                {
                   createDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.DELETEDURABLEQUEUE_NAME.equals(type))
+               else if (DELETEDURABLEQUEUE_NAME.equals(type))
                {
                   deleteDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.CREATE_NON_DURABLE_QUEUE_NAME.equals(type))
+               else if (CREATE_NON_DURABLE_QUEUE_NAME.equals(type))
                {
                   createNonDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.DELETE_NON_DURABLE_QUEUE_NAME.equals(type))
+               else if (DELETE_NON_DURABLE_QUEUE_NAME.equals(type))
                {
                   deleteNonDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.CREATETEMPQUEUE_NAME.equals(type))
+               else if (CREATETEMPQUEUE_NAME.equals(type))
                {
                   createNonDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.DELETETEMPQUEUE_NAME.equals(type))
+               else if (DELETETEMPQUEUE_NAME.equals(type))
                {
                   deleteNonDurableQueue.add(role.trim());
                }
-               else if (FileConfigurationParser.MANAGE_NAME.equals(type))
+               else if (MANAGE_NAME.equals(type))
                {
                   manageRoles.add(role.trim());
                }
@@ -805,7 +780,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
     */
    protected Pair<String, AddressSettings> parseAddressSettings(final Node node)
    {
-      String match = node.getAttributes().getNamedItem("match").getNodeValue();
+      String match = getAttributeValue(node, "match");
 
       NodeList children = node.getChildNodes();
 
@@ -815,89 +790,73 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       for (int i = 0; i < children.getLength(); i++)
       {
-         Node child = children.item(i);
-
-         if (FileConfigurationParser.DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         final Node child = children.item(i);
+         final String name = child.getNodeName();
+         if (DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(name))
          {
-            SimpleString queueName = new SimpleString(child.getTextContent());
+            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
             addressSettings.setDeadLetterAddress(queueName);
          }
-         else if (FileConfigurationParser.EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(name))
          {
-            SimpleString queueName = new SimpleString(child.getTextContent());
+            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
             addressSettings.setExpiryAddress(queueName);
          }
-         else if (FileConfigurationParser.EXPIRY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (EXPIRY_DELAY_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setExpiryDelay(Long.valueOf(child.getTextContent()));
+            addressSettings.setExpiryDelay(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setRedeliveryDelay(Long.valueOf(child.getTextContent()));
+            addressSettings.setRedeliveryDelay(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.REDELIVERY_DELAY_MULTIPLIER_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (REDELIVERY_DELAY_MULTIPLIER_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setRedeliveryMultiplier(Double.valueOf(child.getTextContent()));
+            addressSettings.setRedeliveryMultiplier(XMLUtil.parseDouble(child));
          }
-         else if (FileConfigurationParser.MAX_REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MAX_REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setMaxRedeliveryDelay(Long.valueOf(child.getTextContent()));
+            addressSettings.setMaxRedeliveryDelay(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MAX_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setMaxSizeBytes(Long.valueOf(child.getTextContent()));
+            addressSettings.setMaxSizeBytes(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setPageSizeBytes(Long.valueOf(child.getTextContent()));
+            addressSettings.setPageSizeBytes(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.PAGE_MAX_CACHE_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (PAGE_MAX_CACHE_SIZE_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setPageCacheMaxSize(Integer.valueOf(child.getTextContent()));
+            addressSettings.setPageCacheMaxSize(XMLUtil.parseInt(child));
          }
-         else if (FileConfigurationParser.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
+            addressSettings.setMessageCounterHistoryDayLimit(XMLUtil.parseInt(child));
          }
-         else if (FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(name))
          {
-            String value = child.getTextContent().trim();
-            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME,
+            String value = getTrimmedTextContent(child);
+            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME,
                                                                  value);
-            AddressFullMessagePolicy policy = null;
-            if (value.equals(AddressFullMessagePolicy.BLOCK.toString()))
-            {
-               policy = AddressFullMessagePolicy.BLOCK;
-            }
-            else if (value.equals(AddressFullMessagePolicy.DROP.toString()))
-            {
-               policy = AddressFullMessagePolicy.DROP;
-            }
-            else if (value.equals(AddressFullMessagePolicy.PAGE.toString()))
-            {
-               policy = AddressFullMessagePolicy.PAGE;
-            }
-            else if (value.equals(AddressFullMessagePolicy.FAIL.toString()))
-            {
-               policy = AddressFullMessagePolicy.FAIL;
-            }
+            AddressFullMessagePolicy policy = Enum.valueOf(AddressFullMessagePolicy.class, value);
             addressSettings.setAddressFullMessagePolicy(policy);
          }
-         else if (FileConfigurationParser.LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (LVQ_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setLastValueQueue(Boolean.valueOf(child.getTextContent().trim()));
+            addressSettings.setLastValueQueue(XMLUtil.parseBoolean(child));
          }
-         else if (FileConfigurationParser.MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
+         else if (MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(name))
          {
-            addressSettings.setMaxDeliveryAttempts(Integer.valueOf(child.getTextContent().trim()));
+            addressSettings.setMaxDeliveryAttempts(XMLUtil.parseInt(child));
          }
-         else if (FileConfigurationParser.REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(name))
          {
-            addressSettings.setRedistributionDelay(Long.valueOf(child.getTextContent().trim()));
+            addressSettings.setRedistributionDelay(XMLUtil.parseLong(child));
          }
-         else if (FileConfigurationParser.SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
+         else if (SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(name))
          {
-            addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(child.getTextContent().trim()));
+            addressSettings.setSendToDLAOnNoRoute(XMLUtil.parseBoolean(child));
          }
       }
       return setting;
@@ -905,7 +864,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
    protected CoreQueueConfiguration parseQueueConfiguration(final Node node)
    {
-      String name = node.getAttributes().getNamedItem("name").getNodeValue();
+      String name = getAttributeValue(node, "name");
       String address = null;
       String filterString = null;
       boolean durable = true;
@@ -918,15 +877,15 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
          if (child.getNodeName().equals("address"))
          {
-            address = child.getTextContent().trim();
+            address = getTrimmedTextContent(child);
          }
          else if (child.getNodeName().equals("filter"))
          {
-            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
+            filterString = getAttributeValue(child, "string");
          }
          else if (child.getNodeName().equals("durable"))
          {
-            durable = Boolean.parseBoolean(child.getTextContent().trim());
+            durable = XMLUtil.parseBoolean(child);
          }
       }
 
@@ -996,10 +955,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
-      long broadcastPeriod = getLong(e,
-         "broadcast-period",
-         HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD,
-         Validators.GT_ZERO);
+      long broadcastPeriod =
+               getLong(e, "broadcast-period", HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD, Validators.GT_ZERO);
 
       String localAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
@@ -1036,15 +993,13 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
    {
       String name = e.getAttribute("name");
 
-      long discoveryInitialWaitTimeout = getLong(e,
-         "initial-wait-timeout",
-         HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-         Validators.GT_ZERO);
+      long discoveryInitialWaitTimeout =
+               getLong(e, "initial-wait-timeout", HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                       Validators.GT_ZERO);
 
-      long refreshTimeout = getLong(e,
-         "refresh-timeout",
-         HornetQDefaultConfiguration.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-         Validators.GT_ZERO);
+      long refreshTimeout =
+               getLong(e, "refresh-timeout", HornetQDefaultConfiguration.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+                       Validators.GT_ZERO);
 
       String localBindAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
@@ -1094,27 +1049,26 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       boolean duplicateDetection =
                getBoolean(e, "use-duplicate-detection", HornetQDefaultConfiguration.DEFAULT_CLUSTER_DUPLICATE_DETECTION);
 
-      boolean forwardWhenNoConsumers = getBoolean(e,
-                                                                       "forward-when-no-consumers",
-                                                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
+      boolean forwardWhenNoConsumers =
+               getBoolean(e, "forward-when-no-consumers",
+                          HornetQDefaultConfiguration.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
 
-      int maxHops = getInteger(e,
-                                                    "max-hops",
+      int maxHops = getInteger(e, "max-hops",
                                                     HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_HOPS,
                                                     Validators.GE_ZERO);
 
-      long clientFailureCheckPeriod = getLong(e, "check-period",
- HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+      long clientFailureCheckPeriod =
+               getLong(e, "check-period", HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
                        Validators.GT_ZERO);
 
-      long connectionTTL = getLong(e, "connection-ttl",
-                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL, Validators.GT_ZERO) ;
+      long connectionTTL =
+               getLong(e, "connection-ttl", HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
+                       Validators.GT_ZERO);
 
 
-      long retryInterval = getLong(e,
-                                                        "retry-interval",
-                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL,
-                                                        Validators.GT_ZERO);
+      long retryInterval =
+               getLong(e, "retry-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL,
+                       Validators.GT_ZERO);
 
       long callTimeout = getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
 
@@ -1130,10 +1084,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       int reconnectAttempts = getInteger(e, "reconnect-attempts", HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
 
 
-      int confirmationWindowSize = getInteger(e,
-                                                                   "confirmation-window-size",
-                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                                   Validators.GT_ZERO);
+      int confirmationWindowSize =
+               getInteger(e, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                          Validators.GT_ZERO);
 
       long clusterNotificationInterval = getLong(e, "notification-interval", HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL, Validators.GT_ZERO);
 
@@ -1211,12 +1164,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       String name = node.getAttribute("name");
       String type = getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
       String address = getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
-      Integer timeout = getInteger(node,
-                                                        "timeout",
-                                                        GroupingHandlerConfiguration.DEFAULT_TIMEOUT,
-                                                        Validators.GT_ZERO);
+      Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, Validators.GT_ZERO);
       mainConfiguration.setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString(name),
-                                                                                         type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType()) ? GroupingHandlerConfiguration.TYPE.LOCAL
+                                                                                         type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())
+                                                                                                                                                       ? GroupingHandlerConfiguration.TYPE.LOCAL
                                                                                                                                                        : GroupingHandlerConfiguration.TYPE.REMOTE,
                                                                                          new SimpleString(address),
                                                                                          timeout));
@@ -1230,45 +1181,34 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       String forwardingAddress = getString(brNode, "forwarding-address", null, Validators.NO_CHECK);
 
-      String transformerClassName = getString(brNode,
-                                                                   "transformer-class-name",
-                                                                   null,
-                                                                   Validators.NO_CHECK);
+      String transformerClassName = getString(brNode, "transformer-class-name", null, Validators.NO_CHECK);
 
        // Default bridge conf
-      int confirmationWindowSize = getInteger(brNode,
-                                                                   "confirmation-window-size",
-                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                                   Validators.GT_ZERO);
+      int confirmationWindowSize =
+               getInteger(brNode, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                          Validators.GT_ZERO);
 
-      long retryInterval = getLong(brNode,
-                                                        "retry-interval",
-                                                        HornetQClient.DEFAULT_RETRY_INTERVAL,
-                                                        Validators.GT_ZERO);
+      long retryInterval = getLong(brNode, "retry-interval", HornetQClient.DEFAULT_RETRY_INTERVAL, Validators.GT_ZERO);
 
-      long clientFailureCheckPeriod = getLong(brNode, "check-period",
-                                                                   HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
+      long clientFailureCheckPeriod =
+               getLong(brNode, "check-period", HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO);
 
-      long connectionTTL = getLong(brNode, "connection-ttl",
-                                                        HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO) ;
+      long connectionTTL = getLong(brNode, "connection-ttl", HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO);
 
-      int minLargeMessageSize = getInteger(brNode,
-                                                                "min-large-message-size",
-                                                                HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                Validators.GT_ZERO);
+      int minLargeMessageSize =
+               getInteger(brNode, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                          Validators.GT_ZERO);
 
       long maxRetryInterval = getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
 
 
-      double retryIntervalMultiplier = getDouble(brNode,
-                                                                      "retry-interval-multiplier",
-                                                                      HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                      Validators.GT_ZERO);
+      double retryIntervalMultiplier =
+               getDouble(brNode, "retry-interval-multiplier", HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                         Validators.GT_ZERO);
 
-      int reconnectAttempts = getInteger(brNode,
-                                                              "reconnect-attempts",
-                                                              HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
-                                                              Validators.MINUS_ONE_OR_GE_ZERO);
+      int reconnectAttempts =
+               getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
+                          Validators.MINUS_ONE_OR_GE_ZERO);
 
       boolean useDuplicateDetection = getBoolean(brNode,
                                                                       "use-duplicate-detection",
@@ -1402,17 +1342,11 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       String address = getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = getString(e,
-                                                                "forwarding-address",
-                                                                null,
-                                                                Validators.NOT_NULL_OR_EMPTY);
+      String forwardingAddress = getString(e, "forwarding-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       boolean exclusive = getBoolean(e, "exclusive", HornetQDefaultConfiguration.DEFAULT_DIVERT_EXCLUSIVE);
 
-      String transformerClassName = getString(e,
-                                                                   "transformer-class-name",
-                                                                   null,
-                                                                   Validators.NO_CHECK);
+      String transformerClassName = getString(e, "transformer-class-name", null, Validators.NO_CHECK);
 
       String filterString = null;
 
@@ -1424,7 +1358,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
          if (child.getNodeName().equals("filter"))
          {
-            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
+            filterString = getAttributeValue(child, "string");
          }
       }
 
@@ -1468,8 +1402,4 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       return new ConnectorServiceConfiguration(clazz, params, name);
    }
-
-   // Inner classes -------------------------------------------------
-
 }
-
