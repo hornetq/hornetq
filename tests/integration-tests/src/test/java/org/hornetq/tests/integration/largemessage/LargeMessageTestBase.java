@@ -370,7 +370,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                consumer.setMessageHandler(handler);
 
-               Assert.assertTrue(latchDone.await(waitOnConsumer, TimeUnit.SECONDS));
+               Assert.assertTrue(latchDone.await(waitOnConsumer, TimeUnit.MILLISECONDS));
                Assert.assertEquals(0, errors.get());
             }
             else

@@ -222,6 +222,11 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
       }
    }
 
+   public void proceedDeliver(MessageReference ref)
+   {
+      // no op
+   }
+
    @Override
    public String toManagementString()
    {

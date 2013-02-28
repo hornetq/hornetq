@@ -686,6 +686,8 @@ public class QueueImplTest extends UnitTestCase
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
+      queue.pause();
+
       // Test first with queueing
 
       for (int i = 0; i < numMessages; i++)
@@ -705,7 +707,14 @@ public class QueueImplTest extends UnitTestCase
 
       queue.addConsumer(cons2);
 
-      queue.deliverNow();
+      queue.resume();
+
+      // Need to make sure the consumers will receive the messages before we do these assertions
+      long timeout = System.currentTimeMillis() + 1000;
+      while (cons1.getReferences().size() != numMessages / 2 && cons2.getReferences().size() != numMessages / 2 && timeout > System.currentTimeMillis())
+      {
+         Thread.sleep(1);
+      }
 
       Assert.assertEquals(numMessages / 2, cons1.getReferences().size());
 
