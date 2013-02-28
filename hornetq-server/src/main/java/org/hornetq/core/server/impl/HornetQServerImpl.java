@@ -149,6 +149,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ClassloadingUtil;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -272,7 +273,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private ReplicationEndpoint replicationEndpoint;
 
-   private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
+   private final Set<ActivateCallback> activateCallbacks = new ConcurrentHashSet<ActivateCallback>();
 
    private volatile GroupingHandler groupingHandler;
 
@@ -542,7 +543,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       synchronized (this)
       {
-         if (state == SERVER_STATE.STOPPED)
+         if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
          {
             return;
          }
@@ -583,6 +584,17 @@ public class HornetQServerImpl implements HornetQServer
          }
          stopComponent(clusterManager);
       }
+
+
+      // *************************************************************************************************************
+      // There's no need to sync this part of the method, since the state stopped | stopping is checked within the sync
+      //
+      // we can't synchronized the whole method here as that would cause a deadlock
+      // so stop is checking for stopped || stopping inside the lock
+      // which will be already enough to guarantee that no other thread will be accessing this method here.
+      //
+      // *************************************************************************************************************
+
 
 
       // We stop remotingService before otherwise we may lock the system in case of a critical IO
@@ -1126,12 +1138,12 @@ public class HornetQServerImpl implements HornetQServer
 
    }
 
-   public synchronized void registerActivateCallback(final ActivateCallback callback)
+   public void registerActivateCallback(final ActivateCallback callback)
    {
       activateCallbacks.add(callback);
    }
 
-   public synchronized void unregisterActivateCallback(final ActivateCallback callback)
+   public void unregisterActivateCallback(final ActivateCallback callback)
    {
       activateCallbacks.remove(callback);
    }
