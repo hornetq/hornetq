@@ -42,6 +42,11 @@ public class GroupIDTest extends GroupingTest
    }
 
 
+   public void testManyGroups()
+   {
+      // this test does not make sense here
+   }
+
    @Override
    protected void setProperty(Message message)
    {

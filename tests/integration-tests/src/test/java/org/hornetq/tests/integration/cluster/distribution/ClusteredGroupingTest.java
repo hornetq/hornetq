@@ -54,28 +54,28 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAll(10, 0);
+      verifyReceiveAll(10, 0);
 
 
    }
@@ -98,78 +98,78 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-         setUpGroupHandler(new GroupingHandler()
+      setUpGroupHandler(new GroupingHandler()
+      {
+         public SimpleString getName()
          {
-            public SimpleString getName()
-            {
-               return null;
-            }
-
-            public Response propose(final Proposal proposal) throws Exception
-            {
-               return null;
-            }
-
-            public void proposed(final Response response) throws Exception
-            {
-               System.out.println("ClusteredGroupingTest.proposed");
-            }
-
-            public void send(final Response response, final int distance) throws Exception
-            {
-               System.out.println("ClusteredGroupingTest.send");
-            }
-
-            public Response receive(final Proposal proposal, final int distance) throws Exception
-            {
-               return null;
-            }
-
-            public void onNotification(final Notification notification)
-            {
-               System.out.println("ClusteredGroupingTest.onNotification");
-            }
-
-            public void addGroupBinding(final GroupBinding groupBinding)
-            {
-               System.out.println("ClusteredGroupingTest.addGroupBinding");
-            }
-
-            public Response getProposal(final SimpleString fullID)
-            {
-               return null;
-            }
-         }, 0);
-
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
-
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
-
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
-
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
-
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-         try
-         {
-            sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-            Assert.fail("should timeout");
+            return null;
          }
-         catch (Exception e)
+
+         public Response propose(final Proposal proposal) throws Exception
          {
-            e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
+            return null;
          }
+
+         public void proposed(final Response response) throws Exception
+         {
+            System.out.println("ClusteredGroupingTest.proposed");
+         }
+
+         public void send(final Response response, final int distance) throws Exception
+         {
+            System.out.println("ClusteredGroupingTest.send");
+         }
+
+         public Response receive(final Proposal proposal, final int distance) throws Exception
+         {
+            return null;
+         }
+
+         public void onNotification(final Notification notification)
+         {
+            System.out.println("ClusteredGroupingTest.onNotification");
+         }
+
+         public void addGroupBinding(final GroupBinding groupBinding)
+         {
+            System.out.println("ClusteredGroupingTest.addGroupBinding");
+         }
+
+         public Response getProposal(final SimpleString fullID)
+         {
+            return null;
+         }
+      }, 0);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
+
+      try
+      {
+         sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+         Assert.fail("should timeout");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
+      }
 
    }
 
@@ -191,31 +191,31 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(0, 10, 0);
+      sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 0);
+      verifyReceiveAllInRange(10, 20, 0);
 
    }
 
@@ -237,35 +237,35 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(0, 10, 0);
+      sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(10, 20, 0);
+      sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 0);
+      verifyReceiveAllInRange(10, 20, 0);
 
    }
 
@@ -287,32 +287,32 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(1, 1, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 0, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 1);
-         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(0, 10, 1);
+      sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 1);
-         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(10, 20, 1);
+      sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(20, 30, 1);
+      verifyReceiveAllInRange(20, 30, 1);
    }
 
    public void testGroupingSendTo3queuesNoConsumerOnLocalQueue() throws Exception
@@ -333,34 +333,34 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         // addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      // addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(0, 10, 0);
+      sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(10, 20, 0);
+      sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(20, 30, 0);
+      verifyReceiveAllInRange(20, 30, 0);
 
    }
 
@@ -383,29 +383,29 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         sendInRange(0, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
-         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
-         verifyReceiveAllWithGroupIDRoundRobin(0, 10, 0, 1, 2);
+      sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(0, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+      sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+      verifyReceiveAllWithGroupIDRoundRobin(0, 10, 0, 1, 2);
 
    }
 
@@ -428,55 +428,55 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(0, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 0);
-         sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(0, 10, 0);
+      sendInRange(1, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(2, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(10, 20, 0);
+      sendInRange(2, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(20, 30, 0);
-         removeConsumer(0);
-         removeConsumer(1);
-         removeConsumer(2);
-         deleteQueue(0, "queue0");
-         deleteQueue(1, "queue0");
-         deleteQueue(2, "queue0");
-         createQueue(0, "queues.testaddress", "queue1", null, false);
-         addConsumer(3, 0, "queue1", null);
+      verifyReceiveAllInRange(20, 30, 0);
+      removeConsumer(0);
+      removeConsumer(1);
+      removeConsumer(2);
+      deleteQueue(0, "queue0");
+      deleteQueue(1, "queue0");
+      deleteQueue(2, "queue0");
+      createQueue(0, "queues.testaddress", "queue1", null, false);
+      addConsumer(3, 0, "queue1", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
-         waitForBindings(2, "queues.testaddress", 1, 1, false);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(2, "queues.testaddress", 1, 1, false);
 
-         sendInRange(0, "queues.testaddress", 30, 40, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         verifyReceiveAllInRange(30, 40, 3);
-         sendInRange(1, "queues.testaddress", 40, 50, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         verifyReceiveAllInRange(40, 50, 3);
-         sendInRange(2, "queues.testaddress", 50, 60, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         verifyReceiveAllInRange(50, 60, 3);
-         System.out.println("*****************************************************************************");
-      }
+      sendInRange(0, "queues.testaddress", 30, 40, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(30, 40, 3);
+      sendInRange(1, "queues.testaddress", 40, 50, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(40, 50, 3);
+      sendInRange(2, "queues.testaddress", 50, 60, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(50, 60, 3);
+      System.out.println("*****************************************************************************");
+   }
 
    public void testGroupingSendTo3queuesPinnedNodeGoesDown() throws Exception
    {
@@ -497,75 +497,75 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-         createQueue(2, "queues.testaddress", "queue0", null, true);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
 
-         addConsumer(0, 1, "queue0", null);
+      addConsumer(0, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 0, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(true, 0, 10, 0);
+      verifyReceiveAllInRange(true, 0, 10, 0);
 
-         closeAllConsumers();
+      closeAllConsumers();
 
-         final CountDownLatch latch = new CountDownLatch(4);
-         NotificationListener listener = new NotificationListener()
+      final CountDownLatch latch = new CountDownLatch(4);
+      NotificationListener listener = new NotificationListener()
+      {
+         public void onNotification(final Notification notification)
          {
-            public void onNotification(final Notification notification)
+            if (NotificationType.BINDING_REMOVED == notification.getType())
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
                {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
-               }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
-               {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
+                  latch.countDown();
                }
             }
-         };
-         getServer(0).getManagementService().addNotificationListener(listener);
-         getServer(2).getManagementService().addNotificationListener(listener);
+            else if (NotificationType.BINDING_ADDED == notification.getType())
+            {
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
+               {
+                  latch.countDown();
+               }
+            }
+         }
+      };
+      getServer(0).getManagementService().addNotificationListener(listener);
+      getServer(2).getManagementService().addNotificationListener(listener);
 
-         stopServers(1);
+      stopServers(1);
 
-         startServers(1);
-         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                      TimeUnit.SECONDS));
-         getServer(0).getManagementService().removeNotificationListener(listener);
-         getServer(2).getManagementService().removeNotificationListener(listener);
-         addConsumer(1, 2, "queue0", null);
+      startServers(1);
+      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                   TimeUnit.SECONDS));
+      getServer(0).getManagementService().removeNotificationListener(listener);
+      getServer(2).getManagementService().removeNotificationListener(listener);
+      addConsumer(1, 2, "queue0", null);
 
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 2, 1, false);
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         verifyReceiveAllInRange(10, 20, 1);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(10, 20, 1);
 
-         System.out.println("*****************************************************************************");
+      System.out.println("*****************************************************************************");
 
    }
 
@@ -588,79 +588,79 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-         createQueue(2, "queues.testaddress", "queue0", null, true);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
 
-         addConsumer(0, 1, "queue0", null);
+      addConsumer(0, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 0, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(1, "queues.testaddress", 0, 10, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(true, 0, 10, 0);
+      verifyReceiveAllInRange(true, 0, 10, 0);
 
-         closeAllConsumers();
+      closeAllConsumers();
 
-         sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         final CountDownLatch latch = new CountDownLatch(4);
-         NotificationListener listener = new NotificationListener()
+      sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      final CountDownLatch latch = new CountDownLatch(4);
+      NotificationListener listener = new NotificationListener()
+      {
+         public void onNotification(final Notification notification)
          {
-            public void onNotification(final Notification notification)
+            if (NotificationType.BINDING_REMOVED == notification.getType())
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
                {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
-               }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
-               {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
+                  latch.countDown();
                }
             }
-         };
-         getServer(0).getManagementService().addNotificationListener(listener);
-         getServer(2).getManagementService().addNotificationListener(listener);
+            else if (NotificationType.BINDING_ADDED == notification.getType())
+            {
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
+               {
+                  latch.countDown();
+               }
+            }
+         }
+      };
+      getServer(0).getManagementService().addNotificationListener(listener);
+      getServer(2).getManagementService().addNotificationListener(listener);
 
-         stopServers(1);
+      stopServers(1);
 
-         closeSessionFactory(1);
+      closeSessionFactory(1);
 
-         startServers(1);
+      startServers(1);
 
-         setupSessionFactory(1, isNetty());
+      setupSessionFactory(1, isNetty());
 
-         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                      TimeUnit.SECONDS));
-         getServer(0).getManagementService().removeNotificationListener(listener);
-         getServer(2).getManagementService().removeNotificationListener(listener);
-         addConsumer(1, 1, "queue0", null);
+      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                   TimeUnit.SECONDS));
+      getServer(0).getManagementService().removeNotificationListener(listener);
+      getServer(2).getManagementService().removeNotificationListener(listener);
+      addConsumer(1, 1, "queue0", null);
 
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         verifyReceiveAllInRange(10, 20, 1);
+      verifyReceiveAllInRange(10, 20, 1);
 
    }
 
@@ -683,74 +683,74 @@ public class ClusteredGroupingTest extends ClusterTestBase
       startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-         createQueue(2, "queues.testaddress", "queue0", null, true);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
 
-         addConsumer(0, 1, "queue0", null);
+      addConsumer(0, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 0, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(0, 10, 0);
-         final CountDownLatch latch = new CountDownLatch(4);
-         NotificationListener listener = new NotificationListener()
+      verifyReceiveAllInRange(0, 10, 0);
+      final CountDownLatch latch = new CountDownLatch(4);
+      NotificationListener listener = new NotificationListener()
+      {
+         public void onNotification(final Notification notification)
          {
-            public void onNotification(final Notification notification)
+            if (NotificationType.BINDING_REMOVED == notification.getType())
             {
-               if (NotificationType.BINDING_REMOVED == notification.getType())
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
                {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
-               }
-               else if (NotificationType.BINDING_ADDED == notification.getType())
-               {
-                  if (notification.getProperties()
-                                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                                  .toString()
-                                  .equals("queues.testaddress"))
-                  {
-                     latch.countDown();
-                  }
+                  latch.countDown();
                }
             }
-         };
-         getServer(0).getManagementService().addNotificationListener(listener);
-         getServer(2).getManagementService().addNotificationListener(listener);
-         stopServers(1);
+            else if (NotificationType.BINDING_ADDED == notification.getType())
+            {
+               if (notification.getProperties()
+                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
+                  .toString()
+                  .equals("queues.testaddress"))
+               {
+                  latch.countDown();
+               }
+            }
+         }
+      };
+      getServer(0).getManagementService().addNotificationListener(listener);
+      getServer(2).getManagementService().addNotificationListener(listener);
+      stopServers(1);
 
-         closeSessionFactory(1);
-         startServers(1);
-         Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                      TimeUnit.SECONDS));
-         setupSessionFactory(1, isNetty());
-         getServer(0).getManagementService().removeNotificationListener(listener);
-         getServer(2).getManagementService().removeNotificationListener(listener);
-         addConsumer(1, 1, "queue0", null);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
-         sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      closeSessionFactory(1);
+      startServers(1);
+      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+                                                                                                   TimeUnit.SECONDS));
+      setupSessionFactory(1, isNetty());
+      getServer(0).getManagementService().removeNotificationListener(listener);
+      getServer(2).getManagementService().removeNotificationListener(listener);
+      addConsumer(1, 1, "queue0", null);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      sendInRange(2, "queues.testaddress", 10, 20, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAllInRange(10, 20, 1);
+      verifyReceiveAllInRange(10, 20, 1);
 
-         sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         verifyReceiveAllInRange(20, 30, 1);
+      sendInRange(0, "queues.testaddress", 20, 30, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      verifyReceiveAllInRange(20, 30, 1);
 
    }
 
@@ -771,37 +771,37 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         createQueue(0, "queues.testaddress", "queue1", null, false);
-         createQueue(1, "queues.testaddress", "queue1", null, false);
-         createQueue(2, "queues.testaddress", "queue1", null, false);
+      createQueue(0, "queues.testaddress", "queue1", null, false);
+      createQueue(1, "queues.testaddress", "queue1", null, false);
+      createQueue(2, "queues.testaddress", "queue1", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         addConsumer(3, 0, "queue0", null);
-         addConsumer(4, 1, "queue0", null);
-         addConsumer(5, 2, "queue0", null);
+      addConsumer(3, 0, "queue0", null);
+      addConsumer(4, 1, "queue0", null);
+      addConsumer(5, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, true);
-         waitForBindings(1, "queues.testaddress", 2, 2, true);
-         waitForBindings(2, "queues.testaddress", 2, 2, true);
+      waitForBindings(0, "queues.testaddress", 2, 2, true);
+      waitForBindings(1, "queues.testaddress", 2, 2, true);
+      waitForBindings(2, "queues.testaddress", 2, 2, true);
 
-         waitForBindings(0, "queues.testaddress", 4, 4, false);
-         waitForBindings(1, "queues.testaddress", 4, 4, false);
-         waitForBindings(2, "queues.testaddress", 4, 4, false);
+      waitForBindings(0, "queues.testaddress", 4, 4, false);
+      waitForBindings(1, "queues.testaddress", 4, 4, false);
+      waitForBindings(2, "queues.testaddress", 4, 4, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAll(10, 0);
+      verifyReceiveAll(10, 0);
 
    }
 
@@ -822,39 +822,39 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         CountDownLatch latch = new CountDownLatch(1);
-         Thread[] threads = new Thread[9];
-         int range = 0;
-         for (int i = 0; i < 9; i++, range += 10)
-         {
-            threads[i] = new Thread(new ThreadSender(range, range + 10, 1, new SimpleString("id" + i), latch, i < 8));
-         }
-         for (Thread thread : threads)
-         {
-            thread.start();
-         }
+      CountDownLatch latch = new CountDownLatch(1);
+      Thread[] threads = new Thread[9];
+      int range = 0;
+      for (int i = 0; i < 9; i++, range += 10)
+      {
+         threads[i] = new Thread(new ThreadSender(range, range + 10, 1, new SimpleString("id" + i), latch, i < 8));
+      }
+      for (Thread thread : threads)
+      {
+         thread.start();
+      }
 
-         verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1, 2);
+      verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1, 2);
    }
 
    @Override

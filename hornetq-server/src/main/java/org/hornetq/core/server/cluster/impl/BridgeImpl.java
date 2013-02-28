@@ -532,7 +532,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             return HandleStatus.BUSY;
          }
 
-         if (deliveringLargeMessage)
+         if (deliveringLargeMessage )
          {
             return HandleStatus.BUSY;
          }
@@ -583,6 +583,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
       }
    }
+
+   public void proceedDeliver(MessageReference ref)
+   {
+      // no op
+   }
+
 
    // FailureListener implementation --------------------------------
 
