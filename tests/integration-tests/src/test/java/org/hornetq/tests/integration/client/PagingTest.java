@@ -214,10 +214,14 @@ public class PagingTest extends ServiceTestBase
 
       session.start();
 
+      assertEquals(numberOfMessages * 2, queue.getMessageCount());
+
+      // The consumer has to be created after the queue.getMessageCount assertion
+      // otherwise delivery could alter the messagecount and give us a false failure
       ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
       ClientMessage msg = null;
 
-      assertEquals(numberOfMessages * 2, queue.getMessageCount());
+
       for (int i = 0; i < numberOfMessages * 2; i++)
       {
          msg = consumer.receive(1000);
