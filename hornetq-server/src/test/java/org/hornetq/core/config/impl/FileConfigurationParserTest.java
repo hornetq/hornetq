@@ -25,13 +25,38 @@ import org.hornetq.utils.DefaultSensitiveStringCodec;
 
 /**
  * A FileConfigurationParserTest
- *
- *  @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- *
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class FileConfigurationParserTest extends UnitTestCase
 {
+   /**
+    * These "InvalidConfigurationTest*.xml" files are modified copies of {@value
+    * ConfigurationTest-full-config.xml}, so just diff it for changes, e.g.
+    *
+    * <pre>
+    * diff ConfigurationTest-full-config.xml InvalidConfigurationTest4.xml
+    * </pre>
+    * @throws Exception
+    */
+   public void testSchemaValidation() throws Exception
+   {
+      for (int i = 0; i < 6; i++)
+      {
+         String filename = "InvalidConfigurationTest" + i + ".xml";
+         FileConfiguration fc = new FileConfiguration(filename);
+
+         try
+         {
+            fc.start();
+            fail("parsing should have failed for " + filename);
+         }
+         catch (java.lang.IllegalStateException e)
+         {
+            Throwable cause = e.getCause();
+            assertTrue("must have been org.xml.sax.SAXParseException", cause instanceof org.xml.sax.SAXParseException);
+         }
+      }
+   }
 
    public void testParsingDefaultServerConfig() throws Exception
    {
@@ -153,8 +178,8 @@ public class FileConfigurationParserTest extends UnitTestCase
                      + "<expiry-address>jms.queue.ExpiryQueue\n</expiry-address>" + "\n"
                      + "<redelivery-delay>0\n</redelivery-delay>" + "\n"
                      + "<max-size-bytes>10485760\n</max-size-bytes>" + "\n"
-                     + "<message-counter-history-day-limit>10  </message-counter-history-day-limit>" + "\n"
-                     + "<address-full-policy>BLOCK\n</address-full-policy>" + "\n" +
+                     + "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n"
+                     + "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
             "</address-setting>" + "\n" +
             "</address-settings>";
 

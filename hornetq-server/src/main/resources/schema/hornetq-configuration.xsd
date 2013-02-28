@@ -261,7 +261,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="remoting-interceptors" type="class-name-sequence" maxOccurs="1" minOccurs="0">
+        <xsd:element name="remoting-interceptors" type="class-name-sequenceType" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="intercepting-operations">
             <xsd:documentation>
               DEPRECATED. This option is deprecated, but it will still be honored. Any interceptor
@@ -271,7 +271,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="remoting-incoming-interceptors" type="class-name-sequence" maxOccurs="1" minOccurs="0">
+        <xsd:element name="remoting-incoming-interceptors" type="class-name-sequenceType" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="intercepting-operations">
             <xsd:documentation>a list of &lt;class-name/&gt; elements with the names of classes to
             use for interceptor incoming remoting packets
@@ -279,7 +279,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="remoting-outgoing-interceptors" type="class-name-sequence" maxOccurs="1" minOccurs="0">
+        <xsd:element name="remoting-outgoing-interceptors" type="class-name-sequenceType" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="intercepting-operations">
             <xsd:documentation>a list of &lt;class-name/&gt; elements with the names of classes to
             use for interceptor outcoming remoting packets
@@ -469,7 +469,7 @@
                         <xsd:documentation>address for the queue</xsd:documentation>
                       </xsd:annotation>
                     </xsd:element>
-                    <xsd:element name="filter" maxOccurs="1" minOccurs="0"/>
+                    <xsd:element ref="filter" maxOccurs="1" minOccurs="0"/>
                     <xsd:element name="durable" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
                       <xsd:annotation>
                         <xsd:documentation>whether the queue is durable (persistent)</xsd:documentation>
@@ -506,7 +506,7 @@
           </xsd:annotation>
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element name="cluster-connection" type="clusterConnectionType" maxOccurs="unbounded" minOccurs="0"/>
+              <xsd:element name="cluster-connection" type="cluster-connectionType" maxOccurs="unbounded" minOccurs="0"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
@@ -732,7 +732,7 @@
           </xsd:annotation>
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element maxOccurs="unbounded" minOccurs="0" name="address-setting" />
+              <xsd:element ref="address-setting" maxOccurs="unbounded" minOccurs="0"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
@@ -871,7 +871,7 @@
     </xsd:complexType>
   </xsd:element>
 
-  <xsd:complexType name="class-name-sequence">
+  <xsd:complexType name="class-name-sequenceType">
     <xsd:annotation>
       <xsd:documentation>unlimited sequence of &lt;class-name/&gt;</xsd:documentation>
     </xsd:annotation>
@@ -921,7 +921,7 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="filter" maxOccurs="1" minOccurs="0"/>
+      <xsd:element ref="filter" maxOccurs="1" minOccurs="0"/>
 
       <xsd:element name="transformer-class-name" type="xsd:string"    maxOccurs="1" minOccurs="0"    >
         <xsd:annotation>
@@ -1036,8 +1036,8 @@
 
 
   <!-- CLUSTER CONNECTION CONFIGURATION -->
-  <xsd:complexType name="clusterConnectionType">
 
+  <xsd:complexType  name="cluster-connectionType">
     <xsd:sequence>
       <xsd:element name="address" type="xsd:string" maxOccurs="1" minOccurs="1">
         <xsd:annotation>
@@ -1183,7 +1183,6 @@
     </xsd:attribute>
   </xsd:complexType>
 
-
   <!-- DIVERT CONFIGURATION TYPE -->
   <xsd:complexType name="divertType">
     <xsd:all>
@@ -1216,7 +1215,7 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="filter" maxOccurs="1" minOccurs="0"/>
+      <xsd:element ref="filter" maxOccurs="1" minOccurs="0"/>
     </xsd:all>
     <xsd:attribute name="name" type="xsd:ID" use="required">
       <xsd:annotation>
@@ -1258,7 +1257,8 @@
     </xsd:attribute>
   </xsd:complexType>
 
-  <xsd:complexType name="address-setting">
+  <xsd:element name="address-setting">
+  <xsd:complexType>
     <xsd:annotation>
       <xsd:documentation>Complex type element to configure an address.</xsd:documentation>
     </xsd:annotation>
@@ -1373,17 +1373,20 @@
         </xsd:annotation>
       </xsd:attribute>
     </xsd:complexType>
+</xsd:element>
 
-  <xsd:complexType name="filter">
-    <xsd:annotation>
-      <xsd:documentation>optional core filter expression (set through attribute)</xsd:documentation>
-    </xsd:annotation>
-    <xsd:attribute name="string" type="xsd:string" use="required">
+  <xsd:element name="filter">
+    <xsd:complexType>
       <xsd:annotation>
-        <xsd:documentation>optional core filter expression</xsd:documentation>
+        <xsd:documentation>optional core filter expression (set through attribute)</xsd:documentation>
       </xsd:annotation>
-    </xsd:attribute>
-  </xsd:complexType>
+      <xsd:attribute name="string" type="xsd:string" use="required">
+        <xsd:annotation>
+          <xsd:documentation>optional core filter expression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+    </xsd:complexType>
+</xsd:element>
 
   <xsd:complexType name="connector-serviceType">
     <xsd:sequence>
