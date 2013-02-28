@@ -89,7 +89,7 @@ public class QueueImpl implements Queue
    /** If The system gets slow for any reason, this is the maximum time an Delivery or
        or depage executor should be hanging on
    */
-   private static final int DELIVERY_TIMEOUT = 1000;
+   public static final int DELIVERY_TIMEOUT = 1000;
 
    private static final int FLUSH_TIMEOUT = 10000;
 
@@ -816,7 +816,12 @@ public class QueueImpl implements Queue
 
    public long getMessageCount()
    {
-      internalFlushExecutor(FLUSH_TIMEOUT);
+      return getMessageCount(FLUSH_TIMEOUT);
+   }
+
+   public long getMessageCount(final long timeout)
+   {
+      if (timeout > 0) internalFlushExecutor(timeout);
       return getInstantMessageCount();
    }
 
@@ -1006,7 +1011,12 @@ public class QueueImpl implements Queue
 
    public long getMessagesAdded()
    {
-      internalFlushExecutor(FLUSH_TIMEOUT);
+      return getMessagesAdded(FLUSH_TIMEOUT);
+   }
+
+   public long getMessagesAdded(final long timeout)
+   {
+      if (timeout > 0) internalFlushExecutor(timeout);
       return getInstantMessagesAdded();
    }
 

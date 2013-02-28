@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.client;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -30,6 +31,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * This test will simulate a consumer hanging on the delivery packet due to unbehaved clients
@@ -80,14 +82,17 @@ public class HangConsumerTest extends ServiceTestBase
 
          session.start();
 
+         assertTrue(hangInt.reusableLatch.await(10, TimeUnit.SECONDS));
+
+         // this shouldn't lock
          producer.send(session.createMessage(true));
          session.commit();
 
          ClientConsumer consumer2 = session.createConsumer(QUEUE);
 
          // These two operations should finish without the test hanging
-         queue.getMessagesAdded();
-         queue.getMessageCount();
+         queue.getMessagesAdded(1);
+         queue.getMessageCount(1);
 
          hangInt.open();
 
@@ -140,9 +145,8 @@ public class HangConsumerTest extends ServiceTestBase
 
          session.start();
 
-         // These two operations should finish without the test hanging
-         queue.getMessagesAdded();
-         queue.getMessageCount();
+         assertTrue(hangInt.reusableLatch.await(10, TimeUnit.SECONDS));
+
          hangInt.pendingException = new HornetQException("fake error");
 
          hangInt.open();
@@ -170,6 +174,8 @@ public class HangConsumerTest extends ServiceTestBase
    class HangInterceptor implements Interceptor
    {
       Semaphore semaphore = new Semaphore(1);
+      ReusableLatch reusableLatch = new ReusableLatch(1);
+
 
       volatile HornetQException pendingException = null;
 
@@ -190,8 +196,10 @@ public class HangConsumerTest extends ServiceTestBase
             System.out.println("Receiving message");
             try
             {
+               reusableLatch.countDown();
                semaphore.acquire();
                semaphore.release();
+               reusableLatch.countUp();
             }
             catch (Exception e)
             {

@@ -291,9 +291,21 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public long getMessageCount(long timeout)
+   {
+      return 0;
+   }
+
+   @Override
    public long getMessagesAdded()
    {
       // no-op
+      return 0;
+   }
+
+   @Override
+   public long getMessagesAdded(long timeout)
+   {
       return 0;
    }
 

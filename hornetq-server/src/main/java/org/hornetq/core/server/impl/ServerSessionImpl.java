@@ -547,7 +547,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                          queue.isTemporary(),
                                          filterString,
                                          queue.getConsumerCount(),
-                                         queue.getMessageCount());
+                                         queue.getMessageCount(QueueImpl.DELIVERY_TIMEOUT));
       }
       // make an exception for the management address (see HORNETQ-29)
       else if (name.equals(managementAddress))
