@@ -44,4 +44,8 @@ public interface ClientStompFrame
 
    public boolean isPing();
 
+   public void setForceOneway();
+
+   public void setPing(boolean b);
+
 }

@@ -19,6 +19,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v11.StompFrameHandlerV11;
+import org.hornetq.core.protocol.stomp.v12.StompFrameHandlerV12;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
@@ -30,6 +31,7 @@ import org.hornetq.utils.DataConstants;
 public abstract class VersionedStompFrameHandler
 {
    protected StompConnection connection;
+   protected StompDecoder decoder;
 
    public static VersionedStompFrameHandler getHandler(StompConnection connection, StompVersions version)
    {
@@ -41,7 +43,31 @@ public abstract class VersionedStompFrameHandler
       {
          return new StompFrameHandlerV11(connection);
       }
+      if (version == StompVersions.V1_2)
+      {
+         return new StompFrameHandlerV12(connection);
+      }
       return null;
+   }
+   
+   protected VersionedStompFrameHandler(StompConnection connection)
+   {
+      this.connection = connection;
+   }
+
+   public StompFrame decode(HornetQBuffer buffer) throws HornetQStompException
+   {
+      return decoder.decode(buffer);
+   }
+   
+   public boolean hasBytes()
+   {
+      return decoder.hasBytes();
+   }
+   
+   public StompDecoder getDecoder()
+   {
+      return decoder;
    }
 
    public StompFrame handleFrame(StompFrame request)
@@ -118,6 +144,7 @@ public abstract class VersionedStompFrameHandler
    public abstract StompFrame onUnsubscribe(StompFrame request);
    public abstract StompFrame onStomp(StompFrame request);
    public abstract StompFrame onNack(StompFrame request);
+   public abstract StompFrame createStompFrame(String command);
 
    public StompFrame onUnknown(String command)
    {
@@ -132,10 +159,6 @@ public abstract class VersionedStompFrameHandler
 
       return receipt;
    }
-
-   public abstract StompFrame createStompFrame(String command);
-
-   public abstract StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException;
 
    public StompFrame onCommit(StompFrame request)
    {
@@ -348,6 +371,24 @@ public abstract class VersionedStompFrameHandler
             deliveryCount);
 
       return frame;
+   }
+
+   /**
+    * this method is called when a newer version of handler is created. It should
+    * take over the state of the decoder of the existingHandler so that
+    * the decoding can be continued. For V10 handler it's never get called.
+    * @param existingHandler
+    */
+   public void initDecoder(VersionedStompFrameHandler existingHandler)
+   {
+      throw new IllegalStateException("This method should not be called");
+   }
+
+   //sends an ERROR frame back to client if possible then close the connection
+   public void onError(HornetQStompException e)
+   {
+      this.connection.sendFrame(e.getFrame());
+      connection.destroy();
    }
 
 }

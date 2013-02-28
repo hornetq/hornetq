@@ -115,9 +115,13 @@ public class StompDecoder
 
    public static final byte LN = (byte)'n';
 
+   public static final byte RT = (byte)'r';
+
    public static final byte HEADER_SEPARATOR = (byte)':';
 
    public static final byte NEW_LINE = (byte)'\n';
+
+   public static final byte CR = (byte)'\r';
 
    public static final byte SPACE = (byte)' ';
 
@@ -137,7 +141,7 @@ public class StompDecoder
 
    public Map<String, String> headers;
 
-   public int headerBytesCopyStart;
+   private int headerBytesCopyStart;
 
    public boolean readingHeaders;
 
@@ -154,18 +158,12 @@ public class StompDecoder
    public String contentType;
 
    public int bodyStart;
-
-   public StompConnection connection;
-
-   public StompDecoder(StompConnection stompConnection)
-   {
-      this.connection = stompConnection;
-      init();
-   }
+   
+   //max len of EOL (default is 1 for '\n')
+   protected int eolLen = 1;
 
    public StompDecoder()
    {
-      init();
    }
 
    public boolean hasBytes()
@@ -180,26 +178,15 @@ public class StompDecoder
     * followed by an optional message body
     * terminated with a null character
     *
-    * Note: to support both 1.0 and 1.1, we just assemble a
-    * standard StompFrame and let the versioned handler to do more
-    * spec specific job (like trimming, escaping etc).
+    * Note: This is the decoder for 1.0 stomp frames. However to support for stomp 1.1 
+    * and 1.2, it is also responsible for giving out an proper exception when it detects
+    * unsupported EOLs ("\r\n" valid for 1.2 only). The StompConnection will switch
+    * to proper version decoders on catching such exceptions.
     */
-   public synchronized StompFrame decode(final HornetQBuffer buffer) throws Exception
+   public synchronized StompFrame decode(final HornetQBuffer buffer) throws HornetQStompException
    {
-      if (connection != null && connection.isValid())
-      {
-         VersionedStompFrameHandler handler = connection.getFrameHandler();
-         return handler.decode(this, buffer);
-      }
-
-      return defaultDecode(buffer);
-   }
-
-   public StompFrame defaultDecode(final HornetQBuffer buffer) throws HornetQStompException
-   {
-
       int readable = buffer.readableBytes();
-
+      
       if (data + readable >= workingBuffer.length)
       {
          resizeWorking(data + readable);
@@ -211,323 +198,30 @@ public class StompDecoder
 
       if (command == null)
       {
-         if (data < 4)
+         if (!parseCommand())
          {
-            // Need at least four bytes to identify the command
-            // - up to 3 bytes for the command name + potentially another byte for a leading \n
-
             return null;
          }
-
-         int offset;
-
-         if (workingBuffer[0] == NEW_LINE)
-         {
-            // Yuck, some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
-            // STOMP
-            // frame this can manifest as an extra \n at the beginning when the next STOMP frame is read - we need to
-            // deal
-            // with this
-            offset = 1;
-         }
-         else
-         {
-            offset = 0;
-         }
-
-         byte b = workingBuffer[offset];
-
-         switch (b)
-         {
-            case A:
-            {
-               if (workingBuffer[offset + 1] == B)
-               {
-                  if (!tryIncrement(offset + COMMAND_ABORT_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // ABORT
-                  command = COMMAND_ABORT;
-               }
-               else
-               {
-                  if (!tryIncrement(offset + COMMAND_ACK_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // ACK
-                  command = COMMAND_ACK;
-               }
-               break;
-            }
-            case B:
-            {
-               if (!tryIncrement(offset + COMMAND_BEGIN_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // BEGIN
-               command = COMMAND_BEGIN;
-
-               break;
-            }
-            case C:
-            {
-               if (workingBuffer[offset + 2] == M)
-               {
-                  if (!tryIncrement(offset + COMMAND_COMMIT_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // COMMIT
-                  command = COMMAND_COMMIT;
-               }
-               /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-               else if (workingBuffer[offset+7]==E)
-               {
-                  if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // CONNECTED
-                  command = COMMAND_CONNECTED;
-               }
-               /**** end ****/
-               else
-               {
-                  if (!tryIncrement(offset + COMMAND_CONNECT_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // CONNECT
-                  command = COMMAND_CONNECT;
-               }
-               break;
-            }
-            case D:
-            {
-               if (!tryIncrement(offset + COMMAND_DISCONNECT_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // DISCONNECT
-               command = COMMAND_DISCONNECT;
-
-               break;
-            }
-            case R:
-            {
-               if (!tryIncrement(offset + COMMAND_RECEIPT_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // RECEIPT
-               command = COMMAND_RECEIPT;
-
-               break;
-            }
-            /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-            case E:
-            {
-               if (!tryIncrement(offset + COMMAND_ERROR_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // ERROR
-               command = COMMAND_ERROR;
-
-               break;
-            }
-            case M:
-            {
-               if (!tryIncrement(offset + COMMAND_MESSAGE_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // MESSAGE
-               command = COMMAND_MESSAGE;
-
-               break;
-            }
-            /**** end ****/
-            case S:
-            {
-               if (workingBuffer[offset + 1] == E)
-               {
-                  if (!tryIncrement(offset + COMMAND_SEND_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // SEND
-                  command = COMMAND_SEND;
-               }
-               else if (workingBuffer[offset + 1] == T)
-               {
-                  if (!tryIncrement(offset + COMMAND_STOMP_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // SEND
-                  command = COMMAND_STOMP;
-               }
-               else
-               {
-                  if (!tryIncrement(offset + COMMAND_SUBSCRIBE_LENGTH + 1))
-                  {
-                     return null;
-                  }
-
-                  // SUBSCRIBE
-                  command = COMMAND_SUBSCRIBE;
-               }
-               break;
-            }
-            case U:
-            {
-               if (!tryIncrement(offset + COMMAND_UNSUBSCRIBE_LENGTH + 1))
-               {
-                  return null;
-               }
-
-               // UNSUBSCRIBE
-               command = COMMAND_UNSUBSCRIBE;
-
-               break;
-            }
-            default:
-            {
-               throwInvalid();
-            }
-         }
-
-         // Sanity check
-
-         if (workingBuffer[pos - 1] != NEW_LINE)
-         {
-            throwInvalid();
-         }
       }
 
+      //if command is not null, should it automatically be in
+      //reading headers mode? think of get rid of readingHeaders flag
       if (readingHeaders)
       {
-         if (headerBytesCopyStart == -1)
+         if (!parseHeaders())
          {
-            headerBytesCopyStart = pos;
-         }
-
-         // Now the headers
-
-         outer: while (true)
-         {
-            byte b = workingBuffer[pos++];
-
-            switch (b)
-            {
-               case HEADER_SEPARATOR:
-               {
-                  if (inHeaderName)
-                  {
-                     byte[] data = new byte[pos - headerBytesCopyStart - 1];
-
-                     System.arraycopy(workingBuffer, headerBytesCopyStart, data, 0, data.length);
-
-                     headerName = new String(data);
-
-                     inHeaderName = false;
-
-                     headerBytesCopyStart = pos;
-
-                     headerValueWhitespace = true;
-                  }
-
-                  whiteSpaceOnly = false;
-
-                  break;
-               }
-               case NEW_LINE:
-               {
-                  if (whiteSpaceOnly)
-                  {
-                     // Headers are terminated by a blank line
-                     readingHeaders = false;
-
-                     break outer;
-                  }
-
-                  byte[] data = new byte[pos - headerBytesCopyStart - 1];
-
-                  System.arraycopy(workingBuffer, headerBytesCopyStart, data, 0, data.length);
-
-                  String headerValue = new String(data);
-
-                  headers.put(headerName, headerValue);
-
-                  if (headerName.equals(CONTENT_LENGTH_HEADER_NAME))
-                  {
-                     contentLength = Integer.parseInt(headerValue.toString());
-                  }
-
-                  whiteSpaceOnly = true;
-
-                  headerBytesCopyStart = pos;
-
-                  inHeaderName = true;
-
-                  headerValueWhitespace = false;
-
-                  break;
-               }
-               case SPACE:
-               {
-               }
-               case TAB:
-               {
-                  if (TRIM_LEADING_HEADER_VALUE_WHITESPACE && headerValueWhitespace)
-                  {
-                     // trim off leading whitespace from header values.
-                     // The STOMP spec examples seem to imply that whitespace should be trimmed although it is not
-                     // explicit in the spec
-                     // ActiveMQ + StompConnect also seem to trim whitespace from header values.
-                     // Trimming is problematic though if the user has set a header with a value which deliberately
-                     // has
-                     // leading whitespace since
-                     // this will be removed
-                     headerBytesCopyStart++;
-                  }
-
-                  break;
-               }
-               default:
-               {
-                  whiteSpaceOnly = false;
-
-                  headerValueWhitespace = false;
-               }
-            }
-            if (pos == data)
-            {
-               // Run out of data
-
-               return null;
-            }
+            return null;
          }
       }
-
+      
       // Now the body
+      StompFrame ret = parseBody();
+      
+      return ret;
+   }
 
+   protected StompFrame parseBody() throws HornetQStompException
+   {
       byte[] content = null;
 
       if (contentLength != -1)
@@ -594,9 +288,342 @@ public class StompDecoder
       }
    }
 
+   protected boolean parseHeaders() throws HornetQStompException
+   {
+      if (headerBytesCopyStart == -1)
+      {
+         headerBytesCopyStart = pos;
+      }
+
+      // Now the headers
+      outer: while (true)
+      {
+         byte b = workingBuffer[pos++];
+
+         switch (b)
+         {
+            case HEADER_SEPARATOR:
+            {
+               if (inHeaderName)
+               {
+                  byte[] data = new byte[pos - headerBytesCopyStart - 1];
+
+                  System.arraycopy(workingBuffer, headerBytesCopyStart, data, 0, data.length);
+
+                  headerName = new String(data);
+
+                  inHeaderName = false;
+
+                  headerBytesCopyStart = pos;
+
+                  headerValueWhitespace = true;
+               }
+
+               whiteSpaceOnly = false;
+
+               break;
+            }
+            case NEW_LINE:
+            {
+               if (whiteSpaceOnly)
+               {
+                  // Headers are terminated by a blank line
+                  readingHeaders = false;
+
+                  break outer;
+               }
+
+               byte[] data = new byte[pos - headerBytesCopyStart - 1];
+
+               System.arraycopy(workingBuffer, headerBytesCopyStart, data, 0, data.length);
+
+               String headerValue = new String(data);
+
+               headers.put(headerName, headerValue);
+
+               if (headerName.equals(CONTENT_LENGTH_HEADER_NAME))
+               {
+                  contentLength = Integer.parseInt(headerValue.toString());
+               }
+
+               whiteSpaceOnly = true;
+
+               headerBytesCopyStart = pos;
+
+               inHeaderName = true;
+
+               headerValueWhitespace = false;
+
+               break;
+            }
+            case SPACE:
+            {
+            }
+            case TAB:
+            {
+               if (TRIM_LEADING_HEADER_VALUE_WHITESPACE && headerValueWhitespace)
+               {
+                  // trim off leading whitespace from header values.
+                  // The STOMP spec examples seem to imply that whitespace should be trimmed although it is not
+                  // explicit in the spec
+                  // ActiveMQ + StompConnect also seem to trim whitespace from header values.
+                  // Trimming is problematic though if the user has set a header with a value which deliberately
+                  // has
+                  // leading whitespace since
+                  // this will be removed
+                  headerBytesCopyStart++;
+               }
+
+               break;
+            }
+            default:
+            {
+               whiteSpaceOnly = false;
+
+               headerValueWhitespace = false;
+            }
+         }
+         if (pos == data)
+         {
+            // Run out of data
+
+            return false;
+         }
+      }
+      return true;
+   }
+
+   protected boolean parseCommand() throws HornetQStompException
+   {
+      int offset = 0;
+      boolean nextChar = false;
+
+      // Some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
+      // STOMP frame this can manifest as an extra \n at the beginning when the 
+      // next STOMP frame is read - we need to deal with this.
+      // Besides, Stomp 1.2 allows for extra EOLs after NULL (i.e.
+      // either "[\r]\n"s or "\n"s)
+      while (offset < data)
+      {
+         if (workingBuffer[offset] == NEW_LINE)
+         {
+            nextChar = false;
+         }
+         else if (workingBuffer[offset] == CR)
+         {
+            if (nextChar) throw new HornetQStompException("Invalid char sequence: two consecutive CRs.");
+            nextChar = true;
+         }
+         else
+         {
+            break;
+         }
+         offset++;
+      }
+      
+      if (nextChar)
+      {
+         throw new HornetQStompException("Invalid char sequence: There is a CR not followed by an LF");
+      }
+
+      if (data < 4 + offset)
+      {
+         // Need at least four bytes to identify the command
+         // - up to 3 bytes for the command name + potentially another byte for a leading \n
+         return false;
+      }
+
+      byte b = workingBuffer[offset];
+
+      switch (b)
+      {
+         case A:
+         {
+            if (workingBuffer[offset + 1] == B)
+            {
+               if (!tryIncrement(offset + COMMAND_ABORT_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // ABORT
+               command = COMMAND_ABORT;
+            }
+            else
+            {
+               if (!tryIncrement(offset + COMMAND_ACK_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // ACK
+               command = COMMAND_ACK;
+            }
+            break;
+         }
+         case B:
+         {
+            if (!tryIncrement(offset + COMMAND_BEGIN_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // BEGIN
+            command = COMMAND_BEGIN;
+
+            break;
+         }
+         case C:
+         {
+            if (workingBuffer[offset + 2] == M)
+            {
+               if (!tryIncrement(offset + COMMAND_COMMIT_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // COMMIT
+               command = COMMAND_COMMIT;
+            }
+            /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+            else if (workingBuffer[offset+7]==E)
+            {
+               if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // CONNECTED
+               command = COMMAND_CONNECTED;
+            }
+            /**** end ****/
+            else
+            {
+               if (!tryIncrement(offset + COMMAND_CONNECT_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // CONNECT
+               command = COMMAND_CONNECT;
+            }
+            break;
+         }
+         case D:
+         {
+            if (!tryIncrement(offset + COMMAND_DISCONNECT_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // DISCONNECT
+            command = COMMAND_DISCONNECT;
+
+            break;
+         }
+         case R:
+         {
+            if (!tryIncrement(offset + COMMAND_RECEIPT_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // RECEIPT
+            command = COMMAND_RECEIPT;
+
+            break;
+         }
+         /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+         case E:
+         {
+            if (!tryIncrement(offset + COMMAND_ERROR_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // ERROR
+            command = COMMAND_ERROR;
+
+            break;
+         }
+         case M:
+         {
+            if (!tryIncrement(offset + COMMAND_MESSAGE_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // MESSAGE
+            command = COMMAND_MESSAGE;
+
+            break;
+         }
+         /**** end ****/
+         case S:
+         {
+            if (workingBuffer[offset + 1] == E)
+            {
+               if (!tryIncrement(offset + COMMAND_SEND_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // SEND
+               command = COMMAND_SEND;
+            }
+            else if (workingBuffer[offset + 1] == T)
+            {
+               if (!tryIncrement(offset + COMMAND_STOMP_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // STOMP
+               command = COMMAND_STOMP;
+            }
+            else
+            {
+               if (!tryIncrement(offset + COMMAND_SUBSCRIBE_LENGTH + 1))
+               {
+                  return false;
+               }
+
+               // SUBSCRIBE
+               command = COMMAND_SUBSCRIBE;
+            }
+            break;
+         }
+         case U:
+         {
+            if (!tryIncrement(offset + COMMAND_UNSUBSCRIBE_LENGTH + 1))
+            {
+               return false;
+            }
+
+            // UNSUBSCRIBE
+            command = COMMAND_UNSUBSCRIBE;
+
+            break;
+         }
+         default:
+         {
+            throwInvalid();
+         }
+      }
+
+      // Sanity check
+      if (workingBuffer[pos - 1] != NEW_LINE)
+      {
+         //give a signal to try other versions
+         throw new HornetQStompException(HornetQStompException.INVALID_EOL_V10, "Expect new line char but is " + workingBuffer[pos -1]);
+      }
+      
+      return true;
+   }
+
    public void throwInvalid() throws HornetQStompException
    {
-      throw new HornetQStompException("Invalid STOMP frame: " + this.dumpByteArray(workingBuffer));
+      throw new HornetQStompException(HornetQStompException.INVALID_COMMAND, "Invalid STOMP frame: " + this.dumpByteArray(workingBuffer));
    }
 
    public void init()
@@ -675,5 +702,10 @@ public class StompDecoder
       }
 
       return str.toString();
+   }
+
+   //this should be overriden by subclasses.
+   public void init(StompDecoder decoder)
+   {
    }
 }

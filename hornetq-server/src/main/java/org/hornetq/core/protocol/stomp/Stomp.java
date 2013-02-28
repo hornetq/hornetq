@@ -122,6 +122,8 @@ public interface Stomp
          String TYPE = "type";
 
          String SUBSCRIPTION = "subscription";
+
+         String ACK = "ack";
       }
 
       public interface Subscribe
@@ -201,6 +203,9 @@ public interface Stomp
 
          //1.1
          String SUBSCRIPTION = "subscription";
+
+         //1.2
+         String ID = "id";
       }
    }
 }

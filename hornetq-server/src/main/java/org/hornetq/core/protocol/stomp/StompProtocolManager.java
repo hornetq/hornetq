@@ -138,14 +138,12 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
       conn.setDataReceived();
 
-      StompDecoder decoder = conn.getDecoder();
-
       do
       {
          StompFrame request;
          try
          {
-            request = decoder.decode(buffer);
+            request = conn.decode(buffer);
          }
          catch (Exception e)
          {
@@ -166,7 +164,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          {
             server.getStorageManager().clearContext();
          }
-      } while (decoder.hasBytes());
+      } while (conn.hasBytes());
    }
 
    // Public --------------------------------------------------------
@@ -324,7 +322,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    public String getSupportedVersionsAsString()
    {
-      return "v1.0 v1.1";
+      return "v1.0 v1.1 v1.2";
    }
 
    public String getVirtualHostName()

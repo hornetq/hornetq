@@ -30,6 +30,13 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractStompClientConnection implements StompClientConnection
 {
+   public static final String STOMP_COMMAND = "STOMP";
+
+   public static final String ACCEPT_HEADER = "accept-version";
+   public static final String HOST_HEADER = "host";
+   public static final String VERSION_HEADER = "version";
+   public static final String RECEIPT_HEADER = "receipt";
+
    protected static final String CONNECT_COMMAND = "CONNECT";
    protected static final String CONNECTED_COMMAND = "CONNECTED";
    protected static final String DISCONNECT_COMMAND = "DISCONNECT";
@@ -40,6 +47,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    //ext
    protected static final String CLIENT_ID_HEADER = "client-id";
 
+   protected Pinger pinger;
 
    protected String version;
    protected String host;
@@ -55,6 +63,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    protected BlockingQueue<ClientStompFrame> frameQueue = new LinkedBlockingQueue<ClientStompFrame>();
 
    protected boolean connected = false;
+   private volatile int serverPingCounter;
 
    public AbstractStompClientConnection(String version, String host, int port) throws IOException
    {
@@ -110,6 +119,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
             }
          }
       }
+
       return response;
    }
 
@@ -202,8 +212,16 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       readBuffer.rewind();
    }
 
+
+   @Override
+   public int getServerPingNumber()
+   {
+      return serverPingCounter;
+   }
+
    protected void incrementServerPing()
    {
+      serverPingCounter++;
    }
 
    private boolean validateFrame(ClientStompFrame f) throws UnsupportedEncodingException
@@ -298,6 +316,79 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    public int getFrameQueueSize()
    {
       return this.frameQueue.size();
+   }
+
+   @Override
+   public void startPinger(long interval)
+   {
+      pinger = new Pinger(interval);
+      pinger.startPing();
+   }
+
+   @Override
+   public void stopPinger()
+   {
+      if (pinger != null)
+      {
+         pinger.stopPing();
+         try
+         {
+            pinger.join();
+         }
+         catch (InterruptedException e)
+         {
+            e.printStackTrace();
+         }
+         pinger = null;
+      }
+   }
+
+   private class Pinger extends Thread
+   {
+      long pingInterval;
+      ClientStompFrame pingFrame;
+      volatile boolean stop = false;
+
+      public Pinger(long interval)
+      {
+         this.pingInterval = interval;
+         pingFrame = createFrame("STOMP");
+         pingFrame.setBody("\n");
+         pingFrame.setForceOneway();
+         pingFrame.setPing(true);
+      }
+
+      public void startPing()
+      {
+         start();
+      }
+
+      public synchronized void stopPing()
+      {
+         stop = true;
+         this.notify();
+      }
+
+      public void run()
+      {
+         synchronized (this)
+         {
+            while (!stop)
+            {
+               try
+               {
+                  sendFrame(pingFrame);
+
+                  this.wait(pingInterval);
+               }
+               catch (Exception e)
+               {
+                  stop = true;
+                  e.printStackTrace();
+               }
+            }
+         }
+      }
    }
 
 }

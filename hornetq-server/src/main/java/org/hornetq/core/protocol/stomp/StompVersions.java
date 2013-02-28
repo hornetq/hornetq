@@ -21,15 +21,19 @@ package org.hornetq.core.protocol.stomp;
  */
 public enum StompVersions
 {
-   V1_0,
-   V1_1;
+   V1_0("1.0"),
+   V1_1("1.1"),
+   V1_2("1.2");
+   
+   private String version;
+   
+   private StompVersions(String ver)
+   {
+      this.version = ver;
+   }
 
    public String toString()
    {
-      if (this == V1_0)
-      {
-         return "1.0";
-      }
-      return "1.1";
+      return this.version;
    }
 }
