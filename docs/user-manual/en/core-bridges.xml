@@ -66,7 +66,12 @@
    &lt;failover-on-server-shutdown>false&lt;/failover-on-server-shutdown>
    &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
    &lt;confirmation-window-size>10000000&lt;/confirmation-window-size>
-   &lt;connector-ref connector-name="remote-connector" backup-connector-name="backup-remote-connector"/>
+   &lt;static-connectors>
+      &lt;connector-ref>remote-connector&lt;/connector-ref>
+   &lt;/static-connectors>
+   &lt;!-- alternative to static-connectors
+   &lt;discovery-group-ref discovery-group-name="bridge-discovery-group"/>
+   -->
    &lt;user>foouser&lt;/user>
    &lt;password>foopassword&lt;/password>
 &lt;/bridge></programlisting>
@@ -184,42 +189,31 @@
                     determines the <literal>confirmation-window-size</literal> to use for the
                     connection used to forward messages to the target node. This attribute is
                     described in section <xref linkend="client-reconnection"/></para>
-                <para>
-                    <warning>When using the bridge to forward messages from a queue which has a
-                        max-size-bytes set it's important that confirmation-window-size is less than
-                        or equal to <literal>max-size-bytes</literal> to prevent the flow of
-                        messages from ceasing. </warning>
-                </para>
+
+                 <warning><para>When using the bridge to forward messages from a queue which has a
+                    max-size-bytes set it's important that confirmation-window-size is less than
+                    or equal to <literal>max-size-bytes</literal> to prevent the flow of
+                    messages from ceasing.</para>
+                 </warning>
+
             </listitem>
             <listitem>
-                <para><literal>connector-ref</literal>. This mandatory parameter determines which
-                        <emphasis>connector</emphasis> pair the bridge will use to actually make the
-                    connection to the target server.</para>
-                <para>A <emphasis>connector</emphasis> encapsulates knowledge of what transport to
+                <para><literal>static-connectors</literal> or <literal>discovery-group-ref</literal>.
+                    Pick either of these options to connect the bridge to the target server.
+                </para>
+                <para> The <literal>static-connectors</literal> is a list of <literal>connector-ref</literal>
+                    elements pointing to <literal>connector</literal> elements defined elsewhere.
+                    A <emphasis>connector</emphasis> encapsulates knowledge of what transport to
                     use (TCP, SSL, HTTP etc) as well as the server connection parameters (host, port
                     etc). For more information about what connectors are and how to configure them,
-                    please see <xref linkend="configuring-transports"/>.</para>
-                <para>The <literal>connector-ref</literal> element can be configured with two
-                    attributes:</para>
-                <itemizedlist>
-                    <listitem>
-                        <para><literal>connector-name</literal>. This references the name of a
-                            connector defined in the core configuration file <literal
-                                >hornetq-configuration.xml</literal>. The bridge will use this
-                            connector to make its connection to the target server. This attribute is
-                            mandatory.</para>
-                    </listitem>
-                    <listitem>
-                        <para><literal>backup-connector-name</literal>. This optional parameter also
-                            references the name of a connector defined in the core configuration
-                            file <literal>hornetq-configuration.xml</literal>. It represents the
-                            connector that the bridge will fail-over onto if it detects the live
-                            server connection has failed. If this is specified and <literal
-                                >failover-on-server-shutdown</literal> is set to <literal
-                                >true</literal> then it will also attempt failover onto this
-                            connector if the live target server is cleanly shut-down.</para>
-                    </listitem>
-                </itemizedlist>
+                    please see <xref linkend="configuring-transports"/>.
+                </para>
+                <para>The <literal>discovery-group-ref</literal> element has one attribute -
+                    <literal>discovery-group-name</literal>.  This attribute points to a
+                    <literal>discovery-group</literal> defined elsewhere. For more information about
+                    what discovery-groups are and how to configure them, please see
+                    <xref linkend="clusters.discovery-groups"/>.
+                </para>
             </listitem>
             <listitem>
                 <para><literal>user</literal>. This optional parameter determines the user name to
