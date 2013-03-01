@@ -284,6 +284,18 @@
                     </fileMapper>
                   </fileMappers>
                 </transformationSet>
+                <transformationSet>
+                  <dir>../../hornetq-jms-server/src/main/resources/schema</dir>
+                  <stylesheet>./src/main/resources/schemaToTable.xsl</stylesheet>
+                  <includes>
+                    <include>hornetq-jms.xsd</include>
+                  </includes>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                      <targetExtension>.xml</targetExtension>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
               </transformationSets>
             </configuration>
             <dependencies>

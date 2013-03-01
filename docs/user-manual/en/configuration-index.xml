@@ -132,14 +132,6 @@
                         </row>
                         <row>
                             <entry><link linkend="clusters"
-                                    >connection-factory.connectors.connector-ref.backup-connector-name (attribute)</link>
-                            </entry>
-                            <entry>String</entry>
-                            <entry>Name of the connector to connect to the backup server</entry>
-                            <entry />
-                        </row>
-                        <row>
-                            <entry><link linkend="clusters"
                                     >connection-factory.discovery-group-ref.discovery-group-name (attribute)</link>
                             </entry>
                             <entry>String</entry>
