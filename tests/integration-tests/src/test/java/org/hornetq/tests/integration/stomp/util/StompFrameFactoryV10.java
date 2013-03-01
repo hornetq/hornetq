@@ -68,4 +68,10 @@ public class StompFrameFactoryV10 implements StompFrameFactory
       return new ClientStompFrameV10(command);
    }
 
+   @Override
+   public ClientStompFrame newAnyFrame(String command)
+   {
+      return new ClientStompFrameV10(command, false);
+   }
+
 }

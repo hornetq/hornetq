@@ -13,12 +13,8 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- *
- * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- * pls use factory to create frames.
  */
-public class ClientStompFrameV11 extends AbstractClientStompFrame
+public class ClientStompFrameV12 extends AbstractClientStompFrame
 {
    static
    {
@@ -29,14 +25,23 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
    boolean forceOneway = false;
    boolean isPing = false;
 
-   public ClientStompFrameV11(String command)
+   public ClientStompFrameV12(String command)
    {
-      super(command);
+      this(command, true, true);
    }
 
-   public ClientStompFrameV11(String command, boolean validate)
+   public ClientStompFrameV12(String command, boolean newEol, boolean validate)
    {
       super(command, validate);
+      /**
+       * Stomp 1.2 frames allow a carriage return (octet 13) to optionally
+       * precedes the required line feed (octet 10) as their internal line breaks.
+       * Stomp 1.0 and 1.1 only allow line feeds.
+       */
+      if (newEol)
+      {
+         EOL = "\r\n";
+      }
    }
 
    public void setForceOneway()
@@ -65,10 +70,11 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
    {
       return isPing;
    }
-   
+
    @Override
    public String toString()
    {
-      return "[1.1]" + super.toString();
+      return "[1.2]" + super.toString();
    }
+
 }

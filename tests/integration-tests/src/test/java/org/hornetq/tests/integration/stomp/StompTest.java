@@ -58,7 +58,6 @@ public class StompTest extends StompTestBase
 
          public void onMessage(Message arg0)
          {
-            // System.out.println("<<< " + (1000 - latch.getCount()));
             latch.countDown();
          }
       });
@@ -358,6 +357,52 @@ public class StompTest extends StompTestBase
       Assert.assertEquals("JMSXGroupID", "abc", message.getStringProperty("JMSXGroupID"));
       // FIXME do we support it?
       // Assert.assertEquals("GroupID", "abc", amqMessage.getGroupID());
+   }
+
+   public void testSendMessageWithLongHeaders() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+
+      frame = receiveFrame(10000);
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+      
+      StringBuffer buffer = new StringBuffer();
+      for (int i = 0; i < 1024; i++)
+      {
+         buffer.append("a");
+      }
+      String longHeader = "longHeader:" + buffer.toString() + "\n";
+
+      frame = "SEND\n" + "correlation-id:c123\n" +
+              "persistent:true\n" +
+              "priority:3\n" +
+              "type:t345\n" +
+              "JMSXGroupID:abc\n" +
+              "foo:abc\n" +
+              longHeader +
+              "destination:" +
+              getQueuePrefix() +
+              getQueueName() +
+              "\n\n" +
+              "Hello World" +
+              Stomp.NULL;
+
+      sendFrame(frame);
+
+      TextMessage message = (TextMessage)consumer.receive(1000);
+      Assert.assertNotNull(message);
+      Assert.assertEquals("Hello World", message.getText());
+      Assert.assertEquals("JMSCorrelationID", "c123", message.getJMSCorrelationID());
+      Assert.assertEquals("getJMSType", "t345", message.getJMSType());
+      Assert.assertEquals("getJMSPriority", 3, message.getJMSPriority());
+      Assert.assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
+      Assert.assertEquals("foo", "abc", message.getStringProperty("foo"));
+      Assert.assertEquals("longHeader", 1024, message.getStringProperty("longHeader").length());
+
+      Assert.assertEquals("JMSXGroupID", "abc", message.getStringProperty("JMSXGroupID"));
    }
 
    public void testSubscribeWithAutoAck() throws Exception

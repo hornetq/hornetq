@@ -31,6 +31,11 @@ public class StompFrameFactoryFactory
          return new StompFrameFactoryV11();
       }
 
+      if ("1.2".equals(version))
+      {
+         return new StompFrameFactoryV12();
+      }
+
       return null;
    }
 

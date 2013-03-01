@@ -163,7 +163,7 @@ public class StompFrame
       return headers;
    }
 
-   public static class Header
+   public class Header
    {
       public String key;
       public String val;
@@ -183,43 +183,43 @@ public class StompFrame
       {
          return escape(val);
       }
+   }
 
-      public static String escape(String str)
+   public String escape(String str)
+   {
+      int len = str.length();
+
+      char[] buffer = new char[2*len];
+      int iBuffer = 0;
+      for (int i = 0; i < len; i++)
       {
-         int len = str.length();
-
-         char[] buffer = new char[2*len];
-         int iBuffer = 0;
-         for (int i = 0; i < len; i++)
+         char c = str.charAt(i);
+         if (c == '\n')
          {
-            char c = str.charAt(i);
-            if (c == '\n')
-            {
-               buffer[iBuffer++] = '\\';
-               buffer[iBuffer] = 'n';
-            }
-            else if (c == '\\')
-            {
-               buffer[iBuffer++] = '\\';
-               buffer[iBuffer] = '\\';
-            }
-            else if (c == ':')
-            {
-               buffer[iBuffer++] = '\\';
-               buffer[iBuffer] = ':';
-            }
-            else
-            {
-               buffer[iBuffer] = c;
-            }
-            iBuffer++;
+            buffer[iBuffer++] = '\\';
+            buffer[iBuffer] = 'n';
          }
-
-         char[] total = new char[iBuffer];
-         System.arraycopy(buffer, 0, total, 0, iBuffer);
-
-         return new String(total);
+         else if (c == '\\')
+         {
+            buffer[iBuffer++] = '\\';
+            buffer[iBuffer] = '\\';
+         }
+         else if (c == ':')
+         {
+            buffer[iBuffer++] = '\\';
+            buffer[iBuffer] = ':';
+         }
+         else
+         {
+            buffer[iBuffer] = c;
+         }
+         iBuffer++;
       }
+
+      char[] total = new char[iBuffer];
+      System.arraycopy(buffer, 0, total, 0, iBuffer);
+
+      return new String(total);
    }
 
    public void setBody(String body) throws UnsupportedEncodingException
