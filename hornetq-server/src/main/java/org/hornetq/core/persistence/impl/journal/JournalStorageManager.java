@@ -2223,12 +2223,12 @@ public class JournalStorageManager implements StorageManager
    }
 
    @Override
-   public synchronized void closeIdGenerator()
+   public synchronized void persistIdGenerator()
    {
       if (journalLoaded && idGenerator != null)
       {
          // Must call close to make sure last id is persisted
-         idGenerator.close();
+         idGenerator.persistCurrentID();
       }
    }
 
@@ -2242,7 +2242,7 @@ public class JournalStorageManager implements StorageManager
       if (!ioCriticalError && journalLoaded && idGenerator != null)
       {
          // Must call close to make sure last id is persisted
-         idGenerator.close();
+         idGenerator.persistCurrentID();
       }
 
       if (replicator != null)

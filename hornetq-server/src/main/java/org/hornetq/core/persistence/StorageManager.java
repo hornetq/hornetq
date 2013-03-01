@@ -352,5 +352,5 @@ public interface StorageManager extends HornetQComponent
     * Effectively a "pre-stop" method. Necessary due to the "stop"-order at
     * {@link HornetQServerImpl}
     */
-   void closeIdGenerator();
+   void persistIdGenerator();
 }

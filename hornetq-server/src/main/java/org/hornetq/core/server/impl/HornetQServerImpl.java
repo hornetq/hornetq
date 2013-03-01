@@ -559,7 +559,7 @@ public class HornetQServerImpl implements HornetQServer
             remotingService.freeze(localReplicationManager.getBackupTransportConnection());
             if (!criticalIOError)
             {
-               storageManager.closeIdGenerator();
+               storageManager.persistIdGenerator();
             }
             // Schedule for 10 seconds
             scheduledPool.schedule(new Runnable() {

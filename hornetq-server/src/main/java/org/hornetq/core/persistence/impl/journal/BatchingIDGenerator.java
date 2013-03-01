@@ -51,7 +51,7 @@ public final class BatchingIDGenerator implements IDGenerator
       this.storageManager = storageManager;
    }
 
-   public void close()
+   public void persistCurrentID()
    {
       final long recordID = counter.incrementAndGet();
       storeID(recordID, recordID);
