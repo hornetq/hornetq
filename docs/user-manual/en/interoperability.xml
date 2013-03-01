@@ -25,9 +25,9 @@
     <title>Interoperability</title>
     <section id="stomp">
         <title>Stomp</title>
-        <para><ulink url="http://stomp.codehaus.org/">Stomp</ulink> is a text-orientated wire protocol that allows
-            Stomp clients to communicate with Stomp Brokers. HornetQ now supports both Stomp 1.0 and Stomp 1.1.</para>
-        <para><ulink url="http://stomp.codehaus.org/Clients">Stomp clients</ulink> are available for
+        <para><ulink url="http://stomp.github.com/">Stomp</ulink> is a text-orientated wire protocol that allows
+            Stomp clients to communicate with Stomp Brokers. HornetQ now supports Stomp 1.0, 1.1 and 1.2.</para>
+        <para>Stomp clients are available for
         several languages and platforms making it a good choice for interoperability.</para>
         <section id="stomp.native">
           <title>Native Stomp support</title>
@@ -49,7 +49,7 @@
               (it will be ignored if its <literal>transaction</literal> header is set).</para>
           </section>
           <section>
-            <title>Stomp 1.1 Notes</title>
+            <title>Stomp 1.1/1.2 Notes</title>
             <section>
 				<title>Virtual Hosting</title>
                 <para>HornetQ currently doesn't support virtual hosting, which means the 'host' header 

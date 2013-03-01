@@ -29,14 +29,43 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
 {
    protected static final String HEADER_RECEIPT = "receipt";
 
+   protected static final Set<String> validCommands = new HashSet<String>();
    protected String command;
    protected List<Header> headers = new ArrayList<Header>();
    protected Set<String> headerKeys = new HashSet<String>();
    protected String body;
+   protected String EOL = "\n";
+   static
+   {
+      validCommands.add("CONNECT");
+      validCommands.add("CONNECTED");
+      validCommands.add("SEND");
+      validCommands.add("RECEIPT");
+      validCommands.add("SUBSCRIBE");
+      validCommands.add("UNSUBSCRIBE");
+      validCommands.add("MESSAGE");
+      validCommands.add("BEGIN");
+      validCommands.add("COMMIT");
+      validCommands.add("ABORT");
+      validCommands.add("ACK");
+      validCommands.add("DISCONNECT");
+      validCommands.add("ERROR");
+   }
 
    public AbstractClientStompFrame(String command)
    {
+      this(command, true);
+   }
+
+   public AbstractClientStompFrame(String command, boolean validate)
+   {
+      if (validate && (!validate(command))) throw new IllegalArgumentException("Invalid command " + command);
       this.command = command;
+   }
+
+   public boolean validate(String command)
+   {
+      return validCommands.contains(command);
    }
 
    public String toString()
@@ -64,13 +93,13 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
          return buffer;
       }
       StringBuffer sb = new StringBuffer();
-      sb.append(command + "\n");
+      sb.append(command + EOL);
       int n = headers.size();
       for (int i = 0; i < n; i++)
       {
-         sb.append(headers.get(i).key + ":" + headers.get(i).val + "\n");
+         sb.append(headers.get(i).key + ":" + headers.get(i).val + EOL);
       }
-      sb.append("\n");
+      sb.append(EOL);
       if (body != null)
       {
          sb.append(body);
@@ -92,13 +121,13 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
    public ByteBuffer toByteBufferWithExtra(String str) throws UnsupportedEncodingException
    {
       StringBuffer sb = new StringBuffer();
-      sb.append(command + "\n");
+      sb.append(command + EOL);
       int n = headers.size();
       for (int i = 0; i < n; i++)
       {
-         sb.append(headers.get(i).key + ":" + headers.get(i).val + "\n");
+         sb.append(headers.get(i).key + ":" + headers.get(i).val + EOL);
       }
-      sb.append("\n");
+      sb.append(EOL);
       if (body != null)
       {
          sb.append(body);

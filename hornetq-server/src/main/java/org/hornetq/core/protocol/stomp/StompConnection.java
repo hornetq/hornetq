@@ -24,6 +24,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
+import org.hornetq.core.protocol.stomp.v12.StompFrameHandlerV12;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -63,8 +65,6 @@ public final class StompConnection implements RemotingConnection
 
    private final long creationTime;
 
-   private final StompDecoder decoder;
-
    private final Acceptor acceptorUsed;
 
    private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
@@ -88,9 +88,36 @@ public final class StompConnection implements RemotingConnection
 
    private final Object sendLock = new Object();
 
-   public StompDecoder getDecoder()
+   public StompFrame decode(HornetQBuffer buffer) throws HornetQStompException
    {
-      return decoder;
+      StompFrame frame = null;
+      try
+      {
+         frame = frameHandler.decode(buffer);
+      }
+      catch (HornetQStompException e)
+      {
+         switch (e.getCode())
+         {
+         case HornetQStompException.INVALID_EOL_V10:
+            if (version != null) throw e;
+            frameHandler = new StompFrameHandlerV12(this);
+            buffer.resetReaderIndex();
+            frame = decode(buffer);
+            break;
+         case HornetQStompException.INVALID_COMMAND:
+            frameHandler.onError(e);
+            break;
+         default:
+            throw e;
+         }
+      }
+      return frame;
+   }
+   
+   public boolean hasBytes()
+   {
+      return frameHandler.hasBytes();
    }
 
    StompConnection(final Acceptor acceptorUsed, final Connection transportConnection, final StompProtocolManager manager)
@@ -99,7 +126,7 @@ public final class StompConnection implements RemotingConnection
 
       this.manager = manager;
 
-      this.decoder = new StompDecoder(this);
+      this.frameHandler = new StompFrameHandlerV10(this);
 
       this.creationTime = System.currentTimeMillis();
 
@@ -408,7 +435,11 @@ public final class StompConnection implements RemotingConnection
             requestVersions.add(tokenizer.nextToken());
          }
 
-         if (requestVersions.contains("1.1"))
+         if (requestVersions.contains("1.2"))
+         {
+            this.version = StompVersions.V1_2;
+         }
+         else if (requestVersions.contains("1.1"))
          {
             this.version = StompVersions.V1_1;
          }
@@ -427,8 +458,14 @@ public final class StompConnection implements RemotingConnection
             throw error;
          }
       }
+      
 
-      this.frameHandler = VersionedStompFrameHandler.getHandler(this, this.version);
+      if (this.version != (StompVersions.V1_0))
+      {
+         VersionedStompFrameHandler newHandler = VersionedStompFrameHandler.getHandler(this, this.version);
+         newHandler.initDecoder(this.frameHandler);
+         this.frameHandler = newHandler;
+      }
       this.initialized = true;
    }
 
@@ -453,7 +490,6 @@ public final class StompConnection implements RemotingConnection
 
    public void handleFrame(StompFrame request)
    {
-
       StompFrame reply = null;
 
       if (stompListener != null)
@@ -477,6 +513,7 @@ public final class StompConnection implements RemotingConnection
             //decide version
             negotiateVersion(request);
          }
+         
          reply = frameHandler.handleFrame(request);
       }
       catch (HornetQStompException e)

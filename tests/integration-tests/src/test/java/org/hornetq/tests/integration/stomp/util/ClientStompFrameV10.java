@@ -20,16 +20,32 @@ package org.hornetq.tests.integration.stomp.util;
  */
 public class ClientStompFrameV10 extends AbstractClientStompFrame
 {
-
    public ClientStompFrameV10(String command)
    {
       super(command);
+   }
+
+   public ClientStompFrameV10(String command, boolean validate)
+   {
+      super(command, validate);
    }
 
    @Override
    public boolean isPing()
    {
       return false;
+   }
+
+   @Override
+   public void setForceOneway()
+   {
+      throw new IllegalStateException("Doesn't apply with V1.0!");
+   }
+
+   @Override
+   public void setPing(boolean b)
+   {
+      throw new IllegalStateException("Doesn't apply with V1.0!");
    }
 
 }

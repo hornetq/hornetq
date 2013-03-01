@@ -20,20 +20,26 @@ import java.util.List;
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQStompException extends Exception {
+public class HornetQStompException extends Exception
+{
+   public static final int NONE = 0;
+   public static final int INVALID_EOL_V10 = 1;
+   public static final int INVALID_COMMAND = 2;
 
    private static final long serialVersionUID = -274452327574950068L;
 
+   private int code = NONE;
    private final List<Header> headers = new ArrayList<Header>(10);
    private String body;
    private final VersionedStompFrameHandler handler;
    private boolean disconnect;
 
-   HornetQStompException(StompConnection connection, String msg)
+   public HornetQStompException(StompConnection connection, String msg)
    {
       super(msg);
       handler = connection.getFrameHandler();
    }
+
    public HornetQStompException(String msg)
    {
       super(msg);
@@ -44,6 +50,15 @@ public class HornetQStompException extends Exception {
    {
       super(msg, t);
       this.body = t.getMessage();
+      handler = null;
+   }
+
+   //used for version control logic
+   public HornetQStompException(int code, String details)
+   {
+      super(details);
+      this.code = code;
+      this.body = details;
       handler = null;
    }
 
@@ -107,5 +122,10 @@ public class HornetQStompException extends Exception {
    public void setDisconnect(boolean b)
    {
       disconnect = b;
+   }
+   
+   public int getCode()
+   {
+      return code;
    }
 }

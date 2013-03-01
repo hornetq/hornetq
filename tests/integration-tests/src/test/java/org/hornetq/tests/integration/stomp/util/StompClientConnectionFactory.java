@@ -32,6 +32,10 @@ public class StompClientConnectionFactory
       {
          return new StompClientConnectionV11(host, port);
       }
+      if ("1.2".equals(version))
+      {
+         return new StompClientConnectionV12(host, port);
+      }
       return null;
    }
 

@@ -1,45 +1,12 @@
-/*
- * Copyright 2010 Red Hat, Inc.
- * Red Hat licenses this file to you under the Apache License, version
- * 2.0 (the "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
- */
 package org.hornetq.tests.integration.stomp.util;
 
 import java.util.StringTokenizer;
 
-/**
- *
- * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- * 1.1 frames
- *
- * 1. CONNECT/STOMP(new)
- * 2. CONNECTED
- * 3. SEND
- * 4. SUBSCRIBE
- * 5. UNSUBSCRIBE
- * 6. BEGIN
- * 7. COMMIT
- * 8. ACK
- * 9. NACK (new)
- * 10. ABORT
- * 11. DISCONNECT
- * 12. MESSAGE
- * 13. RECEIPT
- * 14. ERROR
- */
-public class StompFrameFactoryV11 implements StompFrameFactory
+public class StompFrameFactoryV12 implements StompFrameFactory
 {
 
    @Override
-   public ClientStompFrame createFrame(final String data)
+   public ClientStompFrame createFrame(String data)
    {
       //split the string at "\n\n"
       String[] dataFields = data.split("\n\n");
@@ -47,7 +14,7 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       StringTokenizer tokenizer = new StringTokenizer(dataFields[0], "\n");
 
       String command = tokenizer.nextToken();
-      ClientStompFrame frame = new ClientStompFrameV11(command);
+      ClientStompFrame frame = new ClientStompFrameV12(command);
 
       while (tokenizer.hasMoreTokens())
       {
@@ -63,7 +30,19 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       }
       return frame;
    }
-   
+
+   public void printByteHeader(String headers)
+   {
+      StringBuffer buffer = new StringBuffer();
+      
+      for (int i = 0; i < headers.length(); i++)
+      {
+         char c = headers.charAt(i);
+         buffer.append((byte)c + " ");
+      }
+      System.out.println("header in byte : " + buffer.toString());
+   }
+
    private String[] splitHeader(String header)
    {
       StringBuffer sbKey = new StringBuffer();
@@ -147,6 +126,33 @@ public class StompFrameFactoryV11 implements StompFrameFactory
                }
                break;
             }
+            case 'r':
+            {
+               if (isEsc)
+               {
+                  if (isKey)
+                  {
+                     sbKey.append('\r');
+                  }
+                  else
+                  {
+                     sbVal.append('\r');
+                  }
+                  isEsc = false;
+               }
+               else
+               {
+                  if (isKey)
+                  {
+                     sbKey.append(b);
+                  }
+                  else
+                  {
+                     sbVal.append(b);
+                  }
+               }
+               break;
+            }
             default:
             {
                if (isKey)
@@ -170,13 +176,13 @@ public class StompFrameFactoryV11 implements StompFrameFactory
    @Override
    public ClientStompFrame newFrame(String command)
    {
-      return new ClientStompFrameV11(command);
+      return new ClientStompFrameV12(command);
    }
 
    @Override
    public ClientStompFrame newAnyFrame(String command)
    {
-      return new ClientStompFrameV11(command, false);
+      return new ClientStompFrameV12(command, true, false);
    }
 
 }

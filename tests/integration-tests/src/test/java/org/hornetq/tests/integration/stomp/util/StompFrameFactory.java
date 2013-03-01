@@ -24,4 +24,6 @@ public interface StompFrameFactory
 
    ClientStompFrame newFrame(String command);
 
+   ClientStompFrame newAnyFrame(String command);
+
 }
