@@ -79,6 +79,7 @@ public class MessagePropertyTest extends ServiceTestBase
          message.putFloatProperty("float", floatValue(i));
          message.putStringProperty(SIMPLE_STRING_KEY, new SimpleString(Integer.toString(i)));
          message.putBytesProperty("byte[]", byteArray(i));
+         message.putObjectProperty("null-value", null);
          producer.send(message);
       }
       session.commit();
@@ -118,6 +119,10 @@ public class MessagePropertyTest extends ServiceTestBase
          assertEquals(new SimpleString(Integer.toString(i)),
                       message.getSimpleStringProperty(SIMPLE_STRING_KEY.toString()));
          assertEqualsByteArrays(byteArray(i), message.getBytesProperty("byte[]"));
+
+         assertTrue(message.containsProperty("null-value"));
+         assertEquals(message.getObjectProperty("null-value"), null);
+
          message.acknowledge();
       }
       assertNull("no more messages", consumer.receive(50));
