@@ -177,8 +177,8 @@ public class FailoverListenerTest extends FailoverTestBase
    private void wrapUpSessionFactory()
    {
       sf.close();
-      Assert.assertEquals(0, sf.numSessions());
-      Assert.assertEquals(0, sf.numConnections());
+      Assert.assertEquals("Expecting 0 sessions", 0, sf.numSessions());
+      Assert.assertEquals("Expecting 0 connections", 0, sf.numConnections());
    }
 
    @Override

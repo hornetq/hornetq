@@ -116,7 +116,7 @@
       <para>To solve this there is the notion of a grouping handler. Each node will have its own
          grouping handler and when a messages is sent with a group id assigned, the handlers will
          decide between them which route the message should take.</para>
-      <para>There are 2 types of handlers; Local and Remote. Each cluster should choose 1 node to
+      <para id="message-grouping.type">There are 2 types of handlers; Local and Remote. Each cluster should choose 1 node to
          have a local grouping handler and all the other nodes should have remote handlers- it's the
          local handler that actually makes the decision as to what route should be used, all the
          other remote handlers converse with this. Here is a sample config for both types of
@@ -134,8 +134,9 @@
    &lt;address>jms&lt;/address>
    &lt;timeout>5000&lt;/timeout>
 &lt;/grouping-handler></programlisting></para>
-      <para>The <emphasis role="italic">address</emphasis> attribute refers to a cluster connection
-         and the address it uses, refer to the clustering section on how to configure clusters. The
+      <para id="message-grouping.address">The <emphasis role="italic">address</emphasis> attribute refers to a
+      <link linkend="clusters.address">cluster connection and the address it uses</link>,
+      refer to the clustering section on how to configure clusters. The
             <emphasis role="italic">timeout</emphasis> attribute referees to how long to wait for a
          decision to be made, an exception will be thrown during the send if this timeout is
          reached, this ensures that strict ordering is kept.</para>

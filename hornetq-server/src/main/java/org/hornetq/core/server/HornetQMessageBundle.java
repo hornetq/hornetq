@@ -164,7 +164,7 @@ public interface HornetQMessageBundle
    HornetQSecurityException userNoPermissions(String username, CheckType checkType, String saddress);
 
    @Message(id = 119033, value =  "Server and client versions incompatible", format = Message.Format.MESSAGE_FORMAT)
-   HornetQIncompatibleClientServerException incompatibleCLientServer();
+   HornetQIncompatibleClientServerException incompatibleClientServer();
 
    @Message(id = 119034, value = "Server not started", format = Message.Format.MESSAGE_FORMAT)
    HornetQSessionCreationException serverNotStarted();

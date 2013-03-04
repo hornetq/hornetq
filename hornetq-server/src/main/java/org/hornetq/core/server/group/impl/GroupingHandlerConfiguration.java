@@ -21,7 +21,7 @@ import org.hornetq.api.core.SimpleString;
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class GroupingHandlerConfiguration implements Serializable
+public final class GroupingHandlerConfiguration implements Serializable
 {
    private static final long serialVersionUID = -4600283023652477326L;
 
