@@ -617,7 +617,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public void closeIdGenerator()
+   public void persistIdGenerator()
    {
       // no-op
    }

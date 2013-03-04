@@ -590,7 +590,7 @@ ClientSession session = factory.createSession();</programlisting>
             <para>In the above cluster connection all parameters have been explicitly specified. The following
                shows all the available configuration options</para>
             <itemizedlist>
-                <listitem>
+                <listitem id="clusters.address">
                     <para><literal>address</literal>. Each cluster connection only applies to
                         messages sent to an address that starts with this value.</para>
                     <para>In this case, this cluster connection will load balance messages sent to

@@ -68,7 +68,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       Assert.assertTrue(id4 > id3 && id4 < 2000);
 
-      batch.close();
+      batch.persistCurrentID();
 
       journal.stop();
       batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
@@ -87,7 +87,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
             // interchanging closes and simulated crashes
             if (close)
             {
-               batch.close();
+               batch.persistCurrentID();
             }
 
             close = !close;
@@ -104,7 +104,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
          lastId = id;
       }
 
-      batch.close();
+      batch.persistCurrentID();
       journal.stop();
       batch = new BatchingIDGenerator(0, 1000, getJournalStorageManager(journal));
       loadIDs(journal, batch);
