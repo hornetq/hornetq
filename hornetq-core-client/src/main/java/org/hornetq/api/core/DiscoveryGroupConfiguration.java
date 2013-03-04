@@ -46,12 +46,12 @@ public final class DiscoveryGroupConfiguration implements Serializable
    /*
    * The localBindAddress is needed so we can be backward compatible with 2.2 clients
    * */
-   private String localBindAddress;
+   private transient String localBindAddress;
 
    /*
    * The localBindPort is needed so we can be backward compatible with 2.2 clients
    * */
-   private int localBindPort;
+   private transient int localBindPort;
 
    /*
    * The groupAddress is needed so we can be backward compatible with 2.2 clients

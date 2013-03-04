@@ -41,9 +41,9 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
 {
    private static final long serialVersionUID = 1052413739064253955L;
 
-   private final String localBindAddress;
+   private transient final String localBindAddress;
 
-   private final int localBindPort;
+   private transient final int localBindPort;
 
    private final String groupAddress;
 
