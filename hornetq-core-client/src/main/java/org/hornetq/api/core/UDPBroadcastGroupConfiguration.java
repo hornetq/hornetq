@@ -41,9 +41,9 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
 {
    private static final long serialVersionUID = 1052413739064253955L;
 
-   private final String localBindAddress;
+   private transient final String localBindAddress;
 
-   private final int localBindPort;
+   private transient final int localBindPort;
 
    private final String groupAddress;
 
@@ -275,8 +275,6 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
       int result = 1;
       result = prime * result + ((groupAddress == null) ? 0 : groupAddress.hashCode());
       result = prime * result + groupPort;
-      result = prime * result + ((localBindAddress == null) ? 0 : localBindAddress.hashCode());
-      result = prime * result + localBindPort;
       return result;
    }
 
@@ -298,15 +296,6 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
       else if (!groupAddress.equals(other.groupAddress))
          return false;
       if (groupPort != other.groupPort)
-         return false;
-      if (localBindAddress == null)
-      {
-         if (other.localBindAddress != null)
-            return false;
-      }
-      else if (!localBindAddress.equals(other.localBindAddress))
-         return false;
-      if (localBindPort != other.localBindPort)
          return false;
       return true;
    }
