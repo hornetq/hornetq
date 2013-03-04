@@ -162,8 +162,6 @@ public class HornetQPacketHandler implements ChannelHandler
                                                                               protocolManager,
                                                                               channel));
 
-         session.setSessionContext(server.getStorageManager().newContext(server.getExecutorFactory().getExecutor()));
-
          ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
                                                                              server.getStorageManager(),
                                                                              channel);
