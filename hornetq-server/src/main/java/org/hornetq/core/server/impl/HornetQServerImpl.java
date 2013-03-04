@@ -85,6 +85,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
@@ -610,18 +611,27 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            storageManager.setContext(session.getSessionContext());
             session.close(true);
-            if (!criticalIOError)
-            {
-               session.waitContextCompletion();
-            }
          }
          catch (Exception e)
          {
             // If anything went wrong with closing sessions.. we should ignore it
             // such as transactions.. etc.
             HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
+         }
+      }
+      if (!criticalIOError)
+      {
+         for (ServerSession session : sessions.values())
+         {
+            try
+            {
+               session.waitContextCompletion();
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
+            }
          }
       }
 
@@ -924,7 +934,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          securityStore.authenticate(username, password);
       }
-
+      final OperationContext context = storageManager.newContext(getExecutorFactory().getExecutor());
       final ServerSessionImpl session = new ServerSessionImpl(name,
          username,
          password,
@@ -944,7 +954,8 @@ public class HornetQServerImpl implements HornetQServer
          configuration.getManagementAddress(),
          defaultAddress == null ? null
             : new SimpleString(defaultAddress),
-         callback);
+ callback,
+                                     context);
 
       sessions.put(name, session);
 
