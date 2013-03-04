@@ -512,8 +512,8 @@
         </xsd:element>
 
         <xsd:element name="grouping-handler" type="groupingHandlerType" maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+          <xsd:annotation hq:linkend="message-grouping">
+            <xsd:documentation>Message Group configuration</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -1228,8 +1228,10 @@
   <xsd:complexType name="groupingHandlerType">
     <xsd:all>
       <xsd:element name="type" maxOccurs="1" minOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+        <xsd:annotation hq:linkend="message-grouping.type">
+          <xsd:documentation>Each cluster should choose 1 node to
+         have a LOCAL grouping handler and all the other nodes should
+         have REMOTE handlers</xsd:documentation>
         </xsd:annotation>
         <xsd:simpleType>
           <xsd:restriction base="xsd:string">
@@ -1238,28 +1240,28 @@
           </xsd:restriction>
         </xsd:simpleType>
       </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="1" name="address" type="xsd:string">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="address" type="xsd:string" maxOccurs="1" minOccurs="1">
+        <xsd:annotation hq:linkend="message-grouping.address">
+          <xsd:documentation>A reference to a cluster connection address</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element maxOccurs="1" minOccurs="0" name="timeout" type="xsd:int">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="timeout" type="xsd:int" default="5000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(ms)">
+          <xsd:documentation>How long to wait for a decision</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
     </xsd:all>
     <xsd:attribute name="name" type="xsd:string" use="required">
       <xsd:annotation>
-        <xsd:documentation>XXX</xsd:documentation>
+        <xsd:documentation>A name identifying this grouping-handler</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>
 
   <xsd:element name="address-setting">
   <xsd:complexType>
-    <xsd:annotation>
+    <xsd:annotation hq:linkend="queue-attributes.address-settings">
       <xsd:documentation>Complex type element to configure an address.</xsd:documentation>
     </xsd:annotation>
       <xsd:all>
@@ -1275,9 +1277,11 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="expiry-delay" type="xsd:long" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="message-expiry.configuring">
-            <xsd:documentation>XXX</xsd:documentation>
+        <xsd:element name="expiry-delay" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation>Overrides the expiration time for
+            messages using the default value for expiration time. "-1"
+            disables this setting.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -1320,9 +1324,10 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element  name="page-max-cache-size" type="xsd:int"  maxOccurs="1" minOccurs="0">
+        <xsd:element  name="page-max-cache-size" default="5" type="xsd:int"  maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging">
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>Number of paging files to cache in
+            memory to avoid IO during paging navigation</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
