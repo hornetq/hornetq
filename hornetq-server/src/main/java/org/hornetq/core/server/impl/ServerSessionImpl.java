@@ -150,7 +150,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private Map<String, String> metaData;
 
-   private OperationContext sessionContext;
+   private final OperationContext context;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
    private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
@@ -177,7 +177,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final HornetQServer server,
                             final SimpleString managementAddress,
                             final SimpleString defaultAddress,
-                            final SessionCallback callback) throws Exception
+ final SessionCallback callback,
+                            final OperationContext context) throws Exception
    {
       this.username = username;
 
@@ -219,7 +220,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.defaultAddress = defaultAddress;
 
       remotingConnection.addFailureListener(this);
-
+      this.context = context;
       if (!xa)
       {
          tx = newTransaction();
@@ -232,15 +233,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
     */
    public OperationContext getSessionContext()
    {
-      return sessionContext;
-   }
-
-   /**
-    * @param sessionContext the sessionContext to set
-    */
-   public void setSessionContext(OperationContext sessionContext)
-   {
-      this.sessionContext = sessionContext;
+      return context;
    }
 
    public String getUsername()
@@ -1138,59 +1131,38 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void waitContextCompletion()
    {
-      OperationContext formerCtx = storageManager.getContext();
-
       try
       {
-         try
+         if (!context.waitCompletion(10000))
          {
-            if (!storageManager.waitOnOperations(10000))
-            {
-               HornetQServerLogger.LOGGER.errorCompletingContext(new Exception("warning"));
-            }
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            HornetQServerLogger.LOGGER.errorCompletingContext(new Exception("warning"));
          }
       }
-      finally
+      catch (Exception e)
       {
-         storageManager.setContext(formerCtx);
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
       }
    }
 
    public void close(final boolean failed)
    {
-      OperationContext formerCtx = storageManager.getContext();
-
-      try
+      context.executeOnCompletion(new IOAsyncTask()
       {
-         storageManager.setContext(sessionContext);
-
-         storageManager.afterCompleteOperations(new IOAsyncTask()
+         public void onError(int errorCode, String errorMessage)
          {
-            public void onError(int errorCode, String errorMessage)
+         }
+         public void done()
+         {
+            try
             {
+               doClose(failed);
             }
-
-            public void done()
+            catch (Exception e)
             {
-               try
-               {
-                  doClose(failed);
-               }
-               catch (Exception e)
-               {
-                  HornetQServerLogger.LOGGER.errorClosingSession(e);
-               }
+               HornetQServerLogger.LOGGER.errorClosingSession(e);
             }
-         });
-      }
-      finally
-      {
-         storageManager.setContext(formerCtx);
-      }
+         }
+      });
    }
 
    public void closeConsumer(final long consumerID) throws Exception
