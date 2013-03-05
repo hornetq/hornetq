@@ -540,7 +540,7 @@ public class HornetQServerImpl implements HornetQServer
       stop(failoverOnServerShutdown, false);
    }
 
-   private void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
+   private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError) throws Exception
    {
       synchronized (this)
       {
@@ -549,31 +549,22 @@ public class HornetQServerImpl implements HornetQServer
             return;
          }
          state = SERVER_STATE.STOPPING;
-         final ReplicationManager localReplicationManager;
-         synchronized (replicationLock)
-         {
-            localReplicationManager = replicationManager;
-         }
+
+         final ReplicationManager localReplicationManager = getReplicationManager();
 
          if (localReplicationManager != null)
          {
-            remotingService.freeze(localReplicationManager.getBackupTransportConnection());
-            if (!criticalIOError)
-            {
-               storageManager.persistIdGenerator();
-            }
             // Schedule for 10 seconds
-            scheduledPool.schedule(new Runnable() {
+            // this pool gets a 'hard' shutdown, no need to manage the Future of this Runnable.
+            scheduledPool.schedule(new Runnable()
+            {
                @Override
                public void run()
                {
                   localReplicationManager.clearReplicationTokens();
                }
-            }, 10, TimeUnit.SECONDS);
-            localReplicationManager.sendLiveIsStopping();
-            stopComponent(localReplicationManager);
+            }, 15, TimeUnit.SECONDS);
          }
-
          stopComponent(connectorsService);
 
          // we stop the groupingHandler before we stop the cluster manager so binding mappings
@@ -584,8 +575,20 @@ public class HornetQServerImpl implements HornetQServer
             groupingHandler = null;
          }
          stopComponent(clusterManager);
+         freezeConnections();
       }
+      closeAllServerSessions(criticalIOError);
 
+      final ReplicationManager localReplicationManager = getReplicationManager();
+      if (localReplicationManager != null)
+      {
+         if (!criticalIOError)
+         {
+            storageManager.persistIdGenerator();
+         }
+         localReplicationManager.sendLiveIsStopping();
+         stopComponent(localReplicationManager);
+      }
 
       // *************************************************************************************************************
       // There's no need to sync this part of the method, since the state stopped | stopping is checked within the sync
@@ -602,38 +605,6 @@ public class HornetQServerImpl implements HornetQServer
       // error shutdown
       if (remotingService != null)
          remotingService.stop(criticalIOError);
-
-      // We close all the exception in an attempt to let any pending IO to finish
-      // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
-      // It may still be possible to have this scenario on a real failure (without the use of XA)
-      // But at least we will do our best to avoid it on regular shutdowns
-      for (ServerSession session : sessions.values())
-      {
-         try
-         {
-            session.close(true);
-         }
-         catch (Exception e)
-         {
-            // If anything went wrong with closing sessions.. we should ignore it
-            // such as transactions.. etc.
-            HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
-         }
-      }
-      if (!criticalIOError)
-      {
-         for (ServerSession session : sessions.values())
-         {
-            try
-            {
-               session.waitContextCompletion();
-            }
-            catch (Exception e)
-            {
-               HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
-            }
-         }
-      }
 
       if (storageManager != null)
       storageManager.clearContext();
@@ -758,6 +729,71 @@ public class HornetQServerImpl implements HornetQServer
             HornetQServerLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
          }
       }
+   }
+
+   /**
+    * Freeze all connections.
+    * <p>
+    * If replicating, avoid freezing the replication connection. Helper method for
+    * {@link #stop(boolean, boolean)}.
+    */
+   private void freezeConnections()
+   {
+      if (state != SERVER_STATE.STOPPING)
+      {
+         throw new IllegalStateException();
+      }
+      ReplicationManager localReplicationManager = getReplicationManager();
+      if (localReplicationManager != null)
+      {
+         remotingService.freeze(localReplicationManager.getBackupTransportConnection());
+      }
+      else
+      {
+         remotingService.freeze(null);
+      }
+   }
+
+   /**
+    * We close all the exception in an attempt to let any pending IO to finish to avoid scenarios
+    * where the send or ACK got to disk but the response didn't get to the client It may still be
+    * possible to have this scenario on a real failure (without the use of XA) But at least we will
+    * do our best to avoid it on regular shutdowns
+    */
+   private void closeAllServerSessions(final boolean criticalIOError)
+   {
+      if (state != SERVER_STATE.STOPPING)
+      {
+         throw new IllegalStateException();
+      }
+      for (ServerSession session : sessions.values())
+      {
+         try
+         {
+            session.close(true);
+         }
+         catch (Exception e)
+         {
+            // If anything went wrong with closing sessions.. we should ignore it
+            // such as transactions.. etc.
+            HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
+         }
+      }
+      if (!criticalIOError)
+      {
+         for (ServerSession session : sessions.values())
+         {
+            try
+            {
+               session.waitContextCompletion();
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.errorClosingSessionsWhileStoppingServer(e);
+            }
+         }
+      }
+
    }
 
    private static void stopComponent(HornetQComponent component) throws Exception
@@ -1181,7 +1217,10 @@ public class HornetQServerImpl implements HornetQServer
 
    public ReplicationManager getReplicationManager()
    {
+      synchronized (replicationLock)
+      {
       return replicationManager;
+      }
    }
 
    public ConnectorsService getConnectorsService()
