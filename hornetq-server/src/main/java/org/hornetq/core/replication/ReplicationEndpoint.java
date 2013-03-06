@@ -861,7 +861,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       return journals[journalID];
    }
 
-   public static class JournalSyncFile
+   public static final class JournalSyncFile
    {
 
       private FileChannel channel;
