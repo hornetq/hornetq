@@ -67,7 +67,7 @@ import org.hornetq.utils.ExecutorFactory;
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @see ReplicationEndpoint
  */
-public class ReplicationManager implements HornetQComponent
+public final class ReplicationManager implements HornetQComponent
 {
 
    private final ResponseHandler responseHandler = new ResponseHandler();
@@ -87,10 +87,6 @@ public class ReplicationManager implements HornetQComponent
    private SessionFailureListener failureListener;
 
    private CoreRemotingConnection remotingConnection;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    /**
     * @param remotingConnection
@@ -273,7 +269,7 @@ public class ReplicationManager implements HornetQComponent
       enabled = true;
    }
 
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
       if (!started)
       {
