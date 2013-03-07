@@ -106,9 +106,9 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
-   private PageSubscription pageSubscription;
+   private final PageSubscription pageSubscription;
 
-   private LinkedListIterator<PagedReference> pageIterator;
+   private final LinkedListIterator<PagedReference> pageIterator;
 
    // Messages will first enter intermediateMessageReferences
    // Before they are added to messageReferences
@@ -1208,13 +1208,10 @@ public class QueueImpl implements Queue
 
    public void destroyPaging() throws Exception
    {
-
       if (pageSubscription != null)
       {
          pageSubscription.destroy();
          pageSubscription.cleanupEntries(true);
-         pageSubscription = null;
-         pageIterator = null;
       }
 
    }
