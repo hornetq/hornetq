@@ -75,6 +75,10 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
 
    void processReload() throws Exception;
 
+   void disableCleanup();
+
+   void resumeCleanup();
+
    /**
     * Lock the manager. This method should not be called during normal PagingManager usage.
     */

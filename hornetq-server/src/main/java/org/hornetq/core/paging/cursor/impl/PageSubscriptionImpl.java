@@ -1324,7 +1324,7 @@ class PageSubscriptionImpl implements PageSubscription
 
                PageCursorInfo info = getPageInfo(message.getPosition().getPageNr(), false);
 
-               if (info != null && info.isRemoved(message.getPosition()))
+               if (info != null && (info.isRemoved(message.getPosition()) || info.getCompleteInfo() != null))
                {
                   continue;
                }
