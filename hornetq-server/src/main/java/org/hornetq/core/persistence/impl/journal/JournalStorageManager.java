@@ -437,7 +437,6 @@ public class JournalStorageManager implements StorageManager
          finally
          {
             storageManagerLock.writeLock().unlock();
-            pagingManager.resumeCleanup();
          }
       }
       catch (Exception e)
@@ -447,6 +446,7 @@ public class JournalStorageManager implements StorageManager
       }
       finally
       {
+         pagingManager.resumeCleanup();
          // Re-enable compact and reclaim of journal files
          originalBindingsJournal.replicationSyncFinished();
          originalMessageJournal.replicationSyncFinished();
