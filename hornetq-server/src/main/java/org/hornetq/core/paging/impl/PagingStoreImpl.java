@@ -926,6 +926,23 @@ public class PagingStoreImpl implements PagingStore
       }
    }
 
+   /**
+    * This method will disable cleanup of pages. No page will be deleted after this call.
+    */
+   public void disableCleanup()
+   {
+      getCursorProvider().disableCleanup();
+   }
+
+
+   /**
+    * This method will re-enable cleanup of pages. Notice that it will also start cleanup threads.
+    */
+   public void enableCleanup()
+   {
+      getCursorProvider().resumeCleanup();
+   }
+
    private long[] routeQueues(Transaction tx, RouteContextList ctx) throws Exception
    {
       List<org.hornetq.core.server.Queue> durableQueues = ctx.getDurableQueues();

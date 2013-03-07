@@ -51,14 +51,14 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
                    getAllMessageFileIds(dir).size());
       createProducerSendSomeMessages();
       startBackupFinishSyncing();
-      receiveMsgsInRange(0, n_msgs / 2);
+      receiveMsgsInRange(0, getNumberOfMessages() / 2);
       int j = 0;
-      while (getAllMessageFileIds(dir).size() != n_msgs / 2 && j < 20)
+      while (getAllMessageFileIds(dir).size() != getNumberOfMessages() / 2 && j < 20)
       {
          Thread.sleep(50);
          j++;
       }
-      assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
+      assertEquals("we really ought to delete these after delivery", getNumberOfMessages() / 2, getAllMessageFileIds(dir).size());
    }
 
    public void testDeleteLargeMessagesDuringSync() throws Exception
@@ -70,12 +70,12 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
 
       backupServer.start();
       waitForComponent(backupServer.getServer(), 5);
-      receiveMsgsInRange(0, n_msgs / 2);
+      receiveMsgsInRange(0, getNumberOfMessages() / 2);
 
       startBackupFinishSyncing();
       backupServer.stop();
 
-      assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
+      assertEquals("we really ought to delete these after delivery", getNumberOfMessages() / 2, getAllMessageFileIds(dir).size());
    }
 
    /**

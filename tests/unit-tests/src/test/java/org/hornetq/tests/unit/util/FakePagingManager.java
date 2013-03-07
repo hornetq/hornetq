@@ -150,6 +150,16 @@ public final class FakePagingManager implements PagingManager
    {
    }
 
+   @Override
+   public void disableCleanup()
+   {
+   }
+
+   @Override
+   public void resumeCleanup()
+   {
+   }
+
    /*
     * (non-Javadoc)
     * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()

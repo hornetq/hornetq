@@ -50,6 +50,10 @@ public interface PageCursorProvider
 
    void scheduleCleanup();
 
+   void disableCleanup();
+
+   void resumeCleanup();
+
    /**
     * Cleanup stuff as paging mode is being cleared
     */
