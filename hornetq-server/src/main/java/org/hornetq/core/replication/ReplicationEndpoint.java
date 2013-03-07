@@ -481,7 +481,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             ReplicatedLargeMessage largeMessage = lookupLargeMessage(id, false);
             if (!(largeMessage instanceof LargeServerMessageInSync))
             {
-               HornetQServerLogger.LOGGER.largeMessageIncomatible();
+               HornetQServerLogger.LOGGER.largeMessageIncompatible();
                return;
             }
             LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
