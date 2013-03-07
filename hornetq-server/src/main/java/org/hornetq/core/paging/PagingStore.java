@@ -150,4 +150,14 @@ public interface PagingStore extends HornetQComponent
     * @throws Exception
     */
    void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception;
+
+   /**
+    * This method will disable cleanup of pages. No page will be deleted after this call.
+    */
+   void disableCleanup();
+
+   /**
+    * This method will re-enable cleanup of pages. Notice that it will also start cleanup threads.
+    */
+   void enableCleanup();
 }

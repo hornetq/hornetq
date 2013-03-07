@@ -54,6 +54,8 @@ public class PagingManagerImpl implements PagingManager
 
    private final PagingStoreFactory pagingStoreFactory;
 
+   private volatile boolean cleanupEnabled = true;
+
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions =
             new ConcurrentHashMap<Long, PageTransactionInfo>();
 
@@ -85,6 +87,50 @@ public class PagingManagerImpl implements PagingManager
       {
          AddressSettings settings = this.addressSettingsRepository.getMatch(store.getAddress().toString());
          store.applySetting(settings);
+      }
+   }
+
+   public void disableCleanup()
+   {
+      if (!cleanupEnabled)
+      {
+         return;
+      }
+
+      lock();
+      try
+      {
+         cleanupEnabled = false;
+         for (PagingStore store: stores.values())
+         {
+            store.disableCleanup();
+         }
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   public void resumeCleanup()
+   {
+      if (cleanupEnabled)
+      {
+         return;
+      }
+
+      lock();
+      try
+      {
+         cleanupEnabled = true;
+         for (PagingStore store: stores.values())
+         {
+            store.enableCleanup();
+         }
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -249,6 +295,10 @@ public class PagingManagerImpl implements PagingManager
          {
             store = pagingStoreFactory.newStore(address, addressSettingsRepository.getMatch(address.toString()));
             store.start();
+            if (!cleanupEnabled)
+            {
+               store.disableCleanup();
+            }
             stores.put(address, store);
          }
          return store;

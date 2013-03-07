@@ -3,6 +3,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
@@ -15,8 +16,8 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
    @Override
    protected void setUp() throws Exception
    {
-      n_msgs = 100;
       super.setUp();
+      setNumberOfMessages(100);
    }
 
    @Override
@@ -31,4 +32,24 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
       conf.put(ADDRESS.toString(), as);
       return createInVMFailoverServer(realFiles, configuration, PAGE_SIZE, PAGE_MAX, conf, nodeManager, id);
    }
+
+   public void testReplicationWithPageFileComplete() throws Exception
+   {
+      // we could get a first page complete easier with this number
+      setNumberOfMessages(20);
+      createProducerSendSomeMessages();
+      backupServer.start();
+      waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
+
+      sendMessages(session, producer, getNumberOfMessages());
+      session.commit();
+
+      receiveMsgsInRange(0, getNumberOfMessages());
+
+      finishSyncAndFailover();
+
+      receiveMsgsInRange(0, getNumberOfMessages());
+      assertNoMoreMessages();
+   }
+
 }

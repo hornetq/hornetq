@@ -60,6 +60,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    private final AtomicInteger scheduledCleanup = new AtomicInteger(0);
 
+   private volatile boolean cleanupEnabled = true;
+
    private final PagingStore pagingStore;
 
    private final StorageManager storageManager;
@@ -300,9 +302,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
    public void scheduleCleanup()
    {
 
-      if (scheduledCleanup.intValue() > 2)
+      if (!cleanupEnabled || scheduledCleanup.intValue() > 2)
       {
          // Scheduled cleanup was already scheduled before.. never mind!
+         // or we have cleanup disabled
          return;
       }
 
@@ -358,6 +361,17 @@ public class PageCursorProviderImpl implements PageCursorProvider
          HornetQServerLogger.LOGGER.warn("Error while cleaning page, during the commit", e);
       }
    }
+
+   public void disableCleanup()
+   {
+      this.cleanupEnabled = false;
+   }
+
+   public void resumeCleanup()
+   {
+      this.cleanupEnabled = true;
+   }
+
 
    public void cleanup()
    {

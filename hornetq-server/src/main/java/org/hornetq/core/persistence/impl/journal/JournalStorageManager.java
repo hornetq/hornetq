@@ -394,6 +394,7 @@ public class JournalStorageManager implements StorageManager
                pagingManager.lock();
                try
                {
+                  pagingManager.disableCleanup();
                   messageFiles =
                      prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID, autoFailBack);
                   bindingsFiles =
@@ -436,6 +437,7 @@ public class JournalStorageManager implements StorageManager
          finally
          {
             storageManagerLock.writeLock().unlock();
+            pagingManager.resumeCleanup();
          }
       }
       catch (Exception e)

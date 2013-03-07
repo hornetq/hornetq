@@ -255,6 +255,128 @@ public class PagingTest extends ServiceTestBase
       System.out.println("pgComplete = " + pgComplete);
    }
 
+
+   // First page is complete but it wasn't deleted
+   public void testFirstPageCompleteNotDeleted() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      server =
+         createServer(true, config,
+            PagingTest.PAGE_SIZE,
+            PagingTest.PAGE_MAX,
+            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int numberOfMessages = 20;
+
+      locator = createInVMNonHALocator();
+
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      Queue queue = server.createQueue(ADDRESS, ADDRESS, null, true, false);
+
+      queue.getPageSubscription().getPagingStore().startPaging();
+
+      ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+      ClientMessage message = null;
+
+      byte[] body = new byte[MESSAGE_SIZE];
+
+      ByteBuffer bb = ByteBuffer.wrap(body);
+
+      for (int j = 1; j <= MESSAGE_SIZE; j++)
+      {
+         bb.put(getSamplebyte(j));
+      }
+
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         message = session.createMessage(true);
+
+         HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+         bodyLocal.writeBytes(body);
+
+         message.putIntProperty("count", i);
+
+         producer.send(message);
+
+         if ((i+1) % 5 == 0)
+         {
+            session.commit();
+            queue.getPageSubscription().getPagingStore().forceAnotherPage();
+         }
+      }
+
+      session.commit();
+      producer.close();
+      session.close();
+
+      // This will make the cursor to set the page complete and not actually delete it
+      queue.getPageSubscription().getPagingStore().disableCleanup();
+
+      session = sf.createSession(false, false, false);
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      session.start();
+
+      for (int i = 0 ; i < 5; i++)
+      {
+         ClientMessage msg = consumer.receive(2000);
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("count").intValue());
+
+         msg.individualAcknowledge();
+
+         System.out.println(msg);
+      }
+
+      session.commit();
+
+      session.close();
+
+      server.stop();
+
+      server.start();
+
+      sf = createSessionFactory(locator);
+
+      session = sf.createSession(false, false, false);
+
+      consumer = session.createConsumer(ADDRESS);
+      session.start();
+
+      for (int i = 5 ; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = consumer.receive(2000);
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("count").intValue());
+         msg.acknowledge();
+         System.out.println(msg);
+      }
+
+      assertNull(consumer.receiveImmediate());
+      session.commit();
+
+      session.close();
+      sf.close();
+      locator.close();
+
+   }
+
    public void testPreparedACKAndRestart() throws Exception
    {
       clearData();
