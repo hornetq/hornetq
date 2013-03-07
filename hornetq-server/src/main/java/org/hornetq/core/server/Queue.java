@@ -178,6 +178,8 @@ public interface Queue extends Bindable
    boolean checkRedelivery(MessageReference ref, long timeBase) throws Exception;
 
    LinkedListIterator<MessageReference> iterator();
+   
+   LinkedListIterator<MessageReference> totalIterator();
 
    void setExpiryAddress(SimpleString expiryAddress);
 

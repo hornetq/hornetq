@@ -473,7 +473,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          Filter filter = FilterImpl.createFilter(filterStr);
          List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
          queue.flushExecutor();
-         LinkedListIterator<MessageReference> iterator = queue.iterator();
+         LinkedListIterator<MessageReference> iterator = queue.totalIterator();
          try
          {
             while (iterator.hasNext())
@@ -531,7 +531,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          }
          else
          {
-            LinkedListIterator<MessageReference> iterator = queue.iterator();
+            LinkedListIterator<MessageReference> iterator = queue.totalIterator();
             try
             {
                int count = 0;

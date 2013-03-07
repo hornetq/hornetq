@@ -538,6 +538,13 @@ public class FakeQueue implements Queue
       return null;
    }
 
+   @Override
+   public LinkedListIterator<MessageReference> totalIterator()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 
 
 }
