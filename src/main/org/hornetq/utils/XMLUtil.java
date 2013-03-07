@@ -52,6 +52,15 @@ public class XMLUtil
 
    // Static ---------------------------------------------------------------------------------------
 
+
+   public static final String getTrimmedTextContent(Node element)
+   {
+      String content = element.getTextContent();
+      if (content == null)
+         return null;
+      return content.trim();
+   }
+
    public static Element stringToElement(final String s) throws Exception
    {
       return XMLUtil.readerToElement(new StringReader(s));
