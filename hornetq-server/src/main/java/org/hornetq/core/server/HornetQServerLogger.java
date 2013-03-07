@@ -1101,7 +1101,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224029, value = "large message sync: largeMessage instance is incompatible with it, ignoring data", format = Message.Format.MESSAGE_FORMAT)
-   void largeMessageIncomatible();
+   void largeMessageIncompatible();
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224030, value = "Could not cancel reference {0}", format = Message.Format.MESSAGE_FORMAT)
