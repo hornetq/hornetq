@@ -187,7 +187,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // This will be set only while the JournalCompactor is being executed
    private volatile JournalCompactor compactor;
 
-   private final AtomicBoolean compactorEnabled = new AtomicBoolean();
+   private final AtomicBoolean compactorRunning = new AtomicBoolean();
 
    private ExecutorService filesExecutor = null;
 
@@ -1398,7 +1398,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      compactorEnabled.set(true);
+      compactorRunning.set(true);
 
       // We can't use the executor for the compacting... or we would dead lock because of file open and creation
       // operations (that will use the executor)
@@ -1446,7 +1446,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
       finally
       {
-         compactorEnabled.set(false);
+         compactorRunning.set(false);
       }
    }
 
@@ -2068,7 +2068,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public final boolean checkReclaimStatus() throws Exception
    {
 
-      if (compactorEnabled.get())
+      if (compactorRunning.get())
       {
          return false;
       }
@@ -2145,7 +2145,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return;
       }
 
-      if (!compactorEnabled.get() && needsCompact())
+      if (!compactorRunning.get() && needsCompact())
       {
          scheduleCompact();
       }
@@ -2153,7 +2153,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private void scheduleCompact()
    {
-      if (!compactorEnabled.compareAndSet(false, true))
+      if (!compactorRunning.compareAndSet(false, true))
       {
          return;
       }
@@ -2175,7 +2175,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             }
             finally
             {
-               compactorEnabled.set(false);
+               compactorRunning.set(false);
             }
          }
       });
@@ -2456,17 +2456,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public int getNumberOfRecords()
    {
       return records.size();
-   }
-
-
-   public void disableCompact()
-   {
-      compactorEnabled.set(false);
-   }
-
-   public void enableCompact()
-   {
-      compactorEnabled.set(true);
    }
 
 
@@ -2815,7 +2804,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return;
       }
 
-      if (isAutoReclaim() && !compactorEnabled.get())
+      if (isAutoReclaim() && !compactorRunning.get())
       {
          compactorExecutor.execute(new Runnable()
          {
@@ -3172,13 +3161,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public void replicationSyncPreserveOldFiles()
    {
       setAutoReclaim(false);
-      disableCompact();
    }
 
    @Override
    public void replicationSyncFinished()
    {
-      enableCompact();
       setAutoReclaim(true);
    }
 
