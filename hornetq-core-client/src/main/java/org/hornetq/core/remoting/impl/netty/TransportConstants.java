@@ -195,6 +195,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.USE_NIO_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.HOST_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.PORT_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.LOCAL_ADDRESS_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.LOCAL_PORT_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
