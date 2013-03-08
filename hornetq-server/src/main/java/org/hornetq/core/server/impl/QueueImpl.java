@@ -105,6 +105,8 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
+   private volatile boolean pageDestroyed = false;
+
    private final PageSubscription pageSubscription;
 
    private final LinkedListIterator<PagedReference> pageIterator;
@@ -1082,7 +1084,7 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = iter.next();
 
-            if (ref.isPaged() && pageIterator == null)
+            if (ref.isPaged() && pageDestroyed)
             {
                // this means the queue is being removed
                // hence paged references are just going away through
@@ -1124,7 +1126,7 @@ public class QueueImpl implements Queue
          }
 
 
-         if (pageIterator != null)
+         if (!pageDestroyed)
          {
             // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
             while (pageIterator.hasNext())
@@ -1160,7 +1162,7 @@ public class QueueImpl implements Queue
 
 
 
-         if (filter1 != null && pageIterator != null)
+         if (filter != null && !pageDestroyed && pageSubscription != null)
          {
             scheduleDepage(false);
          }
@@ -1175,11 +1177,9 @@ public class QueueImpl implements Queue
 
    public void destroyPaging() throws Exception
    {
-      if (pageSubscription != null)
-      {
-         pageSubscription.destroy();
-         pageSubscription.cleanupEntries(true);
-      }
+      this.pageDestroyed = true;
+      pageSubscription.destroy();
+      pageSubscription.cleanupEntries(true);
    }
 
    public synchronized boolean deleteReference(final long messageID) throws Exception
