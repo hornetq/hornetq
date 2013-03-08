@@ -154,6 +154,8 @@ public interface Queue extends Bindable
 
    LinkedListIterator<MessageReference> iterator();
 
+   LinkedListIterator<MessageReference> totalIterator();
+
    void setExpiryAddress(SimpleString expiryAddress);
 
    /**
