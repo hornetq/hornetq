@@ -1126,7 +1126,7 @@ public class QueueImpl implements Queue
          }
 
 
-         if (!pageDestroyed)
+         if (pageIterator != null && !pageDestroyed)
          {
             // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
             while (pageIterator.hasNext())
