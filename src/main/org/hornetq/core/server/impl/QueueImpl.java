@@ -1216,8 +1216,12 @@ public class QueueImpl implements Queue
    public void destroyPaging() throws Exception
    {
       this.pageDestroyed = true;
-      pageSubscription.destroy();
-      pageSubscription.cleanupEntries(true);
+      // it could be null on embedded or certain unit tests
+      if (pageSubscription != null)
+      {
+         pageSubscription.destroy();
+         pageSubscription.cleanupEntries(true);
+      }
    }
 
    public synchronized boolean deleteReference(final long messageID) throws Exception
