@@ -185,7 +185,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       receiver.join();
       assertNull(receiver.getError());
       
-      Thread.sleep(5000);
+      Thread.sleep(1000);
       
       console.exit();
       console.join();
