@@ -707,6 +707,16 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          return null;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#totalIterator()
+       */
+      @Override
+      public LinkedListIterator<MessageReference> totalIterator()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
    }
 
 }
