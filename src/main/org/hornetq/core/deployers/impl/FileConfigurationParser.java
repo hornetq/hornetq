@@ -315,7 +315,7 @@ public class FileConfigurationParser
          {
             if ("class-name".equalsIgnoreCase(interceptors.item(i).getNodeName()))
             {
-               String clazz = getTrimmedTextContent(interceptors.item(i));
+               String clazz = XMLConfigurationUtil.getTrimmedTextContent(interceptors.item(i));
 
                interceptorList.add(clazz);
             }
@@ -790,12 +790,12 @@ public class FileConfigurationParser
 
          if (FileConfigurationParser.DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
+            SimpleString queueName = new SimpleString(XMLConfigurationUtil.getTrimmedTextContent(child));
             addressSettings.setDeadLetterAddress(queueName);
          }
          else if (FileConfigurationParser.EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            SimpleString queueName = new SimpleString(getTrimmedTextContent(child));
+            SimpleString queueName = new SimpleString(XMLConfigurationUtil.getTrimmedTextContent(child));
             addressSettings.setExpiryAddress(queueName);
          }
          else if (FileConfigurationParser.REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
@@ -820,7 +820,7 @@ public class FileConfigurationParser
          }
          else if (FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            String value = getTrimmedTextContent(child);
+            String value = XMLConfigurationUtil.getTrimmedTextContent(child);
             Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(FileConfigurationParser.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME,
                                                                  value);
             AddressFullMessagePolicy policy = null;
@@ -873,7 +873,7 @@ public class FileConfigurationParser
 
          if (child.getNodeName().equals("address"))
          {
-            address = getTrimmedTextContent(child);
+            address = XMLConfigurationUtil.getTrimmedTextContent(child);
          }
          else if (child.getNodeName().equals("filter"))
          {
