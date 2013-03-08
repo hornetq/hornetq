@@ -752,6 +752,11 @@ public class QueueImpl implements Queue
       return new SynchronizedIterator(messageReferences.iterator());
    }
 
+   public TotalQueueIterator totalIterator()
+   {
+      return new TotalQueueIterator();
+   }
+
    public synchronized MessageReference removeReferenceWithID(final long id) throws Exception
    {
       LinkedListIterator<MessageReference> iterator = iterator();
@@ -2651,6 +2656,80 @@ public class QueueImpl implements Queue
       public void onChange()
       {
          expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+      }
+   }
+
+   // Readonly (no remove) iterator over the messages in the queue, in order of
+   // paging store, intermediateMessageReferences and MessageReferences
+   private class TotalQueueIterator implements LinkedListIterator<MessageReference>
+   {
+      LinkedListIterator<PagedReference> pageIter = null;
+
+      Iterator<MessageReference> interIterator = null;
+
+      LinkedListIterator<MessageReference> messagesIterator = null;
+
+      public TotalQueueIterator()
+      {
+         if (pageSubscription != null)
+         {
+            pageIter = pageSubscription.iterator();
+         }
+         interIterator = intermediateMessageReferences.iterator();
+         messagesIterator = new SynchronizedIterator(messageReferences.iterator());
+      }
+
+      @Override
+      public boolean hasNext()
+      {
+         if (pageIter != null)
+         {
+            if (pageIter.hasNext())
+            {
+               return true;
+            }
+         }
+         if (interIterator.hasNext())
+         {
+            return true;
+         }
+         return messagesIterator.hasNext();
+
+      }
+
+      @Override
+      public MessageReference next()
+      {
+         if (pageIter != null)
+         {
+            if (pageIter.hasNext())
+            {
+               return pageIter.next();
+            }
+         }
+         if (interIterator.hasNext())
+         {
+            return interIterator.next();
+         }
+         return messagesIterator.next();
+      }
+
+      @Override
+      public void remove()
+      {
+      }
+
+      @Override
+      public void repeat()
+      {
+      }
+
+      @Override
+      public void close()
+      {
+         if (pageIter != null)
+            pageIter.close();
+         messagesIterator.close();
       }
    }
 }
