@@ -16,15 +16,22 @@ package org.hornetq.core.replication;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQInterruptedException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
@@ -79,6 +86,8 @@ public final class ReplicationManager implements HornetQComponent
    private volatile boolean enabled;
 
    private final Object replicationLock = new Object();
+   private final Object largeMessageSyncGuard = new Object();
+   private final HashMap<Long, Pair<String, Long>> largeMessagesToSync = new HashMap<Long, Pair<String, Long>>();
 
    private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
 
@@ -87,6 +96,12 @@ public final class ReplicationManager implements HornetQComponent
    private SessionFailureListener failureListener;
 
    private CoreRemotingConnection remotingConnection;
+
+   private volatile boolean inSync = true;
+
+   private Long largeMessageCurrentlySendingId = Long.valueOf(-1);
+   private volatile boolean largeMessageInterruptSend = false;
+   private final Semaphore largeMessageSemaphore = new Semaphore(1);
 
    /**
     * @param remotingConnection
@@ -230,10 +245,33 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public void largeMessageDelete(final long messageId)
+   public void largeMessageDelete(final Long messageId)
    {
       if (enabled)
       {
+         if (inSync)
+         {
+            synchronized (largeMessageSyncGuard)
+            {
+               if (largeMessageCurrentlySendingId.equals(messageId))
+               {
+                  // deal with it
+                  largeMessageInterruptSend = true;
+                  try {
+                     largeMessageSemaphore.acquire();
+                     largeMessageSemaphore.release();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     throw new HornetQInterruptedException(e);
+                  }
+               }
+               else if (largeMessagesToSync.containsKey(messageId))
+               {
+                  largeMessagesToSync.remove(messageId);
+               }
+            }
+         }
          sendReplicatePacket(new ReplicationLargeMessageEndMessage(messageId));
       }
    }
@@ -480,10 +518,45 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
+   /**
+    * @return
+    */
+   public Map.Entry<Long, Pair<String, Long>> getNextLargeMessageToSync()
+   {
+
+      synchronized (largeMessageSyncGuard)
+      {
+         Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
+         if (!iter.hasNext())
+         {
+            return null;
+         }
+
+         Entry<Long, Pair<String, Long>> entry = iter.next();
+         iter.remove();
+         largeMessageCurrentlySendingId = entry.getKey();
+         return entry;
+      }
+   }
+
    public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
    {
       if (enabled)
-         sendLargeFile(null, null, id, file, size);
+      {
+         largeMessageSemaphore.acquire();
+         try
+         {
+            sendLargeFile(null, null, id, file, size);
+         }
+         finally
+         {
+            largeMessageSemaphore.release();
+            synchronized (largeMessageSyncGuard)
+            {
+               largeMessageCurrentlySendingId = Long.valueOf(-1);
+            }
+         }
+      }
    }
 
    public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
@@ -510,39 +583,62 @@ public final class ReplicationManager implements HornetQComponent
       {
          file.open();
       }
-      final FileChannel channel = (new FileInputStream(file.getJavaFile())).getChannel();
       try
       {
-         final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
-         while (true)
+         final FileInputStream fis = new FileInputStream(file.getJavaFile());
+         try
          {
-            buffer.clear();
-            final int bytesRead = channel.read(buffer);
-            int toSend = bytesRead;
-            if (bytesRead > 0)
+            final FileChannel channel = fis.getChannel();
+            try
             {
-               if (bytesRead >= maxBytesToSend)
+               final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
+               while (true)
                {
-                  toSend = (int)maxBytesToSend;
-                  maxBytesToSend = 0;
-               }
-               else
-               {
-                  maxBytesToSend = maxBytesToSend - bytesRead;
-               }
-               buffer.limit(toSend);
-            }
-            buffer.rewind();
+                  buffer.clear();
+                  final int bytesRead = channel.read(buffer);
+                  int toSend = bytesRead;
+                  if (bytesRead > 0)
+                  {
+                     if (bytesRead >= maxBytesToSend)
+                     {
+                        toSend = (int)maxBytesToSend;
+                        maxBytesToSend = 0;
+                     }
+                     else
+                     {
+                        maxBytesToSend = maxBytesToSend - bytesRead;
+                     }
+                     buffer.limit(toSend);
+                  }
+                  buffer.rewind();
 
-            // sending -1 or 0 bytes will close the file at the backup
-            sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, toSend, buffer));
-            if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
-               break;
+                  if (largeMessageInterruptSend)
+                  {
+                     // if the file is open at the backup, this will close it
+                     sendReplicatePacket(new ReplicationSyncFileMessage(null, null, id, -1, null));
+                     return;
+                  }
+
+                  // sending -1 or 0 bytes will close the file at the backup
+                  sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, toSend, buffer));
+                  if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
+                     break;
+               }
+            }
+            finally
+            {
+               channel.close();
+            }
+         }
+         finally
+         {
+            fis.close();
          }
       }
       finally
       {
-         channel.close();
+         if (file.isOpen())
+            file.close();
       }
    }
 
@@ -569,7 +665,10 @@ public final class ReplicationManager implements HornetQComponent
    public void sendSynchronizationDone(String nodeID)
    {
       if (enabled)
+      {
          sendReplicatePacket(new ReplicationStartSyncMessage(nodeID));
+         inSync = false;
+      }
    }
 
    /**
@@ -577,13 +676,18 @@ public final class ReplicationManager implements HornetQComponent
     * <p>
     * Doing this before hand removes the need of synchronizing large-message deletes with the
     * largeMessageSyncList.
-    * @param largeMessageIDs
+    * @param largeMessages
     */
-   public void sendLargeMessageIdListMessage(List<Long> largeMessageIDs)
+   public void sendLargeMessageIdListMessage(Map<Long, Pair<String, Long>> largeMessages)
    {
+      ArrayList<Long> idsToSend;
+      synchronized (largeMessageSyncGuard)
+      {
+         largeMessagesToSync.putAll(largeMessages);
+         idsToSend = new ArrayList<Long>(largeMessagesToSync.keySet());
+      }
       if (enabled)
-         sendReplicatePacket(new ReplicationStartSyncMessage(largeMessageIDs));
-
+         sendReplicatePacket(new ReplicationStartSyncMessage(idsToSend));
    }
 
    /**

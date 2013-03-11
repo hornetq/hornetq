@@ -373,7 +373,6 @@ public class JournalStorageManager implements StorageManager
 
       try
       {
-         Map<String, Long> largeMessageFilesToSync;
          Map<SimpleString, Collection<Integer>> pageFilesToSync;
          storageManagerLock.writeLock().lock();
          try
@@ -400,7 +399,7 @@ public class JournalStorageManager implements StorageManager
                   bindingsFiles =
                      prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID, autoFailBack);
                   pageFilesToSync = getPageInformationForSync(pagingManager);
-                  largeMessageFilesToSync = getLargeMessageInformation();
+                  getLargeMessageInformation();
                }
                finally
                {
@@ -422,7 +421,7 @@ public class JournalStorageManager implements StorageManager
 
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
          sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
-         sendLargeMessageFiles(largeMessageFilesToSync);
+         sendLargeMessageFiles();
          sendPagesToBackup(pageFilesToSync, pagingManager);
 
          storageManagerLock.writeLock().lock();
@@ -541,18 +540,24 @@ public class JournalStorageManager implements StorageManager
       return info;
    }
 
-   private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
+   private void sendLargeMessageFiles() throws Exception
    {
-      for (Entry<String, Long> entry : largeMessageFilesToSync.entrySet())
+      while (true)
       {
-         String fileName = entry.getKey();
-         long size = entry.getValue();
+         Map.Entry<Long, Pair<String, Long>> entry = replicator.getNextLargeMessageToSync();
+         if (entry == null)
+         {
+            break;
+         }
+         String fileName = entry.getValue().getA();
+         final long id = entry.getKey();
+         long size = entry.getValue().getB();
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
          if (!seqFile.exists())
             continue;
          if (!started)
             return;
-         replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
+         replicator.syncLargeMessageFile(seqFile, size, id);
       }
    }
 
@@ -562,29 +567,30 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * Collects a list of existing large messages and their current size.
+    * Sets a list of large message files into the replicationManager for synchronization.
+    * <p>
+    * Collects a list of existing large messages and their current size, passing re.
     * <p>
     * So we know how much of a given message to sync with the backup. Further data appends to the
     * messages will be replicated normally.
-    * @return
     * @throws Exception
     */
-   private Map<String, Long> getLargeMessageInformation() throws Exception
+   private void getLargeMessageInformation() throws Exception
    {
       final String prefix = "msg";
-      Map<String, Long> largeMessages = new HashMap<String, Long>();
+      Map<Long, Pair<String, Long>> largeMessages = new HashMap<Long, Pair<String, Long>>();
       List<String> filenames = largeMessagesFactory.listFiles(prefix);
 
       List<Long> idList = new ArrayList<Long>();
       for (String filename : filenames)
       {
-         idList.add(Long.valueOf(filename.substring(0, filename.length() - (prefix.length() + 1))));
+         Long id = getLargeMessageIdFromFilename(filename);
+         idList.add(id);
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
          long size = seqFile.size();
-         largeMessages.put(filename, size);
+         largeMessages.put(id, new Pair<String, Long>(filename, size));
       }
-      replicator.sendLargeMessageIdListMessage(idList);
-      return largeMessages;
+      replicator.sendLargeMessageIdListMessage(largeMessages);
    }
 
    /**

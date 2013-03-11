@@ -761,7 +761,8 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param numMessages
     * @throws Exception
     */
-   public final void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
+   public final void
+            sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws HornetQException
    {
       for (int i = 0; i < numMessages; i++)
       {
@@ -769,7 +770,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected final ClientMessage createMessage(ClientSession session, int counter, boolean durable) throws Exception
+   protected final ClientMessage
+            createMessage(ClientSession session, int counter, boolean durable) throws HornetQException
    {
       ClientMessage message = session.createMessage(durable);
       setBody(counter, message);
