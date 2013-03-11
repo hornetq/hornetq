@@ -39,7 +39,8 @@ public class BackupSyncJournalTest extends FailoverTestBase
    protected ClientSession session;
    protected ClientProducer producer;
    private BackupSyncDelay syncDelay;
-   private int n_msgs = 20;
+   private final int defaultNMsgs = 20;
+   private int n_msgs = defaultNMsgs;
 
    protected void setNumberOfMessages(int nmsg)
    {
@@ -56,12 +57,14 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       startBackupServer = false;
       super.setUp();
+      setNumberOfMessages(defaultNMsgs);
       locator = getServerLocator();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setReconnectAttempts(-1);
       sessionFactory = createSessionFactoryAndWaitForTopology(locator, 1);
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
+
    }
 
    public void testNodeID() throws Exception
