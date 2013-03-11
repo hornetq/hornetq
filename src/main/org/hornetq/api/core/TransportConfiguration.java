@@ -253,7 +253,7 @@ public class TransportConfiguration implements Serializable
             }
             String encodedKey = replaceWildcardChars(entry.getKey());
 
-            String val = entry.getValue().toString();
+            String val = entry.getValue() == null ? "null" : entry.getValue().toString();
             String encodedVal = replaceWildcardChars(val);
 
             str.append(encodedKey).append('=').append(encodedVal);
