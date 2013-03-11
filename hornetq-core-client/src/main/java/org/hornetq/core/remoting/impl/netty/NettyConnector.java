@@ -526,7 +526,11 @@ public class NettyConnector extends AbstractConnector
 
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
-      channelFactory.releaseExternalResources();
+      // we dont do this when sharing pools as other factories will be using the resources
+      if(!useNioGlobalWorkerPool)
+      {
+         channelFactory.releaseExternalResources();
+      }
       channelFactory = null;
 
       for (Connection connection : connections.values())
