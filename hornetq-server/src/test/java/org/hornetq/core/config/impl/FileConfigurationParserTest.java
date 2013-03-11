@@ -69,7 +69,7 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       String clusterPassword = config.getClusterPassword();
 
-      assertEquals(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD, clusterPassword);
+      assertEquals(HornetQDefaultConfiguration.getDefaultClusterPassword(), clusterPassword);
 
       //if we add cluster-password, it should be default plain text
       String clusterPasswordPart = "<cluster-password>helloworld</cluster-password>";

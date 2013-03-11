@@ -1444,7 +1444,7 @@ public class HornetQServerImpl implements HornetQServer
 
       storageManager = createStorageManager();
 
-      if (HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
+      if (HornetQDefaultConfiguration.getDefaultClusterUser().equals(configuration.getClusterUser()) && HornetQDefaultConfiguration.getDefaultClusterPassword().equals(configuration.getClusterPassword()))
       {
          HornetQServerLogger.LOGGER.clusterSecurityRisk();
       }

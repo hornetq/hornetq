@@ -254,7 +254,7 @@ public class NotificationTest extends UnitTestCase
 
       notifQueue = RandomUtil.randomSimpleString();
 
-      session.createQueue(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false);
+      session.createQueue(HornetQDefaultConfiguration.getDefaultManagementNotificationAddress(), notifQueue, null, false);
 
       notifConsumer = session.createConsumer(notifQueue);
    }

@@ -49,7 +49,7 @@ public class CoreMessagingProxy
 
       this.resourceName = resourceName;
 
-      requestor = new ClientRequestor(session, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
+      requestor = new ClientRequestor(session, HornetQDefaultConfiguration.getDefaultManagementAddress());
 
    }
 

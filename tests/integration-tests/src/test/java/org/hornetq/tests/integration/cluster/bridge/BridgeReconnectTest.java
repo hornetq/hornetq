@@ -132,7 +132,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
  CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -275,7 +275,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
  CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -404,7 +404,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
  CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -549,7 +549,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
  CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -689,7 +689,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
  CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

@@ -81,7 +81,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
                                                  null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
+                                                 Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()));
 
       Assert.assertTrue(acceptor instanceof NettyAcceptor);
    }

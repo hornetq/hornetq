@@ -37,15 +37,15 @@ public final class TransportConstants
       Set<String> allowableAcceptorKeys = new HashSet<String>();
       allowableAcceptorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
       allowableAcceptorKeys.add(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
-      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
-      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropPasswordCodec());
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
       Set<String> allowableConnectorKeys = new HashSet<String>();
       allowableConnectorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
-      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
-      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.getPropPasswordCodec());
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

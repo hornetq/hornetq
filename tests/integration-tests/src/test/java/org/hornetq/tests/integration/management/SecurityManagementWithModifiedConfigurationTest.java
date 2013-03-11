@@ -42,13 +42,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, configuredClusterPassword, true);
+      doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(), configuredClusterPassword, true);
    }
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
-                              HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD,
+      doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(),
+                              HornetQDefaultConfiguration.getDefaultClusterPassword(),
                               false);
    }
 
