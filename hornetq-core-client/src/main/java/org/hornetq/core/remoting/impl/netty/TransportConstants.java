@@ -47,6 +47,8 @@ public class TransportConstants
 
    public static final String USE_NIO_PROP_NAME = "use-nio";
 
+   public static final String USE_NIO_GLOBAL_WORKER_POOL_PROP_NAME = "use-nio-global-worker-pool";
+
    public static final String USE_INVM_PROP_NAME = "use-invm";
 
    public static final String PROTOCOL_PROP_NAME = "protocol";
@@ -93,6 +95,8 @@ public class TransportConstants
 
    // For client, using old IO can be quicker
    public static final boolean DEFAULT_USE_NIO_CLIENT = false;
+
+   public static final boolean DEFAULT_USE_NIO_GLOBAL_WORKER_POOL = false;
 
    public static final boolean DEFAULT_USE_INVM = false;
 
@@ -193,6 +197,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.USE_SERVLET_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.SERVLET_PATH);
       allowableConnectorKeys.add(TransportConstants.USE_NIO_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.USE_NIO_GLOBAL_WORKER_POOL_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.HOST_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.PORT_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.LOCAL_ADDRESS_PROP_NAME);
