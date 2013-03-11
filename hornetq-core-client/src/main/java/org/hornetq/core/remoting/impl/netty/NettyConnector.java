@@ -66,6 +66,9 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.BossPool;
+import org.jboss.netty.channel.socket.nio.NioClientBoss;
+import org.jboss.netty.channel.socket.nio.NioClientBossPool;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioWorker;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
@@ -171,6 +174,8 @@ public class NettyConnector extends AbstractConnector
    private ScheduledFuture<?> batchFlusherFuture;
 
    private static WorkerPool<NioWorker> nioWorkerPool;
+
+   private static BossPool<NioClientBoss> nioBossPool;
 
    private static final Object nioWorkerPoolGuard = new Object();
 
@@ -360,8 +365,13 @@ public class NettyConnector extends AbstractConnector
                {
                   nioWorkerPool = new NioWorkerPool(threadPool, threadsToUse, null);
                }
+               if(nioBossPool == null)
+               {
+                  //only used for connect so 1 will do
+                  nioBossPool = new NioClientBossPool(virtualExecutor, 1);
+               }
             }
-            channelFactory = new NioClientSocketChannelFactory(virtualExecutor, 1, nioWorkerPool);
+            channelFactory = new NioClientSocketChannelFactory(nioBossPool, nioWorkerPool);
          }
          else
          {
@@ -516,7 +526,11 @@ public class NettyConnector extends AbstractConnector
 
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
-      channelFactory.releaseExternalResources();
+      // we dont do this when sharing pools as other factories will be using the resources
+      if(!useNioGlobalWorkerPool)
+      {
+         channelFactory.releaseExternalResources();
+      }
       channelFactory = null;
 
       for (Connection connection : connections.values())
