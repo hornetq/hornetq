@@ -63,6 +63,8 @@ public class TransportConstants
 
    public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "trust-store-password";
 
+   public static final String NEED_CLIENT_AUTH_PROP_NAME = "need-client-auth";
+
    public static final String TCP_NODELAY_PROPNAME = "tcp-no-delay";
 
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
@@ -100,13 +102,15 @@ public class TransportConstants
 
    public static final int DEFAULT_STOMP_PORT = 61613;
 
-   public static final String DEFAULT_KEYSTORE_PATH = "hornetq.keystore";
+   public static final String DEFAULT_KEYSTORE_PATH = null;
 
-   public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
+   public static final String DEFAULT_KEYSTORE_PASSWORD = null;
 
-   public static final String DEFAULT_TRUSTSTORE_PATH = "hornetq.truststore";
+   public static final String DEFAULT_TRUSTSTORE_PATH = null;
 
-   public static final String DEFAULT_TRUSTSTORE_PASSWORD = "secureexample";
+   public static final String DEFAULT_TRUSTSTORE_PASSWORD = null;
+
+   public static final boolean DEFAULT_NEED_CLIENT_AUTH = false;
 
    public static final boolean DEFAULT_TCP_NODELAY = true;
 
@@ -156,6 +160,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
@@ -184,6 +189,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.PORT_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);

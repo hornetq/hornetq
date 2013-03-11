@@ -22,6 +22,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -147,5 +148,55 @@ public class NettyConnectorTest extends UnitTestCase
       {
          // Ok
       }
+   }
+   public void testSystemPropertyOverrides() throws Exception
+   {
+      BufferHandler handler = new BufferHandler()
+      {
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
+         {
+         }
+      };
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      params.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, "bad path");
+      params.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "bad password");
+      params.put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, "bad path");
+      params.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, "bad password");
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(final Object connectionID, final HornetQException me)
+         {
+         }
+
+         public void connectionDestroyed(final Object connectionID)
+         {
+         }
+
+         public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
+         {
+         }
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
+      };
+
+      NettyConnector connector = new NettyConnector(params,
+            handler,
+            listener,
+            Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool(),
+            Executors.newScheduledThreadPool(5));
+
+
+      System.setProperty(NettyConnector.JAVAX_KEYSTORE_PATH_PROP_NAME, "client-side.keystore");
+      System.setProperty(NettyConnector.JAVAX_KEYSTORE_PASSWORD_PROP_NAME, "secureexample");
+      System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PATH_PROP_NAME, "client-side.truststore");
+      System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME, "secureexample");
+
+      connector.start();
+      Assert.assertTrue(connector.isStarted());
+      connector.close();
+      Assert.assertFalse(connector.isStarted());
    }
 }

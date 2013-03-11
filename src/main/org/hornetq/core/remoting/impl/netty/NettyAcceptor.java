@@ -131,6 +131,8 @@ public class NettyAcceptor implements Acceptor
 
    private final String trustStorePassword;
 
+   private final boolean needClientAuth;
+
    private final boolean tcpNoDelay;
 
    private final int tcpSendBufferSize;
@@ -261,13 +263,18 @@ public class NettyAcceptor implements Acceptor
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
                                                                     TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
                                                                     configuration);
+
+         needClientAuth = ConfigurationHelper.getBooleanProperty(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME,
+                                                                 TransportConstants.DEFAULT_NEED_CLIENT_AUTH,
+                                                                 configuration);
       }
       else
       {
-         keyStorePath = null;
-         keyStorePassword = null;
-         trustStorePath = null;
-         trustStorePassword = null;
+         keyStorePath = TransportConstants.DEFAULT_KEYSTORE_PATH;
+         keyStorePassword = TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+         trustStorePath = TransportConstants.DEFAULT_TRUSTSTORE_PATH;
+         trustStorePassword = TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
+         needClientAuth = TransportConstants.DEFAULT_NEED_CLIENT_AUTH;
       }
 
       tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
@@ -337,13 +344,17 @@ public class NettyAcceptor implements Acceptor
       {
          try
          {
-            context = SSLSupport.createServerContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
+            if (keyStorePath == null)
+            {
+               throw new IllegalArgumentException("If \"" + TransportConstants.SSL_ENABLED_PROP_NAME +
+                     "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
+            }
+            context = SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
          }
          catch (Exception e)
          {
             IllegalStateException ise = new IllegalStateException("Unable to create NettyAcceptor for " + host +
-                                                                  ":" +
-                                                                  port);
+                                                                  ":" + port);
             ise.initCause(e);
             throw ise;
          }
@@ -364,6 +375,9 @@ public class NettyAcceptor implements Acceptor
                SSLEngine engine = context.createSSLEngine();
 
                engine.setUseClientMode(false);
+
+               if (needClientAuth)
+                  engine.setNeedClientAuth(true);
 
                SslHandler handler = new SslHandler(engine);
 
