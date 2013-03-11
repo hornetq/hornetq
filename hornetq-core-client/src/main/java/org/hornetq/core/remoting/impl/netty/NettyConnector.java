@@ -67,6 +67,9 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioWorker;
+import org.jboss.netty.channel.socket.nio.NioWorkerPool;
+import org.jboss.netty.channel.socket.nio.WorkerPool;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
@@ -81,6 +84,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.util.ThreadNameDeterminer;
 import org.jboss.netty.util.Version;
 import org.jboss.netty.util.VirtualExecutorService;
 
@@ -154,6 +158,8 @@ public class NettyConnector extends AbstractConnector
 
    private final int nioRemotingThreads;
 
+   private final boolean useNioGlobalWorkerPool;
+
    private final VirtualExecutorService virtualExecutor;
 
    private final ScheduledExecutorService scheduledThreadPool;
@@ -163,6 +169,12 @@ public class NettyConnector extends AbstractConnector
    private BatchFlusher flusher;
 
    private ScheduledFuture<?> batchFlusherFuture;
+
+   private static WorkerPool<NioWorker> nioWorkerPool;
+
+   private static final Object nioWorkerPoolGuard = new Object();
+
+   private final Executor threadPool;
 
    // Static --------------------------------------------------------
 
@@ -228,6 +240,10 @@ public class NettyConnector extends AbstractConnector
                                                               -1,
                                                               configuration);
 
+      useNioGlobalWorkerPool = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_GLOBAL_WORKER_POOL_PROP_NAME,
+                                                                      TransportConstants.DEFAULT_USE_NIO_GLOBAL_WORKER_POOL,
+                                                                      configuration);
+
       useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
                                                           TransportConstants.DEFAULT_USE_SERVLET,
                                                           configuration);
@@ -288,6 +304,8 @@ public class NettyConnector extends AbstractConnector
 
       this.closeExecutor = closeExecutor;
 
+      this.threadPool = threadPool;
+
       virtualExecutor = new VirtualExecutorService(threadPool);
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -334,7 +352,22 @@ public class NettyConnector extends AbstractConnector
             threadsToUse = this.nioRemotingThreads;
          }
 
-         channelFactory = new NioClientSocketChannelFactory(virtualExecutor, virtualExecutor, threadsToUse);
+         if(useNioGlobalWorkerPool)
+         {
+            synchronized (nioWorkerPoolGuard)
+            {
+               if (nioWorkerPool == null)
+               {
+                  nioWorkerPool = new NioWorkerPool(threadPool, threadsToUse, null);
+               }
+            }
+            channelFactory = new NioClientSocketChannelFactory(virtualExecutor, 1, nioWorkerPool);
+         }
+         else
+         {
+            channelFactory = new NioClientSocketChannelFactory(virtualExecutor, virtualExecutor, threadsToUse);
+         }
+
       }
       else
       {
