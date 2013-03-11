@@ -16,10 +16,8 @@ package org.hornetq.api.core;
 /**
  * When an interruption happens, we will just throw a non-checked exception.
  * @author clebertsuconic
- *
- *
  */
-public class HornetQInterruptedException extends RuntimeException
+public final class HornetQInterruptedException extends RuntimeException
 {
    private static final long serialVersionUID = -5744690023549671221L;
 
@@ -27,6 +25,4 @@ public class HornetQInterruptedException extends RuntimeException
    {
       super(cause);
    }
-
-
 }

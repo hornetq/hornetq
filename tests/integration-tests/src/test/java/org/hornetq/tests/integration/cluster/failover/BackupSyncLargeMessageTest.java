@@ -1,8 +1,8 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,30 +52,64 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       createProducerSendSomeMessages();
       startBackupFinishSyncing();
       receiveMsgsInRange(0, getNumberOfMessages() / 2);
+      finishSyncAndFailover();
+      final int target = getNumberOfMessages() / 2;
       int j = 0;
-      while (getAllMessageFileIds(dir).size() != getNumberOfMessages() / 2 && j < 20)
+      while (getAllMessageFileIds(dir).size() != target && j < 20)
       {
          Thread.sleep(50);
          j++;
       }
-      assertEquals("we really ought to delete these after delivery", getNumberOfMessages() / 2, getAllMessageFileIds(dir).size());
+      assertEquals("we really ought to delete these after delivery", target, getAllMessageFileIds(dir).size());
    }
 
    public void testDeleteLargeMessagesDuringSync() throws Exception
    {
-      File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      File backupLMDir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      File liveLMDir = new File(liveServer.getServer().getConfiguration().getLargeMessagesDirectory());
       assertEquals("Should not have any large messages... previous test failed to clean up?", 0,
-                   getAllMessageFileIds(dir).size());
+                   getAllMessageFileIds(backupLMDir).size());
       createProducerSendSomeMessages();
 
       backupServer.start();
       waitForComponent(backupServer.getServer(), 5);
       receiveMsgsInRange(0, getNumberOfMessages() / 2);
 
-      startBackupFinishSyncing();
+      finishSyncAndFailover();
+      backupServer.stop();
+      Set<Long> backupLM = getAllMessageFileIds(backupLMDir);
+      Set<Long> liveLM = getAllMessageFileIds(liveLMDir);
+      assertEquals("live and backup should have the same files ", liveLM, backupLM);
+      assertEquals("we really ought to delete these after delivery: " + backupLM, getNumberOfMessages() / 2,
+                   backupLM.size());
+   }
+
+   /**
+    * @throws Exception
+    */
+   public void testDeleteLargeMessagesDuringSyncLarger() throws Exception
+   {
+      setNumberOfMessages(200);
+      File backupLMdir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      File liveLMDir = new File(liveServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      assertEquals("Should not have any large messages... previous test failed to clean up?", 0,
+                   getAllMessageFileIds(backupLMdir).size());
+      createProducerSendSomeMessages();
+
+      backupServer.start();
+      waitForComponent(backupServer.getServer(), 5);
+      receiveMsgsInRange(0, getNumberOfMessages() / 2);
+
+      finishSyncAndFailover();
       backupServer.stop();
 
-      assertEquals("we really ought to delete these after delivery", getNumberOfMessages() / 2, getAllMessageFileIds(dir).size());
+      Set<Long> backupLM = getAllMessageFileIds(backupLMdir);
+      Set<Long> liveLM = getAllMessageFileIds(liveLMDir);
+      assertEquals("live and backup should have the same files ", liveLM, backupLM);
+      assertEquals("we really ought to delete these after delivery: " + backupLM, getNumberOfMessages() / 2,
+                   backupLM.size());
+      assertEquals("we really ought to delete these after delivery", getNumberOfMessages() / 2,
+                   getAllMessageFileIds(backupLMdir).size());
    }
 
    /**
@@ -106,6 +140,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
             {
                latch.countDown();
                producer.send(message);
+               sendMessages(session, producer, 20);
                session.commit();
             }
             catch (HornetQException e)
@@ -136,6 +171,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
          Assert.assertTrue("large msg , expecting " + largeMessageSize + " bytes, got " + j, buffer.readable());
          Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
       }
+      receiveMessages(consumer, 0, 20, true);
       assertNull("there should be no more messages!", consumer.receiveImmediate());
       consumer.close();
       session.commit();
@@ -143,7 +179,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
 
    private Set<Long> getAllMessageFileIds(File dir)
    {
-      Set<Long> idsOnBkp = new HashSet<Long>();
+      Set<Long> idsOnBkp = new TreeSet<Long>();
       String[] fileList = dir.list();
       if (fileList != null)
       {
@@ -157,5 +193,4 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       }
       return idsOnBkp;
    }
-
 }
