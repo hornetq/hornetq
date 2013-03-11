@@ -45,10 +45,10 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
       ad.addBinding(new BindingFake("jms.topic.Topic1", "jms.topic.Topic1"));
       ad.addBinding(new BindingFake("jms.topic.Topic1", "one"));
       ad.addBinding(new BindingFake("jms.topic.*", "two"));
-      ad.removeBinding(SimpleString.toSimpleString("one"));
+      ad.removeBinding(SimpleString.toSimpleString("one"), null);
       try
       {
-         ad.removeBinding(SimpleString.toSimpleString("two"));
+         ad.removeBinding(SimpleString.toSimpleString("two"), null);
       }
       catch (Throwable e)
       {
