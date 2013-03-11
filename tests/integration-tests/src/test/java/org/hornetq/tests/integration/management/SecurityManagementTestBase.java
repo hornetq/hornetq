@@ -93,7 +93,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
          session.start();
 
-         ClientRequestor requestor = new ClientRequestor(session, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
+         ClientRequestor requestor = new ClientRequestor(session, HornetQDefaultConfiguration.getDefaultManagementAddress());
 
          ClientMessage mngmntMessage = session.createMessage(false);
          ManagementHelper.putAttribute(mngmntMessage, ResourceNames.CORE_SERVER, "started");

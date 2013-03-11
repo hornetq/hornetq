@@ -265,7 +265,7 @@ public class AddressControlTest extends ManagementTestBase
       session.createQueue(address, address, true);
 
       AddressControl addressControl = createManagementControl(address);
-      Assert.assertEquals(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
+      Assert.assertEquals(HornetQDefaultConfiguration.getDefaultJournalFileSize(), addressControl.getNumberOfBytesPerPage());
 
       session.close();
       server.stop();

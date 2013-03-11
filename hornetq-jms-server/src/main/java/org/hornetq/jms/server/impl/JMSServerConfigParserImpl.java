@@ -87,7 +87,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       ArrayList<JMSQueueConfiguration> queues = new ArrayList<JMSQueueConfiguration>();
       ArrayList<TopicConfiguration> topics = new ArrayList<TopicConfiguration>();
       ArrayList<ConnectionFactoryConfiguration> cfs = new ArrayList<ConnectionFactoryConfiguration>();
-      String domain = HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN;
+      String domain = HornetQDefaultConfiguration.getDefaultJmxDomain();
 
       Element e = (Element)rootnode;
 
@@ -124,7 +124,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
          }
       }
 
-      domain = XMLConfigurationUtil.getString(e, JMSServerDeployer.JMX_DOMAIN_NAME, HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN, Validators.NO_CHECK);
+      domain = XMLConfigurationUtil.getString(e, JMSServerDeployer.JMX_DOMAIN_NAME, HornetQDefaultConfiguration.getDefaultJmxDomain(), Validators.NO_CHECK);
 
 
       JMSConfiguration value = newConfig(queues, topics, cfs, domain);

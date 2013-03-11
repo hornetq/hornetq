@@ -278,7 +278,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);
-      config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
+      config.setJournalFileSize(HornetQDefaultConfiguration.getDefaultJournalFileSize());
 
       config.setJournalType(journalType);
 

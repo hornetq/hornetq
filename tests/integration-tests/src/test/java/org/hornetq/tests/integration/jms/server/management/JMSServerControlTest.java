@@ -587,7 +587,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       control.destroyConnectionFactory("test");
 
-      ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN);
+      ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(HornetQDefaultConfiguration.getDefaultJmxDomain());
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
 
       stopServer();

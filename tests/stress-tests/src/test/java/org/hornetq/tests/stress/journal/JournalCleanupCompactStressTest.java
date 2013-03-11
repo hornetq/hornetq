@@ -116,18 +116,18 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       if (AsynchronousFileImpl.isLoaded())
       {
          factory = new AIOSequentialFileFactory(dir.getPath());
-         maxAIO = HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_AIO;
+         maxAIO = HornetQDefaultConfiguration.getDefaultJournalMaxIoAio();
       }
       else
       {
          factory = new NIOSequentialFileFactory(dir.getPath(), true);
-         maxAIO = HornetQDefaultConfiguration.DEFAULT_JOURNAL_MAX_IO_NIO;
+         maxAIO = HornetQDefaultConfiguration.getDefaultJournalMaxIoNio();
       }
 
       journal = new JournalImpl(50 * 1024,
                                 20,
                                 50,
-                                HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
+                                HornetQDefaultConfiguration.getDefaultJournalCompactPercentage(),
                                 factory,
                                 "hornetq-data",
                                 "hq",

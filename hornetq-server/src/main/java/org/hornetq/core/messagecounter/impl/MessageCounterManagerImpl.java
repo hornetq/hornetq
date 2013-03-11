@@ -40,11 +40,11 @@ import org.hornetq.core.messagecounter.MessageCounterManager;
 public class MessageCounterManagerImpl implements MessageCounterManager
 {
 
-   public static final long DEFAULT_SAMPLE_PERIOD = HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
+   public static final long DEFAULT_SAMPLE_PERIOD = HornetQDefaultConfiguration.getDefaultMessageCounterSamplePeriod();
 
    public static final long MIN_SAMPLE_PERIOD = 1000;
 
-   public static final int DEFAULT_MAX_DAY_COUNT = HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
+   public static final int DEFAULT_MAX_DAY_COUNT = HornetQDefaultConfiguration.getDefaultMessageCounterMaxDayHistory();
 
    private final Map<String, MessageCounter> messageCounters;
 

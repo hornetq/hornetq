@@ -95,7 +95,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          stopServer();
 
          NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
-         JournalImpl journal = new JournalImpl(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE,
+         JournalImpl journal = new JournalImpl(HornetQDefaultConfiguration.getDefaultJournalFileSize(),
                                                2,
                                                0,
                                                0,
@@ -351,16 +351,16 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       if (server == null)
       {
          Configuration config = createDefaultConfig(true);
-         config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
+         config.setJournalFileSize(HornetQDefaultConfiguration.getDefaultJournalFileSize());
 
          config.setJournalType(journalType);
          config.setJMXManagementEnabled(false);
 
-         config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
-         config.setJournalMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES);
+         config.setJournalFileSize(HornetQDefaultConfiguration.getDefaultJournalFileSize());
+         config.setJournalMinFiles(HornetQDefaultConfiguration.getDefaultJournalMinFiles());
 
-         config.setJournalCompactMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
-         config.setJournalCompactPercentage(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
+         config.setJournalCompactMinFiles(HornetQDefaultConfiguration.getDefaultJournalCompactMinFiles());
+         config.setJournalCompactPercentage(HornetQDefaultConfiguration.getDefaultJournalCompactPercentage());
 
          // This test is supposed to not sync.. All the ACKs are async, and it was supposed to not sync
          config.setJournalSyncNonTransactional(false);

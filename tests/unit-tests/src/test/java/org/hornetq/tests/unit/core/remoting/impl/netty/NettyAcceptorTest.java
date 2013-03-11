@@ -102,7 +102,7 @@ public class NettyAcceptorTest extends UnitTestCase
          }
       };
       pool1 = Executors.newCachedThreadPool();
-      pool2 = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      pool2 = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
       NettyAcceptor acceptor = new NettyAcceptor(params,
                                                  handler,
                                                  null,

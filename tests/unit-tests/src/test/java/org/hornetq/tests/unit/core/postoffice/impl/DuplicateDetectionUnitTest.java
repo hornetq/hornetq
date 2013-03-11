@@ -93,7 +93,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          PostOffice postOffice = new FakePostOffice();
 
-         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
 
          journal = new JournalStorageManager(configuration, factory, null);
 

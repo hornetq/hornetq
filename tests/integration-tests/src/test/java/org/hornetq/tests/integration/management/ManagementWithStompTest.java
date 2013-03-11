@@ -86,7 +86,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       sendFrame(frame);
 
       // retrieve the address of the queue
-      frame = "\nSEND\n" + "destination:" + HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS + "\n" +
+      frame = "\nSEND\n" + "destination:" + HornetQDefaultConfiguration.getDefaultManagementAddress() + "\n" +
             "reply-to:" + address + "\n" +
             "_HQ_ResourceName:" + ResourceNames.CORE_QUEUE + queue + "\n" +
             "_HQ_Attribute: Address\n\n" +
@@ -128,7 +128,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       sendFrame(frame);
 
       // count number of message with filter "color = 'blue'"
-      frame = "\nSEND\n" + "destination:" + HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS + "\n" +
+      frame = "\nSEND\n" + "destination:" + HornetQDefaultConfiguration.getDefaultManagementAddress() + "\n" +
             "reply-to:" + address + "\n" +
             "_HQ_ResourceName:" + ResourceNames.CORE_QUEUE + queue + "\n" +
             "_HQ_OperationName: countMessages\n\n" +
