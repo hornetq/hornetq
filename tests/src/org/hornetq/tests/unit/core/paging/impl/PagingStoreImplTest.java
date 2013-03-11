@@ -1166,7 +1166,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#deleteQueueBinding(long)
        */
-      public void deleteQueueBinding(final long queueBindingID) throws Exception
+      public void deleteQueueBinding(final long tx, final long queueBindingID) throws Exception
       {
       }
 

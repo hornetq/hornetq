@@ -481,12 +481,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
    }
 
-   public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
+   public synchronized Binding removeBinding(final SimpleString uniqueName, Transaction tx) throws Exception
    {
 
       addressSettingsRepository.clearCache();
 
-      Binding binding = addressManager.removeBinding(uniqueName);
+      Binding binding = addressManager.removeBinding(uniqueName, tx);
 
       if (binding == null)
       {

@@ -31,6 +31,12 @@ public interface QueueBindingInfo
    SimpleString getAddress();
 
    SimpleString getQueueName();
+   
+   /**
+    * used to rename the queue in case of a duplication during load time
+    * @param newName
+    */
+   void replaceQueueName(SimpleString newName);
 
    SimpleString getFilterString();
 
