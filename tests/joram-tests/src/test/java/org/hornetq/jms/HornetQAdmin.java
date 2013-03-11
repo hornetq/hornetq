@@ -88,14 +88,14 @@ public class HornetQAdmin implements Admin
    {
       serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       sf = serverLocator.createSessionFactory();
-      clientSession = sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
-                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD,
+      clientSession = sf.createSession(HornetQDefaultConfiguration.getDefaultClusterUser(),
+                                       HornetQDefaultConfiguration.getDefaultClusterPassword(),
                                        false,
                                        true,
                                        true,
                                        false,
                                        1);
-      requestor = new ClientRequestor(clientSession, HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS);
+      requestor = new ClientRequestor(clientSession, HornetQDefaultConfiguration.getDefaultManagementAddress());
       clientSession.start();
 
    }

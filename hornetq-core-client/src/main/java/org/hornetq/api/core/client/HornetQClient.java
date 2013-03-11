@@ -30,11 +30,11 @@ public final class HornetQClient
 {
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = RoundRobinConnectionLoadBalancingPolicy.class.getCanonicalName();
 
-   public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = HornetQDefaultConfiguration.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = HornetQDefaultConfiguration.getDefaultClientFailureCheckPeriod();
 
    // 1 minute - this should be higher than ping period
 
-   public static final long DEFAULT_CONNECTION_TTL = HornetQDefaultConfiguration.DEFAULT_CONNECTION_TTL;
+   public static final long DEFAULT_CONNECTION_TTL = HornetQDefaultConfiguration.getDefaultConnectionTtl();
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
 
@@ -76,9 +76,9 @@ public final class HornetQClient
 
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
-   public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = HornetQDefaultConfiguration.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+   public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = HornetQDefaultConfiguration.getDefaultRetryIntervalMultiplier();
 
-   public static final long DEFAULT_MAX_RETRY_INTERVAL = HornetQDefaultConfiguration.DEFAULT_MAX_RETRY_INTERVAL;
+   public static final long DEFAULT_MAX_RETRY_INTERVAL = HornetQDefaultConfiguration.getDefaultMaxRetryInterval();
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
 

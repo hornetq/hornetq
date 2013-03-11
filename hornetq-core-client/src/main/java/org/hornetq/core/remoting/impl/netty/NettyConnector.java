@@ -273,8 +273,8 @@ public class NettyConnector extends AbstractConnector
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                   TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
                                                                   configuration,
-                                                                  HornetQDefaultConfiguration.PROP_MASK_PASSWORD,
-                                                                  HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
+                                                                  HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                  HornetQDefaultConfiguration.getPropMaskPassword());
 
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
@@ -282,8 +282,8 @@ public class NettyConnector extends AbstractConnector
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
                                                                    configuration,
-                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD,
-                                                                   HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
+                                                                   HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                   HornetQDefaultConfiguration.getPropMaskPassword());
       }
       else
       {

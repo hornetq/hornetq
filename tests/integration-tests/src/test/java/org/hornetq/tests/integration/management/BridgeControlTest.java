@@ -158,7 +158,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomPositiveInt(),
                                              connectors,
                                              false,
-                                       HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, CLUSTER_PASSWORD);
+                                       HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD);
 
       Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);

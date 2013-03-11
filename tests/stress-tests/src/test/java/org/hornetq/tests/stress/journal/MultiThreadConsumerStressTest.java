@@ -159,8 +159,8 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       config.setJournalType(journalType);
       config.setJMXManagementEnabled(true);
 
-      config.setJournalFileSize(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE);
-      config.setJournalMinFiles(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES);
+      config.setJournalFileSize(HornetQDefaultConfiguration.getDefaultJournalFileSize());
+      config.setJournalMinFiles(HornetQDefaultConfiguration.getDefaultJournalMinFiles());
 
       config.setJournalCompactMinFiles(2);
       config.setJournalCompactPercentage(50);

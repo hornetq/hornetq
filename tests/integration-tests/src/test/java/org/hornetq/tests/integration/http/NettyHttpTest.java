@@ -57,7 +57,7 @@ public class NettyHttpTest extends UnitTestCase
 
       threadPool = Executors.newCachedThreadPool();
 
-      scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
    }
 
    @Override

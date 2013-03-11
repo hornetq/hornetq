@@ -55,7 +55,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    public JMSConfigurationImpl()
    {
-      domain = HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN;
+      domain = HornetQDefaultConfiguration.getDefaultJmxDomain();
    }
 
    public JMSConfigurationImpl(final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations,
@@ -66,7 +66,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
       this.connectionFactoryConfigurations.addAll(connectionFactoryConfigurations);
       this.queueConfigurations.addAll(queueConfigurations);
       this.topicConfigurations.addAll(topicConfigurations);
-      this.domain = domain != null ? domain : HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN;
+      this.domain = domain != null ? domain : HornetQDefaultConfiguration.getDefaultJmxDomain();
    }
 
    // JMSConfiguration implementation -------------------------------

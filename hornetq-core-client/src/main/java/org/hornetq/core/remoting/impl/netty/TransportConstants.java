@@ -183,8 +183,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
       allowableAcceptorKeys.add(TransportConstants.CONNECTION_TTL);
       allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
-      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
-      allowableAcceptorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
+      allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropPasswordCodec());
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
@@ -211,8 +211,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.BATCH_DELAY);
-      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_MASK_PASSWORD);
-      allowableConnectorKeys.add(HornetQDefaultConfiguration.PROP_PASSWORD_CODEC);
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
+      allowableConnectorKeys.add(HornetQDefaultConfiguration.getPropPasswordCodec());
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }

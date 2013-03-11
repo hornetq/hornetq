@@ -126,8 +126,8 @@ public class BridgeWithPagingTest extends BridgeTestBase
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER,
-                                                                        HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD);
+                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
+                                                                        HornetQDefaultConfiguration.getDefaultClusterPassword());
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);

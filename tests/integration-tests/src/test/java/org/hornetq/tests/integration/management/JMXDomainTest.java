@@ -51,7 +51,7 @@ public class JMXDomainTest extends ManagementTestBase
       Configuration config_0 = createDefaultConfig();
       config_0.setJMXManagementEnabled(true);
 
-      String jmxDomain_1 = HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN + ".1";
+      String jmxDomain_1 = HornetQDefaultConfiguration.getDefaultJmxDomain() + ".1";
 
       Configuration config_1 = createBasicConfig();
       Map<String, Object> params = new HashMap<String, Object>();

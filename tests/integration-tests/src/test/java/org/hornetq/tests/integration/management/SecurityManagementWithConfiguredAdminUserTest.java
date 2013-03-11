@@ -58,7 +58,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
     */
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, CLUSTER_PASSWORD, true);
+      doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD, true);
    }
 
    public void testSendManagementMessageWithAdminRole() throws Exception
@@ -97,9 +97,9 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       securityManager.addRole(validAdminUser, "guest");
       securityManager.addRole(invalidAdminUser, "guest");
 
-      Set<Role> adminRole = securityRepository.getMatch(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS.toString());
+      Set<Role> adminRole = securityRepository.getMatch(HornetQDefaultConfiguration.getDefaultManagementAddress().toString());
       adminRole.add(new Role("admin", true, true, true, true, true, true, true));
-      securityRepository.addMatch(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS.toString(), adminRole);
+      securityRepository.addMatch(HornetQDefaultConfiguration.getDefaultManagementAddress().toString(), adminRole);
       Set<Role> guestRole = securityRepository.getMatch("*");
       guestRole.add(new Role("guest", true, true, true, true, true, true, false));
       securityRepository.addMatch("*", guestRole);

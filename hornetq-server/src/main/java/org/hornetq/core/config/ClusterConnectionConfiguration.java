@@ -87,12 +87,12 @@ public final class ClusterConnectionConfiguration implements Serializable
          address,
          connectorName,
          HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
+         HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
+         HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
          retryInterval,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+         HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
+         HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterReconnectAttempts(),
          HornetQClient.DEFAULT_CALL_TIMEOUT,
          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
          duplicateDetection,
@@ -101,8 +101,8 @@ public final class ClusterConnectionConfiguration implements Serializable
          confirmationWindowSize,
          staticConnectors,
          allowDirectConnectionsOnly,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS);
+         HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
    }
 
 
@@ -174,12 +174,12 @@ public final class ClusterConnectionConfiguration implements Serializable
          address,
          connectorName,
          HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL,
+         HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
+         HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
          retryInterval,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+         HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
+         HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterReconnectAttempts(),
          HornetQClient.DEFAULT_CALL_TIMEOUT,
          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
          duplicateDetection,
@@ -187,8 +187,8 @@ public final class ClusterConnectionConfiguration implements Serializable
          maxHops,
          confirmationWindowSize,
          discoveryGroupName,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_INTERVAL,
-         HornetQDefaultConfiguration.DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS);
+         HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
    }
 
 
