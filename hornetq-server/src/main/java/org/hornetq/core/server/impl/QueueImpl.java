@@ -507,6 +507,7 @@ public class QueueImpl implements Queue
          catch (RejectedExecutionException ignored)
          {
             // no-op
+            scheduledRunners.decrementAndGet();
          }
       }
 
@@ -580,17 +581,23 @@ public class QueueImpl implements Queue
 
       getExecutor().execute(future);
 
-      return future.await(timeout);
+      boolean result = future.await(timeout);
+
+      if (!result)
+      {
+         HornetQServerLogger.LOGGER.queueBusy(this.name.toString(), timeout);
+      }
+      return result;
    }
 
    public synchronized void addConsumer(final Consumer consumer) throws Exception
    {
-      consumersChanged = true;
-
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug(this + " adding consumer " + consumer);
       }
+
+      consumersChanged = true;
 
       cancelRedistributor();
 
@@ -828,9 +835,13 @@ public class QueueImpl implements Queue
 
    public long getMessageCount(final long timeout)
    {
-      if (timeout > 0) internalFlushExecutor(timeout);
+      if (timeout > 0)
+      {
+         internalFlushExecutor(timeout);
+      }
       return getInstantMessageCount();
    }
+
 
    public long getInstantMessageCount()
    {

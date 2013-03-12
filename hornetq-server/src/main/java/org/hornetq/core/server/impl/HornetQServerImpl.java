@@ -144,6 +144,8 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -971,31 +973,41 @@ public class HornetQServerImpl implements HornetQServer
          securityStore.authenticate(username, password);
       }
       final OperationContext context = storageManager.newContext(getExecutorFactory().getExecutor());
-      final ServerSessionImpl session = new ServerSessionImpl(name,
-         username,
-         password,
-         minLargeMessageSize,
-         autoCommitSends,
-         autoCommitAcks,
-         preAcknowledge,
-         configuration.isPersistDeliveryCountBeforeDelivery(),
-         xa,
-         connection,
-         storageManager,
-         postOffice,
-         resourceManager,
-         securityStore,
-         managementService,
-         this,
-         configuration.getManagementAddress(),
-         defaultAddress == null ? null
-            : new SimpleString(defaultAddress),
- callback,
-                                     context);
+      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context);
 
       sessions.put(name, session);
 
       return session;
+   }
+
+   protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
+   {
+      return new ServerSessionImpl(name,
+            username,
+            password,
+            minLargeMessageSize,
+            autoCommitSends,
+            autoCommitAcks,
+            preAcknowledge,
+            configuration.isPersistDeliveryCountBeforeDelivery(),
+            xa,
+            connection,
+            storageManager,
+            postOffice,
+            resourceManager,
+            securityStore,
+            managementService,
+            this,
+            configuration.getManagementAddress(),
+            defaultAddress == null ? null
+               : new SimpleString(defaultAddress),
+            callback,
+            context);
+   }
+
+   protected SecurityStore getSecurityStore()
+   {
+      return securityStore;
    }
 
    public void removeSession(final String name) throws Exception
@@ -1172,18 +1184,32 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
-      postOffice.removeBinding(queueName);
+      Transaction tx = new BindingsTransactionImpl(storageManager);
 
-      queue.destroyPaging();
-
-      queue.deleteAllReferences();
-
-      if (queue.isDurable())
+      try
       {
-         storageManager.deleteQueueBinding(queue.getID());
+         postOffice.removeBinding(queueName, tx);
+
+         queue.destroyPaging();
+
+         queue.deleteAllReferences();
+
+         if (queue.isDurable())
+         {
+            storageManager.deleteQueueBinding(tx.getID(), queue.getID());
+            tx.setContainsPersistent();
+         }
+
+         tx.commit();
+      }
+      catch (Exception e)
+      {
+         tx.rollback();
+         throw e;
       }
 
    }
+
 
    public void registerActivateCallback(final ActivateCallback callback)
    {
@@ -1294,7 +1320,7 @@ public class HornetQServerImpl implements HornetQServer
          throw HornetQMessageBundle.BUNDLE.bindingNotDivert(name);
       }
 
-      postOffice.removeBinding(name);
+      postOffice.removeBinding(name, null);
    }
 
    public void deployBridge(BridgeConfiguration config) throws Exception
@@ -1662,37 +1688,61 @@ public class HornetQServerImpl implements HornetQServer
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
       Map<Long, QueueBindingInfo> queueBindingInfosMap = new HashMap<Long, QueueBindingInfo>();
 
+      // Used to rename the queue in case there's a duplication
+      int duplicateID = 0;
       for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
       {
          queueBindingInfosMap.put(queueBindingInfo.getId(), queueBindingInfo);
 
-         if (queueBindingInfo.getFilterString() == null || !queueBindingInfo.getFilterString()
-            .toString()
-            .equals(GENERIC_IGNORED_FILTER))
-         {
-            Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
+         Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
-            PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress())
+         boolean isTopicIdentification = filter != null && filter.getFilterString() != null && filter.getFilterString().equals(GENERIC_IGNORED_FILTER.toString());
+
+         if (postOffice.getBinding(queueBindingInfo.getQueueName()) != null)
+         {
+
+
+            if (isTopicIdentification)
+            {
+               long tx = storageManager.generateUniqueID();
+               storageManager.deleteQueueBinding(tx, queueBindingInfo.getId());
+               storageManager.commit(tx);
+               continue;
+            }
+            else
+            {
+
+               SimpleString newName = queueBindingInfo.getQueueName().concat("-" + (duplicateID++));
+               HornetQServerLogger.LOGGER.queueDuplicatedRenaming(queueBindingInfo.getQueueName().toString(), newName.toString());
+               queueBindingInfo.replaceQueueName(newName);
+            }
+         }
+
+         PageSubscription subscription = null;
+
+         if (!isTopicIdentification)
+         {
+            subscription = pagingManager.getPageStore(queueBindingInfo.getAddress())
                .getCursorProvider()
                .createSubscription(queueBindingInfo.getId(), filter, true);
-
-            Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-               queueBindingInfo.getAddress(),
-               queueBindingInfo.getQueueName(),
-               filter,
-               subscription,
-               true,
-               false);
-
-            Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
-
-            queues.put(queueBindingInfo.getId(), queue);
-
-            postOffice.addBinding(binding);
-
-            managementService.registerAddress(queueBindingInfo.getAddress());
-            managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
          }
+
+         Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
+            queueBindingInfo.getAddress(),
+            queueBindingInfo.getQueueName(),
+            filter,
+            subscription,
+            true,
+            false);
+
+         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
+
+         queues.put(queueBindingInfo.getId(), queue);
+
+         postOffice.addBinding(binding);
+
+         managementService.registerAddress(queueBindingInfo.getAddress());
+         managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
 
       }
 
