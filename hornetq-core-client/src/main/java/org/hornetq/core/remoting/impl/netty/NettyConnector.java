@@ -87,7 +87,6 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.util.ThreadNameDeterminer;
 import org.jboss.netty.util.Version;
 import org.jboss.netty.util.VirtualExecutorService;
 
@@ -180,6 +179,8 @@ public class NettyConnector extends AbstractConnector
    private static final Object nioWorkerPoolGuard = new Object();
 
    private final Executor threadPool;
+   
+   private int connectTimeoutMillis;
 
    // Static --------------------------------------------------------
 
@@ -307,6 +308,9 @@ public class NettyConnector extends AbstractConnector
                                                        TransportConstants.DEFAULT_BATCH_DELAY,
                                                        configuration);
 
+      connectTimeoutMillis = ConfigurationHelper.getIntProperty(TransportConstants.NETTY_CONNECT_TIMEOUT,
+                                                         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT, 
+                                                         configuration);
       this.closeExecutor = closeExecutor;
 
       this.threadPool = threadPool;
@@ -392,6 +396,11 @@ public class NettyConnector extends AbstractConnector
       bootstrap = new ClientBootstrap(channelFactory);
 
       bootstrap.setOption("tcpNoDelay", tcpNoDelay);
+      
+      if (connectTimeoutMillis != -1)
+      {
+         bootstrap.setOption("connectTimeoutMillis", connectTimeoutMillis);
+      }
       if (tcpReceiveBufferSize != -1)
       {
          bootstrap.setOption("receiveBufferSize", tcpReceiveBufferSize);
@@ -927,6 +936,12 @@ public class NettyConnector extends AbstractConnector
       }
 
       return result;
+   }
+
+   //for test purpose only
+   public ClientBootstrap getBootStrap()
+   {
+      return bootstrap;
    }
 
 }
