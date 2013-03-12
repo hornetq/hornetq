@@ -18,28 +18,11 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ReplicationResponseMessage extends PacketImpl
+public final class ReplicationResponseMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationResponseMessage()
    {
       super(PacketImpl.REPLICATION_RESPONSE);
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
