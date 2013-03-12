@@ -507,6 +507,7 @@ public class QueueImpl implements Queue
          catch (RejectedExecutionException ignored)
          {
             // no-op
+            scheduledRunners.decrementAndGet();
          }
       }
 
