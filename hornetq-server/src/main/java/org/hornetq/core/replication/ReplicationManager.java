@@ -317,11 +317,11 @@ public final class ReplicationManager implements HornetQComponent
       synchronized (replicationLock)
       {
          enabled = false;
+         if (replicatingChannel != null)
+         {
+            replicatingChannel.close();
+         }
          clearReplicationTokens();
-      }
-      if (replicatingChannel != null)
-      {
-         replicatingChannel.close();
       }
 
 
