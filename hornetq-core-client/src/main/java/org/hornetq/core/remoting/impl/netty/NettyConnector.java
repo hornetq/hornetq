@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
@@ -30,6 +31,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -66,13 +68,9 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.BossPool;
-import org.jboss.netty.channel.socket.nio.NioClientBoss;
 import org.jboss.netty.channel.socket.nio.NioClientBossPool;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioWorker;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
-import org.jboss.netty.channel.socket.nio.WorkerPool;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
@@ -172,14 +170,16 @@ public class NettyConnector extends AbstractConnector
 
    private ScheduledFuture<?> batchFlusherFuture;
 
-   private static WorkerPool<NioWorker> nioWorkerPool;
+   private static NioWorkerPool nioWorkerPool;
 
-   private static BossPool<NioClientBoss> nioBossPool;
+   private static NioClientBossPool nioBossPool;
 
    private static final Object nioWorkerPoolGuard = new Object();
 
+   private static final AtomicInteger nioChannelFactoryCount = new AtomicInteger(0);
+
    private final Executor threadPool;
-   
+
    private int connectTimeoutMillis;
 
    // Static --------------------------------------------------------
@@ -309,7 +309,7 @@ public class NettyConnector extends AbstractConnector
                                                        configuration);
 
       connectTimeoutMillis = ConfigurationHelper.getIntProperty(TransportConstants.NETTY_CONNECT_TIMEOUT,
-                                                         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT, 
+                                                         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
                                                          configuration);
       this.closeExecutor = closeExecutor;
 
@@ -374,8 +374,9 @@ public class NettyConnector extends AbstractConnector
                   //only used for connect so 1 will do
                   nioBossPool = new NioClientBossPool(virtualExecutor, 1);
                }
+               channelFactory = new NioClientSocketChannelFactory(nioBossPool, nioWorkerPool);
+               nioChannelFactoryCount.incrementAndGet();
             }
-            channelFactory = new NioClientSocketChannelFactory(nioBossPool, nioWorkerPool);
          }
          else
          {
@@ -396,7 +397,7 @@ public class NettyConnector extends AbstractConnector
       bootstrap = new ClientBootstrap(channelFactory);
 
       bootstrap.setOption("tcpNoDelay", tcpNoDelay);
-      
+
       if (connectTimeoutMillis != -1)
       {
          bootstrap.setOption("connectTimeoutMillis", connectTimeoutMillis);
@@ -535,8 +536,18 @@ public class NettyConnector extends AbstractConnector
 
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
-      // we dont do this when sharing pools as other factories will be using the resources
-      if(!useNioGlobalWorkerPool)
+      // if using shared pools only release them once there are no references
+      if(useNioGlobalWorkerPool)
+      {
+         synchronized (nioWorkerPoolGuard)
+         {
+            if(nioChannelFactoryCount.decrementAndGet() == 0)
+            {
+               closePools();
+            }
+         }
+      }
+      else
       {
          channelFactory.releaseExternalResources();
       }
@@ -938,6 +949,26 @@ public class NettyConnector extends AbstractConnector
       return result;
    }
 
+   private void closePools()
+   {
+      if (nioBossPool != null)
+      {
+         nioBossPool.shutdown();
+         nioBossPool = null;
+      }
+      if (nioWorkerPool != null)
+      {
+         nioWorkerPool.shutdown();
+         nioWorkerPool = null;
+      }
+   }
+
+   public void finalize() throws Throwable
+   {
+      close();
+      super.finalize();
+   }
+
    //for test purpose only
    public ClientBootstrap getBootStrap()
    {
@@ -945,3 +976,4 @@ public class NettyConnector extends AbstractConnector
    }
 
 }
+
