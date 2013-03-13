@@ -44,7 +44,7 @@ public class TransactionImpl implements Transaction
 
    private Object[] properties = new Object[TransactionImpl.INITIAL_NUM_PROPERTIES];
 
-   private final StorageManager storageManager;
+   protected final StorageManager storageManager;
 
    private final Xid xid;
 
@@ -262,21 +262,7 @@ public class TransactionImpl implements Transaction
 
          beforeCommit();
 
-         if (containsPersistent || xid != null && state == State.PREPARED)
-         {
-
-            if (waitBeforeCommit)
-            {
-               // we will wait all the pending operations to finish before we can add this
-               asyncAppendCommit();
-            }
-            else
-            {
-               storageManager.commit(id);
-            }
-
-            state = State.COMMITTED;
-         }
+         doCommit();
 
          // We use the Callback even for non persistence
          // If we are using non-persistence with replication, the replication manager will have
@@ -299,6 +285,28 @@ public class TransactionImpl implements Transaction
             }
          });
 
+      }
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void doCommit() throws Exception
+   {
+      if (containsPersistent || xid != null && state == State.PREPARED)
+      {
+
+         if (waitBeforeCommit)
+         {
+            // we will wait all the pending operations to finish before we can add this
+            asyncAppendCommit();
+         }
+         else
+         {
+            storageManager.commit(id);
+         }
+
+         state = State.COMMITTED;
       }
    }
 
@@ -475,7 +483,7 @@ public class TransactionImpl implements Transaction
    // Private
    // -------------------------------------------------------------------
 
-   private void doRollback() throws Exception
+   protected void doRollback() throws Exception
    {
       if (containsPersistent || xid != null && state == State.PREPARED)
       {

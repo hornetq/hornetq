@@ -595,6 +595,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
+   public void proceedDeliver(MessageReference ref)
+   {
+      // no op
+   }
+
    // FailureListener implementation --------------------------------
 
    public void connectionFailed(final HornetQException me, boolean failedOver)

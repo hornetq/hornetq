@@ -12,6 +12,8 @@
  */
 package org.hornetq.utils;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 /**
  * A Future
  *
@@ -20,39 +22,22 @@ package org.hornetq.utils;
  */
 public class Future implements Runnable
 {
-   private boolean done;
+   private final CountDownLatch latch = new CountDownLatch(1);
 
-   public synchronized boolean await(final long timeout)
+   public boolean await(final long timeout)
    {
-      long toWait = timeout;
-
-      long start = System.currentTimeMillis();
-
-      while (!done && toWait > 0)
-      {
-         try
-         {
-            wait(toWait);
-         }
-         catch (InterruptedException e)
-         {
-         }
-
-         long now = System.currentTimeMillis();
-
-         toWait -= now - start;
-
-         start = now;
+      try {
+         return latch.await(timeout, TimeUnit.MILLISECONDS);
       }
-
-      return done;
+      catch (InterruptedException e)
+      {
+         return false;
+      }
    }
 
-   public synchronized void run()
+   public void run()
    {
-      done = true;
-
-      notify();
+      latch.countDown();
    }
 
 }
