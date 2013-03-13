@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -78,21 +79,17 @@ public class OperationContextImpl implements OperationContext
 
    private List<TaskHolder> tasks;
 
-   private int minimalStore = Integer.MAX_VALUE;
+   private long minimalStore = Long.MAX_VALUE;
+   private long minimalReplicated = Long.MAX_VALUE;
+   private long minimalPage = Long.MAX_VALUE;
 
-   private int minimalReplicated = Integer.MAX_VALUE;
+   private final AtomicLong storeLineUp = new AtomicLong(0);
+   private final AtomicLong replicationLineUp = new AtomicLong(0);
+   private final AtomicLong pageLineUp = new AtomicLong(0);
 
-   private int minimalPage = Integer.MAX_VALUE;
-
-   private final AtomicInteger storeLineUp = new AtomicInteger(0);
-   private final AtomicInteger replicationLineUp = new AtomicInteger(0);
-   private final AtomicInteger pageLineUp = new AtomicInteger(0);
-
-   private int stored = 0;
-
-   private int replicated = 0;
-
-   private int paged = 0;
+   private long stored = 0;
+   private long replicated = 0;
+   private long paged = 0;
 
    private int errorCode = -1;
 

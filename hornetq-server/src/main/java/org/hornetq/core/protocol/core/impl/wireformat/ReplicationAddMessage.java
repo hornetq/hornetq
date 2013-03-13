@@ -18,50 +18,40 @@ import java.util.Arrays;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.replication.ReplicationManager.ADD_OPERATION_TYPE;
 
 /**
  * A ReplicationAddMessage
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class ReplicationAddMessage extends PacketImpl
+public final class ReplicationAddMessage extends PacketImpl
 {
-
    private long id;
 
    /** 0 - BindingsImpl, 1 - MessagesJournal */
    private byte journalID;
 
-   private boolean isUpdate;
+   private ADD_OPERATION_TYPE operation;
 
-   private byte recordType;
+   private byte journalRecordType;
 
    private EncodingSupport encodingData;
 
    private byte[] recordData;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationAddMessage()
    {
       super(PacketImpl.REPLICATION_APPEND);
    }
 
-   public ReplicationAddMessage(final byte journalID,
-                                final boolean isUpdate,
-                                final long id,
-                                final byte recordType,
-                                final EncodingSupport encodingData)
+   public ReplicationAddMessage(final byte journalID, final ADD_OPERATION_TYPE operation, final long id,
+                                final byte journalRecordType, final EncodingSupport encodingData)
    {
       this();
       this.journalID = journalID;
-      this.isUpdate = isUpdate;
+      this.operation = operation;
       this.id = id;
-      this.recordType = recordType;
+      this.journalRecordType = journalRecordType;
       this.encodingData = encodingData;
    }
 
@@ -71,9 +61,10 @@ public class ReplicationAddMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeByte(journalID);
-      buffer.writeBoolean(isUpdate);
+
+      buffer.writeBoolean(operation.toBoolean());
       buffer.writeLong(id);
-      buffer.writeByte(recordType);
+      buffer.writeByte(journalRecordType);
       buffer.writeInt(encodingData.getEncodeSize());
       encodingData.encode(buffer);
    }
@@ -82,11 +73,11 @@ public class ReplicationAddMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       journalID = buffer.readByte();
-      isUpdate = buffer.readBoolean();
+      operation = ADD_OPERATION_TYPE.toOperation(buffer.readBoolean());
       id = buffer.readLong();
-      recordType = buffer.readByte();
-      int size = buffer.readInt();
-      recordData = new byte[size];
+      journalRecordType = buffer.readByte();
+      final int recordDataSize = buffer.readInt();
+      recordData = new byte[recordDataSize];
       buffer.readBytes(recordData);
    }
 
@@ -106,17 +97,17 @@ public class ReplicationAddMessage extends PacketImpl
       return journalID;
    }
 
-   public boolean isUpdate()
+   public ADD_OPERATION_TYPE getRecord()
    {
-      return isUpdate;
+      return operation;
    }
 
    /**
     * @return the recordType
     */
-   public byte getRecordType()
+   public byte getJournalRecordType()
    {
-      return recordType;
+      return journalRecordType;
    }
 
    /**
@@ -134,10 +125,10 @@ public class ReplicationAddMessage extends PacketImpl
       int result = super.hashCode();
       result = prime * result + ((encodingData == null) ? 0 : encodingData.hashCode());
       result = prime * result + (int)(id ^ (id >>> 32));
-      result = prime * result + (isUpdate ? 1231 : 1237);
       result = prime * result + journalID;
+      result = prime * result + journalRecordType;
+      result = prime * result + ((operation == null) ? 0 : operation.hashCode());
       result = prime * result + Arrays.hashCode(recordData);
-      result = prime * result + recordType;
       return result;
    }
 
@@ -145,49 +136,29 @@ public class ReplicationAddMessage extends PacketImpl
    public boolean equals(Object obj)
    {
       if (this == obj)
-      {
          return true;
-      }
       if (!super.equals(obj))
-      {
          return false;
-      }
       if (!(obj instanceof ReplicationAddMessage))
-      {
          return false;
-      }
       ReplicationAddMessage other = (ReplicationAddMessage)obj;
       if (encodingData == null)
       {
          if (other.encodingData != null)
-         {
             return false;
-         }
       }
       else if (!encodingData.equals(other.encodingData))
-      {
          return false;
-      }
       if (id != other.id)
-      {
          return false;
-      }
-      if (isUpdate != other.isUpdate)
-      {
-         return false;
-      }
       if (journalID != other.journalID)
-      {
          return false;
-      }
+      if (journalRecordType != other.journalRecordType)
+         return false;
+      if (operation != other.operation)
+         return false;
       if (!Arrays.equals(recordData, other.recordData))
-      {
          return false;
-      }
-      if (recordType != other.recordType)
-      {
-         return false;
-      }
       return true;
    }
 }

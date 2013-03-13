@@ -76,6 +76,32 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public final class ReplicationManager implements HornetQComponent
 {
+   public enum ADD_OPERATION_TYPE
+   {
+      UPDATE
+      {
+         @Override
+         public boolean toBoolean()
+         {
+            return true;
+         }
+      },
+      ADD
+      {
+         @Override
+         public boolean toBoolean()
+         {
+            return false;
+         }
+      };
+
+      public abstract boolean toBoolean();
+
+      public static ADD_OPERATION_TYPE toOperation(boolean isUpdate)
+      {
+         return isUpdate ? UPDATE : ADD;
+      }
+   }
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
@@ -113,22 +139,13 @@ public final class ReplicationManager implements HornetQComponent
       this.remotingConnection = remotingConnection;
    }
 
-   public void appendAddRecord(final byte journalID, final long id, final byte recordType, final EncodingSupport record)
-   {
-      if (enabled)
-      {
-         sendReplicatePacket(new ReplicationAddMessage(journalID, false, id, recordType, record));
-      }
-   }
-
-   public void appendUpdateRecord(final byte journalID,
-                                  final long id,
+   public void appendUpdateRecord(final byte journalID, final ADD_OPERATION_TYPE operation, final long id,
                                   final byte recordType,
-                                  final EncodingSupport record) throws Exception
+ final EncodingSupport record) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationAddMessage(journalID, true, id, recordType, record));
+         sendReplicatePacket(new ReplicationAddMessage(journalID, operation, id, recordType, record));
       }
    }
 
@@ -140,27 +157,16 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public void appendAddRecordTransactional(final byte journalID,
-                                            final long txID,
-                                            final long id,
+   public
+            void
+            appendAddRecordTransactional(final byte journalID, final ADD_OPERATION_TYPE operation, final long txID,
+                                         final long id,
                                             final byte recordType,
                                             final EncodingSupport record) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationAddTXMessage(journalID, false, txID, id, recordType, record));
-      }
-   }
-
-   public void appendUpdateRecordTransactional(final byte journalID,
-                                               final long txID,
-                                               final long id,
-                                               final byte recordType,
-                                               final EncodingSupport record) throws Exception
-   {
-      if (enabled)
-      {
-         sendReplicatePacket(new ReplicationAddTXMessage(journalID, true, txID, id, recordType, record));
+         sendReplicatePacket(new ReplicationAddTXMessage(journalID, operation, txID, id, recordType, record));
       }
    }
 
@@ -169,7 +175,7 @@ public final class ReplicationManager implements HornetQComponent
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID, sync), lineUp);
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID), lineUp);
       }
    }
 
@@ -192,7 +198,9 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public void appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
+   public
+            void
+            appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
       throws Exception
    {
       if (enabled)
@@ -201,11 +209,11 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public void appendRollbackRecord(final byte journalID, final long txID, boolean sync) throws Exception
+   public void appendRollbackRecord(final byte journalID, final long txID) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationCommitMessage(journalID, true, txID, sync));
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, true, txID));
       }
    }
 
@@ -317,11 +325,11 @@ public final class ReplicationManager implements HornetQComponent
       synchronized (replicationLock)
       {
          enabled = false;
+         if (replicatingChannel != null)
+         {
+            replicatingChannel.close();
+         }
          clearReplicationTokens();
-      }
-      if (replicatingChannel != null)
-      {
-         replicatingChannel.close();
       }
 
 
@@ -464,7 +472,7 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   private class ResponseHandler implements ChannelHandler
+   private final class ResponseHandler implements ChannelHandler
    {
      public void handlePacket(final Packet packet)
       {

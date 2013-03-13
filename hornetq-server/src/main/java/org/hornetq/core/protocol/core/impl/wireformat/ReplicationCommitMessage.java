@@ -18,12 +18,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A ReplicationAddMessage
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class ReplicationCommitMessage extends PacketImpl
+public final class ReplicationCommitMessage extends PacketImpl
 {
 
    /** 0 - BindingsImpl, 1 - MessagesJournal */
@@ -33,21 +30,18 @@ public class ReplicationCommitMessage extends PacketImpl
 
    private long txId;
 
-   private boolean sync;
-
 
    public ReplicationCommitMessage()
    {
       super(PacketImpl.REPLICATION_COMMIT_ROLLBACK);
    }
 
-   public ReplicationCommitMessage(final byte journalID, final boolean rollback, final long txId, boolean sync)
+   public ReplicationCommitMessage(final byte journalID, final boolean rollback, final long txId)
    {
       this();
       this.journalID = journalID;
       this.rollback = rollback;
       this.txId = txId;
-      this.sync = sync;
    }
 
    @Override
@@ -56,7 +50,6 @@ public class ReplicationCommitMessage extends PacketImpl
       buffer.writeByte(journalID);
       buffer.writeBoolean(rollback);
       buffer.writeLong(txId);
-      buffer.writeBoolean(sync);
    }
 
    @Override
@@ -65,7 +58,6 @@ public class ReplicationCommitMessage extends PacketImpl
       journalID = buffer.readByte();
       rollback = buffer.readBoolean();
       txId = buffer.readLong();
-      sync = buffer.readBoolean();
    }
 
    public boolean isRollback()
@@ -76,11 +68,6 @@ public class ReplicationCommitMessage extends PacketImpl
    public long getTxId()
    {
       return txId;
-   }
-
-   public boolean getSync()
-   {
-      return sync;
    }
 
    /**
@@ -98,7 +85,6 @@ public class ReplicationCommitMessage extends PacketImpl
       int result = super.hashCode();
       result = prime * result + journalID;
       result = prime * result + (rollback ? 1231 : 1237);
-      result = prime * result + (sync ? 1231 : 1237);
       result = prime * result + (int)(txId ^ (txId >>> 32));
       return result;
    }
@@ -116,8 +102,6 @@ public class ReplicationCommitMessage extends PacketImpl
       if (journalID != other.journalID)
          return false;
       if (rollback != other.rollback)
-         return false;
-      if (sync != other.sync)
          return false;
       if (txId != other.txId)
          return false;

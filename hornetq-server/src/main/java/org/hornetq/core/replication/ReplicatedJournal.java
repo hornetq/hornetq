@@ -29,6 +29,7 @@ import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.replication.ReplicationManager.ADD_OPERATION_TYPE;
 
 /**
  * Used by the {@link JournalStorageManager} to replicate journal calls.
@@ -82,7 +83,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("Append record id = " + id + " recordType = " + recordType);
       }
-      replicationManager.appendAddRecord(journalID, id, recordType, record);
+      replicationManager.appendUpdateRecord(journalID, ADD_OPERATION_TYPE.ADD, id, recordType, record);
       localJournal.appendAddRecord(id, recordType, record, sync);
    }
 
@@ -104,7 +105,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("Append record id = " + id + " recordType = " + recordType);
       }
-      replicationManager.appendAddRecord(journalID, id, recordType, record);
+      replicationManager.appendUpdateRecord(journalID, ADD_OPERATION_TYPE.ADD, id, recordType, record);
       localJournal.appendAddRecord(id, recordType, record, sync, completionCallback);
    }
 
@@ -138,7 +139,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("Append record TXid = " + id + " recordType = " + recordType);
       }
-      replicationManager.appendAddRecordTransactional(journalID, txID, id, recordType, record);
+      replicationManager.appendAddRecordTransactional(journalID, ADD_OPERATION_TYPE.ADD, txID, id, recordType, record);
       localJournal.appendAddRecordTransactional(txID, id, recordType, record);
    }
 
@@ -185,6 +186,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#appendDeleteRecord(long, boolean)
     */
+   @Override
    public void appendDeleteRecord(final long id, final boolean sync) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -195,6 +197,7 @@ public class ReplicatedJournal implements Journal
       localJournal.appendDeleteRecord(id, sync);
    }
 
+   @Override
    public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion completionCallback) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -305,7 +308,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendRollback " + txID);
       }
-      replicationManager.appendRollbackRecord(journalID, txID, sync);
+      replicationManager.appendRollbackRecord(journalID, txID);
       localJournal.appendRollbackRecord(txID, sync);
    }
 
@@ -315,7 +318,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendRollback " + txID);
       }
-      replicationManager.appendRollbackRecord(journalID, txID, sync);
+      replicationManager.appendRollbackRecord(journalID, txID);
       localJournal.appendRollbackRecord(txID, sync, callback);
    }
 
@@ -340,28 +343,30 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean)
     */
+   @Override
    public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
    {
       if (ReplicatedJournal.trace)
       {
          ReplicatedJournal.trace("AppendUpdateRecord id = " + id + " , recordType = " + recordType);
       }
-      replicationManager.appendUpdateRecord(journalID, id, recordType, record);
+      replicationManager.appendUpdateRecord(journalID, ADD_OPERATION_TYPE.UPDATE, id, recordType, record);
       localJournal.appendUpdateRecord(id, recordType, record, sync);
    }
 
+   @Override
    public void appendUpdateRecord(final long id,
-                                  final byte recordType,
+                                  final byte journalRecordType,
                                   final EncodingSupport record,
                                   final boolean sync,
                                   final IOCompletion completionCallback) throws Exception
    {
       if (ReplicatedJournal.trace)
       {
-         ReplicatedJournal.trace("AppendUpdateRecord id = " + id + " , recordType = " + recordType);
+         ReplicatedJournal.trace("AppendUpdateRecord id = " + id + " , recordType = " + journalRecordType);
       }
-      replicationManager.appendUpdateRecord(journalID, id, recordType, record);
-      localJournal.appendUpdateRecord(id, recordType, record, sync, completionCallback);
+      replicationManager.appendUpdateRecord(journalID, ADD_OPERATION_TYPE.UPDATE, id, journalRecordType, record);
+      localJournal.appendUpdateRecord(id, journalRecordType, record, sync, completionCallback);
    }
 
    /**
@@ -372,9 +377,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#appendUpdateRecordTransactional(long, long, byte, byte[])
     */
-   public void appendUpdateRecordTransactional(final long txID,
-                                               final long id,
-                                               final byte recordType,
+   public void appendUpdateRecordTransactional(final long txID, final long id, final byte recordType,
                                                final byte[] record) throws Exception
    {
       this.appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
@@ -388,16 +391,15 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#appendUpdateRecordTransactional(long, long, byte, org.hornetq.core.journal.EncodingSupport)
     */
-   public void appendUpdateRecordTransactional(final long txID,
-                                               final long id,
-                                               final byte recordType,
+   public void appendUpdateRecordTransactional(final long txID, final long id, final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
       if (ReplicatedJournal.trace)
       {
          ReplicatedJournal.trace("AppendUpdateRecord txid=" + txID + " id = " + id + " , recordType = " + recordType);
       }
-      replicationManager.appendUpdateRecordTransactional(journalID, txID, id, recordType, record);
+      replicationManager.appendAddRecordTransactional(journalID, ADD_OPERATION_TYPE.UPDATE, txID, id, recordType,
+                                                      record);
       localJournal.appendUpdateRecordTransactional(txID, id, recordType, record);
    }
 
