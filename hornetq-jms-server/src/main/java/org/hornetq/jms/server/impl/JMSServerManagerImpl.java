@@ -218,12 +218,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return;
       }
 
-      active = true;
+      try{
 
-      jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
+         jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
 
-      try
-      {
          jmsManagementService.registerJMSServer(this);
 
          initJournal();
@@ -259,7 +257,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cachedCommands.clear();
 
          recoverJndiBindings();
-
+         active = true;
       }
       catch (Exception e)
       {
@@ -455,13 +453,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       }
 
-      started = true;
+        deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+        server.registerActivateCallback(this);
+        server.start();
 
-      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+        started = true;
 
-      server.registerActivateCallback(this);
-
-      server.start();
    }
 
    public void stop() throws Exception
@@ -478,11 +475,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             registry.close();
          }
-
+         server.stop();
          started = false;
       }
-
-      server.stop();
    }
 
    public boolean isStarted()
