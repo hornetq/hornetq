@@ -156,6 +156,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
 
    private final long creationTime = System.currentTimeMillis();
+   
+   // to prevent session from being closed twice.
+   // this can happen when a session close from client just
+   // arrives while the connection failure is detected at the 
+   // server. Both the request and failure listener will
+   // try to close one session from different threads
+   // concurrently.
+   private volatile boolean closed = false;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -275,22 +283,37 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private synchronized void doClose(final boolean failed) throws Exception
+   private void doClose(final boolean failed) throws Exception
    {
-      if (tx != null && tx.getXid() == null)
+      synchronized(this)
       {
-         // We only rollback local txs on close, not XA tx branches
+         if (closed) return;
 
-         try
+         if (tx != null && tx.getXid() == null)
          {
-            rollback(failed, false);
+            // We only rollback local txs on close, not XA tx branches
+
+            try
+            {
+               rollback(failed, false);
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            }
          }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-         }
+
+         server.removeSession(name);
+
+         remotingConnection.removeFailureListener(this);
+
+         callback.closed();
+
+         closed = true;
       }
 
+      //putting closing of consumers outside the sync block
+      //https://issues.jboss.org/browse/HORNETQ-1141
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
 
       for (ServerConsumer consumer : consumersClone)
@@ -299,8 +322,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       consumers.clear();
-
-      server.removeSession(name);
 
       if (currentLargeMessage != null)
       {
@@ -313,10 +334,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             HornetQServerLogger.LOGGER.errorDeletingLargeMessageFile(error);
          }
       }
-
-      remotingConnection.removeFailureListener(this);
-
-      callback.closed();
    }
 
    public void createConsumer(final long consumerID,
@@ -1146,6 +1163,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void close(final boolean failed)
    {
+      if (closed) return;
       context.executeOnCompletion(new IOAsyncTask()
       {
          public void onError(int errorCode, String errorMessage)
