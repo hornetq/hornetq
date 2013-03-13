@@ -1232,13 +1232,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          fail("invm registry still had acceptors registered");
       }
 
-      if (AsynchronousFileImpl.getTotalMaxIO() != 0)
+      final int totalMaxIO = AsynchronousFileImpl.getTotalMaxIO();
+      if (totalMaxIO != 0)
       {
          AsynchronousFileImpl.resetMaxAIO();
-         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+         Assert.fail("test did not close all its files " + totalMaxIO);
       }
-
-
    }
 
    private void cleanupPools()
