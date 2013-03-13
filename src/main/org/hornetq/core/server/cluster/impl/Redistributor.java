@@ -207,6 +207,11 @@ public class Redistributor implements Consumer
       return HandleStatus.HANDLED;
    }
 
+   public void proceedDeliver(MessageReference ref)
+   {
+      // no op
+   }
+
    private void ackRedistribution(final MessageReference reference, final Transaction tx) throws Exception
    {
       reference.handled();

@@ -15,6 +15,7 @@ package org.hornetq.core.postoffice;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * Used to maintain addresses and Bindings.
@@ -27,7 +28,14 @@ public interface AddressManager
 {
    boolean addBinding(Binding binding) throws Exception;
 
-   Binding removeBinding(SimpleString uniqueName) throws Exception;
+   /**
+    * This will use a Transaction as we need to confirm the queue was removed
+    * @param uniqueName
+    * @param tx
+    * @return
+    * @throws Exception
+    */
+   Binding removeBinding(SimpleString uniqueName, Transaction tx) throws Exception;
 
    Bindings getBindingsForRoutingAddress(SimpleString address) throws Exception;
 
