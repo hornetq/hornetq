@@ -20,19 +20,10 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * A ReplicationAddMessage
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class ReplicationPrepareMessage extends PacketImpl
+public final class ReplicationPrepareMessage extends PacketImpl
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long txId;
 
    /** 0 - BindingsImpl, 1 - MessagesJournal */
@@ -41,10 +32,6 @@ public class ReplicationPrepareMessage extends PacketImpl
    private EncodingSupport encodingData;
 
    private byte[] recordData;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public ReplicationPrepareMessage()
    {
@@ -134,7 +121,7 @@ public class ReplicationPrepareMessage extends PacketImpl
          if (other.encodingData != null)
          {
             return false;
-         }
+      }
       }
       else if (!encodingData.equals(other.encodingData))
       {

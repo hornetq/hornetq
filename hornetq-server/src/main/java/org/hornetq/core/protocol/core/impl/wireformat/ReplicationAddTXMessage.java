@@ -18,6 +18,7 @@ import java.util.Arrays;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.replication.ReplicationManager.ADD_OPERATION_TYPE;
 
 /**
  * A ReplicationAddMessage
@@ -29,10 +30,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class ReplicationAddTXMessage extends PacketImpl
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private long txId;
 
    private long id;
@@ -40,25 +37,20 @@ public class ReplicationAddTXMessage extends PacketImpl
    /** 0 - BindingsImpl, 1 - MessagesJournal */
    private byte journalID;
 
-   private boolean isUpdate;
-
    private byte recordType;
 
    private EncodingSupport encodingData;
 
    private byte[] recordData;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
+   private ADD_OPERATION_TYPE operation;
 
    public ReplicationAddTXMessage()
    {
       super(PacketImpl.REPLICATION_APPEND_TX);
    }
 
-   public ReplicationAddTXMessage(final byte journalID,
-                                  final boolean isUpdate,
+   public ReplicationAddTXMessage(final byte journalID, final ADD_OPERATION_TYPE operation,
                                   final long txId,
                                   final long id,
                                   final byte recordType,
@@ -66,7 +58,7 @@ public class ReplicationAddTXMessage extends PacketImpl
    {
       this();
       this.journalID = journalID;
-      this.isUpdate = isUpdate;
+      this.operation = operation;
       this.txId = txId;
       this.id = id;
       this.recordType = recordType;
@@ -79,7 +71,7 @@ public class ReplicationAddTXMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeByte(journalID);
-      buffer.writeBoolean(isUpdate);
+      buffer.writeBoolean(operation.toBoolean());
       buffer.writeLong(txId);
       buffer.writeLong(id);
       buffer.writeByte(recordType);
@@ -91,12 +83,12 @@ public class ReplicationAddTXMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       journalID = buffer.readByte();
-      isUpdate = buffer.readBoolean();
+      operation = ADD_OPERATION_TYPE.toOperation(buffer.readBoolean());
       txId = buffer.readLong();
       id = buffer.readLong();
       recordType = buffer.readByte();
-      int size = buffer.readInt();
-      recordData = new byte[size];
+      final int recordDataSize = buffer.readInt();
+      recordData = new byte[recordDataSize];
       buffer.readBytes(recordData);
    }
 
@@ -121,9 +113,9 @@ public class ReplicationAddTXMessage extends PacketImpl
       return journalID;
    }
 
-   public boolean isUpdate()
+   public ADD_OPERATION_TYPE getOperation()
    {
-      return isUpdate;
+      return operation;
    }
 
    /**
@@ -149,8 +141,8 @@ public class ReplicationAddTXMessage extends PacketImpl
       int result = super.hashCode();
       result = prime * result + ((encodingData == null) ? 0 : encodingData.hashCode());
       result = prime * result + (int)(id ^ (id >>> 32));
-      result = prime * result + (isUpdate ? 1231 : 1237);
       result = prime * result + journalID;
+      result = prime * result + ((operation == null) ? 0 : operation.hashCode());
       result = prime * result + Arrays.hashCode(recordData);
       result = prime * result + recordType;
       result = prime * result + (int)(txId ^ (txId >>> 32));
@@ -161,53 +153,31 @@ public class ReplicationAddTXMessage extends PacketImpl
    public boolean equals(Object obj)
    {
       if (this == obj)
-      {
          return true;
-      }
       if (!super.equals(obj))
-      {
          return false;
-      }
       if (!(obj instanceof ReplicationAddTXMessage))
-      {
          return false;
-      }
       ReplicationAddTXMessage other = (ReplicationAddTXMessage)obj;
       if (encodingData == null)
       {
          if (other.encodingData != null)
-         {
             return false;
-         }
       }
       else if (!encodingData.equals(other.encodingData))
-      {
          return false;
-      }
       if (id != other.id)
-      {
          return false;
-      }
-      if (isUpdate != other.isUpdate)
-      {
-         return false;
-      }
       if (journalID != other.journalID)
-      {
          return false;
-      }
+      if (operation != other.operation)
+         return false;
       if (!Arrays.equals(recordData, other.recordData))
-      {
          return false;
-      }
       if (recordType != other.recordType)
-      {
          return false;
-      }
       if (txId != other.txId)
-      {
          return false;
-      }
       return true;
    }
 }

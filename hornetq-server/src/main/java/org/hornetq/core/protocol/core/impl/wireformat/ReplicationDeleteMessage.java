@@ -18,14 +18,10 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A ReplicationAddMessage
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class ReplicationDeleteMessage extends PacketImpl
+public final class ReplicationDeleteMessage extends PacketImpl
 {
-
    private long id;
 
    /** 0 - BindingsImpl, 1 - MessagesJournal */
@@ -42,8 +38,6 @@ public class ReplicationDeleteMessage extends PacketImpl
       this.journalID = journalID;
       this.id = id;
    }
-
-   // Public --------------------------------------------------------
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
