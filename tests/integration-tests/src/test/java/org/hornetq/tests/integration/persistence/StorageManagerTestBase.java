@@ -69,7 +69,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       Exception exception = null;
-      executor.shutdown();
 
       if (journal != null)
       {
@@ -99,6 +98,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
          jmsJournal = null;
       }
+      executor.shutdown();
 
       super.tearDown();
       if (exception != null)
@@ -128,7 +128,9 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
     */
    protected JournalStorageManager createJournalStorageManager(Configuration configuration)
    {
-      return new JournalStorageManager(configuration, execFactory, null);
+      JournalStorageManager jsm = new JournalStorageManager(configuration, execFactory, null);
+      addHornetQComponent(jsm);
+      return jsm;
    }
 
    /**

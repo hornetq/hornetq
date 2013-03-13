@@ -565,7 +565,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   localReplicationManager.clearReplicationTokens();
                }
-            }, 15, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
          }
          stopComponent(connectorsService);
 
@@ -581,17 +581,6 @@ public class HornetQServerImpl implements HornetQServer
       }
       closeAllServerSessions(criticalIOError);
 
-      final ReplicationManager localReplicationManager = getReplicationManager();
-      if (localReplicationManager != null)
-      {
-         if (!criticalIOError)
-         {
-            storageManager.persistIdGenerator();
-         }
-         localReplicationManager.sendLiveIsStopping();
-         stopComponent(localReplicationManager);
-      }
-
       // *************************************************************************************************************
       // There's no need to sync this part of the method, since the state stopped | stopping is checked within the sync
       //
@@ -600,13 +589,6 @@ public class HornetQServerImpl implements HornetQServer
       // which will be already enough to guarantee that no other thread will be accessing this method here.
       //
       // *************************************************************************************************************
-
-
-
-      // We stop remotingService before otherwise we may lock the system in case of a critical IO
-      // error shutdown
-      if (remotingService != null)
-         remotingService.stop(criticalIOError);
 
       if (storageManager != null)
       storageManager.clearContext();
@@ -629,14 +611,16 @@ public class HornetQServerImpl implements HornetQServer
             managementService.unregisterServer();
 
          stopComponent(managementService);
-         stopComponent(replicationManager); // applies to a "live" server
          stopComponent(replicationEndpoint); // applies to a "backup" server
          stopComponent(pagingManager);
 
-         if (!criticalIOError)
-         {
-            stopComponent(storageManager);
-         }
+         storageManager.stop(criticalIOError);
+
+         // We stop remotingService before otherwise we may lock the system in case of a critical IO
+         // error shutdown
+         if (remotingService != null)
+            remotingService.stop(criticalIOError);
+
          stopComponent(securityManager);
          stopComponent(resourceManager);
 
