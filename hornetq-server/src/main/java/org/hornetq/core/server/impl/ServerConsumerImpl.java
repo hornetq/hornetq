@@ -936,7 +936,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       public boolean deliver() throws Exception
       {
-         synchronized (lockDelivery)
+         lockDelivery.readLock().lock();
+         try
          {
             if (largeMessage == null)
             {
@@ -1051,6 +1052,10 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             finish();
 
             return true;
+         }
+         finally
+         {
+            lockDelivery.readLock().unlock();
          }
       }
 

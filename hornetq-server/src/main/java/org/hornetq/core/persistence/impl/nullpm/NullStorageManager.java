@@ -121,7 +121,7 @@ public class NullStorageManager implements StorageManager
    };
 
    @Override
-   public void deleteQueueBinding(final long queueBindingID) throws Exception
+   public void deleteQueueBinding(long tx, final long queueBindingID) throws Exception
    {
    }
 

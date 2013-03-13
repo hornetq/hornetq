@@ -1244,4 +1244,22 @@ public interface HornetQServerLogger extends BasicLogger
       value = "Bridge {0} forwarding address {1} could not be resolved on address-settings configuration",
       format = Message.Format.MESSAGE_FORMAT)
    void bridgeCantFindAddressConfig(String bridgeName, String forwardingAddress);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+      id = 224062,
+      value =  "Queue {0} was busy for more than {1} milliseconds. There are possibly consumers hanging on a network operation",
+      format = Message.Format.MESSAGE_FORMAT)
+   void queueBusy(String name, long timeout);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+      id = 224063,
+      value =  "Queue {0} is duplicated during reload. This queue will be renamed as {1}",
+      format = Message.Format.MESSAGE_FORMAT)
+   void queueDuplicatedRenaming(String name, String newName);
+
+
+
+
 }

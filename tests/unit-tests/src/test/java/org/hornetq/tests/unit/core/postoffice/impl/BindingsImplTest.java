@@ -157,6 +157,12 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      @Override
+      public boolean isContainsPersistent()
+      {
+         return false;
+      }
+
       public State getState()
       {
 

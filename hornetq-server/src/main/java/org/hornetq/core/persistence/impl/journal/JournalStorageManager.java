@@ -2030,8 +2030,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         bindingsJournal.appendAddRecordTransactional(tx, binding.getID(),
- JournalRecordIds.QUEUE_BINDING_RECORD,
+         bindingsJournal.appendAddRecordTransactional(tx, binding.getID(), JournalRecordIds.QUEUE_BINDING_RECORD,
             bindingEncoding);
       }
       finally
@@ -2040,12 +2039,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void deleteQueueBinding(final long queueBindingID) throws Exception
+   public void deleteQueueBinding(long tx, final long queueBindingID) throws Exception
    {
       readLock();
       try
       {
-         bindingsJournal.appendDeleteRecord(queueBindingID, true);
+         bindingsJournal.appendDeleteRecordTransactional(tx, queueBindingID);
       }
       finally
       {
@@ -2989,6 +2988,11 @@ public class JournalStorageManager implements StorageManager
       public SimpleString getAddress()
       {
          return address;
+      }
+
+      public void replaceQueueName(SimpleString newName)
+      {
+         this.name = newName;
       }
 
       public SimpleString getFilterString()

@@ -36,16 +36,16 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public class QueueFactoryImpl implements QueueFactory
 {
-   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
+   protected final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private final ScheduledExecutorService scheduledExecutor;
+   protected final ScheduledExecutorService scheduledExecutor;
 
    /** This is required for delete-all-reference to work correctly with paging, and controlling global-size */
-   private PostOffice postOffice;
+   protected PostOffice postOffice;
 
-   private final StorageManager storageManager;
+   protected final StorageManager storageManager;
 
-   private final ExecutorFactory executorFactory;
+   protected final ExecutorFactory executorFactory;
 
    public QueueFactoryImpl(final ExecutorFactory executorFactory,
                            final ScheduledExecutorService scheduledExecutor,
