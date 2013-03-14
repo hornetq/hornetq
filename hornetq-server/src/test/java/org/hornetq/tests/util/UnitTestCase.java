@@ -140,7 +140,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" +
+            System.currentTimeMillis();
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
@@ -205,7 +206,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       mainConfig.getClusterConfigurations().add(ccc);
    }
 
-   protected static Configuration createDefaultConfig(final int index,
+   protected Configuration createDefaultConfig(final int index,
                                                       final Map<String, Object> params,
                                                       final String... acceptors)
    {
@@ -222,7 +223,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return configuration;
    }
 
-   protected static ConfigurationImpl createBasicConfig() throws Exception
+   protected ConfigurationImpl createBasicConfig() throws Exception
    {
       return createBasicConfig(0);
    }
@@ -232,7 +233,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     * @return
     * @throws Exception
     */
-   protected static final ConfigurationImpl createBasicConfig(final int serverID)
+   protected final ConfigurationImpl createBasicConfig(final int serverID)
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -252,7 +253,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return configuration;
    }
 
-   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
+   protected Configuration
+            createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
       ConfigurationImpl configuration = createBasicConfig(-1);
 
@@ -655,12 +657,17 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the testDir
     */
-   protected static String getTestDir()
+   protected final String getTestDir()
    {
       return testDir;
    }
 
-   protected void clearData()
+   protected final void setTestDir(String testDir)
+   {
+      this.testDir = testDir;
+   }
+
+   protected final void clearData()
    {
       clearData(getTestDir());
    }
@@ -684,17 +691,17 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the journalDir
     */
-   public static String getJournalDir()
+   public String getJournalDir()
    {
       return getJournalDir(getTestDir());
    }
 
-   protected static String getJournalDir(final String testDir1)
+   protected String getJournalDir(final String testDir1)
    {
       return testDir1 + "/journal";
    }
 
-   protected static String getJournalDir(final int index, final boolean backup)
+   protected String getJournalDir(final int index, final boolean backup)
    {
       return getJournalDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
@@ -702,7 +709,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir()
+   protected String getBindingsDir()
    {
       return getBindingsDir(getTestDir());
    }
@@ -718,7 +725,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir(final int index, final boolean backup)
+   protected String getBindingsDir(final int index, final boolean backup)
    {
       return getBindingsDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
@@ -726,7 +733,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the pageDir
     */
-   protected static String getPageDir()
+   protected String getPageDir()
    {
       return getPageDir(getTestDir());
    }
@@ -739,7 +746,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return testDir1 + "/page";
    }
 
-   protected static String getPageDir(final int index, final boolean backup)
+   protected String getPageDir(final int index, final boolean backup)
    {
       return getPageDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
@@ -747,7 +754,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the largeMessagesDir
     */
-   protected static String getLargeMessagesDir()
+   protected String getLargeMessagesDir()
    {
       return getLargeMessagesDir(getTestDir());
    }
@@ -760,7 +767,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return testDir1 + "/large-msg";
    }
 
-   protected static String getLargeMessagesDir(final int index, final boolean backup)
+   protected String getLargeMessagesDir(final int index, final boolean backup)
    {
       return getLargeMessagesDir(getTestDir()) + directoryNameSuffix(index, backup);
    }
@@ -791,7 +798,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    /**
     * @return the temporaryDir
     */
-   protected String getTemporaryDir()
+   protected final String getTemporaryDir()
    {
       return getTemporaryDir(getTestDir());
    }
@@ -951,7 +958,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+      //      testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" + System.currentTimeMillis();
       OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));

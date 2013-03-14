@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import junit.framework.Assert;
 
@@ -90,21 +91,16 @@ public class JournalCrashTest extends ServiceTestBase
    {
       try
       {
-         int start = 4;
-         int end = 8;
-
-         if (arg.length > 0)
+         if (arg.length != 3)
          {
-            start = Integer.parseInt(arg[0]);
+            throw new IllegalArgumentException(Arrays.toString(arg));
          }
-
-         if (arg.length > 1)
-         {
-            end = Integer.parseInt(arg[1]);
-         }
+         String testDir = arg[0];
+         final int start = Integer.parseInt(arg[1]);
+         final int end = Integer.parseInt(arg[2]);
 
          JournalCrashTest restart = new JournalCrashTest();
-
+         restart.setTestDir(testDir);
          restart.startServer();
 
          restart.sendMessages(start, end);
@@ -159,10 +155,10 @@ public class JournalCrashTest extends ServiceTestBase
 
    public void testRestartJournal() throws Throwable
    {
-      runExternalProcess(0, JournalCrashTest.FIRST_RUN);
-      runExternalProcess(JournalCrashTest.FIRST_RUN, JournalCrashTest.SECOND_RUN);
-      runExternalProcess(JournalCrashTest.SECOND_RUN, JournalCrashTest.THIRD_RUN);
-      runExternalProcess(JournalCrashTest.THIRD_RUN, JournalCrashTest.FOURTH_RUN);
+      runExternalProcess(getTestDir(), 0, JournalCrashTest.FIRST_RUN);
+      runExternalProcess(getTestDir(), JournalCrashTest.FIRST_RUN, JournalCrashTest.SECOND_RUN);
+      runExternalProcess(getTestDir(), JournalCrashTest.SECOND_RUN, JournalCrashTest.THIRD_RUN);
+      runExternalProcess(getTestDir(), JournalCrashTest.THIRD_RUN, JournalCrashTest.FOURTH_RUN);
 
       printJournal();
 
@@ -204,7 +200,8 @@ public class JournalCrashTest extends ServiceTestBase
     * @throws Exception
     * @throws InterruptedException
     */
-   private void runExternalProcess(final int start, final int end) throws Exception, InterruptedException
+   private void runExternalProcess(final String tempDir, final int start, final int end) throws Exception,
+                                                                                        InterruptedException
    {
       System.err.println("running external process...");
       Process process = SpawnedVMSupport.spawnVM(this.getClass().getCanonicalName(),
@@ -212,6 +209,7 @@ public class JournalCrashTest extends ServiceTestBase
                                                  new String[] {},
                                                  true,
                                                  true,
+ tempDir,
                                                  Integer.toString(start),
                                                  Integer.toString(end));
 
