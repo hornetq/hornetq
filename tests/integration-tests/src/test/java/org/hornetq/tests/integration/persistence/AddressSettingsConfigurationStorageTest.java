@@ -48,12 +48,12 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
       super.tearDown();
    }
 
-   protected void addAddress(JournalStorageManager journal, String address, AddressSettings setting) throws Exception
+   protected void addAddress(JournalStorageManager journal1, String address, AddressSettings setting) throws Exception
    {
       SimpleString str = new SimpleString(address);
       PersistedAddressSetting persistedSetting = new PersistedAddressSetting(str, setting);
       mapExpectedAddresses.put(str, persistedSetting);
-      journal.storeAddressSetting(persistedSetting);
+      journal1.storeAddressSetting(persistedSetting);
    }
 
    public void testStoreSecuritySettings() throws Exception
@@ -96,12 +96,12 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
    }
 
    /**
-    * @param journal
+    * @param journal1
     * @throws Exception
     */
-   private void checkAddresses(JournalStorageManager journal) throws Exception
+   private void checkAddresses(JournalStorageManager journal1) throws Exception
    {
-      List<PersistedAddressSetting> listSetting = journal.recoverAddressSettings();
+      List<PersistedAddressSetting> listSetting = journal1.recoverAddressSettings();
 
       assertEquals(mapExpectedAddresses.size(), listSetting.size());
 

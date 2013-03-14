@@ -3,10 +3,14 @@
  */
 package org.hornetq.core.replication;
 
+import org.hornetq.core.persistence.impl.journal.LargeServerMessageInSync;
 import org.hornetq.core.server.LargeServerMessage;
 
 /**
- *
+ * {@link LargeServerMessage} methods used by the {@link ReplicationEndpoint}.
+ * <p>
+ * In practice a subset of the methods necessary to have a {@link LargeServerMessage}
+ * @see LargeServerMessageInSync
  */
 public interface ReplicatedLargeMessage
 {
