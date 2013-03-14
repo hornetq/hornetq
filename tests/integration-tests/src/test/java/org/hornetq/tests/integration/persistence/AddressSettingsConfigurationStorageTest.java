@@ -25,10 +25,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * A ConfigurationStorageTest
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class AddressSettingsConfigurationStorageTest extends StorageManagerTestBase
 {
@@ -116,13 +113,4 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
          assertEquals(el.getSetting(), el2.getSetting());
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

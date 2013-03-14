@@ -18,10 +18,7 @@ import java.util.Map;
 
 /**
  * A ConnectorServiceConfiguration
- *
  * @author <a href="tm.igarashi@gmail.com">Tomohisa Igarashi</a>
- *
- *
  */
 public class ConnectorServiceConfiguration implements Serializable
 {

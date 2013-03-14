@@ -29,10 +29,7 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 
 /**
  * A DeleteMessagesOnStartupTest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 {

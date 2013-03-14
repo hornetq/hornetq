@@ -36,18 +36,10 @@ import org.hornetq.tests.util.SpawnedVMSupport;
 
 /**
  * A JournalCrashTest
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalCrashTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private static final int FIRST_RUN = 4;
 
    private static final int SECOND_RUN = 8;
@@ -63,22 +55,6 @@ public class JournalCrashTest extends ServiceTestBase
    private final SimpleString QUEUE = new SimpleString("queue");
 
    private ServerLocator locator;
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServer();
-
-      printJournal();
-
-      super.tearDown();
-   }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
 
    protected void startServer() throws Exception
    {
@@ -98,32 +74,14 @@ public class JournalCrashTest extends ServiceTestBase
    protected void stopServer() throws Exception
    {
       locator.close();
-      try
-      {
-         factory.close();
-      }
-      catch (Throwable ignored)
-      {
-      }
+      closeSessionFactory(factory);
 
       factory = null;
 
-      try
-      {
-         server.stop();
-      }
-      catch (Throwable ignored)
-      {
-      }
+      stopComponent(server);
 
       server = null;
    }
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    /**
     * The test needs another VM, that will be "killed" right after commit. This main will do this job.
@@ -290,13 +248,4 @@ public class JournalCrashTest extends ServiceTestBase
 //      }
       journal.stop();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
