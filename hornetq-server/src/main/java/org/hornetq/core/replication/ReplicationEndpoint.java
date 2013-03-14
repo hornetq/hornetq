@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -111,9 +114,11 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
-   private boolean started;
+   private volatile boolean started;
 
    private QuorumManager quorumManager;
+
+   private Executor executor;
 
    // Constructors --------------------------------------------------
    public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener,
@@ -352,13 +357,23 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       }
       pageManager.stop();
 
-
       pageIndex.clear();
+      final CountDownLatch latch = new CountDownLatch(1);
+      executor.execute(new Runnable()
+      {
 
-         // Storage needs to be the last to stop
-         storageManager.stop();
+         @Override
+         public void run()
+         {
+            latch.countDown();
+         }
+      });
+      latch.await(30, TimeUnit.SECONDS);
 
-         started = false;
+      // Storage needs to be the last to stop
+      storageManager.stop();
+
+      started = false;
    }
 
 
@@ -589,18 +604,26 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {
-      ReplicatedLargeMessage message = lookupLargeMessage(packet.getMessageId(), true);
+      HornetQServerLogger.LOGGER.info("REND LM DELETE " + packet.getMessageId());
+      final ReplicatedLargeMessage message = lookupLargeMessage(packet.getMessageId(), true);
 
       if (message != null)
       {
-         try
+         executor.execute(new Runnable()
          {
-            message.deleteFile();
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorDeletingLargeMessage(e, packet.getMessageId());
-         }
+            @Override
+            public void run()
+            {
+               try
+               {
+                  message.deleteFile();
+               }
+               catch (Exception e)
+               {
+                  HornetQServerLogger.LOGGER.errorDeletingLargeMessage(e, packet.getMessageId());
+               }
+            }
+         });
       }
    }
 
@@ -907,5 +930,13 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    public synchronized void setQuorumManager(QuorumManager quorumManager)
    {
       this.quorumManager = quorumManager;
+   }
+
+   /**
+    * @param executor2
+    */
+   public void setExecutor(Executor executor2)
+   {
+      this.executor = executor2;
    }
 }
