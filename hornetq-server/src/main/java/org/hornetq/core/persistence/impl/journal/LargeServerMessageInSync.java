@@ -19,6 +19,7 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
    private final StorageManager storageManager;
    private SequentialFile appendFile;
    private boolean syncDone;
+   private boolean deleted;
 
    /**
     * @param storageManager
@@ -31,7 +32,13 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
 
    public synchronized void joinSyncedData(ByteBuffer buffer) throws Exception
    {
+      if (deleted)
+         return;
       SequentialFile mainSeqFile = mainLM.getFile();
+      if (!mainSeqFile.isOpen())
+      {
+         mainSeqFile.open();
+      }
       if (appendFile != null)
       {
          appendFile.close();
@@ -89,6 +96,7 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
    @Override
    public synchronized void deleteFile() throws Exception
    {
+      deleted = true;
       try
       {
          mainLM.deleteFile();
@@ -115,6 +123,8 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
    @Override
    public synchronized void addBytes(byte[] bytes) throws Exception
    {
+      if (deleted)
+         return;
       if (syncDone)
       {
          mainLM.addBytes(bytes);
