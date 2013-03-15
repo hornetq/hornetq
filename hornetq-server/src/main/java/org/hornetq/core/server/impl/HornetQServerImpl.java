@@ -104,6 +104,8 @@ import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -556,6 +558,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (localReplicationManager != null)
          {
+            replicationManager.sendLiveIsStopping(LiveStopping.STOP_CALLED);
             // Schedule for 10 seconds
             // this pool gets a 'hard' shutdown, no need to manage the Future of this Runnable.
             scheduledPool.schedule(new Runnable()
@@ -2272,7 +2275,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(serverLocator0, threadPool, getIdentity(), nodeManager);
+               quorumManager = new QuorumManager(serverLocator0, threadPool, scheduledPool, getIdentity(), nodeManager);
                serverLocator0.addClusterTopologyListener(quorumManager);
             }
 
@@ -2336,7 +2339,7 @@ public class HornetQServerImpl implements HornetQServer
                }
                catch (Exception e)
                {
-                  if(possibleLive.getB() != null)
+                  if (possibleLive.getB() != null)
                   {
                      try
                      {
@@ -2492,9 +2495,16 @@ public class HornetQServerImpl implements HornetQServer
       /**
        * Live has notified this server that it is going to stop.
        */
-      public void failOver()
+      public final void failOver(final LiveStopping finalMessage)
       {
-         quorumManager.failOver();
+         if (finalMessage == null)
+         {
+            quorumManager.causeExit(FAILURE_REPLICATING);
+         }
+         else
+         {
+            quorumManager.failOver(finalMessage);
+         }
       }
 
       private class EndpointConnector implements Runnable
@@ -2872,17 +2882,25 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * @throws HornetQException
     */
-   public void remoteFailOver() throws HornetQException
+   public void remoteFailOver(ReplicationLiveIsStoppingMessage.LiveStopping finalMessage) throws HornetQException
    {
       if (!configuration.isBackup() || configuration.isSharedStore())
       {
          throw new HornetQInternalErrorException();
       }
-      if (!backupUpToDate) return;
       if (activation instanceof SharedNothingBackupActivation)
       {
-         ((SharedNothingBackupActivation)activation).failOver();
-      }
+         final SharedNothingBackupActivation replicationActivation = ((SharedNothingBackupActivation)activation);
+
+         if (!backupUpToDate)
+         {
+            replicationActivation.failOver(null);
+         }
+         else
+         {
+            replicationActivation.failOver(finalMessage);
+         }
+    }
    }
 
 

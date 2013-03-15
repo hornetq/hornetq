@@ -60,6 +60,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
@@ -217,7 +218,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             }
          else if (type == PacketImpl.REPLICATION_SCHEDULED_FAILOVER)
          {
-            handleLiveStopping();
+            handleLiveStopping((ReplicationLiveIsStoppingMessage)packet);
          }
          else if (type == PacketImpl.BACKUP_REGISTRATION_FAILED)
          {
@@ -252,11 +253,12 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    }
 
    /**
+    * @param packet
     * @throws HornetQException
     */
-   private void handleLiveStopping() throws HornetQException
+   private void handleLiveStopping(ReplicationLiveIsStoppingMessage packet) throws HornetQException
    {
-      server.remoteFailOver();
+      server.remoteFailOver(packet.isFinalMessage());
    }
 
    public boolean isStarted()
