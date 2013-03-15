@@ -236,7 +236,7 @@ public interface StorageManager extends HornetQComponent
 
    void addQueueBinding(long tx, Binding binding) throws Exception;
 
-   void deleteQueueBinding(long queueBindingID) throws Exception;
+   void deleteQueueBinding(long tx, long queueBindingID) throws Exception;
 
    JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
 

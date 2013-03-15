@@ -41,54 +41,54 @@ public class ClusterRestartTest extends ClusterTestBase
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
 
-         setupSessionFactory(0, isNetty(), -1);
-         setupSessionFactory(1, isNetty());
+      setupSessionFactory(0, isNetty(), -1);
+      setupSessionFactory(1, isNetty());
 
-         // create some dummy queues to ensure that the test queue has a high numbered binding
-         createQueue(0, "queues.testaddress2", "queue0", null, false);
-         createQueue(0, "queues.testaddress2", "queue1", null, false);
-         createQueue(0, "queues.testaddress2", "queue2", null, false);
-         createQueue(0, "queues.testaddress2", "queue3", null, false);
-         createQueue(0, "queues.testaddress2", "queue4", null, false);
-         createQueue(0, "queues.testaddress2", "queue5", null, false);
-         createQueue(0, "queues.testaddress2", "queue6", null, false);
-         createQueue(0, "queues.testaddress2", "queue7", null, false);
-         createQueue(0, "queues.testaddress2", "queue8", null, false);
-         createQueue(0, "queues.testaddress2", "queue9", null, false);
-         // now create the 2 queues and make sure they are durable
-         createQueue(0, "queues.testaddress", "queue10", null, true);
-         createQueue(1, "queues.testaddress", "queue10", null, true);
+      // create some dummy queues to ensure that the test queue has a high numbered binding
+      createQueue(0, "queues.testaddress2", "queue0", null, false);
+      createQueue(0, "queues.testaddress2", "queue1", null, false);
+      createQueue(0, "queues.testaddress2", "queue2", null, false);
+      createQueue(0, "queues.testaddress2", "queue3", null, false);
+      createQueue(0, "queues.testaddress2", "queue4", null, false);
+      createQueue(0, "queues.testaddress2", "queue5", null, false);
+      createQueue(0, "queues.testaddress2", "queue6", null, false);
+      createQueue(0, "queues.testaddress2", "queue7", null, false);
+      createQueue(0, "queues.testaddress2", "queue8", null, false);
+      createQueue(0, "queues.testaddress2", "queue9", null, false);
+      // now create the 2 queues and make sure they are durable
+      createQueue(0, "queues.testaddress", "queue10", null, true);
+      createQueue(1, "queues.testaddress", "queue10", null, true);
 
-         addConsumer(0, 0, "queue10", null);
+      addConsumer(0, 0, "queue10", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, false);
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(0, "queues.testaddress", 1, 0, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         printBindings(2);
+      printBindings(2);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, null);
+      sendInRange(1, "queues.testaddress", 0, 10, true, null);
 
-         log.info("stopping******************************************************");
-         stopServers(0);
-         // Waiting some time after stopped
-         Thread.sleep(2000);
-         startServers(0);
+      log.info("stopping******************************************************");
+      stopServers(0);
+      // Waiting some time after stopped
+      Thread.sleep(2000);
+      startServers(0);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, false);
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(0, "queues.testaddress", 1, 0, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         printBindings(2);
+      printBindings(2);
 
-         sendInRange(1, "queues.testaddress", 10, 20, false, null);
+      sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
-         verifyReceiveAllInRange(0, 20, 0);
-         System.out.println("*****************************************************************************");
+      verifyReceiveAllInRange(0, 20, 0);
+      System.out.println("*****************************************************************************");
    }
 
    public void testRestartWithQueuesCreateInDiffOrder2() throws Exception
@@ -105,50 +105,50 @@ public class ClusterRestartTest extends ClusterTestBase
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
       setupSessionFactory(0, isNetty(), -1);
-         setupSessionFactory(1, isNetty());
+      setupSessionFactory(1, isNetty());
 
-         // create some dummy queues to ensure that the test queue has a high numbered binding
-         createQueue(0, "queues.testaddress2", "queue0", null, false);
-         createQueue(0, "queues.testaddress2", "queue1", null, false);
-         createQueue(0, "queues.testaddress2", "queue2", null, false);
-         createQueue(0, "queues.testaddress2", "queue3", null, false);
-         createQueue(0, "queues.testaddress2", "queue4", null, false);
-         createQueue(0, "queues.testaddress2", "queue5", null, false);
-         createQueue(0, "queues.testaddress2", "queue6", null, false);
-         createQueue(0, "queues.testaddress2", "queue7", null, false);
-         createQueue(0, "queues.testaddress2", "queue8", null, false);
-         createQueue(0, "queues.testaddress2", "queue9", null, false);
-         // now create the 2 queues and make sure they are durable
-         createQueue(0, "queues.testaddress", "queue10", null, true);
-         createQueue(1, "queues.testaddress", "queue10", null, true);
+      // create some dummy queues to ensure that the test queue has a high numbered binding
+      createQueue(0, "queues.testaddress2", "queue0", null, false);
+      createQueue(0, "queues.testaddress2", "queue1", null, false);
+      createQueue(0, "queues.testaddress2", "queue2", null, false);
+      createQueue(0, "queues.testaddress2", "queue3", null, false);
+      createQueue(0, "queues.testaddress2", "queue4", null, false);
+      createQueue(0, "queues.testaddress2", "queue5", null, false);
+      createQueue(0, "queues.testaddress2", "queue6", null, false);
+      createQueue(0, "queues.testaddress2", "queue7", null, false);
+      createQueue(0, "queues.testaddress2", "queue8", null, false);
+      createQueue(0, "queues.testaddress2", "queue9", null, false);
+      // now create the 2 queues and make sure they are durable
+      createQueue(0, "queues.testaddress", "queue10", null, true);
+      createQueue(1, "queues.testaddress", "queue10", null, true);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
-         waitForBindings(0, "queues.testaddress", 1, 0, false);
-         waitForBindings(1, "queues.testaddress", 1, 0, false);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, false);
+      waitForBindings(1, "queues.testaddress", 1, 0, false);
 
-         printBindings(2);
+      printBindings(2);
 
-         sendInRange(1, "queues.testaddress", 0, 10, true, null);
+      sendInRange(1, "queues.testaddress", 0, 10, true, null);
 
-         System.out.println("stopping******************************************************");
-         stopServers(0);
+      System.out.println("stopping******************************************************");
+      stopServers(0);
 
-         sendInRange(1, "queues.testaddress", 10, 20, true, null);
-         System.out.println("stopped******************************************************");
-         startServers(0);
+      sendInRange(1, "queues.testaddress", 10, 20, true, null);
+      System.out.println("stopped******************************************************");
+      startServers(0);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
-         waitForBindings(0, "queues.testaddress", 1, 0, false);
-         waitForBindings(1, "queues.testaddress", 1, 0, false);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, false);
+      waitForBindings(1, "queues.testaddress", 1, 0, false);
 
-         printBindings(2);
-         addConsumer(0, 1, "queue10", null);
-         addConsumer(1, 0, "queue10", null);
+      printBindings(2);
+      addConsumer(0, 1, "queue10", null);
+      addConsumer(1, 0, "queue10", null);
 
-         verifyReceiveRoundRobin(0, 20, 0, 1);
-         System.out.println("*****************************************************************************");
+      verifyReceiveRoundRobin(0, 20, 0, 1);
+      System.out.println("*****************************************************************************");
    }
 
    private void printBindings(final int num) throws Exception
@@ -156,8 +156,8 @@ public class ClusterRestartTest extends ClusterTestBase
       for (int i = 0; i < num; i++)
       {
          Collection<Binding> bindings0 = getServer(i).getPostOffice()
-                                                     .getBindingsForAddress(new SimpleString("queues.testaddress"))
-                                                     .getBindings();
+            .getBindingsForAddress(new SimpleString("queues.testaddress"))
+            .getBindings();
          for (Binding binding : bindings0)
          {
             System.out.println(binding + " on node " + i + " at " + binding.getID());
