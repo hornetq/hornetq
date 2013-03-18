@@ -23,30 +23,13 @@ import javax.jms.TextMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
- *
  * A PersistenceTest
-
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class PersistenceTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /**
     * Test that the messages in a persistent queue survive starting and stopping and server,
-    *
     */
    public void testQueuePersistence() throws Exception
    {
@@ -561,13 +544,4 @@ public class PersistenceTest extends JMSTestCase
          }
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
