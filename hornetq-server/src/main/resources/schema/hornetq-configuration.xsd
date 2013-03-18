@@ -570,16 +570,18 @@
           </xsd:simpleType>
         </xsd:element>
 
-        <xsd:element name="journal-buffer-timeout" type="xsd:long" default="20000" maxOccurs="1" minOccurs="0">
+        <xsd:element name="journal-buffer-timeout" type="xsd:long" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-timeout">
             <xsd:documentation>The timeout (in nanoseconds) used to flush internal buffers on the
-            journal.
+            journal. The exact default value depend on whether the
+            journal is ASYNCIO or NIO.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="journal-buffer-size" type="xsd:long" default="128" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size">
+        <xsd:element name="journal-buffer-size" type="xsd:long" default="501760" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size"
+          hq:default="(490 KiB)">
             <xsd:documentation>The size of the internal buffer on the journal in KiB.
             </xsd:documentation>
           </xsd:annotation>
@@ -638,20 +640,20 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="journal-max-io" type="xsd:int" default="500" maxOccurs="1" minOccurs="0">
+        <xsd:element name="journal-max-io" type="xsd:int" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-max-io">
             <xsd:documentation>the maximum number of write requests that can be in the AIO queue at
-            any one time</xsd:documentation>
+            any one time. Default is 500 for AIO and 1 for NIO.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="perf-blast-pages" type="xsd:int" maxOccurs="1" minOccurs="0">
+        <xsd:element name="perf-blast-pages" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="run-sync-speed-test" type="xsd:boolean" maxOccurs="1" minOccurs="0">
+        <xsd:element name="run-sync-speed-test" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="XXX">
             <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
@@ -672,7 +674,7 @@
         </xsd:element>
 
         <xsd:element name="memory-measure-interval" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="perf-tuning.memory">
+          <xsd:annotation hq:linkend="perf-tuning.memory" hq:default="(ms)">
             <xsd:documentation>frequency to sample JVM memory in ms (or -1 to disable memory
             sampling)</xsd:documentation>
           </xsd:annotation>
