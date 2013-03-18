@@ -26,7 +26,27 @@ import org.hornetq.core.filter.Filter;
  */
 public interface Consumer
 {
+   /**
+    * There was a change on semantic during 2.3 here.
+    * We now first accept the message, and the actual deliver is done as part of proceedDeliver
+    * This is to avoid holding a lock on the queues while the delivery is being accomplished
+    * To avoid a lock on the queue in case of unbehaved consumers
+    *
+    * This should return busy if handle is called before proceed deliver is called
+    * @param reference
+    * @return
+    * @throws Exception
+    */
    HandleStatus handle(MessageReference reference) throws Exception;
+
+   /**
+    * This will proceed with the actual delivery.
+    * Notice that handle should hold a readLock and proceedDelivery should release the readLock
+    * any lock operation on Consumer should also get a writeLock on the readWriteLock
+    * to guarantee there are no pending deliveries
+    * @throws Exception
+    */
+   void proceedDeliver(MessageReference reference) throws Exception;
 
    Filter getFilter();
    

@@ -1453,9 +1453,9 @@ public class JournalStorageManager implements StorageManager
                                       bindingEncoding);
    }
 
-   public void deleteQueueBinding(final long queueBindingID) throws Exception
+   public void deleteQueueBinding(long tx, final long queueBindingID) throws Exception
    {
-      bindingsJournal.appendDeleteRecord(queueBindingID, true);
+      bindingsJournal.appendDeleteRecordTransactional(tx, queueBindingID);
    }
 
    /* (non-Javadoc)
@@ -2421,6 +2421,11 @@ public class JournalStorageManager implements StorageManager
       public SimpleString getAddress()
       {
          return address;
+      }
+      
+      public void replaceQueueName(SimpleString newName)
+      {
+         this.name = newName;
       }
 
       public SimpleString getFilterString()

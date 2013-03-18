@@ -22,6 +22,7 @@ import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * extends the simple manager to allow wildcard addresses to be used.
@@ -126,9 +127,9 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @return true if this was the last mapping for a specific address
     */
    @Override
-   public Binding removeBinding(final SimpleString uniqueName) throws Exception
+   public Binding removeBinding(final SimpleString uniqueName, Transaction tx) throws Exception
    {
-      Binding binding = super.removeBinding(uniqueName);
+      Binding binding = super.removeBinding(uniqueName, tx);
       if (binding != null)
       {
          Address add = getAddress(binding.getAddress());

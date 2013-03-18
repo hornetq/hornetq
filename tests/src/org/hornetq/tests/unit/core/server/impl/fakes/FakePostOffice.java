@@ -139,7 +139,7 @@ public class FakePostOffice implements PostOffice
    /* (non-Javadoc)
     * @see org.hornetq.core.postoffice.PostOffice#removeBinding(org.hornetq.utils.SimpleString)
     */
-   public Binding removeBinding(final SimpleString uniqueName) throws Exception
+   public Binding removeBinding(final SimpleString uniqueName, final Transaction tx) throws Exception
    {
       // TODO Auto-generated method stub
       return null;

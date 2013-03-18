@@ -1424,7 +1424,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             throw new IllegalStateException("Cannot find binding for queue " + clusterName);
          }
 
-         postOffice.removeBinding(binding.getUniqueName());
+         postOffice.removeBinding(binding.getUniqueName(), null);
       }
 
       private synchronized void doConsumerCreated(final ClientMessage message) throws Exception

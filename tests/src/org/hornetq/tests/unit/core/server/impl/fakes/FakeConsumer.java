@@ -152,6 +152,13 @@ public class FakeConsumer implements Consumer
       return statusToReturn;
    }
 
+   @Override
+   public void proceedDeliver(MessageReference ref) throws Exception
+   {
+      // no op
+   }
+
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Consumer#getDeliveringMessages(java.util.List)
     */

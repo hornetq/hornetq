@@ -24,6 +24,9 @@ import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
+import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -45,6 +48,8 @@ public class SimpleAddressManager implements AddressManager
     * HashMap<QueueName, Binding>
     */
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
+   
+   private final ConcurrentHashSet<SimpleString> pendingDeletes = new ConcurrentHashSet<SimpleString>();
 
    private final BindingsFactory bindingsFactory;
 
@@ -55,7 +60,7 @@ public class SimpleAddressManager implements AddressManager
 
    public boolean addBinding(final Binding binding) throws Exception
    {
-      if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
+      if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null || pendingDeletes.contains(binding.getUniqueName()))
       {
          throw new HornetQException(HornetQException.QUEUE_EXISTS, "Binding already exists " + binding);
       }
@@ -68,13 +73,35 @@ public class SimpleAddressManager implements AddressManager
       return addMappingInternal(binding.getAddress(), binding);
    }
 
-   public Binding removeBinding(final SimpleString uniqueName) throws Exception
+   public Binding removeBinding(final SimpleString uniqueName, Transaction tx) throws Exception
    {
-      Binding binding = nameMap.remove(uniqueName);
+      final Binding binding = nameMap.remove(uniqueName);
 
       if (binding == null)
       {
          return null;
+      }
+      
+      if (tx != null)
+      {
+         pendingDeletes.add(uniqueName);
+         tx.addOperation(new TransactionOperationAbstract()
+         {
+            
+            @Override
+            public void afterCommit(Transaction tx)
+            {
+               pendingDeletes.remove(uniqueName);
+            }
+
+            @Override
+            public void afterRollback(Transaction tx)
+            {
+               nameMap.put(uniqueName, binding);
+               pendingDeletes.remove(uniqueName);
+            }
+
+         });
       }
 
       removeBindingInternal(binding.getAddress(), uniqueName);
