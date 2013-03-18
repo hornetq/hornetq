@@ -22,7 +22,7 @@ import org.hornetq.api.core.client.HornetQClient;
  * A BridgeConfiguration
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class BridgeConfiguration implements Serializable
+public final class BridgeConfiguration implements Serializable
 {
    private static final long serialVersionUID = -1057244274380572226L;
 

@@ -158,7 +158,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    public String getContextFactory()
    {
-      return "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory";
+      return org.hornetq.jms.tests.tools.container.InVMInitialContextFactory.class.getCanonicalName();
    }
 
    public void start() throws Exception

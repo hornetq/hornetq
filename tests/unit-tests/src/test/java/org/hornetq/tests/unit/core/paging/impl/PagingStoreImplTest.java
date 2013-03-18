@@ -125,8 +125,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
    public void testPageWithNIO() throws Exception
    {
-      UnitTestCase.recreateDirectory(UnitTestCase.getTestDir());
-      testConcurrentPaging(new NIOSequentialFileFactory(UnitTestCase.getTestDir()), 1);
+      UnitTestCase.recreateDirectory(getTestDir());
+      testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
    }
 
    public void testStore() throws Exception
@@ -642,7 +642,7 @@ public class PagingStoreImplTest extends UnitTestCase
    public void testRestartPage() throws Throwable
    {
       clearData();
-      SequentialFileFactory factory = new NIOSequentialFileFactory(UnitTestCase.getPageDir());
+      SequentialFileFactory factory = new NIOSequentialFileFactory(getPageDir());
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
@@ -678,7 +678,7 @@ public class PagingStoreImplTest extends UnitTestCase
    public void testOrderOnPaging() throws Throwable
    {
       clearData();
-      SequentialFileFactory factory = new NIOSequentialFileFactory(UnitTestCase.getPageDir());
+      SequentialFileFactory factory = new NIOSequentialFileFactory(getPageDir());
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 

@@ -29,42 +29,40 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.server.impl.QuorumManager;
 
 /**
- * A class that will locate a particular live server running in a cluster.
- * How this live is chosen is a job for the implementation
- *
+ * A class that will locate a particular live server running in a cluster. How this live is chosen
+ * is a job for the implementation
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         8/2/12
  */
 public abstract class LiveNodeLocator implements ClusterTopologyListener
 {
-   private QuorumManager quorumManager;
+   private final QuorumManager quorumManager;
 
    public LiveNodeLocator(QuorumManager quorumManager)
    {
       this.quorumManager = quorumManager;
    }
 
-   /*
-  * locate a possible live server in a cluster
-  * */
+   /**
+    * Locates a possible live server in a cluster
+    */
    public abstract void locateNode() throws HornetQException;
 
-   /*
-   * get the current connector
-   * */
+   /**
+    * Returns the current connector
+    */
    public abstract Pair<TransportConfiguration, TransportConfiguration> getLiveConfiguration();
 
-   /*
-   * get the node id for the current connector
-   * */
+   /**
+    * Returns the node id for the current connector
+    */
    public abstract String getNodeID();
 
-   /*
-   * tells the locator the the current connector has failed.
-   * */
-   public  void notifyRegistrationFailed(boolean alreadyReplicating)
+   /**
+    * tells the locator the the current connector has failed.
+    */
+   public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
-      if(alreadyReplicating)
+      if (alreadyReplicating)
       {
          quorumManager.notifyAlreadyReplicating();
       }
@@ -74,9 +72,9 @@ public abstract class LiveNodeLocator implements ClusterTopologyListener
       }
    }
 
-   /*
-   * connect to the cluster
-   * */
+   /**
+    * connects to the cluster
+    */
    public void connectToCluster(ServerLocatorInternal serverLocator) throws HornetQException
    {
       serverLocator.connect();

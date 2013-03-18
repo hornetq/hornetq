@@ -1,6 +1,5 @@
 package org.hornetq.tests.integration.cluster.failover;
 
-import junit.framework.TestSuite;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 

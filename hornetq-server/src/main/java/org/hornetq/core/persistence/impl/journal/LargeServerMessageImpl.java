@@ -148,17 +148,17 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
    }
 
    @Override
-   public void encode(final HornetQBuffer buffer)
+   public void encode(final HornetQBuffer buffer1)
    {
-      super.encodeHeadersAndProperties(buffer);
+      super.encodeHeadersAndProperties(buffer1);
    }
 
    @Override
-   public void decode(final HornetQBuffer buffer)
+   public void decode(final HornetQBuffer buffer1)
    {
       file = null;
 
-      super.decodeHeadersAndProperties(buffer);
+      super.decodeHeadersAndProperties(buffer1);
    }
 
    public synchronized void incrementDelayDeletionCount()

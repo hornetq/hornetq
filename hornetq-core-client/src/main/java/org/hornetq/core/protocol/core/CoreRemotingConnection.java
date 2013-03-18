@@ -19,10 +19,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * Extension of RemotingConnection for the HornetQ core protocol
- *
  * @author Tim Fox
- *
- *
  */
 public interface CoreRemotingConnection extends RemotingConnection
 {

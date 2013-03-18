@@ -20,12 +20,9 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A ReplicationLargeMessageWriteMessage
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class ReplicationLargeMessageWriteMessage extends PacketImpl
+public final class ReplicationLargeMessageWriteMessage extends PacketImpl
 {
 
    private long messageId;

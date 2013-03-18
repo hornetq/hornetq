@@ -21,23 +21,10 @@ import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A DuplicateCacheTest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class DuplicateCacheTest extends StorageManagerTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public void testDuplicate() throws Exception
    {
@@ -109,13 +96,4 @@ public class DuplicateCacheTest extends StorageManagerTestBase
       }
 
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

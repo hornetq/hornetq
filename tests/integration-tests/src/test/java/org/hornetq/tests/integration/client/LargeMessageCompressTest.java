@@ -33,8 +33,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Base64;
 
 /**
  * A LargeMessageCompressTest
@@ -139,7 +137,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
-      String testDir = UnitTestCase.getTestDir();
+      String testDir = getTestDir();
       File testFile = new File(testDir, "async_large_message");
       FileOutputStream output = new FileOutputStream(testFile);
 
@@ -198,7 +196,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
-      String testDir = UnitTestCase.getTestDir();
+      String testDir = getTestDir();
       File testFile = new File(testDir, "async_large_message");
       FileOutputStream output = new FileOutputStream(testFile);
 
@@ -303,6 +301,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       msg1.saveToOutputStream(new OutputStream()
       {
+         @Override
          public void write(int content)
          {
             if (content == ' ')
@@ -379,7 +378,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       assertEquals(messageSize, msg1.getBodySize());
 
-      String testDir = UnitTestCase.getTestDir();
+      String testDir = getTestDir();
       File testFile = new File(testDir, "async_large_message");
       FileOutputStream output = new FileOutputStream(testFile);
 
