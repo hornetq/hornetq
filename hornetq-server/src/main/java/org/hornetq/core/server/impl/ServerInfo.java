@@ -36,14 +36,6 @@ public class ServerInfo
 
    private final PagingManager pagingManager;
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    public ServerInfo(final HornetQServer server, final PagingManager pagingManager)
    {
       this.server = server;

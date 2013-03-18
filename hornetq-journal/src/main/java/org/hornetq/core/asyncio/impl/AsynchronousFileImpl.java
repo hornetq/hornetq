@@ -195,7 +195,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       this(writeExecutor, pollerExecutor, null);
    }
 
-   public void open(final String fileName, final int maxIO) throws HornetQException
+   public void open(final String fileName1, final int maxIOArgument) throws HornetQException
    {
       writeLock.lock();
 
@@ -206,14 +206,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
             throw new IllegalStateException("AsynchronousFile is already opened");
          }
 
-         this.maxIO = maxIO;
+         this.maxIO = maxIOArgument;
          maxIOSemaphore = new Semaphore(this.maxIO);
 
-         this.fileName = fileName;
+         this.fileName = fileName1;
 
          try
          {
-            handler = AsynchronousFileImpl.init(fileName, this.maxIO, HornetQJournalLogger.LOGGER);
+            handler = AsynchronousFileImpl.init(fileName1, this.maxIO, HornetQJournalLogger.LOGGER);
          }
          catch (HornetQException e)
          {
@@ -223,7 +223,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
                ex = new HornetQException(e.getType(),
                                          "Can't initialize AIO. Currently AIO in use = " + AsynchronousFileImpl.totalMaxIO.get() +
                                                   ", trying to allocate more " +
-                                                  maxIO,
+                                                  maxIOArgument,
                                          e);
             }
             else
