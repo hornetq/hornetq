@@ -27,11 +27,12 @@ import org.hornetq.core.filter.Filter;
 public interface Consumer
 {
    /**
-    * There was a change on semantic during 2.3 here.
-    * We now first accept the message, and the actual deliver is done as part of proceedDeliver
-    * This is to avoid holding a lock on the queues while the delivery is being accomplished
-    * To avoid a lock on the queue in case of unbehaved consumers
-    *
+    * There was a change on semantic during 2.3 here.<br/>
+    * We now first accept the message, and the actual deliver is done as part of
+    * {@link #proceedDeliver(MessageReference)}. This is to avoid holding a lock on the queues while
+    * the delivery is being accomplished To avoid a lock on the queue in case of misbehaving
+    * consumers.
+    * <p>
     * This should return busy if handle is called before proceed deliver is called
     * @param reference
     * @return

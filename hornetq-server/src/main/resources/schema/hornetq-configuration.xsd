@@ -570,16 +570,18 @@
           </xsd:simpleType>
         </xsd:element>
 
-        <xsd:element name="journal-buffer-timeout" type="xsd:long" default="20000" maxOccurs="1" minOccurs="0">
+        <xsd:element name="journal-buffer-timeout" type="xsd:long" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-timeout">
             <xsd:documentation>The timeout (in nanoseconds) used to flush internal buffers on the
-            journal.
+            journal. The exact default value depend on whether the
+            journal is ASYNCIO or NIO.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="journal-buffer-size" type="xsd:long" default="128" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size">
+        <xsd:element name="journal-buffer-size" type="xsd:long" default="501760" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size"
+          hq:default="(490 KiB)">
             <xsd:documentation>The size of the internal buffer on the journal in KiB.
             </xsd:documentation>
           </xsd:annotation>
@@ -638,28 +640,29 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="journal-max-io" type="xsd:int" default="500" maxOccurs="1" minOccurs="0">
+        <xsd:element name="journal-max-io" type="xsd:int" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-max-io">
             <xsd:documentation>the maximum number of write requests that can be in the AIO queue at
-            any one time</xsd:documentation>
+            any one time. Default is 500 for AIO and 1 for NIO.</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="perf-blast-pages" type="xsd:int" maxOccurs="1" minOccurs="0">
+        <xsd:element name="perf-blast-pages" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="XXX">
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xsd:boolean">
+        <xsd:element name="run-sync-speed-test" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="XXX">
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xsd:long">
-          <xsd:annotation hq:linkend="XXX">
-            <xsd:documentation>XXX</xsd:documentation>
+        <xsd:element name="server-dump-interval" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="XXX" hq:default="(ms)">
+            <xsd:documentation>Interval to log server specific information (e.g. memory usage
+            etc)</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -671,7 +674,7 @@
         </xsd:element>
 
         <xsd:element name="memory-measure-interval" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="perf-tuning.memory">
+          <xsd:annotation hq:linkend="perf-tuning.memory" hq:default="(ms)">
             <xsd:documentation>frequency to sample JVM memory in ms (or -1 to disable memory
             sampling)</xsd:documentation>
           </xsd:annotation>
@@ -989,20 +992,21 @@
       </xsd:element>
 
       <xsd:element name="confirmation-window-size" type="xsd:int"     maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+        <xsd:annotation hq:default="(bytes, 1024 * 1024)">
+          <xsd:documentation>Once the bridge has received this many
+          bytes, it sends a confirmation</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="user" type="xsd:string"       maxOccurs="1" minOccurs="0">
+      <xsd:element name="user" type="xsd:string" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>username, if unspecified the cluster-user is used</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="password" type="xsd:string"                  maxOccurs="1" minOccurs="0">
+      <xsd:element name="password" type="xsd:string" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>password, if unspecified the cluster-password is used</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1066,9 +1070,9 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="min-large-message-size" type="xsd:int"  maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+      <xsd:element name="min-large-message-size" type="xsd:int" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="large-messages" hq:default="(bytes)">
+          <xsd:documentation>Messages larger than this are considered large-messages</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1086,19 +1090,20 @@
 
       <xsd:element name="retry-interval-multiplier" type="xsd:double" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>multiplier to apply to the retry-interval</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
       <xsd:element name="max-retry-interval" type="xsd:long" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>Maximum value for retry-interval</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="reconnect-attempts" type="xsd:long" maxOccurs="1" minOccurs="0">
+      <xsd:element name="reconnect-attempts" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>How many attempts should be made to
+          reconnect after failure</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1157,15 +1162,16 @@
             <xsd:sequence>
               <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="0"/>
             </xsd:sequence>
-            <xsd:attribute name="allow-direct-connections-only" type="xsd:boolean"
+            <xsd:attribute name="allow-direct-connections-only" default="false" type="xsd:boolean"
                            use="optional">
               <xsd:annotation>
-                <xsd:documentation>XXX</xsd:documentation>
+                <xsd:documentation>restricts cluster connections to the
+                listed connector-ref's</xsd:documentation>
               </xsd:annotation>
             </xsd:attribute>
           </xsd:complexType>
         </xsd:element>
-        <xsd:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
+        <xsd:element name="discovery-group-ref" maxOccurs="1" minOccurs="0">
           <xsd:complexType>
             <xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
               <xsd:annotation>
@@ -1294,13 +1300,13 @@
 
         <xsd:element name="redelivery-delay-multiplier" type="xsd:double"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>multipler to apply to the "redelivery-delay"</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="max-redelivery-delay" type="xsd:long"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>XXX</xsd:documentation>
+            <xsd:documentation>Maximum value for the redelivery-delay</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -1397,14 +1403,14 @@
     <xsd:sequence>
       <xsd:element maxOccurs="1" minOccurs="1" name="factory-class" type="xsd:string">
         <xsd:annotation>
-          <xsd:documentation>Name of ConnectorService factory class</xsd:documentation>
+          <xsd:documentation>Name of the factory class of the ConnectorService</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="optional">
       <xsd:annotation>
-        <xsd:documentation>XXX</xsd:documentation>
+        <xsd:documentation>name of the connector service</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>
