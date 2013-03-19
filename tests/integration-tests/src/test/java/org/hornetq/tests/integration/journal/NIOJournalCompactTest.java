@@ -1734,7 +1734,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    {
       Configuration config = createBasicConfig();
       config.setJournalFileSize(100 * 1024);
-      System.out.println(config.getJournalDirectory());
       config.setJournalSyncNonTransactional(false);
       config.setJournalSyncTransactional(false);
 //      config.setJournalBufferTimeout_NIO(2000000000);
@@ -1873,15 +1872,15 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       compactorThread.join();
 
+      storage.stop();
+
       executor.shutdown();
 
-      assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
+      assertTrue("executor terminated", executor.awaitTermination(10, TimeUnit.SECONDS));
 
       deleteExecutor.shutdown();
 
-      assertTrue(deleteExecutor.awaitTermination(30, TimeUnit.SECONDS));
-
-      storage.stop();
+      assertTrue("delete executor terminated", deleteExecutor.awaitTermination(30, TimeUnit.SECONDS));
    }
 
    @Override
