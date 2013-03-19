@@ -36,20 +36,6 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
       return UnitTestCase.createAIOTestSuite(AIOJournalCompactTest.class);
    }
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
@@ -64,9 +50,4 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
                                           100000,
                                           false);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

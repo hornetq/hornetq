@@ -40,10 +40,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.xa.Xid;
@@ -2251,6 +2253,17 @@ public class JournalStorageManager implements StorageManager
          // Must call close to make sure last id is persisted
          idGenerator.persistCurrentID();
       }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      executor.execute(new Runnable() {
+         @Override
+         public void run()
+         {
+            latch.countDown();
+         }
+      });
+
+      latch.await(30, TimeUnit.SECONDS);
 
       if (replicator != null)
          replicator.stop();
