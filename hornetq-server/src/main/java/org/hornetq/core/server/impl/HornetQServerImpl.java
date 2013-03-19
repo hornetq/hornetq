@@ -1425,7 +1425,6 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       executorFactory = new OrderedExecutorFactory(threadPool);
-
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
          new HornetQThreadFactory("HornetQ-scheduled-threads",
             false,
@@ -2329,7 +2328,7 @@ public class HornetQServerImpl implements HornetQServer
             clusterManager.start();
 
             replicationEndpoint.setQuorumManager(quorumManager);
-
+            replicationEndpoint.setExecutor(executorFactory.getExecutor());
             EndpointConnector endpointConnector = new EndpointConnector();
 
             HornetQServerLogger.LOGGER.backupServerStarted(version.getFullVersion(), nodeManager.getNodeId());
