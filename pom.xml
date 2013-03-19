@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.0.BETA-SNAPSHOT</version>
+   <version>2.3.0.CR2</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -32,13 +32,13 @@
    <properties>
       <netty.version>3.6.2.Final</netty.version>
       <netty.version.string>${netty.version}-c0d783c</netty.version.string>
-      <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
+      <hornetq.version.versionName>black'n'yellow2</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>123</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>CR2</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>CR2</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
