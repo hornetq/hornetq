@@ -58,8 +58,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
-import org.hornetq.jms.server.HornetQJMSServerBundle;
-import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
@@ -72,6 +70,8 @@ import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
 import org.hornetq.jms.persistence.impl.nullpm.NullJMSStorageManagerImpl;
+import org.hornetq.jms.server.HornetQJMSServerBundle;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -129,7 +129,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private XmlDeployer jmsDeployer;
 
-   private boolean started;
+   private boolean startCalled;
 
    private boolean active;
 
@@ -213,18 +213,19 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void activated()
    {
-      if (!started)
+      if (!startCalled)
       {
          return;
       }
 
-      active = true;
+      try{
 
-      jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
+         jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
 
-      try
-      {
          jmsManagementService.registerJMSServer(this);
+
+         // Must be set to active before calling initJournal
+         active = true;
 
          initJournal();
 
@@ -259,10 +260,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cachedCommands.clear();
 
          recoverJndiBindings();
-
       }
       catch (Exception e)
       {
+         active = false;
          HornetQJMSServerLogger.LOGGER.jmsDeployerStartError(e);
       }
    }
@@ -440,9 +441,23 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    // HornetQComponent implementation -----------------------------------
 
+   /**
+    * Notice that this component has a {@link #startCalled} boolean to control its internal
+    * life-cycle, but its {@link #isStarted()} returns the value of {@code server.isStarted()} and
+    * not the value of {@link #startCalled}.
+    * <p>
+    * This method and {@code server.start()} are interdependent in the following way:
+    * <ol>
+    * <li>{@link JMSServerManagerImpl#start()} is called, it sets {@code start_called=true}, and
+    * calls {@link HornetQServerImpl#start()}
+    * <li>{@link HornetQServerImpl#start()} will call {@link JMSServerManagerImpl#activated()}
+    * <li>{@link JMSServerManagerImpl#activated()} checks the value of {@link #startCalled}, which
+    * must already be true.
+    * </ol>
+    */
    public synchronized void start() throws Exception
    {
-      if (started)
+      if (startCalled)
       {
          return;
       }
@@ -455,20 +470,26 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       }
 
-      started = true;
+        deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+        server.registerActivateCallback(this);
+      /**
+       * See this method's javadoc.
+       * <p>
+       * start_called MUST be set to true BEFORE calling server.start().
+       * <p>
+       * start_called is NOT used at {@link JMSServerManager#isStarted()}
+       */
+      startCalled = true;
+        server.start();
 
-      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
 
-      server.registerActivateCallback(this);
-
-      server.start();
    }
 
    public void stop() throws Exception
    {
       synchronized (this)
       {
-         if (!started)
+         if (!startCalled)
          {
             return;
          }
@@ -478,11 +499,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             registry.close();
          }
-
-         started = false;
+         server.stop();
+         startCalled = false;
       }
-
-      server.stop();
    }
 
    public boolean isStarted()
