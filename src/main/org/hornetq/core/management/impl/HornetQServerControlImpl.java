@@ -728,7 +728,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          SimpleString queueName = new SimpleString(name);
 
-         server.destroyQueue(queueName, null);
+         server.destroyQueue(queueName, null, true);
       }
       finally
       {

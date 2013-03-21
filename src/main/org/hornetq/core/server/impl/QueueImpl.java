@@ -58,6 +58,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
+import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Future;
@@ -109,7 +110,7 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
-   private volatile boolean pageDestroyed = false;
+   private volatile boolean queueDestroyed = false;
    
    private final PageSubscription pageSubscription;
 
@@ -1093,7 +1094,7 @@ public class QueueImpl implements Queue
          {
             MessageReference ref = iter.next();
 
-            if (ref.isPaged() && pageDestroyed)
+            if (ref.isPaged() && queueDestroyed)
             {
                // this means the queue is being removed
                // hence paged references are just going away through
@@ -1135,7 +1136,7 @@ public class QueueImpl implements Queue
          }
 
 
-         if (pageIterator != null && !pageDestroyed)
+         if (pageIterator != null && !queueDestroyed)
          {
             // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
             while (pageIterator.hasNext())
@@ -1171,7 +1172,7 @@ public class QueueImpl implements Queue
 
 
 
-         if (filter != null && !pageDestroyed && pageSubscription != null)
+         if (filter != null && !queueDestroyed && pageSubscription != null)
          {
             scheduleDepage(false);
          }
@@ -1187,7 +1188,6 @@ public class QueueImpl implements Queue
 
    public void destroyPaging() throws Exception
    {
-      this.pageDestroyed = true;
       // it could be null on embedded or certain unit tests
       if (pageSubscription != null)
       {
@@ -1304,6 +1304,39 @@ public class QueueImpl implements Queue
          iter.close();
       }
    }
+   
+   public void deleteQueue() throws Exception
+   {
+      synchronized (this)
+      {
+         this.queueDestroyed = true;
+      }
+      
+      Transaction tx = new BindingsTransactionImpl(storageManager);
+      
+      try
+      {
+         postOffice.removeBinding(name, tx);
+         
+         deleteAllReferences();
+   
+         destroyPaging();
+   
+         if (isDurable())
+         {
+            storageManager.deleteQueueBinding(tx.getID(), getID());
+            tx.setContainsPersistent();
+         }
+         
+         tx.commit();
+      }
+      catch (Exception e)
+      {
+         tx.rollback();
+         throw e;
+      }
+
+   }
 
    public void expireReferences()
    {
@@ -1315,7 +1348,7 @@ public class QueueImpl implements Queue
          return;
       }
 
-      if (expiryScanner.scannerRunning.get() == 0)
+      if (!queueDestroyed && expiryScanner.scannerRunning.get() == 0)
       {
          expiryScanner.scannerRunning.incrementAndGet();
          getExecutor().execute(expiryScanner);
@@ -1330,6 +1363,11 @@ public class QueueImpl implements Queue
       {
          synchronized (QueueImpl.this)
          {
+            if (queueDestroyed)
+            {
+               return;
+            }
+            
             LinkedListIterator<MessageReference> iter = iterator();
 
             try
