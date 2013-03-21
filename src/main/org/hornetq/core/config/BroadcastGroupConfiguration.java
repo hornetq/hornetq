@@ -34,9 +34,9 @@ public class BroadcastGroupConfiguration implements Serializable
 
    private String name;
 
-   private String localBindAddress;
+   private transient String localBindAddress;
 
-   private int localBindPort;
+   private transient int localBindPort;
 
    private String groupAddress;
 

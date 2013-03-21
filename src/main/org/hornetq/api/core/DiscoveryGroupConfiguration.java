@@ -37,7 +37,7 @@ public class DiscoveryGroupConfiguration implements Serializable
 
    private String name;
 
-   private String localBindAddress;
+   private transient String localBindAddress;
 
    private String groupAddress;
 
@@ -161,8 +161,6 @@ public class DiscoveryGroupConfiguration implements Serializable
       if (groupPort != that.groupPort) return false;
       if (refreshTimeout != that.refreshTimeout) return false;
       if (groupAddress != null ? !groupAddress.equals(that.groupAddress) : that.groupAddress != null) return false;
-      if (localBindAddress != null ? !localBindAddress.equals(that.localBindAddress) : that.localBindAddress != null)
-         return false;
       if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
       return true;
@@ -172,7 +170,6 @@ public class DiscoveryGroupConfiguration implements Serializable
    public int hashCode()
    {
       int result = name != null ? name.hashCode() : 0;
-      result = 31 * result + (localBindAddress != null ? localBindAddress.hashCode() : 0);
       result = 31 * result + (groupAddress != null ? groupAddress.hashCode() : 0);
       result = 31 * result + groupPort;
       result = 31 * result + (int) (refreshTimeout ^ (refreshTimeout >>> 32));
