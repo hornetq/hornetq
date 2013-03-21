@@ -41,6 +41,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -55,6 +56,7 @@ import org.hornetq.core.server.impl.QueueFactoryImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -87,6 +89,8 @@ public class HangConsumerTest extends ServiceTestBase
       super.setUp();
 
       Configuration config = createDefaultConfig(false);
+      
+      config.setMessageExpiryScanPeriod(10);
       
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
@@ -173,6 +177,167 @@ public class HangConsumerTest extends ServiceTestBase
       }
    }
 
+
+   public void testHangOnPaging() throws Exception
+   {
+      AddressSettings setting = new AddressSettings();
+      setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      setting.setMaxSizeBytes(100 * 1024);
+      setting.setPageSizeBytes(10024);
+      server.getAddressSettingsRepository().addMatch("#", setting);
+      queue = server.createQueue(QUEUE, QUEUE, null, true, false);
+      
+      System.out.println("maxSize = " + queue.getPageSubscription().getPagingStore().getMaxSize());
+      queue.getPageSubscription().getPagingStore().startPaging();
+      try
+      {
+
+         locator.setBlockOnDurableSend(false);
+         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSession sessionProducer = factory.createSession(false, false, false);
+
+         ServerLocator consumerLocator = createInVMNonHALocator();
+         ClientSessionFactory factoryConsumer = consumerLocator.createSessionFactory();
+         ClientSession sessionConsumer = factoryConsumer.createSession();
+
+         ClientProducer producer = sessionProducer.createProducer(QUEUE);
+
+         ClientConsumer consumer = sessionConsumer.createConsumer(QUEUE);
+
+         for (int i = 0; i < 2000; i++)
+         {
+            ClientMessage msg = sessionProducer.createMessage(true);
+            msg.getBodyBuffer().writeBytes(new byte[1024]);
+            msg.setExpiration(System.currentTimeMillis() + 5000);
+            producer.send(msg);
+         }
+         sessionProducer.commit();
+
+         sessionConsumer.start();
+
+         for (int i = 0; i < 500; i++)
+         {
+            ClientMessage msg = consumer.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+         }
+
+         sessionConsumer.commit();
+         for (int i = 0; i < 500; i++)
+         {
+            ClientMessage msg = consumer.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+         }
+
+         sessionConsumer.rollback();
+         
+         PageCursorProviderImpl cursor = (PageCursorProviderImpl)queue.getPageSubscription().getPagingStore().getCursorProvier();
+         
+         cursor.clearCache();
+
+         try
+         {
+            server.destroyQueue(QUEUE);
+         }
+         catch (Exception e)
+         {
+         }
+         
+         cursor.clearCache();
+  
+         consumer.close();
+         server.stop();
+         
+         server.start();
+      }
+      finally
+      {
+
+      }
+   }
+
+   public void testHangOnPaging2() throws Exception
+   {
+      AddressSettings setting = new AddressSettings();
+      setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      setting.setMaxSizeBytes(100 * 1024);
+      setting.setPageSizeBytes(10024);
+      server.getAddressSettingsRepository().addMatch("#", setting);
+      queue = server.createQueue(QUEUE, QUEUE, null, true, false);
+      server.createQueue(QUEUE, QUEUE.concat("hold-address"), new SimpleString("hq=0"), true, false);
+      
+      System.out.println("maxSize = " + queue.getPageSubscription().getPagingStore().getMaxSize());
+      queue.getPageSubscription().getPagingStore().startPaging();
+      try
+      {
+
+         locator.setBlockOnDurableSend(false);
+         ClientSessionFactory factory = locator.createSessionFactory();
+         ClientSession sessionProducer = factory.createSession(false, false, false);
+
+         ServerLocator consumerLocator = createInVMNonHALocator();
+         consumerLocator.setBlockOnAcknowledge(true);
+         ClientSessionFactory factoryConsumer = consumerLocator.createSessionFactory();
+         ClientSession sessionConsumer = factoryConsumer.createSession(false, false, 0);
+
+         ClientProducer producer = sessionProducer.createProducer(QUEUE);
+
+         ClientConsumer consumer = sessionConsumer.createConsumer(QUEUE);
+
+         for (int i = 0; i < 2000; i++)
+         {
+            ClientMessage msg = sessionProducer.createMessage(true);
+            msg.getBodyBuffer().writeBytes(new byte[1024]);
+            msg.setExpiration(System.currentTimeMillis() + 5000);
+            producer.send(msg);
+         }
+         sessionProducer.commit();
+
+         sessionConsumer.start();
+         
+         ClientMessage msg = null;
+         for (int i = 0; i < 500; i++)
+         {
+            msg = consumer.receive(5000);
+            assertNotNull(msg);
+         }
+
+         PageCursorProviderImpl cursor = (PageCursorProviderImpl)queue.getPageSubscription().getPagingStore().getCursorProvier();
+         
+         boolean exceptionHappened = false;
+         try
+         {
+            server.destroyQueue(QUEUE);
+         }
+         catch (Exception e)
+         {
+            exceptionHappened = true;
+         }
+         
+         assertTrue(exceptionHappened);
+         
+         cursor.clearCache();
+         
+         Thread.sleep(500);
+         
+         msg.acknowledge();
+         
+         sessionConsumer.commit();
+         
+         consumer.close();
+
+         server.destroyQueue(QUEUE);
+         
+         server.stop();
+         server.start();
+      }
+      finally
+      {
+
+      }
+   }
+   
    /**
     * 
     */
@@ -295,10 +460,14 @@ public class HangConsumerTest extends ServiceTestBase
 
       }
 
-      ((HornetQServerImpl)server).replaceQueueFactory(new LocalFactory(server.getExecutorFactory(),
-                                                                       server.getScheduledPool(),
-                                                                       server.getAddressSettingsRepository(),
-                                                                       server.getStorageManager()));
+      LocalFactory queueFactory = new LocalFactory(server.getExecutorFactory(),
+                       server.getScheduledPool(),
+                       server.getAddressSettingsRepository(),
+                       server.getStorageManager());
+      
+      queueFactory.setPostOffice(server.getPostOffice());
+      
+      ((HornetQServerImpl)server).replaceQueueFactory(queueFactory);
 
       queue = server.createQueue(QUEUE, QUEUE, null, true, false);
 

@@ -467,7 +467,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             try
             {
-               server.destroyQueue(bindingName);
+               server.destroyQueue(bindingName, null, false);
             }
             catch (HornetQException e)
             {
@@ -507,7 +507,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
       }
 
-      server.destroyQueue(name, this);
+      server.destroyQueue(name, this, true);
 
       TempQueueCleanerUpper cleaner = this.tempQueueCleannerUppers.remove(name);
 
