@@ -78,8 +78,8 @@ public interface Queue extends Bindable
 
    /** This method will make sure that any pending message (including paged message) will be delivered  */
    void forceDelivery();
-
-   void destroyPaging() throws Exception;
+   
+   void deleteQueue() throws Exception;
 
    /**
     * It will wait for up to 10 seconds for a flush on the executors and return the number of messages added.
@@ -135,8 +135,6 @@ public interface Queue extends Bindable
    MessageReference removeReferenceWithID(long id) throws Exception;
 
    MessageReference getReference(long id);
-
-   int deleteAllReferences() throws Exception;
 
    boolean deleteReference(long messageID) throws Exception;
 
