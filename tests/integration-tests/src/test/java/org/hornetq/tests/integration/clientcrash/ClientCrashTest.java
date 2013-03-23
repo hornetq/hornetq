@@ -107,7 +107,6 @@ public class ClientCrashTest extends ClientTestBase
       assertActiveConnections(1, timeout);
       assertActiveSession(1, timeout);
 
-      session.deleteQueue(ClientCrashTest.QUEUE);
       session.close();
 
       // the crash must have been detected and the resources cleaned up
@@ -154,7 +153,7 @@ public class ClientCrashTest extends ClientTestBase
 
       assertEquals("delivery count", 2, messageFromClient.getDeliveryCount());
 
-      session.deleteQueue(ClientCrashTest.QUEUE2);
+      consumer.close();
       session.close();
    }
 

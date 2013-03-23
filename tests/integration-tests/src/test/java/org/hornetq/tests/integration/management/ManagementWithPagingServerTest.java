@@ -91,7 +91,6 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       array = new JSONArray(result);
       
       assertEquals(0, array.length());
-      session1.deleteQueue(queue);
    }
 
    public void testListMessagesAsJSONWithFilter() throws Exception
@@ -145,8 +144,6 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       ReceiverThread receiver = new ReceiverThread(queue, num, 1);
       receiver.start();
       receiver.join();
-
-      session1.deleteQueue(queue);
    }
 
    //In this test, the management api listMessageAsJSon is called while
@@ -163,9 +160,9 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       int num = 1000;
-      SenderThread sender = new SenderThread(address, num, 30);
+      SenderThread sender = new SenderThread(address, num, 1);
 
-      ReceiverThread receiver = new ReceiverThread(queue, num, 60);
+      ReceiverThread receiver = new ReceiverThread(queue, num, 2);
       
       ManagementThread console = new ManagementThread(queueControl);
       
@@ -184,15 +181,11 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       
       receiver.join();
       assertNull(receiver.getError());
-      
-      Thread.sleep(1000);
-      
+
       console.exit();
       console.join();
       
       assertNull(console.getError());
-
-      session1.deleteQueue(queue);
    }
 
    protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
@@ -225,8 +218,8 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       server.start();
 
       locator = createInVMNonHALocator();
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnNonDurableSend(false);
       locator.setConsumerWindowSize(0);
       ClientSessionFactory sf = createSessionFactory(locator);
       session1 = sf.createSession(false, true, false);
