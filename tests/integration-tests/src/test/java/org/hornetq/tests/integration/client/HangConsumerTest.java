@@ -41,6 +41,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
@@ -56,6 +57,7 @@ import org.hornetq.core.server.impl.QueueFactoryImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -65,7 +67,6 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.ReusableLatch;
-
 
 /**
  * This test will simulate a consumer hanging on the delivery packet due to unbehaved clients
@@ -89,18 +90,20 @@ public class HangConsumerTest extends ServiceTestBase
       super.setUp();
 
       Configuration config = createDefaultConfig(false);
-      
+
+      config.setMessageExpiryScanPeriod(10);
+
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
       config.setPersistenceEnabled(true);
 
       server = new MyHornetQServer(config, ManagementFactory.getPlatformMBeanServer(), securityManager);
-      
+
       server.start();
 
       locator = createInVMNonHALocator();
    }
-   
+
    protected void tearDown() throws Exception
    {
       server.stop();
@@ -116,7 +119,7 @@ public class HangConsumerTest extends ServiceTestBase
 
          ClientSessionFactory factory = locator.createSessionFactory();
          ClientSession sessionProducer = factory.createSession(false, false, false);
-         
+
          ServerLocator consumerLocator = createInVMNonHALocator();
          ClientSessionFactory factoryConsumer = consumerLocator.createSessionFactory();
          ClientSession sessionConsumer = factoryConsumer.createSession();
@@ -126,13 +129,13 @@ public class HangConsumerTest extends ServiceTestBase
          ClientConsumer consumer = sessionConsumer.createConsumer(QUEUE);
 
          producer.send(sessionProducer.createMessage(true));
-         
+
          blockConsumers();
-         
+
          sessionProducer.commit();
 
          sessionConsumer.start();
-         
+
          awaitBlocking();
 
          // this shouldn't lock
@@ -144,7 +147,7 @@ public class HangConsumerTest extends ServiceTestBase
          queue.getMessageCount(1);
 
          releaseConsumers();
-         
+
          // a rollback to make sure everything will be reset on the deliveries
          // and that both consumers will receive each a message
          // this is to guarantee the server will have both consumers regsitered
@@ -165,7 +168,7 @@ public class HangConsumerTest extends ServiceTestBase
 
          sessionProducer.commit();
          sessionConsumer.commit();
-         
+
          sessionProducer.close();
          sessionConsumer.close();
       }
@@ -176,7 +179,7 @@ public class HangConsumerTest extends ServiceTestBase
    }
 
    /**
-    * 
+    *
     */
    protected void releaseConsumers()
    {
@@ -211,19 +214,19 @@ public class HangConsumerTest extends ServiceTestBase
       {
 
          /**
-         * @param id
-         * @param address
-         * @param name
-         * @param filter
-         * @param pageSubscription
-         * @param durable
-         * @param temporary
-         * @param scheduledExecutor
-         * @param postOffice
-         * @param storageManager
-         * @param addressSettingsRepository
-         * @param executor
-         */
+          * @param id
+          * @param address
+          * @param name
+          * @param filter
+          * @param pageSubscription
+          * @param durable
+          * @param temporary
+          * @param scheduledExecutor
+          * @param postOffice
+          * @param storageManager
+          * @param addressSettingsRepository
+          * @param executor
+          */
          public MyQueueWithBlocking(final long id,
                                     final SimpleString address,
                                     final SimpleString name,
@@ -238,17 +241,17 @@ public class HangConsumerTest extends ServiceTestBase
                                     final Executor executor)
          {
             super(id,
-                  address,
-                  name,
-                  filter,
-                  pageSubscription,
-                  durable,
-                  temporary,
-                  scheduledExecutor,
-                  postOffice,
-                  storageManager,
-                  addressSettingsRepository,
-                  executor);
+               address,
+               name,
+               filter,
+               pageSubscription,
+               durable,
+               temporary,
+               scheduledExecutor,
+               postOffice,
+               storageManager,
+               addressSettingsRepository,
+               executor);
          }
 
          @Override
@@ -281,26 +284,30 @@ public class HangConsumerTest extends ServiceTestBase
                                   final boolean temporary)
          {
             queue = new MyQueueWithBlocking(persistenceID,
-                                            address,
-                                            name,
-                                            filter,
-                                            pageSubscription,
-                                            durable,
-                                            temporary,
-                                            scheduledExecutor,
-                                            postOffice,
-                                            storageManager,
-                                            addressSettingsRepository,
-                                            executorFactory.getExecutor());
+               address,
+               name,
+               filter,
+               pageSubscription,
+               durable,
+               temporary,
+               scheduledExecutor,
+               postOffice,
+               storageManager,
+               addressSettingsRepository,
+               executorFactory.getExecutor());
             return queue;
          }
 
       }
 
-      ((HornetQServerImpl)server).replaceQueueFactory(new LocalFactory(server.getExecutorFactory(),
-                                                                       server.getScheduledPool(),
-                                                                       server.getAddressSettingsRepository(),
-                                                                       server.getStorageManager()));
+      LocalFactory queueFactory = new LocalFactory(server.getExecutorFactory(),
+         server.getScheduledPool(),
+         server.getAddressSettingsRepository(),
+         server.getStorageManager());
+
+      queueFactory.setPostOffice(server.getPostOffice());
+
+      ((HornetQServerImpl)server).replaceQueueFactory(queueFactory);
 
       queue = server.createQueue(QUEUE, QUEUE, null, true, false);
 
@@ -342,12 +349,12 @@ public class HangConsumerTest extends ServiceTestBase
       {
       }
 
+      blocked.release();
+
       server.stop();
 
-      blocked.release();
-      
       tDelete.join();
-      
+
       session.close();
 
       // a duplicate binding would impede the server from starting
@@ -374,10 +381,10 @@ public class HangConsumerTest extends ServiceTestBase
 
       producer.send(session.createMessage(true));
       session.commit();
-      
+
       long queueID = server.getStorageManager().generateUniqueID();
       long txID = server.getStorageManager().generateUniqueID();
-      
+
 
       // Forcing a situation where the server would unexpectedly create a duplicated queue. The server should still start normally
       LocalQueueBinding newBinding = new LocalQueueBinding(QUEUE, new QueueImpl(queueID, QUEUE, QUEUE, null, true, false, null, null, null, null, null), server.getNodeID());
@@ -462,13 +469,13 @@ public class HangConsumerTest extends ServiceTestBase
          SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getBindingsDir(), null);
 
          JournalImpl messagesJournal = new JournalImpl(1024 * 1024,
-                                                       2,
-                                                       0,
-                                                       0,
-                                                       messagesFF,
-                                                       "hornetq-bindings",
-                                                       "bindings",
-                                                       1);
+            2,
+            0,
+            0,
+            messagesFF,
+            "hornetq-bindings",
+            "bindings",
+            1);
 
          messagesJournal.start();
 
@@ -492,15 +499,16 @@ public class HangConsumerTest extends ServiceTestBase
       }
    }
 
-   
+
+
    ReusableLatch inCall = new ReusableLatch(1);
    Semaphore callbackSemaphore = new Semaphore(1);
-   
-   
+
+
    class MyCallback implements SessionCallback
    {
       final SessionCallback targetCallback;
-      
+
       MyCallback(SessionCallback parameter)
       {
          this.targetCallback = parameter;
@@ -592,14 +600,14 @@ public class HangConsumerTest extends ServiceTestBase
       {
          targetCallback.removeReadyListener(listener);
       }
-      
-      
+
+
    }
-   
+
    class MyHornetQServer extends HornetQServerImpl
    {
-      
-      
+
+
 
       public MyHornetQServer(Configuration configuration,
                              MBeanServer mbeanServer,
@@ -612,26 +620,26 @@ public class HangConsumerTest extends ServiceTestBase
       protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
       {
          return new ServerSessionImpl(name,
-               username,
-               password,
-               minLargeMessageSize,
-               autoCommitSends,
-               autoCommitAcks,
-               preAcknowledge,
-               getConfiguration().isPersistDeliveryCountBeforeDelivery(),
-               xa,
-               connection,
-               getStorageManager(),
-               getPostOffice(),
-               getResourceManager(),
-               getSecurityStore(),
-               getManagementService(),
-               this,
-               getConfiguration().getManagementAddress(),
-               defaultAddress == null ? null
-                  : new SimpleString(defaultAddress),
-               new MyCallback(callback),
-               context);
+            username,
+            password,
+            minLargeMessageSize,
+            autoCommitSends,
+            autoCommitAcks,
+            preAcknowledge,
+            getConfiguration().isPersistDeliveryCountBeforeDelivery(),
+            xa,
+            connection,
+            getStorageManager(),
+            getPostOffice(),
+            getResourceManager(),
+            getSecurityStore(),
+            getManagementService(),
+            this,
+            getConfiguration().getManagementAddress(),
+            defaultAddress == null ? null
+               : new SimpleString(defaultAddress),
+            new MyCallback(callback),
+            context);
       }
    }
 

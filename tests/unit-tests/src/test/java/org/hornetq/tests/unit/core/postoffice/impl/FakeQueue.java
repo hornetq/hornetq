@@ -509,6 +509,12 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public void deleteQueue() throws Exception
+   {
+      // no-op
+   }
+
+   @Override
    public long getInstantMessageCount()
    {
       // no-op

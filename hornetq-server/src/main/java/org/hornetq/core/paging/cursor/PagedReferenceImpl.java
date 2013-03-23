@@ -214,9 +214,19 @@ public class PagedReferenceImpl implements PagedReference
    @Override
    public String toString()
    {
+      String msgToString;
+      try
+      {
+         msgToString = getPagedMessage().toString();
+      }
+      catch (Throwable e)
+      {
+         // in case of an exception because of a missing page, we just want toString to return null
+         msgToString = "error:" + e.getMessage();
+      }
       return "PagedReferenceImpl [position=" + position +
              ", message=" +
-             getPagedMessage() +
+             msgToString +
              ", deliveryTime=" +
              deliveryTime +
              ", persistedCount=" +
