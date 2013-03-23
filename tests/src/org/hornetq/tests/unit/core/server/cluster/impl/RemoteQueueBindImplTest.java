@@ -737,6 +737,16 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          return 0;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#deleteQueue()
+       */
+      @Override
+      public void deleteQueue() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
 }
