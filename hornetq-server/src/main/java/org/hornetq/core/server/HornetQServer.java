@@ -179,7 +179,7 @@ public interface HornetQServer extends HornetQComponent
 
    void destroyQueue(SimpleString queueName) throws Exception;
 
-   void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
+   void destroyQueue(SimpleString queueName, ServerSession session, boolean checkConsumerCount) throws Exception;
 
    String destroyConnectionWithSessionMetadata(String metaKey, String metaValue) throws Exception;
 

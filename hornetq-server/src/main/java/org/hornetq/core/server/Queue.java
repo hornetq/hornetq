@@ -78,6 +78,8 @@ public interface Queue extends Bindable
    /** This method will make sure that any pending message (including paged message) will be delivered  */
    void forceDelivery();
 
+   void deleteQueue() throws Exception;
+
    void destroyPaging() throws Exception;
 
    /**

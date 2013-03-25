@@ -899,7 +899,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       jmsManagementService.unregisterQueue(name);
 
-      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null);
+      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null, true);
 
       storage.deleteDestination(PersistedType.Queue, name);
 
@@ -933,7 +933,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             // We can't remove the remote binding. As this would be the bridge associated with the topic on this case
             if (binding.getType() != BindingType.REMOTE_QUEUE)
             {
-               server.destroyQueue(SimpleString.toSimpleString(queueName), null);
+               server.destroyQueue(SimpleString.toSimpleString(queueName), null, true);
             }
          }
       }
