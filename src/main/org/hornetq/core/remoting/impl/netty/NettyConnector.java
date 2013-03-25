@@ -160,6 +160,8 @@ public class NettyConnector extends AbstractConnector
 
    private ScheduledFuture<?> batchFlusherFuture;
 
+   private int connectTimeoutMillis;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -272,6 +274,9 @@ public class NettyConnector extends AbstractConnector
                                                        TransportConstants.DEFAULT_BATCH_DELAY,
                                                        configuration);
 
+      connectTimeoutMillis = ConfigurationHelper.getIntProperty(TransportConstants.NETTY_CONNECT_TIMEOUT,
+                                                                TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT, 
+                                                                configuration);
       this.closeExecutor = closeExecutor;
 
       virtualExecutor = new VirtualExecutorService(threadPool);
@@ -338,6 +343,12 @@ public class NettyConnector extends AbstractConnector
       bootstrap = new ClientBootstrap(channelFactory);
 
       bootstrap.setOption("tcpNoDelay", tcpNoDelay);
+
+      if (connectTimeoutMillis != -1)
+      {
+         bootstrap.setOption("connectTimeoutMillis", connectTimeoutMillis);
+      }
+
       if (tcpReceiveBufferSize != -1)
       {
          bootstrap.setOption("receiveBufferSize", tcpReceiveBufferSize);
@@ -840,6 +851,12 @@ public class NettyConnector extends AbstractConnector
       }
 
       return result;
+   }
+
+   //for test purpose only
+   public ClientBootstrap getBootStrap()
+   {
+      return bootstrap;
    }
 
 }
