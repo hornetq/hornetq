@@ -580,9 +580,9 @@ public class JournalStorageManager implements StorageManager
     */
    private void getLargeMessageInformation() throws Exception
    {
-      final String prefix = "msg";
       Map<Long, Pair<String, Long>> largeMessages = new HashMap<Long, Pair<String, Long>>();
-      List<String> filenames = largeMessagesFactory.listFiles(prefix);
+      // only send durable messages...
+      List<String> filenames = largeMessagesFactory.listFiles(LargeMessageExtension.DURABLE.getExtension());
 
       List<Long> idList = new ArrayList<Long>();
       for (String filename : filenames)
@@ -684,7 +684,7 @@ public class JournalStorageManager implements StorageManager
       {
          // Note: (https://issues.jboss.org/browse/HORNETQ-1059)
          // We have to replicate durable and non-durable messages on paging
-         // since acknowledgements are written using the page-position.
+         // since acknowledgments are written using the page-position.
          // Say you are sending durable and non-durable messages to a page
          // The ACKs would be done to wrong positions, and the backup would be a mess
 
@@ -808,8 +808,7 @@ public class JournalStorageManager implements StorageManager
       {
          long recordID = generateUniqueID();
 
-         messageJournal.appendAddRecord(recordID,
- JournalRecordIds.ADD_LARGE_MESSAGE_PENDING,
+         messageJournal.appendAddRecord(recordID, JournalRecordIds.ADD_LARGE_MESSAGE_PENDING,
             new PendingLargeMessageEncoding(messageID),
             true,
             getContext(true));
@@ -2397,18 +2396,18 @@ public class JournalStorageManager implements StorageManager
    {
       if (durable)
       {
-         return createFileForLargeMessage(messageID, ".msg");
+         return createFileForLargeMessage(messageID, LargeMessageExtension.DURABLE);
       }
       else
       {
-         return createFileForLargeMessage(messageID, ".tmp");
+         return createFileForLargeMessage(messageID, LargeMessageExtension.TEMPORARY);
       }
    }
 
 
-   public SequentialFile createFileForLargeMessage(final long messageID, String extension)
+   public SequentialFile createFileForLargeMessage(final long messageID, LargeMessageExtension extension)
    {
-      return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
+      return largeMessagesFactory.createSequentialFile(messageID + extension.getExtension(), -1);
    }
 
 

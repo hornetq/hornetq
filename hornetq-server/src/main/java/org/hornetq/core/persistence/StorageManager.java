@@ -197,7 +197,28 @@ public interface StorageManager extends HornetQComponent
     */
    LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
 
-   SequentialFile createFileForLargeMessage(final long messageID, String extension);
+   enum LargeMessageExtension
+   {
+      DURABLE(".msg"), TEMPORARY(".tmp"), SYNC(".sync");
+      final String extension;
+      private LargeMessageExtension(String extension)
+      {
+         this.extension = extension;
+      }
+
+      public String getExtension()
+      {
+         return extension;
+      }
+   }
+
+   /**
+    * Instantiates a SequentialFile to be used for storing a {@link LargeServerMessage}.
+    * @param messageID the id of the message
+    * @param extension the extension to add to the file
+    * @return
+    */
+   SequentialFile createFileForLargeMessage(final long messageID, LargeMessageExtension extension);
 
    void prepare(long txID, Xid xid) throws Exception;
 
