@@ -502,9 +502,7 @@ public final class ReplicationManager implements HornetQComponent
     */
    public Map.Entry<Long, Pair<String, Long>> getNextLargeMessageToSync()
    {
-      synchronized (largeMessageSyncGuard)
-      {
-         Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
+      Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
          if (!iter.hasNext())
          {
             return null;
@@ -513,7 +511,6 @@ public final class ReplicationManager implements HornetQComponent
          Entry<Long, Pair<String, Long>> entry = iter.next();
          iter.remove();
          return entry;
-      }
    }
 
    public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
@@ -639,11 +636,9 @@ public final class ReplicationManager implements HornetQComponent
    public void sendLargeMessageIdListMessage(Map<Long, Pair<String, Long>> largeMessages)
    {
       ArrayList<Long> idsToSend;
-      synchronized (largeMessageSyncGuard)
-      {
-         largeMessagesToSync.putAll(largeMessages);
+      largeMessagesToSync.putAll(largeMessages);
          idsToSend = new ArrayList<Long>(largeMessagesToSync.keySet());
-      }
+
       if (enabled)
          sendReplicatePacket(new ReplicationStartSyncMessage(idsToSend));
    }
