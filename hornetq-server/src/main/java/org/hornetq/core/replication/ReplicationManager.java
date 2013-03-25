@@ -25,12 +25,10 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
@@ -125,10 +123,6 @@ public final class ReplicationManager implements HornetQComponent
    private CoreRemotingConnection remotingConnection;
 
    private volatile boolean inSync = true;
-
-   private Long largeMessageCurrentlySendingId = Long.valueOf(-1);
-   private volatile boolean largeMessageInterruptSend = false;
-   private final Semaphore largeMessageSemaphore = new Semaphore(1);
 
    /**
     * @param remotingConnection
@@ -258,29 +252,6 @@ public final class ReplicationManager implements HornetQComponent
    {
       if (enabled)
       {
-         if (inSync)
-         {
-            synchronized (largeMessageSyncGuard)
-            {
-               if (largeMessageCurrentlySendingId.equals(messageId))
-               {
-                  // deal with it
-                  largeMessageInterruptSend = true;
-                  try {
-                     largeMessageSemaphore.acquire();
-                     largeMessageSemaphore.release();
-                  }
-                  catch (InterruptedException e)
-                  {
-                     throw new HornetQInterruptedException(e);
-                  }
-               }
-               else if (largeMessagesToSync.containsKey(messageId))
-               {
-                  largeMessagesToSync.remove(messageId);
-               }
-            }
-         }
          sendReplicatePacket(new ReplicationLargeMessageEndMessage(messageId));
       }
    }
@@ -531,10 +502,7 @@ public final class ReplicationManager implements HornetQComponent
     */
    public Map.Entry<Long, Pair<String, Long>> getNextLargeMessageToSync()
    {
-
-      synchronized (largeMessageSyncGuard)
-      {
-         Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
+      Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
          if (!iter.hasNext())
          {
             return null;
@@ -542,28 +510,14 @@ public final class ReplicationManager implements HornetQComponent
 
          Entry<Long, Pair<String, Long>> entry = iter.next();
          iter.remove();
-         largeMessageCurrentlySendingId = entry.getKey();
          return entry;
-      }
    }
 
    public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
    {
       if (enabled)
       {
-         largeMessageSemaphore.acquire();
-         try
-         {
-            sendLargeFile(null, null, id, file, size);
-         }
-         finally
-         {
-            largeMessageSemaphore.release();
-            synchronized (largeMessageSyncGuard)
-            {
-               largeMessageCurrentlySendingId = Long.valueOf(-1);
-            }
-         }
+         sendLargeFile(null, null, id, file, size);
       }
    }
 
@@ -619,13 +573,6 @@ public final class ReplicationManager implements HornetQComponent
                      buffer.limit(toSend);
                   }
                   buffer.rewind();
-
-                  if (largeMessageInterruptSend)
-                  {
-                     // if the file is open at the backup, this will close it
-                     sendReplicatePacket(new ReplicationSyncFileMessage(null, null, id, -1, null));
-                     return;
-                  }
 
                   // sending -1 or 0 bytes will close the file at the backup
                   sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, toSend, buffer));
@@ -689,11 +636,9 @@ public final class ReplicationManager implements HornetQComponent
    public void sendLargeMessageIdListMessage(Map<Long, Pair<String, Long>> largeMessages)
    {
       ArrayList<Long> idsToSend;
-      synchronized (largeMessageSyncGuard)
-      {
-         largeMessagesToSync.putAll(largeMessages);
+      largeMessagesToSync.putAll(largeMessages);
          idsToSend = new ArrayList<Long>(largeMessagesToSync.keySet());
-      }
+
       if (enabled)
          sendReplicatePacket(new ReplicationStartSyncMessage(idsToSend));
    }
@@ -717,5 +662,13 @@ public final class ReplicationManager implements HornetQComponent
    public CoreRemotingConnection getBackupTransportConnection()
    {
       return remotingConnection;
+   }
+
+   /**
+    * @return
+    */
+   public boolean isSynchronizing()
+   {
+      return inSync;
    }
 }

@@ -146,8 +146,6 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -594,7 +592,8 @@ public class HornetQServerImpl implements HornetQServer
       // *************************************************************************************************************
 
       if (storageManager != null)
-      storageManager.clearContext();
+         storageManager.clearContext();
+
       //before we stop any components deactivate any callbacks
       callDeActiveCallbacks();
 
