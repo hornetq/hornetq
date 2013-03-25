@@ -144,6 +144,10 @@ public class TransportConstants
 
    public static final String STOMP_ENABLE_MESSAGE_ID = "stomp-enable-message-id";
 
+   public static final String NETTY_CONNECT_TIMEOUT = "connect-timeout-millis";
+
+   public static final int DEFAULT_NETTY_CONNECT_TIMEOUT = -1;
+
    static
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
@@ -198,6 +202,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.BATCH_DELAY);
       allowableConnectorKeys.add(Configuration.PROP_MASK_PASSWORD);
       allowableConnectorKeys.add(Configuration.PROP_PASSWORD_CODEC);
+      allowableConnectorKeys.add(TransportConstants.NETTY_CONNECT_TIMEOUT);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }
