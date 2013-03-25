@@ -672,6 +672,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       clearData(getTestDir());
    }
 
+   private final void deleteTmpDir()
+   {
+      File file = new File(getTestDir());
+      deleteDirectory(file);
+   }
+
    protected void clearData(final String testDir1)
    {
       // Need to delete the root
@@ -1105,7 +1111,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       checkFilesUsage();
          // System.out.println("SLEEP!");
          // Thread.sleep(60000);
-      clearData();
+         deleteTmpDir();
       super.tearDown();
    }
    }
