@@ -1670,23 +1670,23 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       List<ConnectionFactoryConfiguration> connectionFactoryConfigurations = config.getConnectionFactoryConfigurations();
-      for (ConnectionFactoryConfiguration config : connectionFactoryConfigurations)
+      for (ConnectionFactoryConfiguration cfConfig : connectionFactoryConfigurations)
       {
-         createConnectionFactory(false, config, config.getBindings());
+         createConnectionFactory(false, cfConfig, cfConfig.getBindings());
       }
 
       List<JMSQueueConfiguration> queueConfigs = config.getQueueConfigurations();
-      for (JMSQueueConfiguration config : queueConfigs)
+      for (JMSQueueConfiguration qConfig : queueConfigs)
       {
-         String[] bindings = config.getBindings();
-         createQueue(false, config.getName(), config.getSelector(), config.isDurable(), bindings);
+         String[] bindings = qConfig.getBindings();
+         createQueue(false, qConfig.getName(), qConfig.getSelector(), qConfig.isDurable(), bindings);
       }
 
       List<TopicConfiguration> topicConfigs = config.getTopicConfigurations();
-      for (TopicConfiguration config : topicConfigs)
+      for (TopicConfiguration tConfig : topicConfigs)
       {
-         String[] bindings = config.getBindings();
-         createTopic(false, config.getName(), bindings);
+         String[] bindings = tConfig.getBindings();
+         createTopic(false, tConfig.getName(), bindings);
       }
    }
 
