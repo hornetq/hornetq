@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -213,6 +214,8 @@ public class JournalStorageManager implements StorageManager
 
    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings =
       new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
+
+   private final Set<Long> largeMessagesToDelete = new HashSet<Long>();
 
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
    {
@@ -433,8 +436,8 @@ public class JournalStorageManager implements StorageManager
             if (replicator != null)
             {
                replicator.sendSynchronizationDone(nodeID);
+               performCachedLargeMessageDeletes();
             }
-            // XXX HORNETQ-720 SEND a compare journals message?
          }
          finally
          {
@@ -485,7 +488,6 @@ public class JournalStorageManager implements StorageManager
    @Override
    public void stopReplication()
    {
-
       storageManagerLock.writeLock().lock();
       try
       {
@@ -502,11 +504,39 @@ public class JournalStorageManager implements StorageManager
             HornetQServerLogger.LOGGER.errorStoppingReplicationManager(e);
          }
          replicator = null;
+         // delete inside the writeLock. Avoids a lot of state checking and races with
+         // startReplication.
+         // This method should not be called under normal circumstances
+         performCachedLargeMessageDeletes();
       }
       finally
       {
          storageManagerLock.writeLock().unlock();
       }
+   }
+
+   /**
+    * Assumption is that this is only called with a writeLock on the StorageManager.
+    */
+   private void performCachedLargeMessageDeletes()
+   {
+      for (Long largeMsgId : largeMessagesToDelete)
+      {
+         SequentialFile msg = createFileForLargeMessage(largeMsgId, LargeMessageExtension.DURABLE);
+         try
+         {
+            msg.delete();
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.journalErrorDeletingMessage(e, largeMsgId);
+         }
+         if (replicator != null)
+         {
+            replicator.largeMessageDelete(largeMsgId);
+         }
+      }
+      largeMessagesToDelete.clear();
    }
 
    /**
@@ -581,8 +611,8 @@ public class JournalStorageManager implements StorageManager
    private void getLargeMessageInformation() throws Exception
    {
       Map<Long, Pair<String, Long>> largeMessages = new HashMap<Long, Pair<String, Long>>();
-      // only send durable messages...
-      List<String> filenames = largeMessagesFactory.listFiles(LargeMessageExtension.DURABLE.getExtension());
+      // only send durable messages... // listFiles append a "." to anything...
+      List<String> filenames = largeMessagesFactory.listFiles("msg");
 
       List<Long> idList = new ArrayList<Long>();
       for (String filename : filenames)
@@ -2248,10 +2278,12 @@ public class JournalStorageManager implements StorageManager
          return;
       }
 
-      if (!ioCriticalError && journalLoaded && idGenerator != null)
+      if (!ioCriticalError)
       {
+         performCachedLargeMessageDeletes();
          // Must call close to make sure last id is persisted
-         idGenerator.persistCurrentID();
+         if (journalLoaded && idGenerator != null)
+            idGenerator.persistCurrentID();
       }
 
       final CountDownLatch latch = new CountDownLatch(1);
@@ -2347,12 +2379,32 @@ public class JournalStorageManager implements StorageManager
    // Package protected ---------------------------------------------
 
    // This should be accessed from this package only
-   void deleteLargeMessageFile(final LargeServerMessage largeServerMessageImpl) throws HornetQException
+   void deleteLargeMessageFile(final LargeServerMessage largeServerMessage) throws HornetQException
    {
-      final SequentialFile file = largeServerMessageImpl.getFile();
+      final SequentialFile file = largeServerMessage.getFile();
       if (file == null)
       {
          return;
+      }
+
+      if (largeServerMessage.isDurable() && isReplicated())
+      {
+         readLock();
+         try
+         {
+            if (isReplicated() && replicator.isSynchronizing())
+            {
+               synchronized (largeMessagesToDelete)
+               {
+                  largeMessagesToDelete.add(Long.valueOf(largeServerMessage.getMessageID()));
+               }
+               return;
+            }
+         }
+         finally
+         {
+            readUnLock();
+         }
       }
       Runnable deleteAction = new Runnable()
       {
@@ -2365,7 +2417,7 @@ public class JournalStorageManager implements StorageManager
                {
                   if (replicator != null)
                   {
-                     replicator.largeMessageDelete(largeServerMessageImpl.getMessageID());
+                     replicator.largeMessageDelete(largeServerMessage.getMessageID());
                   }
                   file.delete();
                }
@@ -2376,7 +2428,7 @@ public class JournalStorageManager implements StorageManager
             }
             catch (Exception e)
             {
-               HornetQServerLogger.LOGGER.journalErrorDeletingMessage(e, largeServerMessageImpl.getMessageID());
+               HornetQServerLogger.LOGGER.journalErrorDeletingMessage(e, largeServerMessage.getMessageID());
             }
          }
 
