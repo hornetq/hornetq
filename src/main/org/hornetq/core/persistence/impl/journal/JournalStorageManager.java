@@ -69,6 +69,7 @@ import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
+import org.hornetq.core.paging.cursor.impl.PageSubscriptionCounterImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
@@ -3469,6 +3470,8 @@ public class JournalStorageManager implements StorageManager
       List<JournalFile> files = journal.orderFiles();
 
       final PrintStream out = System.out;
+      
+      final Map<Long, PageSubscriptionCounterImpl> counters = new HashMap<Long, PageSubscriptionCounterImpl>();
 
       for (JournalFile file : files)
       {
@@ -3480,11 +3483,13 @@ public class JournalStorageManager implements StorageManager
             public void onReadUpdateRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
             {
                out.println("operation@UpdateTX;txID=" + transactionID + "," + describeRecord(recordInfo));
+               checkRecordCounter(recordInfo);
             }
 
             public void onReadUpdateRecord(final RecordInfo recordInfo) throws Exception
             {
                out.println("operation@Update;" + describeRecord(recordInfo));
+               checkRecordCounter(recordInfo);
             }
 
             public void onReadRollbackRecord(final long transactionID) throws Exception
@@ -3520,20 +3525,77 @@ public class JournalStorageManager implements StorageManager
             public void onReadAddRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
             {
                out.println("operation@AddRecordTX;txID=" + transactionID + "," + describeRecord(recordInfo));
+               checkRecordCounter(recordInfo);
             }
 
             public void onReadAddRecord(final RecordInfo recordInfo) throws Exception
             {
                out.println("operation@AddRecord;" + describeRecord(recordInfo));
+               checkRecordCounter(recordInfo);
             }
 
             public void markAsDataFile(final JournalFile file)
             {
             }
+            
+            public void checkRecordCounter(RecordInfo info)
+            {
+               if (info.getUserRecordType() == JournalStorageManager.PAGE_CURSOR_COUNTER_VALUE)
+               {
+                  PageCountRecord encoding = (PageCountRecord)newObjectEncoding(info);
+                  long queueIDForCounter = encoding.queueID;
+
+                  PageSubscriptionCounterImpl subsCounter = lookupCounter(counters, queueIDForCounter);
+                  
+                  if (subsCounter.getValue() != 0 && subsCounter.getValue() != encoding.value);
+                  {
+                     out.println("####### Counter replace wrongly on queue " + queueIDForCounter + " oldValue=" + subsCounter.getValue() + " newValue=" + encoding.value);
+                  }
+                  
+                  subsCounter.loadValue(info.id, encoding.value);
+                  subsCounter.processReload();
+                  out.print("#Counter queue " + queueIDForCounter + " value=" + subsCounter.getValue() + ", result=" + subsCounter.getValue());
+                  if (subsCounter.getValue() < 0)
+                  {
+                     out.println(" #NegativeCounter!!!!");
+                  }
+                  else
+                  {
+                     out.println();
+                  }
+                  out.println();
+               }
+               else if (info.getUserRecordType() == JournalStorageManager.PAGE_CURSOR_COUNTER_INC)
+               {
+                  PageCountRecordInc encoding = (PageCountRecordInc)newObjectEncoding(info);
+                  long queueIDForCounter = encoding.queueID;
+
+                  PageSubscriptionCounterImpl subsCounter = lookupCounter(counters, queueIDForCounter);
+                  
+                  subsCounter.loadInc(info.id, (int)encoding.value);
+                  subsCounter.processReload();
+                  out.print("#Counter queue " + queueIDForCounter +  " value=" + subsCounter.getValue() + " increased by " + encoding.value);
+                  if (subsCounter.getValue() < 0)
+                  {
+                     out.println(" #NegativeCounter!!!!");
+                  }
+                  else
+                  {
+                     out.println();
+                  }
+                  out.println();
+               }
+            }
          });
       }
 
       out.println();
+      
+      if (counters.size() != 0)
+      {
+         out.println("#Counters during initial load:");
+         printCounters(out, counters);
+      }
 
       out.println("### Surviving Records Summary ###");
 
@@ -3566,9 +3628,15 @@ public class JournalStorageManager implements StorageManager
 
          }
       }, false);
+      
+      
+      counters.clear();
 
       for (RecordInfo info : records)
       {
+         PageSubscriptionCounterImpl subsCounter = null;
+         long queueIDForCounter = 0;
+         
          Object o = newObjectEncoding(info);
          if (info.getUserRecordType() == JournalStorageManager.ADD_MESSAGE)
          {
@@ -3601,7 +3669,41 @@ public class JournalStorageManager implements StorageManager
                messageRefCounts.put(ref.refEncoding.queueID, count - 1);
             }
          }
+         else if (info.getUserRecordType() == JournalStorageManager.PAGE_CURSOR_COUNTER_VALUE)
+         {
+            PageCountRecord encoding = (PageCountRecord)o;
+            queueIDForCounter = encoding.queueID;
+
+            subsCounter = lookupCounter(counters, queueIDForCounter);
+            
+            subsCounter.loadValue(info.id, encoding.value);
+            subsCounter.processReload();
+         }
+         else if (info.getUserRecordType() == JournalStorageManager.PAGE_CURSOR_COUNTER_INC)
+         {
+            PageCountRecordInc encoding = (PageCountRecordInc)o;
+            queueIDForCounter = encoding.queueID;
+
+            subsCounter = lookupCounter(counters, queueIDForCounter);
+            
+            subsCounter.loadInc(info.id, (int)encoding.value);
+            subsCounter.processReload();
+         }
+
          out.println(describeRecord(info, o));
+         
+         if (subsCounter != null)
+         {
+            out.println("##SubsCounter for queue=" + queueIDForCounter + ", value=" + subsCounter.getValue());
+            out.println();
+         }
+      }
+      
+      
+      if (counters.size() > 0)
+      {
+         out.println("### Page Counters");
+         printCounters(out, counters);
       }
 
       out.println();
@@ -3666,6 +3768,36 @@ public class JournalStorageManager implements StorageManager
       }
 
       journal.stop();
+   }
+
+   /**
+    * @param out
+    * @param counters
+    */
+   protected static void printCounters(final PrintStream out, final Map<Long, PageSubscriptionCounterImpl> counters)
+   {
+      for (Map.Entry<Long, PageSubscriptionCounterImpl> entry: counters.entrySet())
+      {
+         out.println("Queue " + entry.getKey() + " value=" + entry.getValue().getValue());
+      }
+   }
+
+   /**
+    * @param counters
+    * @param queueIDForCounter
+    * @return
+    */
+   protected static PageSubscriptionCounterImpl lookupCounter(Map<Long, PageSubscriptionCounterImpl> counters,
+                                                              long queueIDForCounter)
+   {
+      PageSubscriptionCounterImpl subsCounter;
+      subsCounter = counters.get(queueIDForCounter);
+      if (subsCounter == null)
+      {
+         subsCounter = new PageSubscriptionCounterImpl(null, null, null, false, -1);
+         counters.put(queueIDForCounter, subsCounter);
+      }
+      return subsCounter;
    }
 
    private void installLargeMessageConfirmationOnTX(Transaction tx, long recordID)
