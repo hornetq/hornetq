@@ -28,6 +28,14 @@ public interface SequentialFileFactory
 {
    SequentialFile createSequentialFile(String fileName, int maxIO);
 
+   /**
+    * Lists files that end with the given extension.
+    * <p>
+    * This method inserts a ".' before the extension.
+    * @param extension
+    * @return
+    * @throws Exception
+    */
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();

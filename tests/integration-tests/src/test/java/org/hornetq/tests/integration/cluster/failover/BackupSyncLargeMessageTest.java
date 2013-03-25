@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
@@ -63,31 +64,10 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       assertEquals("we really ought to delete these after delivery", target, getAllMessageFileIds(dir).size());
    }
 
-   public void testDeleteLargeMessagesDuringSync() throws Exception
-   {
-      File backupLMDir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
-      File liveLMDir = new File(liveServer.getServer().getConfiguration().getLargeMessagesDirectory());
-      assertEquals("Should not have any large messages... previous test failed to clean up?", 0,
-                   getAllMessageFileIds(backupLMDir).size());
-      createProducerSendSomeMessages();
-
-      backupServer.start();
-      waitForComponent(backupServer.getServer(), 5);
-      receiveMsgsInRange(0, getNumberOfMessages() / 2);
-
-      finishSyncAndFailover();
-      backupServer.stop();
-      Set<Long> backupLM = getAllMessageFileIds(backupLMDir);
-      Set<Long> liveLM = getAllMessageFileIds(liveLMDir);
-      assertEquals("live and backup should have the same files ", liveLM, backupLM);
-      assertEquals("we really ought to delete these after delivery: " + backupLM, getNumberOfMessages() / 2,
-                   backupLM.size());
-   }
-
    /**
     * @throws Exception
     */
-   public void testDeleteLargeMessagesDuringSyncLarger() throws Exception
+   public void testDeleteLargeMessagesDuringSync() throws Exception
    {
       setNumberOfMessages(200);
       File backupLMdir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
@@ -100,7 +80,10 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       waitForComponent(backupServer.getServer(), 5);
       receiveMsgsInRange(0, getNumberOfMessages() / 2);
 
-      finishSyncAndFailover();
+      startBackupFinishSyncing();
+      Thread.sleep(500);
+      liveServer.getServer().stop();
+      backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
       backupServer.stop();
 
       Set<Long> backupLM = getAllMessageFileIds(backupLMdir);

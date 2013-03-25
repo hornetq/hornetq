@@ -606,9 +606,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {
-      HornetQServerLogger.LOGGER.info("REND LM DELETE " + packet.getMessageId());
       final ReplicatedLargeMessage message = lookupLargeMessage(packet.getMessageId(), true);
-
       if (message != null)
       {
          executor.execute(new Runnable()

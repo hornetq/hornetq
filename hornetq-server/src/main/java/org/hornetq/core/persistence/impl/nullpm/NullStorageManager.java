@@ -565,7 +565,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public SequentialFile createFileForLargeMessage(final long messageID, final String extension)
+   public SequentialFile createFileForLargeMessage(final long messageID, final LargeMessageExtension extension)
    {
       throw new UnsupportedOperationException();
    }
