@@ -241,6 +241,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
    }
 
+   public void clearCache()
+   {
+      synchronized (softCache)
+      {
+         softCache.clear();
+      }
+   }
+
    public void processReload() throws Exception
    {
       Collection<PageSubscription> cursorList = this.activeCursors.values();
