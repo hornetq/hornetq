@@ -47,7 +47,6 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
@@ -56,6 +55,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeginMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
@@ -331,7 +332,6 @@ public final class ReplicationManager implements HornetQComponent
          }
          clearReplicationTokens();
       }
-
 
       RemotingConnection toStop = remotingConnection;
       if (toStop != null)
@@ -704,10 +704,10 @@ public final class ReplicationManager implements HornetQComponent
     * This notification allows the backup to skip quorum voting (or any other measure to avoid
     * 'split-brain') and do a faster fail-over.
     */
-   public void sendLiveIsStopping()
+   public void sendLiveIsStopping(final LiveStopping finalMessage)
    {
       if (enabled)
-         sendReplicatePacket(new LiveIsStoppingMessage());
+         sendReplicatePacket(new ReplicationLiveIsStoppingMessage(finalMessage));
    }
 
    /**

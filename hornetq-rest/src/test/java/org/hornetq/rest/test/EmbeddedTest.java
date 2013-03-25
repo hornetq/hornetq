@@ -1,5 +1,16 @@
 package org.hornetq.rest.test;
 
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
+
+import java.io.Serializable;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+
 import org.hornetq.rest.HttpHeaderProperty;
 import org.hornetq.rest.integration.EmbeddedRestHornetQJMS;
 import org.hornetq.spi.core.naming.BindingRegistry;
@@ -11,19 +22,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
-import java.io.Serializable;
-
-import static org.jboss.resteasy.test.TestPortProvider.*;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class EmbeddedTest
 {
@@ -100,7 +100,7 @@ public class EmbeddedTest
         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
+         TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
          res.releaseConnection();
@@ -117,7 +117,7 @@ public class EmbeddedTest
         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
+         TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
          res.releaseConnection();
@@ -134,7 +134,7 @@ public class EmbeddedTest
         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         TransformTest.Order order2 = (TransformTest.Order) res.getEntity(TransformTest.Order.class);
+         TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);
          Assert.assertEquals(order, order2);
          consumeNext = res.getLinkHeader().getLinkByTitle("consume-next");
          res.releaseConnection();

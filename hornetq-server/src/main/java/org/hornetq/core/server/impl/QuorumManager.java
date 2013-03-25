@@ -4,11 +4,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -22,10 +24,11 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.api.core.Pair;
 
 /**
  * Manages a quorum of servers used to determine whether a given server is running or not.
@@ -36,7 +39,7 @@ import org.hornetq.api.core.Pair;
  * <p>
  * If the live server does an orderly shutdown, it will explicitly notify the backup through the
  * replication channel. In this scenario, no voting takes place and the backup fails-over. See
- * {@link #failOver()}.
+ * {@link #failOver(boolean)}.
  * <p>
  * In case of
  * <ol>
@@ -68,13 +71,27 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    private final Object decisionGuard = new Object();
    private final NodeManager nodeManager;
+   private final ServerLocator serverLocator;
+   private final ScheduledExecutorService scheduledPool;
 
-   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, String identity, NodeManager nodeManager)
+   /**
+    * This is a safety net in case the live sends the first {@link ReplicationLiveIsStoppingMessage}
+    * with code {@link LiveStopping#STOP_CALLED} and crashes before sending the second with
+    * {@link LiveStopping#FAIL_OVER}.
+    * <p>
+    * If the second message does come within this dead line, we fail over anyway.
+    */
+   private static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
+
+   public QuorumManager(ServerLocator serverLocator, ExecutorService executor, ScheduledExecutorService scheduledPool,
+                        String identity, NodeManager nodeManager)
    {
       this.serverIdentity = identity;
       this.executor = executor;
+      this.scheduledPool = scheduledPool;
       this.latch = new CountDownLatch(1);
       this.nodeManager = nodeManager;
+      this.serverLocator = serverLocator;
       topology = serverLocator.getTopology();
    }
 
@@ -274,7 +291,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       //we may get called via multiple paths so need to guard
       synchronized (decisionGuard)
       {
-         if(signal == BACKUP_ACTIVATION.FAIL_OVER)
+         if (signal == BACKUP_ACTIVATION.FAIL_OVER)
          {
             return;
          }
@@ -334,9 +351,9 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    private void removeListener()
    {
-      if (connection == null)
-         return;
-      connection.removeFailureListener(this);
+      serverLocator.removeClusterTopologyListener(this);
+      if (connection != null)
+         connection.removeFailureListener(this);
    }
 
    /**
@@ -345,11 +362,27 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
     * The use case is for when the 'live' has an orderly shutdown, in which case it informs the
     * backup that it should fail-over.
     */
-   public synchronized void failOver()
+   public synchronized void failOver(LiveStopping finalMessage)
    {
       removeListener();
       signal = BACKUP_ACTIVATION.FAIL_OVER;
-      latch.countDown();
+      if (finalMessage == LiveStopping.FAIL_OVER)
+      {
+         latch.countDown();
+      }
+      if (finalMessage == LiveStopping.STOP_CALLED)
+      {
+         final CountDownLatch localLatch = latch;
+         scheduledPool.schedule(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               localLatch.countDown();
+            }
+
+         }, WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG, TimeUnit.SECONDS);
+      }
    }
 
    /**

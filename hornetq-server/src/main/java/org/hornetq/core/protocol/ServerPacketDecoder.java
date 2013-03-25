@@ -42,7 +42,7 @@ import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.LiveIsStoppingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
@@ -172,7 +172,7 @@ public class ServerPacketDecoder extends PacketDecoder
          }
          case PacketImpl.REPLICATION_SCHEDULED_FAILOVER:
          {
-            packet = new LiveIsStoppingMessage();
+            packet = new ReplicationLiveIsStoppingMessage();
             break;
          }
          default:

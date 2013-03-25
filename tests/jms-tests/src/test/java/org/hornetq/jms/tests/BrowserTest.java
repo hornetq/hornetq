@@ -37,23 +37,9 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class BrowserTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------------------------------------
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   // Public ---------------------------------------------------------------------------------------
-
-
+   Connection conn;
    public void testCreateBrowserOnNullDestination() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = getConnectionFactory().createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -67,14 +53,6 @@ public class BrowserTest extends JMSTestCase
          {
             // OK
          }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    public void testCreateBrowserOnNonExistentQueue() throws Exception
@@ -112,19 +90,15 @@ public class BrowserTest extends JMSTestCase
 
    public void testBrowse2() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = getConnectionFactory().createConnection();
+      conn = getConnectionFactory().createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
 
-         HornetQConnectionFactory cf = (HornetQConnectionFactory) getConnectionFactory();
+      HornetQConnectionFactory cf1 = (HornetQConnectionFactory)getConnectionFactory();
 
-         ClientSession coreSession = cf.getServerLocator().createSessionFactory().createSession(true, true);
+      ClientSession coreSession = cf1.getServerLocator().createSessionFactory().createSession(true, true);
 
          coreSession.start();
 
@@ -146,23 +120,10 @@ public class BrowserTest extends JMSTestCase
 
          System.out.println("Draining destination...");
          drainDestination(getConnectionFactory(), queue1);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    public void testBrowse() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = getConnectionFactory().createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -189,21 +150,10 @@ public class BrowserTest extends JMSTestCase
 
          System.out.println("Draining destination...");
          drainDestination(getConnectionFactory(), queue1);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    public void testBrowseWithSelector() throws Exception
    {
-      Connection conn = null;
-
       try
       {
          conn = getConnectionFactory().createConnection();
@@ -223,19 +173,12 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null)
-         {
-            conn.close();
-         }
-
          removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
    public void testGetEnumeration() throws Exception
    {
-      Connection conn = null;
-
       try
       {
          conn = getConnectionFactory().createConnection();
@@ -279,20 +222,23 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         if (conn != null)
-         {
-            conn.close();
-         }
-
          removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
       }
    }
 
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
+   @Override
+   protected void tearDown() throws Exception
+   {
+      try
+      {
+      if  (conn != null)
+      {
+            conn.close();
+         }
+      }
+      finally
+      {
+         super.tearDown();
+      }
+   }
 }

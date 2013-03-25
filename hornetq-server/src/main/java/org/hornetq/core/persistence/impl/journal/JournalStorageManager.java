@@ -93,6 +93,7 @@ import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.replication.ReplicatedJournal;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
@@ -2266,8 +2267,10 @@ public class JournalStorageManager implements StorageManager
       latch.await(30, TimeUnit.SECONDS);
 
       if (replicator != null)
+      {
+         replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
          replicator.stop();
-
+      }
       bindingsJournal.stop();
 
       messageJournal.stop();
