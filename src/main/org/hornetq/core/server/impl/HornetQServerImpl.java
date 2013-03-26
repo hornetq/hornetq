@@ -1659,7 +1659,7 @@ public class HornetQServerImpl implements HornetQServer
 
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
          
-         boolean isTopicIdentification = filter != null && filter.getFilterString() != null && filter.getFilterString().equals(GENERIC_IGNORED_FILTER.toString());
+         boolean isTopicIdentification = filter != null && filter.getFilterString() != null && filter.getFilterString().toString().equals(GENERIC_IGNORED_FILTER);
          
          if (postOffice.getBinding(queueBindingInfo.getQueueName()) != null)
          {
