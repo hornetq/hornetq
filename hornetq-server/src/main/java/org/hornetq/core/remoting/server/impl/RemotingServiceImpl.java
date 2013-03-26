@@ -278,6 +278,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public synchronized void freeze(final CoreRemotingConnection connectionToKeepOpen)
    {
+      if (!started)
+         return;
+      failureCheckAndFlushThread.close(false);
+
       for (Acceptor acceptor : acceptors)
       {
          try
@@ -316,11 +320,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void stop(final boolean criticalError) throws Exception
    {
-      if (!started)
-      {
-         return;
-      }
-
       if (!started)
       {
          return;
