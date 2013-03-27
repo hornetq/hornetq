@@ -770,7 +770,8 @@ public interface HornetQServerLogger extends BasicLogger
    void unableToStartBridge(@Cause Exception e, SimpleString name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222119, value = "No connector with name '{0}'. backup cannot be announced.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222119, value = "No connector with name {0}. backup cannot be announced.",
+            format = Message.Format.MESSAGE_FORMAT)
    void announceBackupNoConnector(String connectorName);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -810,15 +811,19 @@ public interface HornetQServerLogger extends BasicLogger
    void clusterConnectionNoForwardAddress();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222129, value =  "No connector with name '{0}'. The cluster connection will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222129, value = "No connector with name {0}. The cluster connection will not be deployed.",
+            format = Message.Format.MESSAGE_FORMAT)
    void clusterConnectionNoConnector(String connectorName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222130, value =   "Cluster Configuration  '{0}' already exists. The cluster connection will not be deployed." , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222130,
+            value = "Cluster Configuration  {0} already exists. The cluster connection will not be deployed.",
+            format = Message.Format.MESSAGE_FORMAT)
    void clusterConnectionAlreadyExists(String connectorName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222131, value =   "No discovery group with name '{0}'. The cluster connection will not be deployed." , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222131, value = "No discovery group with name {0}. The cluster connection will not be deployed.",
+            format = Message.Format.MESSAGE_FORMAT)
    void clusterConnectionNoDiscoveryGroup(String discoveryGroupName);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -826,11 +831,15 @@ public interface HornetQServerLogger extends BasicLogger
    void broadcastGroupAlreadyExists(String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222133, value =   "There is no connector deployed with name '{0}'. The broadcast group with name '{1}' will not be deployed."  , format = Message.Format.MESSAGE_FORMAT)
+   @Message(
+            id = 222133,
+            value = "There is no connector deployed with name {0}. The broadcast group with name {1} will not be deployed.",
+            format = Message.Format.MESSAGE_FORMAT)
    void broadcastGroupNoConnector(String connectorName, String bgName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222134, value =   "No connector defined with name '{0}'. The bridge will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222134, value = "No connector defined with name {0}. The bridge will not be deployed.",
+            format = Message.Format.MESSAGE_FORMAT)
    void bridgeNoConnector(String name);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1219,7 +1228,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 224058,
-      value = "Can't find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
+ value = "Cannot find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
       format = Message.Format.MESSAGE_FORMAT)
    void cantFindQueueOnPageComplete(long queueID);
 
