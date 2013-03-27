@@ -386,7 +386,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       started = false;
-
    }
 
    public boolean isStarted()
