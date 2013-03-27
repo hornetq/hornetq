@@ -230,15 +230,19 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          }
       }
 
-      for (BridgeConfiguration config : configuration.getBridgeConfigurations())
-      {
-         deployBridge(config, !backup);
-      }
-
+      deployConfiguredBridges();
 
       started = true;
    }
 
+   private final void deployConfiguredBridges() throws Exception {
+      if (backup) return;
+      for (BridgeConfiguration config : configuration.getBridgeConfigurations())
+      { 
+         deployBridge(config);
+      }
+   }
+   
    public void stop() throws Exception
    {
       synchronized (this)
@@ -329,8 +333,9 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    }
 
    // backup node becomes live
-   public synchronized void activate()
+   public synchronized void activate() throws Exception
    {
+      if (!started) return;
       if (backup)
       {
          backup = false;
@@ -359,17 +364,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             }
          }
 
-         for (Bridge bridge : bridges.values())
-         {
-            try
-            {
-               bridge.start();
-            }
-            catch (Exception e)
-            {
-               log.warn("unable to start bridge " + bridge.getName(), e);
-            }
-         }
+         deployConfiguredBridges();
       }
    }
 
@@ -391,7 +386,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       this.clusterLocators.remove(serverLocator);
    }
 
-   public synchronized void deployBridge(final BridgeConfiguration config, final boolean start) throws Exception
+   public synchronized void deployBridge(final BridgeConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
@@ -529,11 +524,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       managementService.registerBridge(bridge, config);
 
-      if (start)
-      {
-         bridge.start();
-      }
-
+      bridge.start();
    }
 
    public void destroyBridge(final String name) throws Exception

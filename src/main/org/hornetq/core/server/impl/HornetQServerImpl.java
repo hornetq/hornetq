@@ -1259,7 +1259,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (clusterManager != null)
       {
-         clusterManager.deployBridge(config, true);
+         clusterManager.deployBridge(config);
       }
    }
 
