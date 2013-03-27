@@ -44,7 +44,11 @@ public interface ClusterManager extends HornetQComponent
 
    Set<BroadcastGroup> getBroadcastGroups();
 
-   void activate();
+   /**
+    * Starts several cluster services. Used by shared-store backup for failover.
+    * @throws Exception 
+    */
+   void activate() throws Exception;
 
    void flushExecutor();
 
@@ -52,7 +56,7 @@ public interface ClusterManager extends HornetQComponent
 
    void deploy() throws Exception;
 
-   void deployBridge(BridgeConfiguration config, boolean start) throws Exception;
+   void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
 
