@@ -35,7 +35,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HandleStatus;
@@ -148,7 +147,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final SimpleString name,
                      final Queue queue,
                      final Executor executor,
-                     final SimpleString filterString,
+                     final Filter filter,
                      final SimpleString forwardingAddress,
                      final ScheduledExecutorService scheduledExecutor,
                      final Transformer transformer,
@@ -156,7 +155,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final String user,
                      final String password,
                      final boolean activated,
-                     final StorageManager storageManager) throws Exception
+                     final StorageManager storageManager)
    {
 
       this.reconnectAttempts = reconnectAttempts;
@@ -181,7 +180,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.scheduledExecutor = scheduledExecutor;
 
-      filter = FilterImpl.createFilter(filterString);
+      this.filter = filter;
 
       this.forwardingAddress = forwardingAddress;
 
