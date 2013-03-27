@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
@@ -521,7 +523,8 @@ public class ManagementServiceImpl implements ManagementService
    // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to
    // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
    // will throw an exception if the MBean has already been unregistered
-   public void unregisterFromJMX(final ObjectName objectName) throws Exception
+   public void unregisterFromJMX(final ObjectName objectName) throws MBeanRegistrationException,
+                                                             InstanceNotFoundException
    {
       if (!jmxManagementEnabled)
       {
