@@ -20,8 +20,8 @@ import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 
 /**
@@ -62,7 +62,7 @@ public class FilterImpl implements Filter
 
    private final SimpleString sfilterString;
 
-   private final Map<SimpleString, Identifier> identifiers = new HashMap<SimpleString, Identifier>();
+   private final Map<SimpleString, Identifier> identifiers;
 
    private final Object result;
 
@@ -89,30 +89,30 @@ public class FilterImpl implements Filter
       {
          return null;
       }
-      else
+
+      HashMap<SimpleString, Identifier> identifierMap = new HashMap<SimpleString, Identifier>();
+      Object result0;
+      try
       {
-         return new FilterImpl(filterStr);
+         result0 = new FilterParser().parse(filterStr, identifierMap);
       }
+      catch (Throwable e)
+      {
+         HornetQServerLogger.LOGGER.invalidFilter(e, filterStr);
+         throw HornetQMessageBundle.BUNDLE.invalidFilter(e, filterStr);
+      }
+      return new FilterImpl(filterStr, identifierMap, result0);
    }
 
    // Constructors ---------------------------------------------------
 
-   private FilterImpl(final SimpleString str) throws HornetQException
+   private FilterImpl(final SimpleString str, final HashMap<SimpleString, Identifier> identifierMap,
+                      final Object result0)
    {
       sfilterString = str;
-
-      try
-      {
-         result = new FilterParser().parse(sfilterString, identifiers);
-
-         resultType = result.getClass();
-      }
-      catch (Throwable e)
-      {
-         HornetQServerLogger.LOGGER.invalidFilter(e, str);
-
-         throw HornetQMessageBundle.BUNDLE.invalidFilter(e, str);
-      }
+      identifiers = identifierMap;
+      this.result = result0;
+      resultType = result.getClass();
    }
 
    // Filter implementation ---------------------------------------------------------------------
