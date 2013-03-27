@@ -258,12 +258,18 @@ public final class ClusterManager implements HornetQComponent
          }
       }
 
+      deployConfiguredBridges();
+      state = State.STARTED;
+   }
+
+   private final void deployConfiguredBridges() throws Exception
+   {
+      if (backup)
+         return;
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
-         deployBridge(config, !backup);
+         deployBridge(config);
       }
-
-      state = State.STARTED;
    }
 
    public void stop() throws Exception
@@ -352,12 +358,20 @@ public final class ClusterManager implements HornetQComponent
       return clusterConnections.get(name);
    }
 
-   // backup node becomes live
-   public synchronized void activate()
+   /**
+    * Activates several cluster services. Used by backups on failover.
+    * @throws Exception
+    */
+   public synchronized void activate() throws Exception
    {
+      if (state != State.STARTED && state != State.DEPLOYED)
+         return;
+
       if (backup)
       {
          backup = false;
+
+         deployConfiguredBridges();
 
          for (BroadcastGroup broadcastGroup : broadcastGroups.values())
          {
@@ -441,7 +455,7 @@ public final class ClusterManager implements HornetQComponent
       this.clusterLocators.remove(serverLocator);
    }
 
-   public synchronized void deployBridge(final BridgeConfiguration config, final boolean start) throws Exception
+   public synchronized void deployBridge(final BridgeConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
@@ -599,10 +613,7 @@ public final class ClusterManager implements HornetQComponent
 
       managementService.registerBridge(bridge, config);
 
-      if (start)
-      {
-         bridge.start();
-      }
+      bridge.start();
 
    }
 

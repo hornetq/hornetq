@@ -73,7 +73,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
    final String bridgeName = "bridge1";
    final String testAddress = "testAddress";
-   final String queueName0 = "queue0";
+   final String queueName = "queue0";
    final String forwardAddress = "forwardAddress";
 
    final long retryInterval = 50;
@@ -121,6 +121,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       return INVM_CONNECTOR_FACTORY;
    }
 
+   /**
+    * Backups must successfully deploy its bridges on fail-over.
+    * @see https://bugzilla.redhat.com/show_bug.cgi?id=900764
+    */
    public void testFailoverDeploysBridge() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager(false);
@@ -134,7 +138,41 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
       server1.getConfiguration().setConnectorConfigurations(connectors);
+      server2.getConfiguration().setConnectorConfigurations(connectors);
+      reconnectAttempts = -1;
 
+      BridgeConfiguration bridgeConfiguration = createBridgeConfig();
+      bridgeConfiguration.setQueueName(queueName);
+      List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+      bridgeConfigs.add(bridgeConfiguration);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server2.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
+      List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs0.add(queueConfig0);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
+      List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs1.add(queueConfig1);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs1);
+      server2.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+      startServers();
+
+      waitForServerStart(server0);
+      server0.stop(true);
+
+      waitForServerStart(server2);
+
+      locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server2tc));
+
+      ClientSessionFactory csf0 = addSessionFactory(locator.createSessionFactory(server2tc));
+
+      session0 = csf0.createSession(false, true, true);
+      Map<String, Bridge> bridges = server2.getClusterManager().getBridges();
+      assertTrue("backup must deploy bridge on failover", !bridges.isEmpty());
    }
 
    // Fail bridge and reconnecting immediately
@@ -160,12 +198,12 @@ public class BridgeReconnectTest extends BridgeTestBase
       bridgeConfigs.add(bridgeConfiguration);
       server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
-      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
@@ -181,17 +219,17 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server2tc));
 
-         ClientSessionFactory csf0 = addSessionFactory(locator.createSessionFactory(server2tc));
+      ClientSessionFactory csf0 = addSessionFactory(locator.createSessionFactory(server2tc));
 
       session0 = csf0.createSession(false, true, true);
 
-         ClientProducer prod0 = session0.createProducer(testAddress);
+      ClientProducer prod0 = session0.createProducer(testAddress);
 
-         ClientSessionFactory csf2 = addSessionFactory(locator.createSessionFactory(server2tc));
+      ClientSessionFactory csf2 = addSessionFactory(locator.createSessionFactory(server2tc));
 
       session2 = csf2.createSession(false, true, true);
 
-         ClientConsumer cons2 = session2.createConsumer(queueName0);
+      ClientConsumer cons2 = session2.createConsumer(queueName);
 
          session2.start();
 
@@ -221,7 +259,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
    private BridgeConfiguration createBridgeConfig()
    {
-      return new BridgeConfiguration(bridgeName, queueName0, forwardAddress, null, null,
+      return new BridgeConfiguration(bridgeName, queueName, forwardAddress, null, null,
                                      HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                      HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                      HornetQClient.DEFAULT_CONNECTION_TTL, retryInterval,
@@ -251,12 +289,12 @@ public class BridgeReconnectTest extends BridgeTestBase
       bridgeConfigs.add(bridgeConfiguration);
       server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
-      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
@@ -276,7 +314,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
-         ClientConsumer cons2 = session2.createConsumer(queueName0);
+      ClientConsumer cons2 = session2.createConsumer(queueName);
 
          session2.start();
 
@@ -319,12 +357,12 @@ public class BridgeReconnectTest extends BridgeTestBase
       bridgeConfigs.add(bridgeConfiguration);
       server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
-      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
@@ -340,7 +378,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
-         ClientConsumer cons1 = session1.createConsumer(queueName0);
+      ClientConsumer cons1 = session1.createConsumer(queueName);
 
          session1.start();
 
@@ -401,7 +439,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long clientFailureCheckPeriod = 1000;
 
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
+ queueName,
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
@@ -423,12 +461,12 @@ public class BridgeReconnectTest extends BridgeTestBase
       bridgeConfigs.add(bridgeConfiguration);
       server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
-      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
@@ -458,7 +496,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
       session1 = csf1.createSession(false, true, true);
 
-         ClientConsumer cons1 = session1.createConsumer(queueName0);
+      ClientConsumer cons1 = session1.createConsumer(queueName);
 
          session1.start();
 
@@ -534,12 +572,12 @@ public class BridgeReconnectTest extends BridgeTestBase
       bridgeConfigs.add(bridgeConfiguration);
       server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
-      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs0.add(queueConfig0);
       server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName0, null, true);
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
@@ -555,7 +593,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
-         ClientConsumer cons1 = session1.createConsumer(queueName0);
+      ClientConsumer cons1 = session1.createConsumer(queueName);
 
          session1.start();
 
