@@ -77,6 +77,106 @@ public class BridgeReconnectTest extends BridgeTestBase
          return InVMConnectorFactory.class.getName();
       }
    }
+   /**
+    * Backups must successfully deploy its bridges on fail-over.
+    * @see https://bugzilla.redhat.com/show_bug.cgi?id=900764
+    */
+   public void testFailoverDeploysBridge() throws Exception
+   {
+      NodeManager nodeManager = new InVMNodeManager();
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      HornetQServer server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
+
+      Map<String, Object> server2Params = new HashMap<String, Object>();
+      HornetQServer server2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
+
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
+      TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+      connectors.put(server1tc.getName(), server1tc);
+      connectors.put(server2tc.getName(), server2tc);
+
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
+      server2.getConfiguration().setConnectorConfigurations(connectors);
+      
+      final String bridgeName = "bridge1";
+      final String testAddress = "testAddress";
+      final String queueName = "queue0";
+      final String forwardAddress = "forwardAddress";
+
+      final long retryInterval = 50;
+      final double retryIntervalMultiplier = 1d;
+      final int reconnectAttempts = -1;
+      final int confirmationWindowSize = 1024;
+
+      ArrayList<String> staticConnectors = new ArrayList<String>();
+      staticConnectors.add(server1tc.getName());
+      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
+                                                                        queueName,
+                                                                        forwardAddress,
+                                                                        null,
+                                                                        null,
+                                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
+                                                                        retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                                                                        retryIntervalMultiplier,
+                                                                        reconnectAttempts,
+                                                                        true,
+                                                                        confirmationWindowSize,
+                                                                        staticConnectors,
+                                                                        false,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+
+      bridgeConfiguration.setQueueName(queueName);
+      List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+      bridgeConfigs.add(bridgeConfiguration);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server2.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
+      List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs0.add(queueConfig0);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
+      List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs1.add(queueConfig1);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs1);
+      server2.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+      server2.start();
+      server1.start();
+      server0.start();
+
+      waitForServerStart(server0);
+      server0.stop(true);
+
+      waitForServerStart(server2);
+      
+      ServerLocator locator = null;
+      try {
+         locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server2tc);
+
+         ClientSessionFactory csf0 = locator.createSessionFactory(server2tc);
+
+         ClientSession session0 = csf0.createSession(false, true, true);
+         Map<String, Bridge> bridges = server2.getClusterManager().getBridges();
+         assertTrue("backup must deploy bridge on failover", !bridges.isEmpty());
+      } finally {
+         locator.close();
+         server2.stop();
+         server1.stop();
+         server0.stop();
+      }
+   }
 
    // Fail bridge and reconnecting immediately
    public void testFailoverAndReconnectImmediately() throws Exception
