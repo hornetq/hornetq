@@ -46,18 +46,64 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 
 /**
  * A BridgeReconnectTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 20 Jan 2009 19:20:41
- *
- *
  */
 public class BridgeReconnectTest extends BridgeTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-   private final int NUM_MESSAGES = 100;
+   private static final int NUM_MESSAGES = 100;
+
+   Map<String, Object> server0Params;
+   Map<String, Object> server1Params;
+   Map<String, Object> server2Params;
+
+   HornetQServer server0;
+   HornetQServer server1;
+   HornetQServer server2;
+   ServerLocator locator;
+
+   ClientSession session0;
+   ClientSession session1;
+   ClientSession session2;
+
+   private TransportConfiguration server1tc;
+   private Map<String, TransportConfiguration> connectors;
+   private ArrayList<String> staticConnectors;
+
+   final String bridgeName = "bridge1";
+   final String testAddress = "testAddress";
+   final String queueName0 = "queue0";
+   final String forwardAddress = "forwardAddress";
+
+   final long retryInterval = 50;
+   final double retryIntervalMultiplier = 1d;
+   final int confirmationWindowSize = 1024;
+   int reconnectAttempts = 3;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      server0Params = new HashMap<String, Object>();
+      server1Params = new HashMap<String, Object>();
+      server2Params = new HashMap<String, Object>();
+      connectors = new HashMap<String, TransportConfiguration>();
+
+      server1 = createHornetQServer(1, isNetty(), server1Params);
+      server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
+      connectors.put(server1tc.getName(), server1tc);
+      staticConnectors = new ArrayList<String>();
+      staticConnectors.add(server1tc.getName());
+   }
+
+   @Override
+   public void tearDown() throws Exception
+   {
+      locator = null;
+      super.tearDown();
+   }
+
    protected boolean isNetty()
    {
       return false;
@@ -75,65 +121,40 @@ public class BridgeReconnectTest extends BridgeTestBase
       return INVM_CONNECTOR_FACTORY;
    }
 
-   // Fail bridge and reconnecting immediately
-   public void testFailoverAndReconnectImmediately() throws Exception
+   public void testFailoverDeploysBridge() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager(false);
-      Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
-
-      Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
+      server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
+      server2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
 
       TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
-
       TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
-
-      connectors.put(server1tc.getName(), server1tc);
 
       connectors.put(server2tc.getName(), server2tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
       server1.getConfiguration().setConnectorConfigurations(connectors);
 
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
+   }
 
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int reconnectAttempts = 1;
-      final int confirmationWindowSize = 1024;
+   // Fail bridge and reconnecting immediately
+   public void testFailoverAndReconnectImmediately() throws Exception
+   {
+      NodeManager nodeManager = new InVMNodeManager(false);
+      server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
+      server2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
 
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(server1tc.getName());
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
+      TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
 
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
-                                                                        forwardAddress,
-                                                                        null,
-                                                                        null,
-                                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                                                        retryInterval,
-                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                        retryIntervalMultiplier,
-                                                                        reconnectAttempts,
-                                                                        true,
-                                                                        confirmationWindowSize,
-                                                                        staticConnectors,
-                                                                        false,
-                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
- CLUSTER_PASSWORD);
+      connectors.put(server2tc.getName(), server2tc);
+
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
+
+      reconnectAttempts = 1;
+
+      BridgeConfiguration bridgeConfiguration = createBridgeConfig();
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -148,33 +169,27 @@ public class BridgeReconnectTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-      service2.getConfiguration().setQueueConfigurations(queueConfigs1);
+      server2.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      ServerLocator locator = null;
-
-      try
-      {
-         service2.start();
-         server1.start();
-         server0.start();
+      startServers();
 
          BridgeReconnectTest.log.info("** failing connection");
          // Now we will simulate a failure of the bridge connection between server0 and server1
          server0.stop(true);
 
-         waitForServerStart(service2);
+         waitForServerStart(server2);
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(server0tc, server2tc));
 
          ClientSessionFactory csf0 = addSessionFactory(locator.createSessionFactory(server2tc));
 
-         ClientSession session0 = csf0.createSession(false, true, true);
+      session0 = csf0.createSession(false, true, true);
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
          ClientSessionFactory csf2 = addSessionFactory(locator.createSessionFactory(server2tc));
 
-         ClientSession session2 = csf2.createSession(false, true, true);
+      session2 = csf2.createSession(false, true, true);
 
          ClientConsumer cons2 = session2.createConsumer(queueName0);
 
@@ -198,25 +213,21 @@ public class BridgeReconnectTest extends BridgeTestBase
             Assert.assertNotNull(r1);
             Assert.assertEquals(i, r1.getObjectProperty(propKey));
          }
+         closeServers();
 
-         session0.close();
-         session2.close();
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
 
-         server0.stop();
-         server1.stop();
-         service2.stop();
-      }
+      assertNoMoreConnections();
+   }
 
-      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, service2.getRemotingService().getConnections().size());
+   private BridgeConfiguration createBridgeConfig()
+   {
+      return new BridgeConfiguration(bridgeName, queueName0, forwardAddress, null, null,
+                                     HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                     HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                     HornetQClient.DEFAULT_CONNECTION_TTL, retryInterval,
+                                     HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, retryIntervalMultiplier,
+                                     reconnectAttempts, true, confirmationWindowSize, staticConnectors, false,
+                                     HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD);
    }
 
    // Fail bridge and attempt failover a few times before succeeding
@@ -224,59 +235,17 @@ public class BridgeReconnectTest extends BridgeTestBase
    {
       NodeManager nodeManager = new InVMNodeManager(false);
 
-      Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
-
-      Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
+      server0 = createHornetQServer(0, server0Params, isNetty(), nodeManager);
+      server2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
 
       TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
-
-      connectors.put(server1tc.getName(), server1tc);
 
       connectors.put(server2tc.getName(), server2tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
       server1.getConfiguration().setConnectorConfigurations(connectors);
 
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
-
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int reconnectAttempts = 3;
-      final int confirmationWindowSize = 1024;
-
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(server1tc.getName());
-
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
-                                                                        forwardAddress,
-                                                                        null,
-                                                                        null,
-                                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                                                        retryInterval,
-                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                        retryIntervalMultiplier,
-                                                                        reconnectAttempts,
-                                                                        true,
-                                                                        confirmationWindowSize,
-                                                                        staticConnectors,
-                                                                        false,
-                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
- CLUSTER_PASSWORD);
+      BridgeConfiguration bridgeConfiguration = createBridgeConfig();
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -291,24 +260,19 @@ public class BridgeReconnectTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-      service2.getConfiguration().setQueueConfigurations(queueConfigs1);
+      server2.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      ServerLocator locator = null;
-      try
-      {
-         service2.start();
-         server1.start();
-         server0.start();
+      startServers();
          // Now we will simulate a failure of the bridge connection between server0 and server1
          server0.stop(true);
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server2tc));
          locator.setReconnectAttempts(100);
          ClientSessionFactory csf0 = addSessionFactory(locator.createSessionFactory(server2tc));
-         ClientSession session0 = csf0.createSession(false, true, true);
+      session0 = csf0.createSession(false, true, true);
 
          ClientSessionFactory csf2 = addSessionFactory(locator.createSessionFactory(server2tc));
-         ClientSession session2 = csf2.createSession(false, true, true);
+      session2 = csf2.createSession(false, true, true);
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -334,78 +298,22 @@ public class BridgeReconnectTest extends BridgeTestBase
             Assert.assertNotNull(r1);
             Assert.assertEquals(i, r1.getObjectProperty(propKey));
          }
+         closeServers();
 
-         session0.close();
-         session2.close();
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-
-         server0.stop();
-         server1.stop();
-         service2.stop();
-      }
-
-      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, service2.getRemotingService().getConnections().size());
+      assertNoMoreConnections();
    }
 
    // Fail bridge and reconnect same node, no backup specified
    public void testReconnectSameNode() throws Exception
    {
-      Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
+      server0 = createHornetQServer(0, isNetty(), server0Params);
 
       TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
-
-      connectors.put(server1tc.getName(), server1tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
       server1.getConfiguration().setConnectorConfigurations(connectors);
 
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
-
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int reconnectAttempts = 3;
-      final int confirmationWindowSize = 1024;
-
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(server1tc.getName());
-
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
-                                                                        forwardAddress,
-                                                                        null,
-                                                                        null,
-                                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                                                        retryInterval,
-                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                        retryIntervalMultiplier,
-                                                                        reconnectAttempts,
-                                                                        true,
-                                                                        confirmationWindowSize,
-                                                                        staticConnectors,
-                                                                        false,
-                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
- CLUSTER_PASSWORD);
+      BridgeConfiguration bridgeConfiguration = createBridgeConfig();
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -421,18 +329,14 @@ public class BridgeReconnectTest extends BridgeTestBase
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      ServerLocator locator = null;
-      try
-      {
-         server1.start();
-         server0.start();
+      startServers();
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
          ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
-         ClientSession session0 = csf0.createSession(false, true, true);
+      session0 = csf0.createSession(false, true, true);
 
          ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
-         ClientSession session1 = csf1.createSession(false, true, true);
+      session1 = csf1.createSession(false, true, true);
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -469,23 +373,9 @@ public class BridgeReconnectTest extends BridgeTestBase
             Assert.assertNotNull(r1);
             Assert.assertEquals(i, r1.getObjectProperty(propKey));
          }
+         closeServers();
 
-         session0.close();
-         session1.close();
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
-
-         server0.stop();
-         server1.stop();
-      }
-
-      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
+      assertNoMoreConnections();
    }
 
    // We test that we can pause more than client failure check period (to prompt the pinger to failing)
@@ -502,36 +392,13 @@ public class BridgeReconnectTest extends BridgeTestBase
 
    private void testShutdownServerCleanlyAndReconnectSameNode(final boolean sleep) throws Exception
    {
-      Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
-
+      server0 = createHornetQServer(0, isNetty(), server0Params);
       TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
-
-      connectors.put(server1tc.getName(), server1tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
       server1.getConfiguration().setConnectorConfigurations(connectors);
-
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
-
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int reconnectAttempts = -1;
-      final int confirmationWindowSize = 1024;
+      reconnectAttempts = -1;
       final long clientFailureCheckPeriod = 1000;
-
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(server1tc.getName());
 
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
@@ -565,19 +432,14 @@ public class BridgeReconnectTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-
-      ServerLocator locator = null;
-      try
-      {
-         server1.start();
-         server0.start();
+         startServers();
 
          waitForServerStart(server0);
          waitForServerStart(server1);
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
          ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
-         ClientSession session0 = csf0.createSession(false, true, true);
+      session0 = csf0.createSession(false, true, true);
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -594,7 +456,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          BridgeReconnectTest.log.info("server 1 restarted");
 
          ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
-         ClientSession session1 = csf1.createSession(false, true, true);
+      session1 = csf1.createSession(false, true, true);
 
          ClientConsumer cons1 = session1.createConsumer(queueName0);
 
@@ -623,74 +485,50 @@ public class BridgeReconnectTest extends BridgeTestBase
          }
 
          BridgeReconnectTest.log.info("got messages");
+         closeServers();
+      assertNoMoreConnections();
+   }
 
+   /**
+    * @throws Exception
+    */
+   private void closeServers() throws Exception
+   {
+      if (session0 != null)
          session0.close();
+      if (session1 != null)
          session1.close();
-      }
-      finally
+      if (session2 != null)
+         session2.close();
+
+      if (locator != null)
       {
-         if (locator != null)
-         {
-            locator.close();
-         }
-
-         server0.stop();
-         server1.stop();
+         locator.close();
       }
 
+      server0.stop();
+      server1.stop();
+      if (server2 != null)
+         server2.stop();
+   }
+
+   private void assertNoMoreConnections()
+   {
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
+      if (server2 != null)
+         Assert.assertEquals(0, server2.getRemotingService().getConnections().size());
    }
 
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
-      Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
-
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
+      server0 = createHornetQServer(0, isNetty(), server0Params);
 
       TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
-
-      connectors.put(server1tc.getName(), server1tc);
-
       server0.getConfiguration().setConnectorConfigurations(connectors);
 
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
-
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int reconnectAttempts = 3;
-      final int confirmationWindowSize = 1024;
-
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(server1tc.getName());
-
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
-                                                                        forwardAddress,
-                                                                        null,
-                                                                        null,
-                                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                                                        retryInterval,
-                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                        retryIntervalMultiplier,
-                                                                        reconnectAttempts,
-                                                                        true,
-                                                                        confirmationWindowSize,
-                                                                        staticConnectors,
-                                                                        false,
-                                                                        HornetQDefaultConfiguration.getDefaultClusterUser(),
- CLUSTER_PASSWORD);
+      BridgeConfiguration bridgeConfiguration = createBridgeConfig();
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -706,18 +544,14 @@ public class BridgeReconnectTest extends BridgeTestBase
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      ServerLocator locator = null;
-      try
-      {
-         server1.start();
-         server0.start();
+      startServers();
 
          locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
          ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
-         ClientSession session0 = csf0.createSession(false, true, true);
+      session0 = csf0.createSession(false, true, true);
 
          ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
-         ClientSession session1 = csf1.createSession(false, true, true);
+      session1 = csf1.createSession(false, true, true);
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -789,27 +623,21 @@ public class BridgeReconnectTest extends BridgeTestBase
          }
 
 
-         session0.close();
-         session1.close();
-
-         if (outOfOrder != -1)
+      if (outOfOrder != -1)
          {
             fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
          }
-      }
-      finally
-      {
-         if (locator != null)
-         {
-            locator.close();
-         }
+         closeServers();
 
-         server0.stop();
-         server1.stop();
-      }
+      assertNoMoreConnections();
+   }
 
-      Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
-      Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
+   private void startServers() throws Exception
+   {
+      if (server2 != null)
+         server2.start();
+      server1.start();
+      server0.start();
    }
 
    private RemotingConnection getForwardingConnection(final Bridge bridge) throws Exception
