@@ -39,6 +39,7 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConfigurationUtils;
+import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
@@ -584,7 +585,7 @@ public final class ClusterManager implements HornetQComponent
                                      new SimpleString(config.getName()),
                                      queue,
                                      executorFactory.getExecutor(),
-                                     SimpleString.toSimpleString(config.getFilterString()),
+                              FilterImpl.createFilter(config.getFilterString()),
                                      SimpleString.toSimpleString(config.getForwardingAddress()),
                                      scheduledExecutor,
                                      transformer,

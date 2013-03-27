@@ -30,6 +30,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.filter.Filter;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
@@ -86,7 +87,7 @@ public class ClusterConnectionBridge extends BridgeImpl
                                   final SimpleString name,
                                   final Queue queue,
                                   final Executor executor,
-                                  final SimpleString filterString,
+                                  final Filter filterString,
                                   final SimpleString forwardingAddress,
                                   final ScheduledExecutorService scheduledExecutor,
                                   final Transformer transformer,
@@ -98,7 +99,7 @@ public class ClusterConnectionBridge extends BridgeImpl
                                   final SimpleString managementAddress,
                                   final SimpleString managementNotificationAddress,
                                   final MessageFlowRecord flowRecord,
-                                  final TransportConfiguration connector) throws Exception
+                                  final TransportConfiguration connector)
    {
       super(targetLocator,
             reconnectAttempts,
