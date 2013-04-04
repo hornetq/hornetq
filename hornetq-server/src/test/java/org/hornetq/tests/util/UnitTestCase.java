@@ -1359,9 +1359,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
          for (int j = 0; j < files.length; j++)
          {
-            if (!deleteDirectory(new File(directory, files[j])))
+            File f = new File(directory, files[j]);
+            if (!deleteDirectory(f))
             {
-               return false;
+               log.warn("Failed to clean up file: " + f.getAbsolutePath());
             }
          }
       }
