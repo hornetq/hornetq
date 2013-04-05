@@ -890,6 +890,8 @@ public class HornetQMessage implements javax.jms.Message
 
    public void doBeforeReceive() throws Exception
    {
+      message.checkCompletion();
+
       HornetQBuffer body = message.getBodyBuffer();
 
       if (body != null)

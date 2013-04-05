@@ -29,6 +29,7 @@ import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInterceptorRejectedPacketException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQLargeMessageException;
+import org.hornetq.api.core.HornetQLargeMessageInterruptedException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
@@ -243,5 +244,9 @@ public interface HornetQClientMessageBundle
    @Message(id = 119059, value = "Interceptor {0} rejected packet in a blocking call. This call will never complete."
          , format = Message.Format.MESSAGE_FORMAT)
    HornetQInterceptorRejectedPacketException interceptorRejectedPacket(String interceptionResult);
+
+   @Message(id = 119060, value = "Large Message Transmission interrupted on consumer shutdown."
+         , format = Message.Format.MESSAGE_FORMAT)
+   HornetQLargeMessageInterruptedException largeMessageInterrupted();
 
 }
