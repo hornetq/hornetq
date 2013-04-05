@@ -137,6 +137,8 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean tcpNoDelay;
 
+   private final int backlog;
+
    private final int tcpSendBufferSize;
 
    private final int tcpReceiveBufferSize;
@@ -236,7 +238,9 @@ public class NettyAcceptor implements Acceptor
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
                                                               -1,
                                                               configuration);
-
+      backlog = ConfigurationHelper.getIntProperty(TransportConstants.BACKLOG_PROP_NAME,
+                                                   -1,
+                                                   configuration);
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
                                                        TransportConstants.DEFAULT_USE_INVM,
                                                        configuration);
@@ -458,6 +462,10 @@ public class NettyAcceptor implements Acceptor
       if (tcpSendBufferSize != -1)
       {
          bootstrap.setOption("child.sendBufferSize", tcpSendBufferSize);
+      }
+      if (backlog != -1)
+      {
+         bootstrap.setOption("backlog", backlog);
       }
       bootstrap.setOption("reuseAddress", true);
       bootstrap.setOption("child.reuseAddress", true);
