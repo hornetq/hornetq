@@ -71,6 +71,8 @@ public class TransportConstants
 
    public static final String NEED_CLIENT_AUTH_PROP_NAME = "need-client-auth";
 
+   public static final String BACKLOG_PROP_NAME = "backlog";
+
    public static final String TCP_NODELAY_PROPNAME = "tcp-no-delay";
 
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
