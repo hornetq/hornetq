@@ -149,6 +149,14 @@ public class PagingManagerImpl implements PagingManager
 
          for (PagingStore store : reloadedStores)
          {
+            PagingStore oldStore = stores.remove(store.getStoreName());
+            //the store may already be in the map.
+            //see HornetQServerImpl.initialisePart1() and initialisePart2()
+            if (oldStore != null)
+            {
+               oldStore.stop();
+               oldStore = null;
+            }
             store.start();
             stores.put(store.getStoreName(), store);
          }
