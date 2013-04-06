@@ -29,8 +29,9 @@
             share message processing load. Each active node in the cluster is an active HornetQ
             server which manages its own messages and handles its own connections. </para>
         <note id="clustered-deprecation">
-            <para> The <emphasis>clustered</emphasis> parameter is deprecated and no longer needed for
-            setting up a cluster.</para>
+            <para>The <emphasis>clustered</emphasis> parameter is deprecated and no longer needed for
+            setting up a cluster. If your configuration contains this parameter it will be ignored and
+            a message with the ID <literal>HQ221038</literal> will be logged.</para>
         </note>
         <para>The cluster is formed by each node declaring <emphasis>cluster connections</emphasis>
             to other nodes in the core configuration file <literal
