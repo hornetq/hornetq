@@ -794,6 +794,7 @@ public class NettyConnector extends AbstractConnector
             }
 
             HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, url);
+            httpRequest.addHeader(HttpHeaders.Names.HOST, NettyConnector.this.host);
             if (cookie != null)
             {
                httpRequest.addHeader(HttpHeaders.Names.COOKIE, cookie);
@@ -827,6 +828,7 @@ public class NettyConnector extends AbstractConnector
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
                HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
+               httpRequest.addHeader(HttpHeaders.Names.HOST, NettyConnector.this.host);
                waitingGet = true;
                channel.write(httpRequest);
             }
