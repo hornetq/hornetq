@@ -175,7 +175,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setName(getString(e, "name", config.getName(), Validators.NO_CHECK));
 
       NodeList elems = e.getElementsByTagName("clustered");
-      if (elems != null && elems.getLength() > -1)
+      if (elems != null && elems.getLength() > 0)
       {
          HornetQServerLogger.LOGGER.deprecatedConfigurationOption("clustered");
 

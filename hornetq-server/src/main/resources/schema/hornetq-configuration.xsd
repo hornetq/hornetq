@@ -17,8 +17,8 @@
                      minOccurs="0">
           <xsd:annotation hq:linkend="clusters">
             <xsd:documentation>DEPRECATED. This option is deprecated and its value will be
-            ignored. A HornetQ server will be "clustered" when its configuration contain a
-            cluster-configuration.
+            ignored (HQHQ221038). A HornetQ server will be "clustered" when its configuration
+            contain a cluster-configuration.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
