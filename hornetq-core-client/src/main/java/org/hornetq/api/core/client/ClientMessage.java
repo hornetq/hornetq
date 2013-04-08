@@ -68,6 +68,16 @@ public interface ClientMessage extends Message
    void individualAcknowledge() throws HornetQException;
 
    /**
+    * This can be optionally used to verify if the entire message has been received.
+    * It won't have any effect on regular messages but it may be helpful on large messages.
+    * The use case for this is to make sure there won't be an exception while getting the buffer.
+    * Using getBodyBuffer directly would have the same effect but you could get a Runtime non checked Exception
+    * instead
+    * @throws HornetQException
+    */
+   void checkCompletion() throws HornetQException;
+
+   /**
     * Return the size (in bytes) of this message's body
     */
    int getBodySize();

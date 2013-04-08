@@ -233,9 +233,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public void cancel()
    {
-      // TODO: LOGS
-      // Doing this outside of the lock might interrupt the process as soon as possible
-      this.handledException = new HornetQException(HornetQExceptionType.LARGE_MESSAGE_ERROR_BODY, "Transmission interrupted on consumer shutdown");
+      this.handledException = HornetQClientMessageBundle.BUNDLE.largeMessageInterrupted();
 
       synchronized (this)
       {
