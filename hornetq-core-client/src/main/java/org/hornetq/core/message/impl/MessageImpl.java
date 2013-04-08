@@ -266,6 +266,12 @@ public abstract class MessageImpl implements MessageInternal
       return bodyBuffer;
    }
 
+   public void checkCompletion() throws HornetQException
+   {
+      // no op on regular messages
+   }
+
+
    public synchronized HornetQBuffer getBodyBufferCopy()
    {
       // Must copy buffer before sending it

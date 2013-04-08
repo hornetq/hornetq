@@ -85,10 +85,23 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
       largeMessageController = controller;
    }
 
+   public void checkCompletion() throws HornetQException
+   {
+      checkBuffer();
+   }
+
    @Override
    public HornetQBuffer getBodyBuffer()
    {
-      checkBuffer();
+
+      try
+      {
+         checkBuffer();
+      }
+      catch (HornetQException e)
+      {
+         throw new RuntimeException(e.getMessage(), e);
+      }
 
       return bodyBuffer;
    }
@@ -157,7 +170,7 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
       }
    }
 
-   private void checkBuffer()
+   private void checkBuffer() throws HornetQException
    {
       if (bodyBuffer == null)
       {
@@ -171,14 +184,7 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
 
          bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
 
-         try
-         {
-            largeMessageController.saveBuffer(new HornetQOutputStream(bodyBuffer));
-         }
-         catch (HornetQException e)
-         {
-            throw new RuntimeException(e.getMessage(), e);
-         }
+         largeMessageController.saveBuffer(new HornetQOutputStream(bodyBuffer));
       }
    }
 

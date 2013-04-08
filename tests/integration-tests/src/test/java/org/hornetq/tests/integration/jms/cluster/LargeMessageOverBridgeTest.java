@@ -21,8 +21,12 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSClusteredTestBase;
 
 /**
@@ -163,5 +167,62 @@ public class LargeMessageOverBridgeTest extends JMSClusteredTestBase
       conn1.close();
       conn2.close();
    }
+
+   /**
+     * The message won't be large to the client while it will be considered large throught he bridge
+     * @throws Exception
+     */
+    public void testSendLargeForBridge() throws Exception
+    {
+       createQueue("Q1");
+
+
+       Queue queue = (Queue)context1.lookup("queue/Q1");
+
+
+       HornetQConnectionFactory cf1 = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(INVM_CONNECTOR_FACTORY, generateInVMParams(0)));
+       cf1.setMinLargeMessageSize(200 * 1024);
+
+       Connection conn1 = cf1.createConnection();
+       Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+       MessageProducer prod1 = session1.createProducer(queue);
+
+       Connection conn2 = cf2.createConnection();
+       Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+       MessageConsumer cons2 = session2.createConsumer(queue);
+       conn2.start();
+
+       byte [] bytes = new byte[150 * 1024];
+
+       for (int i = 0 ; i < bytes.length; i++)
+       {
+          bytes[i] = getSamplebyte(i);
+       }
+
+       for (int i = 0 ; i < 10; i++)
+       {
+          BytesMessage msg = session1.createBytesMessage();
+          msg.writeBytes(bytes);
+          prod1.send(msg);
+       }
+
+       session1.commit();
+
+
+       for (int i = 0 ; i < 5; i++)
+       {
+          BytesMessage msg2 = (BytesMessage)cons2.receive(5000);
+          assertNotNull(msg2);
+          msg2.acknowledge();
+
+          for (int j = 0; j < bytes.length; j++)
+          {
+             assertEquals("Position " + i, msg2.readByte(), bytes[j]);
+          }
+       }
+
+       conn1.close();
+       conn2.close();
+    }
 
 }
