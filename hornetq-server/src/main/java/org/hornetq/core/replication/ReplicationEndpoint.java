@@ -350,6 +350,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
             try
             {
                page.sync();
+               page.close();
             }
             catch (Exception e)
             {

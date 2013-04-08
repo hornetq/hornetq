@@ -154,7 +154,7 @@ public final class XmlDataExporter
       queueBindings = new HashMap<Long, PersistentQueueBindingEncoding>();
 
       XMLOutputFactory factory = XMLOutputFactory.newInstance();
-         XMLStreamWriter rawXmlWriter = factory.createXMLStreamWriter(out);
+         XMLStreamWriter rawXmlWriter = factory.createXMLStreamWriter(out, "UTF-8");
          PrettyPrintHandler handler = new PrettyPrintHandler(rawXmlWriter);
          xmlWriter = (XMLStreamWriter) Proxy.newProxyInstance(
                XMLStreamWriter.class.getClassLoader(),
