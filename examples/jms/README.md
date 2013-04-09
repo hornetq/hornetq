@@ -18,3 +18,12 @@ export MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
 ```
 
 To run the javaee examples follow the instructions in examples/javaee/README.md
+
+### Recreating the examples
+
+If you are trying to copy the examples somewhere else and modifying them. Consider asking Maven to explicitly list all the dependencies:
+
+```
+# if trying to modify the 'topic' example:
+cd examples/jms/topic && mvn dependency:list
+```

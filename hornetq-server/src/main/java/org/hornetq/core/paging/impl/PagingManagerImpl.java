@@ -36,7 +36,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
-public class PagingManagerImpl implements PagingManager
+public final class PagingManagerImpl implements PagingManager
 {
    private volatile boolean started = false;
 
@@ -149,9 +149,9 @@ public class PagingManagerImpl implements PagingManager
 
          for (PagingStore store : reloadedStores)
          {
+            // when reloading, we need to close the previously loaded version of this
+            // store
             PagingStore oldStore = stores.remove(store.getStoreName());
-            //the store may already be in the map.
-            //see HornetQServerImpl.initialisePart1() and initialisePart2()
             if (oldStore != null)
             {
                oldStore.stop();
