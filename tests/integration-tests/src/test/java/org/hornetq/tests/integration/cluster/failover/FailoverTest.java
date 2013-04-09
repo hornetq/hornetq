@@ -89,12 +89,12 @@ public class FailoverTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-   protected ClientSession createSession(ClientSessionFactory sf,
+   protected ClientSession createSession(ClientSessionFactory sf1,
                                          boolean autoCommitSends,
                                          boolean autoCommitAcks,
                                          int ackBatchSize) throws Exception
    {
-      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
+      return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
    }
 
    protected ClientSession
@@ -1773,9 +1773,9 @@ public class FailoverTest extends FailoverTestBase
             {
                producer.send(message);
             }
-            catch (HornetQException e)
+            catch (HornetQException e1)
             {
-               this.e = e;
+               this.e = e1;
             }
          }
 
@@ -2249,7 +2249,7 @@ public class FailoverTest extends FailoverTestBase
       return TransportConfigurationUtils.getInVMConnector(live);
    }
 
-   protected void beforeRestart(TestableServer liveServer)
+   protected void beforeRestart(TestableServer liveServer1)
    {
       // no-op
    }

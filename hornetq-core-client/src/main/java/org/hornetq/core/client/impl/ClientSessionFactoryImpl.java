@@ -525,9 +525,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             else
                session.cleanUp(false);
          }
-         catch (Exception e)
+         catch (Exception e1)
          {
-            HornetQClientLogger.LOGGER.unableToCloseSession(e);
+            HornetQClientLogger.LOGGER.unableToCloseSession(e1);
          }
       }
       checkCloseConnection();
@@ -579,10 +579,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          failoverOrReconnect(connectionID, me);
       }
-      catch (HornetQInterruptedException e)
+      catch (HornetQInterruptedException e1)
       {
          // this is just a debug, since an interrupt is an expected event (in case of a shutdown)
-         HornetQClientLogger.LOGGER.debug(e.getMessage(), e);
+         HornetQClientLogger.LOGGER.debug(e1.getMessage(), e1);
       }
    }
 
@@ -672,9 +672,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      {
                         exitLockLatch.await(500, TimeUnit.MILLISECONDS);
                      }
-                     catch (InterruptedException e)
+                     catch (InterruptedException e1)
                      {
-                        throw new HornetQInterruptedException(e);
+                        throw new HornetQInterruptedException(e1);
                      }
                   }
                }
