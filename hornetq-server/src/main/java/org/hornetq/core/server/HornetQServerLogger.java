@@ -1268,6 +1268,12 @@ public interface HornetQServerLogger extends BasicLogger
       format = Message.Format.MESSAGE_FORMAT)
    void queueDuplicatedRenaming(String name, String newName);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+      id = 224064,
+      value =  "Queue {0}, on address={1}, is taking too long to flush deliveries. Watch out for frozen clients.",
+      format = Message.Format.MESSAGE_FORMAT)
+   void timeoutFlushInTransit(String queueName, String addressName);
 
 
 
