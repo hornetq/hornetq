@@ -43,25 +43,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * It parses JMS Configuration Files
- *
+ * JMS Configuration File Parser.
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
-public class JMSServerConfigParserImpl implements JMSServerConfigParser
+final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 {
-   // Constants -----------------------------------------------------
-
    protected static final String NAME_ATTR = "name";
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    public JMSServerConfigParserImpl()
    {
@@ -509,13 +496,4 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       JMSConfiguration value = new JMSConfigurationImpl(cfs, queues, topics, domain);
       return value;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
