@@ -84,6 +84,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private final Object lock = new Object();
 
+   private final Object deliveryGuard = new Object();
+
    /**
     * We get a readLock when a message is handled, and return the readLock when the message is finally delivered
     * When stopping the consumer we need to get a writeLock to make sure we had all delivery finished
@@ -332,24 +334,27 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       try
       {
-         ServerMessage message = reference.getMessage();
+         synchronized (deliveryGuard)
+         {
+            ServerMessage message = reference.getMessage();
 
-         if (message.isLargeMessage())
-         {
-            if (largeMessageDeliverer == null)
+            if (message.isLargeMessage())
             {
-               // This can't really happen as handle had already crated the deliverer
-               // instead of throwing an exception in weird cases there is no problem on just go ahead and create it
-               // again here
-               largeMessageDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, reference);
+               if (largeMessageDeliverer == null)
+               {
+                  // This can't really happen as handle had already crated the deliverer
+                  // instead of throwing an exception in weird cases there is no problem on just go ahead and create it
+                  // again here
+                  largeMessageDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, reference);
+               }
+               // The deliverer was prepared during handle, as we can't have more than one pending large message
+               // as it would return busy if there is anything pending
+               largeMessageDeliverer.deliver();
             }
-            // The deliverer was prepared during handle, as we can't have more than one pending large message
-            // as it would return busy if there is anything pending
-            largeMessageDeliverer.deliver();
-         }
-         else
-         {
-            deliverStandardMessage(reference, message);
+            else
+            {
+               deliverStandardMessage(reference, message);
+            }
          }
       }
       finally
