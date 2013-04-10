@@ -1,5 +1,6 @@
 build
 target
+classes
 
 /eclipse-output
 /thirdparty
@@ -12,4 +13,5 @@ target
 native/src/org_hornetq_*.h
 .idea/
 *.iml
+hornetq.iws
 

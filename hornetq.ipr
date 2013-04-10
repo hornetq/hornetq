@@ -312,7 +312,11 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <copyright>
@@ -365,22 +369,22 @@
       </facet-type>
       <facet-type id="javaeeApplication">
         <modules>
-          <module name="messaging" />
           <module name="hornetq-javaee-examples">
             <files>
               <file url="file://$PROJECT_DIR$/examples/javaee/servlet-transport/config/META-INF/application.xml" />
             </files>
           </module>
+          <module name="messaging" />
         </modules>
       </facet-type>
       <facet-type id="web">
         <modules>
-          <module name="messaging" />
           <module name="hornetq-javaee-examples">
             <files>
               <file url="file://$PROJECT_DIR$/examples/javaee/servlet-transport/config/WEB-INF/web.xml" />
             </files>
           </module>
+          <module name="messaging" />
         </modules>
       </facet-type>
     </autodetection-disabled>
@@ -607,6 +611,15 @@
       </item>
     </group>
   </component>
+  <component name="ProjectCodeStyleSettingsManager">
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <XML>
+          <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
+        </XML>
+      </value>
+    </option>
+  </component>
   <component name="ProjectDetails">
     <option name="projectName" value="messaging" />
   </component>
@@ -631,7 +644,7 @@
       <module fileurl="file://$PROJECT_DIR$/tests/hornetq-tests.iml" filepath="$PROJECT_DIR$/tests/hornetq-tests.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="ResourceManagerContainer">
@@ -647,30 +660,6 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
-              <option name="branchMap">
-                <map>
-                  <entry key="https://svn.jboss.org/repos/messaging/admin">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://svn.jboss.org/repos/messaging/branches">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://svn.jboss.org/repos/messaging/projects">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://svn.jboss.org/repos/messaging/tags">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://svn.jboss.org/repos/messaging/admin" />
@@ -689,8 +678,7 @@
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="" />
-    <mapping directory="$PROJECT_DIR$" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
@@ -701,87 +689,6 @@
     </option>
   </component>
   <component name="libraryTable">
-    <library name="messaging">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/src/config/common" />
-        <root url="file://$PROJECT_DIR$/src/config/stand-alone/non-clustered" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
-    </library>
-    <library name="messaging_jars">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-mdr.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/sun-jaxb/lib/jaxb-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib/jbossjts.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-transaction-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jca-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jbossxb.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/net/java/dev/javacc/lib/javacc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/security/lib/jbosssx.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xml-apis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-reflect.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xercesImpl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib/dtdparser121.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jms-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/javax/activation/lib/activation.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/security/lib/jboss-security-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-common-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/log4j/lib/log4j.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/netty/lib/netty.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/naming/lib/jnpserver.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jaspi-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib/jbossts-common.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-joram-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/joram-tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-jms-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-jms-examples">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
-        <root url="file://$PROJECT_DIR$/src/config/common" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-javaee-examples">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/src/config/common" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="ant 1.7.1">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/lib/commons-logging-1.0.4.jar!/" />
@@ -824,6 +731,87 @@
     <library name="etc">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/../etc" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+        <root url="file://$PROJECT_DIR$/src/config/stand-alone/non-clustered" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
+    </library>
+    <library name="messaging-javaee-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-joram-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/joram-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging_jars">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-mdr.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/sun-jaxb/lib/jaxb-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib/jbossjts.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-transaction-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jca-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jbossxb.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/net/java/dev/javacc/lib/javacc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/security/lib/jbosssx.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xml-apis.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-reflect.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xercesImpl.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib/dtdparser121.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jms-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/javax/activation/lib/activation.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/security/lib/jboss-security-spi.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/lib/jboss-common-core.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/log4j/lib/log4j.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/netty/lib/netty.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/naming/lib/jnpserver.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/javaee/lib/jboss-jaspi-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib/jbossts-common.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
