@@ -142,6 +142,7 @@
                             <entry />
                         </row>
                         <row>
+                          <!-- FIXME documented but does not exist? -->
                             <entry id="configuration.connection-factory.discovery-initial-wait-timeout">
                                <link linkend="clusters"
                                     >connection-factory.discovery-initial-wait-timeout</link>
@@ -189,7 +190,7 @@
                             <entry>the period (in ms) after which the client will consider the
                                 connection failed after not receiving packets from the
                                 server</entry>
-                            <entry>5000</entry>
+                            <entry>30000</entry>
                         </row>
                         <row>
                             <entry id="configuration.connection-factory.client-id">
