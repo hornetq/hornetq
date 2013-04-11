@@ -27,10 +27,7 @@ import org.hornetq.jms.server.config.TopicConfiguration;
 
 /**
  * A JMSConfigurationImpl
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSConfigurationImpl implements JMSConfiguration
 {
@@ -44,14 +41,6 @@ public class JMSConfigurationImpl implements JMSConfiguration
    private final String domain;
 
    private Context context = null;
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public JMSConfigurationImpl()
    {
@@ -100,15 +89,4 @@ public class JMSConfigurationImpl implements JMSConfiguration
    {
       return domain;
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

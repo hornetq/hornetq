@@ -7,7 +7,7 @@
                 xmlns:fn="http://www.w3.org/2005/xpath-functions">
 
   <!--
-   XSL to transform our hornetq-configuration schema into a DocBook manual reference.
+   XSL to transform HornetQ schemas into DocBook tables to be used in our user manual reference.
 
    For each option element defined in the schema, it tries to create something like
 
@@ -17,7 +17,7 @@
    </entry>
    <entry>TYPE</entry>
    <entry>DESCRIPTION</entry>
-   <entry>DEFAULT</entry>
+   <entry>DEFAULT_VALUE</entry>
 </row>
 
    TODO:
@@ -38,13 +38,17 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
+
   <xsl:template match="/">
     <tbody>
 
     <xsl:comment>
       THIS IS A GENERATED FILE. DO NOT EDIT IT DIRECTLY!
 
-      Generated from "hornetq-configuration.xsd".
+      HornetQ options reference table generated from:
+      <xsl:copy-of select="concat('hornetq-', substring-after(base-uri(), 'hornetq-'))"/>
+
+      =======================================================================
 
       XSLT Version = <xsl:copy-of select="system-property('xsl:version')"/>
       XSLT Vendor = <xsl:copy-of select="system-property('xsl:vendor')"/>
@@ -56,9 +60,10 @@
     <xsl:text>&#xa;</xsl:text>
     <xsl:text>&#xa;</xsl:text>
 
-    <xsl:for-each-group select="xsd:schema/xsd:element/xsd:complexType/xsd:all/xsd:element"
+    <!-- main 'for-each' for "hornetq-configuration.xsd". Notice the attribute matching at the
+         select which ensures this only matches "hornetq-configuration.xsd". -->
+    <xsl:for-each-group select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element"
                         group-by="@name">
-
       <!-- the manual reference should list options in sorted order.
            Notice that this is only OK because the first level of options is "xsd:all".
 
@@ -82,6 +87,21 @@
       <xsl:text>&#xa;</xsl:text>
       <xsl:text>&#xa;</xsl:text>
     </xsl:for-each-group>
+
+    <!-- JMS: main 'for-each' for "hornetq-jms.xsd". Notice the attribute matching at the
+         select which ensures this only matches "hornetq-jms.xsd". -->
+    <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-jms-configuration']/xsd:complexType/xsd:sequence/xsd:element">
+
+      <xsl:call-template name="xsd_element">
+        <xsl:with-param name="prefix"/>
+        <xsl:with-param name="parentLinkend" select="xsd:annotation/@hq:linkend"/>
+      </xsl:call-template>
+
+      <!-- Add 2 new lines between each option -->
+      <xsl:text>&#xa;</xsl:text>
+      <xsl:text>&#xa;</xsl:text>
+    </xsl:for-each>
+
     </tbody>
   </xsl:template>
 
