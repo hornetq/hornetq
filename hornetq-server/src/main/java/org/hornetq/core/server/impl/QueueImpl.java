@@ -63,6 +63,7 @@ import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * Implementation of a Queue
@@ -187,6 +188,14 @@ public class QueueImpl implements Queue
    private AddressSettingsRepositoryListener addressSettingsRepositoryListener;
 
    private ExpiryScanner expiryScanner = new ExpiryScanner();
+
+   private final ReusableLatch deliveriesInTransit = new ReusableLatch(0);
+
+    /**
+     * This is to avoid multi-thread races on calculating direct delivery,
+     * to guarantee ordering will be always be correct
+     */
+    private final Object directDeliveryGuard = new Object();
 
    public String debug()
    {
@@ -384,6 +393,7 @@ public class QueueImpl implements Queue
    /* Called when a message is cancelled back into the queue */
    public synchronized void addHead(final MessageReference ref)
    {
+      flushDeliveriesInTransit();
       if (scheduledDeliveryHandler.checkAndSchedule(ref, false))
       {
          return;
@@ -397,6 +407,7 @@ public class QueueImpl implements Queue
    /* Called when a message is cancelled back into the queue */
    public synchronized void addHead(final List<MessageReference> refs)
    {
+      flushDeliveriesInTransit();
       for (MessageReference ref: refs)
       {
          addHead(ref);
@@ -437,29 +448,32 @@ public class QueueImpl implements Queue
          return;
       }
 
-      // We perform the directDelivery periodically, if the delivery is specified as direct then this causes the
-      // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
-      // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
-      if (!directDeliver &&
-          direct &&
-         System.currentTimeMillis() - lastDirectDeliveryCheck > CHECK_QUEUE_SIZE_PERIOD)
-      {
-         lastDirectDeliveryCheck = System.currentTimeMillis();
+      synchronized (directDeliveryGuard)
+       {
+          // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
+          // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
+          // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
+          if (!directDeliver &&
+              direct &&
+             System.currentTimeMillis() - lastDirectDeliveryCheck > CHECK_QUEUE_SIZE_PERIOD)
+          {
+             lastDirectDeliveryCheck = System.currentTimeMillis();
 
-         if (intermediateMessageReferences.isEmpty() &&
-             messageReferences.isEmpty() &&
-             !pageIterator.hasNext() &&
-             !pageSubscription.isPaging())
-         {
-            // We must block on the executor to ensure any async deliveries have completed or we might get out of order
-            // deliveries
-            if (flushExecutor())
-            {
-               // Go into direct delivery mode
-               directDeliver = true;
-            }
-         }
-      }
+             if (intermediateMessageReferences.isEmpty() &&
+                 messageReferences.isEmpty() &&
+                 !pageIterator.hasNext() &&
+                 !pageSubscription.isPaging())
+             {
+                // We must block on the executor to ensure any async deliveries have completed or we might get out of order
+                // deliveries
+                if (flushExecutor() && flushDeliveriesInTransit())
+                {
+                   // Go into direct delivery mode
+                   directDeliver = true;
+                }
+             }
+          }
+       }
 
       if (direct && directDeliver && deliverDirect(ref))
       {
@@ -475,6 +489,31 @@ public class QueueImpl implements Queue
 
       // Delivery async will both poll for intermediate reference and deliver to clients
       deliverAsync();
+   }
+
+   /**
+    * This will wait for any pending deliveries to finish
+    */
+   private boolean flushDeliveriesInTransit()
+   {
+      try
+      {
+
+         if (deliveriesInTransit.await(DELIVERY_TIMEOUT))
+         {
+            return true;
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.timeoutFlushInTransit(getName().toString(), getAddress().toString());
+            return false;
+         }
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         return false;
+      }
    }
 
    public void forceDelivery()
@@ -597,6 +636,8 @@ public class QueueImpl implements Queue
       {
          HornetQServerLogger.LOGGER.debug(this + " adding consumer " + consumer);
       }
+
+      flushDeliveriesInTransit();
 
       consumersChanged = true;
 
@@ -1625,6 +1666,14 @@ public class QueueImpl implements Queue
 
    public synchronized void pause()
    {
+      try
+      {
+         this.flushDeliveriesInTransit();
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+      }
       paused = true;
    }
 
@@ -1874,6 +1923,8 @@ public class QueueImpl implements Queue
 
                if (status == HandleStatus.HANDLED)
                {
+
+                  deliveriesInTransit.countUp();
 
                   handledconsumer = consumer;
 
@@ -2246,89 +2297,74 @@ public class QueueImpl implements Queue
     */
    private boolean deliverDirect(final MessageReference ref)
    {
-      Consumer handledConsumer = null;
-      MessageReference handledReference = null;
-      try
+      synchronized (this)
       {
-         synchronized (this)
+         if (paused || consumerList.isEmpty())
          {
-            if (paused || consumerList.isEmpty())
+            return false;
+         }
+
+         if (checkExpired(ref))
+         {
+            return true;
+         }
+
+         int startPos = pos;
+
+         int size = consumerList.size();
+
+         while (true)
+         {
+            ConsumerHolder holder = consumerList.get(pos);
+
+            Consumer consumer = holder.consumer;
+
+            Consumer groupConsumer = null;
+
+            // If a group id is set, then this overrides the consumer chosen round-robin
+
+            SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+            if (groupID != null)
             {
-               return false;
+               groupConsumer = groups.get(groupID);
+
+               if (groupConsumer != null)
+               {
+                  consumer = groupConsumer;
+               }
             }
 
-            if (checkExpired(ref))
+            pos++;
+
+            if (pos == size)
             {
+               pos = 0;
+            }
+
+            HandleStatus status = handle(ref, consumer);
+
+            if (status == HandleStatus.HANDLED)
+            {
+               if (groupID != null && groupConsumer == null)
+               {
+                  groups.put(groupID, consumer);
+               }
+
+               messagesAdded++;
+
+               deliveriesInTransit.countUp();
+               proceedDeliver(consumer, ref);
                return true;
             }
 
-            int startPos = pos;
-
-            int size = consumerList.size();
-
-            while (true)
+            if (pos == startPos)
             {
-               ConsumerHolder holder = consumerList.get(pos);
-
-               Consumer consumer = holder.consumer;
-
-               Consumer groupConsumer = null;
-
-               // If a group id is set, then this overrides the consumer chosen round-robin
-
-               SimpleString groupID = ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
-
-               if (groupID != null)
-               {
-                  groupConsumer = groups.get(groupID);
-
-                  if (groupConsumer != null)
-                  {
-                     consumer = groupConsumer;
-                  }
-               }
-
-               pos++;
-
-               if (pos == size)
-               {
-                  pos = 0;
-               }
-
-               HandleStatus status = handle(ref, consumer);
-
-               if (status == HandleStatus.HANDLED)
-               {
-                  if (groupID != null && groupConsumer == null)
-                  {
-                     groups.put(groupID, consumer);
-                  }
-
-                  messagesAdded++;
-
-                  handledConsumer = consumer;
-                  handledReference = ref;
-                  break;
-               }
-
-               if (pos == startPos)
-               {
-                  // Tried them all
-                  break;
-               }
+               // Tried them all
+               break;
             }
          }
-         return handledConsumer != null;
-      }
-      finally
-      {
-         // outside of any locks to avoid a permanent lock of the queue with unbehaved consumers
-         // also a successful handle will take a readLock on the consumer
-         // so we must do the proceedDeliver was successful
-         if (handledReference != null)
-         {
-            proceedDeliver(handledConsumer, handledReference);
-         }
+         return false;
       }
    }
 
@@ -2357,6 +2393,10 @@ public class QueueImpl implements Queue
             // The message failed to be delivered, hence we try again
             addHead(reference);
          }
+      }
+      finally
+      {
+         deliveriesInTransit.countDown();
       }
    }
 
