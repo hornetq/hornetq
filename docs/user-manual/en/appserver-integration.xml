@@ -456,7 +456,7 @@ public class MyMDB implements MessageListener
                             </entry>
                         </row>
                         <row>
-                            <entry>hA</entry>
+                            <entry>ha</entry>
                             <entry>boolean</entry>
                             <entry>True if high availability is needed.</entry>
                         </row>

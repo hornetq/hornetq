@@ -45,6 +45,9 @@
                             <entry>Default</entry>
                         </row>
                     </thead>
+                    <!-- The options reference is generated from the schema.  If something is wrong
+                         in the reference, it must be fixed in the annotations present in the
+                         schema. -->
                       <xi:include href="../target/generated-resources/xml/xslt/hornetq-configuration.xml"
                                   xmlns:xi="http://www.w3.org/2001/XInclude"/>
                 </tgroup>
@@ -139,6 +142,7 @@
                             <entry />
                         </row>
                         <row>
+                          <!-- FIXME documented but does not exist? -->
                             <entry id="configuration.connection-factory.discovery-initial-wait-timeout">
                                <link linkend="clusters"
                                     >connection-factory.discovery-initial-wait-timeout</link>
@@ -186,7 +190,7 @@
                             <entry>the period (in ms) after which the client will consider the
                                 connection failed after not receiving packets from the
                                 server</entry>
-                            <entry>5000</entry>
+                            <entry>30000</entry>
                         </row>
                         <row>
                             <entry id="configuration.connection-factory.client-id">

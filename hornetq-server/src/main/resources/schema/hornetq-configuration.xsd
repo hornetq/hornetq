@@ -3,7 +3,7 @@
   attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:hornetq"
   version="1.0">
 
-  <xsd:element name="configuration">
+  <xsd:element name="configuration" hq:schema="hornetq-configuration">
     <xsd:complexType>
       <xsd:all>
         <xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0">

@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.jms.server.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -39,9 +42,6 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A JMSConfigurationTest
  *
@@ -51,14 +51,6 @@ import java.util.List;
  */
 public class JMSConfigurationTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public void testSetupJMSConfiguration() throws Exception
    {
@@ -122,14 +114,4 @@ public class JMSConfigurationTest extends ServiceTestBase
 
       server.stop();
    }
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
