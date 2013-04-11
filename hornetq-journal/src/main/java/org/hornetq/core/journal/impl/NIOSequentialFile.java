@@ -223,7 +223,15 @@ public class NIOSequentialFile extends AbstractSequentialFile
    {
       if (channel != null)
       {
-         channel.force(false);
+         try
+         {
+            channel.force(false);
+         }
+         catch (IOException e)
+         {
+            factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+            throw e;
+         }
       }
    }
 
