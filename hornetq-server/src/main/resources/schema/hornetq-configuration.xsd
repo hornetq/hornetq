@@ -1082,7 +1082,7 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="retry-interval" type="xsd:long" default="2000"                     maxOccurs="1" minOccurs="0">
+      <xsd:element name="retry-interval" type="xsd:long" default="500" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>period (in ms) between successive retries</xsd:documentation>
         </xsd:annotation>
@@ -1094,7 +1094,7 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="max-retry-interval" type="xsd:long" maxOccurs="1" minOccurs="0">
+      <xsd:element name="max-retry-interval" type="xsd:long" default="2000" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>Maximum value for retry-interval</xsd:documentation>
         </xsd:annotation>
@@ -1121,17 +1121,17 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="max-hops" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+      <xsd:element name="max-hops" type="xsd:int" default="1" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>maximum number of hops cluster topology is
           propagated</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="confirmation-window-size" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+      <xsd:element name="confirmation-window-size" type="xsd:int" default="1048576" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:linkend="client-reconnection">
           <xsd:documentation>The size (in bytes) of the window used for confirming data from
-          the server connected to, default is -1 which is no window.</xsd:documentation>
+          the server connected to.</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
