@@ -61,7 +61,7 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-core-server</include>
+            <include>org.hornetq:hornetq-server</include>
          </includes>
          <binaries>
             <includeDependencies>false</includeDependencies>
