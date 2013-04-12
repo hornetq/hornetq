@@ -81,7 +81,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
     * <p>
     * If the second message does come within this dead line, we fail over anyway.
     */
-   private static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
+   public static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
 
    public QuorumManager(ServerLocator serverLocator, ExecutorService executor, ScheduledExecutorService scheduledPool,
                         String identity, NodeManager nodeManager)
