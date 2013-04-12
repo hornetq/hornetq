@@ -66,6 +66,7 @@ import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.core.server.impl.QuorumManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -431,7 +432,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void waitForServerRestart(final int node) throws Exception
    {
-      if (!servers[node].waitForActivation(ServiceTestBase.WAIT_TIMEOUT, TimeUnit.MILLISECONDS))
+      long waitTimeout = ServiceTestBase.WAIT_TIMEOUT;
+      if (!isSharedStore())
+      {
+         //it should be greater than 
+         //QuorumManager.WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG (60 sec)
+         waitTimeout = 1000 * (QuorumManager.WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG + 5);
+      }
+      if (!servers[node].waitForActivation(waitTimeout, TimeUnit.MILLISECONDS))
       {
          String msg = "Timed out waiting for server starting = " + node;
 
