@@ -870,7 +870,7 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public String toString()
    {
-      return "HornetQRASession->" + session;
+      return "HornetQSession->" + session;
    }
 
    public ClientSession getCoreSession()

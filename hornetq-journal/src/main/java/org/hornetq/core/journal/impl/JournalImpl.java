@@ -65,6 +65,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -192,6 +193,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private ExecutorService filesExecutor = null;
 
    private ExecutorService compactorExecutor = null;
+
+   private ConcurrentHashSet<CountDownLatch> latches = new ConcurrentHashSet<CountDownLatch>();
 
    // Lock used during the append of records
    // This lock doesn't represent a global lock.
@@ -1396,7 +1399,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    {
       final AtomicInteger errors = new AtomicInteger(0);
 
-      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch latch = newLatch(1);
 
       compactorRunning.set(true);
 
@@ -1427,17 +1430,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       try
       {
 
-         if (timeout <= 0)
-         {
-            latch.await();
-         }
-         else
-         {
-            if (!latch.await(timeout, TimeUnit.SECONDS))
-            {
-               throw new RuntimeException("Didn't finish compact timely");
-            }
-         }
+         awaitLatch(latch, timeout);
 
          if (errors.get() > 0)
          {
@@ -2256,7 +2249,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
          // Send something to the closingExecutor, just to make sure we went
          // until its end
-         final CountDownLatch latch = new CountDownLatch(1);
+         final CountDownLatch latch = newLatch(1);
 
          filesExecutor.execute(new Runnable()
          {
@@ -2266,7 +2259,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             }
          });
 
-         latch.await();
+         awaitLatch(latch, -1);
       }
 
    }
@@ -2429,6 +2422,18 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             HornetQJournalLogger.LOGGER.couldNotStopJournalExecutor();
          }
 
+         try
+         {
+            for (CountDownLatch latch : latches)
+            {
+               latch.countDown();
+            }
+         }
+         catch (Throwable e)
+         {
+            HornetQJournalLogger.LOGGER.warn(e.getMessage(), e);
+         }
+
          fileFactory.deactivateBuffer();
 
          if (currentFile != null && currentFile.getFile().isOpen())
@@ -2490,31 +2495,37 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       // These files are already freed, and are described on the compactor file control.
       // In case of crash they will be cleared anyways
 
-      final CountDownLatch done = new CountDownLatch(1);
+      final CountDownLatch done = newLatch(1);
 
       filesExecutor.execute(new Runnable()
       {
          public void run()
          {
-            for (JournalFile file : oldFiles)
+            try
             {
-               try
+               for (JournalFile file : oldFiles)
                {
-                  filesRepository.addFreeFile(file, false);
-               }
-               catch (Throwable e)
-               {
-                  HornetQJournalLogger.LOGGER.errorReinitializingFile(e, file);
+                  try
+                  {
+                     filesRepository.addFreeFile(file, false);
+                  }
+                  catch (Throwable e)
+                  {
+                     HornetQJournalLogger.LOGGER.errorReinitializingFile(e, file);
+                  }
                }
             }
-            done.countDown();
+            finally
+            {
+               done.countDown();
+            }
          }
       });
 
       // need to wait all old files to be freed
       // to avoid a race where the CTR file is deleted before the init for these files is already done
       // what could cause a duplicate in case of a crash after the CTR is deleted and before the file is initialized
-      done.await();
+      awaitLatch(done, -1);
 
       for (JournalFile file : newFiles)
       {
@@ -3135,6 +3146,42 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          }
       }
       return currentFile;
+   }
+
+   private CountDownLatch newLatch(int countDown)
+   {
+      if (state == JournalState.STOPPED)
+      {
+         throw new RuntimeException("Server is not started");
+      }
+      CountDownLatch latch = new CountDownLatch(countDown);
+      latches.add(latch);
+      return latch;
+   }
+
+   private void awaitLatch(CountDownLatch latch, int timeout) throws InterruptedException
+   {
+      try
+      {
+         if (timeout < 0)
+         {
+            latch.await();
+         }
+         else
+         {
+            latch.await(timeout, TimeUnit.SECONDS);
+         }
+
+         // in case of an interrupted server, we need to make sure we don't proceed on anything
+         if (state == JournalState.STOPPED)
+         {
+            throw new RuntimeException("Server is not started");
+         }
+      }
+      finally
+      {
+         latches.remove(latch);
+      }
    }
 
    /** You need to guarantee lock.acquire() before calling this method! */
