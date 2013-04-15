@@ -418,9 +418,9 @@ public class NettyAcceptor implements Acceptor
                handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
                handlers.put("websocket-handler", new WebSocketServerHandler());
             }
-            else if (protocol == ProtocolType.STOMP)
+            else if (protocol == ProtocolType.STOMP || protocol == ProtocolType.AMQP)
             {
-               //With STOMP the decoding is handled in the StompFrame class
+               //With STOMP & AMQP the decoding is handled in the StompFrame class
             }
             else
             {

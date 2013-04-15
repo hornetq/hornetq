@@ -785,6 +785,28 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
+   public void individualCancel(final long messageID, boolean failed) throws Exception
+   {
+      if (browseOnly)
+      {
+         return;
+      }
+
+      MessageReference ref = removeReferenceByID(messageID);
+
+      if (ref == null)
+      {
+         throw new IllegalStateException("Cannot find ref to ack " + messageID);
+      }
+
+      if(!failed)
+      {
+         ref.decrementDeliveryCount();
+      }
+
+      ref.getQueue().cancel(ref, System.currentTimeMillis());
+   }
+
    public MessageReference removeReferenceByID(final long messageID) throws Exception
    {
       if (browseOnly)
@@ -1197,5 +1219,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          }
       }
 
+      public boolean isBrowsed()
+      {
+         messageQueue.deliverAsync();
+         boolean b = !iterator.hasNext();
+         return b;
+      }
    }
 }

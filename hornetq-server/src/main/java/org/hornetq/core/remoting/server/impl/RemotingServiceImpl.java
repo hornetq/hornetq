@@ -38,6 +38,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
+import org.hornetq.core.protocol.proton.ProtonProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -157,6 +158,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                            new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
       this.protocolMap.put(ProtocolType.STOMP_WS,
                            new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+      this.protocolMap.put(ProtocolType.AMQP,
+                           new ProtonProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
    }
 
    // RemotingService implementation -------------------------------

@@ -38,6 +38,11 @@ import org.hornetq.api.core.HornetQSessionCreationException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
+import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
+import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateException;
+import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInternalErrorException;
+import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInvalidFieldException;
+import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPNotImplementedException;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.jboss.logging.Cause;
@@ -315,4 +320,49 @@ public interface HornetQMessageBundle
 
    @Message(id = 119081, value =  "No Discovery Group configuration named {0} found", format = Message.Format.MESSAGE_FORMAT)
    HornetQException noDiscoveryGroupFound(DiscoveryGroupConfiguration dg);
+
+   @Message(id = 119082, value =  "target address not set", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInvalidFieldException targetAddressNotSet();
+
+   @Message(id = 119083, value =  "error creating temporary queue, {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInternalErrorException errorCreatingTemporaryQueue(String message);
+
+   @Message(id = 119084, value =  "target address does not exist", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException addressDoesntExist();
+
+   @Message(id = 119085, value =  "error finding temporary queue, {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInternalErrorException errorFindingTemporaryQueue(String message);
+
+   @Message(id = 119086, value =  "error creating HornetQ Session, {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInternalErrorException errorCreatingHornetQSession(String message);
+
+   @Message(id = 119087, value =  "error creating HornetQ Consumer, {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInternalErrorException errorCreatingHornetQConsumer(String message);
+
+   @Message(id = 119088, value =  "error starting HornetQ Consumer, {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorStartingConsumer(String message);
+
+   @Message(id = 119089, value =  "error acknowledging message {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorAcknowledgingMessage(long messageID, String message);
+
+   @Message(id = 119090, value =  "error cancelling message {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorCancellingMessage(long messageID, String message);
+
+   @Message(id = 119091, value =  "error closing consumer {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorClosingConsumer(long consumerID, String message);
+
+   @Message(id = 119092, value =  "source address does not exist", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInvalidFieldException sourceAddressDoesntExist();
+
+   @Message(id = 119093, value =  "source address not set", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPInvalidFieldException sourceAddressNotSet();
+
+   @Message(id = 119094, value =  "error rolling back coordinator: {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorRollingbackCoordinator(String message);
+
+   @Message(id = 119095, value =  "error committing coordinator: {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPIllegalStateException errorCommittingCoordinator(String message);
+
+   @Message(id = 119096, value =  "not implemented: {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAMQPNotImplementedException notImplemented(String message);
 }

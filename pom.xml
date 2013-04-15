@@ -285,6 +285,23 @@
             <!-- there is a new version of this JAR but it breaks our usage of it -->
             <version>2.1.2</version>
          </dependency>
+         <!---->
+
+         <dependency>
+             <groupId>org.apache.qpid</groupId>
+             <artifactId>proton-api</artifactId>
+             <version>0.3</version>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.qpid</groupId>
+             <artifactId>proton-j</artifactId>
+             <version>0.3</version>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.qpid</groupId>
+             <artifactId>proton-jms</artifactId>
+             <version>0.3</version>
+         </dependency>
          <!--needed to compile the spring support-->
          <dependency>
             <groupId>org.springframework</groupId>
