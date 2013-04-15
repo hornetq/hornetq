@@ -1591,9 +1591,9 @@ public class HornetQServerImpl implements HornetQServer
       // We do this at the end - we don't want things like MDBs or other connections connecting to a backup server until
       // it is activated
 
-      clusterManager.start();
-
       remotingService.start();
+
+      clusterManager.start();
 
       if (nodeManager.getNodeId() == null)
       {
