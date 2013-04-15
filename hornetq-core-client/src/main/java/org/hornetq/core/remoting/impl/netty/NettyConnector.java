@@ -574,7 +574,6 @@ public class NettyConnector extends AbstractConnector
       }
 
       SocketAddress remoteDestination;
-      SocketAddress localDestination;
       if (useServlet)
       {
          try
@@ -608,17 +607,27 @@ public class NettyConnector extends AbstractConnector
          }
       }
       HornetQClientLogger.LOGGER.debug("Remote destination: " + remoteDestination);
-      //default local port of zero means use any available port
-      if(localAddress != null)
+
+      ChannelFuture future;
+      //port 0 does not work so only use local address if set
+      if(port != 0)
       {
-         localDestination = new InetSocketAddress(localAddress, localPort);
+         SocketAddress localDestination;
+         if(localAddress != null)
+         {
+            localDestination = new InetSocketAddress(localAddress, localPort);
+         }
+         else
+         {
+            localDestination = new InetSocketAddress(localPort);
+         }
+         future = bootstrap.connect(remoteDestination, localDestination);
       }
       else
       {
-         localDestination = new InetSocketAddress(localPort);
+         future = bootstrap.connect(remoteDestination);
       }
 
-      ChannelFuture future = bootstrap.connect(remoteDestination, localDestination);
       future.awaitUninterruptibly();
 
       if (future.isSuccess())
