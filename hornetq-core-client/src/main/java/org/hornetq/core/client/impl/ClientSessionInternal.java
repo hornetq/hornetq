@@ -110,4 +110,9 @@ public interface ClientSessionInternal extends ClientSession
     * @see #startCall()
     */
    void endCall();
+
+   /**
+    * Sets a stop signal to true. This will cancel
+    */
+   void setStopSignal();
 }
