@@ -31,7 +31,7 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.FutureLatch;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * A Redistributor
@@ -57,6 +57,11 @@ public class Redistributor implements Consumer
    private final Queue queue;
 
    private int count;
+
+   // a Flush executor here is happening inside another executor.
+   // what may cause issues under load. Say you are running out of executors for cases where you don't need to wait at all.
+   // So, instead of using a future we will use a plain ReusableLatch here
+   private ReusableLatch pendingRuns = new ReusableLatch();
 
    public Redistributor(final Queue queue,
                         final StorageManager storageManager,
@@ -126,12 +131,16 @@ public class Redistributor implements Consumer
 
    private boolean flushExecutor()
    {
-      FutureLatch future = new FutureLatch();
-
-      executor.execute(future);
-
-      boolean ok = future.await(10000);
-      return ok;
+      try
+      {
+         boolean ok = pendingRuns.await(10000);
+         return ok;
+      }
+      catch (InterruptedException e)
+      {
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         return false;
+      }
    }
 
    public synchronized HandleStatus handle(final MessageReference reference) throws Exception
@@ -211,6 +220,25 @@ public class Redistributor implements Consumer
    public void proceedDeliver(MessageReference ref)
    {
       // no op
+   }
+
+
+   private void internalExecute(final Runnable runnable)
+   {
+      pendingRuns.countUp();
+      executor.execute(new Runnable(){
+         public void run()
+         {
+            try
+            {
+               runnable.run();
+            }
+            finally
+            {
+               pendingRuns.countDown();
+            }
+         }
+      });
    }
 
 

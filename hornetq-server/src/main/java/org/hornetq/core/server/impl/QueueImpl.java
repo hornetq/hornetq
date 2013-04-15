@@ -475,7 +475,7 @@ public class QueueImpl implements Queue
           }
        }
 
-      if (direct && directDeliver && deliverDirect(ref))
+      if (direct && directDeliver && deliveriesInTransit.getCount() == 0 && deliverDirect(ref))
       {
          return;
       }
