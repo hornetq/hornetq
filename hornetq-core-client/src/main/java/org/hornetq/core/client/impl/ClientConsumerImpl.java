@@ -212,6 +212,8 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          startSlowConsumer();
       }
 
+      messagesRunningLatch.countUp();
+
       receiverThread = Thread.currentThread();
 
       // To verify if deliveryForced was already call
@@ -388,6 +390,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       finally
       {
          receiverThread = null;
+         messagesRunningLatch.countDown();
       }
    }
 
@@ -966,6 +969,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          HornetQClientLogger.LOGGER.trace("Adding Runner on Executor for delivery");
       }
 
+      messagesRunningLatch.countUp();
       sessionExecutor.execute(runner);
    }
 
@@ -1081,7 +1085,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                   }
                });
 
-               messagesRunningLatch.countUp();
                onMessageThread = Thread.currentThread();
                try
                {
@@ -1106,7 +1109,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                   }
 
                   onMessageThread = null;
-                  messagesRunningLatch.countDown();
                }
 
                if (isTrace)
@@ -1161,8 +1163,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          // might be acked and if the consumer is already closed, the ack will be ignored
          closing = true;
 
-         resetLargeMessageController();
-
          if (interruptConsumer && !messagesRunningLatch.await(CLOSE_TIMEOUT_MILLISECONDS))
          {
             Thread onThread = receiverThread;
@@ -1182,6 +1182,8 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
+
+         resetLargeMessageController();
 
          closed = true;
 
@@ -1245,6 +1247,10 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
             HornetQClientLogger.LOGGER.onMessageError(e);
 
             lastException = e;
+         }
+         finally
+         {
+            messagesRunningLatch.countDown();
          }
 
       }
