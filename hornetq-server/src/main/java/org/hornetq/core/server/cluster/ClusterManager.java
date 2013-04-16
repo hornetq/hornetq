@@ -810,9 +810,9 @@ public final class ClusterManager implements HornetQComponent
 
       clusterConnections.put(config.getName(), clusterConnection);
 
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
+         HornetQServerLogger.LOGGER.trace("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
       }
    }
 
