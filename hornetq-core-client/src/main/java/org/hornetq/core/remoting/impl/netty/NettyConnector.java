@@ -610,7 +610,7 @@ public class NettyConnector extends AbstractConnector
 
       ChannelFuture future;
       //port 0 does not work so only use local address if set
-      if(port != 0)
+      if(localPort != 0)
       {
          SocketAddress localDestination;
          if(localAddress != null)
