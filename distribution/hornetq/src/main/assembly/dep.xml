@@ -129,18 +129,6 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-jms</include>
-         </includes>
-         <binaries>
-            <includeDependencies>false</includeDependencies>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
-         </binaries>
-      </moduleSet>
-      <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
             <include>org.hornetq:hornetq-jms-client</include>
          </includes>
          <binaries>
@@ -193,7 +181,7 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
-            <include>org.hornetq:hornetq-rar</include>
+            <include>org.hornetq:hornetq-ra</include>
          </includes>
          <binaries>
             <includeDependencies>false</includeDependencies>
