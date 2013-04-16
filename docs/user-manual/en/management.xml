@@ -992,14 +992,14 @@ notificationConsumer.setMessageListener(new MessageListener()
                   update</emphasis></para>
          </listitem>
          <listitem>
-            <para><literal>depth</literal></para>
+            <para><literal>messageCount</literal></para>
             <para>The <emphasis>current</emphasis> number of messages in the queue</para>
          </listitem>
          <listitem>
-            <para><literal>depthDelta</literal></para>
+            <para><literal>messageCountDelta</literal></para>
             <para>The <emphasis>overall</emphasis> number of messages added/removed from the queue
                   <emphasis>since the last message counter update</emphasis>. For example, if
-                  <literal>depthDelta</literal> is equal to <literal>-10</literal> this means that
+                  <literal>messageCountDelta</literal> is equal to <literal>-10</literal> this means that
                overall 10 messages have been removed from the queue (e.g. 2 messages were added and
                12 were removed)</para>
          </listitem>
@@ -1012,6 +1012,9 @@ notificationConsumer.setMessageListener(new MessageListener()
             <para>The timestamp of the last message counter update</para>
          </listitem>
       </itemizedlist>
+      <para>These attributes can be used to determine other meaningful data as well.  For example, to know
+      specifically how many messages were <emphasis>consumed</emphasis> from the queue since the last update
+      simply subtract the <literal>messageCountDelta</literal> from <literal>countDelta</literal>.</para>
       <section id="configuring.message.counters">
          <title>Configuring Message Counters</title>
          <para>By default, message counters are disabled as it might have a small negative effect on
@@ -1043,8 +1046,8 @@ String counters = queueControl.listMessageCounter();
 // use the MessageCounterInfo helper class to manipulate message counters more easily
 MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);         
 System.out.format("%s message(s) in the queue (since last sample: %s)\n",
-messageCounter.getDepth(),
-messageCounter.getDepthDelta());</programlisting>
+messageCounter.getMessageCount(),
+messageCounter.getMessageCountDelta());</programlisting>
       </section>
       <section>
          <title>Example</title>
