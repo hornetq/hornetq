@@ -43,6 +43,7 @@ import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
+import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.TokenBucketLimiter;
 
 /**
@@ -135,6 +136,8 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean ackIndividually;
 
    private final ClassLoader contextClassLoader;
+
+   private final ReusableLatch messagesRunningLatch = new ReusableLatch();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -1062,8 +1065,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
             if (!expired)
             {
-               onMessageThread = Thread.currentThread();
-
                if (isTrace)
                {
                   HornetQClientLogger.LOGGER.trace("Calling handler.onMessage");
@@ -1079,22 +1080,33 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                      return originalLoader;
                   }
                });
+
+               messagesRunningLatch.countUp();
+               onMessageThread = Thread.currentThread();
                try
                {
                   theHandler.onMessage(message);
                }
                finally
                {
-                  AccessController.doPrivileged(new PrivilegedAction<Object>()
+                  try
                   {
-                     public Object run()
+                     AccessController.doPrivileged(new PrivilegedAction<Object>()
                      {
-                        Thread.currentThread().setContextClassLoader(originalLoader);
-                        return null;
-                     }
-                  });
+                        public Object run()
+                        {
+                           Thread.currentThread().setContextClassLoader(originalLoader);
+                           return null;
+                        }
+                     });
+                  }
+                  catch (Exception e)
+                  {
+                     HornetQClientLogger.LOGGER.warn(e.getMessage(), e);
+                  }
 
                   onMessageThread = null;
+                  messagesRunningLatch.countDown();
                }
 
                if (isTrace)
@@ -1151,7 +1163,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
          resetLargeMessageController();
 
-         if (interruptConsumer)
+         if (interruptConsumer && !messagesRunningLatch.await(CLOSE_TIMEOUT_MILLISECONDS))
          {
             Thread onThread = receiverThread;
             if (onThread != null)
