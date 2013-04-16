@@ -298,7 +298,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public String toString()
    {
-      return "HornetQRAMessageProducer->" + producer;
+      return "HornetQMessageProducer->" + producer;
    }
 
    // Package protected ---------------------------------------------
