@@ -47,7 +47,9 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
+import org.hornetq.jms.server.management.JMSNotificationType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -57,7 +59,8 @@ import org.hornetq.utils.json.JSONObject;
  *
  *
  */
-public class JMSServerControlImpl extends AbstractControl implements JMSServerControl, NotificationEmitter
+public class JMSServerControlImpl extends AbstractControl implements JMSServerControl, NotificationEmitter, 
+                                                                     org.hornetq.core.server.management.NotificationListener
 {
 
    // Constants -----------------------------------------------------
@@ -132,7 +135,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
    public static MBeanNotificationInfo[] getNotificationInfos()
    {
-      NotificationType[] values = NotificationType.values();
+      JMSNotificationType[] values = JMSNotificationType.values();
       String[] names = new String[values.length];
       for (int i = 0; i < values.length; i++)
       {
@@ -150,6 +153,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       super(JMSServerControl.class, server.getHornetQServer().getStorageManager());
       this.server = server;
       broadcaster = new NotificationBroadcasterSupport();
+      server.getHornetQServer().getManagementService().addNotificationListener(this);
    }
 
    // Public --------------------------------------------------------
@@ -199,8 +203,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                                            connectorList,
                                            JMSServerControlImpl.convert(bindings));
          }
-
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
       finally
       {
@@ -379,8 +381,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          configuration.setGroupID(groupId);
 
          server.createConnectionFactory(true, configuration, bindings);
-
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
       finally
       {
@@ -431,12 +431,8 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean created = server.createQueue(true, name, selector, durable, JMSServerControlImpl.toArray(jndiBindings));
-         if (created)
-         {
-            sendNotification(NotificationType.QUEUE_CREATED, name);
-         }
-         return created;
+         return server.createQueue(true, name, selector, durable, 
+               JMSServerControlImpl.toArray(jndiBindings));
       }
       finally
       {
@@ -452,12 +448,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean destroyed = server.destroyQueue(name);
-         if (destroyed)
-         {
-            sendNotification(NotificationType.QUEUE_DESTROYED, name);
-         }
-         return destroyed;
+         return server.destroyQueue(name);
       }
       finally
       {
@@ -478,12 +469,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean created = server.createTopic(true, topicName, JMSServerControlImpl.toArray(jndiBindings));
-         if (created)
-         {
-            sendNotification(NotificationType.TOPIC_CREATED, topicName);
-         }
-         return created;
+         return server.createTopic(true, topicName, JMSServerControlImpl.toArray(jndiBindings));
       }
       finally
       {
@@ -499,12 +485,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean destroyed = server.destroyTopic(name);
-         if (destroyed)
-         {
-            sendNotification(NotificationType.TOPIC_DESTROYED, name);
-         }
-         return destroyed;
+         return server.destroyTopic(name);
       }
       finally
       {
@@ -520,11 +501,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean destroyed = server.destroyConnectionFactory(name);
-         if (destroyed)
-         {
-            sendNotification(NotificationType.CONNECTION_FACTORY_DESTROYED, name);
-         }
+         server.destroyConnectionFactory(name);
       }
       finally
       {
@@ -882,12 +859,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
    // Private -------------------------------------------------------
 
-   private void sendNotification(final NotificationType type, final String message)
-   {
-      Notification notif = new Notification(type.toString(), this, notifSeq.incrementAndGet(), message);
-      broadcaster.sendNotification(notif);
-   }
-
    private void checkStarted()
    {
       if (!server.isStarted())
@@ -897,16 +868,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
    }
 
    // Inner classes -------------------------------------------------
-
-   public static enum NotificationType
-   {
-      QUEUE_CREATED,
-      QUEUE_DESTROYED,
-      TOPIC_CREATED,
-      TOPIC_DESTROYED,
-      CONNECTION_FACTORY_CREATED,
-      CONNECTION_FACTORY_DESTROYED;
-   }
 
    public String[] listTargetDestinations(String sessionID) throws Exception
    {
@@ -1029,5 +990,16 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
 
       return obj;
+   }
+
+   @Override
+   public void onNotification(org.hornetq.core.server.management.Notification notification)
+   {
+      if (!(notification.getType() instanceof JMSNotificationType)) return;
+      JMSNotificationType type = (JMSNotificationType) notification.getType();
+      TypedProperties prop = notification.getProperties();
+
+      this.broadcaster.sendNotification(new Notification(type.toString(), this, 
+            notifSeq.incrementAndGet(), prop.getSimpleStringProperty(JMSNotificationType.MESSAGE).toString()));
    }
 }
