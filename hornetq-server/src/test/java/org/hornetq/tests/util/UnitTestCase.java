@@ -1356,6 +1356,20 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       if (directory.isDirectory())
       {
          String[] files = directory.list();
+         int num = 5;
+         int attempts = 0;
+         while (files == null && (attempts < num))
+         {
+            try
+            {
+               Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            files = directory.list();
+            attempts++;
+         }
 
          for (int j = 0; j < files.length; j++)
          {

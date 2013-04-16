@@ -31,6 +31,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
@@ -91,6 +92,13 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
          {
             sessions[i] = createSession(factories[i], true, true);
             sessions[i].createQueue(MultipleServerFailoverTestBase.ADDRESS, MultipleServerFailoverTestBase.ADDRESS, null, true);
+         }
+
+         //make sure bindings are ready before sending messages
+         for (int i = 0; i < liveServers.size(); i++)
+         {
+            this.waitForBindings(liveServers.get(i).getServer(), ADDRESS.toString(), true, 1, 0, 2000);
+            this.waitForBindings(liveServers.get(i).getServer(), ADDRESS.toString(), false, 1, 0, 2000);
          }
 
          ClientProducer producer = sessions[0].createProducer(MultipleServerFailoverTestBase.ADDRESS);
