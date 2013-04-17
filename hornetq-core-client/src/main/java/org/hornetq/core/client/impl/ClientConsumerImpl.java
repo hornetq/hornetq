@@ -137,8 +137,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    private final ClassLoader contextClassLoader;
 
-   private final ReusableLatch messagesRunningLatch = new ReusableLatch();
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -211,8 +209,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       {
          startSlowConsumer();
       }
-
-      messagesRunningLatch.countUp();
 
       receiverThread = Thread.currentThread();
 
@@ -390,7 +386,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       finally
       {
          receiverThread = null;
-         messagesRunningLatch.countDown();
       }
    }
 
@@ -457,7 +452,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    public void close() throws HornetQException
    {
-      doCleanUp(true, false);
+      doCleanUp(true);
    }
 
    /**
@@ -489,7 +484,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    {
       try
       {
-         doCleanUp(false, false);
+         doCleanUp(false);
       }
       catch (HornetQException e)
       {
@@ -969,7 +964,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          HornetQClientLogger.LOGGER.trace("Adding Runner on Executor for delivery");
       }
 
-      messagesRunningLatch.countUp();
       sessionExecutor.execute(runner);
    }
 
@@ -1149,7 +1143,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void doCleanUp(final boolean sendCloseMessage, final boolean interruptConsumer) throws HornetQException
+   private void doCleanUp(final boolean sendCloseMessage) throws HornetQException
    {
       try
       {
@@ -1162,23 +1156,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
          // after this and we can't just set the closed flag to true here, since after/in onmessage the message
          // might be acked and if the consumer is already closed, the ack will be ignored
          closing = true;
-
-         if (interruptConsumer && !messagesRunningLatch.await(CLOSE_TIMEOUT_MILLISECONDS))
-         {
-            Thread onThread = receiverThread;
-            if (onThread != null)
-            {
-               try
-               {
-                  // just trying to interrupt any ongoing messages
-                  onThread.interrupt();
-               }
-               catch (Throwable ignored)
-               {
-                  // security exception probably.. we just ignore it, not big deal!
-               }
-            }
-         }
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
@@ -1248,11 +1225,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
             lastException = e;
          }
-         finally
-         {
-            messagesRunningLatch.countDown();
-         }
-
       }
    }
 
