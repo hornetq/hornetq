@@ -25,8 +25,8 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -260,17 +260,17 @@ public class ClusterConnectionBridge extends BridgeImpl
                                                 " AND " +
                                                 ManagementHelper.HDR_NOTIFICATION_TYPE +
                                                 " IN ('" +
-                                                NotificationType.BINDING_ADDED +
+                                                CoreNotificationType.BINDING_ADDED +
                                                 "','" +
-                                                NotificationType.BINDING_REMOVED +
+                                                CoreNotificationType.BINDING_REMOVED +
                                                 "','" +
-                                                NotificationType.CONSUMER_CREATED +
+                                                CoreNotificationType.CONSUMER_CREATED +
                                                 "','" +
-                                                NotificationType.CONSUMER_CLOSED +
+                                                CoreNotificationType.CONSUMER_CLOSED +
                                                 "','" +
-                                                NotificationType.PROPOSAL +
+                                                CoreNotificationType.PROPOSAL +
                                                 "','" +
-                                                NotificationType.PROPOSAL_RESPONSE +
+                                                CoreNotificationType.PROPOSAL_RESPONSE +
                                                 "') AND " +
                                                 ManagementHelper.HDR_DISTANCE +
                                                 "<" +
