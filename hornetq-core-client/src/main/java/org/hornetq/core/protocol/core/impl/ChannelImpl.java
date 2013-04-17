@@ -354,9 +354,7 @@ public final class ChannelImpl implements Channel
                }
                catch (InterruptedException e)
                {
-                  // I can't throw an exception on this case, as we need to keep trying, and only leave after a callback
-                  // specJMS for instance may throw an interrupt and expect these blocking operations (such as commit)
-                  // to finish
+                  throw new HornetQInterruptedException(e);
                }
 
                if (response != null && response.getType() != PacketImpl.EXCEPTION && response.getType() != expectedPacket)
