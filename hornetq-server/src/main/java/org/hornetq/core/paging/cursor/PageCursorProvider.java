@@ -40,7 +40,7 @@ public interface PageCursorProvider
 
    PageSubscription createSubscription(long queueId, Filter filter, boolean durable);
 
-   PagedMessage getMessage(PagePosition pos) throws Exception;
+   PagedMessage getMessage(PagePosition pos);
 
    void processReload() throws Exception;
 

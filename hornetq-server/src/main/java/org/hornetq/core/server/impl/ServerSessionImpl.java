@@ -511,18 +511,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    }
 
-   public void deleteQueue(final SimpleString name) throws Exception
+   public void deleteQueue(final SimpleString queueToDelete) throws Exception
    {
-      Binding binding = postOffice.getBinding(name);
+      Binding binding = postOffice.getBinding(queueToDelete);
 
       if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
          throw new HornetQNonExistentQueueException();
       }
 
-      server.destroyQueue(name, this, true);
+      server.destroyQueue(queueToDelete, this, true);
 
-      TempQueueCleanerUpper cleaner = this.tempQueueCleannerUppers.remove(name);
+      TempQueueCleanerUpper cleaner = this.tempQueueCleannerUppers.remove(queueToDelete);
 
       if (cleaner != null)
       {
@@ -723,9 +723,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
     */
    private TransactionImpl newTransaction()
    {
-      TransactionImpl tx = new TransactionImpl(storageManager, timeoutSeconds);
-
-      return tx;
+      return new TransactionImpl(storageManager, timeoutSeconds);
    }
 
    /**
@@ -734,9 +732,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
     */
    private TransactionImpl newTransaction(final Xid xid)
    {
-      TransactionImpl tx = new TransactionImpl(xid, storageManager, timeoutSeconds);
-
-      return tx;
+      return new TransactionImpl(xid, storageManager, timeoutSeconds);
    }
 
    public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
