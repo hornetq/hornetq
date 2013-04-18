@@ -1288,7 +1288,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
       }
    }
-   
+
    private int getNumInitialConnectors()
    {
       if (initialConnectors == null) return 0;
@@ -1392,6 +1392,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          for (ClientSessionFactoryInternal csf : connectingFactories)
          {
+            csf.causeExit();
+         }
+         for (ClientSessionFactoryInternal csf : connectingFactories)
+         {
             csf.close();
          }
          connectingFactories.clear();
@@ -1405,6 +1409,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          factories.clear();
       }
 
+      for (ClientSessionFactoryInternal factory : clonedFactory)
+      {
+         factory.causeExit();
+      }
       for (ClientSessionFactory factory : clonedFactory)
       {
          if (sendClose)

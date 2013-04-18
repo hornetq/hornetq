@@ -616,7 +616,8 @@ public class HornetQServerImpl implements HornetQServer
          stopComponent(replicationEndpoint); // applies to a "backup" server
          stopComponent(pagingManager);
 
-         storageManager.stop(criticalIOError);
+         if (storageManager != null)
+            storageManager.stop(criticalIOError);
 
          // We stop remotingService before otherwise we may lock the system in case of a critical IO
          // error shutdown
