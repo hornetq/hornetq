@@ -2034,7 +2034,7 @@ public class FailoverTest extends FailoverTestBase
 
       committer.join();
 
-      Assert.assertFalse(committer.failed);
+      Assert.assertFalse("commiter failed should be false", committer.failed);
 
       session.close();
 
