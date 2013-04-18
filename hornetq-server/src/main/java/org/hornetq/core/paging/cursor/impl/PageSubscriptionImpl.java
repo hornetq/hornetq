@@ -59,7 +59,7 @@ import org.hornetq.utils.LinkedListIterator;
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-class PageSubscriptionImpl implements PageSubscription
+final class PageSubscriptionImpl implements PageSubscription
 {
    private final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
@@ -368,7 +368,7 @@ class PageSubscriptionImpl implements PageSubscription
       return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + ", filter = " + filter + "]";
    }
 
-   private PagedReference getReference(PagePosition pos) throws Exception
+   private PagedReference getReference(PagePosition pos)
    {
       return cursorProvider.newReference(pos, cursorProvider.getMessage(pos), this);
    }
@@ -1260,14 +1260,14 @@ class PageSubscriptionImpl implements PageSubscription
 
             return moveNext();
          }
-         catch (Exception e)
+         catch (RuntimeException e)
          {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage(), e);
+            throw e;
          }
       }
 
-      private PagedReference moveNext() throws Exception
+      private PagedReference moveNext()
       {
          synchronized (PageSubscriptionImpl.this)
          {

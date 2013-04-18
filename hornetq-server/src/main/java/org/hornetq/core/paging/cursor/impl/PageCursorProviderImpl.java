@@ -113,7 +113,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return activeCursors.get(cursorID);
    }
 
-   public PagedMessage getMessage(final PagePosition pos) throws Exception
+   public PagedMessage getMessage(final PagePosition pos)
    {
       PageCache cache = getPageCache(pos.getPageNr());
 
