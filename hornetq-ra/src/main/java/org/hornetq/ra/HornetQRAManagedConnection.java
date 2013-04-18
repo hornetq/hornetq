@@ -54,7 +54,7 @@ import org.hornetq.jms.client.HornetQXAConnection;
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public class HornetQRAManagedConnection implements ManagedConnection, ExceptionListener
+public final class HornetQRAManagedConnection implements ManagedConnection, ExceptionListener
 {
    /** Trace enabled */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
@@ -91,7 +91,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
    private HornetQXAConnection connection;
 
-   // The ManagedConnection will paly with a XA and a NonXASession to couple with
+   // The ManagedConnection will play with a XA and a NonXASession to couple with
    // cases where a commit is called on a non-XAed (or non-enlisted) case.
    private Session nonXAsession;
 
@@ -203,8 +203,10 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       try
       {
+
          if (connection != null)
          {
+            connection.signalStopToAllSessions();
             connection.stop();
          }
       }
@@ -252,6 +254,21 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
       try
       {
+         /**
+          * (xa|nonXA)Session.close() may NOT be called BEFORE connection.close().
+          * <p>
+          * If the ClientSessionFactory is trying to fail-over or reconnect with -1 attempts, and
+          * one calls session.close() it may effectively dead-lock.
+          * <p>
+          * connection close will close the ClientSessionFactory which will close all sessions.
+          */
+         if (connection != null)
+         {
+            connection.close();
+         }
+
+         // The following calls should not be necessary, as the connection should close the
+         // ClientSessionFactory, which will close the sessions.
          try
          {
             if (nonXAsession != null)
@@ -267,11 +284,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          catch (JMSException e)
          {
             HornetQRALogger.LOGGER.debug("Error closing session " + this, e);
-         }
-
-         if (connection != null)
-         {
-            connection.close();
          }
 
          // we must close the HornetQConnectionFactory because it contains a ServerLocator
@@ -758,7 +770,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
    /**
     * Setup the connection.
-    * @exception ResourceException Thrown if a connection couldnt be created
+    * @exception ResourceException Thrown if a connection couldn't be created
     */
    private void setup() throws ResourceException
    {

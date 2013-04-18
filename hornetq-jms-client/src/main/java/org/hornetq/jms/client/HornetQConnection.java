@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSConstants;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
@@ -287,6 +288,20 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       started = true;
    }
 
+   public synchronized void signalStopToAllSessions()
+   {
+      for (HornetQSession session : sessions)
+      {
+         ClientSession coreSession = session.getCoreSession();
+         if (coreSession instanceof ClientSessionInternal)
+         {
+            ClientSessionInternal internalSession = (ClientSessionInternal)coreSession;
+            internalSession.setStopSignal();
+         }
+      }
+
+   }
+
    public synchronized void stop() throws JMSException
    {
       checkClosed();
@@ -300,7 +315,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       started = false;
    }
 
-   public synchronized void close() throws JMSException
+   public synchronized final void close() throws JMSException
    {
       if (closed)
       {

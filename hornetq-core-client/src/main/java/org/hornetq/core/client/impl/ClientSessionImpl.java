@@ -184,6 +184,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private volatile boolean inClose;
 
+   private volatile boolean mayAttemptToFailover = true;
+
    private volatile SimpleString defaultAddress;
 
    private boolean xaRetry = false;
@@ -928,9 +930,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          {
             producerCreditManager.close();
          }
-
          inClose = true;
-
          channel.sendBlocking(new SessionCloseMessage(), PacketImpl.NULL_RESPONSE);
       }
       catch (Throwable e)
@@ -1031,7 +1031,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                // has already been executed on the server, that's why we can't find the session- in this case we *don't*
                // want
                // to recreate the session, we just want to unblock the blocking call
-               if (!inClose)
+               if (!inClose && mayAttemptToFailover)
                {
                   Packet createRequest = new CreateSessionMessage(name,
                                                                   channel.getID(),
@@ -2210,8 +2210,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          return "XAER_INVAL(" + flags + ")";
       }
-
    }
 
-
+   @Override
+   public void setStopSignal()
+   {
+      mayAttemptToFailover = false;
+   }
 }
