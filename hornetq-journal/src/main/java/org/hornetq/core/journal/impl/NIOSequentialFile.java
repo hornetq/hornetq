@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIOErrorException;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -38,7 +39,7 @@ import org.hornetq.journal.HornetQJournalLogger;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class NIOSequentialFile extends AbstractSequentialFile
+public final class NIOSequentialFile extends AbstractSequentialFile
 {
    private FileChannel channel;
 
@@ -126,13 +127,18 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
       bb.flip();
 
-      channel.position(position);
-
-      channel.write(bb);
-
-      channel.force(false);
-
-      channel.position(0);
+      try
+      {
+         channel.position(position);
+         channel.write(bb);
+         channel.force(false);
+         channel.position(0);
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
+      }
 
       fileSize = channel.size();
    }
@@ -159,17 +165,23 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
 
       maxIOSemaphore = null;
-
-      if (channel != null)
+      try
       {
-         channel.close();
-      }
+         if (channel != null)
+         {
+            channel.close();
+         }
 
-      if (rfile != null)
+         if (rfile != null)
+         {
+            rfile.close();
+         }
+      }
+      catch (IOException e)
       {
-         rfile.close();
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
       }
-
       channel = null;
 
       rfile = null;
@@ -182,13 +194,14 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return read(bytes, null);
    }
 
-   public synchronized int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
+   public synchronized int read(final ByteBuffer bytes, final IOAsyncTask callback) throws IOException,
+                                                                                   HornetQIllegalStateException
    {
       try
       {
          if (channel == null)
          {
-            throw new Exception("File " + this.getFileName() + " has a null channel");
+            throw new HornetQIllegalStateException("File " + this.getFileName() + " has a null channel");
          }
          int bytesRead = channel.read(bytes);
 
@@ -212,11 +225,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
          throw e;
       }
-      catch (Exception e)
-      {
-         throw e;
-      }
-
    }
 
    public void sync() throws IOException
@@ -241,17 +249,31 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          return getFile().length();
       }
-      else
+
+      try
       {
          return channel.size();
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
       }
    }
 
    @Override
-   public void position(final long pos) throws Exception
+   public void position(final long pos) throws IOException
    {
-      super.position(pos);
-      channel.position(pos);
+      try
+      {
+         super.position(pos);
+         channel.position(pos);
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
+      }
    }
 
    @Override
@@ -302,7 +324,10 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return super.newBuffer(size, limit);
    }
 
-   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
+ throws IOException,
+                                                                                                 HornetQIOErrorException,
+                                                                                                 InterruptedException
    {
       if (!isOpen())
       {
