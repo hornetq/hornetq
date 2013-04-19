@@ -50,8 +50,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   /** This definition needs to match Version.h on the native sources.
-       Or else the native module won't be loaded because of version mismatches */
+   /**
+    * This definition needs to match Version.h on the native sources.
+    * <p>
+    * Or else the native module won't be loaded because of version mismatches
+    */
    private static final int EXPECTED_NATIVE_VERSION = 51;
 
    /** Used to determine the next writing sequence */
@@ -63,7 +66,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /**
     * AIO can't guarantee ordering over callbacks.
-    * We use thie PriorityQueue to hold values until they are in order
+    * <p>
+    * We use this {@link PriorityQueue} to hold values until they are in order
     */
    private final PriorityQueue<CallbackHolder> pendingCallbacks = new PriorityQueue<CallbackHolder>();
 
@@ -411,7 +415,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void fill(final long position, final int blocks, final long size, final byte fillChar) throws HornetQException
    {
       checkOpened();
-      AsynchronousFileImpl.fill(handler, position, blocks, size, fillChar);
+      try {
+         AsynchronousFileImpl.fill(handler, position, blocks, size, fillChar);
+      }
+      catch (HornetQException e)
+      {
+         fireExceptionListener(e.getType().getCode(), e.getMessage());
+         throw e;
+      }
    }
 
    public int getBlockSize()
