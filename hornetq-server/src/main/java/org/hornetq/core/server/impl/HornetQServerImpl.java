@@ -480,7 +480,7 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * Stops the server in a different thread.
     */
-   public final void stopTheServer()
+   public final void stopTheServer(final boolean criticalIOError)
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.submit(new Runnable()
@@ -490,7 +490,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             try
             {
-               stop();
+               stop(configuration.isFailoverOnServerShutdown(), criticalIOError);
             }
             catch (Exception e)
             {
@@ -502,10 +502,6 @@ public class HornetQServerImpl implements HornetQServer
 
    public final void stop() throws Exception
    {
-      synchronized (failbackCheckerGuard)
-      {
-         cancelFailBackChecker = true;
-      }
       stop(configuration.isFailoverOnServerShutdown());
    }
 
@@ -544,6 +540,11 @@ public class HornetQServerImpl implements HornetQServer
 
    private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError) throws Exception
    {
+      synchronized (failbackCheckerGuard)
+      {
+         cancelFailBackChecker = true;
+      }
+
       synchronized (this)
       {
          if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
@@ -2217,7 +2218,7 @@ public class HornetQServerImpl implements HornetQServer
 
             HornetQServerLogger.LOGGER.ioCriticalIOError(message, file.toString(), cause);
 
-            stopTheServer();
+            stopTheServer(true);
          }
       }
    }
