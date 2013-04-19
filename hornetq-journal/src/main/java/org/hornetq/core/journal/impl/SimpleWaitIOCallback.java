@@ -16,6 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.journal.HornetQJournalLogger;
 
@@ -26,7 +27,7 @@ import org.hornetq.journal.HornetQJournalLogger;
  *
  *
  */
-public class SimpleWaitIOCallback extends SyncIOCompletion
+public final class SimpleWaitIOCallback extends SyncIOCompletion
 {
    private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -45,19 +46,19 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
       latch.countDown();
    }
 
-   public void onError(final int errorCode, final String errorMessage)
+   public void onError(final int errorCode1, final String errorMessage1)
    {
-      this.errorCode = errorCode;
+      this.errorCode = errorCode1;
 
-      this.errorMessage = errorMessage;
+      this.errorMessage = errorMessage1;
 
-      HornetQJournalLogger.LOGGER.errorOnIOCallback(errorMessage);
+      HornetQJournalLogger.LOGGER.errorOnIOCallback(errorMessage1);
 
       latch.countDown();
    }
 
    @Override
-   public void waitCompletion() throws Exception
+   public void waitCompletion() throws InterruptedException, HornetQException
    {
       while (true)
       {
@@ -73,7 +74,7 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
       return;
    }
 
-   public boolean waitCompletion(final long timeout) throws Exception
+   public boolean waitCompletion(final long timeout) throws InterruptedException, HornetQException
    {
       boolean retValue = latch.await(timeout, TimeUnit.MILLISECONDS);
 

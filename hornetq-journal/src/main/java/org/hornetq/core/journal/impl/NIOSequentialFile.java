@@ -75,7 +75,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return 1;
    }
 
-   public int calculateBlockStart(final int position) throws Exception
+   public int calculateBlockStart(final int position)
    {
       return position;
    }
@@ -87,12 +87,12 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    /** this.maxIO represents the default maxIO.
     *  Some operations while initializing files on the journal may require a different maxIO */
-   public synchronized void open() throws Exception
+   public synchronized void open() throws IOException
    {
       open(defaultMaxIO, true);
    }
 
-   public void open(final int maxIO, final boolean useExecutor) throws Exception
+   public void open(final int maxIO, final boolean useExecutor) throws IOException
    {
       try
       {
@@ -115,7 +115,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
    }
 
-   public void fill(final int position, final int size, final byte fillCharacter) throws Exception
+   public void fill(final int position, final int size, final byte fillCharacter) throws IOException
    {
       ByteBuffer bb = ByteBuffer.allocate(size);
 
@@ -137,7 +137,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       fileSize = channel.size();
    }
 
-   public synchronized void waitForClose() throws Exception
+   public synchronized void waitForClose() throws InterruptedException
    {
       while (isOpen())
       {
@@ -146,7 +146,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
    }
 
    @Override
-   public synchronized void close() throws Exception
+   public synchronized void close() throws IOException, InterruptedException
    {
       super.close();
 
@@ -235,7 +235,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       }
    }
 
-   public long size() throws Exception
+   public long size() throws IOException
    {
       if (channel == null)
       {

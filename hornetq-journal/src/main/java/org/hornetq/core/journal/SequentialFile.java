@@ -104,7 +104,7 @@ public interface SequentialFile
     */
    int read(ByteBuffer bytes) throws Exception;
 
-   void position(long pos) throws Exception;
+   void position(long pos) throws IOException;
 
    long position() throws Exception;
 

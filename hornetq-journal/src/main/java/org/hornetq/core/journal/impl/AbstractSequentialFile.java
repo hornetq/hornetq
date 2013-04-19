@@ -14,6 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -134,7 +135,8 @@ public abstract class AbstractSequentialFile implements SequentialFile
       this.close();
    }
 
-   public void position(final long pos) throws Exception
+   @Override
+   public void position(final long pos) throws IOException
    {
       position.set(pos);
    }
@@ -159,7 +161,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public synchronized void close() throws Exception
+   /**
+    * @throws IOException we declare throwing IOException because sub-classes need to do it
+    */
+   public synchronized void close() throws IOException, InterruptedException
    {
       final CountDownLatch donelatch = new CountDownLatch(1);
 

@@ -67,14 +67,14 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       return opened;
    }
 
-   public int getAlignment() throws Exception
+   public int getAlignment()
    {
       checkOpened();
 
       return aioFile.getBlockSize();
    }
 
-   public int calculateBlockStart(final int position) throws Exception
+   public int calculateBlockStart(final int position)
    {
       int alignment = getAlignment();
 
@@ -178,7 +178,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       open(maxIO, true);
    }
 
-   public synchronized void open(final int maxIO, final boolean useExecutor) throws Exception
+   public synchronized void open(final int maxIO, final boolean useExecutor) throws HornetQException
    {
       opened = true;
 
@@ -206,7 +206,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       aioFile.setBufferCallback(callback);
    }
 
-   public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
+   public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws HornetQException
    {
       int bytesToRead = bytes.limit();
 
@@ -318,7 +318,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    // Private methods
    // -----------------------------------------------------------------------------------------------------
 
-   private void checkOpened() throws Exception
+   private void checkOpened()
    {
       if (aioFile == null || !opened)
       {
