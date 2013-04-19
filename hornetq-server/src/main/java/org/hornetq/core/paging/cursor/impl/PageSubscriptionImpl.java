@@ -828,7 +828,7 @@ final class PageSubscriptionImpl implements PageSubscription
       getPageInfo(pageNr, true);
    }
 
-   private synchronized PageCursorInfo getPageInfo(final PagePosition pos)
+   private PageCursorInfo getPageInfo(final PagePosition pos)
    {
       return getPageInfo(pos.getPageNr(), true);
    }

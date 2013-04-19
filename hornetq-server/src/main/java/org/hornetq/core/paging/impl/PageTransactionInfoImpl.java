@@ -37,7 +37,7 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PageTransactionInfoImpl implements PageTransactionInfo
+public final class PageTransactionInfoImpl implements PageTransactionInfo
 {
    // Constants -----------------------------------------------------
 
