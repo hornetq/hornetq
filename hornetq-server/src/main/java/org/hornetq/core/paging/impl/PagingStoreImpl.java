@@ -1157,7 +1157,7 @@ public class PagingStoreImpl implements PagingStore
    @Override
    public void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception
    {
-      lock(-1);
+      lock.writeLock().lock();
       try
       {
          for (Integer id : pageIds)
@@ -1172,7 +1172,7 @@ public class PagingStoreImpl implements PagingStore
       }
       finally
       {
-         unlock();
+         lock.writeLock().unlock();
       }
    }
 
