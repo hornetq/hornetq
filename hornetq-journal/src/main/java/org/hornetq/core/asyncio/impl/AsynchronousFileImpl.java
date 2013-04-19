@@ -243,7 +243,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
    }
 
-   public void close() throws Exception
+   public void close() throws InterruptedException, HornetQException
    {
       checkOpened();
 

@@ -309,7 +309,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          this.fileName = fileName;
       }
 
-      public synchronized void close() throws Exception
+      public synchronized void close()
       {
          open = false;
 
@@ -329,7 +329,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          }
       }
 
-      public void delete() throws Exception
+      public void delete()
       {
          if (open)
          {
@@ -407,7 +407,8 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return bytesRead.length;
       }
 
-      public void position(final long pos) throws Exception
+      @Override
+      public void position(final long pos)
       {
          if (!open)
          {
@@ -419,7 +420,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          data.position((int)pos);
       }
 
-      public long position() throws Exception
+      public long position()
       {
          return data.position();
       }

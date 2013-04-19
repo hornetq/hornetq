@@ -14,6 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
@@ -97,7 +98,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
    }
 
    @Override
-   public synchronized void close() throws Exception
+   public synchronized void close() throws IOException, InterruptedException, HornetQException
    {
       if (!opened)
       {

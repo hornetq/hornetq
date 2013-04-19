@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -152,7 +153,7 @@ public final class NIOSequentialFile extends AbstractSequentialFile
    }
 
    @Override
-   public synchronized void close() throws IOException, InterruptedException
+   public synchronized void close() throws IOException, InterruptedException, HornetQException
    {
       super.close();
 
