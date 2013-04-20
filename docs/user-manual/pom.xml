@@ -244,6 +244,7 @@
                             <xmlTransformerType>saxon</xmlTransformerType>
                             <docbookVersion>1.72.0</docbookVersion>
                             <localeSeparator>-</localeSeparator>
+                            <applyStandardInjectionValues>false</applyStandardInjectionValues>
                             <transformerParameters>
                                 <property>
                                     <name>javax.xml.parsers.DocumentBuilderFactory</name>
