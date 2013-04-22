@@ -63,6 +63,10 @@ public interface ConnectionFactoryControl
    */
    void setClientID(String clientID);
 
+   /**
+    * @see ServerLocator#isCompressLargeMessage()
+    * @return whether large messages are compressed
+    */
    boolean isCompressLargeMessages();
 
    void setCompressLargeMessages(boolean compress);

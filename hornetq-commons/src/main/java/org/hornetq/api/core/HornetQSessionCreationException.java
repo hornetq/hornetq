@@ -24,11 +24,9 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.SESSION_CREATION_REJECTED;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/2/12
- *
- * The creation of a session was rejected by the server (e.g. if the
- * server is starting and has not finish to be initialized.
+ * The creation of a session was rejected by the server (e.g. if the server is starting and has not
+ * finish to be initialized.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/2/12
  */
 public final class HornetQSessionCreationException extends HornetQException
 {

@@ -188,7 +188,7 @@ public final class ManagementHelper
          {
             if (parameter != null)
             {
-               Class clz = parameter.getClass();
+               Class<?> clz = parameter.getClass();
 
                if (clz.isArray())
                {
@@ -454,19 +454,7 @@ public final class ManagementHelper
       return ManagementHelper.fromJSONArray(array);
    }
 
-   // Constructors --------------------------------------------------
-
    private ManagementHelper()
    {
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

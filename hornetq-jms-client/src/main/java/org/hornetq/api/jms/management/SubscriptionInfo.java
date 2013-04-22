@@ -24,10 +24,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class SubscriptionInfo
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final String queueName;
 
    private final String clientID;
@@ -144,12 +140,4 @@ public class SubscriptionInfo
    {
       return deliveringCount;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

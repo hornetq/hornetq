@@ -27,7 +27,6 @@ import org.hornetq.api.core.management.Parameter;
  */
 public interface TopicControl extends DestinationControl
 {
-   // Attributes ----------------------------------------------------
 
    /**
     * Returns the number of (durable and non-durable) subscribers for this topic.

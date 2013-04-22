@@ -22,8 +22,6 @@ import org.hornetq.api.core.Interceptor;
  */
 public interface HornetQServerControl
 {
-   // Attributes ----------------------------------------------------
-
    /**
     * Returns this server's version.
     */

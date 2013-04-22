@@ -24,8 +24,6 @@ package org.hornetq.api.core.management;
 public final class ResourceNames
 {
 
-   // Constants -----------------------------------------------------
-
    public static final String CORE_SERVER = "core.server";
 
    public static final String CORE_QUEUE = "core.queue.";
@@ -52,24 +50,8 @@ public final class ResourceNames
 
    public static final String JMS_CONNECTION_FACTORY = "jms.connectionfactory.";
 
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    private ResourceNames()
    {
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

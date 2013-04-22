@@ -40,9 +40,6 @@ import org.hornetq.journal.HornetQJournalLogger;
 public abstract class AbstractSequentialFile implements SequentialFile
 {
 
-   // Constants -----------------------------------------------------
-   // Attributes ----------------------------------------------------
-
    private File file;
 
    private final String directory;

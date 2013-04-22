@@ -92,5 +92,6 @@ public final class HornetQBuffers
 
    private HornetQBuffers()
    {
+      // Utility class
    }
 }

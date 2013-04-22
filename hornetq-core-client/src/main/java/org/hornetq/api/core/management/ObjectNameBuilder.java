@@ -20,9 +20,7 @@ import org.hornetq.api.core.SimpleString;
 
 /**
  * Helper class to build ObjectNames for HornetQ resources.
- *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public final class ObjectNameBuilder
 {

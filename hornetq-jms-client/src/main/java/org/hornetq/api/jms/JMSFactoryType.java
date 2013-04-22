@@ -20,6 +20,7 @@ package org.hornetq.api.jms;
  *
  *
  */
+// XXX no javadocs
 public enum JMSFactoryType
 {
    CF, QUEUE_CF, TOPIC_CF, XA_CF, QUEUE_XA_CF, TOPIC_XA_CF;

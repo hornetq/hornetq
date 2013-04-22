@@ -15,7 +15,14 @@ package org.hornetq.api.core.management;
 
 /**
  * Types of notification emitted by HornetQ servers.
- *
+ * <p>
+ * These notifications can be received through:
+ * <ul>
+ * <li>JMX' MBeans subscriptions
+ * <li>Core messages to a notification address (default value is {@value hornetq.notifications})
+ * <li>JMS messages
+ * </ul>
+ * @see the HornetQ user manual section on "Management Notifications"
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public enum NotificationType

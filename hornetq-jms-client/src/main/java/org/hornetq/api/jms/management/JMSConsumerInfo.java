@@ -24,10 +24,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class JMSConsumerInfo
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final String consumerID;
 
    private final String connectionID;
@@ -136,12 +132,4 @@ public class JMSConsumerInfo
    {
       return filter;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

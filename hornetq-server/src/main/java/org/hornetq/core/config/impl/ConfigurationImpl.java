@@ -1133,7 +1133,7 @@ public class ConfigurationImpl implements Configuration
          return true;
       if (obj == null)
          return false;
-      if (getClass() != obj.getClass())
+      if (!(obj instanceof ConfigurationImpl))
          return false;
       ConfigurationImpl other = (ConfigurationImpl)obj;
       if (acceptorConfigs == null)

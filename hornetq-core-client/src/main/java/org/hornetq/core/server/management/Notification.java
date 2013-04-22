@@ -18,14 +18,11 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * A Notification
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 22 Jan 2009 16:41:12
- *
- *
+ * @see org.hornetq.core.server.management.NotificationListener
+ * @see NotificationType
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 22 Jan 2009 16:41:12
  */
-public class Notification
+public final class Notification
 {
    private final NotificationType type;
 

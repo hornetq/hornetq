@@ -20,6 +20,7 @@ import static org.hornetq.api.core.HornetQExceptionType.LARGE_MESSAGE_INTERRUPTE
 /**
  * @author Clebert
  */
+// XXX
 public class HornetQLargeMessageInterruptedException extends HornetQException
 {
    private static final long serialVersionUID = 0;

@@ -23,9 +23,10 @@ package org.hornetq.api.core;
 
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/4/12
+ * An error has happened at HornetQ's native (non-Java) code used in reading and writing data.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> 5/4/12
  */
+// XXX
 public final class HornetQNativeIOError extends HornetQException
 {
    private static final long serialVersionUID = 2355120980683293085L;

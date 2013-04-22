@@ -24,9 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.ADDRESS_FULL;
 
 /**
- * @author Justin Bertram
- *
  * An address is full.
+ * @author Justin Bertram
  */
 public final class HornetQAddressFullException extends HornetQException
 {

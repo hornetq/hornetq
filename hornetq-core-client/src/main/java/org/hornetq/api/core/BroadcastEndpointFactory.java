@@ -1,7 +1,7 @@
 package org.hornetq.api.core;
 
-import org.hornetq.api.core.BroadcastEndpoint;
 
+//XXX No javadocs
 public interface BroadcastEndpointFactory
 {
     BroadcastEndpoint createBroadcastEndpoint() throws Exception;
