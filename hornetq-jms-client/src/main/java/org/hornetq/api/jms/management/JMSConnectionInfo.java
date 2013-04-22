@@ -26,10 +26,6 @@ import org.hornetq.utils.json.JSONObject;
 public class JMSConnectionInfo
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final String connectionID;
 
    private final String clientAddress;
@@ -104,13 +100,4 @@ public class JMSConnectionInfo
    {
       return username;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

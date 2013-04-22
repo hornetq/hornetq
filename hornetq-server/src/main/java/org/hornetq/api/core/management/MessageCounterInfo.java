@@ -27,10 +27,6 @@ import org.hornetq.utils.json.JSONObject;
  */
 public final class MessageCounterInfo
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final String name;
 
    private final String subscription;
@@ -49,8 +45,12 @@ public final class MessageCounterInfo
 
    private final String udpateTimestamp;
 
-   // Static --------------------------------------------------------
-
+   /**
+    * Returns a JSON String serialization of a {@link MessageCounter} object.
+    * @param counter
+    * @return
+    * @throws Exception
+    */
    public static String toJSon(final MessageCounter counter) throws Exception
    {
       DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
@@ -188,12 +188,4 @@ public final class MessageCounterInfo
    {
       return udpateTimestamp;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }
