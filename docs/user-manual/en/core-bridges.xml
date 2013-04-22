@@ -66,14 +66,14 @@
    &lt;failover-on-server-shutdown>false&lt;/failover-on-server-shutdown>
    &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
    &lt;confirmation-window-size>10000000&lt;/confirmation-window-size>
+   &lt;user>foouser&lt;/user>
+   &lt;password>foopassword&lt;/password>
    &lt;static-connectors>
       &lt;connector-ref>remote-connector&lt;/connector-ref>
    &lt;/static-connectors>
    &lt;!-- alternative to static-connectors
    &lt;discovery-group-ref discovery-group-name="bridge-discovery-group"/>
    -->
-   &lt;user>foouser&lt;/user>
-   &lt;password>foopassword&lt;/password>
 &lt;/bridge></programlisting>
         <para>In the above example we have shown all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
@@ -198,6 +198,19 @@
 
             </listitem>
             <listitem>
+                <para><literal>user</literal>. This optional parameter determines the user name to
+                    use when creating the bridge connection to the remote server. If it is not
+                    specified the default cluster user specified by <literal>cluster-user</literal>
+                    in <literal>hornetq-configuration.xml</literal> will be used. </para>
+            </listitem>
+            <listitem>
+                <para><literal>password</literal>. This optional parameter determines the password
+                    to use when creating the bridge connection to the remote server. If it is not
+                    specified the default cluster password specified by <literal
+                            >cluster-password</literal> in <literal>hornetq-configuration.xml</literal>
+                    will be used. </para>
+            </listitem>
+            <listitem>
                 <para><literal>static-connectors</literal> or <literal>discovery-group-ref</literal>.
                     Pick either of these options to connect the bridge to the target server.
                 </para>
@@ -214,19 +227,6 @@
                     what discovery-groups are and how to configure them, please see
                     <xref linkend="clusters.discovery-groups"/>.
                 </para>
-            </listitem>
-            <listitem>
-                <para><literal>user</literal>. This optional parameter determines the user name to
-                    use when creating the bridge connection to the remote server. If it is not
-                    specified the default cluster user specified by <literal>cluster-user</literal>
-                    in <literal>hornetq-configuration.xml</literal> will be used. </para>
-            </listitem>
-            <listitem>
-                <para><literal>password</literal>. This optional parameter determines the password
-                    to use when creating the bridge connection to the remote server. If it is not
-                    specified the default cluster password specified by <literal
-                        >cluster-password</literal> in <literal>hornetq-configuration.xml</literal>
-                    will be used. </para>
             </listitem>
         </itemizedlist>
     </section>
