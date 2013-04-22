@@ -24,7 +24,8 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.INTERCEPTOR_REJECTED_PACKET;
 
 /**
- * An outgoing interceptor returned false
+ * An outgoing interceptor returned false.
+ * @see org.hornetq.api.core.client.ServerLocator#addOutgoingInterceptor(org.hornetq.api.core.Interceptor)
  * @author Justin Bertram
  */
 // XXX I doubt any reader will make much sense of this Javadoc's text.

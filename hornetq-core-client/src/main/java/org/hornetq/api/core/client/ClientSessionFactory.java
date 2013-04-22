@@ -167,6 +167,9 @@ public interface ClientSessionFactory
     */
    ServerLocator getServerLocator();
 
-// XXX No javadocs
+   /**
+    * Returns the code connection used by this session factory.
+    * @return the core connection
+    */
    CoreRemotingConnection getConnection();
 }
