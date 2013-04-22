@@ -5,6 +5,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Defines all {@link HornetQException} types and their codes.
+ */
 public enum HornetQExceptionType
 {
 

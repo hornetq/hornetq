@@ -22,19 +22,11 @@ import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * Helper class to use JMS messages to manage HornetQ server resources.
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class JMSManagementHelper
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
    private static org.hornetq.api.core.Message getCoreMessage(final Message jmsMessage)
    {
       if (jmsMessage instanceof HornetQMessage == false)
@@ -171,19 +163,8 @@ public class JMSManagementHelper
       return ManagementHelper.getResult(JMSManagementHelper.getCoreMessage(message));
    }
 
-   // Constructors --------------------------------------------------
-
    private JMSManagementHelper()
    {
+      // Utility class
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

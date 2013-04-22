@@ -24,7 +24,9 @@ package org.hornetq.api.core;
 import static org.hornetq.api.core.HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS;
 
 /**
- * An incompatibility between HornetQ versions on the client and the server has been detected.
+ * The server version and the client version are incompatible.
+ * <p>
+ * Normally this means you are trying to use a newer client on an older server.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public final class HornetQIncompatibleClientServerException extends HornetQException

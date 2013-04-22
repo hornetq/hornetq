@@ -121,12 +121,17 @@ public class HornetQJMSClient
    }
 
    /**
-    * Create a HornetQConnectionFactory which will receive cluster topology updates from the cluster as servers leave or join and new backups are appointed or removed.
-    * The initial list of servers supplied in this method is simply to make an initial connection to the cluster, once that connection is made, up to date
-    * cluster topology information is downloaded and automatically updated whenever the cluster topology changes. If the topology includes backup servers
-    * that information is also propagated to the client so that it can know which server to failover onto in case of live server failure.
-    * @param initialServers The initial set of servers used to make a connection to the cluster. Each one is tried in turn until a successful connection is made. Once
-    * a connection is made, the cluster topology is downloaded and the rest of the list is ignored.
+    * Create a HornetQConnectionFactory which will receive cluster topology updates from the cluster
+    * as servers leave or join and new backups are appointed or removed.
+    * <p>
+    * The initial list of servers supplied in this method is simply to make an initial connection to
+    * the cluster, once that connection is made, up to date cluster topology information is
+    * downloaded and automatically updated whenever the cluster topology changes. If the topology
+    * includes backup servers that information is also propagated to the client so that it can know
+    * which server to failover onto in case of live server failure.
+    * @param initialServers The initial set of servers used to make a connection to the cluster.
+    *           Each one is tried in turn until a successful connection is made. Once a connection
+    *           is made, the cluster topology is downloaded and the rest of the list is ignored.
     * @return the HornetQConnectionFactory
     */
    public static HornetQConnectionFactory createConnectionFactoryWithHA(JMSFactoryType jmsFactoryType, final TransportConfiguration... initialServers)
@@ -161,9 +166,11 @@ public class HornetQJMSClient
    }
 
    /**
-    * Create a HornetQConnectionFactory which creates session factories using a static list of transportConfigurations, the HornetQConnectionFactory is not updated automatically
-    * as the cluster topology changes, and no HA backup information is propagated to the client
-    *
+    * Create a HornetQConnectionFactory which creates session factories using a static list of
+    * transportConfigurations.
+    * <p>
+    * The HornetQConnectionFactory is not updated automatically as the cluster topology changes, and
+    * no HA backup information is propagated to the client
     * @param transportConfigurations
     * @return the HornetQConnectionFactory
     */
@@ -222,5 +229,6 @@ public class HornetQJMSClient
 
    private HornetQJMSClient()
    {
+      // Utility class
    }
 }

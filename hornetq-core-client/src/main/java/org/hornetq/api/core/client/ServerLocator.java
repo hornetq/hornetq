@@ -577,9 +577,19 @@ public interface ServerLocator
     */
    void setReconnectAttempts(int reconnectAttempts);
 
+   /**
+    * Sets the maximum number of attempts to establish an initial connection.
+    * <p>
+    * Value must be -1 (to retry infinitely), 0 (to never retry connection) or greater than 0.
+    * @param reconnectAttempts maximum number of attempts for the initial connection
+    */
    void setInitialConnectAttempts(int reconnectAttempts);
 
+   /**
+    * @return the number of attempts to be made for first initial connection.
+    */
    int getInitialConnectAttempts();
+
    /**
     * Returns true if the client will automatically attempt to connect to the backup server if the initial
     * connection to the live server fails
@@ -702,13 +712,28 @@ public interface ServerLocator
     */
    Topology getTopology();
 
+   /**
+    * Whether this server receives topology notifications from the cluster as servers join or leave
+    * the cluster.
+    * @return {@code true} if the locator receives topology updates from the cluster
+    */
    boolean isHA();
 
+   /**
+    * Whether to compress large messages.
+    * @return
+    */
    boolean isCompressLargeMessage();
 
-   void setCompressLargeMessage(boolean avoidLargeMessages);
+   /**
+    * Sets whether to compress or not large messages.
+    * @param compressLargeMessages
+    */
+   void setCompressLargeMessage(boolean compressLargeMessages);
 
+   // XXX No javadocs
    void addClusterTopologyListener(ClusterTopologyListener listener);
 
+   // XXX No javadocs
    void removeClusterTopologyListener(ClusterTopologyListener listener);
 }

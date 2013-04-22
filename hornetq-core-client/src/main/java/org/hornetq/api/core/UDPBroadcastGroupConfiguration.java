@@ -29,13 +29,10 @@ import org.hornetq.core.client.HornetQClientLogger;
 
 
 /**
- * The configuration used to determine how the server will broadcast members
+ * The configuration used to determine how the server will broadcast members.
+ * <p>
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 18 Nov 2008 08:44:30
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 18 Nov 2008 08:44:30
  */
 public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {

@@ -27,6 +27,9 @@ public final class RandomStickyConnectionLoadBalancingPolicy implements Connecti
 
    private int pos = -1;
 
+   /**
+    * @see java.util.Random#nextInt(int)
+    */
    public int select(final int max)
    {
       if (pos == -1)
