@@ -32,6 +32,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -540,30 +541,47 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          HornetQClientLogger.LOGGER.trace("Sending commit");
       }
 
+      /*
+      * we have failed over since any work was done so we should rollback
+      * */
       if (rollbackOnly)
       {
          rollbackOnFailover(true);
       }
 
       flushAcks();
-
+      /*
+      * if we have failed over whilst flushing the acks then we should rollback and throw exception before attempting to
+      * commit as committing might actually commit something but we we wouldn't know and rollback after the commit
+      * */
+      if(rollbackOnly)
+      {
+         rollbackOnFailover(true);
+      }
       try
       {
          channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT), PacketImpl.NULL_RESPONSE);
       }
       catch (HornetQException e)
       {
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
+         if (e.getType() == HornetQExceptionType.UNBLOCKED || rollbackOnly)
          {
             // The call to commit was unlocked on failover, we therefore rollback the tx,
             // and throw a transaction rolled back exception instead
-
+            //or
+            //if we have been set to rollbackonly then we have probably failed over and don't know if the tx has committed
             rollbackOnFailover(false);
          }
          else
          {
             throw e;
          }
+      }
+
+      //oops, we have failed over during the commit and dont know what happened
+      if(rollbackOnly)
+      {
+         rollbackOnFailover(false);
       }
 
       workDone = false;

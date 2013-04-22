@@ -26,6 +26,8 @@ public interface TestableServer extends HornetQComponent
 {
    HornetQServer getServer();
 
+   public void stop() throws Exception;
+
    public void setIdentity(String identity);
 
    public void crash(ClientSession... sessions) throws Exception;
