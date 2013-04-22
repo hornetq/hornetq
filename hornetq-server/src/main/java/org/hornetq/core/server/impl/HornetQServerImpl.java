@@ -490,7 +490,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             try
             {
-               stop(configuration.isFailoverOnServerShutdown(), criticalIOError);
+               stop(configuration.isFailoverOnServerShutdown(), criticalIOError, false);
             }
             catch (Exception e)
             {
@@ -535,14 +535,22 @@ public class HornetQServerImpl implements HornetQServer
 
    public final void stop(boolean failoverOnServerShutdown) throws Exception
    {
-      stop(failoverOnServerShutdown, false);
+      stop(failoverOnServerShutdown, false, false);
    }
-
-   private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError) throws Exception
+   /*
+   * stops the server
+   * @param failoverOnServerShutdown whether we will allow a backup server to become live when the server is stopped normally
+   * @param criticalIOError whether we have encountered an IO error with the journal etc
+   * @param failingBack if true don't set the flag to stop the failback checker
+   */
+   private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError, boolean failingBack) throws Exception
    {
-      synchronized (failbackCheckerGuard)
+      if (!failingBack)
       {
-         cancelFailBackChecker = true;
+         synchronized (failbackCheckerGuard)
+         {
+            cancelFailBackChecker = true;
+         }
       }
 
       synchronized (this)
@@ -725,7 +733,7 @@ public class HornetQServerImpl implements HornetQServer
     * Freeze all connections.
     * <p>
     * If replicating, avoid freezing the replication connection. Helper method for
-    * {@link #stop(boolean, boolean)}.
+    * {@link #stop(boolean, boolean, boolean)}.
     */
    private void freezeConnections()
    {
@@ -1992,7 +2000,7 @@ public class HornetQServerImpl implements HornetQServer
                      try
                      {
                         HornetQServerLogger.LOGGER.debug(HornetQServerImpl.this + "::Stopping live node in favor of failback");
-                        stop(true);
+                        stop(true, false, true);
                         // We need to wait some time before we start the backup again
                         // otherwise we may eventually start before the live had a chance to get it
                         Thread.sleep(configuration.getFailbackDelay());
