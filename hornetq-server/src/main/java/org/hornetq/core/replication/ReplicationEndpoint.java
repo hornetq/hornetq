@@ -249,7 +249,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private void handleFatalError(BackupReplicationStartFailedMessage packet)
    {
       HornetQServerLogger.LOGGER.errorStartingReplication(packet.getRegistrationProblem());
-      server.stopTheServer();
+      server.stopTheServer(false);
    }
 
    /**
