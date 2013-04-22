@@ -577,6 +577,7 @@ public interface ServerLocator
     */
    void setReconnectAttempts(int reconnectAttempts);
 
+   // XXX No javadocs
    void setInitialConnectAttempts(int reconnectAttempts);
 
    int getInitialConnectAttempts();
@@ -702,13 +703,18 @@ public interface ServerLocator
     */
    Topology getTopology();
 
+   // XXX No javadocs
    boolean isHA();
 
+   // XXX No javadocs
    boolean isCompressLargeMessage();
 
+   // XXX No javadocs
    void setCompressLargeMessage(boolean avoidLargeMessages);
 
+   // XXX No javadocs
    void addClusterTopologyListener(ClusterTopologyListener listener);
 
+   // XXX No javadocs
    void removeClusterTopologyListener(ClusterTopologyListener listener);
 }

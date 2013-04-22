@@ -167,5 +167,6 @@ public interface ClientSessionFactory
     */
    ServerLocator getServerLocator();
 
+// XXX No javadocs
    CoreRemotingConnection getConnection();
 }

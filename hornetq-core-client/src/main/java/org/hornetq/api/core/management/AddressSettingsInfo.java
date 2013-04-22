@@ -22,13 +22,9 @@ import org.hornetq.utils.json.JSONObject;
  *
  *
  */
+// XXX no javadocs
 public final class AddressSettingsInfo
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final String addressFullMessagePolicy;
 
    private final long maxSizeBytes;

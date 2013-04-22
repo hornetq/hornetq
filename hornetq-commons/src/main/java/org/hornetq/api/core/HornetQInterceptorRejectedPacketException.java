@@ -27,6 +27,7 @@ import static org.hornetq.api.core.HornetQExceptionType.INTERCEPTOR_REJECTED_PAC
  * An outgoing interceptor returned false
  * @author Justin Bertram
  */
+// XXX I doubt any reader will make much sense of this Javadoc's text.
 public final class HornetQInterceptorRejectedPacketException extends HornetQException
 {
    private static final long serialVersionUID = -5798841227645281815L;
