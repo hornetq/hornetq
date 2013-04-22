@@ -21,8 +21,6 @@ package org.hornetq.api.core.management;
  */
 public interface AddressControl
 {
-   // Attributes ----------------------------------------------------
-
    /**
     * Returns the managed address.
     */

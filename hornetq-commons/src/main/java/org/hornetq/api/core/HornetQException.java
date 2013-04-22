@@ -14,12 +14,9 @@
 package org.hornetq.api.core;
 
 /**
- *
- * HornetQException is the root exception for HornetQ API.
- *
+ * HornetQException is the root exception for the HornetQ API.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *
  */
 public class HornetQException extends Exception
 {

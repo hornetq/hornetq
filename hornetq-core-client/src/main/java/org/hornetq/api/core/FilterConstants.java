@@ -16,10 +16,7 @@ package org.hornetq.api.core;
 /**
  * Constants representing pre-defined message attributes that can be referenced in HornetQ core
  * filter expressions.
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public final class FilterConstants
 {
@@ -70,5 +67,6 @@ public final class FilterConstants
 
    private FilterConstants()
    {
+      // Utility class
    }
 }

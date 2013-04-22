@@ -198,5 +198,6 @@ public final class HornetQClient
 
    private HornetQClient()
    {
+      // Utility class
    }
 }
