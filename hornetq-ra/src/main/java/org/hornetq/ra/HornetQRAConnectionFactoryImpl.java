@@ -14,10 +14,12 @@
 package org.hornetq.ra;
 
 import javax.jms.Connection;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
+import javax.jms.XAJMSContext;
 import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
 import javax.naming.NamingException;
@@ -426,5 +428,41 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       }
 
       return s;
+   }
+
+   @Override
+   public JMSContext createContext()
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(String userName, String password)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(String userName, String password, int sessionMode)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(int sessionMode)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public XAJMSContext createXAContext()
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public XAJMSContext createXAContext(String userName, String password)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 }

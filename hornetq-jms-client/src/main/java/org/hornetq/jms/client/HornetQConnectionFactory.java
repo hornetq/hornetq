@@ -16,10 +16,14 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XAJMSContext;
 import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
 import javax.naming.NamingException;
@@ -41,7 +45,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class HornetQConnectionFactory implements Serializable, Referenceable
+public class HornetQConnectionFactory implements Serializable, Referenceable, ConnectionFactory, XAConnectionFactory
 {
    private final static long serialVersionUID = -2810634789345348326L;
 
@@ -107,7 +111,31 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createConnectionInternal(username, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
-   // QueueConnectionFactory implementation --------------------------------------------------------
+   @Override
+   public JMSContext createContext()
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(String userName, String password)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(String userName, String password, int sessionMode)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public JMSContext createContext(int sessionMode)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    // QueueConnectionFactory implementation --------------------------------------------------------
 
    public QueueConnection createQueueConnection() throws JMSException
    {
@@ -141,6 +169,18 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
       return (XAConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+   }
+
+   @Override
+   public XAJMSContext createXAContext()
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public XAJMSContext createXAContext(String userName, String password)
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------

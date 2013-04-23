@@ -162,8 +162,8 @@
          <!-- needed to compile JMS-->
          <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_1.1_spec</artifactId>
-            <version>1.0.0.Final</version>
+            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <version>1.0.0.Alpha1</version>
          </dependency>
 
          <!-- needed to compile JavaEE examples-->
