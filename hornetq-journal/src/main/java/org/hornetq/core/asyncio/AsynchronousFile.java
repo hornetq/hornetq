@@ -24,7 +24,7 @@ import org.hornetq.api.core.HornetQException;
  */
 public interface AsynchronousFile
 {
-   void close() throws Exception;
+   void close() throws InterruptedException, HornetQException;
 
    /**
     *

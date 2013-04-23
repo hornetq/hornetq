@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.impl.TimedBuffer;
 
 /**
@@ -54,7 +55,7 @@ public interface SequentialFile
 
    void fill(int position, int size, byte fillCharacter) throws Exception;
 
-   void delete() throws Exception;
+   void delete() throws IOException, InterruptedException, HornetQException;
 
    void write(HornetQBuffer bytes, boolean sync, IOAsyncTask callback) throws Exception;
 
@@ -104,9 +105,9 @@ public interface SequentialFile
     */
    int read(ByteBuffer bytes) throws Exception;
 
-   void position(long pos) throws Exception;
+   void position(long pos) throws IOException;
 
-   long position() throws Exception;
+   long position();
 
    void close() throws Exception;
 

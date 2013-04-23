@@ -14,6 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,6 +24,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
@@ -59,10 +62,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
    /** Used for asynchronous writes */
    protected final Executor writerExecutor;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
    /**
     * @param file
     * @param directory
@@ -91,7 +90,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
       return file.getName();
    }
 
-   public final void delete() throws Exception
+   public final void delete() throws IOException, InterruptedException, HornetQException
    {
       if (isOpen())
       {
@@ -106,6 +105,8 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    public void copyTo(SequentialFile newFileName) throws Exception
    {
+      try
+      {
       HornetQJournalLogger.LOGGER.debug("Copying "  + this + " as " + newFileName);
       if (!newFileName.isOpen())
       {
@@ -132,21 +133,41 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
       newFileName.close();
       this.close();
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
+      }
    }
 
-   public void position(final long pos) throws Exception
+   /**
+    * @throws IOException only declare exception due to signature. Sub-class needs it.
+    */
+   @Override
+   public void position(final long pos) throws IOException
    {
       position.set(pos);
    }
 
-   public long position() throws Exception
+   public long position()
    {
       return position.get();
    }
 
-   public final void renameTo(final String newFileName) throws Exception
+   public final void renameTo(final String newFileName) throws IOException, InterruptedException,
+ HornetQException
    {
-      close();
+      try
+      {
+         close();
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
+         throw e;
+      }
+
       File newFile = new File(directory + "/" + newFileName);
 
       if (!file.equals(newFile))
@@ -159,7 +180,11 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public synchronized void close() throws Exception
+   /**
+    * @throws IOException we declare throwing IOException because sub-classes need to do it
+    * @throws HornetQException
+    */
+   public synchronized void close() throws IOException, InterruptedException, HornetQException
    {
       final CountDownLatch donelatch = new CountDownLatch(1);
 
@@ -208,7 +233,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    }
 
-   public void write(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback) throws IOException
    {
       if (timedBuffer != null)
       {
@@ -224,7 +249,8 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync) throws IOException, InterruptedException,
+                                                                   HornetQException
    {
       if (sync)
       {
@@ -240,7 +266,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
       if (timedBuffer != null)
       {
@@ -261,7 +287,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public void write(final EncodingSupport bytes, final boolean sync) throws Exception
+   public void write(final EncodingSupport bytes, final boolean sync) throws InterruptedException, HornetQException
    {
       if (sync)
       {
@@ -277,18 +303,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    protected File getFile()
    {
       return file;
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
    private static final class DelegateCallback implements IOAsyncTask
    {
