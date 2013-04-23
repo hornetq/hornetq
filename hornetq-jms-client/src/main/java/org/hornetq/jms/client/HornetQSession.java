@@ -482,6 +482,42 @@ public class HornetQSession implements QueueSession, TopicSession
       return createConsumer(jbdest, name, messageSelector, noLocal);
    }
 
+   @Override
+   public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(Topic topic, String name) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
    private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
                                                  final String subscriptionName,
                                                  String selectorString,

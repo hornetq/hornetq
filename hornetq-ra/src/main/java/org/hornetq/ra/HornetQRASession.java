@@ -1311,7 +1311,43 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
    }
 
-   /**
+   @Override
+   public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(Topic topic, String name) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    /**
     * Set the managed connection
     * @param managedConnection The managed connection
     */
