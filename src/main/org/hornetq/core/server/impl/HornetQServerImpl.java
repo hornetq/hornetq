@@ -1668,7 +1668,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                long tx = storageManager.generateUniqueID();
                storageManager.deleteQueueBinding(tx, queueBindingInfo.getId());
-               storageManager.commit(tx);
+               storageManager.commitBindings(tx);
                continue;
             }
             else
