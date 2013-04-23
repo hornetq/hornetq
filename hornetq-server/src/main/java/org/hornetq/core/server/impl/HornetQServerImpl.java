@@ -1677,7 +1677,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                long tx = storageManager.generateUniqueID();
                storageManager.deleteQueueBinding(tx, queueBindingInfo.getId());
-               storageManager.commit(tx);
+               storageManager.commitBindings(tx);
                continue;
             }
             else
@@ -2220,6 +2220,8 @@ public class HornetQServerImpl implements HornetQServer
 
       public synchronized void onIOException(Exception cause, String message, SequentialFile file)
       {
+         System.out.println("Critical ErrorListener, failedAlready=" + failedAlready);
+
          if (!failedAlready)
          {
             failedAlready = true;

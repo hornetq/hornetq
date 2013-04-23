@@ -134,6 +134,8 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
    @Override
    public void onIOError(Exception exception, String message, SequentialFile file)
    {
+      exception.printStackTrace();
+      System.out.println("Exception happened, criticalErrorListener = " + critialErrorListener);
       if (critialErrorListener != null)
       {
          critialErrorListener.onIOException(exception, message, file);
