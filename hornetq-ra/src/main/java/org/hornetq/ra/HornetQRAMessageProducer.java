@@ -13,6 +13,7 @@
 
 package org.hornetq.ra;
 
+import javax.jms.CompletionListener;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -391,7 +392,43 @@ public class HornetQRAMessageProducer implements MessageProducer
       producer.setTimeToLive(timeToLive);
    }
 
-   /**
+   @Override
+   public void setDeliveryDelay(long deliveryDelay) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public long getDeliveryDelay() throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Message message, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Destination destination, Message message, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    /**
     * Check state
     * @exception JMSException Thrown if an error occurs
     */

@@ -13,6 +13,7 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.JMSContext;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnectionFactory;
 

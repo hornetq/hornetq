@@ -407,7 +407,19 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return null;
    }
 
-   // QueueConnection implementation ---------------------------------------------------------------
+   @Override
+   public Session createSession(int sessionMode) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public Session createSession() throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    // QueueConnection implementation ---------------------------------------------------------------
 
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
@@ -441,7 +453,19 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return null;
    }
 
-   // Public ---------------------------------------------------------------------------------------
+   @Override
+   public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    // Public ---------------------------------------------------------------------------------------
 
    /**
     * Sets a FailureListener for the session which is notified if a failure occurs on the session.

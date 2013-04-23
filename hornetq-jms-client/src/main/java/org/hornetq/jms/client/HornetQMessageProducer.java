@@ -14,6 +14,7 @@
 package org.hornetq.jms.client;
 
 import javax.jms.BytesMessage;
+import javax.jms.CompletionListener;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -241,7 +242,43 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       doSend(message, timeToLive, (HornetQDestination)destination);
    }
 
-   // TopicPublisher Implementation ---------------------------------
+   @Override
+   public void setDeliveryDelay(long deliveryDelay) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public long getDeliveryDelay() throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Message message, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Destination destination, Message message, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    // TopicPublisher Implementation ---------------------------------
 
    public Topic getTopic() throws JMSException
    {
