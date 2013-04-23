@@ -201,7 +201,7 @@ public class AppletExample extends JApplet implements ActionListener
       frame.setVisible(true);
 
       applet.start();
-      System.out.println("open up the applet.html file in a browser, press enter to stop the example");
+      System.out.println("Click send button at the bottom in the applet window, or press enter to stop the example");
       System.in.read();
       Runtime.getRuntime().addShutdownHook(new Thread()
       {
