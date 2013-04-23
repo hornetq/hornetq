@@ -1287,24 +1287,55 @@ public class StompV11Test extends StompTestBase2
          fail("Disconnect failed! " + result);
       }
 
-      // sending a message will result in an error
-      ClientStompFrame sendFrame = connV11.createFrame("SEND");
-      sendFrame.addHeader("destination", getQueuePrefix() + getQueueName());
-      sendFrame.setBody("Hello World");
+      final CountDownLatch latch = new CountDownLatch(1);
 
-      try
+      Thread thr = new Thread() {
+         public void run() {
+            ClientStompFrame sendFrame = connV11.createFrame("SEND");
+            sendFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+            sendFrame.setBody("Hello World");
+            while (latch.getCount() != 0)
+            {
+               try
+               {
+                  connV11.sendFrame(sendFrame);
+                  Thread.sleep(500);
+               }
+               catch (InterruptedException e)
+               {
+                  //retry
+               }
+               catch (ClosedChannelException e)
+               {
+                  //ok.
+                  latch.countDown();
+                  break;
+               }
+               catch (IOException e)
+               {
+                  //ok.
+                  latch.countDown();
+                  break;
+               }
+               finally
+               {
+                  connV11.destroy();
+               }
+            }
+         }
+      };
+
+      thr.start();
+      latch.await(10, TimeUnit.SECONDS);
+
+      long count = latch.getCount();
+      if (count != 0)
       {
-         connV11.sendFrame(sendFrame);
-         fail("connection should have been closed by server.");
+         latch.countDown();
       }
-      catch (ClosedChannelException e)
-      {
-         //ok.
-      }
-      finally
-      {
-         connV11.destroy();
-      }
+      thr.join();
+
+      assertTrue("Server failed to disconnect.", count == 0);
    }
 
    public void testDurableSubscriber() throws Exception
