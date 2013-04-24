@@ -166,7 +166,20 @@
             <version>1.0.0.Alpha1</version>
          </dependency>
 
-         <!-- needed to compile JavaEE examples-->
+
+          <!-- needed to provide JMS injection-->
+          <dependency>
+              <groupId>javax.enterprise</groupId>
+              <artifactId>cdi-api</artifactId>
+              <version>1.0-SP4</version>
+          </dependency>
+          <dependency>
+              <groupId>javax.inject</groupId>
+              <artifactId>javax.inject</artifactId>
+              <version>1</version>
+          </dependency>
+
+          <!-- needed to compile JavaEE examples-->
          <dependency>
             <groupId>org.jboss.javaee</groupId>
             <artifactId>jboss-ejb-api</artifactId>
@@ -435,6 +448,7 @@
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
+            <module>hornetq-jms-cdi</module>
             <module>hornetq-jms-server</module>
             <module>hornetq-journal</module>
             <module>hornetq-ra</module>
