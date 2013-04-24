@@ -238,7 +238,6 @@ public final class NIOSequentialFile extends AbstractSequentialFile
          }
          catch (IOException e)
          {
-            e.printStackTrace();
             factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
             throw e;
          }
