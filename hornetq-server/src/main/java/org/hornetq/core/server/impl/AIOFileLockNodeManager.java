@@ -70,15 +70,15 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
    {
       File file = newFileForRegionLock(liveLockPos);
 
-      int handle = AsynchronousFileImpl.openFile(file.getAbsolutePath());
-
-      if (handle < 0)
-      {
-         throw new IOException("couldn't open file " + file.getAbsolutePath());
-      }
-
       while (!interrupted)
       {
+         int handle = AsynchronousFileImpl.openFile(file.getAbsolutePath());
+
+         if (handle < 0)
+         {
+             throw new IOException("couldn't open file " + file.getAbsolutePath());
+         }
+
          FileLock lockFile = AsynchronousFileImpl.lock(handle);
          if (lockFile != null)
          {
@@ -86,6 +86,7 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
          }
          else
          {
+            AsynchronousFileImpl.closeFile(handle);
             try
             {
                Thread.sleep(500);
