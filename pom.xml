@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.0.BETA-SNAPSHOT</version>
+   <version>2.3.0.Final</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -32,7 +32,7 @@
    <properties>
       <netty.version>3.6.2.Final</netty.version>
       <netty.version.string>${netty.version}-c0d783c</netty.version.string>
-      <hornetq.version.versionName>black'n'yellow</hornetq.version.versionName>
+      <hornetq.version.versionName>colonizer</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
@@ -713,7 +713,7 @@
          <plugin>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-maven-plugin</artifactId>
-            <version>1.1.1-SNAPSHOT</version>
+            <version>1.2.0</version>
          </plugin>
          </plugins>
       </pluginManagement>
