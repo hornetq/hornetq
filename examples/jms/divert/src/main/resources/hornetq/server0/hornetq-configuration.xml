@@ -49,13 +49,15 @@
    </queues>
 
    <diverts>
-      <divert name="order-divert">                 
+      <divert name="order-divert">
+	     <routing-name>order-divert</routing-name>
          <address>jms.queue.orders</address>
          <forwarding-address>jms.topic.spyTopic</forwarding-address>         
          <exclusive>false</exclusive>
       </divert>
       
       <divert name="prices-divert">                  
+	     <routing-name>prices-divert</routing-name>
          <address>jms.topic.priceUpdates</address>
          <forwarding-address>jms.queue.priceForwarding</forwarding-address>    
          <filter string="office='New York'"/>
