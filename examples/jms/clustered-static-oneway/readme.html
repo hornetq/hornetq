@@ -183,9 +183,9 @@
 	
 	   System.out.println("Got message: " + message1.getText() + " from node 1");
 
-      TextMessage message2 = (TextMessage)consumer2.receive(5000);
+	   TextMessage message2 = (TextMessage)consumer2.receive(5000);
 
-      System.out.println("Got message: " + message2.getText() + " from node " + con2Node);
+	   System.out.println("Got message: " + message2.getText() + " from node " + con2Node);
 	}
            </code>
         </pre> 
@@ -194,8 +194,8 @@
 
         <pre class="prettyprint">
            <code>
-	finally
-	{
+    finally
+    {
       if (initialConnection != null)
       {
          initialConnection.close();
@@ -220,7 +220,7 @@
       {
          ic0.close();
       }
-	}
+    }
            </code>
         </pre>
 
