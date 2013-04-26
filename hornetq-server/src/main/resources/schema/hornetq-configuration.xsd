@@ -780,13 +780,13 @@
         <!-- XXX these 2 local-* here...-->
         <xsd:element ref="local-bind-address"  maxOccurs="1" minOccurs="0" />
         <xsd:element ref="local-bind-port" maxOccurs="1" minOccurs="0"/>
-        <xsd:element name="group-address" type="xsd:string" maxOccurs="1" minOccurs="1">
+        <xsd:element name="group-address" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>multicast address to which the data will be broadcast</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="group-port" type="xsd:int" maxOccurs="1" minOccurs="1">
+        <xsd:element name="group-port" type="xsd:int" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>UDP port number used for broadcasting</xsd:documentation>
           </xsd:annotation>
@@ -827,12 +827,12 @@
     <xsd:complexType>
       <xsd:all>
         <!-- XXX -->
-        <xsd:element name="group-address" type="xsd:string" maxOccurs="1" minOccurs="1">
+        <xsd:element name="group-address" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>Multicast IP address of the group to listen on</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
-        <xsd:element name="group-port" type="xsd:int" maxOccurs="1" minOccurs="1">
+        <xsd:element name="group-port" type="xsd:int" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>UDP port number of the multi cast group</xsd:documentation>
           </xsd:annotation>
