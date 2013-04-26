@@ -60,7 +60,7 @@ public class StompWebSocketExample extends HornetQExample
          //message.writeBytes(text.getBytes("UTF-8"));
          TextMessage message = session.createTextMessage(text);
          System.out.println("Sent message: " + text);
-         System.out.println("Open up the index.html file in a browser and press enter");
+         System.out.println("Open up the chat/index.html file in a browser and press enter");
          System.in.read();
          producer.send(message);
 
