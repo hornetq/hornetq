@@ -1187,7 +1187,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
       Map<Thread, StackTraceElement[]> postThreads = Thread.getAllStackTraces();
 
-      if (postThreads.size() > previousThreads.size())
+      if (postThreads != null && postThreads.size() > previousThreads.size())
       {
 
          buffer.append("*********************************************************************************\n");
