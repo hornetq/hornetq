@@ -60,6 +60,8 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+
       clearData();
 
       Configuration config = createDefaultConfig(ClientNonDivertedSoakTest.IS_NETTY);
