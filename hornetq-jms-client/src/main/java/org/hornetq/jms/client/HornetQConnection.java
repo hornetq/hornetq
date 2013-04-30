@@ -696,6 +696,11 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       this.factoryReference = factory;
    }
 
+   public boolean isStarted()
+   {
+      return started;
+   }
+
    // Inner classes --------------------------------------------------------------------------------
 
    private static class JMSFailureListener implements SessionFailureListener
