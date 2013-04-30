@@ -40,43 +40,85 @@ public class HornetQJMSConsumer implements JMSConsumer
    @Override
    public String getMessageSelector()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return consumer.getMessageSelector();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public MessageListener getMessageListener() throws JMSRuntimeException
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return consumer.getMessageListener();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void setMessageListener(MessageListener listener) throws JMSRuntimeException
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         consumer.setMessageListener(listener);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Message receive()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return consumer.receive();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Message receive(long timeout)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return consumer.receive(timeout);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Message receiveNoWait()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return consumer.receiveNoWait();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void close()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         consumer.close();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override

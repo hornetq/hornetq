@@ -45,13 +45,15 @@ import javax.jms.Topic;
  */
 public class HornetQJMSContext implements JMSContext
 {
+   private static final boolean DEFAULT_AUTO_START = true;
    private final ConnectionFactory cf;
    private final int ackMode;
    private final String userName;
    private final String password;
 
-   private final Connection connection;
-   private final Session session;
+   private final HornetQConnection connection;
+   private final HornetQSession session;
+   private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
 
    // Constants -----------------------------------------------------
 
@@ -70,8 +72,8 @@ public class HornetQJMSContext implements JMSContext
 
       try
       {
-         connection = cf.createConnection(userName, password);
-         session = connection.createSession(ackMode);
+         connection = (HornetQConnection) cf.createConnection(userName, password);
+         session = (HornetQSession) connection.createSession(ackMode);
       } catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
@@ -83,7 +85,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public JMSContext createContext(int sessionMode)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return new HornetQJMSContext(cf, sessionMode, userName, password);
    }
 
    @Override
@@ -101,55 +103,97 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public String getClientID()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return connection.getClientID();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void setClientID(String clientID)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         connection.setClientID(clientID);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public ConnectionMetaData getMetaData()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return connection.getMetaData();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public ExceptionListener getExceptionListener()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return connection.getExceptionListener();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void setExceptionListener(ExceptionListener listener)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         connection.setExceptionListener(listener);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void start()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         connection.start();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void stop()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         connection.stop();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void setAutoStart(boolean autoStart)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.autoStart = autoStart;
    }
 
    @Override
    public boolean getAutoStart()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return autoStart;
    }
 
    @Override
@@ -168,43 +212,85 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public BytesMessage createBytesMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createBytesMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public MapMessage createMapMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createMapMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Message createMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public ObjectMessage createObjectMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createObjectMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public ObjectMessage createObjectMessage(Serializable object)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createObjectMessage(object);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public StreamMessage createStreamMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createStreamMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public TextMessage createTextMessage()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createTextMessage();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
@@ -222,31 +308,55 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public boolean getTransacted()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.getTransacted();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public int getSessionMode()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return ackMode;
    }
 
    @Override
    public void commit()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         session.commit();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void rollback()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         session.rollback();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void recover()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         session.recover();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
@@ -254,7 +364,9 @@ public class HornetQJMSContext implements JMSContext
    {
       try
       {
-         return new HornetQJMSConsumer(this, session.createConsumer(destination));
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination));
+         checkAutoStart();
+         return consumer;
       } catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
@@ -264,96 +376,207 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public JMSConsumer createConsumer(Destination destination, String messageSelector)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination, messageSelector));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createConsumer(Destination destination, String messageSelector, boolean noLocal)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination, messageSelector, noLocal));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Queue createQueue(String queueName)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createQueue(queueName);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public Topic createTopic(String topicName)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createTopic(topicName);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createDurableConsumer(Topic topic, String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createDurableConsumer(topic, name));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createDurableConsumer(topic, name, messageSelector, noLocal));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createSharedDurableConsumer(Topic topic, String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedDurableConsumer(topic, name));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedDurableConsumer(topic, name, messageSelector));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedConsumer(topic, sharedSubscriptionName));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public JMSConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedConsumer(topic, sharedSubscriptionName, messageSelector));
+         checkAutoStart();
+         return consumer;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public QueueBrowser createBrowser(Queue queue)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         QueueBrowser browser = session.createBrowser(queue);
+         checkAutoStart();
+         return browser;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public QueueBrowser createBrowser(Queue queue, String messageSelector)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         QueueBrowser browser = session.createBrowser(queue, messageSelector);
+         checkAutoStart();
+         return browser;
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public TemporaryQueue createTemporaryQueue()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createTemporaryQueue();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public TemporaryTopic createTemporaryTopic()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return session.createTemporaryTopic();
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void unsubscribe(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         session.unsubscribe(name);
+      } catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
    public void acknowledge()
    {
+      //todo add ack on session for all consumers
       throw new UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 
@@ -365,6 +588,13 @@ public class HornetQJMSContext implements JMSContext
 
    // Private -------------------------------------------------------
 
+   private synchronized void checkAutoStart() throws JMSException
+   {
+      if(autoStart && !connection.isStarted())
+      {
+         connection.start();
+      }
+   }
    // Inner classes -------------------------------------------------
 
 }
