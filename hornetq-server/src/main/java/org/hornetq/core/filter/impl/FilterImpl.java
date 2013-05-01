@@ -154,7 +154,18 @@ public class FilterImpl implements Filter
          else if (resultType.equals(Operator.class))
          {
             Operator op = (Operator)result;
-            return (Boolean)op.apply();
+            Object result = op.apply();
+            if (result == null)
+            {
+               // https://issues.jboss.org/browse/HORNETQ-1188 -
+               // if this was going to NPE anyways, we just return false
+               // invalid properties will just fail the query
+               return false;
+            }
+            else
+            {
+               return (Boolean)result;
+            }
          }
          else
          {
