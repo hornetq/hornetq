@@ -1013,6 +1013,58 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testCountMessagesWithInvalidFilter() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      String matchingValue = "MATCH";
+      String nonMatchingValue = "DIFFERENT";
+      
+
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      ClientProducer producer = session.createProducer(address);
+
+      // send on queue
+      for (int i = 0 ; i < 100; i++)
+      {
+         ClientMessage msg = session.createMessage(false);
+         msg.putStringProperty(key, SimpleString.toSimpleString(matchingValue));
+         producer.send(msg);
+      }
+
+      for (int i = 0 ; i < 10; i++)
+      {
+         ClientMessage msg = session.createMessage(false);
+         msg.putStringProperty(key, SimpleString.toSimpleString(nonMatchingValue));
+         producer.send(msg);
+      }
+
+      // this is just to guarantee a round trip and avoid in transit messages, so they are all accounted for
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer(queue, SimpleString.toSimpleString("nonExistentProperty like \'%Temp/88\'"));
+      
+      session.start();
+      
+      assertNull(consumer.receiveImmediate());
+
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(110, queueControl.getMessageCount());
+
+      
+      Assert.assertEquals(0, queueControl.countMessages("nonExistentProperty like \'%Temp/88\'"));
+
+      Assert.assertEquals(100, queueControl.countMessages(key + "=\'" + matchingValue + "\'"));
+      Assert.assertEquals(10, queueControl.countMessages(key + " = \'" + nonMatchingValue + "\'"));
+      
+      consumer.close();
+      
+      session.deleteQueue(queue);
+   }
+
    public void testExpireMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
