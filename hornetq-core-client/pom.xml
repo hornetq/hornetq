@@ -88,6 +88,59 @@
         </resource>
       </resources>
       <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>add-source</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>add-source</goal>
+              </goals>
+              <configuration>
+                <sources>
+                  <source>./target/generated-sources/xslt</source>
+                </sources>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>transform</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <transformationSets>
+                <transformationSet>
+                  <dir>../hornetq-server/src/main/resources/schema</dir>
+                  <outputDir>${project.build.directory}/generated-sources/xslt</outputDir>
+                  <stylesheet>./src/main/resources/hqDefaults.xsl</stylesheet>
+                  <includes>
+                    <include>hornetq-configuration.xsd</include>
+                  </includes>
+                  <fileMappers>
+                    <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                      <targetName>./org/hornetq/api/config/HornetQDefaultConfiguration.java</targetName>
+                    </fileMapper>
+                  </fileMappers>
+                </transformationSet>
+              </transformationSets>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>saxon</artifactId>
+                <version>8.7</version>
+              </dependency>
+            </dependencies>
+          </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>javacc-maven-plugin</artifactId>

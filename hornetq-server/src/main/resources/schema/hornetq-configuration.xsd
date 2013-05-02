@@ -77,7 +77,7 @@
         </xsd:element>
 
         <xsd:element name="security-invalidation-interval" type="xsd:long" default="10000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="security">
+          <xsd:annotation hq:linkend="security" hq:field_name="DEFAULT_SECURITY_INVALIDATION_INTERVAL">
             <xsd:documentation>how long (in ms) to wait before invalidating the security cache
             </xsd:documentation>
           </xsd:annotation>
@@ -538,7 +538,7 @@
         </xsd:element>
 
         <xsd:element name="page-max-concurrent-io" type="xsd:int" default="5" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="paging.mode">
+          <xsd:annotation hq:linkend="paging.mode" hq:field_name="DEFAULT_MAX_CONCURRENT_PAGE_IO">
             <xsd:documentation>The max number of concurrent reads allowed on paging
             </xsd:documentation>
           </xsd:annotation>
