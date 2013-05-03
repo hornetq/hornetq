@@ -206,7 +206,6 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
          if (connection != null)
          {
-            connection.signalStopToAllSessions();
             connection.stop();
          }
       }
@@ -248,6 +247,10 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       catch (JMSException e)
       {
          HornetQRALogger.LOGGER.debug("Error unsetting the exception listener " + this, e);
+      }
+      if (connection != null)
+      {
+         connection.signalStopToAllSessions();
       }
 
       destroyHandles();
