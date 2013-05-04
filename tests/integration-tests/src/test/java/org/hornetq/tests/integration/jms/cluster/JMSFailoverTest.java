@@ -13,9 +13,6 @@
 
 package org.hornetq.tests.integration.jms.cluster;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -26,9 +23,15 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
-
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -36,6 +39,8 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -326,6 +331,158 @@ public class JMSFailoverTest extends ServiceTestBase
 
       connBackup.close();
    }
+
+
+   public void testSendReceiveLargeMessages() throws Exception
+   {
+      SimpleString QUEUE = new SimpleString("jms.queue.somequeue");
+
+      HornetQConnectionFactory jbcf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, livetc, backuptc);
+      jbcf.setReconnectAttempts(-1);
+      jbcf.setBlockOnDurableSend(true);
+      jbcf.setBlockOnNonDurableSend(true);
+      jbcf.setMinLargeMessageSize(1024);
+      //jbcf.setConsumerWindowSize(0);
+      //jbcf.setMinLargeMessageSize(1024);
+
+
+      final CountDownLatch flagAlign = new CountDownLatch(1);
+
+      final CountDownLatch waitToKill = new CountDownLatch(1);
+
+      final AtomicBoolean killed = new AtomicBoolean(false);
+
+      jbcf.getServerLocator().addIncomingInterceptor(new Interceptor()
+      {
+         int count = 0;
+
+         @Override
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+
+            if (packet instanceof SessionReceiveContinuationMessage)
+            {
+               if (count++ == 300 && !killed.get())
+               {
+                  System.out.println("sending countDown on latch waitToKill");
+                  killed.set(true);
+                  waitToKill.countDown();
+               }
+            }
+            return true;
+         }
+      });
+
+
+
+      Connection conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      final ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
+
+
+      // The thread that will fail the server
+      Thread spoilerThread = new Thread()
+      {
+         public void run()
+         {
+            flagAlign.countDown();
+            // a large timeout just to help in case of debugging
+            try
+            {
+               waitToKill.await(120, TimeUnit.SECONDS);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+
+            try
+            {
+               System.out.println("Killing server...");
+
+               JMSUtil.crash(liveService, coreSession);
+            } catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      coreSession.createQueue(QUEUE, QUEUE, true);
+
+      Queue queue = sess.createQueue("somequeue");
+
+      MessageProducer producer = sess.createProducer(queue);
+      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         TextMessage message = sess.createTextMessage(new String(new byte[10 * 1024]));
+         producer.send(message);
+
+         if (i % 10 == 0)
+         {
+            sess.commit();
+         }
+      }
+
+      sess.commit();
+
+      conn.start();
+
+      spoilerThread.start();
+
+      assertTrue(flagAlign.await(10, TimeUnit.SECONDS));
+
+
+      MessageConsumer consumer = sess.createConsumer(queue);
+
+      // We won't receive the whole thing here.. we just want to validate if message will arrive or not...
+      // this test is not meant to validate transactionality during Failover as that would require XA and recovery
+      for (int i = 0 ; i < 90; i++)
+      {
+         TextMessage message = null;
+
+         int retryNrs = 0;
+         do
+         {
+            retryNrs ++;
+            try
+            {
+               message = (TextMessage)consumer.receive(5000);
+               assertNotNull(message);
+               break;
+            }
+            catch (JMSException e)
+            {
+               new Exception ("Exception on receive message", e).printStackTrace();
+            }
+         } while (retryNrs < 10);
+
+         assertNotNull(message);
+
+         try
+         {
+            sess.commit();
+         }
+         catch (Exception e)
+         {
+            new Exception ("Exception during commit", e);
+            sess.rollback();
+         }
+
+      }
+
+
+      conn.close();
+
+
+      spoilerThread.join();
+
+
+   }
+
+
 
    // Package protected ---------------------------------------------
 
