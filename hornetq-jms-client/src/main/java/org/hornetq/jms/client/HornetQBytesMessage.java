@@ -19,6 +19,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -400,7 +401,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    }
 
    @Override
-   public void doBeforeReceive() throws Exception
+   public void doBeforeReceive() throws HornetQException
    {
       bodyLength = message.getBodySize();
    }
