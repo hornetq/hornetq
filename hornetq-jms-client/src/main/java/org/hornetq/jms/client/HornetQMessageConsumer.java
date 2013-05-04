@@ -229,16 +229,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
                                                 ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE) ?
                                                                 session.getCoreSession() : null);
 
-            try
-            {
-               msg.doBeforeReceive();
-            }
-            catch (Throwable e)
-            {
-               HornetQJMSClientLogger.LOGGER.errorPreparingMessage(e);
-
-               return null;
-            }
+            msg.doBeforeReceive();
 
             // We Do the ack after doBeforeRecive, as in the case of large messages, this may fail so we don't want messages redelivered
             // https://issues.jboss.org/browse/JBPAPP-6110

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -98,7 +99,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    }
 
    @Override
-   public void doBeforeReceive() throws Exception
+   public void doBeforeReceive() throws HornetQException
    {
       super.doBeforeReceive();
       try
