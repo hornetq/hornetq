@@ -22,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -432,7 +433,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    }
 
    @Override
-   public void doBeforeReceive() throws Exception
+   public void doBeforeReceive() throws HornetQException
    {
       super.doBeforeReceive();
 
