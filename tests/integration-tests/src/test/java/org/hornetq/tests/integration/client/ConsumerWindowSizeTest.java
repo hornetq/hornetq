@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -300,6 +301,156 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
       senderSession.close();
    }
+
+   public void testMultipleImmediate() throws Exception
+   {
+
+      final int NUMBER_OF_MESSAGES = 200;
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      locator.setConsumerWindowSize(0);
+
+      final ClientSessionFactory sf = createSessionFactory(locator);
+
+      {
+         ClientSession session = sf.createSession(false, false, false);
+         session.createQueue("testWindow", "testWindow", true);
+         session.close();
+      }
+
+      Thread threads[] = new Thread[10];
+      final AtomicInteger errors = new AtomicInteger(0);
+      final CountDownLatch latchStart = new CountDownLatch(1);
+      final AtomicInteger received = new AtomicInteger(0);
+
+      for (int i = 0 ; i < threads.length; i++)
+      {
+         threads[i] = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  ClientSession session = sf.createSession(false, false);
+                  ClientConsumer consumer = session.createConsumer("testWindow");
+                  session.start();
+                  latchStart.await(10, TimeUnit.SECONDS);
+
+                  while (true)
+                  {
+
+                     ClientMessage msg = consumer.receiveImmediate();
+                     if (msg == null)
+                     {
+                        break;
+                     }
+                     msg.acknowledge();
+
+                     session.commit();
+
+                     received.incrementAndGet();
+
+                  }
+
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         };
+
+
+         threads[i].start();
+      }
+
+
+      ClientSession senderSession = sf.createSession(false, false);
+
+      ClientProducer producer = senderSession.createProducer("testWindow");
+
+      ClientMessage sent = senderSession.createMessage(true);
+      sent.putStringProperty("hello", "world");
+      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      {
+         producer.send(sent);
+         senderSession.commit();
+      }
+
+      latchStart.countDown();
+
+      for (Thread t : threads)
+      {
+         t.join();
+      }
+
+      assertEquals(0, errors.get());
+
+      assertEquals(NUMBER_OF_MESSAGES, received.get());
+   }
+
+   public void testSingleImmediate() throws Exception
+   {
+
+      final int NUMBER_OF_MESSAGES = 200;
+      HornetQServer server = createServer(false, isNetty());
+
+      server.start();
+
+      locator.setConsumerWindowSize(0);
+
+      final ClientSessionFactory sf = createSessionFactory(locator);
+
+      {
+         ClientSession session = sf.createSession(false, false, false);
+         session.createQueue("testWindow", "testWindow", true);
+         session.close();
+      }
+
+      final AtomicInteger received = new AtomicInteger(0);
+
+
+
+      ClientSession senderSession = sf.createSession(false, false);
+
+      ClientProducer producer = senderSession.createProducer("testWindow");
+
+      ClientMessage sent = senderSession.createMessage(true);
+      sent.putStringProperty("hello", "world");
+      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      {
+         producer.send(sent);
+      }
+
+      senderSession.commit();
+
+      ClientSession session = sf.createSession(false, false);
+      ClientConsumer consumer = session.createConsumer("testWindow");
+      session.start();
+
+      while (true)
+      {
+
+         ClientMessage msg = consumer.receiveImmediate();
+         if (msg == null)
+         {
+            System.out.println("Returning null");
+            break;
+         }
+         msg.acknowledge();
+
+         session.commit();
+
+         received.incrementAndGet();
+
+      }
+
+      assertEquals(NUMBER_OF_MESSAGES, received.get());
+   }
+
 
    /*
    * tests send window size. we do this by having 2 receivers on the q. since we roundrobin the consumer for delivery we
