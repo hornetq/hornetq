@@ -39,6 +39,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage
 import org.hornetq.utils.Future;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
+import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.TokenBucketLimiter;
 
 /**
@@ -89,6 +90,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // for that reason we have a separate flowControlExecutor that's using the thread pool
    // Which is a OrderedExecutor
    private final Executor flowControlExecutor;
+
+   // Number of pending calls on flow control
+   private final ReusableLatch pendingFlowControl = new ReusableLatch(0);
 
    private final int clientWindowSize;
 
@@ -870,6 +874,18 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          ClientConsumerImpl.log.trace("Sending 1 credit to start delivering of one message to slow consumer");
       }
       sendCredits(1);
+      try
+      {
+         // We use an executor here to guarantee the messages will arrive in order.
+         // However when starting a slow consumer, we have to guarantee the credit was sent before we can perform any
+         // operations like forceDelivery
+         pendingFlowControl.await(10, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e)
+      {
+         // will just ignore and forward the ignored
+         Thread.currentThread().interrupt();
+      }
    }
 
    private void resetIfSlowConsumer()
@@ -922,11 +938,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    private void sendCredits(final int credits)
    {
+      pendingFlowControl.countUp();
       flowControlExecutor.execute(new Runnable()
       {
          public void run()
          {
-            channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+            try
+            {
+               channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+            }
+            finally
+            {
+               pendingFlowControl.countDown();
+            }
          }
       });
    }
