@@ -78,144 +78,144 @@ public class JMSLargeMessageTest extends JMSTestBase
    public void testSimpleLargeMessage() throws Exception
    {
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(queue1);
 
-         BytesMessage m = session.createBytesMessage();
+      BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(1024 * 1024));
+      m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(1024 * 1024));
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         BytesMessage rm = (BytesMessage)cons.receive(10000);
+      BytesMessage rm = (BytesMessage)cons.receive(10000);
 
-         byte data[] = new byte[1024];
+      byte data[] = new byte[1024];
 
-         System.out.println("Message = " + rm);
+      System.out.println("Message = " + rm);
 
-         for (int i = 0; i < 1024 * 1024; i += 1024)
+      for (int i = 0; i < 1024 * 1024; i += 1024)
+      {
+         int numberOfBytes = rm.readBytes(data);
+         Assert.assertEquals(1024, numberOfBytes);
+         for (int j = 0; j < 1024; j++)
          {
-            int numberOfBytes = rm.readBytes(data);
-            Assert.assertEquals(1024, numberOfBytes);
-            for (int j = 0; j < 1024; j++)
-            {
-               Assert.assertEquals(UnitTestCase.getSamplebyte(i + j), data[j]);
-            }
+            Assert.assertEquals(UnitTestCase.getSamplebyte(i + j), data[j]);
          }
+      }
 
-         Assert.assertNotNull(rm);
+      Assert.assertNotNull(rm);
    }
 
    public void testSimpleLargeMessage2() throws Exception
    {
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(queue1);
 
-         BytesMessage m = session.createBytesMessage();
+      BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
+      m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         BytesMessage rm = (BytesMessage)cons.receive(10000);
+      BytesMessage rm = (BytesMessage)cons.receive(10000);
 
-         byte data[] = new byte[1024];
+      byte data[] = new byte[1024];
 
-         System.out.println("Message = " + rm);
+      System.out.println("Message = " + rm);
 
-         int numberOfBytes = rm.readBytes(data);
-         Assert.assertEquals(10, numberOfBytes);
-         for (int j = 0; j < numberOfBytes; j++)
-         {
-            Assert.assertEquals(UnitTestCase.getSamplebyte(j), data[j]);
-         }
+      int numberOfBytes = rm.readBytes(data);
+      Assert.assertEquals(10, numberOfBytes);
+      for (int j = 0; j < numberOfBytes; j++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(j), data[j]);
+      }
 
-         Assert.assertNotNull(rm);
+      Assert.assertNotNull(rm);
    }
 
    public void testExceptionsOnSettingNonStreaming() throws Exception
    {
       conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TextMessage msg = session.createTextMessage();
+      TextMessage msg = session.createTextMessage();
 
-         try
-         {
-            msg.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
-            Assert.fail("Exception was expected");
-         }
-         catch (JMSException e)
-         {
-         }
-
-         msg.setText("hello");
-
-         MessageProducer prod = session.createProducer(queue1);
-
-         prod.send(msg);
-
-         conn.close();
-
-         conn = cf.createConnection();
-
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageConsumer cons = session.createConsumer(queue1);
-
-         conn.start();
-
-         TextMessage rm = (TextMessage)cons.receive(10000);
-
-         try
-         {
-            rm.setObjectProperty("JMS_HQ_OutputStream", new OutputStream()
-            {
-               @Override
-               public void write(final int b) throws IOException
-               {
-                  System.out.println("b = " + b);
-               }
-
-            });
-            Assert.fail("Exception was expected");
-         }
-         catch (JMSException e)
-         {
-         }
-
-         Assert.assertEquals("hello", rm.getText());
-
-         Assert.assertNotNull(rm);
-
+      try
+      {
+         msg.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(10));
+         Assert.fail("Exception was expected");
       }
+      catch (JMSException e)
+      {
+      }
+
+      msg.setText("hello");
+
+      MessageProducer prod = session.createProducer(queue1);
+
+      prod.send(msg);
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue1);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive(10000);
+
+      try
+      {
+         rm.setObjectProperty("JMS_HQ_OutputStream", new OutputStream()
+         {
+            @Override
+            public void write(final int b) throws IOException
+            {
+               System.out.println("b = " + b);
+            }
+
+         });
+         Assert.fail("Exception was expected");
+      }
+      catch (JMSException e)
+      {
+      }
+
+      Assert.assertEquals("hello", rm.getText());
+
+      Assert.assertNotNull(rm);
+
+   }
 
    public void testWaitOnOutputStream() throws Exception
    {
@@ -223,67 +223,67 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(queue1);
 
-         BytesMessage m = session.createBytesMessage();
+      BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(msgSize));
+      m.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(msgSize));
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         BytesMessage rm = (BytesMessage)cons.receive(10000);
-         Assert.assertNotNull(rm);
+      BytesMessage rm = (BytesMessage)cons.receive(10000);
+      Assert.assertNotNull(rm);
 
-         final AtomicLong numberOfBytes = new AtomicLong(0);
+      final AtomicLong numberOfBytes = new AtomicLong(0);
 
-         final AtomicInteger numberOfErrors = new AtomicInteger(0);
+      final AtomicInteger numberOfErrors = new AtomicInteger(0);
 
-         OutputStream out = new OutputStream()
+      OutputStream out = new OutputStream()
+      {
+
+         int position = 0;
+
+         @Override
+         public void write(final int b) throws IOException
          {
-
-            int position = 0;
-
-            @Override
-            public void write(final int b) throws IOException
+            numberOfBytes.incrementAndGet();
+            if (UnitTestCase.getSamplebyte(position++) != b)
             {
-               numberOfBytes.incrementAndGet();
-               if (UnitTestCase.getSamplebyte(position++) != b)
-               {
-                  System.out.println("Wrong byte at position " + position);
-                  numberOfErrors.incrementAndGet();
-               }
+               System.out.println("Wrong byte at position " + position);
+               numberOfErrors.incrementAndGet();
             }
-
-         };
-
-         try
-         {
-            rm.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(100));
-            Assert.fail("Exception expected!");
-         }
-         catch (MessageNotWriteableException expected)
-         {
          }
 
-         rm.setObjectProperty("JMS_HQ_SaveStream", out);
+      };
 
-         Assert.assertEquals(msgSize, numberOfBytes.get());
-
-         Assert.assertEquals(0, numberOfErrors.get());
-
+      try
+      {
+         rm.setObjectProperty("JMS_HQ_InputStream", UnitTestCase.createFakeLargeStream(100));
+         Assert.fail("Exception expected!");
       }
+      catch (MessageNotWriteableException expected)
+      {
+      }
+
+      rm.setObjectProperty("JMS_HQ_SaveStream", out);
+
+      Assert.assertEquals(msgSize, numberOfBytes.get());
+
+      Assert.assertEquals(0, numberOfErrors.get());
+
+   }
 
 
    public void testHugeString() throws Exception
@@ -292,43 +292,43 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue1);
+      MessageProducer prod = session.createProducer(queue1);
 
-         TextMessage m = session.createTextMessage();
+      TextMessage m = session.createTextMessage();
 
-         StringBuffer buffer = new StringBuffer();
-         while(buffer.length() < msgSize)
-         {
-            buffer.append(UUIDGenerator.getInstance().generateStringUUID());
-         }
+      StringBuffer buffer = new StringBuffer();
+      while(buffer.length() < msgSize)
+      {
+         buffer.append(UUIDGenerator.getInstance().generateStringUUID());
+      }
 
-         final String originalString = buffer.toString();
+      final String originalString = buffer.toString();
 
-         m.setText(originalString);
+      m.setText(originalString);
 
-         buffer = null;
+      buffer = null;
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
-         validateNoFilesOnLargeDir(1);
+      validateNoFilesOnLargeDir(1);
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive(10000);
-         Assert.assertNotNull(rm);
+      TextMessage rm = (TextMessage)cons.receive(10000);
+      Assert.assertNotNull(rm);
 
-         String str = rm.getText();
-         assertEquals(originalString, str);
+      String str = rm.getText();
+      assertEquals(originalString, str);
       conn.close();
       validateNoFilesOnLargeDir(0);
 
