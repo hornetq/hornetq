@@ -211,25 +211,25 @@ public class NettyConnector extends AbstractConnector
       this.handler = handler;
 
       sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
-                                                          TransportConstants.DEFAULT_SSL_ENABLED,
-                                                          configuration);
+         TransportConstants.DEFAULT_SSL_ENABLED,
+         configuration);
       httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
-                                                           TransportConstants.DEFAULT_HTTP_ENABLED,
-                                                           configuration);
+         TransportConstants.DEFAULT_HTTP_ENABLED,
+         configuration);
       servletPath = ConfigurationHelper.getStringProperty(TransportConstants.SERVLET_PATH,
-                                                          TransportConstants.DEFAULT_SERVLET_PATH,
-                                                          configuration);
+         TransportConstants.DEFAULT_SERVLET_PATH,
+         configuration);
       if (httpEnabled)
       {
          httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
-                                                                     TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
-                                                                     configuration);
+            TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
+            configuration);
          httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
-                                                                        TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
-                                                                        configuration);
+            TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
+            configuration);
          httpRequiresSessionId = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_REQUIRES_SESSION_ID,
-                                                                        TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
-                                                                        configuration);
+            TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
+            configuration);
       }
       else
       {
@@ -239,52 +239,52 @@ public class NettyConnector extends AbstractConnector
       }
 
       useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-                                                      TransportConstants.DEFAULT_USE_NIO_CLIENT,
-                                                      configuration);
+         TransportConstants.DEFAULT_USE_NIO_CLIENT,
+         configuration);
 
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
-                                                              -1,
-                                                              configuration);
+         -1,
+         configuration);
 
       useNioGlobalWorkerPool = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_GLOBAL_WORKER_POOL_PROP_NAME,
-                                                                      TransportConstants.DEFAULT_USE_NIO_GLOBAL_WORKER_POOL,
-                                                                      configuration);
+         TransportConstants.DEFAULT_USE_NIO_GLOBAL_WORKER_POOL,
+         configuration);
 
       useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
-                                                          TransportConstants.DEFAULT_USE_SERVLET,
-                                                          configuration);
+         TransportConstants.DEFAULT_USE_SERVLET,
+         configuration);
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-                                                   TransportConstants.DEFAULT_HOST,
-                                                   configuration);
+         TransportConstants.DEFAULT_HOST,
+         configuration);
       port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-                                                TransportConstants.DEFAULT_PORT,
-                                                configuration);
+         TransportConstants.DEFAULT_PORT,
+         configuration);
       localAddress = ConfigurationHelper.getStringProperty(TransportConstants.LOCAL_ADDRESS_PROP_NAME,
-                                                           TransportConstants.DEFAULT_LOCAL_ADDRESS,
-                                                           configuration);
+         TransportConstants.DEFAULT_LOCAL_ADDRESS,
+         configuration);
 
       localPort = ConfigurationHelper.getIntProperty(TransportConstants.LOCAL_PORT_PROP_NAME,
-                                                TransportConstants.DEFAULT_LOCAL_PORT,
-                                                configuration);
+         TransportConstants.DEFAULT_LOCAL_PORT,
+         configuration);
       if (sslEnabled)
       {
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
-                                                              TransportConstants.DEFAULT_KEYSTORE_PATH,
-                                                              configuration);
+            TransportConstants.DEFAULT_KEYSTORE_PATH,
+            configuration);
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-                                                                  TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                  configuration,
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword());
+            TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+            configuration,
+            HornetQDefaultConfiguration.getPropMaskPassword(),
+            HornetQDefaultConfiguration.getPropMaskPassword());
 
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
-                                                                TransportConstants.DEFAULT_TRUSTSTORE_PATH,
-                                                                configuration);
+            TransportConstants.DEFAULT_TRUSTSTORE_PATH,
+            configuration);
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
-                                                                   TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
-                                                                   configuration,
-                                                                   HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                   HornetQDefaultConfiguration.getPropMaskPassword());
+            TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+            configuration,
+            HornetQDefaultConfiguration.getPropMaskPassword(),
+            HornetQDefaultConfiguration.getPropMaskPassword());
       }
       else
       {
@@ -295,22 +295,22 @@ public class NettyConnector extends AbstractConnector
       }
 
       tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
-                                                          TransportConstants.DEFAULT_TCP_NODELAY,
-                                                          configuration);
+         TransportConstants.DEFAULT_TCP_NODELAY,
+         configuration);
       tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
-                                                             TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
-                                                             configuration);
+         TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+         configuration);
       tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
-                                                                TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
-                                                                configuration);
+         TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+         configuration);
 
       batchDelay = ConfigurationHelper.getLongProperty(TransportConstants.BATCH_DELAY,
-                                                       TransportConstants.DEFAULT_BATCH_DELAY,
-                                                       configuration);
+         TransportConstants.DEFAULT_BATCH_DELAY,
+         configuration);
 
       connectTimeoutMillis = ConfigurationHelper.getIntProperty(TransportConstants.NETTY_CONNECT_TIMEOUT,
-                                                         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
-                                                         configuration);
+         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
+         configuration);
       this.closeExecutor = closeExecutor;
 
       this.threadPool = threadPool;
@@ -324,19 +324,19 @@ public class NettyConnector extends AbstractConnector
    public String toString()
    {
       return "NettyConnector [host=" + host +
-             ", port=" +
-             port +
-             ", httpEnabled=" +
-             httpEnabled +
-             ", useServlet=" +
-             useServlet +
-             ", servletPath=" +
-             servletPath +
-             ", sslEnabled=" +
-             sslEnabled +
-             ", useNio=" +
-             useNio +
-             "]";
+         ", port=" +
+         port +
+         ", httpEnabled=" +
+         httpEnabled +
+         ", useServlet=" +
+         useServlet +
+         ", servletPath=" +
+         servletPath +
+         ", sslEnabled=" +
+         sslEnabled +
+         ", useNio=" +
+         useNio +
+         "]";
    }
 
    public synchronized void start()
@@ -436,11 +436,11 @@ public class NettyConnector extends AbstractConnector
             String realTrustStorePassword = trustStorePassword;
             if (System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME) != null)
             {
-                realTrustStorePath = System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME);
+               realTrustStorePath = System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME);
             }
             if (System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME) != null)
             {
-                realTrustStorePassword = System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME);
+               realTrustStorePassword = System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME);
             }
             context = SSLSupport.createContext(realKeyStorePath, realKeyStorePassword, realTrustStorePath, realTrustStorePassword);
          }
@@ -639,22 +639,22 @@ public class NettyConnector extends AbstractConnector
             ChannelFuture handshakeFuture = sslHandler.handshake();
             if (handshakeFuture.awaitUninterruptibly(30000))
             {
-                if (handshakeFuture.isSuccess())
-                {
-                    ch.getPipeline().get(HornetQChannelHandler.class).active = true;
-                }
-                else
-                {
-                    ch.close().awaitUninterruptibly();
-                    HornetQClientLogger.LOGGER.errorCreatingNettyConnection(handshakeFuture.getCause());
-                    return null;
-                }
+               if (handshakeFuture.isSuccess())
+               {
+                  ch.getPipeline().get(HornetQChannelHandler.class).active = true;
+               }
+               else
+               {
+                  ch.close().awaitUninterruptibly();
+                  HornetQClientLogger.LOGGER.errorCreatingNettyConnection(handshakeFuture.getCause());
+                  return null;
+               }
             }
             else
             {
-                handshakeFuture.setFailure(new SSLException("Handshake was not completed in 30 seconds"));
-                ch.close().awaitUninterruptibly();
-                return null;
+               handshakeFuture.setFailure(new SSLException("Handshake was not completed in 30 seconds"));
+               ch.close().awaitUninterruptibly();
+               return null;
             }
 
          }
@@ -741,9 +741,9 @@ public class NettyConnector extends AbstractConnector
          {
             task = new HttpIdleTimer();
             java.util.concurrent.Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task,
-                                                                                            httpClientIdleScanPeriod,
-                                                                                            httpClientIdleScanPeriod,
-                                                                                            TimeUnit.MILLISECONDS);
+               httpClientIdleScanPeriod,
+               httpClientIdleScanPeriod,
+               TimeUnit.MILLISECONDS);
             task.setFuture(future);
          }
       }
@@ -930,11 +930,11 @@ public class NettyConnector extends AbstractConnector
       //here we only check host and port because these two parameters
       //is sufficient to determine the target host
       String host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-                                                   TransportConstants.DEFAULT_HOST,
-                                                   configuration);
+         TransportConstants.DEFAULT_HOST,
+         configuration);
       Integer port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-                                                TransportConstants.DEFAULT_PORT,
-                                                configuration);
+         TransportConstants.DEFAULT_PORT,
+         configuration);
 
       if (!port.equals(this.port)) return false;
 
