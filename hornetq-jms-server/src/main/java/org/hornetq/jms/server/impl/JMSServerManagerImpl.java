@@ -493,15 +493,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             return;
          }
+         startCalled = false;
          //deactivate in case we haven't been already
          deActivate();
          if (registry != null)
          {
             registry.close();
          }
-         server.stop();
-         startCalled = false;
       }
+      // We have to perform the server.stop outside of the lock because of backup activation issues.
+      // See https://bugzilla.redhat.com/show_bug.cgi?id=959616
+      // And org.hornetq.byteman.tests.StartStopDeadlockTest which is validating for this case here
+      server.stop();
    }
 
    public boolean isStarted()
