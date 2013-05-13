@@ -60,6 +60,8 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+
       clearData();
 
       Configuration config = createDefaultConfig(SimpleSendReceiveSoakTest.IS_NETTY);
