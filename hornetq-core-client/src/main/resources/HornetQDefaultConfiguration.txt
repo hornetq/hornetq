@@ -91,11 +91,6 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_THREAD_POOL_MAX_SIZE;
    }
 
-   public static long getDefaultSecurityInvalidationInterval()
-   {
-      return DEFAULT_SECURITY_INVALIDATION_INTERVAL;
-   }
-
    public static boolean isDefaultSecurityEnabled()
    {
       return DEFAULT_SECURITY_ENABLED;
@@ -114,51 +109,6 @@ public final class HornetQDefaultConfiguration
    public static boolean isDefaultAsyncConnectionExecutionEnabled()
    {
       return DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED;
-   }
-
-   public static String getDefaultBindingsDirectory()
-   {
-      return DEFAULT_BINDINGS_DIRECTORY;
-   }
-
-   public static boolean isDefaultCreateBindingsDir()
-   {
-      return DEFAULT_CREATE_BINDINGS_DIR;
-   }
-
-   public static String getDefaultJournalDir()
-   {
-      return DEFAULT_JOURNAL_DIR;
-   }
-
-   public static String getDefaultPagingDir()
-   {
-      return DEFAULT_PAGING_DIR;
-   }
-
-   public static String getDefaultLargeMessagesDir()
-   {
-      return DEFAULT_LARGE_MESSAGES_DIR;
-   }
-
-   public static int getDefaultMaxConcurrentPageIo()
-   {
-      return DEFAULT_MAX_CONCURRENT_PAGE_IO;
-   }
-
-   public static boolean isDefaultCreateJournalDir()
-   {
-      return DEFAULT_CREATE_JOURNAL_DIR;
-   }
-
-   public static boolean isDefaultJournalSyncTransactional()
-   {
-      return DEFAULT_JOURNAL_SYNC_TRANSACTIONAL;
-   }
-
-   public static boolean isDefaultJournalSyncNonTransactional()
-   {
-      return DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL;
    }
 
    public static int getDefaultJournalFileSize()
@@ -226,36 +176,6 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_RUN_SYNC_SPEED_TEST;
    }
 
-   public static boolean isDefaultWildcardRoutingEnabled()
-   {
-      return DEFAULT_WILDCARD_ROUTING_ENABLED;
-   }
-
-   public static boolean isDefaultMessageCounterEnabled()
-   {
-      return DEFAULT_MESSAGE_COUNTER_ENABLED;
-   }
-
-   public static long getDefaultMessageCounterSamplePeriod()
-   {
-      return DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
-   }
-
-   public static int getDefaultMessageCounterMaxDayHistory()
-   {
-      return DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
-   }
-
-   public static long getDefaultTransactionTimeout()
-   {
-      return DEFAULT_TRANSACTION_TIMEOUT;
-   }
-
-   public static long getDefaultTransactionTimeoutScanPeriod()
-   {
-      return DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
-   }
-
    public static SimpleString getDefaultManagementAddress()
    {
       return DEFAULT_MANAGEMENT_ADDRESS;
@@ -264,11 +184,6 @@ public final class HornetQDefaultConfiguration
    public static SimpleString getDefaultManagementNotificationAddress()
    {
       return DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
-   }
-
-   public static String getDefaultClusterUser()
-   {
-      return DEFAULT_CLUSTER_USER;
    }
 
    public static String getDefaultClusterPassword()
@@ -391,16 +306,6 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_FAILBACK_DELAY;
    }
 
-   public static boolean isDefaultCheckForLiveServer()
-   {
-      return DEFAULT_CHECK_FOR_LIVE_SERVER;
-   }
-
-   public static boolean isDefaultMaskPassword()
-   {
-      return DEFAULT_MASK_PASSWORD;
-   }
-
    public static long getDefaultClusterNotificationInterval()
    {
       return DEFAULT_CLUSTER_NOTIFICATION_INTERVAL;
@@ -447,20 +352,10 @@ public final class HornetQDefaultConfiguration
    private static long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
    private static int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
    private static int DEFAULT_THREAD_POOL_MAX_SIZE = 30;
-   private static long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
    private static boolean DEFAULT_SECURITY_ENABLED = true;
    private static boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
    private static long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
    private static boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
-   private static String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
-   private static boolean DEFAULT_CREATE_BINDINGS_DIR = true;
-   private static String DEFAULT_JOURNAL_DIR = "data/journal";
-   private static String DEFAULT_PAGING_DIR = "data/paging";
-   private static String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
-   private static int DEFAULT_MAX_CONCURRENT_PAGE_IO = 5;
-   private static boolean DEFAULT_CREATE_JOURNAL_DIR = true;
-   private static boolean DEFAULT_JOURNAL_SYNC_TRANSACTIONAL = true;
-   private static boolean DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL = true;
    private static int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
    private static int DEFAULT_JOURNAL_COMPACT_MIN_FILES = 10;
    private static int DEFAULT_JOURNAL_COMPACT_PERCENTAGE = 30;
@@ -474,19 +369,12 @@ public final class HornetQDefaultConfiguration
    private static boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
    private static int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
    private static boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
-   private static boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
-   private static boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
-   private static long DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD = 10000;
-   private static int DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY = 10;
-   private static long DEFAULT_TRANSACTION_TIMEOUT = 300000; // 5 minutes
-   private static long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
    /**
     * The management address is prefixed with {@literal jms.queue} so that JMS clients can send
     * messages to it too.
     */
    private static SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jms.queue.hornetq.management");
    private static SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("hornetq.notifications");
-   private static String DEFAULT_CLUSTER_USER = "HORNETQ.CLUSTER.ADMIN.USER";
    private static String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
    private static long DEFAULT_BROADCAST_PERIOD = 2000;
    private static long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
@@ -511,12 +399,9 @@ public final class HornetQDefaultConfiguration
    private static int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
    private static long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
    private static long DEFAULT_FAILBACK_DELAY = 5000; // in milliseconds
-   private static boolean DEFAULT_CHECK_FOR_LIVE_SERVER = false;
-   private static boolean DEFAULT_MASK_PASSWORD = false;
    private static long DEFAULT_CLUSTER_NOTIFICATION_INTERVAL = 1000;
    private static int DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS = 2;
 
    //properties passed to acceptor/connectors.
    private static String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
    private static String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
-}
