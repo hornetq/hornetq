@@ -19,15 +19,23 @@
   <xsl:template match="/">
     <xsl:value-of select="unparsed-text('./HornetQDefaultConfiguration.txt', 'iso-8859-1')" disable-output-escaping="yes"/>
 
-<xsl:text>&#xa;   // Following fields are generated from hornetq-schema.xsd annotations &#xa;</xsl:text>
+<xsl:text>&#xa;    // -------------------------------------------------------------------
+    // Following fields are generated from hornetq-schema.xsd annotations
+    // -------------------------------------------------------------------&#xa;</xsl:text>
 
         <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element[ xsd:annotation/@hq:field_name ]">
-   private static <xsl:call-template name="determine-type"/><xsl:text> </xsl:text><xsl:value-of select="xsd:annotation/@hq:field_name"/> = <xsl:value-of select="@default"/>;
+   // <xsl:value-of select="normalize-space(xsd:annotation/xsd:documentation)"/>
+   private static <xsl:call-template name="determine-type"/><xsl:text> </xsl:text><xsl:value-of select="xsd:annotation/@hq:field_name"/> = <xsl:call-template name="quote-default-value"/>;
+</xsl:for-each>
+
+<xsl:text>&#xa;&#xa;</xsl:text>
+
+        <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element[ xsd:annotation/@hq:field_name ]">
 
 <xsl:text>   /**&#xa;    * </xsl:text>
 <xsl:value-of select="normalize-space(xsd:annotation/xsd:documentation)"/>
 <xsl:text>&#xa;    */</xsl:text>
-   public static <xsl:call-template name="determine-type"/> get<xsl:for-each select="fn:tokenize(xsd:annotation/@hq:field_name,'_')">
+   public static <xsl:call-template name="determine-type"/> <xsl:call-template name="method-prefix-verb"/><xsl:for-each select="fn:tokenize(xsd:annotation/@hq:field_name,'_')">
   <xsl:value-of select=
                 "concat(upper-case(substring(.,1,1)),
                  lower-case(substring(., 2)),
@@ -41,10 +49,29 @@
    &#125;&#xa;</xsl:text>
         </xsl:for-each>
     <xsl:text>
-&#125;&#xa;
-    </xsl:text>
-
+&#125;&#xa;</xsl:text>
   </xsl:template>
+
+<xsl:template name="method-prefix-verb">
+  <xsl:choose>
+    <xsl:when test="@type='xsd:boolean'">
+      <xsl:text> is</xsl:text>
+    </xsl:when>
+    <xsl:otherwise>      <xsl:text> get</xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+<xsl:template name="quote-default-value">
+  <xsl:choose>
+    <xsl:when test="@type='xsd:string'">
+      <xsl:value-of select="concat( '&#34;', @default, '&#34;')"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="@default"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
 
 <xsl:template name="determine-type">
   <xsl:choose>
@@ -62,5 +89,4 @@
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
-
 </xsl:stylesheet>
