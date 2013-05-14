@@ -544,6 +544,7 @@
             <skipJoramTests>false</skipJoramTests>
             <skipConcurrentTests>false</skipConcurrentTests>
             <skipRestTests>false</skipRestTests>
+            <skipBytemanTests>false</skipBytemanTests>
          </properties>
       </profile>
       <profile>
