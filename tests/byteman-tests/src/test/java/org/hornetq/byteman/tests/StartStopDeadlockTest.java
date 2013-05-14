@@ -159,7 +159,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
 
    @Override
    @After
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
