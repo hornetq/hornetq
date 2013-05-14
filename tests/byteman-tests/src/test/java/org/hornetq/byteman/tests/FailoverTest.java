@@ -24,7 +24,6 @@ package org.hornetq.byteman.tests;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.HornetQTransactionRolledBackException;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -33,14 +32,14 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.server.Bindable;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,11 +53,20 @@ public class FailoverTest extends FailoverTestBase
    private ServerLocator locator;
    private ClientSessionFactoryInternal sf;
    public static TestableServer serverToStop;
+
+   @Before
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
+   }
+
+   @After
+   @Override
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
    }
 
    @Test
@@ -78,10 +86,7 @@ public class FailoverTest extends FailoverTestBase
    )
    public void testFailoverOnCommit() throws Exception
    {
-      setUp();
-      try
-      {
-         serverToStop = liveServer;
+             serverToStop = liveServer;
          locator = getServerLocator();
          locator.setFailoverOnInitialConnection(true);
          createSessionFactory();
@@ -103,11 +108,6 @@ public class FailoverTest extends FailoverTestBase
          session.commit();
          Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
          assertTrue(bindable.getMessageCount() == 10);
-      }
-      finally
-      {
-         tearDown();
-      }
    }
 
    @Test
@@ -127,10 +127,7 @@ public class FailoverTest extends FailoverTestBase
       )
    public void testFailoverOnReceiveCommit() throws Exception
    {
-      setUp();
-      try
-      {
-         serverToStop = liveServer;
+      serverToStop = liveServer;
          locator = getServerLocator();
          locator.setFailoverOnInitialConnection(true);
          createSessionFactory();
@@ -165,11 +162,6 @@ public class FailoverTest extends FailoverTestBase
          }
          Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
          assertTrue("messager count = " + bindable.getMessageCount(), bindable.getMessageCount() == 10);
-      }
-      finally
-      {
-         tearDown();
-      }
    }
 
    @Override
@@ -191,11 +183,13 @@ public class FailoverTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       return session;
    }
+
    protected ClientSession
                createSession(ClientSessionFactory sf1, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
       {
          return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks));
       }
+
    private void createSessionFactory() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
