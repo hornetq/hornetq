@@ -1542,8 +1542,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          ref.getQueue().cancel(theTx, ref);
       }
-
-      if (wasStarted)
+      //if we failed don't restart as an attempt to deliver messages may be made before we actually close the consumer
+      if (wasStarted && !clientFailed)
       {
          theTx.addOperation(new TransactionOperationAbstract()
          {
