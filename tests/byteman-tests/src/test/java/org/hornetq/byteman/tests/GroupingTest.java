@@ -51,7 +51,7 @@ public class GroupingTest extends JMSTestBase
 
    @Before
    @Override
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -63,11 +63,6 @@ public class GroupingTest extends JMSTestBase
    public void tearDown() throws Exception
    {
       super.tearDown();
-   }
-
-   protected void setProperty(Message message)
-   {
-      ((HornetQMessage)message).getCoreMessage().putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, new SimpleString("foo"));
    }
 
    protected ConnectionFactory getCF() throws Exception

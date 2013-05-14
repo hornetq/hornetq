@@ -1195,14 +1195,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
          for (Thread aliveThread : postThreads.keySet())
          {
-            final String name = aliveThread.getName();
-            final boolean notSunPKCS11 = !name.contains("SunPKCS11");
-            final boolean notAttachListener = !name.contains("Attach Listener");
-            ThreadGroup group = aliveThread.getThreadGroup();
-            final boolean isSystemThread = group != null && "system".equals(group.getName());
-            // 'process reaper' is a normal JVM thread that will run when we call Runtime.exec()
-            final boolean notProcessReaper = isSystemThread && !name.equals("process reaper");
-            if (notSunPKCS11 && notAttachListener && notProcessReaper && !previousThreads.containsKey(aliveThread))
+            if (!isExpectedThread(aliveThread) && !previousThreads.containsKey(aliveThread))
             {
                failedThread = true;
                buffer.append("=============================================================================\n");
@@ -1219,6 +1212,42 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
       }
       return failedThread;
+   }
+
+   /**
+    * if it's an expected thread... we will just move along ignoring it
+    * @param thread
+    * @return
+    */
+   private boolean isExpectedThread(Thread thread)
+   {
+      final String name = thread.getName();
+      final ThreadGroup group = thread.getThreadGroup();
+      final boolean isSystemThread = group != null && "system".equals(group.getName());
+
+      if (name.contains("SunPKCS11"))
+      {
+         return true;
+      }
+      else if (name.contains("Attach Listener"))
+      {
+         return true;
+      }
+      else if (isSystemThread && name.equals("process reaper"))
+      {
+         return true;
+      }
+      else
+      {
+         for (StackTraceElement element : thread.getStackTrace())
+         {
+            if (element.getClassName().contains("org.jboss.byteman.agent.TransformListener"))
+            {
+               return true;
+            }
+         }
+         return false;
+      }
    }
 
 
