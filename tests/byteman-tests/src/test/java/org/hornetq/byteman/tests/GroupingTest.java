@@ -49,18 +49,13 @@ public class GroupingTest extends JMSTestBase
    static boolean pause = false;
 
    @Override
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
 
       queue = createQueue("TestQueue");
    }
 
-
-   protected void setProperty(Message message)
-   {
-      ((HornetQMessage)message).getCoreMessage().putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, new SimpleString("foo"));
-   }
 
    protected ConnectionFactory getCF() throws Exception
    {
