@@ -64,8 +64,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       executor.shutdown();
+      super.tearDown();
    }
 
    @Override

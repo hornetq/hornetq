@@ -26,6 +26,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -108,6 +109,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
 
       Thread tCrasher = new Thread("tStart")
       {
+         @Override
          public void run()
          {
             try
@@ -127,6 +129,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
 
       Thread tStop = new Thread("tStop")
       {
+         @Override
          public void run()
          {
             try
@@ -154,7 +157,9 @@ public class StartStopDeadlockTest extends ServiceTestBase
       assertEquals(0, errors.get());
    }
 
-   protected void tearDown() throws Exception
+   @Override
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
