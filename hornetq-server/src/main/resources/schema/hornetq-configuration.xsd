@@ -28,7 +28,7 @@
           <xsd:annotation hq:linkend="hq.check-for-live-server">
             <xsd:documentation>
               Whether to check the cluster for a live server (using our own server ID) when starting
-              up. This setting only applies to replicated servers.
+              up. This option is necessary for performing 'fail-back' on replicating servers. This setting only applies to replicated servers.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
