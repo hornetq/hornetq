@@ -2263,6 +2263,10 @@ public class HornetQServerImpl implements HornetQServer
                //connect to.
                ClusterConnectionConfiguration config =
                         ConfigurationUtils.getReplicationClusterConfiguration(configuration);
+               if (serverLocator0 != null)
+               {
+                  serverLocator0.close();
+               }
                serverLocator0 = getFailbackLocator(config);
             }
             //if the cluster isn't available we want to hang around until it is
