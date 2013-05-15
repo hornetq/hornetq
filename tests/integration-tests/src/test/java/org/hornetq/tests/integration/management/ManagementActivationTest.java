@@ -66,6 +66,13 @@ public class ManagementActivationTest extends FailoverTestBase
       backupJmsServer.start();
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      backupJmsServer.stop();
+      super.tearDown();
+   }
+
    public void testCreateConnectionFactory() throws Exception
    {
       List<String> connectorNames = new ArrayList<String>();
@@ -210,17 +217,25 @@ public class ManagementActivationTest extends FailoverTestBase
     */
    public void testDestroyConnectionFactory() throws Exception
    {
-      boolean exception = false;
-      try
-      {
-         backupJmsServer.destroyConnectionFactory("fakeConnectionFactory");
-      }
-      catch (Exception e)
-      {
-         exception = true;
-      }
 
-      assertFalse(exception);
+      // This test was deadlocking one in 10, so running it a couple times to make sure that won't happen any longer
+      for (int testrun = 0 ; testrun < 50; testrun++)
+      {
+         boolean exception = false;
+         try
+         {
+            backupJmsServer.destroyConnectionFactory("fakeConnectionFactory");
+         }
+         catch (Exception e)
+         {
+            exception = true;
+         }
+
+         assertFalse(exception);
+
+         tearDown();
+         setUp();
+      }
    }
 
    /**
@@ -264,4 +279,6 @@ public class ManagementActivationTest extends FailoverTestBase
 
       assertFalse(exception);
    }
+
+
 }
