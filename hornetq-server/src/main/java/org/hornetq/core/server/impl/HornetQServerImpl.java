@@ -606,126 +606,123 @@ public class HornetQServerImpl implements HornetQServer
       //before we stop any components deactivate any callbacks
       callDeActiveCallbacks();
 
-      synchronized (this)
+      // Stop the deployers
+      if (configuration.isFileDeploymentEnabled())
       {
-         // Stop the deployers
-         if (configuration.isFileDeploymentEnabled())
+         stopComponent(basicUserCredentialsDeployer);
+         stopComponent(addressSettingsDeployer);
+         stopComponent(queueDeployer);
+         stopComponent(securityDeployer);
+         stopComponent(deploymentManager);
+      }
+
+      if (managementService != null)
+         managementService.unregisterServer();
+
+      stopComponent(managementService);
+      stopComponent(replicationEndpoint); // applies to a "backup" server
+      stopComponent(pagingManager);
+
+      if (storageManager != null)
+         storageManager.stop(criticalIOError);
+
+      // We stop remotingService before otherwise we may lock the system in case of a critical IO
+      // error shutdown
+      if (remotingService != null)
+         remotingService.stop(criticalIOError);
+
+      stopComponent(securityManager);
+      stopComponent(resourceManager);
+
+      stopComponent(postOffice);
+
+      if (scheduledPool != null)
+      {
+         // we just interrupt all running tasks, these are supposed to be pings and the like.
+         scheduledPool.shutdownNow();
+      }
+
+      stopComponent(memoryManager);
+
+      if (threadPool != null)
+      {
+         threadPool.shutdown();
+         try
          {
-            stopComponent(basicUserCredentialsDeployer);
-            stopComponent(addressSettingsDeployer);
-            stopComponent(queueDeployer);
-            stopComponent(securityDeployer);
-            stopComponent(deploymentManager);
-         }
-
-         if (managementService != null)
-            managementService.unregisterServer();
-
-         stopComponent(managementService);
-         stopComponent(replicationEndpoint); // applies to a "backup" server
-         stopComponent(pagingManager);
-
-         if (storageManager != null)
-            storageManager.stop(criticalIOError);
-
-         // We stop remotingService before otherwise we may lock the system in case of a critical IO
-         // error shutdown
-         if (remotingService != null)
-            remotingService.stop(criticalIOError);
-
-         stopComponent(securityManager);
-         stopComponent(resourceManager);
-
-         stopComponent(postOffice);
-
-         if (scheduledPool != null)
-         {
-            // we just interrupt all running tasks, these are supposed to be pings and the like.
-            scheduledPool.shutdownNow();
-         }
-
-         stopComponent(memoryManager);
-
-         if (threadPool != null)
-         {
-            threadPool.shutdown();
-            try
+            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
             {
-               if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+               HornetQServerLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
+               for (Runnable r : threadPool.shutdownNow())
                {
-                  HornetQServerLogger.LOGGER.timedOutStoppingThreadpool(threadPool);
-                  for (Runnable r : threadPool.shutdownNow())
-                  {
-                     HornetQServerLogger.LOGGER.debug("Cancelled the execution of " + r);
-                  }
+                  HornetQServerLogger.LOGGER.debug("Cancelled the execution of " + r);
                }
             }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
          }
-
-         scheduledPool = null;
-         threadPool = null;
-
-         if (securityStore != null)
-            securityStore.stop();
-
-         threadPool = null;
-
-         scheduledPool = null;
-
-         pagingManager = null;
-         securityStore = null;
-         resourceManager = null;
-         replicationManager = null;
-         replicationEndpoint = null;
-         postOffice = null;
-         queueFactory = null;
-         resourceManager = null;
-         messagingServerControl = null;
-         memoryManager = null;
-
-         sessions.clear();
-
-         state = SERVER_STATE.STOPPED;
-
-         activationLatch.setCount(1);
-
-         // to display in the log message
-         SimpleString tempNodeID = getNodeID();
-         if (activation != null)
+         catch (InterruptedException e)
          {
-            activation.close(failoverOnServerShutdown);
+            // Ignore
          }
-         if (backupActivationThread != null)
+      }
+
+      scheduledPool = null;
+      threadPool = null;
+
+      if (securityStore != null)
+         securityStore.stop();
+
+      threadPool = null;
+
+      scheduledPool = null;
+
+      pagingManager = null;
+      securityStore = null;
+      resourceManager = null;
+      replicationManager = null;
+      replicationEndpoint = null;
+      postOffice = null;
+      queueFactory = null;
+      resourceManager = null;
+      messagingServerControl = null;
+      memoryManager = null;
+
+      sessions.clear();
+
+      state = SERVER_STATE.STOPPED;
+
+      activationLatch.setCount(1);
+
+      // to display in the log message
+      SimpleString tempNodeID = getNodeID();
+      if (activation != null)
+      {
+         activation.close(failoverOnServerShutdown);
+      }
+      if (backupActivationThread != null)
+      {
+
+         backupActivationThread.join(30000);
+         if (backupActivationThread.isAlive())
          {
-
-            backupActivationThread.join(30000);
-            if (backupActivationThread.isAlive())
-            {
-               HornetQServerLogger.LOGGER.backupActivationDidntFinish(this);
-               backupActivationThread.interrupt();
-            }
+            HornetQServerLogger.LOGGER.backupActivationDidntFinish(this);
+            backupActivationThread.interrupt();
          }
+      }
 
-         stopComponent(nodeManager);
+      stopComponent(nodeManager);
 
-         nodeManager = null;
+      nodeManager = null;
 
-         addressSettingsRepository.clearListeners();
+      addressSettingsRepository.clearListeners();
 
-         addressSettingsRepository.clearCache();
-         if (identity != null)
-         {
-            HornetQServerLogger.LOGGER.serverStopped("identity=" + identity + ",version=" + getVersion().getFullVersion(),
-               tempNodeID);
-         }
-         else
-         {
-            HornetQServerLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
-         }
+      addressSettingsRepository.clearCache();
+      if (identity != null)
+      {
+         HornetQServerLogger.LOGGER.serverStopped("identity=" + identity + ",version=" + getVersion().getFullVersion(),
+                                                  tempNodeID);
+      }
+      else
+      {
+         HornetQServerLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
       }
    }
 
@@ -737,16 +734,12 @@ public class HornetQServerImpl implements HornetQServer
     */
    private void freezeConnections()
    {
-      if (state != SERVER_STATE.STOPPING)
-      {
-         throw new IllegalStateException();
-      }
       ReplicationManager localReplicationManager = getReplicationManager();
-      if (localReplicationManager != null)
+      if (remotingService != null && localReplicationManager != null)
       {
          remotingService.freeze(localReplicationManager.getBackupTransportConnection());
       }
-      else
+      else if (remotingService != null)
       {
          remotingService.freeze(null);
       }
@@ -762,7 +755,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (state != SERVER_STATE.STOPPING)
       {
-         throw new IllegalStateException();
+         return;
       }
       for (ServerSession session : sessions.values())
       {
