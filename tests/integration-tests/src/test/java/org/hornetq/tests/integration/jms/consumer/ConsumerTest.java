@@ -19,8 +19,10 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
@@ -304,6 +306,133 @@ public class ConsumerTest extends JMSTestBase
       conn.start();
       Message m = consumer.receiveNoWait();
       Assert.assertNull(m);
+
+      // Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this
+      // point
+      // which can cause delivering count to flip to 1
+   }
+
+
+   public void testBrowserAndConsumerSimultaneous() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
+      conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      jBossQueue = HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+
+      QueueBrowser browser = session.createBrowser(jBossQueue);
+      Enumeration enumMessages = browser.getEnumeration();
+
+
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 10;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         TextMessage textMessage = session.createTextMessage("m" + i);
+         textMessage.setIntProperty("i", i);
+         producer.send(textMessage);
+      }
+
+      conn.start();
+      for (int i = 0 ; i < noOfMessages; i++)
+      {
+         TextMessage msg = (TextMessage)enumMessages.nextElement();
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("i"));
+
+         conn.start();
+         TextMessage recvMessage = (TextMessage)consumer.receiveNoWait();
+         assertNotNull(recvMessage);
+         conn.stop();
+         assertEquals(i, msg.getIntProperty("i"));
+      }
+
+      assertNull(consumer.receiveNoWait());
+      assertFalse(enumMessages.hasMoreElements());
+
+      conn.close();
+
+      // Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this
+      // point
+      // which can cause delivering count to flip to 1
+   }
+
+   public void testBrowserAndConsumerSimultaneousDifferentConnections() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
+      conn = cf.createConnection();
+
+      Connection connConsumer = cf.createConnection();
+      Session sessionConsumer = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      jBossQueue = HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = sessionConsumer.createConsumer(jBossQueue);
+      int noOfMessages = 1000;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         TextMessage textMessage = session.createTextMessage("m" + i);
+         textMessage.setIntProperty("i", i);
+         producer.send(textMessage);
+      }
+
+      connConsumer.start();
+
+      QueueBrowser browser = session.createBrowser(jBossQueue);
+      Enumeration enumMessages = browser.getEnumeration();
+
+      for (int i = 0 ; i < noOfMessages; i++)
+      {
+         TextMessage msg = (TextMessage)enumMessages.nextElement();
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("i"));
+
+         TextMessage recvMessage = (TextMessage)consumer.receiveNoWait();
+         assertNotNull(recvMessage);
+         assertEquals(i, msg.getIntProperty("i"));
+      }
+
+      Message m = consumer.receiveNoWait();
+      assertFalse(enumMessages.hasMoreElements());
+      Assert.assertNull(m);
+
+      conn.close();
+   }
+
+   public void testBrowserOnly() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
+      conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      jBossQueue = HornetQJMSClient.createQueue(ConsumerTest.Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      int noOfMessages = 10;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         TextMessage textMessage = session.createTextMessage("m" + i);
+         textMessage.setIntProperty("i", i);
+         producer.send(textMessage);
+      }
+
+      QueueBrowser browser = session.createBrowser(jBossQueue);
+      Enumeration enumMessages = browser.getEnumeration();
+
+      for (int i = 0 ; i < noOfMessages; i++)
+      {
+         assertTrue(enumMessages.hasMoreElements());
+         TextMessage msg = (TextMessage)enumMessages.nextElement();
+         assertNotNull(msg);
+         assertEquals(i, msg.getIntProperty("i"));
+
+      }
+
+      assertFalse(enumMessages.hasMoreElements());
+
+      conn.close();
 
       // Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this
       // point
