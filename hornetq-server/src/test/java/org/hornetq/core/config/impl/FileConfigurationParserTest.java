@@ -58,6 +58,13 @@ public class FileConfigurationParserTest extends UnitTestCase
       }
    }
 
+   public void testDivertRoutingNameIsNotRequired() throws Exception
+   {
+      String filename = "divertRoutingNameNotRequired.xml";
+      FileConfiguration fc = new FileConfiguration(filename);
+      fc.start();
+   }
+
    public void testParsingDefaultServerConfig() throws Exception
    {
       FileConfigurationParser parser = new FileConfigurationParser();
