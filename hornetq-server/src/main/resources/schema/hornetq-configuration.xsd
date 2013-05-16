@@ -1204,11 +1204,12 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="routing-name" type="xsd:string" maxOccurs="1" minOccurs="1">
+      <xsd:element name="routing-name" type="xsd:string" maxOccurs="1" minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>the routing name for the divert</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
+
       <xsd:element name="address" type="xsd:string"            maxOccurs="1" minOccurs="1">
         <xsd:annotation>
           <xsd:documentation>the address this divert will divert from</xsd:documentation>
@@ -1223,6 +1224,7 @@
 
       <xsd:element ref="filter" maxOccurs="1" minOccurs="0"/>
     </xsd:all>
+
     <xsd:attribute name="name" type="xsd:ID" use="required">
       <xsd:annotation>
         <xsd:documentation>a unique name for the divert</xsd:documentation>
