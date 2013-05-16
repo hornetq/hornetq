@@ -504,6 +504,12 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    {
       waitForOnMessageToComplete(waitForOnMessage);
 
+      if (browseOnly)
+      {
+         // stop shouldn't affect browser delivery
+         return;
+      }
+
       synchronized (this)
       {
          if (stopped)
