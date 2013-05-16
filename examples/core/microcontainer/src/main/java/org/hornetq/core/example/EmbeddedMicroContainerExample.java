@@ -21,7 +21,7 @@ import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 
 /**
  *
- * This exammple shows how to run a HornetQ core client and server embedded in your
+ * This example shows how to run a HornetQ core client and server embedded in your
  * own application
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -30,7 +30,7 @@ import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 public class EmbeddedMicroContainerExample
 {
 
-   public static void main(final String[] args)
+   public static void main(final String[] args) throws Exception
    {
 
       HornetQBootstrapServer hornetQ = null;
@@ -102,8 +102,7 @@ public class EmbeddedMicroContainerExample
       catch (Exception e)
       {
          e.printStackTrace();
-         System.exit(-1);
+         throw e;
       }
    }
-
 }
