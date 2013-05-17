@@ -50,12 +50,6 @@ public class SymmetricClusterExample extends HornetQExample
 {
    public static void main(final String[] args)
    {
-      String[] serverArgs = new String[] { "-Xms50M",
-                                          "-Xmx100M",
-                                          "-XX:+UseParallelGC",
-                                          "-XX:+AggressiveOpts",
-                                          "-XX:+UseFastAccessorMethods" };
-
       new SymmetricClusterExample().run(args);
    }
 
@@ -234,22 +228,12 @@ public class SymmetricClusterExample extends HornetQExample
       {
          // Step 15. Be sure to close our resources!
 
-         if (connection0 != null)
-         {
-            connection0.close();
-         }
-
-         if (connection1 != null)
-         {
-            connection1.close();
-         }
-
-         if (connection2 != null)
-         {
-            connection2.close();
-         }
-
+         closeConnection(connection0);
+         closeConnection(connection1);
+         closeConnection(connection2);
+         closeConnection(connection3);
+         closeConnection(connection4);
+         closeConnection(connection5);
       }
    }
-
 }
