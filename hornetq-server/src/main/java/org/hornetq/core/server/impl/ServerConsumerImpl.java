@@ -1136,12 +1136,26 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
          }
 
-         while (iterator.hasNext())
+         MessageReference ref = null;
+         HandleStatus status;
+
+         while (true)
          {
-            MessageReference ref = iterator.next();
             try
             {
-               HandleStatus status = handle(ref);
+               ref = null;
+               synchronized (messageQueue)
+               {
+                  if (!iterator.hasNext())
+                  {
+                     break;
+                  }
+
+                  ref = iterator.next();
+
+                  status = handle(ref);
+               }
+
                if (status == HandleStatus.HANDLED)
                {
                   proceedDeliver(ref);
@@ -1161,7 +1175,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                break;
             }
          }
-
       }
 
    }
