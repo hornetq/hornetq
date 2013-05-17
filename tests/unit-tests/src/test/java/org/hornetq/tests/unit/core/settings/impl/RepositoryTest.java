@@ -162,6 +162,7 @@ public class RepositoryTest extends UnitTestCase
       try
       {
          repository.addMatch("hjhjhjhjh.#.hhh", "test");
+         fail("expected exception");
       }
       catch (IllegalArgumentException e)
       {
@@ -170,6 +171,7 @@ public class RepositoryTest extends UnitTestCase
       try
       {
          repository.addMatch(null, "test");
+         fail("expected exception");
       }
       catch (IllegalArgumentException e)
       {
