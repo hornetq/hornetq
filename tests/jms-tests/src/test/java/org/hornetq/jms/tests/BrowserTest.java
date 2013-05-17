@@ -40,19 +40,19 @@ public class BrowserTest extends JMSTestCase
    Connection conn;
    public void testCreateBrowserOnNullDestination() throws Exception
    {
-         conn = getConnectionFactory().createConnection();
+      conn = getConnectionFactory().createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         try
-         {
-            session.createBrowser(null);
-            ProxyAssertSupport.fail("should throw exception");
-         }
-         catch (InvalidDestinationException e)
-         {
-            // OK
-         }
+      try
+      {
+         session.createBrowser(null);
+         ProxyAssertSupport.fail("should throw exception");
+      }
+      catch (InvalidDestinationException e)
+      {
+         // OK
+      }
    }
 
    public void testCreateBrowserOnNonExistentQueue() throws Exception
@@ -92,64 +92,62 @@ public class BrowserTest extends JMSTestCase
    {
       conn = getConnectionFactory().createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
 
       HornetQConnectionFactory cf1 = (HornetQConnectionFactory)getConnectionFactory();
 
       ClientSession coreSession = cf1.getServerLocator().createSessionFactory().createSession(true, true);
 
-         coreSession.start();
+      coreSession.start();
 
-         ClientConsumer browser = coreSession.createConsumer("jms.queue.Queue1", true);
+      ClientConsumer browser = coreSession.createConsumer("jms.queue.Queue1", true);
 
-         conn.start();
+      conn.start();
 
-         Message m = session.createMessage();
-         m.setIntProperty("cnt", 0);
-         producer.send(m);
-
-
-         assertNotNull(browser.receive(5000));
-
-         Thread.sleep(5000);
-
-         coreSession.close();
+      Message m = session.createMessage();
+      m.setIntProperty("cnt", 0);
+      producer.send(m);
 
 
-         System.out.println("Draining destination...");
-         drainDestination(getConnectionFactory(), queue1);
+      assertNotNull(browser.receiveImmediate());
+
+      coreSession.close();
+
+
+      System.out.println("Draining destination...");
+      drainDestination(getConnectionFactory(), queue1);
    }
 
    public void testBrowse() throws Exception
    {
-         conn = getConnectionFactory().createConnection();
+      conn = getConnectionFactory().createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
 
-         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+      QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
 
-         ProxyAssertSupport.assertEquals(browser.getQueue(), HornetQServerTestCase.queue1);
+      ProxyAssertSupport.assertEquals(browser.getQueue(), HornetQServerTestCase.queue1);
 
-         ProxyAssertSupport.assertNull(browser.getMessageSelector());
+      ProxyAssertSupport.assertNull(browser.getMessageSelector());
 
-         Enumeration<Message> en = browser.getEnumeration();
+      Enumeration<Message> en = browser.getEnumeration();
 
-         conn.start();
+      conn.start();
 
-         Message m = session.createMessage();
-         m.setIntProperty("cnt", 0);
-         producer.send(m);
-         Message m2 = en.nextElement();
+      Message m = session.createMessage();
+      m.setIntProperty("cnt", 0);
+      producer.send(m);
+      Message m2 = en.nextElement();
 
-         assertNotNull(m2);
+      assertNotNull(m2);
 
 
-         System.out.println("Draining destination...");
-         drainDestination(getConnectionFactory(), queue1);
+      System.out.println("Draining destination...");
+      drainDestination(getConnectionFactory(), queue1);
    }
 
    public void testBrowseWithSelector() throws Exception
@@ -231,8 +229,8 @@ public class BrowserTest extends JMSTestCase
    {
       try
       {
-      if  (conn != null)
-      {
+         if  (conn != null)
+         {
             conn.close();
          }
       }
