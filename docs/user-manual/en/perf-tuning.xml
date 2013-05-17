@@ -251,7 +251,7 @@ serveruser     hard    nofile  20000</programlisting>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning
                     parameters, for the Sun Hotspot JVM the full list of options is available <ulink
-                        url="http://java.sun.com/javase/technologies/hotspot/vmoptions.jsp"
+                        url="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html"
                         >here</ulink>. We recommend at least using <literal
                         >-XX:+AggressiveOpts</literal> and<literal>
                         -XX:+UseFastAccessorMethods</literal>. You may get some mileage with the

@@ -139,7 +139,7 @@
                 grouping them in transactions. ClientSession instances can support both
                 transactional and non transactional semantics and also provide an <literal
                     >XAResource</literal> interface so messaging operations can be performed as part
-                of a <ulink url="http://java.sun.com/javaee/technologies/jta/index.jsp">JTA</ulink>
+                of a <ulink url="http://www.oracle.com/technetwork/java/javaee/tech/jta-138684.html">JTA</ulink>
                 transaction.</para>
             <para>ClientSession instances group ClientConsumers and ClientProducers.</para>
             <para>ClientSession instances can be registered with an optional <literal

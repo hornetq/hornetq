@@ -254,7 +254,7 @@
                         the source destination. Only messages that match the selector expression
                         will be bridged from the source to the target destination</para>
                     <para>The selector expression must follow the <ulink
-                            url="http://java.sun.com/j2ee/1.4/docs/api/javax/jms/Message.html">JMS
+                            url="http://docs.oracle.com/javaee/6/api/javax/jms/Message.html">JMS
                             selector syntax</ulink></para>
                 </listitem>
                 <listitem>
@@ -433,7 +433,7 @@
                  <para>Once the initial JNDI connection has succeeded all calls are made using RMI. If you want to control
                     the timeouts for the RMI connections then this can be done via system properties. JBoss uses Sun's RMI
                  and the properties can be found <ulink
-                            url="http://java.sun.com/j2se/1.5.0/docs/guide/rmi/sunrmiproperties.html">here</ulink>.
+                            url="http://docs.oracle.com/javase/6/docs/technotes/guides/rmi/sunrmiproperties.html">here</ulink>.
                  The default connection timeout is 10 seconds and the default read timeout is 18 seconds.</para>
               </note>
               <para>If you implement your own factories for looking up JMS resources then you will have to bear in mind timeout issues.</para>
