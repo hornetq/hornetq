@@ -133,8 +133,8 @@ public final class PriorityLinkedListTest extends TestCase
 
       Assert.assertFalse(list.isEmpty());
 
-      Wibble w = list.poll();
-      Assert.assertEquals(a, w);
+      Wibble w1 = list.poll();
+      Assert.assertEquals(a, w1);
       Assert.assertTrue(list.isEmpty());
 
       assertEquals(0, list.size());
@@ -478,10 +478,10 @@ public final class PriorityLinkedListTest extends TestCase
       LinkedListIterator<Wibble> iter = list.iterator();
 
       int count = 0;
-      Wibble w;
+      Wibble w1;
       while (iter.hasNext())
       {
-         w = iter.next();
+         w1 = iter.next();
          count++;
       }
       Assert.assertEquals(26, count);
@@ -490,256 +490,256 @@ public final class PriorityLinkedListTest extends TestCase
       iter = list.iterator();
 
       assertTrue(iter.hasNext());
-      w = iter.next();
+      w1 = iter.next();
       assertTrue(iter.hasNext());
-      Assert.assertEquals("a", w.s);
+      Assert.assertEquals("a", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
+      w1 = iter.next();
       assertTrue(iter.hasNext());
-      Assert.assertEquals("b", w.s);
+      Assert.assertEquals("b", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("c", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("c", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("d", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("d", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("e", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("e", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("f", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("f", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("g", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("g", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("h", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("h", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("i", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("i", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("j", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("j", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("k", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("k", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("l", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("l", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("m", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("m", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("n", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("n", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("o", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("o", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("p", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("p", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("q", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("q", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("r", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("r", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("s", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("s", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("t", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("t", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("u", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("u", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("v", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("v", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("w", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("w", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("x", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("x", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("y", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("y", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("z", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("z", w1.s1);
       assertFalse(iter.hasNext());
 
       iter = list.iterator();
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("a", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("a", w1.s1);
 
       iter.remove();
 
       Assert.assertEquals(25, list.size());
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("b", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("b", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("c", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("c", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("d", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("d", w1.s1);
 
       iter.remove();
 
       Assert.assertEquals(24, list.size());
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("c", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("c", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("e", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("e", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("f", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("f", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("g", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("g", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("h", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("h", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("i", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("i", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("j", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("j", w1.s1);
 
       iter.remove();
 
       Assert.assertEquals(23, list.size());
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("i", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("i", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("k", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("k", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("l", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("l", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("m", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("m", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("n", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("n", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("o", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("o", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("p", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("p", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("q", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("q", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("r", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("r", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("s", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("s", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("t", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("t", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("u", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("u", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("v", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("v", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("w", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("w", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("x", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("x", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("y", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("y", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("z", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("z", w1.s1);
       iter.remove();
 
       iter = list.iterator();
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("b", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("b", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("c", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("c", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("e", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("e", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("f", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("f", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("g", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("g", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("h", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("h", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("i", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("i", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("k", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("k", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("l", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("l", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("m", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("m", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("n", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("n", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("o", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("o", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("p", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("p", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("q", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("q", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("r", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("r", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("s", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("s", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("t", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("t", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("u", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("u", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("v", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("v", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("w", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("w", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("x", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("x", w1.s1);
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("y", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("y", w1.s1);
 
       assertFalse(iter.hasNext());
       assertFalse(iter.hasNext());
@@ -750,12 +750,12 @@ public final class PriorityLinkedListTest extends TestCase
       list.addTail(b, 4);
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("a", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("a", w1.s1);
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("b", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("b", w1.s1);
 
       assertFalse(iter.hasNext());
 
@@ -763,12 +763,12 @@ public final class PriorityLinkedListTest extends TestCase
       list.addTail(d, 4);
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("c", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("c", w1.s1);
 
       assertTrue(iter.hasNext());
-      w = iter.next();
-      Assert.assertEquals("d", w.s);
+      w1 = iter.next();
+      Assert.assertEquals("d", w1.s1);
 
       assertFalse(iter.hasNext());
 
@@ -881,19 +881,19 @@ public final class PriorityLinkedListTest extends TestCase
       iter.remove();
    }
 
-   class Wibble
+   static class Wibble
    {
-      String s;
+      String s1;
 
       Wibble(final String s)
       {
-         this.s = s;
+         this.s1 = s;
       }
 
       @Override
       public String toString()
       {
-         return s;
+         return s1;
       }
    }
 
