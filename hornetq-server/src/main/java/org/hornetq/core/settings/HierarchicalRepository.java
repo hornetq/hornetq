@@ -23,7 +23,7 @@ public interface HierarchicalRepository<T>
    /**
     * Add a new match to the repository
     * @param match The regex to use to match against
-    * @param value the value to hold agains the match
+    * @param value the value to hold against the match
     */
    void addMatch(String match, T value);
 
@@ -65,8 +65,14 @@ public interface HierarchicalRepository<T>
     */
    void clear();
 
+   /**
+    * Removes all listeners.
+    */
    void clearListeners();
 
+   /**
+    * Clears the cache.
+    */
    void clearCache();
 
    int getCacheSize();
