@@ -189,7 +189,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
 
    // Connection implementation --------------------------------------------------------------------
 
-   public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   public synchronized Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
 
