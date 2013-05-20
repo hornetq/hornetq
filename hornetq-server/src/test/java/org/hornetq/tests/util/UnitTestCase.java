@@ -1224,6 +1224,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       final String name = thread.getName();
       final ThreadGroup group = thread.getThreadGroup();
       final boolean isSystemThread = group != null && "system".equals(group.getName());
+      final String javaVendor = System.getProperty("java.vendor");
 
       if (name.contains("SunPKCS11"))
       {
@@ -1234,6 +1235,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          return true;
       }
       else if (isSystemThread && name.equals("process reaper"))
+      {
+         return true;
+      }
+      else if (javaVendor.contains("IBM") && name.equals("MemoryPoolMXBean notification dispatcher"))
       {
          return true;
       }
