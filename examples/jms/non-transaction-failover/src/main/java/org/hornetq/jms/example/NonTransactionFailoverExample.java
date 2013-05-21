@@ -93,7 +93,7 @@ public class NonTransactionFailoverExample extends HornetQExample
          }
 
          // Step 10. Crash server #1, the live server, and wait a little while to make sure
-         // it has really crashed
+         // pending Acks are on the server's side
          Thread.sleep(2000);
          killServer(0);
 
