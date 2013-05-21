@@ -2920,7 +2920,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (dg == null)
          {
-            throw new HornetQException("foo");
+            throw HornetQMessageBundle.BUNDLE.noDiscoveryGroupFound(dg);
          }
          locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(dg);
       }
