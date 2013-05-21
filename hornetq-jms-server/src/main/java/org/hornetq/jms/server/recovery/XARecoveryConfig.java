@@ -147,8 +147,6 @@ public class XARecoveryConfig
              ", discoveryConfiguration = " + discoveryConfiguration +
              ", username=" +
              username +
-             ", password=" +
-             password +
-             "]";
+             ", password=****]";
    }
 }
