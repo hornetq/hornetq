@@ -13,15 +13,19 @@
 
 package org.hornetq.core.settings.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -60,12 +64,28 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * a regex comparator
     */
-   private final MatchComparator<String> matchComparator = new MatchComparator<String>();
+   private final MatchComparator matchComparator = new MatchComparator();
 
    /**
     * a cache
     */
    private final Map<String, T> cache = new ConcurrentHashMap<String, T>();
+
+   /**
+    * Need a lock instead of using multiple {@link ConcurrentHashMap}s.
+    * <p>
+    * We could have a race between the state of {@link #matches} and {@link #cache}:
+    * <p>
+    * Thread1: calls {@link #addMatch(String , T)}: i. cleans cache; ii. adds match to Map.<br/>
+    * Thread2: could add an (out-dated) entry to the cache between 'i. clean cache' and 'ii. add
+    * match to Map'.
+    * <p>
+    * The lock is OK with regards to performance because we can search the cache before entering the
+    * lock.
+    * <p>
+    * The lock is required for the 'add match to cache' part.
+    */
+   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(false);
 
    /**
     * any registered listeners, these get fired on changes to the repository
@@ -87,16 +107,25 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void addMatch(final String match, final T value, final boolean immutableMatch)
    {
-      clearCache();
-      if (immutableMatch)
+      lock.writeLock().lock();
+      try
       {
-         immutables.add(match);
+         clearCache();
+
+         if (immutableMatch)
+         {
+            immutables.add(match);
+         }
+         Match.verify(match);
+         Match<T> match1 = new Match<T>(match);
+         match1.setValue(value);
+         matches.put(match, match1);
+         onChange();
       }
-      Match.verify(match);
-      Match<T> match1 = new Match<T>(match);
-      match1.setValue(value);
-      matches.put(match, match1);
-      onChange();
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    public int getCacheSize()
@@ -117,24 +146,32 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       {
          return cacheResult;
       }
-      T actualMatch;
-      HashMap<String, Match<T>> possibleMatches = getPossibleMatches(match);
-      List<Match<T>> orderedMatches = sort(possibleMatches);
-      actualMatch = merge(orderedMatches);
-      T value = actualMatch != null ? actualMatch : defaultmatch;
-      if (value != null)
+      lock.readLock().lock();
+      try
       {
-         cache.put(match, value);
+         T actualMatch;
+         Map<String, Match<T>> possibleMatches = getPossibleMatches(match);
+         Collection<Match<T>> orderedMatches = sort(possibleMatches);
+         actualMatch = merge(orderedMatches);
+         T value = actualMatch != null ? actualMatch : defaultmatch;
+         if (value != null)
+         {
+            cache.put(match, value);
+         }
+         return value;
       }
-      return value;
+      finally
+      {
+         lock.readLock().unlock();
+      }
    }
 
    /**
-    * merge all the possible matches, if  the values implement Mergeable then a full merge is done
+    * merge all the possible matches, if the values implement Mergeable then a full merge is done
     * @param orderedMatches
     * @return
     */
-   private T merge(final List<Match<T>> orderedMatches)
+   private T merge(final Collection<Match<T>> orderedMatches)
    {
       T actualMatch = null;
       for (Match<T> match : orderedMatches)
@@ -150,14 +187,14 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
          else
          {
             ((Mergeable)actualMatch).merge(match.getValue());
-
          }
       }
       return actualMatch;
    }
 
    /**
-    * sort the matches in order of precedence
+    * Sort the matches according to their precedence (that is, according to the precedence of their
+    * keys).
     * @param possibleMatches
     * @return
     */
@@ -165,12 +202,12 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    {
       List<String> keys = new ArrayList<String>(possibleMatches.keySet());
       Collections.sort(keys, matchComparator);
-      List<Match<T>> matches = new ArrayList<Match<T>>();
+      List<Match<T>> matches1 = new ArrayList<Match<T>>();
       for (String key : keys)
       {
-         matches.add(possibleMatches.get(key));
+         matches1.add(possibleMatches.get(key));
       }
-      return matches;
+      return matches1;
    }
 
    /**
@@ -180,16 +217,28 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void removeMatch(final String match)
    {
-      boolean isImmutable = immutables.contains(match);
-      if (isImmutable)
+      lock.writeLock().lock();
+      try
       {
-         log.debug("Cannot remove match "  + match + " since it came from a main config");
+         boolean isImmutable = immutables.contains(match);
+         if (isImmutable)
+         {
+             log.debug("Cannot remove match "  + match + " since it came from a main config");
+         }
+         else
+         {
+            /**
+             * clear the cache before removing the match. This will force any thread at
+             * {@link #getMatch(String)} to get the lock to recompute.
+             */
+            clearCache();
+            matches.remove(match);
+            onChange();
+         }
       }
-      else
+      finally
       {
-         matches.remove(match);
-         clearCache();
-         onChange();
+         lock.writeLock().unlock();
       }
    }
 
@@ -216,9 +265,17 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
 
    public void clear()
    {
-      clearCache();
-      listeners.clear();
-      matches.clear();
+      lock.writeLock().lock();
+      try
+      {
+         clearCache();
+         listeners.clear();
+         matches.clear();
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    public void clearListeners()
@@ -251,25 +308,28 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * @param match
     * @return
     */
-   private HashMap<String, Match<T>> getPossibleMatches(final String match)
+   private Map<String, Match<T>> getPossibleMatches(final String match)
    {
       HashMap<String, Match<T>> possibleMatches = new HashMap<String, Match<T>>();
 
-      for (String key : matches.keySet())
+      for (Entry<String, Match<T>> entry : matches.entrySet())
       {
-         if (matches.get(key).getPattern().matcher(match).matches())
+         Match<T> entryMatch = entry.getValue();
+         if (entryMatch.getPattern().matcher(match).matches())
          {
-            possibleMatches.put(key, matches.get(key));
+            possibleMatches.put(entry.getKey(), entryMatch);
          }
       }
       return possibleMatches;
    }
 
    /**
-    * compares to matches to see which one is more specific
+    * Compares to matches to see which one is more specific.
     */
-   private static class MatchComparator<T extends String> implements Comparator<T>
+   private static final class MatchComparator implements Comparator<String>, Serializable
    {
+      private static final long serialVersionUID = -6182535107518999740L;
+
       public int compare(final String o1, final String o2)
       {
          if (o1.contains(Match.WILDCARD) && !o2.contains(Match.WILDCARD))
