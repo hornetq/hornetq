@@ -318,6 +318,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
    {
       return "HornetQRAConnectionRequestInfo[type=" + type +
          ", transacted=" + transacted + ", acknowledgeMode=" + acknowledgeMode +
-         ", clientID=" + clientID + ", userName=" + userName + ", password=" + password + "]";
+         ", clientID=" + clientID + ", userName=" + userName + ", password=****]";
    }
 }
