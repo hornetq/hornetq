@@ -273,7 +273,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    public String toString()
    {
       return "HornetQRAProperties[localTx=" + localTx +
-         ", userName=" + userName + ", password=" + password + "]";
+         ", userName=" + userName + ", password=****]";
    }
 
    public synchronized void init() throws HornetQException
