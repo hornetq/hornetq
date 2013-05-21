@@ -21,9 +21,11 @@
 */
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQDuplicateMetaDataException;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQIncompatibleClientServerException;
@@ -311,4 +313,6 @@ public interface HornetQMessageBundle
    @Message(id = 119080, value =  "Invalid Page IO, PagingManager was stopped or closed", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException invalidPageIO();
 
+   @Message(id = 119081, value =  "No Discovery Group configuration named {0} found", format = Message.Format.MESSAGE_FORMAT)
+   HornetQException noDiscoveryGroupFound(DiscoveryGroupConfiguration dg);
 }
