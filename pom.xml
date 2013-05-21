@@ -30,8 +30,8 @@
     </prerequisites>
 
    <properties>
-      <netty.version>3.6.2.Final</netty.version>
-      <netty.version.string>${netty.version}-c0d783c</netty.version.string>
+      <netty.version>3.6.6.Final</netty.version>
+      <netty.version.string>${netty.version}-90e1eb2</netty.version.string>
       <hornetq.version.versionName>colonizer</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
