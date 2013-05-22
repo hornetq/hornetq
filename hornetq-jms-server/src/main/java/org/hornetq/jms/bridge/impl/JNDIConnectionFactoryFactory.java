@@ -24,7 +24,6 @@ import org.hornetq.jms.bridge.ConnectionFactoryFactory;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision:4566 $</tt>
  *
- * $Id:JNDIConnectionFactoryFactory.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
 public class JNDIConnectionFactoryFactory extends JNDIFactorySupport implements ConnectionFactoryFactory

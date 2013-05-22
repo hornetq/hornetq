@@ -28,7 +28,6 @@ import javax.jms.XASession;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2349 $</tt>
  *
- * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
 public class QueueStressTest extends JMSStressTestBase
 {

@@ -40,7 +40,6 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 6016 $
  *
- * $Id: String64KLimitTest.java 6016 2009-03-06 10:40:09Z jmesnil $
  */
 public class String64KLimitTest extends UnitTestCase
 {

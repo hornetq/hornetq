@@ -69,7 +69,6 @@ import org.hornetq.utils.SensitiveDataCodec;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision:4566 $</tt>
  *
- * $Id:JMSBridge.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
 public final class JMSBridgeImpl implements JMSBridge

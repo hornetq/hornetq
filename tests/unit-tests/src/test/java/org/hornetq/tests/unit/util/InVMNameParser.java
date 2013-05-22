@@ -24,7 +24,6 @@ import javax.naming.NamingException;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: InVMNameParser.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public class InVMNameParser implements NameParser, Serializable
 {

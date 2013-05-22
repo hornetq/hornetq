@@ -34,7 +34,6 @@ import org.hornetq.core.messagecounter.MessageCounterManager;
  *
  * @version <tt>$Revision: 3307 $</tt>
  *
- * $Id: MessageCounterManager.java 3307 2007-11-09 20:43:00Z timfox $
  *
  */
 public class MessageCounterManagerImpl implements MessageCounterManager

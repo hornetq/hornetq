@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
  * @author Loren Rosen
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * $Id: RegExp.java 2681 2007-05-15 00:09:10Z timfox $
  */
 final class RegExp
 {

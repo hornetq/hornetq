@@ -41,7 +41,6 @@ import org.hornetq.utils.TypedProperties;
  *
  * @version $Revision: 3412 $
  *
- * $Id: HornetQRAMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public final class HornetQMapMessage extends HornetQMessage implements MapMessage
 {

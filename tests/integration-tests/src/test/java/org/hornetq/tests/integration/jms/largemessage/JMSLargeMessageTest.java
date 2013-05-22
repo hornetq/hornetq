@@ -39,7 +39,6 @@ import org.hornetq.utils.UUIDGenerator;
  * @author <a href="mailto:clebert.suconic@feodorov.com">Clebert Suconic</a>
  * @version <tt>$Revision: 6220 $</tt>
  *
- * $Id: MessageHeaderTest.java 6220 2009-03-30 19:38:11Z timfox $
  */
 public class JMSLargeMessageTest extends JMSTestBase
 {
