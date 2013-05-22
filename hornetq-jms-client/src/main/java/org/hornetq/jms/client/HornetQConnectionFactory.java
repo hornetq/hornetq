@@ -114,25 +114,45 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    @Override
    public JMSContext createContext()
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createContext(null, null);
    }
 
    @Override
-   public JMSContext createContext(String userName, String password)
+   public JMSContext createContext(final int sessionMode)
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createContext(null, null, sessionMode);
+   }
+
+   @Override
+   public JMSContext createContext(final String userName, final String password)
+   {
+      return createContext(userName, password, JMSContext.AUTO_ACKNOWLEDGE);
    }
 
    @Override
    public JMSContext createContext(String userName, String password, int sessionMode)
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      validateSessionMode(sessionMode);
+      return new HornetQJMSContext(this, sessionMode, userName, password);
    }
 
-   @Override
-   public JMSContext createContext(int sessionMode)
+   /**
+    * @param mode
+    */
+   private static void validateSessionMode(int mode)
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      switch (mode)
+      {
+         case JMSContext.AUTO_ACKNOWLEDGE:
+         case JMSContext.CLIENT_ACKNOWLEDGE:
+         case JMSContext.DUPS_OK_ACKNOWLEDGE:
+         case JMSContext.SESSION_TRANSACTED:
+         {
+            return;
+         }
+         default:
+            throw new IllegalArgumentException();
+      }
    }
 
     // QueueConnectionFactory implementation --------------------------------------------------------
