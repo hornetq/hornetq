@@ -25,7 +25,6 @@ import org.hornetq.jms.bridge.DestinationFactory;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>10 Oct 2007
  *
- * $Id: $
  *
  */
 public class JNDIDestinationFactory extends JNDIFactorySupport implements DestinationFactory

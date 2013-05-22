@@ -39,7 +39,6 @@ import org.hornetq.jms.tests.JmsTestLogger;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: InVMContext.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public class InVMContext implements Context, Serializable
 {

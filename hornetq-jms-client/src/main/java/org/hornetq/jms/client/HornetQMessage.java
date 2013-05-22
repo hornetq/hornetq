@@ -59,7 +59,6 @@ import org.hornetq.utils.UUID;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * $Id: HornetQRAMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
 public class HornetQMessage implements javax.jms.Message
 {

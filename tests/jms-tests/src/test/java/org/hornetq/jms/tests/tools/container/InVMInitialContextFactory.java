@@ -27,7 +27,6 @@ import javax.naming.spi.InitialContextFactory;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: InVMInitialContextFactory.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public class InVMInitialContextFactory implements InitialContextFactory
 {

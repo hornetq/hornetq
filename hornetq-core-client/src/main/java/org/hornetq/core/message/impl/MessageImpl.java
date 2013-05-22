@@ -42,7 +42,6 @@ import org.hornetq.utils.UUID;
  * @version <tt>$Revision: 2740 $</tt>
  *
  *
- * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
  */
 public abstract class MessageImpl implements MessageInternal
 {

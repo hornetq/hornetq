@@ -24,7 +24,6 @@ import org.hornetq.core.transaction.Transaction;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3020 $</tt>
  *
- * $Id: MessageReference.java 3020 2007-08-21 15:46:38Z timfox $
  */
 public interface MessageReference
 {
