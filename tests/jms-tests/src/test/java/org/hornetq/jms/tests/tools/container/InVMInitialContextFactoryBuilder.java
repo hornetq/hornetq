@@ -26,7 +26,6 @@ import javax.naming.spi.InitialContextFactoryBuilder;
  *
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: InVMInitialContextFactoryBuilder.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public class InVMInitialContextFactoryBuilder implements InitialContextFactoryBuilder
 {

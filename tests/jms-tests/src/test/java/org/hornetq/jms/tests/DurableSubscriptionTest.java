@@ -37,7 +37,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * $Id: DurableSubscriberTest.java 1319 2006-09-19 17:17:53Z ovidiu.feodorov@jboss.com $
  */
 public class DurableSubscriptionTest extends JMSTestCase
 {

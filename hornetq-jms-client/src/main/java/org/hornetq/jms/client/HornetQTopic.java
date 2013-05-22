@@ -26,7 +26,6 @@ import org.hornetq.api.core.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 8737 $</tt>
  *
- * $Id: HornetQTopic.java 8737 2010-01-06 12:41:30Z jmesnil $
  */
 public class HornetQTopic extends HornetQDestination implements Topic
 {

@@ -21,7 +21,6 @@ package org.hornetq.utils;
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision: 1174 $</tt>
  *
- * $Id: PrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
 public interface PriorityLinkedList<T>
 {

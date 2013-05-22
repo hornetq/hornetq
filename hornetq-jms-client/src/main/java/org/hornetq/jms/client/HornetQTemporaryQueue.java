@@ -24,7 +24,6 @@ import javax.jms.TemporaryQueue;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 3569 $</tt>
  *
- * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
  */
 public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueue
 {

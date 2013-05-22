@@ -38,7 +38,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>4 Jul 2007
  *
- * $Id: $
  *
  */
 public class ManyConnectionsStressTest extends HornetQServerTestCase

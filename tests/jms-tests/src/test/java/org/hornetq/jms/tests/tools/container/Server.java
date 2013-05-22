@@ -30,7 +30,6 @@ import org.hornetq.jms.server.JMSServerManager;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: Server.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public interface Server extends Remote
 {

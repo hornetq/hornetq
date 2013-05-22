@@ -25,7 +25,6 @@ import java.util.NoSuchElementException;
  * @author <a href="mailto:jmesnil@redhat.com>Jeff Mesnil</a>
  * @version <tt>$Revision: 1174 $</tt>
  *
- * $Id: BasicPrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {

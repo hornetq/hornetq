@@ -35,7 +35,6 @@ import org.hornetq.api.core.client.ClientSession;
  *
  * @version $Revision: 3412 $
  *
- * $Id: HornetQRABytesMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 {

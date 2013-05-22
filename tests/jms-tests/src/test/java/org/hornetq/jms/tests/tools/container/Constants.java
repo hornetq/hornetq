@@ -16,7 +16,6 @@ package org.hornetq.jms.tests.tools.container;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
  *
- * $Id: Constants.java 2868 2007-07-10 20:22:16Z timfox $
  */
 public class Constants
 {

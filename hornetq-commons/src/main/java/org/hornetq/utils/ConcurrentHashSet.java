@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1935 $</tt>
  *
- * $Id: ConcurrentReaderHashSet.java 1935 2007-01-09 23:29:20Z clebert.suconic@jboss.com $
  */
 public class ConcurrentHashSet<E> extends AbstractSet<E> implements ConcurrentSet<E>
 {
