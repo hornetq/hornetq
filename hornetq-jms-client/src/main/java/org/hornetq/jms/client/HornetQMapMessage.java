@@ -94,7 +94,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    public HornetQMapMessage(final MapMessage foreign, final ClientSession session) throws JMSException
    {
       super(foreign, HornetQMapMessage.TYPE, session);
-      Enumeration names = foreign.getMapNames();
+      Enumeration<?> names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
          String name = (String)names.nextElement();
@@ -467,6 +467,28 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
       }
    }
 
-   // Inner classes -------------------------------------------------
+   @Override
+   protected boolean hasNoBody()
+   {
+      return map.isEmpty();
+   }
 
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      if (hasNoBody())
+      {
+         System.out.println("has no body?");
+         return true;
+      }
+      return c.isAssignableFrom(java.util.Map.class);
+   }
+
+   @SuppressWarnings("unchecked")
+   @Override
+   protected <T> T getBodyInternal(Class<T> c)
+   {
+      return (T)map.getMap();
+   }
 }

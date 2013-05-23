@@ -25,16 +25,13 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 
 /**
- * HornetQ implementation of a JMS BytesMessage.
- *
+ * HornetQ implementation of a JMS {@link BytesMessage}.
+ * <p>
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
- * @version $Revision: 3412 $
- *
  */
 public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 {
@@ -47,7 +44,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    // Constructor ---------------------------------------------------
 
-   /*
+   /**
     * This constructor is used to construct messages prior to sending
     */
    protected HornetQBytesMessage(final ClientSession session)
@@ -55,7 +52,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       super(HornetQBytesMessage.TYPE, session);
    }
 
-   /*
+   /**
     * Constructor on receipt at client side
     */
    protected HornetQBytesMessage(final ClientMessage message, final ClientSession session)
@@ -63,7 +60,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       super(message, session);
    }
 
-   /*
+   /**
     * Foreign message constructor
     */
    public HornetQBytesMessage(final BytesMessage foreign, final ClientSession session) throws JMSException
@@ -436,16 +433,28 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       return HornetQBytesMessage.TYPE;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private HornetQBuffer getBuffer()
    {
       return message.getBodyBuffer();
    }
 
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      if (bodyLength == 0)
+         return true;
+      // XXX FIXME HORNETQ-1209 What to do on Serializable?
+      return c.isAssignableFrom(byte[].class);
+   }
+
+   @Override
+   protected <T> T getBodyInternal(Class<T> c)
+   {
+      if (bodyLength == 0)
+         return null;
+      byte[] dst = new byte[bodyLength];
+      message.getBodyBuffer().getBytes(0, dst);
+      return (T)dst;
+   }
 }

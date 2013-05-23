@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
+import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 
 import org.hornetq.api.core.HornetQException;
@@ -174,11 +175,32 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       data = null;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   protected <T> T getBodyInternal(Class<T> c) throws MessageFormatException
+   {
+      try
+      {
+         return (T)getObject();
+      }
+      catch (JMSException e)
+      {
+         throw new MessageFormatException("Deserialization error on HornetQObjectMessage");
+      }
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      if (data == null) // we have no body
+         return true;
+      try
+      {
+         return Serializable.class == c || Object.class == c || c.isInstance(getObject());
+      }
+      catch (JMSException e)
+      {
+         return false;
+      }
+   }
 }
