@@ -1059,4 +1059,26 @@ public final class TypedProperties
          return DataConstants.SIZE_BYTE + SimpleString.sizeofString(val);
       }
    }
+
+   public boolean isEmpty()
+   {
+      return properties.isEmpty();
+   }
+
+   public Map getMap()
+   {
+      Map<String, Object> m = new HashMap<String, Object>();
+      for (Entry<SimpleString,PropertyValue> entry:properties.entrySet()) {
+         Object val = entry.getValue().getValue();
+         if (val instanceof SimpleString)
+         {
+            m.put(entry.getKey().toString(), ((SimpleString)val).toString());
+         }
+         else
+         {
+            m.put(entry.getKey().toString(), val);
+         }
+      }
+      return m;
+   }
 }

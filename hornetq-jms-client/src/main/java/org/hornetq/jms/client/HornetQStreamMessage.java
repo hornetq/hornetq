@@ -41,7 +41,7 @@ import org.hornetq.utils.DataConstants;
  * @version $Revision: 3412 $
  *
  */
-public class HornetQStreamMessage extends HornetQMessage implements StreamMessage
+public final class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
@@ -580,16 +580,15 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       reset();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private HornetQBuffer getBuffer()
    {
       return message.getBodyBuffer();
    }
 
-   // Inner classes -------------------------------------------------
+   @SuppressWarnings("rawtypes")
+   @Override
+   public boolean isBodyAssignableTo(Class c) throws JMSException
+   {
+      return false;
+   }
 }

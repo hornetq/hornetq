@@ -227,8 +227,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       return (XATopicConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
-   // Referenceable implementation -----------------------------------------------------------------
-
+   @Override
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),

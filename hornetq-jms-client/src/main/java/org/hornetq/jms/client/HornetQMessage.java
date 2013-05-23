@@ -14,6 +14,7 @@
 package org.hornetq.jms.client;
 
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.utils.UUID;
 
 /**
@@ -869,13 +871,50 @@ public class HornetQMessage implements javax.jms.Message
    @Override
    public <T> T getBody(Class<T> c) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (isBodyAssignableTo(c))
+      {
+         return getBodyInternal(c);
+      }
+      // XXX HORNETQ-1209 Do we need translations here?
+      throw new MessageFormatException("Body not assignable to " + c);
    }
 
-   @Override
-   public boolean isBodyAssignableTo(Class c) throws JMSException
+   @SuppressWarnings("unchecked")
+   protected <T> T getBodyInternal(Class<T> c) throws MessageFormatException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      InputStream is = ((MessageInternal)message).getBodyInputStream();
+      try
+      {
+         ObjectInputStream ois = new ObjectInputStream(is);
+         return (T)ois.readObject();
+      }
+      catch (Exception e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
+   }
+
+
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      /**
+       * From the specs:
+       * <p>
+       * If the message is a {@code Message} (but not one of its subtypes) then this method will
+       * return true irrespective of the value of this parameter.
+       */
+      return true;
+   }
+
+   /**
+    * Helper method for {@link #isBodyAssignableTo(Class)}.
+    * @return true if the message has no body.
+    */
+   protected boolean hasNoBody()
+   {
+      return message.getBodySize() == 0;
    }
 
    // Public --------------------------------------------------------
@@ -885,9 +924,9 @@ public class HornetQMessage implements javax.jms.Message
       this.individualAck = true;
    }
 
-   public void resetMessageID(final String msgID)
+   public void resetMessageID(final String newMsgID)
    {
-      this.msgID = msgID;
+      this.msgID = newMsgID;
    }
 
    public ClientMessage getCoreMessage()

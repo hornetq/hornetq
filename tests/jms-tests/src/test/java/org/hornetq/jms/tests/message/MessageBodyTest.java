@@ -17,23 +17,17 @@ import java.util.Enumeration;
 import java.util.HashSet;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.MapMessage;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
-import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -44,50 +38,8 @@ import org.junit.Test;
  *
  *
  */
-public class MessageBodyTest extends HornetQServerTestCase
+public class MessageBodyTest extends MessageBodyTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   protected Connection producerConnection, consumerConnection;
-
-   protected Session queueProducerSession, queueConsumerSession;
-
-   protected MessageProducer queueProducer;
-
-   protected MessageConsumer queueConsumer;
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      producerConnection = getConnectionFactory().createConnection();
-      consumerConnection = getConnectionFactory().createConnection();
-
-      queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
-      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
-
-      consumerConnection.start();
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-      producerConnection.close();
-      consumerConnection.close();
-   }
 
    @Test
    public void testSMBodyReadable() throws Exception
