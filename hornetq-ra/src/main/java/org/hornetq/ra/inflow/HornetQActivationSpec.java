@@ -51,6 +51,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /** The resource adapter */
    private HornetQResourceAdapter ra;
 
+   /** The connection factory lookup */
+   private String connectionFactoryLookup;
+
    /** The destination */
    private String destination;
 
@@ -207,6 +210,34 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    }
 
    /**
+    * Get the connection factory lookup
+    * @return The value
+    */
+   public String getConnectionFactoryLookup()
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getConnectionFactoryLookup() ->" + connectionFactoryLookup);
+      }
+
+      return connectionFactoryLookup;
+   }
+
+   /**
+    * Set the connection factory lookup
+    * @param value The value
+    */
+   public void setConnectionFactoryLookup(final String value)
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setConnectionFactoryLookup(" + value + ")");
+      }
+
+      connectionFactoryLookup = value;
+   }
+
+   /**
     * Get the destination
     * @return The value
     */
@@ -232,6 +263,25 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
 
       destination = value;
+   }
+
+   /**
+    * Get the destination lookup
+    * @return The value
+    */
+   public String getDestinationLookup()
+   {
+      return getDestination();
+   }
+
+   /**
+    * Set the destination
+    * @param value The value
+    */
+   public void setDestinationLookup(final String value)
+   {
+      setDestination(value);
+      setUseJNDI(true);
    }
 
    /**
@@ -719,6 +769,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       StringBuffer buffer = new StringBuffer();
       buffer.append(HornetQActivationSpec.class.getName()).append('(');
       buffer.append("ra=").append(ra);
+      if (messageSelector != null)
+      {
+         buffer.append(" connectionFactoryLookup=").append(connectionFactoryLookup);
+      }
       buffer.append(" destination=").append(destination);
       buffer.append(" destinationType=").append(destinationType);
       if (messageSelector != null)
