@@ -20,7 +20,6 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.TextMessage;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -124,7 +123,15 @@ public class HornetQJMSConsumer implements JMSConsumer
    @Override
    public <T> T receiveBody(Class<T> c)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         Message message = consumer.receive();
+         return message.getBody(c);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    @Override
@@ -133,10 +140,9 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receive(timeout);
-         // FIXME
-         TextMessage textMessage = (TextMessage) message;
-         return (T) textMessage.getText();
-      } catch (JMSException e)
+         return message.getBody(c);
+      }
+      catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
@@ -145,6 +151,14 @@ public class HornetQJMSConsumer implements JMSConsumer
    @Override
    public <T> T receiveBodyNoWait(Class<T> c)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         Message message = consumer.receiveNoWait();
+         return message.getBody(c);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 }
