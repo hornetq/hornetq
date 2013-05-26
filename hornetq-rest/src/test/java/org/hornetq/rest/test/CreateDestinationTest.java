@@ -22,6 +22,7 @@ public class CreateDestinationTest extends MessageTestBase
       server.getJaxrsServer().getDeployment().getProviderFactory().registerProvider(org.jboss.resteasy.plugins.providers.DocumentProvider.class);
    }
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       String queueConfig = "<queue name=\"testQueue\"><durable>true</durable></queue>";
@@ -76,6 +77,7 @@ public class CreateDestinationTest extends MessageTestBase
       Assert.assertEquals(204, res.getStatus());
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       String queueConfig = "<topic name=\"testTopic\"></topic>";
@@ -161,6 +163,7 @@ public class CreateDestinationTest extends MessageTestBase
       Assert.assertEquals(415, cRes.getStatus());
    }
 
+   @Test
    public void testCreateTopicWithBadContentType() throws Exception
    {
       String queueConfig = "<topic name=\"testTopic\"></topic>";
