@@ -928,6 +928,22 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(QueueControl.class);
    }
+   
+   public void resetMessagesAdded() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         queue.resetMessagesAdded();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+      
+   }
 
    // Package protected ---------------------------------------------
 
@@ -942,6 +958,8 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          throw new IllegalStateException("HornetQ Server is not started. Queue can not be managed yet");
       }
    }
+   
+   
 
    // Inner classes -------------------------------------------------
 }

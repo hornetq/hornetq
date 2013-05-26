@@ -1279,7 +1279,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(messageReference, consumer.getReferences().get(1));
       Assert.assertEquals(messageReference2, consumer.getReferences().get(2));
    }
-
+   
    public void testMessagesAdded() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1470,6 +1470,28 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(numMessages, queue.getMessageCount());
       Assert.assertEquals(numMessages, queue.getDeliveringCount());
 
+   }
+   
+   public void testResetMessagesAdded() throws Exception
+   {
+      QueueImpl queue = new QueueImpl(1,
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
+      MessageReference messageReference = generateReference(queue, 1);
+      MessageReference messageReference2 = generateReference(queue, 2);
+      queue.addTail(messageReference);
+      queue.addTail(messageReference2);
+      Assert.assertEquals(2, queue.getMessagesAdded());
+      queue.resetMessagesAdded();
+      Assert.assertEquals(0, queue.getMessagesAdded());
    }
 
    class AddtoQueueRunner implements Runnable
