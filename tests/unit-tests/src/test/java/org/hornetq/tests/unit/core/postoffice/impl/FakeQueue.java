@@ -302,6 +302,13 @@ public class FakeQueue implements Queue
       // no-op
       return 0;
    }
+   
+   @Override
+   public void resetMessagesAdded()
+   {
+      // no-op
+      
+   }
 
    @Override
    public long getMessagesAdded(long timeout)

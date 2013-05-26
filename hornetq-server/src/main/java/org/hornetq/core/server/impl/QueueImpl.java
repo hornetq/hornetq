@@ -2548,6 +2548,12 @@ public class QueueImpl implements Queue
 
       return delay;
    }
+   
+   public synchronized void resetMessagesAdded()
+   {
+	  messagesAdded = 0;
+   }
+   
 
    // Inner classes
    // --------------------------------------------------------------------------

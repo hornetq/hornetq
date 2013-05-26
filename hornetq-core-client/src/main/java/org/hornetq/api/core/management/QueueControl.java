@@ -330,4 +330,10 @@ public interface QueueControl
     */
    @Operation(desc = "Inspects if the queue is paused", impact = MBeanOperationInfo.INFO)
    boolean isPaused() throws Exception;
+   
+   /**
+    * Resets the MessagesAdded property
+    */
+   @Operation(desc = "Resets the MessagesAdded property", impact = MBeanOperationInfo.ACTION)
+   void resetMessagesAdded() throws Exception;
 }

@@ -223,4 +223,6 @@ public interface Queue extends Bindable
    boolean isInternalQueue();
 
    void setInternalQueue(boolean internalQueue);
+   
+   void resetMessagesAdded();
 }
