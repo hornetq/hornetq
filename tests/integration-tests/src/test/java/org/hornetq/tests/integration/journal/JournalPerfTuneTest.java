@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.TestSuite;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
@@ -45,12 +43,6 @@ public class JournalPerfTuneTest extends UnitTestCase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Journal journal;
-
-   public static TestSuite suite()
-   {
-      TestSuite suite = new TestSuite();
-      return suite;
-   }
 
    @Override
    protected void setUp() throws Exception

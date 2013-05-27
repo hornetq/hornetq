@@ -50,7 +50,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
-import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -466,23 +465,24 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       System.out.println(this.getClass().getName() + "::" + message);
    }
 
-   protected static TestSuite createAIOTestSuite(final Class<?> clazz)
+   protected static Object createAIOTestSuite(final Class<?> clazz)
    {
-      TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
+       throw new RuntimeException("need rewrite");
+      // TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
 
-      if (AIOSequentialFileFactory.isSupported())
-      {
-         suite.addTestSuite(clazz);
-      }
-      else
-      {
-         // System.out goes towards JUnit report
-         System.out.println("Test " + clazz.getName() + " ignored as AIO is not available." +
-            "Add this to your java arguments if you are on a Linux system:" +
-            "\n-Djava.library.path=<project_home>/distribution/hornetq/src/main/resources/bin");
-      }
+      // if (AIOSequentialFileFactory.isSupported())
+      // {
+      //    suite.addTestSuite(clazz);
+      // }
+      // else
+      // {
+      //    // System.out goes towards JUnit report
+      //    System.out.println("Test " + clazz.getName() + " ignored as AIO is not available." +
+      //       "Add this to your java arguments if you are on a Linux system:" +
+      //       "\n-Djava.library.path=<project_home>/distribution/hornetq/src/main/resources/bin");
+      // }
 
-      return suite;
+      // return suite;
    }
 
    public static String dumpBytes(final byte[] bytes)

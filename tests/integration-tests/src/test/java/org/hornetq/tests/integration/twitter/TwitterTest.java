@@ -73,25 +73,25 @@ public class TwitterTest extends ServiceTestBase
 
 
 
-   public static TestSuite suite()
-   {
-      TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
+   // public static TestSuite suite()
+   // {
+   //    TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
 
-      if (TWITTER_CONSUMER_KEY != null && !TWITTER_CONSUMER_KEY.equals("null"))
-      {
-         suite.addTestSuite(TwitterTest.class);
-      }
-      else
-      {
-         // System.out goes towards JUnit report
-         String errorMsg = "Test " + TwitterTest.class.getName() +
-                           " ignored as twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret is not set in system property  * * *";
-         System.out.println(errorMsg);
-         log.warn(errorMsg);
-      }
+   //    if (TWITTER_CONSUMER_KEY != null && !TWITTER_CONSUMER_KEY.equals("null"))
+   //    {
+   //       suite.addTestSuite(TwitterTest.class);
+   //    }
+   //    else
+   //    {
+   //       // System.out goes towards JUnit report
+   //       String errorMsg = "Test " + TwitterTest.class.getName() +
+   //                         " ignored as twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret is not set in system property  * * *";
+   //       System.out.println(errorMsg);
+   //       log.warn(errorMsg);
+   //    }
 
-      return suite;
-   }
+   //    return suite;
+   // }
 
    public void testSimpleIncoming() throws Exception
    {
