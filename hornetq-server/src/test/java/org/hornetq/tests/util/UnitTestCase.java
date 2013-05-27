@@ -105,6 +105,8 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 /**
  * Helper base class for our unit tests.
@@ -117,6 +119,8 @@ import org.hornetq.utils.UUIDGenerator;
 public abstract class UnitTestCase extends CoreUnitTestCase
 {
    // Constants -----------------------------------------------------
+
+   @Rule public TestName name = new TestName();
 
    private static final HornetQServerLogger log = HornetQServerLogger.LOGGER;
 
@@ -159,6 +163,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected void disableCheckThread()
    {
       checkThread = false;
+   }
+
+   protected String getName()
+   {
+      return name.getMethodName();
    }
 
    protected boolean isWindows()
@@ -1401,9 +1410,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
             attempts++;
          }
 
-         for (int j = 0; j < files.length; j++)
+         for (String file : files)
          {
-            File f = new File(directory, files[j]);
+            File f = new File(directory, file);
             if (!deleteDirectory(f))
             {
                log.warn("Failed to clean up file: " + f.getAbsolutePath());
