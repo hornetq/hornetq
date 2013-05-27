@@ -13,22 +13,14 @@
 
 package org.hornetq.jms.tests;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
+import javax.jms.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * The most comprehensive, yet simple, unit test.
@@ -39,22 +31,23 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class JMSTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
+    Connection conn = null;
 
-   // Static --------------------------------------------------------
+    protected void tearDown() throws Exception {
+     try
+     {
+        if (conn != null)
+        {
+            conn.close();
+            conn=null;
+         }
+     } finally {
+         super.tearDown();
+     }
+    }
 
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   public void test_NonPersistent_NonTransactional() throws Exception
+   public void testNonPersistent_NonTransactional() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -81,22 +74,10 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(rm);
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_CreateTextMessageNull() throws Exception
+   public void testCreateTextMessageNull() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -123,22 +104,10 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)cons.receive();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_Persistent_NonTransactional() throws Exception
+   public void testPersistent_NonTransactional() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -163,22 +132,10 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)cons.receive();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_NonPersistent_Transactional_Send() throws Exception
+   public void testNonPersistent_Transactional_Send() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -207,22 +164,10 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("message one", rm.getText());
          rm = (TextMessage)cons.receive();
          ProxyAssertSupport.assertEquals("message two", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_Persistent_Transactional_Send() throws Exception
+   public void testPersistent_Transactional_Send() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -251,22 +196,10 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("message one", rm.getText());
          rm = (TextMessage)cons.receive();
          ProxyAssertSupport.assertEquals("message two", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
+   public void testNonPersistent_Transactional_Acknowledgment() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -290,22 +223,10 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("one", rm.getText());
 
          session.commit();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_Asynchronous_to_Client() throws Exception
+   public void testAsynchronous_to_Client() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -360,22 +281,10 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)message.get();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_MessageListener() throws Exception
+   public void testMessageListener() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -408,22 +317,10 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)message.get();
 
          ProxyAssertSupport.assertEquals("one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
-   public void test_ClientAcknowledge() throws Exception
+   public void testClientAcknowledge() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = JMSTestCase.cf.createConnection();
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -444,22 +341,5 @@ public class JMSTest extends JMSTestCase
          m.acknowledge();
 
          assertRemainingMessages(0);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

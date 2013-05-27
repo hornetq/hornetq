@@ -1059,4 +1059,18 @@ public final class TypedProperties
          return DataConstants.SIZE_BYTE + SimpleString.sizeofString(val);
       }
    }
+
+   public boolean isEmpty()
+   {
+      return properties.isEmpty();
+   }
+
+   public Map getMap()
+   {
+      Map m = new HashMap();
+      for (Entry<SimpleString,PropertyValue> entry:properties.entrySet()) {
+         m.put(entry.getKey().toString(), entry.getValue().getValue());
+      }
+      return m;
+   }
 }

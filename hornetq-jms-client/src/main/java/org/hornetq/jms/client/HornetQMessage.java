@@ -875,13 +875,39 @@ public class HornetQMessage implements javax.jms.Message
    @Override
    public <T> T getBody(Class<T> c) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (isBodyAssignableTo(c))
+      {
+         return getBodyInternal(c);
+      }
+      // XXX HORNETQ-1209 Do we need translations here?
+      throw new MessageFormatException("Body not assignable to " + c);
+   }
+
+   protected <T> T getBodyInternal(Class<T> c) throws JMSException
+   {
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 
    @Override
-   public boolean isBodyAssignableTo(Class c) throws JMSException
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      /**
+       * From the specs:
+       * <p>
+       * If the message is a {@code Message} (but not one of its subtypes) then this method will
+       * return true irrespective of the value of this parameter.
+       */
+      return true;
+   }
+
+   /**
+    * Helper method for {@link #isBodyAssignableTo(Class)}.
+    * @return true if the message has no body.
+    */
+   protected boolean hasNoBody()
+   {
+      return message.getBodySize() == 0;
    }
 
    // Public --------------------------------------------------------

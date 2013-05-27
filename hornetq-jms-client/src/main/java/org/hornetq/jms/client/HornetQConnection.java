@@ -376,6 +376,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       checkClosed();
 
       checkTempQueues(destination);
+      // XXX HORNETQ-1209 is this valid?
       return null;
    }
 

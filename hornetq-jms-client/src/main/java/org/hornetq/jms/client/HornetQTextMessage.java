@@ -140,13 +140,18 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
       text = message.getBodyBuffer().readNullableSimpleString();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   protected <T> T getBodyInternal(Class<T> c) throws JMSException
+   {
+      return (T)getText();
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   // Public --------------------------------------------------------
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      if (text == null)
+         return true;
+      return c.isAssignableFrom(java.lang.String.class);
+   }
 }
