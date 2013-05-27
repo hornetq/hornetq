@@ -351,9 +351,4 @@ public class FilterParserTest extends UnitTestCase
          Assert.fail("" + e);
       }
    }
-
-   public static void main(final java.lang.String[] args)
-   {
-      junit.textui.TestRunner.run(FilterParserTest.class);
-   }
 }
