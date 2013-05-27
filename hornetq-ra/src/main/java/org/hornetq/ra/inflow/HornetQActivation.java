@@ -409,7 +409,19 @@ public class HornetQActivation
 
    protected void setupCF() throws Exception
    {
-      if (spec.isHasBeenUpdated())
+      if (spec.getConnectionFactoryLookup() != null) {
+         Context ctx;
+         if(spec.getParsedJndiParams() == null)
+         {
+            ctx = new InitialContext();
+         }
+         else
+         {
+            ctx = new InitialContext(spec.getParsedJndiParams());
+         }
+         factory = (HornetQConnectionFactory) ctx.lookup(spec.getConnectionFactoryLookup());
+      }
+      else if (spec.isHasBeenUpdated())
       {
          factory = ra.createHornetQConnectionFactory(spec);
          resourceRecovery = ra.getRecoveryManager().register(factory, spec.getUser(), spec.getPassword());
