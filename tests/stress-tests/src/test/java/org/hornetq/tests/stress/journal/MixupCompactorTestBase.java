@@ -32,7 +32,7 @@ import org.hornetq.utils.SimpleIDGenerator;
  *
  *
  */
-public abstract class MixupCompactorBase extends JournalImplTestBase
+public abstract class MixupCompactorTestBase extends JournalImplTestBase
 {
 
    // Constants -----------------------------------------------------
