@@ -960,10 +960,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    Map<Thread, StackTraceElement[]> previousThreads;
 
-   @Override
    protected void setUp() throws Exception
    {
-      super.setUp();
       //      testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" + System.currentTimeMillis();
       OperationContextImpl.clearContext();
 
@@ -978,7 +976,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       logAndSystemOut("#test " + getName());
    }
 
-   @Override
    protected void tearDown() throws Exception
    {
       closeAllSessionFactories();
@@ -1112,7 +1109,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          // System.out.println("SLEEP!");
          // Thread.sleep(60000);
          deleteTmpDir();
-      super.tearDown();
    }
    }
 
