@@ -25,14 +25,11 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- *
- * A SimpleSendMultipleQueues
- *
  * @author Tim Fox
  *
  *
  */
-public class SimpleSendMultipleQueues extends ServiceTestBase
+public class SimpleSendMultipleQueuesTest extends ServiceTestBase
 {
    public static final String address = "testaddress";
 
@@ -52,7 +49,7 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
    private ServerLocator locator;
 
-   public void test() throws Exception
+   public void testSimpleSend() throws Exception
    {
       for (int i = 0; i < 1000; i++)
       {
@@ -95,11 +92,11 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
       session = cf.createSession();
 
-      session.createQueue(SimpleSendMultipleQueues.address, "queue1");
-      session.createQueue(SimpleSendMultipleQueues.address, "queue2");
-      session.createQueue(SimpleSendMultipleQueues.address, "queue3");
+      session.createQueue(SimpleSendMultipleQueuesTest.address, "queue1");
+      session.createQueue(SimpleSendMultipleQueuesTest.address, "queue2");
+      session.createQueue(SimpleSendMultipleQueuesTest.address, "queue3");
 
-      producer = session.createProducer(SimpleSendMultipleQueues.address);
+      producer = session.createProducer(SimpleSendMultipleQueuesTest.address);
 
       consumer1 = session.createConsumer("queue1");
 

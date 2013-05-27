@@ -20,7 +20,7 @@ package org.hornetq.tests.stress.journal;
  *
  *
  */
-public class AllPossibilitiesCompactWithAddDeleteStressTest extends MixupCompactorBase
+public class AllPossibilitiesCompactWithAddDeleteStressTest extends MixupCompactorTestBase
 {
 
    public void internalTest() throws Exception

@@ -21,7 +21,7 @@ package org.hornetq.tests.stress.journal;
  *
  *
  */
-public class AllPossibilitiesCompactStressTest extends MixupCompactorBase
+public class AllPossibilitiesCompactStressTest extends MixupCompactorTestBase
 {
 
    public void internalTest() throws Exception
