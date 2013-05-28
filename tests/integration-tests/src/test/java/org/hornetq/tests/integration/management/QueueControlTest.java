@@ -221,6 +221,8 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
+   
+   
 
    public void testGetMessageCount() throws Exception
    {
@@ -1587,6 +1589,33 @@ public class QueueControlTest extends ManagementTestBase
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+   }
+   
+   public void testResetMessagesAdded() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(0, queueControl.getMessagesAdded());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createMessage(false));
+      Assert.assertEquals(1, queueControl.getMessagesAdded());
+      producer.send(session.createMessage(false));
+      Assert.assertEquals(2, queueControl.getMessagesAdded());
+
+      ManagementTestBase.consumeMessages(2, session, queue);
+
+      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      
+      queueControl.resetMessagesAdded();
+      
+      Assert.assertEquals(0, queueControl.getMessagesAdded());
+
+      session.deleteQueue(queue);
    }
 
    // Package protected ---------------------------------------------
