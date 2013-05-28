@@ -236,7 +236,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
       double d = RandomUtil.randomDouble();
       wrapper.writeDouble(d);
 
-      Assert.assertEquals(d, wrapper.readDouble());
+      Assert.assertEquals(d, wrapper.readDouble(), 0.000001);
    }
 
    public void testFloat() throws Exception
@@ -244,7 +244,7 @@ public abstract class HornetQBufferTestBase extends UnitTestCase
       float f = RandomUtil.randomFloat();
       wrapper.writeFloat(f);
 
-      Assert.assertEquals(f, wrapper.readFloat());
+      Assert.assertEquals(f, wrapper.readFloat(), 0.000001);
    }
 
    public void testUTF() throws Exception

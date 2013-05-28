@@ -222,7 +222,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          assertEquals(true, cf.isFailoverOnInitialConnection());
          Assert.assertEquals(34, cf.getReconnectAttempts());
          Assert.assertEquals(5, cf.getRetryInterval());
-         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
+         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier(), 0.000001);
          Assert.assertEquals(true, cf.isCacheLargeMessagesClient());
       }
 
@@ -307,7 +307,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          assertEquals(true, cf.isFailoverOnInitialConnection());
          Assert.assertEquals(34, cf.getReconnectAttempts());
          Assert.assertEquals(5, cf.getRetryInterval());
-         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
+         Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier(), 0.000001);
          Assert.assertEquals(true, cf.isCacheLargeMessagesClient());
       }
 

@@ -437,7 +437,7 @@ public class HornetQMapMessageTest extends UnitTestCase
       HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, value);
 
-      Assert.assertEquals(value, message.getFloat(itemName));
+      Assert.assertEquals(value, message.getFloat(itemName), 0.000001);
    }
 
    public void testGetFloatFromNull() throws Exception
@@ -461,7 +461,7 @@ public class HornetQMapMessageTest extends UnitTestCase
       HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Float.toString(value));
 
-      Assert.assertEquals(value, message.getFloat(itemName));
+      Assert.assertEquals(value, message.getFloat(itemName), 0.000001);
    }
 
    public void testGetFloatFromInvalidType() throws Exception
@@ -486,7 +486,7 @@ public class HornetQMapMessageTest extends UnitTestCase
       HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, value);
 
-      Assert.assertEquals(Float.valueOf(value).doubleValue(), message.getDouble(itemName));
+      Assert.assertEquals(Float.valueOf(value).doubleValue(), message.getDouble(itemName), 0.000001);
    }
 
    public void testGetDoubleFromDouble() throws Exception
@@ -496,7 +496,7 @@ public class HornetQMapMessageTest extends UnitTestCase
       HornetQMapMessage message = new HornetQMapMessage();
       message.setDouble(itemName, value);
 
-      Assert.assertEquals(value, message.getDouble(itemName));
+      Assert.assertEquals(value, message.getDouble(itemName), 0.000001);
    }
 
    public void testGetDoubleFromNull() throws Exception
@@ -520,7 +520,7 @@ public class HornetQMapMessageTest extends UnitTestCase
       HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Double.toString(value));
 
-      Assert.assertEquals(value, message.getDouble(itemName));
+      Assert.assertEquals(value, message.getDouble(itemName), 0.000001);
    }
 
    public void testGetDoubleFromInvalidType() throws Exception

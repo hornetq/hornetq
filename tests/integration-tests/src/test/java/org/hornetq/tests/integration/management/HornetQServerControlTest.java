@@ -547,7 +547,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(pageSizeBytes, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
-      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier());
+      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier(), 0.000001);
       assertEquals(maxRedeliveryDelay, info.getMaxRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
@@ -581,7 +581,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(1000, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
-      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier());
+      assertEquals(redeliveryMultiplier, info.getRedeliveryMultiplier(), 0.000001);
       assertEquals(maxRedeliveryDelay, info.getMaxRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());

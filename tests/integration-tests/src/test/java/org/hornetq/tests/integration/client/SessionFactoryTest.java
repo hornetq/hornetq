@@ -249,7 +249,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertEquals(scheduledThreadPoolMaxSize, locator.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(threadPoolMaxSize, locator.getThreadPoolMaxSize());
       Assert.assertEquals(retryInterval, locator.getRetryInterval());
-      Assert.assertEquals(retryIntervalMultiplier, locator.getRetryIntervalMultiplier());
+      Assert.assertEquals(retryIntervalMultiplier, locator.getRetryIntervalMultiplier(), 0.000001);
       Assert.assertEquals(reconnectAttempts, locator.getReconnectAttempts());
 
    }
@@ -548,7 +548,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertEquals(locator.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       Assert.assertEquals(locator.getThreadPoolMaxSize(), threadPoolMaxSize);
       Assert.assertEquals(locator.getRetryInterval(), retryInterval);
-      Assert.assertEquals(locator.getRetryIntervalMultiplier(), retryIntervalMultiplier);
+      Assert.assertEquals(locator.getRetryIntervalMultiplier(), retryIntervalMultiplier, 0.000001);
       Assert.assertEquals(locator.getReconnectAttempts(), reconnectAttempts);
    }
 

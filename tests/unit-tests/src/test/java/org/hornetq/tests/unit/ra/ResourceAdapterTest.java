@@ -81,7 +81,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       // by default, reconnect attempts is set to -1
       Assert.assertEquals(-1, factory.getReconnectAttempts());
       Assert.assertEquals(factory.getRetryInterval(), HornetQClient.DEFAULT_RETRY_INTERVAL);
-      Assert.assertEquals(factory.getRetryIntervalMultiplier(), HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                          0.00001);
       Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
       Assert.assertEquals(factory.getThreadPoolMaxSize(), HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE);
       Assert.assertEquals(factory.getTransactionBatchSize(), HornetQClient.DEFAULT_ACK_BATCH_SIZE);
@@ -122,7 +123,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       // by default, reconnect attempts is set to -1
       Assert.assertEquals(-1, factory.getReconnectAttempts());
       Assert.assertEquals(factory.getRetryInterval(), HornetQClient.DEFAULT_RETRY_INTERVAL);
-      Assert.assertEquals(factory.getRetryIntervalMultiplier(), HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                          0.000001);
       Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
       Assert.assertEquals(factory.getThreadPoolMaxSize(), HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE);
       Assert.assertEquals(factory.getTransactionBatchSize(), HornetQClient.DEFAULT_ACK_BATCH_SIZE);
@@ -177,7 +179,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConfirmationWindowSize(), 12);
       Assert.assertEquals(factory.getReconnectAttempts(), 13);
       Assert.assertEquals(factory.getRetryInterval(), 14);
-      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d, 0.00001);
       Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
       Assert.assertEquals(factory.getThreadPoolMaxSize(), 17);
       Assert.assertEquals(factory.getTransactionBatchSize(), 18);
@@ -233,7 +235,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConfirmationWindowSize(), 12);
       Assert.assertEquals(factory.getReconnectAttempts(), 13);
       Assert.assertEquals(factory.getRetryInterval(), 14);
-      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      Assert.assertEquals(factory.getRetryIntervalMultiplier(), 15d, 0.000001);
       Assert.assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
       Assert.assertEquals(factory.getThreadPoolMaxSize(), 17);
       Assert.assertEquals(factory.getTransactionBatchSize(), 18);

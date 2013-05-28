@@ -76,7 +76,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());
       Assert.assertEquals(38383, as.getRedistributionDelay());
-      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertTrue(as.isSendToDLAOnNoRoute());
 
@@ -100,7 +100,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
       Assert.assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
       Assert.assertEquals(100, as.getRedeliveryDelay());
-      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
       Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
