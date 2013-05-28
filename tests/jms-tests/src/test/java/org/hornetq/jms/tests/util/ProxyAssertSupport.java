@@ -13,20 +13,15 @@
 
 package org.hornetq.jms.tests.util;
 
-import org.junit.Assert;
-import org.junit.AssertionFailedError;
-import org.junit.TestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
+import org.junit.Assert;
 
 /**
  * This class will proxy any JUnit assertions and send then to our log outputs.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ProxyAssertSupport extends TestCase
+public class ProxyAssertSupport extends Assert
 {
-
-   // Static ---------------------------------------------------------------------------------------
-
    private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    public static void assertTrue(final java.lang.String string, final boolean b)
@@ -35,7 +30,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertTrue(string, b);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -48,7 +43,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertTrue(b);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -61,7 +56,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertFalse(string, b);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -74,7 +69,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertFalse(b);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -88,7 +83,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.fail(string);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -101,7 +96,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.fail();
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -116,7 +111,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -129,7 +124,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -144,7 +139,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, string1, string2);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -157,7 +152,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, string1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -170,7 +165,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, v, v1, v2);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -183,7 +178,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(v, v1, v2);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -196,7 +191,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, v, v1, v2);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -209,7 +204,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(v, v1, v2);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -222,7 +217,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, l, l1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -235,7 +230,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(l, l1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -248,7 +243,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, b, b1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -261,7 +256,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(b, b1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -274,7 +269,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, b, b1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -287,7 +282,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(b, b1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -300,7 +295,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, c, c1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -313,7 +308,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(c, c1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -326,7 +321,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, i, i1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -339,7 +334,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(i, i1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -352,7 +347,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(string, i, i1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -365,7 +360,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertEquals(i, i1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -378,7 +373,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNotNull(object);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -391,7 +386,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNotNull(string, object);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -404,7 +399,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNull(object);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -417,7 +412,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNull(string, object);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -432,7 +427,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertSame(string, object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -445,7 +440,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertSame(object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -460,7 +455,7 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNotSame(string, object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
@@ -473,12 +468,13 @@ public class ProxyAssertSupport extends TestCase
       {
          Assert.assertNotSame(object, object1);
       }
-      catch (AssertionFailedError e)
+      catch (AssertionError e)
       {
          ProxyAssertSupport.log.warn("AssertionFailure::" + e.toString(), e);
          throw e;
       }
    }
+<<<<<<< HEAD
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -493,4 +489,6 @@ public class ProxyAssertSupport extends TestCase
 
    }
 
+=======
+>>>>>>> 36247a7... fix more crap
 }
