@@ -485,7 +485,7 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createSharedConsumer(topic, sharedSubscriptionName, null);
    }
 
    @Override
@@ -497,7 +497,7 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createDurableConsumer(Topic topic, String name) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createDurableConsumer(topic, name, null, false);
    }
 
    @Override
@@ -509,7 +509,7 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedDurableConsumer(Topic topic, String name) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createSharedDurableConsumer(topic, name, null);
    }
 
    @Override
