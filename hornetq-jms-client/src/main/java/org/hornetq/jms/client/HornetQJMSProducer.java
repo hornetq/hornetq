@@ -15,6 +15,7 @@ package org.hornetq.jms.client;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.jms.CompletionListener;
@@ -23,7 +24,9 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageFormatRuntimeException;
 import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 
@@ -66,7 +69,68 @@ public class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer send(Destination destination, Map<String, Object> body)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      MapMessage message = context.createMapMessage();
+      if (body != null)
+      {
+         try
+         {
+            for (Entry<String, Object> entry : body.entrySet())
+            {
+               final String name = entry.getKey();
+               final Object v = entry.getValue();
+               if (v instanceof String)
+               {
+                  message.setString(name, (String)v);
+               }
+               else if (v instanceof Long)
+               {
+                  message.setLong(name, (Long)v);
+               }
+               else if (v instanceof Double)
+               {
+                  message.setDouble(name, (Double)v);
+               }
+               else if (v instanceof Integer)
+               {
+                  message.setInt(name, (Integer)v);
+               }
+               else if (v instanceof Character)
+               {
+                  message.setChar(name, (Character)v);
+               }
+               else if (v instanceof Short)
+               {
+                  message.setShort(name, (Short)v);
+               }
+               else if (v instanceof Boolean)
+               {
+                  message.setBoolean(name, (Boolean)v);
+               }
+               else if (v instanceof Float)
+               {
+                  message.setFloat(name, (Float)v);
+               }
+               else if (v instanceof Byte)
+               {
+                  message.setByte(name, (Byte)v);
+               }else if (v instanceof byte[])
+               {
+                byte[] array=  (byte[])v;
+                  message.setBytes(name, array, 0, array.length);
+               }
+               else
+               {
+                  message.setObject(name, v);
+               }
+            }
+         }
+         catch (JMSException e)
+         {
+            throw new MessageFormatRuntimeException(e.getMessage());
+         }
+      }
+      send(destination, message);
+      return this;
    }
 
    @Override
