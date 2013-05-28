@@ -1334,8 +1334,8 @@ public class JMSBridgeTest extends BridgeTestBase
             Assert.assertTrue(tm.getBooleanProperty("cheese"));
             Assert.assertEquals(23, tm.getIntProperty("Sausages"));
             assertEquals((byte)12, tm.getByteProperty("bacon"));
-            assertEquals(17261762.12121d, tm.getDoubleProperty("toast"));
-            assertEquals(1212.1212f, tm.getFloatProperty("orange"));
+            assertEquals(17261762.12121d, tm.getDoubleProperty("toast"), 0.000000001);
+            assertEquals(1212.1212f, tm.getFloatProperty("orange"), 0.000001);
             assertEquals(817217827l, tm.getLongProperty("blurg"));
             assertEquals((short)26363, tm.getShortProperty("stst"));
 
@@ -1386,8 +1386,8 @@ public class JMSBridgeTest extends BridgeTestBase
                Assert.assertTrue(tm.getBooleanProperty("cheese"));
                Assert.assertEquals(23, tm.getIntProperty("Sausages"));
                assertEquals((byte)12, tm.getByteProperty("bacon"));
-               assertEquals(17261762.12121d, tm.getDoubleProperty("toast"));
-               assertEquals(1212.1212f, tm.getFloatProperty("orange"));
+               assertEquals(17261762.12121d, tm.getDoubleProperty("toast"), 0.000001);
+               assertEquals(1212.1212f, tm.getFloatProperty("orange"), 0.0000001);
                assertEquals(817217827l, tm.getLongProperty("blurg"));
                assertEquals((short)26363, tm.getShortProperty("stst"));
 
@@ -1587,8 +1587,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          Assert.assertEquals(myBool, tm.getBooleanProperty("mybool"));
          Assert.assertEquals(myByte, tm.getByteProperty("mybyte"));
-         Assert.assertEquals(myDouble, tm.getDoubleProperty("mydouble"));
-         Assert.assertEquals(myFloat, tm.getFloatProperty("myfloat"));
+         Assert.assertEquals(myDouble, tm.getDoubleProperty("mydouble"), 0.000001);
+         Assert.assertEquals(myFloat, tm.getFloatProperty("myfloat"), 0.000001);
          Assert.assertEquals(myInt, tm.getIntProperty("myint"));
          Assert.assertEquals(myLong, tm.getLongProperty("mylong"));
          Assert.assertEquals(myShort, tm.getShortProperty("myshort"));

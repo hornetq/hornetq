@@ -87,7 +87,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals("FooClass", cfConfig.getLoadBalancingPolicyClassName());
       assertEquals(34, cfConfig.getReconnectAttempts());
       assertEquals(5, cfConfig.getRetryInterval());
-      assertEquals(6.0, cfConfig.getRetryIntervalMultiplier());
+      assertEquals(6.0, cfConfig.getRetryIntervalMultiplier(), 0.000001);
       assertEquals(300, cfConfig.getMaxRetryInterval());
       assertEquals(true, cfConfig.isCacheLargeMessagesClient());
 

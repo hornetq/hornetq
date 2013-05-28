@@ -64,7 +64,8 @@ public class BridgeControlTest extends ManagementTestBase
       Assert.assertEquals(bridgeConfig.getForwardingAddress(), bridgeControl.getForwardingAddress());
       Assert.assertEquals(bridgeConfig.getFilterString(), bridgeControl.getFilterString());
       Assert.assertEquals(bridgeConfig.getRetryInterval(), bridgeControl.getRetryInterval());
-      Assert.assertEquals(bridgeConfig.getRetryIntervalMultiplier(), bridgeControl.getRetryIntervalMultiplier());
+      Assert.assertEquals(bridgeConfig.getRetryIntervalMultiplier(), bridgeControl.getRetryIntervalMultiplier(),
+                          0.000001);
       Assert.assertEquals(bridgeConfig.getReconnectAttempts(), bridgeControl.getReconnectAttempts());
       Assert.assertEquals(bridgeConfig.isUseDuplicateDetection(), bridgeControl.isUseDuplicateDetection());
 

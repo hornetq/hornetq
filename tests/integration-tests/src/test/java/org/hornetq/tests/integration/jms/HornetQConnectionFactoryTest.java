@@ -344,7 +344,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
       Assert.assertEquals(retryInterval, cf.getRetryInterval());
-      Assert.assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier());
+      Assert.assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier(), 0.0001);
       Assert.assertEquals(reconnectAttempts, cf.getReconnectAttempts());
 
       cf.close();
@@ -683,7 +683,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       Assert.assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);
       Assert.assertEquals(cf.getRetryInterval(), retryInterval);
-      Assert.assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier);
+      Assert.assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier, 0.00001);
       Assert.assertEquals(cf.getReconnectAttempts(), reconnectAttempts);
    }
 

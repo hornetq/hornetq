@@ -442,7 +442,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeFloat(value);
       message.reset();
 
-      Assert.assertEquals(value, message.readFloat());
+      Assert.assertEquals(value, message.readFloat(), 0.000001);
    }
 
    public void testReadFloatFromString() throws Exception
@@ -453,7 +453,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeString(Float.toString(value));
       message.reset();
 
-      Assert.assertEquals(value, message.readFloat());
+      Assert.assertEquals(value, message.readFloat(), 0.000001);
    }
 
    public void testReadFloatFromInvalidType() throws Exception
@@ -486,7 +486,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeFloat(value);
       message.reset();
 
-      Assert.assertEquals(Float.valueOf(value).doubleValue(), message.readDouble());
+      Assert.assertEquals(Float.valueOf(value).doubleValue(), message.readDouble(), 0.000001);
    }
 
    public void testReadDoubleFromDouble() throws Exception
@@ -497,7 +497,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeDouble(value);
       message.reset();
 
-      Assert.assertEquals(value, message.readDouble());
+      Assert.assertEquals(value, message.readDouble(), 0.000001);
    }
 
    public void testReadDoubleFromString() throws Exception
@@ -508,7 +508,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeString(Double.toString(value));
       message.reset();
 
-      Assert.assertEquals(value, message.readDouble());
+      Assert.assertEquals(value, message.readDouble(), 0.000001);
    }
 
    public void testReadDoubleFromInvalidType() throws Exception

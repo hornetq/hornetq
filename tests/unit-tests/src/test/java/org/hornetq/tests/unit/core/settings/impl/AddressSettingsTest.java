@@ -37,7 +37,8 @@ public class AddressSettingsTest extends UnitTestCase
                           addressSettings.getMessageCounterHistoryDayLimit());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER,
-                          addressSettings.getRedeliveryMultiplier());
+ addressSettings.getRedeliveryMultiplier(),
+                          0.000001);
 
    }
 
@@ -94,7 +95,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 2003);
-      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 2.5);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 2.5, 0.000001);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
@@ -132,7 +133,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 1003);
-      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0, 0.000001);
       Assert.assertEquals(addressSettings.getMaxRedeliveryDelay(), 5000);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }

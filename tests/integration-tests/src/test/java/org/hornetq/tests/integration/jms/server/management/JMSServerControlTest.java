@@ -542,7 +542,7 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getScheduledThreadPoolMaxSize());
       assertEquals(1, cf.getThreadPoolMaxSize());
       assertEquals(1, cf.getRetryInterval());
-      assertEquals(1.0, cf.getRetryIntervalMultiplier());
+      assertEquals(1.0, cf.getRetryIntervalMultiplier(), 0.000001);
       assertEquals(1, cf.getMaxRetryInterval());
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
@@ -579,7 +579,7 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getScheduledThreadPoolMaxSize());
       assertEquals(1, cf.getThreadPoolMaxSize());
       assertEquals(1, cf.getRetryInterval());
-      assertEquals(1.0, cf.getRetryIntervalMultiplier());
+      assertEquals(1.0, cf.getRetryIntervalMultiplier(), 0.000001);
       assertEquals(1, cf.getMaxRetryInterval());
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());

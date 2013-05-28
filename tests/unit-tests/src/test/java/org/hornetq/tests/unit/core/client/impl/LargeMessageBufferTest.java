@@ -239,8 +239,8 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Assert.assertEquals(str1, readBuffer.readUTF());
       Assert.assertEquals(str2, readBuffer.readString());
-      Assert.assertEquals(d1, readBuffer.readDouble());
-      Assert.assertEquals(f1, readBuffer.readFloat());
+      Assert.assertEquals(d1, readBuffer.readDouble(), 0.000001);
+      Assert.assertEquals(f1, readBuffer.readFloat(), 0.000001);
    }
 
    private File getTestFile()
@@ -269,14 +269,14 @@ public class LargeMessageBufferTest extends UnitTestCase
       Assert.assertEquals(str1, readBuffer.readUTF());
       Assert.assertEquals(str2, readBuffer.readString());
       Assert.assertEquals(d1, readBuffer.readDouble(), 0.00000001);
-      Assert.assertEquals(f1, readBuffer.readFloat());
+      Assert.assertEquals(f1, readBuffer.readFloat(), 0.000001);
 
       readBuffer.readerIndex(0);
 
       Assert.assertEquals(str1, readBuffer.readUTF());
       Assert.assertEquals(str2, readBuffer.readString());
       Assert.assertEquals(d1, readBuffer.readDouble(), 0.00000001);
-      Assert.assertEquals(f1, readBuffer.readFloat());
+      Assert.assertEquals(f1, readBuffer.readFloat(), 0.000001);
 
       readBuffer.close();
    }
