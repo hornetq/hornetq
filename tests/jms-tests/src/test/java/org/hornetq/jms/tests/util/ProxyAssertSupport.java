@@ -13,9 +13,9 @@
 
 package org.hornetq.jms.tests.util;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.AssertionFailedError;
+import org.junit.TestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 
 /**
