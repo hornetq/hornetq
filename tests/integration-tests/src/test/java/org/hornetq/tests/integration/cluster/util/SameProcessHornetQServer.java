@@ -16,13 +16,12 @@ package org.hornetq.tests.integration.cluster.util;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
+import org.junit.Assert;
 
 /**
  * A SameProcessHornetQServer

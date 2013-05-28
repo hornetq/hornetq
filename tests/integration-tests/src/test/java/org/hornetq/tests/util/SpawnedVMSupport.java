@@ -26,17 +26,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
-import junit.framework.Assert;
-
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.junit.Assert;
 
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- *
- *
  */
 public final class SpawnedVMSupport
 {

@@ -152,7 +152,7 @@ public class JoramAggregationTest extends Assert
 
 
 
-   public static junit.framework.Test suite() throws Exception
+   public static org.junit.Test suite() throws Exception
    {
       TestSuite suite = new TestSuite();
 
