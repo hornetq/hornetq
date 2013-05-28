@@ -98,17 +98,12 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    protected static Queue queue4;
 
-   @Override
    @Before
    public void setUp() throws Exception
    {
       super.setUp();
 
       System.setProperty("java.naming.factory.initial", getContextFactory());
-
-      String banner = "####################################################### Start " + " test: " + getName();
-
-      log.info(banner);
 
       try
       {
