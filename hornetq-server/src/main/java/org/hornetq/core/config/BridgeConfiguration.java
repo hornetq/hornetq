@@ -38,34 +38,45 @@ public final class BridgeConfiguration implements Serializable
 
    private String discoveryGroupName;
 
-   private boolean ha;
+   private boolean ha = false;
 
-   private String transformerClassName;
+   private String transformerClassName = null;
 
-   private long retryInterval;
-   private double retryIntervalMultiplier;
+   private long retryInterval = HornetQClient.DEFAULT_RETRY_INTERVAL;
 
-   private int reconnectAttempts;
+   private double retryIntervalMultiplier = HornetQClient.DEFAULT_RETRY_INTERVAL;
 
-   private boolean useDuplicateDetection;
+   private int reconnectAttempts = -1;
 
-   private int confirmationWindowSize;
+   private int reconnectAttemptsOnSameNode = 10;
 
-   private final long clientFailureCheckPeriod;
+   private boolean useDuplicateDetection = true;
+
+   private int confirmationWindowSize = HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+
+   private long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 
    private String user;
 
    private String password;
 
-   private final long connectionTTL;
+   private long connectionTTL = HornetQClient.DEFAULT_CONNECTION_TTL;
 
-   private final long maxRetryInterval;
+   private long maxRetryInterval = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
-   private final int minLargeMessageSize;
+   private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
    // At this point this is only changed on testcases
    // The bridge shouldn't be sending blocking anyways
    private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
+
+
+   /**
+    * A default constructor for embedded users or testcases to setup defaults
+    */
+   public BridgeConfiguration()
+   {
+   }
 
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -79,6 +90,7 @@ public final class BridgeConfiguration implements Serializable
                               final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
+                              final int reconnectAttemptsOnSameNode,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
                               final List<String> staticConnectors,
@@ -95,6 +107,7 @@ public final class BridgeConfiguration implements Serializable
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.reconnectAttempts = reconnectAttempts;
+      this.reconnectAttemptsOnSameNode = reconnectAttemptsOnSameNode;
       this.useDuplicateDetection = useDuplicateDetection;
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -119,6 +132,7 @@ public final class BridgeConfiguration implements Serializable
                               final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
+                              final int reconnectAttemptsOnSameNode,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
                               final String discoveryGroupName,
@@ -135,6 +149,7 @@ public final class BridgeConfiguration implements Serializable
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.reconnectAttempts = reconnectAttempts;
+      this.reconnectAttemptsOnSameNode = reconnectAttemptsOnSameNode;
       this.useDuplicateDetection = useDuplicateDetection;
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -152,93 +167,17 @@ public final class BridgeConfiguration implements Serializable
       return name;
    }
 
-   public String getQueueName()
-   {
-      return queueName;
-   }
-
-   /**
-    * @return the connectionTTL
-    */
-   public long getConnectionTTL()
-   {
-      return connectionTTL;
-   }
-
-   /**
-    * @return the maxRetryInterval
-    */
-   public long getMaxRetryInterval()
-   {
-      return maxRetryInterval;
-   }
-
-   public String getForwardingAddress()
-   {
-      return forwardingAddress;
-   }
-
-   public String getFilterString()
-   {
-      return filterString;
-   }
-
-   public String getTransformerClassName()
-   {
-      return transformerClassName;
-   }
-
-   public List<String> getStaticConnectors()
-   {
-      return staticConnectors;
-   }
-
-   public String getDiscoveryGroupName()
-   {
-      return discoveryGroupName;
-   }
-
-   public boolean isHA()
-   {
-      return ha;
-   }
-
-   public long getRetryInterval()
-   {
-      return retryInterval;
-   }
-
-   public double getRetryIntervalMultiplier()
-   {
-      return retryIntervalMultiplier;
-   }
-
-   public int getReconnectAttempts()
-   {
-      return reconnectAttempts;
-   }
-
-   public boolean isUseDuplicateDetection()
-   {
-      return useDuplicateDetection;
-   }
-
-   public int getConfirmationWindowSize()
-   {
-      return confirmationWindowSize;
-   }
-
-   public long getClientFailureCheckPeriod()
-   {
-      return clientFailureCheckPeriod;
-   }
-
    /**
     * @param name the name to set
     */
    public void setName(final String name)
    {
       this.name = name;
+   }
+
+   public String getQueueName()
+   {
+      return queueName;
    }
 
    /**
@@ -250,11 +189,34 @@ public final class BridgeConfiguration implements Serializable
    }
 
    /**
-    * @return the minLargeMessageSize
+    * @return the connectionTTL
     */
-   public int getMinLargeMessageSize()
+   public long getConnectionTTL()
    {
-      return minLargeMessageSize;
+      return connectionTTL;
+   }
+
+   public void setConnectionTTL(long connectionTTL)
+   {
+      this.connectionTTL = connectionTTL;
+   }
+
+   /**
+    * @return the maxRetryInterval
+    */
+   public long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
+   }
+
+   public void setMaxRetryInterval(long maxRetryInterval)
+   {
+      this.maxRetryInterval = maxRetryInterval;
+   }
+
+   public String getForwardingAddress()
+   {
+      return forwardingAddress;
    }
 
    /**
@@ -265,12 +227,35 @@ public final class BridgeConfiguration implements Serializable
       this.forwardingAddress = forwardingAddress;
    }
 
+   public String getFilterString()
+   {
+      return filterString;
+   }
+
    /**
     * @param filterString the filterString to set
     */
    public void setFilterString(final String filterString)
    {
       this.filterString = filterString;
+   }
+
+   public String getTransformerClassName()
+   {
+      return transformerClassName;
+   }
+
+   /**
+    * @param transformerClassName the transformerClassName to set
+    */
+   public void setTransformerClassName(final String transformerClassName)
+   {
+      this.transformerClassName = transformerClassName;
+   }
+
+   public List<String> getStaticConnectors()
+   {
+      return staticConnectors;
    }
 
    /**
@@ -281,12 +266,22 @@ public final class BridgeConfiguration implements Serializable
       this.staticConnectors = staticConnectors;
    }
 
+   public String getDiscoveryGroupName()
+   {
+      return discoveryGroupName;
+   }
+
    /**
     * @param discoveryGroupName the discoveryGroupName to set
     */
    public void setDiscoveryGroupName(final String discoveryGroupName)
    {
       this.discoveryGroupName = discoveryGroupName;
+   }
+
+   public boolean isHA()
+   {
+      return ha;
    }
 
    /**
@@ -298,12 +293,9 @@ public final class BridgeConfiguration implements Serializable
       this.ha = ha;
    }
 
-   /**
-    * @param transformerClassName the transformerClassName to set
-    */
-   public void setTransformerClassName(final String transformerClassName)
+   public long getRetryInterval()
    {
-      this.transformerClassName = transformerClassName;
+      return retryInterval;
    }
 
    /**
@@ -314,12 +306,22 @@ public final class BridgeConfiguration implements Serializable
       this.retryInterval = retryInterval;
    }
 
+   public double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
+   }
+
    /**
     * @param retryIntervalMultiplier the retryIntervalMultiplier to set
     */
    public void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   public int getReconnectAttempts()
+   {
+      return reconnectAttempts;
    }
 
    /**
@@ -330,12 +332,22 @@ public final class BridgeConfiguration implements Serializable
       this.reconnectAttempts = reconnectAttempts;
    }
 
+   public boolean isUseDuplicateDetection()
+   {
+      return useDuplicateDetection;
+   }
+
    /**
     * @param useDuplicateDetection the useDuplicateDetection to set
     */
    public void setUseDuplicateDetection(final boolean useDuplicateDetection)
    {
       this.useDuplicateDetection = useDuplicateDetection;
+   }
+
+   public int getConfirmationWindowSize()
+   {
+      return confirmationWindowSize;
    }
 
    /**
@@ -346,14 +358,32 @@ public final class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
    }
 
+   public long getClientFailureCheckPeriod()
+   {
+      return clientFailureCheckPeriod;
+   }
+
+   public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
+   {
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+   }
+
+   /**
+    * @return the minLargeMessageSize
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+
+   public void setMinLargeMessageSize(int minLargeMessageSize)
+   {
+      this.minLargeMessageSize = minLargeMessageSize;
+   }
+
    public String getUser()
    {
       return user;
-   }
-
-   public String getPassword()
-   {
-      return password;
    }
 
    public void setUser(String user)
@@ -361,11 +391,15 @@ public final class BridgeConfiguration implements Serializable
       this.user = user;
    }
 
+   public String getPassword()
+   {
+      return password;
+   }
+
    public void setPassword(String password)
    {
       this.password = password;
    }
-
 
    /**
     * @return the callTimeout
@@ -373,6 +407,16 @@ public final class BridgeConfiguration implements Serializable
    public long getCallTimeout()
    {
       return callTimeout;
+   }
+
+   public int getReconnectAttemptsOnSameNode()
+   {
+      return reconnectAttemptsOnSameNode;
+   }
+
+   public void setReconnectAttemptsOnSameNode(int reconnectAttemptsOnSameNode)
+   {
+      this.reconnectAttemptsOnSameNode = reconnectAttemptsOnSameNode;
    }
 
    /**

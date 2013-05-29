@@ -6,6 +6,7 @@ package org.hornetq.api.core.client;
 import java.io.Serializable;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A member of the topology.
@@ -49,4 +50,19 @@ public interface TopologyMember extends Serializable
     * @return long value representing a unique event ID
     */
    public long getUniqueEventID();
+
+   /**
+    * Returns true if this TopologyMember is the target of this remoting connection
+    * @param connection
+    * @return
+    */
+   public boolean isMember(RemotingConnection connection);
+
+   /**
+    * Returns true if this configuration is the target of this remoting connection
+    * @param configuration
+    * @return
+    */
+   public boolean isMember(TransportConfiguration configuration);
+
 }

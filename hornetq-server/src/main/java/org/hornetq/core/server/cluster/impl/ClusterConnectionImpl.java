@@ -584,9 +584,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
       topology.addClusterTopologyListener(listener);
-
-      // no need to use an executor here since the Topology is already using one
-      topology.sendTopology(listener);
    }
 
    public void removeClusterTopologyListener(final ClusterTopologyListener listener)

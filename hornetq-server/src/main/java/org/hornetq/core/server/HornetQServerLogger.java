@@ -783,20 +783,20 @@ public interface HornetQServerLogger extends BasicLogger
    void bridgeNotUnique();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222122, value =  "Must specify a queue name for each bridge. This one will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
-   void bridgeNoQueue();
+   @Message(id = 222122, value =  "Must specify a queue name for each bridge. This one {0} will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
+   void bridgeNoQueue(String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222123, value =  "Bridge Forward address is not specified. Will use original message address instead", format = Message.Format.MESSAGE_FORMAT)
-   void bridgeNoForwardAddress();
+   @Message(id = 222123, value =  "Forward address is not specified on bridge {0}. Will use original message address instead", format = Message.Format.MESSAGE_FORMAT)
+   void bridgeNoForwardAddress(String bridgeName);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222124, value =  "There is already a bridge with name {0} deployed. This one will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
    void bridgeAlreadyDeployed(String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222125, value =   "No queue found with name {0} bridge will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
-   void bridgeNoQueue(String name);
+   @Message(id = 222125, value =   "No queue found with name {0} bridge {1} will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
+   void bridgeQueueNotFound(String queueName, String bridgeName);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222126, value =   "No discovery group found with name {0} bridge will not be deployed.", format = Message.Format.MESSAGE_FORMAT)
@@ -1274,6 +1274,13 @@ public interface HornetQServerLogger extends BasicLogger
       value =  "Queue {0}, on address={1}, is taking too long to flush deliveries. Watch out for frozen clients.",
       format = Message.Format.MESSAGE_FORMAT)
    void timeoutFlushInTransit(String queueName, String addressName);
+
+   @LogMessage(level = Logger.Level.WARN)
+    @Message(
+       id = 224065,
+       value = "Bridge {0} couldn't find configured connectors",
+       format = Message.Format.MESSAGE_FORMAT)
+    void bridgeCantFindConnectors(String bridgeName);
 
 
 
