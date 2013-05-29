@@ -88,7 +88,7 @@ public class AcknowledgedQueueConsumer extends QueueConsumer
    {
       HornetQRestLogger.LOGGER.debug("Handling POST request for \"" + uriInfo.getPath() + "\"");
 
-      ping();
+      ping(0);
       String basePath = uriInfo.getMatchedURIs().get(1);
       if (closed)
       {

@@ -68,9 +68,9 @@ public class QueueConsumer
       return lastPing;
    }
 
-   protected void ping()
+   protected void ping(long offsetSecs)
    {
-      lastPing = System.currentTimeMillis();
+      lastPing = System.currentTimeMillis()+(offsetSecs*1000);
    }
 
    public QueueConsumer(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector) throws HornetQException
@@ -146,7 +146,7 @@ public class QueueConsumer
 
    protected Response checkIndexAndPoll(long wait, UriInfo info, String basePath, long index)
    {
-      ping();
+      ping(wait);
 
       if (lastConsumed == null && index > 0)
       {
@@ -171,7 +171,7 @@ public class QueueConsumer
       }
       finally
       {
-         ping(); // ping again as we don't want wait time included in timeout.
+         ping(0); // ping again as we don't want wait time included in timeout.
       }
    }
 
