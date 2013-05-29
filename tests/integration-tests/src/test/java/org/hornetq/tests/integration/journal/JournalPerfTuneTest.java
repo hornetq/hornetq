@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,19 +29,50 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * A JournalPerfTuneTest
- *
  * @author tim
- *
- *
  */
+@Ignore
 public class JournalPerfTuneTest extends UnitTestCase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private Journal journal;
+
+   static final class LoaderCB implements LoaderCallback
+   {
+
+      public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+      {
+         // no-op
+      }
+
+      public void addRecord(RecordInfo info)
+      {
+         // no-op
+      }
+
+      public void deleteRecord(long id)
+      {
+         // no-op
+      }
+
+      public void updateRecord(RecordInfo info)
+      {
+         // no-op
+      }
+
+      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      {
+         // no-op
+      }
+
+   }
 
    @Override
    @Before
@@ -79,48 +105,13 @@ public class JournalPerfTuneTest extends UnitTestCase
                                 filePrefix,
                                 extension,
                                 maxIO);
-
+      addHornetQComponent(journal);
       journal.start();
-
-      class LoaderCB implements LoaderCallback
-      {
-
-         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
-         {
-            // TODO Auto-generated method stub
-
-         }
-
-         public void addRecord(RecordInfo info)
-         {
-            // TODO Auto-generated method stub
-
-         }
-
-         public void deleteRecord(long id)
-         {
-            // TODO Auto-generated method stub
-
-         }
-
-         public void updateRecord(RecordInfo info)
-         {
-            // TODO Auto-generated method stub
-
-         }
-
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
-         {
-            // TODO Auto-generated method stub
-
-         }
-
-      }
 
       journal.load(new LoaderCB());
    }
 
-   class TestCallback implements IOCompletion
+   static final class TestCallback implements IOCompletion
    {
       private final CountDownLatch latch;
 
@@ -148,16 +139,6 @@ public class JournalPerfTuneTest extends UnitTestCase
       public void onError(int errorCode, String errorMessage)
       {
       }
-
-   }
-
-   @Override
-   @After
-   public void tearDown() throws Exception
-   {
-      journal.stop();
-
-      super.tearDown();
 
    }
 
