@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -37,6 +32,9 @@ import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -84,14 +82,11 @@ public class MessageBodyTest extends HornetQServerTestCase
       consumerConnection.start();
    }
 
-   @Override
    @After
    public void tearDown() throws Exception
    {
       producerConnection.close();
       consumerConnection.close();
-
-      super.tearDown();
    }
 
    @Test

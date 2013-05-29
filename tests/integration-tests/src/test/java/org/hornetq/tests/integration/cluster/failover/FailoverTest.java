@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
@@ -56,6 +50,9 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -65,18 +62,6 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverTest extends FailoverTestBase
 {
-
-
-   public FailoverTest(String name)
-   {
-      super(name);
-   }
-
-   public FailoverTest()
-   {
-      super();
-   }
-
 
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 

@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.stress;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +27,9 @@ import javax.naming.InitialContext;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
@@ -66,15 +64,10 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
       ConcurrentCloseStressTest.log.debug("setup done");
    }
 
-   @Override
    @After
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
-
-      super.tearDown();
-
-      ConcurrentCloseStressTest.log.debug("tear down done");
    }
 
    @Test

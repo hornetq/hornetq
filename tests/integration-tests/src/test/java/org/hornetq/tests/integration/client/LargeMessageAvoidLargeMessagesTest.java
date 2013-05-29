@@ -12,13 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -33,6 +29,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DeflaterReader;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * The test extends the LargeMessageTest and tests
@@ -74,9 +72,9 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       int minLargeSize = locator.getMinLargeMessageSize();
 
@@ -99,7 +97,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       //no file should be in the dir as we send it as regular
       validateNoFilesOnLargeDir();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       for (int j = 0; j < num; j++)
       {
          ClientMessage msg1 = consumer.receive(1000);
@@ -132,9 +130,9 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       int minLargeSize = locator.getMinLargeMessageSize();
       TestLargeMessageInputStream input = new TestLargeMessageInputStream(minLargeSize);
@@ -157,7 +155,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       //no file should be in the dir as we send it as regular
       validateNoFilesOnLargeDir(num);
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       for (int j = 0; j < num; j++)
       {
          ClientMessage msg1 = consumer.receive(1000);
@@ -187,9 +185,9 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       final int minLargeSize = locator.getMinLargeMessageSize();
       TestLargeMessageInputStream regularInput = new TestLargeMessageInputStream(minLargeSize);
@@ -222,12 +220,12 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       //half the messages are sent as large
       validateNoFilesOnLargeDir(num/2);
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       for (int j = 0; j < num; j++)
       {
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
-         
+
          if (j%2 == 0)
          {
             for (int i = 0 ; i < regularInput.getSize(); i++)
@@ -252,7 +250,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       session.close();
    }
-   
+
    private void adjustLargeCompression(boolean regular, TestLargeMessageInputStream stream, int step) throws IOException
    {
       int absoluteStep = Math.abs(step);
@@ -295,7 +293,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
          }
       }
    }
-   
+
    private static class TestLargeMessageInputStream extends InputStream
    {
       private final int minLarge;
@@ -341,10 +339,10 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       {
          if (pos == size) return -1;
          pos++;
-         
+
          return getChar(pos - 1);
       }
-      
+
       public void resetAdjust(int step)
       {
          size += step;
@@ -354,7 +352,8 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
          }
          pos = 0;
       }
-      
+
+      @Override
       public TestLargeMessageInputStream clone()
       {
          return new TestLargeMessageInputStream(this);
@@ -379,12 +378,11 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       session = addClientSession(sf.createSession(false, false, false));
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS,
+      session.createQueue(ADDRESS, ADDRESS,
             true);
-      session.createQueue(LargeMessageTest.ADDRESS,
-            LargeMessageTest.ADDRESS.concat("-2"), true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-2"), true);
 
-      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+      SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
 
       AddressSettings addressSettings = new AddressSettings();
 
@@ -396,7 +394,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
 
       ClientProducer producer = session
-            .createProducer(LargeMessageTest.ADDRESS);
+.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -409,7 +407,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
 
       ClientConsumer consumerRollback = session
-            .createConsumer(LargeMessageTest.ADDRESS);
+.createConsumer(ADDRESS);
       ClientMessage msg1 = consumerRollback.receive(1000);
       Assert.assertNotNull(msg1);
       msg1.acknowledge();
@@ -458,7 +456,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       //large message becomes a regular at server.
       validateNoFilesOnLargeDir(0);
 
-      consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
+      consumer = session.createConsumer(ADDRESS.concat("-2"));
 
       msg1 = consumer.receive(10000);
 

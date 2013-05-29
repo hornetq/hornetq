@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +38,9 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.jboss.tm.TxUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -91,7 +89,6 @@ public class XATest extends HornetQServerTestCase
       suspendedTx = tm.suspend();
    }
 
-   @Override
    @After
    public void tearDown() throws Exception
    {
@@ -122,8 +119,6 @@ public class XATest extends HornetQServerTestCase
       {
          tm.resume(suspendedTx);
       }
-
-      super.tearDown();
    }
 
    // Public --------------------------------------------------------

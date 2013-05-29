@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.stress;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,6 +31,8 @@ import javax.naming.Context;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -218,13 +215,6 @@ public class SeveralClientsStressTest extends HornetQServerTestCase
       }
 
       conn.close();
-   }
-
-   @Override
-   @After
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
    }
 
    @Override

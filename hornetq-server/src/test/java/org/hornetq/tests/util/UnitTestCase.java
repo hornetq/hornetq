@@ -1230,24 +1230,24 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     */
    private boolean isExpectedThread(Thread thread)
    {
-      final String name = thread.getName();
+      final String threadName = thread.getName();
       final ThreadGroup group = thread.getThreadGroup();
       final boolean isSystemThread = group != null && "system".equals(group.getName());
       final String javaVendor = System.getProperty("java.vendor");
 
-      if (name.contains("SunPKCS11"))
+      if (threadName.contains("SunPKCS11"))
       {
          return true;
       }
-      else if (name.contains("Attach Listener"))
+      else if (threadName.contains("Attach Listener"))
       {
          return true;
       }
-      else if (isSystemThread && name.equals("process reaper"))
+      else if (isSystemThread && threadName.equals("process reaper"))
       {
          return true;
       }
-      else if (javaVendor.contains("IBM") && name.equals("MemoryPoolMXBean notification dispatcher"))
+      else if (javaVendor.contains("IBM") && threadName.equals("MemoryPoolMXBean notification dispatcher"))
       {
          return true;
       }
