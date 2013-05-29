@@ -1,5 +1,7 @@
 package org.hornetq.rest.test;
 
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
+
 import org.hornetq.rest.util.Constants;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
@@ -7,8 +9,6 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.jboss.resteasy.test.TestPortProvider.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -150,5 +150,26 @@ public class CreateDestinationTest extends MessageTestBase
       res = sub2.request().delete();
       res.releaseConnection();
       Assert.assertEquals(204, res.getStatus());
+   }
+
+   @Test
+   public void testCreateQueueWithBadContentType() throws Exception
+   {
+      String queueConfig = "<queue name=\"testQueue\"><durable>true</durable></queue>";
+      ClientRequest create = new ClientRequest(generateURL("/queues"));
+      ClientResponse cRes = create.body("application/x-www-form-urlencoded", queueConfig).post();
+      cRes.releaseConnection();
+
+      Assert.assertEquals(415, cRes.getStatus());
+   }
+
+   @Test
+   public void testCreateTopicWithBadContentType() throws Exception
+   {
+      String queueConfig = "<topic name=\"testTopic\"></topic>";
+      ClientRequest create = new ClientRequest(generateURL("/topics"));
+      ClientResponse cRes = create.body("application/x-www-form-urlencoded", queueConfig).post();
+      cRes.releaseConnection();
+      Assert.assertEquals(415, cRes.getStatus());
    }
 }
