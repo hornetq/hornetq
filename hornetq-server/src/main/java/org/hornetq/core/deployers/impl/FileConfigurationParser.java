@@ -1210,6 +1210,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts(),
                           Validators.MINUS_ONE_OR_GE_ZERO);
 
+      int reconnectAttemptsSameNode =
+               getInteger(brNode, "reconnect-attempts-same-node", HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
+                          Validators.MINUS_ONE_OR_GE_ZERO);
+
       boolean useDuplicateDetection = getBoolean(brNode,
                                                                       "use-duplicate-detection",
                                                                       HornetQDefaultConfiguration.isDefaultBridgeDuplicateDetection());
@@ -1288,6 +1292,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                           maxRetryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
+                                          reconnectAttemptsSameNode,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           staticConnectorNames,
@@ -1309,6 +1314,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                           maxRetryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
+                                          reconnectAttemptsSameNode,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           discoveryGroupName,
