@@ -70,7 +70,8 @@ public abstract class MessageTestBase extends HornetQServerTestCase
    @After
    public void tearDown() throws Exception
    {
-      conn.close();
+      if (conn != null)
+         conn.close();
    }
 
    @Test

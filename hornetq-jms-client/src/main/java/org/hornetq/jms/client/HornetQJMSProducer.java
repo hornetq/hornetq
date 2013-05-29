@@ -14,11 +14,15 @@
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -28,16 +32,35 @@ import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageFormatRuntimeException;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.utils.TypedProperties;
+
 /**
+ * NOTE: this class forwards {@link #setDisableMessageID(boolean)} and
+ * {@link #setDisableMessageTimestamp(boolean)} calls their equivalent at the
+ * {@link MessageProducer}. IF the user is using the producer in async mode, this may lead to races.
+ * We allow/tolerate this because these are just optional optimizations.
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 public class HornetQJMSProducer implements JMSProducer
 {
-
    private final JMSContext context;
    private final MessageProducer producer;
+   private final TypedProperties properties = new TypedProperties();
+
+   private int deliveryMode = Message.DEFAULT_DELIVERY_MODE;
+   private int priority = Message.DEFAULT_PRIORITY;
+   private long timeToLive = Message.DEFAULT_TIME_TO_LIVE;
+   private long deliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
+   private volatile CompletionListener completionListener;
+
+   private Destination jmsHeaderReplyTo;
+   private String jmsHeaderCorrelationID;
+   private byte[] jmsHeaderCorrelationIDAsBytes;
+   private String jmsHeaderType;
 
    HornetQJMSProducer(JMSContext context, MessageProducer producer)
    {
@@ -50,12 +73,52 @@ public class HornetQJMSProducer implements JMSProducer
    {
       try
       {
-         producer.send(destination, message);
-      } catch (JMSException e)
+         if (jmsHeaderCorrelationID != null)
+         {
+            message.setJMSCorrelationID(jmsHeaderCorrelationID);
+         }
+         if (jmsHeaderCorrelationIDAsBytes != null && jmsHeaderCorrelationIDAsBytes.length > 0)
+         {
+            message.setJMSCorrelationIDAsBytes(jmsHeaderCorrelationIDAsBytes);
+         }
+         if (jmsHeaderReplyTo != null)
+         {
+            message.setJMSReplyTo(jmsHeaderReplyTo);
+         }
+         if (jmsHeaderType != null)
+         {
+            message.setJMSType(jmsHeaderType);
+         }
+         // XXX HORNETQ-1209 "JMS 2.0" can this be a foreign msg?
+         // if so, then "SimpleString" properties will trigger an error.
+         setProperties(message);
+         if (completionListener != null)
+         {
+            producer.send(destination, message, deliveryMode, priority, timeToLive, completionListener);
+         }
+         else
+         {
+            producer.send(destination, message, deliveryMode, priority, timeToLive);
+         }
+      }
+      catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
       return this;
+   }
+
+   /**
+    * Sets all properties we carry onto the message.
+    * @param message
+    * @throws JMSException
+    */
+   private void setProperties(Message message) throws JMSException
+   {
+      for (SimpleString name : properties.getPropertyNames())
+      {
+         message.setObjectProperty(name.toString(), properties.getProperty(name));
+      }
    }
 
    @Override
@@ -136,270 +199,439 @@ public class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer send(Destination destination, byte[] body)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      BytesMessage message = context.createBytesMessage();
+      if (body != null)
+      {
+         try
+         {
+            message.writeBytes(body);
+         }
+         catch (JMSException e)
+         {
+            throw new MessageFormatRuntimeException(e.getMessage());
+         }
+      }
+      send(destination, message);
+      return this;
    }
 
    @Override
    public JMSProducer send(Destination destination, Serializable body)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      ObjectMessage message = context.createObjectMessage(body);
+      send(destination, message);
+      return this;
    }
 
    @Override
    public JMSProducer setDisableMessageID(boolean value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         producer.setDisableMessageID(value);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
+      return this;
    }
 
    @Override
    public boolean getDisableMessageID()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return producer.getDisableMessageID();
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public JMSProducer setDisableMessageTimestamp(boolean value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         producer.setDisableMessageTimestamp(value);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
+      return this;
    }
 
    @Override
    public boolean getDisableMessageTimestamp()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return producer.getDisableMessageTimestamp();
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public JMSProducer setDeliveryMode(int deliveryMode)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
+      {
+         throw new IllegalArgumentException("Illegal deliveryMode value: " + deliveryMode);
+      }
+      this.deliveryMode = deliveryMode;
+      return this;
    }
 
    @Override
    public int getDeliveryMode()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return deliveryMode;
    }
 
    @Override
    public JMSProducer setPriority(int priority)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (priority < 0 || priority > 9)
+      {
+         throw new IllegalArgumentException("Illegal priority value: " + priority);
+      }
+      this.priority = priority;
+      return this;
    }
 
    @Override
    public int getPriority()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return priority;
    }
 
    @Override
    public JMSProducer setTimeToLive(long timeToLive)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.timeToLive = timeToLive;
+      return this;
    }
 
    @Override
    public long getTimeToLive()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return timeToLive;
    }
 
    @Override
    public JMSProducer setDeliveryDelay(long deliveryDelay)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.deliveryDelay = deliveryDelay;
+      return this;
    }
 
    @Override
    public long getDeliveryDelay()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return deliveryDelay;
    }
 
    @Override
    public JMSProducer setAsync(CompletionListener completionListener)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.completionListener = completionListener;
+      return this;
    }
 
    @Override
    public CompletionListener getAsync()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return completionListener;
    }
 
    @Override
    public JMSProducer setProperty(String name, boolean value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putBooleanProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, byte value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putByteProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, short value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putShortProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, int value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putIntProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, long value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putLongProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, float value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putFloatProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, double value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putDoubleProperty(new SimpleString(name), value);
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, String value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      properties.putSimpleStringProperty(new SimpleString(name), new SimpleString(value));
+      return this;
    }
 
    @Override
    public JMSProducer setProperty(String name, Object value)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         TypedProperties.setObjectProperty(new SimpleString(name), value, properties);
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
+      return this;
    }
 
    @Override
    public JMSProducer clearProperties()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         properties.clear();
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
+      return this;
    }
 
    @Override
    public boolean propertyExists(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return properties.containsProperty(new SimpleString(name));
    }
 
    @Override
    public boolean getBooleanProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getBooleanProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public byte getByteProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getByteProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public short getShortProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getShortProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public int getIntProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getIntProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public long getLongProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getLongProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public float getFloatProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getFloatProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public double getDoubleProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getDoubleProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public String getStringProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         SimpleString prop = properties.getSimpleStringProperty(new SimpleString(name));
+         if (prop == null)
+            return null;
+         return prop.toString();
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public Object getObjectProperty(String name)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         return properties.getProperty(new SimpleString(name));
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public Set<String> getPropertyNames()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      try
+      {
+         Set<String> propNames = new HashSet<String>();
+
+         for (SimpleString str : properties.getPropertyNames())
+         {
+            propNames.add(str.toString());
+         }
+         return propNames;
+      }
+      catch (RuntimeException e)
+      {
+         throw new JMSRuntimeException(e.getMessage());
+      }
    }
 
    @Override
    public JMSProducer setJMSCorrelationIDAsBytes(byte[] correlationID)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (correlationID == null || correlationID.length == 0)
+      {
+         throw new JMSRuntimeException("Please specify a non-zero length byte[]");
+      }
+      jmsHeaderCorrelationIDAsBytes = Arrays.copyOf(correlationID, correlationID.length);
+      return this;
    }
 
    @Override
    public byte[] getJMSCorrelationIDAsBytes()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return Arrays.copyOf(jmsHeaderCorrelationIDAsBytes, jmsHeaderCorrelationIDAsBytes.length);
    }
 
    @Override
    public JMSProducer setJMSCorrelationID(String correlationID)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      jmsHeaderCorrelationID = correlationID;
+      return this;
    }
 
    @Override
    public String getJMSCorrelationID()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return jmsHeaderCorrelationID;
    }
 
    @Override
    public JMSProducer setJMSType(String type)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      jmsHeaderType = type;
+      return this;
    }
 
    @Override
    public String getJMSType()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return jmsHeaderType;
    }
 
    @Override
    public JMSProducer setJMSReplyTo(Destination replyTo)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      jmsHeaderReplyTo = replyTo;
+      return this;
    }
 
    @Override
    public Destination getJMSReplyTo()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      return jmsHeaderReplyTo;
    }
 }

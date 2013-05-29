@@ -727,6 +727,8 @@ public class HornetQMessage implements javax.jms.Message
       return val;
    }
 
+   @SuppressWarnings("rawtypes")
+   @Override
    public Enumeration getPropertyNames() throws JMSException
    {
       HashSet<String> set = new HashSet<String>();
@@ -747,50 +749,50 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
 
       message.putBooleanProperty(new SimpleString(name), value);
    }
 
    public void setByteProperty(final String name, final byte value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putByteProperty(new SimpleString(name), value);
    }
 
    public void setShortProperty(final String name, final short value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putShortProperty(new SimpleString(name), value);
    }
 
    public void setIntProperty(final String name, final int value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putIntProperty(new SimpleString(name), value);
    }
 
    public void setLongProperty(final String name, final long value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putLongProperty(new SimpleString(name), value);
    }
 
    public void setFloatProperty(final String name, final float value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putFloatProperty(new SimpleString(name), value);
    }
 
    public void setDoubleProperty(final String name, final double value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putDoubleProperty(new SimpleString(name), value);
    }
 
    public void setStringProperty(final String name, final String value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
 
       if (HornetQMessage.JMSXGROUPID.equals(name))
       {
@@ -817,7 +819,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      checkProperty(name, value);
+      checkProperty(name);
 
       if (HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
@@ -1061,7 +1063,7 @@ public class HornetQMessage implements javax.jms.Message
       }
    }
 
-   private void checkProperty(final String name, final Object value) throws JMSException
+   private void checkProperty(final String name) throws JMSException
    {
       if (propertiesReadOnly)
       {

@@ -21,9 +21,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
-import org.hornetq.api.core.HornetQLargeMessageException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.Channel;
@@ -31,7 +31,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.utils.DeflaterReader;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -133,16 +132,16 @@ public class ClientProducerImpl implements ClientProducerInternal
       doSend(null, msg);
    }
 
-   public void send(final SimpleString address, final Message msg) throws HornetQException
+   public void send(final SimpleString address1, final Message msg) throws HornetQException
    {
       checkClosed();
 
-      doSend(address, msg);
+      doSend(address1, msg);
    }
 
-   public void send(final String address, final Message message) throws HornetQException
+   public void send(final String address1, final Message message) throws HornetQException
    {
-      send(SimpleString.toSimpleString(address), message);
+      send(SimpleString.toSimpleString(address1), message);
    }
 
    public synchronized void close() throws HornetQException
@@ -210,7 +209,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       closed = true;
    }
 
-   private void doSend(final SimpleString address, final Message msg) throws HornetQException
+   private void doSend(final SimpleString address1, final Message msg) throws HornetQException
    {
       session.startCall();
 
@@ -235,19 +234,19 @@ public class ClientProducerImpl implements ClientProducerInternal
             isLarge = false;
          }
 
-         if (address != null)
+         if (address1 != null)
          {
             if (!isLarge)
             {
-               session.setAddress(msg, address);
+               session.setAddress(msg, address1);
             }
             else
             {
-               msg.setAddress(address);
+               msg.setAddress(address1);
             }
 
             // Anonymous
-            theCredits = session.getCredits(address, true);
+            theCredits = session.getCredits(address1, true);
          }
          else
          {
