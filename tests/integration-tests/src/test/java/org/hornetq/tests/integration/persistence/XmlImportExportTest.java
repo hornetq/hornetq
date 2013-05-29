@@ -120,8 +120,8 @@ public class XmlImportExportTest extends ServiceTestBase
          {
             Assert.assertEquals(j, bytes[j]);
          }
-         Assert.assertEquals(i * 1.6, msg.getDoubleProperty("myDoubleProperty"));
-         Assert.assertEquals(i * 2.5F, msg.getFloatProperty("myFloatProperty"));
+         Assert.assertEquals(i * 1.6, msg.getDoubleProperty("myDoubleProperty"), 0.000001);
+         Assert.assertEquals(i * 2.5F, msg.getFloatProperty("myFloatProperty"), 0.000001);
          Assert.assertEquals(i, msg.getIntProperty("myIntProperty").intValue());
          Assert.assertEquals(Long.MAX_VALUE - i, msg.getLongProperty("myLongProperty").longValue());
          Assert.assertEquals(i, msg.getObjectProperty("myObjectProperty"));

@@ -46,7 +46,7 @@ import org.hornetq.tests.util.RandomUtil;
  *
  *
  */
-public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReattachSupport
+public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReattachSupportTestBase
 {
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 

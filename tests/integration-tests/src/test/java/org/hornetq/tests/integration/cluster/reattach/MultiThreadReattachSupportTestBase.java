@@ -42,7 +42,7 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  *
  */
-public abstract class MultiThreadReattachSupport extends ServiceTestBase
+public abstract class MultiThreadReattachSupportTestBase extends ServiceTestBase
 {
 
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;

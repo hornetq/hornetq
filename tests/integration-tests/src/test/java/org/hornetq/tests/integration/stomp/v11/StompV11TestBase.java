@@ -49,7 +49,7 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
-public abstract class StompTestBase2 extends UnitTestCase
+public abstract class StompV11TestBase extends UnitTestCase
 {
    protected String hostname = "127.0.0.1";
 

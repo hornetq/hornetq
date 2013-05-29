@@ -7,7 +7,7 @@ import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
 /*
  * Some Stomp tests against server with persistence enabled are put here.
  */
-public class ExtraStompTest extends StompTestBase2
+public class ExtraStompTest extends StompV11TestBase
 {
 
    private StompClientConnection connV10;

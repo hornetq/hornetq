@@ -41,12 +41,12 @@ import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionV11;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionV12;
-import org.hornetq.tests.integration.stomp.v11.StompTestBase2;
+import org.hornetq.tests.integration.stomp.v11.StompV11TestBase;
 
 /**
  * Testing Stomp version 1.2 functionalities
  */
-public class StompV12Test extends StompTestBase2
+public class StompV12Test extends StompV11TestBase
 {
    private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
