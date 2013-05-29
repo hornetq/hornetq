@@ -227,7 +227,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       String str1 = RandomUtil.randomString();
       String str2 = RandomUtil.randomString();
-      Double d1 = RandomUtil.randomDouble();
+      double d1 = RandomUtil.randomDouble();
       float f1 = RandomUtil.randomFloat();
 
       dynamic.writeUTF(str1);
@@ -256,7 +256,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       String str1 = RandomUtil.randomString();
       String str2 = RandomUtil.randomString();
-      Double d1 = RandomUtil.randomDouble();
+      double d1 = RandomUtil.randomDouble();
       float f1 = RandomUtil.randomFloat();
 
       dynamic.writeUTF(str1);
@@ -268,14 +268,14 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Assert.assertEquals(str1, readBuffer.readUTF());
       Assert.assertEquals(str2, readBuffer.readString());
-      Assert.assertEquals(d1, readBuffer.readDouble());
+      Assert.assertEquals(d1, readBuffer.readDouble(), 0.00000001);
       Assert.assertEquals(f1, readBuffer.readFloat());
 
       readBuffer.readerIndex(0);
 
       Assert.assertEquals(str1, readBuffer.readUTF());
       Assert.assertEquals(str2, readBuffer.readString());
-      Assert.assertEquals(d1, readBuffer.readDouble());
+      Assert.assertEquals(d1, readBuffer.readDouble(), 0.00000001);
       Assert.assertEquals(f1, readBuffer.readFloat());
 
       readBuffer.close();
