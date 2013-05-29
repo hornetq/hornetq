@@ -63,18 +63,6 @@ import org.junit.Test;
 public class FailoverTest extends FailoverTestBase
 {
 
-
-   public FailoverTest(String name)
-   {
-      super(name);
-   }
-
-   public FailoverTest()
-   {
-      super();
-   }
-
-
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final int NUM_MESSAGES = 100;

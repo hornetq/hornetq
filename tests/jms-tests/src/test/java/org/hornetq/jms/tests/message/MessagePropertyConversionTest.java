@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,6 +22,9 @@ import javax.jms.Session;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -69,14 +67,11 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       consumerConnection.start();
    }
 
-   @Override
    @After
    public void tearDown() throws Exception
    {
       producerConnection.close();
       consumerConnection.close();
-
-      super.tearDown();
    }
 
    @Test

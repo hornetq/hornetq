@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,9 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -78,6 +71,9 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A PagingTest
@@ -93,17 +89,6 @@ public class PagingTest extends ServiceTestBase
    private ClientSessionFactory sf;
    static final int MESSAGE_SIZE = 1024; // 1k
 
-   public PagingTest(final String name)
-   {
-      super(name);
-   }
-
-   public PagingTest()
-   {
-      super();
-   }
-
-   // Constants -----------------------------------------------------
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private static final int RECEIVE_TIMEOUT = 5000;

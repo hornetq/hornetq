@@ -474,21 +474,4 @@ public class ProxyAssertSupport extends Assert
          throw e;
       }
    }
-<<<<<<< HEAD
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   public ProxyAssertSupport(final String string)
-   {
-      super(string);
-   }
-
-   public ProxyAssertSupport()
-   {
-      super();
-
-   }
-
-=======
->>>>>>> 36247a7... fix more crap
 }

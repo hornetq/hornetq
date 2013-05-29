@@ -1,9 +1,8 @@
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-import org.junit.After;
-
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * See {@link BackupSyncDelay} for the rationale about these 'WithDelay' tests.
@@ -11,17 +10,6 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLargeMessageFailoverTest
 {
    private BackupSyncDelay syncDelay;
-
-   public ReplicatedLargeMessageWithDelayFailoverTest(String name)
-   {
-      super(name);
-   }
-
-   public ReplicatedLargeMessageWithDelayFailoverTest()
-   {
-      super();
-   }
-
 
    @Override
    @Before

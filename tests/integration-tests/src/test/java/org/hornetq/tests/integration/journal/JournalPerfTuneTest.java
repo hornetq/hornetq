@@ -235,6 +235,5 @@ public class JournalPerfTuneTest extends UnitTestCase
       {
          return DataConstants.SIZE_INT + bytes.length;
       }
-
    }
 }

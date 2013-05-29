@@ -12,14 +12,8 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -31,6 +25,9 @@ import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SendAcknowledgementsTest
@@ -100,16 +97,16 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
    @Test
    public void testSendAcknowledgementsNoWindowSize() throws Exception
    {
-      testSendAcknowledgements(0);
+      verifySendAcknowledgements(0);
    }
 
    @Test
    public void testSendAcknowledgements() throws Exception
    {
-      testSendAcknowledgements(1024);
+      verifySendAcknowledgements(1024);
    }
 
-   public void testSendAcknowledgements(int windowSize) throws Exception
+   public void verifySendAcknowledgements(int windowSize) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
 

@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.stress;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +29,9 @@ import javax.naming.InitialContext;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -84,15 +82,12 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
       ManyConnectionsStressTest.log.debug("setup done");
    }
 
-   @Override
    @After
    public void tearDown() throws Exception
    {
       destroyTopic("StressTestTopic");
 
       ic.close();
-
-      super.tearDown();
    }
 
    @Test
