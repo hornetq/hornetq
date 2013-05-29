@@ -12,15 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * A SleepTest
@@ -31,21 +30,11 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class SleepTest extends UnitTestCase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(SleepTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
 
    @Test
    public void testNanoSleep() throws Exception

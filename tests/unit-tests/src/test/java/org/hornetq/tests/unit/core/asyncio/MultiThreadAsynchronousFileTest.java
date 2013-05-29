@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -25,15 +21,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -47,10 +46,10 @@ import org.hornetq.utils.HornetQThreadFactory;
  *   */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
-
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    AtomicInteger position = new AtomicInteger(0);

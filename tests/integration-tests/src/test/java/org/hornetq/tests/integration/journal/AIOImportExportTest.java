@@ -15,28 +15,21 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.BeforeClass;
 
 /**
  * A AIOImportExportTest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class AIOImportExportTest extends NIOImportExportTest
 {
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      // Ignore tests if AIO is not installed
-      return UnitTestCase.createAIOTestSuite(AIOImportExportTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
-
-
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
@@ -49,5 +42,4 @@ public class AIOImportExportTest extends NIOImportExportTest
 
       return new AIOSequentialFileFactory(getTestDir());
    }
-
 }

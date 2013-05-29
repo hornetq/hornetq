@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,16 +29,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -57,9 +55,10 @@ import org.hornetq.utils.HornetQThreadFactory;
 public class AsynchronousFileTest extends AIOTestBase
 {
 
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AsynchronousFileTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();

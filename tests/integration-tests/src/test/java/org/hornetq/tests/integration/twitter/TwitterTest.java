@@ -12,16 +12,9 @@
  */
 
 package org.hornetq.tests.integration.twitter;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-
-import org.junit.Assert;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -42,7 +35,17 @@ import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import twitter4j.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import twitter4j.Paging;
+import twitter4j.ResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
 
 /**
@@ -69,33 +72,19 @@ public class TwitterTest extends ServiceTestBase
 
    // incoming
 
+   @Override
    @Before
    public void setUp() throws Exception
    {
       super.setUp();
    }
 
-
-
-   // public static Object suite() // FIXME TestSuite()
-   // {
-   //    TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
-
-   //    if (TWITTER_CONSUMER_KEY != null && !TWITTER_CONSUMER_KEY.equals("null"))
-   //    {
-   //       suite.addTestSuite(TwitterTest.class);
-   //    }
-   //    else
-   //    {
-   //       // System.out goes towards JUnit report
-   //       String errorMsg = "Test " + TwitterTest.class.getName() +
-   //                         " ignored as twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret is not set in system property  * * *";
-   //       System.out.println(errorMsg);
-   //       log.warn(errorMsg);
-   //    }
-
-   //    return suite;
-   // }
+   @BeforeClass
+   public static void hasCredentials()
+   {
+      Assume.assumeNotNull(TWITTER_CONSUMER_KEY);
+      Assume.assumeFalse("null".equals(TWITTER_CONSUMER_KEY));
+   }
 
    @Test
    public void testSimpleIncoming() throws Exception
