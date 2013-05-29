@@ -468,7 +468,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       ClientMessage coreMessage = msg.getCoreMessage();
 
-         coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
+      coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
 
       try
       {

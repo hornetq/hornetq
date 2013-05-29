@@ -239,5 +239,4 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          return size;
       }
    }
-
 }

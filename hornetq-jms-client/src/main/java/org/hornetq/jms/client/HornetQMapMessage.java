@@ -199,50 +199,12 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    public void setObject(final String name, final Object value) throws JMSException
    {
       checkName(name);
-      SimpleString key = new SimpleString(name);
-      if (value instanceof Boolean)
-      {
-         map.putBooleanProperty(key, (Boolean)value);
+      try {
+         TypedProperties.setObjectProperty(new SimpleString(name), value, map);
       }
-      else if (value instanceof Byte)
+      catch (HornetQPropertyConversionException e)
       {
-         map.putByteProperty(key, (Byte)value);
-      }
-      else if (value instanceof Short)
-      {
-         map.putShortProperty(key, (Short)value);
-      }
-      else if (value instanceof Character)
-      {
-         map.putCharProperty(key, (Character)value);
-      }
-      else if (value instanceof Integer)
-      {
-         map.putIntProperty(key, (Integer)value);
-      }
-      else if (value instanceof Long)
-      {
-         map.putLongProperty(key, (Long)value);
-      }
-      else if (value instanceof Float)
-      {
-         map.putFloatProperty(key, (Float)value);
-      }
-      else if (value instanceof Double)
-      {
-         map.putDoubleProperty(key, (Double)value);
-      }
-      else if (value instanceof String)
-      {
-         map.putSimpleStringProperty(key, new SimpleString((String)value));
-      }
-      else if (value instanceof byte[])
-      {
-         map.putBytesProperty(key, (byte[])value);
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid object type.");
+         throw new MessageFormatException(e.getMessage());
       }
       invalid = true;
    }
