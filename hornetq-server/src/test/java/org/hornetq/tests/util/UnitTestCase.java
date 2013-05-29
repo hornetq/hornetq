@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
-
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -51,8 +48,6 @@ import javax.naming.Context;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -75,7 +70,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
@@ -106,6 +100,9 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
@@ -465,26 +462,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
       log0.info(message);
       System.out.println(this.getClass().getName() + "::" + message);
-   }
-
-   protected static Object createAIOTestSuite(final Class<?> clazz)
-   {
-       throw new RuntimeException("need rewrite");
-      // TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
-
-      // if (AIOSequentialFileFactory.isSupported())
-      // {
-      //    suite.addTestSuite(clazz);
-      // }
-      // else
-      // {
-      //    // System.out goes towards JUnit report
-      //    System.out.println("Test " + clazz.getName() + " ignored as AIO is not available." +
-      //       "Add this to your java arguments if you are on a Linux system:" +
-      //       "\n-Djava.library.path=<project_home>/distribution/hornetq/src/main/resources/bin");
-      // }
-
-      // return suite;
    }
 
    public static String dumpBytes(final byte[] bytes)

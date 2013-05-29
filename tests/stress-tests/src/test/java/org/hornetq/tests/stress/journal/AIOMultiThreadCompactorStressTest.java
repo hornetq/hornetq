@@ -13,10 +13,9 @@
 
 package org.hornetq.tests.stress.journal;
 
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.BeforeClass;
 
 /**
  * A AIOMultiThreadCompactorStressTest
@@ -28,9 +27,10 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOMultiThreadCompactorStressTest extends NIOMultiThreadCompactorStressTest
 {
 
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AIOMultiThreadCompactorStressTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    /**

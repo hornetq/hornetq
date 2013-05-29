@@ -12,21 +12,17 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.nio.ByteBuffer;
-
-import org.junit.Assert;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -38,9 +34,10 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AIOSequentialFileFactoryTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    @Override

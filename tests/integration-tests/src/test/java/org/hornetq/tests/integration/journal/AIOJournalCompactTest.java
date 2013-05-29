@@ -15,12 +15,10 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalConstants;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.BeforeClass;
 
 /**
  * A AIOJournalCompactTest
@@ -31,9 +29,10 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
 {
-   public static Object suite() // FIXME TestSuite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AIOJournalCompactTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    @Override
