@@ -79,7 +79,7 @@
             <para>The default value for <literal>thread-pool-max-size</literal> is <literal
                     >30</literal>.</para>
             <para>See the <ulink
-                    url="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/ThreadPoolExecutor.html"
+                    url="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/ThreadPoolExecutor.htm"
                     >J2SE javadoc</ulink> for more information on unbounded (cached), and bounded
                 (fixed) thread pools.</para>
         </section>
