@@ -14,6 +14,7 @@
 package org.hornetq.jms.tests.message;
 
 import javax.jms.Connection;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageFormatException;
@@ -70,6 +71,23 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       consumerConnection.close();
 
       super.tearDown();
+   }
+
+   public void testResetToNull() throws JMSException
+   {
+      Message m1 = queueProducerSession.createMessage();
+      m1.setStringProperty("key", "fish");
+      m1.setBooleanProperty("key", true);
+      m1.setStringProperty("key2", "fish");
+      m1.setStringProperty("key2", null);
+      m1.setStringProperty("key3", "fish");
+      m1.setObjectProperty("key3", null);
+
+      queueProducer.send(queue1, m1);
+      Message m2 = queueConsumer.receive(1000);
+      assertEquals("key should be true", m2.getObjectProperty("key"), Boolean.TRUE);
+      assertEquals("key2 should be null", null, m2.getObjectProperty("key2"));
+      assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
    }
 
    public void testBooleanConversion() throws Exception
