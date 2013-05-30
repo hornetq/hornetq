@@ -672,7 +672,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       clearData(getTestDir());
    }
 
-   private final void deleteTmpDir()
+   protected final void deleteTmpDir()
    {
       File file = new File(getTestDir());
       deleteDirectory(file);
