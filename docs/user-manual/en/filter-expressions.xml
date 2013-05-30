@@ -29,7 +29,7 @@
         expression syntax.</para>
     <para>It is the same as the syntax used for JMS selectors, but the predefined identifiers are
         different. For documentation on JMS selector syntax please the JMS javadoc for <ulink
-            url="http://java.sun.com/javaee/5/docs/api/javax/jms/Message.html"
+            url="http://docs.oracle.com/javaee/6/api/javax/jms/Message.html"
             >javax.jms.Message</ulink>.</para>
     <para>Filter expressions are used in several places in HornetQ</para>
     <itemizedlist>
