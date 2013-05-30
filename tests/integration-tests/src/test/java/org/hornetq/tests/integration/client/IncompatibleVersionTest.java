@@ -71,6 +71,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
       server = createServer(false, false);
       server.getConfiguration().setConnectionTTLOverride(500);
       server.start();
@@ -89,6 +90,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
       locator.close();
 
       server.stop();
+
+      deleteTmpDir();
       // You CANNOT CALL super.tearDown();
    }
 

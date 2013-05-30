@@ -90,6 +90,8 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       }
 
       server.stop();
+
+      super.tearDown();
    }
 
    // Constants -----------------------------------------------------

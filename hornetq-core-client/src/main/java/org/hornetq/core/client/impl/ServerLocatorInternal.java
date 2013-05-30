@@ -50,6 +50,9 @@ public interface ServerLocatorInternal extends ServerLocator
 
    void cleanup();
 
+   // Reset this Locator back as if it never received any topology
+   void resetToInitialConnectors();
+
    ClientSessionFactoryInternal connect() throws HornetQException;
 
    /**
