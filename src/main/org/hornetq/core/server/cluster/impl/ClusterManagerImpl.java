@@ -475,9 +475,11 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
 
+      serverLocator.setIdentity("Bridge " + config.getName());
+      
       // We are going to manually retry on the bridge in case of failure
       serverLocator.setReconnectAttempts(0);
-      serverLocator.setInitialConnectAttempts(-1);
+      serverLocator.setInitialConnectAttempts(0);
       serverLocator.setRetryInterval(config.getRetryInterval());
       serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
