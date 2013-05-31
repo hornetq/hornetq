@@ -223,6 +223,8 @@ public class HornetQMessage implements javax.jms.Message
 
    private boolean individualAck;
 
+   private long jmsDeliveryTime;
+
    // Constructors --------------------------------------------------
 
    /*
@@ -861,13 +863,13 @@ public class HornetQMessage implements javax.jms.Message
    @Override
    public long getJMSDeliveryTime() throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return jmsDeliveryTime;
    }
 
    @Override
    public void setJMSDeliveryTime(long deliveryTime) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.jmsDeliveryTime = deliveryTime;
    }
 
    @Override

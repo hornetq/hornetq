@@ -15,7 +15,6 @@ package org.hornetq.jms.client;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
@@ -65,11 +64,10 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private boolean disableMessageTimestamp = false;
 
-   private int defaultPriority = 4;
-
-   private long defaultTimeToLive = 0;
-
-   private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
+   private int defaultPriority = Message.DEFAULT_PRIORITY;
+   private long defaultTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
+   private int defaultDeliveryMode = Message.DEFAULT_DELIVERY_MODE;
+   private long defaultDeliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
 
    private final HornetQDestination defaultDestination;
 
@@ -245,19 +243,19 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public void setDeliveryDelay(long deliveryDelay) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      this.defaultDeliveryDelay = deliveryDelay;
    }
 
    @Override
    public long getDeliveryDelay() throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return defaultDeliveryDelay;
    }
 
    @Override
    public void send(Message message, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      send(message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, completionListener);
    }
 
    @Override
@@ -269,7 +267,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public void send(Destination destination, Message message, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      send(destination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, completionListener);
    }
 
    @Override
@@ -466,8 +464,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw je;
       }
 
-      ClientMessage coreMessage = msg.getCoreMessage();
+      msg.setJMSDeliveryTime(System.currentTimeMillis());
 
+      ClientMessage coreMessage = msg.getCoreMessage();
       coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
 
       try

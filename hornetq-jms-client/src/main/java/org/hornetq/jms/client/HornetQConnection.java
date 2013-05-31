@@ -376,7 +376,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       checkClosed();
 
       checkTempQueues(destination);
-      // XXX HORNETQ-1209 is this valid?
+      // XXX "JMS 2.0" HORNETQ-1209 is this valid?
       return null;
    }
 
@@ -411,12 +411,14 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    @Override
    public Session createSession(int sessionMode) throws JMSException
    {
+      checkClosed();
       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 
    @Override
    public Session createSession() throws JMSException
    {
+      checkClosed();
       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
    }
 
