@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
@@ -55,6 +57,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
@@ -80,6 +84,8 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -614,6 +620,51 @@ public class UnitTestCase extends TestCase
                {
                }
             }
+         }
+      }
+   }
+   
+   public static void crashAndWaitForFailure(HornetQServer server, ClientSession ...sessions) throws Exception
+   {
+      CountDownLatch latch = new CountDownLatch(sessions.length);
+      for (ClientSession session : sessions)
+      {
+         CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
+         session.addFailureListener(listener);
+      }
+
+      ClusterManager clusterManager = server.getClusterManager();
+      clusterManager.flushExecutor();
+      ((ClusterManagerImpl)clusterManager).clear();
+      Assert.assertTrue("server should be running!", server.isStarted());
+      server.stop(true);
+
+      if (sessions.length > 0)
+      {
+         // Wait to be informed of failure
+         boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
+                  sessions.length, ok);
+      }
+   }
+
+  public static void crashAndWaitForFailure(HornetQServer server, ServerLocator locator) throws Exception
+   {
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession session = sf.createSession();
+      try
+      {
+         crashAndWaitForFailure(server, session);
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+            sf.close();
+         }
+         catch (Exception ignored)
+         {
          }
       }
    }

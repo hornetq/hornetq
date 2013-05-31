@@ -155,7 +155,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       if (ccs.size() != 1)
       {
-         throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
+         throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase, it had " + ccs.size());
       }
 
       Topology topology = ccs.iterator().next().getTopology();
@@ -313,6 +313,32 @@ public abstract class ServiceTestBase extends UnitTestCase
          {
             fail("Server didn't initialize");
          }
+      }
+   }
+
+   protected void waitForBackupInitialize(HornetQServer server) throws InterruptedException
+   {
+      long timetowait = System.currentTimeMillis() + 5000;
+      while (!server.isStarted() && System.currentTimeMillis() < timetowait)
+      {
+         Thread.sleep(100);
+      }
+
+      if (!server.isStarted())
+      {
+         log.info(threadDump("Server didn't start"));
+         fail("server didnt start");
+      }
+
+      timetowait = System.currentTimeMillis() + 5000;
+      while (!server.isInitialised() && System.currentTimeMillis() < timetowait)
+      {
+         Thread.sleep(100);
+      }
+
+      if (!server.isInitialised())
+      {
+         fail("Server didn't initialize");
       }
    }
 
