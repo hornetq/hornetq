@@ -247,7 +247,7 @@ public interface HornetQServerLogger extends BasicLogger
    void messageWithDuplicateID(Object duplicateProperty, SimpleString toAddress, SimpleString address, SimpleString simpleString);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221037, value = "{0} to become \'live\'", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 221037, value = "{0} to become \''live\''", format = Message.Format.MESSAGE_FORMAT)
    void becomingLive(HornetQServer server);
 
    @LogMessage(level = Logger.Level.INFO)
@@ -344,7 +344,7 @@ public interface HornetQServerLogger extends BasicLogger
    void discoveryGroupAlreadyDeployed(String name);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222020, value = "error scanning for URL's", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222020, value = "error scanning for URL''s", format = Message.Format.MESSAGE_FORMAT)
    void errorScanningURLs(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1241,7 +1241,7 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(
             id = 224060,
-            value = "Bridge {0} forwarding address {1} has confirmation-window-size ({2}) greater than address' max-size-bytes' ({3})",
+            value = "Bridge {0} forwarding address {1} has confirmation-window-size ({2}) greater than address'' max-size-bytes'' ({3})",
             format = Message.Format.MESSAGE_FORMAT)
             void
  bridgeConfirmationWindowTooSmall(String bridgeName, String address, int windowConfirmation,

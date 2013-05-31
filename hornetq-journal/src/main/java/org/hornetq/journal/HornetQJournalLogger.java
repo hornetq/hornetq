@@ -155,7 +155,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void compactReadError(JournalFile file);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142012, value = "Couldn't find tx={0} to merge after compacting",
+   @Message(id = 142012, value = "Couldn''t find tx={0} to merge after compacting",
          format = Message.Format.MESSAGE_FORMAT)
    void compactMergeError(Long id);
 
@@ -175,12 +175,12 @@ public interface HornetQJournalLogger extends BasicLogger
    void uncomittedTxFound(Long id);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142016, value = "Couldn't stop compactor executor after 120 seconds",
+   @Message(id = 142016, value = "Couldn''t stop compactor executor after 120 seconds",
          format = Message.Format.MESSAGE_FORMAT)
    void couldNotStopCompactor();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142017, value = "Couldn't stop journal executor after 60 seconds",
+   @Message(id = 142017, value = "Couldn''t stop journal executor after 60 seconds",
          format = Message.Format.MESSAGE_FORMAT)
    void couldNotStopJournalExecutor();
 
@@ -194,7 +194,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void deletingOrphanedFile(String fileToDelete);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142020, value =  "Couldn't get lock after 60 seconds on closing Asynchronous File: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142020, value =  "Couldn''t get lock after 60 seconds on closing Asynchronous File: {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorClosingFile(String fileToDelete);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -206,7 +206,7 @@ public interface HornetQJournalLogger extends BasicLogger
    void timeoutOnPollerShutdown(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 142023, value =  "Executor on file {0} couldn't complete its tasks in 60 seconds.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 142023, value =  "Executor on file {0} couldn''t complete its tasks in 60 seconds.", format = Message.Format.MESSAGE_FORMAT)
    void couldNotCompleteTask(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.WARN)
