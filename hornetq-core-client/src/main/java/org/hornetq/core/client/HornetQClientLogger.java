@@ -390,7 +390,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 214022,
-      value = "Packet {0} was answered out of sequence due to a previous server timeout and it's being ignored",
+      value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
       format = Message.Format.MESSAGE_FORMAT)
    void packetOutOfOrder(Object obj, @Cause Throwable t);
 
