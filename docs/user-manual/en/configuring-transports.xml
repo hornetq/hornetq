@@ -131,13 +131,13 @@
             (default):</para>
         <programlisting>
 Map&lt;String, Object> connectionParams = new HashMap&lt;String, Object>();
-    
-connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 
+
+connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                     5446);
 
-TransportConfiguration transportConfiguration = 
+TransportConfiguration transportConfiguration =
     new TransportConfiguration(
-    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
+    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
     connectionParams);
 
 ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
@@ -155,9 +155,9 @@ Map&lt;String, Object> connectionParams = new HashMap&lt;String, Object>();
 
 connectionParams.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME, 5446);
 
-TransportConfiguration transportConfiguration = 
+TransportConfiguration transportConfiguration =
     new TransportConfiguration(
-    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
+    "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
     connectionParams);
 
 ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
@@ -233,9 +233,9 @@ etc</programlisting>
                 </listitem>
                 <listitem>
                     <para><literal>tcp-no-delay</literal>. If this is <literal>true</literal> then
-                            <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
-                            algorithm</ulink> will be enabled. The default value for this property
-                        is <literal>true</literal>.</para>
+                            <ulink url="http://en.wikipedia.org/wiki/Nagle%27s_algorithm">Nagle's
+                            algorithm</ulink> will be disabled. This is a
+                            <ulink url="http://docs.oracle.com/javase/7/docs/technotes/guides/net/socketOpt.html">Java (client) socket option</ulink>. The default value for this property is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>tcp-send-buffer-size</literal>. This parameter determines the
@@ -444,7 +444,7 @@ buffer_size = bandwidth * RTT.</programlisting>
                         configuration.</para>
                     <para>Here's a snippet from the <literal>hornetq-configuration.xml</literal>
                         file showing that acceptor being defined:</para>
-                    <programlisting>                    
+                    <programlisting>
 &lt;acceptors>
    &lt;acceptor name="netty-invm">
       &lt;factory-class>
