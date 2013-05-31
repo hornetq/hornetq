@@ -76,6 +76,14 @@ public final class Topology implements Serializable
       this.executor = executor;
    }
 
+   /**
+    * It will remove all elements as if it haven't received anyone from the server.
+    */
+   public void clear()
+   {
+      topology.clear();
+   }
+
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
       if (HornetQClientLogger.LOGGER.isTraceEnabled())
@@ -86,6 +94,7 @@ public final class Topology implements Serializable
       {
          topologyListeners.add(listener);
       }
+      this.sendTopology(listener);
    }
 
    public void removeClusterTopologyListener(final ClusterTopologyListener listener)
@@ -420,6 +429,19 @@ public final class Topology implements Serializable
    public synchronized TopologyMemberImpl getMember(final String nodeID)
    {
       return topology.get(nodeID);
+   }
+
+   public synchronized TopologyMemberImpl getMember(final TransportConfiguration configuration)
+   {
+      for (TopologyMemberImpl member : topology.values())
+      {
+         if (member.isMember(configuration))
+         {
+            return member;
+         }
+      }
+
+      return null;
    }
 
    public synchronized boolean isEmpty()

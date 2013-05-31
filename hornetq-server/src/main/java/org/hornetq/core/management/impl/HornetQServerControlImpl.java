@@ -35,6 +35,7 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -1734,6 +1735,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                   HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                   retryIntervalMultiplier,
                   reconnectAttempts,
+                  HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
                   useDuplicateDetection,
                   confirmationWindowSize,
                   connectorNames,
@@ -1756,6 +1758,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                   HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                   retryIntervalMultiplier,
                   reconnectAttempts,
+                  HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
                   useDuplicateDetection,
                   confirmationWindowSize,
                   connectors,

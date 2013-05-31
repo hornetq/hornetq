@@ -26,10 +26,13 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -79,6 +82,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    protected final ServerLocatorInternal serverLocator;
 
+   protected final Executor executor;
+
+   protected final ScheduledExecutorService scheduledExecutor;
+
    private final ReusableLatch pendingAcks = new ReusableLatch(0);
 
    private final UUID nodeUUID;
@@ -86,13 +93,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final SimpleString name;
 
    private final Queue queue;
-
-   protected final Executor executor;
-
-   protected final ScheduledExecutorService scheduledExecutor;
-
-   /** Used when there's a scheduled reconnection */
-   protected ScheduledFuture<?> futureScheduledReconnection;
 
    private final Filter filter;
 
@@ -103,30 +103,16 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final Transformer transformer;
 
    private final Object connectionGuard = new Object();
-   private volatile ClientSessionFactoryInternal csf;
-
-   protected volatile ClientSessionInternal session;
-
-   private volatile ClientProducer producer;
-
-   private volatile boolean started;
-   private volatile boolean stopping = false;
 
    private final boolean useDuplicateDetection;
-
-   private volatile boolean active;
-
-   private boolean deliveringLargeMessage;
 
    private final String user;
 
    private final String password;
 
-   private boolean activated;
-
    private final int reconnectAttempts;
 
-   private int reconnectAttemptsInUse;
+   private final int reconnectAttemptsSameNode;
 
    private final long retryInterval;
 
@@ -134,12 +120,39 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final long maxRetryInterval;
 
+   /** Used when there's a scheduled reconnection */
+   protected ScheduledFuture<?> futureScheduledReconnection;
+
+   protected volatile ClientSessionInternal session;
+
+   protected String targetNodeID;
+
+   protected TopologyMember targetNode;
+
+   private volatile ClientSessionFactoryInternal csf;
+
+   private volatile ClientProducer producer;
+
+   private volatile boolean started;
+
+   private volatile boolean stopping = false;
+
+   private volatile boolean active;
+
+   private boolean deliveringLargeMessage;
+
+   private boolean activated;
+
+   private int reconnectAttemptsInUse;
+
    private int retryCount = 0;
 
    private NotificationService notificationService;
 
+
    public BridgeImpl(final ServerLocatorInternal serverLocator,
                      final int reconnectAttempts,
+                     final int reconnectAttemptsSameNode,
                      final long retryInterval,
                      final double retryMultiplier,
                      final long maxRetryInterval,
@@ -161,6 +174,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.reconnectAttempts = reconnectAttempts;
 
       this.reconnectAttemptsInUse = -1;
+
+      this.reconnectAttemptsSameNode = reconnectAttemptsSameNode;
 
       this.retryInterval = retryInterval;
 
@@ -193,6 +208,25 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.password = password;
 
       this.activated = activated;
+   }
+
+   public final static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
+   {
+      byte[] bytes = new byte[24];
+
+      ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+      bb.put(nodeUUID.asBytes());
+
+      bb.putLong(messageID);
+
+      return bytes;
+   }
+
+   private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
+   {
+      if (factory != null)
+         factory.cleanup();
    }
 
    public void setNotificationService(final NotificationService notificationService)
@@ -320,7 +354,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    }
 
    /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
-   *  This method is intended to expose this executor to the ClusterManager */
+    *  This method is intended to expose this executor to the ClusterManager */
    public Executor getExecutor()
    {
       return executor;
@@ -421,6 +455,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return filter;
    }
 
+   // SendAcknowledgementHandler implementation ---------------------
+
    public SimpleString getForwardingAddress()
    {
       return forwardingAddress;
@@ -439,7 +475,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   // SendAcknowledgementHandler implementation ---------------------
+
+   // Consumer implementation ---------------------------------------
 
    public void sendAcknowledged(final Message message)
    {
@@ -466,7 +503,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   // Consumer implementation ---------------------------------------
+   protected boolean isPlainCoreBridge()
+   {
+      return true;
+   }
 
    /* Hook for processing message before forwarding */
    protected ServerMessage beforeForward(final ServerMessage message)
@@ -487,9 +527,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             if (HornetQServerLogger.LOGGER.isDebugEnabled())
             {
                HornetQServerLogger.LOGGER.debug("The transformer " + transformer +
-                         " made a copy of the message " +
-                         message +
-                         " as transformedMessage");
+                                                   " made a copy of the message " +
+                                                   message +
+                                                   " as transformedMessage");
             }
          }
          return transformedMessage;
@@ -498,19 +538,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return message;
       }
-   }
-
-   public final static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
-   {
-      byte[] bytes = new byte[24];
-
-      ByteBuffer bb = ByteBuffer.wrap(bytes);
-
-      bb.put(nodeUUID.asBytes());
-
-      bb.putLong(messageID);
-
-      return bytes;
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
@@ -583,13 +610,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
+
+   // FailureListener implementation --------------------------------
+
    public void proceedDeliver(MessageReference ref)
    {
       // no op
    }
-
-
-   // FailureListener implementation --------------------------------
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
@@ -632,7 +659,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // fail(false);
    }
 
-    private void deliverLargeMessage(final SimpleString dest,
+   private void deliverLargeMessage(final SimpleString dest,
                                     final MessageReference ref,
                                     final LargeServerMessage message)
    {
@@ -659,7 +686,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                unsetLargeMessageDelivery();
                HornetQServerLogger.LOGGER.bridgeUnableToSendMessage(e, ref);
 
-              connectionFailed(e, false);
+               connectionFailed(e, false);
             }
          }
       });
@@ -702,18 +729,27 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return HandleStatus.HANDLED;
    }
 
+   /**
+    * for use in tests mainly
+    * @return
+    */
+   public TopologyMember getTargetNodeFromTopology()
+   {
+      return this.targetNode;
+   }
+
    @Override
    public String toString()
    {
       return this.getClass().getSimpleName() + "@" +
-             Integer.toHexString(System.identityHashCode(this)) +
-             " [name=" +
-             name +
-             ", queue=" +
-             queue +
-             " targetConnector=" +
-             this.serverLocator +
-             "]";
+         Integer.toHexString(System.identityHashCode(this)) +
+         " [name=" +
+         name +
+         ", queue=" +
+         queue +
+         " targetConnector=" +
+         this.serverLocator +
+         "]";
    }
 
    @Override
@@ -768,10 +804,56 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    /* Hook for creating session factory */
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
-      csf = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
-      csf.setReconnectAttempts(0);
+      if (targetNodeID != null && (this.reconnectAttemptsSameNode < 0 || retryCount <= this.reconnectAttemptsSameNode))
+      {
+         csf = reconnectOnOriginalNode();
+      }
+      else
+      {
+         serverLocator.resetToInitialConnectors();
+         csf = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
+      }
+
+      // null here means the targetNodeIS is not available yet
+      if (csf != null)
+      {
+         csf.setReconnectAttempts(0);
+      }
+
       return csf;
    }
+
+   private ClientSessionFactoryInternal reconnectOnOriginalNode() throws Exception
+   {
+      String targetNodeIdUse = targetNodeID;
+      TopologyMember nodeUse = targetNode;
+      if (targetNodeIdUse != null && nodeUse != null)
+      {
+         TransportConfiguration configs[] = new TransportConfiguration[2]; // live and backup
+         int numberOfConfigs = 0;
+
+         if (nodeUse.getLive() != null)
+         {
+            configs[numberOfConfigs++] = nodeUse.getLive();
+         }
+         if (nodeUse.getBackup() != null)
+         {
+            configs[numberOfConfigs++] = nodeUse.getBackup();
+         }
+
+         if (numberOfConfigs > 0)
+         {
+            // It will bounce between all the available configs
+            int nodeTry = (retryCount-1) % numberOfConfigs;
+
+            return (ClientSessionFactoryInternal)serverLocator.createSessionFactory(configs[nodeTry]);
+         }
+      }
+
+      return null;
+   }
+
+
 
    protected void setSessionFactory(ClientSessionFactoryInternal sfi)
    {
@@ -784,108 +866,116 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (stopping)
          return;
 
+
       synchronized (connectionGuard)
       {
 
-      HornetQServerLogger.LOGGER.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
+         HornetQServerLogger.LOGGER.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
 
-      retryCount++;
+         retryCount++;
 
-      try
-      {
-         if (csf == null || csf.isClosed())
+         try
          {
-            if (stopping)
-               return;
-            csf = createSessionFactory();
-            if (csf == null)
+            if (csf == null || csf.isClosed())
             {
-               // Retrying. This probably means the node is not available (for the cluster connection case)
-               scheduleRetryConnect();
-               return;
-            }
-            // Session is pre-acknowledge
-            session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
-         }
-
-         if (forwardingAddress != null)
-         {
-            BindingQuery query = null;
-
-            try
-            {
-               query = session.bindingQuery(forwardingAddress);
-            }
-            catch (Throwable e)
-            {
-               HornetQServerLogger.LOGGER.errorQueryingBridge(e, name);
-               // This was an issue during startup, we will not count this retry
-               retryCount--;
-
-               scheduleRetryConnectFixedTimeout(100);
-               return;
-            }
-
-            if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
-            {
-               if (!query.isExists())
+               if (stopping)
+                  return;
+               csf = createSessionFactory();
+               if (csf == null)
                {
-                  HornetQServerLogger.LOGGER.errorQueryingBridge(forwardingAddress, retryCount);
+                  // Retrying. This probably means the node is not available (for the cluster connection case)
                   scheduleRetryConnect();
                   return;
                }
+               // Session is pre-acknowledge
+               session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
+            }
+
+            if (forwardingAddress != null)
+            {
+               BindingQuery query = null;
+
+               try
+               {
+                  query = session.bindingQuery(forwardingAddress);
+               }
+               catch (Throwable e)
+               {
+                  HornetQServerLogger.LOGGER.errorQueryingBridge(e, name);
+                  // This was an issue during startup, we will not count this retry
+                  retryCount--;
+
+                  scheduleRetryConnectFixedTimeout(100);
+                  return;
+               }
+
+               if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
+               {
+                  if (!query.isExists())
+                  {
+                     HornetQServerLogger.LOGGER.errorQueryingBridge(forwardingAddress, retryCount);
+                     scheduleRetryConnect();
+                     return;
+                  }
+               }
+               else
+               {
+                  if (!query.isExists())
+                  {
+                     HornetQServerLogger.LOGGER.bridgeNoBindings(getName(), getForwardingAddress(), getForwardingAddress());
+                  }
+               }
+            }
+
+            producer = session.createProducer();
+            session.addFailureListener(BridgeImpl.this);
+
+            session.setSendAcknowledgementHandler(BridgeImpl.this);
+
+            afterConnect();
+
+            active = true;
+
+            queue.addConsumer(BridgeImpl.this);
+            queue.deliverAsync();
+
+            HornetQServerLogger.LOGGER.bridgeConnected(this);
+
+            // We only do this on plain core bridges
+            if (isPlainCoreBridge())
+            {
+               serverLocator.addClusterTopologyListener(new TopologyListener());
+            }
+
+            return;
+         }
+         catch (HornetQException e)
+         {
+            // the session was created while its server was starting, retry it:
+            if (e.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED)
+            {
+               HornetQServerLogger.LOGGER.errorStartingBridge(name);
+
+               // We are not going to count this one as a retry
+               retryCount--;
+
+               scheduleRetryConnectFixedTimeout(this.retryInterval);
+               return;
             }
             else
             {
-               if (!query.isExists())
+               if (HornetQServerLogger.LOGGER.isDebugEnabled())
                {
-                  HornetQServerLogger.LOGGER.bridgeNoBindings(getName(), getForwardingAddress(), getForwardingAddress());
+                  HornetQServerLogger.LOGGER.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
                }
+
+               scheduleRetryConnect();
             }
          }
-
-         producer = session.createProducer();
-         session.addFailureListener(BridgeImpl.this);
-
-         session.setSendAcknowledgementHandler(BridgeImpl.this);
-
-         afterConnect();
-
-         active = true;
-
-         queue.addConsumer(BridgeImpl.this);
-         queue.deliverAsync();
-
-         HornetQServerLogger.LOGGER.bridgeConnected(this);
-
-         return;
-      }
-      catch (HornetQException e)
-      {
-         // the session was created while its server was starting, retry it:
-         if (e.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED)
+         catch (Exception e)
          {
-            HornetQServerLogger.LOGGER.errorStartingBridge(name);
-
-            // We are not going to count this one as a retry
-            retryCount--;
-            scheduleRetryConnectFixedTimeout(this.retryInterval);
-            return;
+            HornetQServerLogger.LOGGER.errorConnectingBridge(e, this);
          }
-         else
-         {
-            if (HornetQServerLogger.LOGGER.isDebugEnabled())
-            {
-               HornetQServerLogger.LOGGER.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
-            }
-
-            scheduleRetryConnect();
-         }
-      }
-      catch (Exception e)
-      {
-         HornetQServerLogger.LOGGER.errorConnectingBridge(e, this);
-      }
       }
    }
 
@@ -921,25 +1011,27 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       HornetQServerLogger.LOGGER.debug("Bridge " + this +
-                " retrying connection #" +
-                retryCount +
-                ", maxRetry=" +
-                reconnectAttemptsInUse +
-                ", timeout=" +
-                timeout);
+                                          " retrying connection #" +
+                                          retryCount +
+                                          ", maxRetry=" +
+                                          reconnectAttemptsInUse +
+                                          ", timeout=" +
+                                          timeout);
 
       scheduleRetryConnectFixedTimeout(timeout);
    }
 
+   // Inner classes -------------------------------------------------
+
    protected void scheduleRetryConnectFixedTimeout(final long milliseconds)
    {
       try
-         {
+      {
          cleanUpSessionFactory(csf);
-         }
-         catch (Throwable ignored)
-         {
-         }
+      }
+      catch (Throwable ignored)
+      {
+      }
 
 
       if (stopping)
@@ -954,107 +1046,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return;
 
       futureScheduledReconnection =
-               scheduledExecutor.schedule(new FutureConnectRunnable(executor, this),
-                                                               milliseconds,
-                                                               TimeUnit.MILLISECONDS);
-   }
-
-   // Inner classes -------------------------------------------------
-
-   private class StopRunnable implements Runnable
-   {
-      public void run()
-      {
-         try
-         {
-            HornetQServerLogger.LOGGER.debug("stopping bridge " + BridgeImpl.this);
-            queue.removeConsumer(BridgeImpl.this);
-
-            if (!pendingAcks.await(10, TimeUnit.SECONDS))
-            {
-               HornetQServerLogger.LOGGER.timedOutWaitingCompletions(BridgeImpl.this.toString(),
-                  pendingAcks.getCount());
-            }
-
-            synchronized (BridgeImpl.this)
-            {
-               HornetQServerLogger.LOGGER.debug("Closing Session for bridge " + BridgeImpl.this.name);
-
-               started = false;
-
-               active = false;
-
-            }
-
-
-            internalCancelReferences();
-
-            if (session != null)
-            {
-               HornetQServerLogger.LOGGER.debug("Cleaning up session " + session);
-               session.removeFailureListener(BridgeImpl.this);
-               try
-               {
-                  session.close();
-                  session = null;
-               }
-            catch (HornetQException dontcare)
-               {
-               }
-            }
-
-            if (csf != null)
-            {
-               csf.cleanup();
-            }
-
-            if (isTrace)
-            {
-               HornetQServerLogger.LOGGER.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
-            }
-            HornetQServerLogger.LOGGER.bridgeStopped(name);
-         }
-         catch (RuntimeException e)
-         {
-           HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
-         }
-         catch (InterruptedException e)
-         {
-            HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
-         }
-      }
-   }
-
-   private class PauseRunnable implements Runnable
-   {
-      public void run()
-      {
-         try
-         {
-            queue.removeConsumer(BridgeImpl.this);
-
-            if (!pendingAcks.await(60, TimeUnit.SECONDS))
-            {
-               HornetQServerLogger.LOGGER.timedOutWaitingCompletions(BridgeImpl.this.toString(),
-                  pendingAcks.getCount());
-            }
-
-            synchronized (BridgeImpl.this)
-            {
-               started = false;
-               active = false;
-            }
-
-            internalCancelReferences();
-
-            HornetQServerLogger.LOGGER.bridgePaused(name);
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorPausingBridge(e);
-         }
-      }
-
+         scheduledExecutor.schedule(new FutureConnectRunnable(executor, this),
+                                    milliseconds,
+                                    TimeUnit.MILLISECONDS);
    }
 
    private void internalCancelReferences()
@@ -1079,6 +1073,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private static class FutureConnectRunnable implements Runnable
    {
       private final BridgeImpl bridge;
+
       private final Executor executor;
 
       public FutureConnectRunnable(Executor exe, BridgeImpl bridge)
@@ -1086,6 +1081,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          executor = exe;
          this.bridge = bridge;
       }
+
       public void run()
       {
          if (bridge.isStarted())
@@ -1101,15 +1097,139 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          bridge = bridge2;
       }
+
       public void run()
       {
          bridge.connect();
       }
    }
 
-   private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
+   private class StopRunnable implements Runnable
+   {
+      public void run()
       {
-      if (factory != null)
-         factory.cleanup();
+         try
+         {
+            HornetQServerLogger.LOGGER.debug("stopping bridge " + BridgeImpl.this);
+            queue.removeConsumer(BridgeImpl.this);
+
+            if (!pendingAcks.await(10, TimeUnit.SECONDS))
+            {
+               HornetQServerLogger.LOGGER.timedOutWaitingCompletions(BridgeImpl.this.toString(),
+                                                                     pendingAcks.getCount());
+            }
+
+            synchronized (BridgeImpl.this)
+            {
+               HornetQServerLogger.LOGGER.debug("Closing Session for bridge " + BridgeImpl.this.name);
+
+               started = false;
+
+               active = false;
+
+            }
+
+
+            internalCancelReferences();
+
+            if (session != null)
+            {
+               HornetQServerLogger.LOGGER.debug("Cleaning up session " + session);
+               session.removeFailureListener(BridgeImpl.this);
+               try
+               {
+                  session.close();
+                  session = null;
+               }
+               catch (HornetQException dontcare)
+               {
+               }
+            }
+
+            if (csf != null)
+            {
+               csf.cleanup();
+            }
+
+            if (isTrace)
+            {
+               HornetQServerLogger.LOGGER.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
+            }
+            HornetQServerLogger.LOGGER.bridgeStopped(name);
+         }
+         catch (RuntimeException e)
+         {
+            HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
+         }
+         catch (InterruptedException e)
+         {
+            HornetQServerLogger.LOGGER.error("Failed to stop bridge", e);
+         }
+      }
+   }
+
+   private class PauseRunnable implements Runnable
+   {
+      public void run()
+      {
+         try
+         {
+            queue.removeConsumer(BridgeImpl.this);
+
+            if (!pendingAcks.await(60, TimeUnit.SECONDS))
+            {
+               HornetQServerLogger.LOGGER.timedOutWaitingCompletions(BridgeImpl.this.toString(),
+                                                                     pendingAcks.getCount());
+            }
+
+            synchronized (BridgeImpl.this)
+            {
+               started = false;
+               active = false;
+            }
+
+            internalCancelReferences();
+
+            HornetQServerLogger.LOGGER.bridgePaused(name);
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.errorPausingBridge(e);
+         }
+      }
+
+   }
+
+   private class TopologyListener implements ClusterTopologyListener
+   {
+
+      // ClusterListener
+
+      public void nodeUP(TopologyMember member, boolean last)
+      {
+         ClientSessionInternal sessionToUse = session;
+         RemotingConnection connectionToUse = sessionToUse != null? sessionToUse.getConnection(): null;
+
+         if (member != null && BridgeImpl.this.targetNodeID != null && BridgeImpl.this.targetNodeID.equals(member.getNodeId()))
+         {
+            // this could be an update of the topology say after a backup started
+            BridgeImpl.this.targetNode = member;
+         }
+         else
+         {
+            // we don't need synchronization here, but we need to make sure we won't get a NPE on races
+            if (connectionToUse != null && member.isMember(connectionToUse))
+            {
+               BridgeImpl.this.targetNode = member;
+               BridgeImpl.this.targetNodeID = member.getNodeId();
+            }
+         }
+
+      }
+
+      public void nodeDown(long eventUID, String nodeID)
+      {
+
+      }
    }
 }
