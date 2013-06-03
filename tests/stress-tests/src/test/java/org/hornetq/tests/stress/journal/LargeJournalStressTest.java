@@ -267,7 +267,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    {
       super.setUp();
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       locator = createInVMNonHALocator();
 

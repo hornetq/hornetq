@@ -79,7 +79,6 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    {
       super.setUp();
 
-      clearData();
       addressSettings.clear();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);

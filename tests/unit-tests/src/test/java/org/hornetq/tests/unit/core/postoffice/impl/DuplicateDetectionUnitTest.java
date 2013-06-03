@@ -92,7 +92,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
       try
       {
-         clearData();
+         clearDataRecreateServerDirs();
 
          SimpleString ADDRESS = new SimpleString("address");
 

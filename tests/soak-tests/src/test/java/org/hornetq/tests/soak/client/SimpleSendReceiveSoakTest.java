@@ -66,7 +66,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
    {
       super.setUp();
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig(SimpleSendReceiveSoakTest.IS_NETTY);
 

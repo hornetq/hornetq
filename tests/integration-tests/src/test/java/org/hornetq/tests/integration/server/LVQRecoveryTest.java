@@ -11,27 +11,30 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -216,7 +219,6 @@ public class LVQRecoveryTest extends ServiceTestBase
    {
       super.setUp();
 
-      clearData();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       server = createServer(true, configuration);

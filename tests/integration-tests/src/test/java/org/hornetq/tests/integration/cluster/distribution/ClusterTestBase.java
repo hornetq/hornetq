@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
-import org.junit.After;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -29,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
@@ -72,6 +67,9 @@ import org.hornetq.core.server.impl.QuorumManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
  * A ClusterTestBase
@@ -133,8 +131,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       forceGC();
 
       UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
-
-      clearData();
 
       consumers = new ConsumerHolder[ClusterTestBase.MAX_CONSUMERS];
 
@@ -476,7 +472,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No server at " + node);
       }
 
-      long timeout = ClusterTestBase.WAIT_TIMEOUT;
+      long timeout = ServiceTestBase.WAIT_TIMEOUT;
 
 
       if  (waitForBindings(server, address, local, expectedBindingCount, expectedConsumerCount, timeout))

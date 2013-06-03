@@ -98,7 +98,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -184,7 +184,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -238,7 +238,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -274,7 +274,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -338,7 +338,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createFactory(false);
       factory = createSessionFactory(locator);
@@ -397,7 +397,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -462,7 +462,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -507,7 +507,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
@@ -551,7 +551,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = locator.createSessionFactory();
@@ -606,7 +606,7 @@ public class XmlImportExportTest extends ServiceTestBase
       xmlDataExporter.writeXMLData();
       System.out.print(new String(xmlOutputStream.toByteArray()));
 
-      clearData();
+      clearDataRecreateServerDirs();
       server.start();
       locator = createInVMNonHALocator();
       factory = locator.createSessionFactory();

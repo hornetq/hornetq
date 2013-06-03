@@ -110,7 +110,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPageCleanup() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -250,7 +250,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testFirstPageCompleteNotDeleted() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -371,7 +371,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPreparedACKAndRestart() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -589,7 +589,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testMoveExpire() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -738,7 +738,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDeleteQueueRestart() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -924,7 +924,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPreparePersistent() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -1132,7 +1132,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testSendOverBlockingNoFlowControl() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -1220,7 +1220,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testReceiveImmediate() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -1350,7 +1350,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDeletePhisicalPages() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
       config.setPersistDeliveryCountBeforeDelivery(true);
@@ -1568,7 +1568,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testMissingTXEverythingAcked() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -1753,7 +1753,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testMissingTXEverythingAcked2() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -1913,7 +1913,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2032,7 +2032,7 @@ public class PagingTest extends ServiceTestBase
 
    public void internalMultiQueuesTest(final boolean divert) throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2332,7 +2332,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testMultiQueuesNonPersistentAndPersistent() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2500,7 +2500,7 @@ public class PagingTest extends ServiceTestBase
    private void internaltestSendReceivePaging(final boolean persistentMessages) throws Exception
    {
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2637,7 +2637,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDepageDuringTransaction() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2761,7 +2761,7 @@ public class PagingTest extends ServiceTestBase
    public void testDepageDuringTransaction2() throws Exception
    {
       boolean IS_DURABLE_MESSAGE = true;
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2886,7 +2886,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDepageDuringTransaction3() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -2994,7 +2994,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDepageDuringTransaction4() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3108,7 +3108,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testOrderingNonTX() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3237,7 +3237,7 @@ public class PagingTest extends ServiceTestBase
 
    public void internalTestPageOnScheduling(final boolean restart) throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3357,7 +3357,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testRollbackOnSend() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3416,7 +3416,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testCommitOnSend() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3504,7 +3504,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testParialConsume() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3629,7 +3629,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDropMessages() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -3755,7 +3755,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDropMessagesExpiring() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4234,7 +4234,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4355,7 +4355,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4461,7 +4461,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4581,7 +4581,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4681,7 +4681,7 @@ public class PagingTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -4806,7 +4806,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testDLAOnLargeMessageAndPaging() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
       config.setThreadPoolMaxSize(5);
@@ -5051,7 +5051,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testExpireLargeMessageOnPaging() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
       config.setMessageExpiryScanPeriod(500);
@@ -5209,7 +5209,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testFailMessages() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -5403,7 +5403,7 @@ public class PagingTest extends ServiceTestBase
    public void testSpreadMessagesWithFilter(boolean deadConsumer) throws Exception
    {
 
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -5606,7 +5606,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPageHole() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -5708,7 +5708,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPendingACKOutOfOrder() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -5810,7 +5810,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testPageCompleteWasLive() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 
@@ -5941,7 +5941,7 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testMoveMessages() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig();
 

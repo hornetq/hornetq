@@ -653,7 +653,7 @@ public class PagingStoreImplTest extends UnitTestCase
    @Test
    public void testRestartPage() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
       SequentialFileFactory factory = new NIOSequentialFileFactory(getPageDir());
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
@@ -690,7 +690,7 @@ public class PagingStoreImplTest extends UnitTestCase
    @Test
    public void testOrderOnPaging() throws Throwable
    {
-      clearData();
+      clearDataRecreateServerDirs();
       SequentialFileFactory factory = new NIOSequentialFileFactory(getPageDir());
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
