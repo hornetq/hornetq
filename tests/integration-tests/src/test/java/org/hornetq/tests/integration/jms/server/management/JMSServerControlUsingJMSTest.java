@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -58,6 +62,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
    // The JMS test won't support the server being restarted, hence we have to do a slight different test on that case
    @Override
+   @Test
    public void testCreateConnectionFactory_CompleteList() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -141,7 +146,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -153,7 +159,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       connection.close();
 

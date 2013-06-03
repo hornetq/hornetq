@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import org.junit.Test;
+
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +33,7 @@ import javax.management.ObjectName;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
@@ -54,31 +56,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // MaxBatchSize but no MaxBatchTime
 
+   @Test
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
 
+   @Test
    public void testNoMaxBatchTime_DuplicatesOk_P() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, true);
    }
 
+   @Test
    public void testNoMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
 
+   @Test
    public void testNoMaxBatchTime_AtMostOnce_NP() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
 
+   @Test
    public void testNoMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, false);
    }
 
+   @Test
    public void testNoMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
       testNoMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
@@ -88,31 +96,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // MaxBatchSize but no MaxBatchTime
 
+   @Test
    public void testNoMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
 
+   @Test
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, true);
    }
 
+   @Test
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
 
+   @Test
    public void testNoMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
 
+   @Test
    public void testNoMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, false);
    }
 
+   @Test
    public void testNoMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
       testNoMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
@@ -120,31 +134,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // MaxBatchTime but no MaxBatchSize
 
+   @Test
    public void testMaxBatchTime_AtMostOnce_P() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
 
+   @Test
    public void testMaxBatchTime_DuplicatesOk_P() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, true);
    }
 
+   @Test
    public void testMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
 
+   @Test
    public void testMaxBatchTime_AtMostOnce_NP() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
 
+   @Test
    public void testMaxBatchTime_DuplicatesOk_NP() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.DUPLICATES_OK, false);
    }
 
+   @Test
    public void testMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
       testMaxBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
@@ -154,31 +174,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // MaxBatchTime but no MaxBatchSize
 
+   @Test
    public void testMaxBatchTimeSameServer_AtMostOnce_P() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, true);
    }
 
+   @Test
    public void testMaxBatchTimeSameServer_DuplicatesOk_P() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, true);
    }
 
+   @Test
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_P() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
 
+   @Test
    public void testMaxBatchTimeSameServer_AtMostOnce_NP() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.AT_MOST_ONCE, false);
    }
 
+   @Test
    public void testMaxBatchTimeSameServer_DuplicatesOk_NP() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.DUPLICATES_OK, false);
    }
 
+   @Test
    public void testMaxBatchTimeSameServer_OnceAndOnlyOnce_NP() throws Exception
    {
       testMaxBatchTimeSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
@@ -186,31 +212,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // Stress with batch size of 50
 
+   @Test
    public void testStress_AtMostOnce_P_50() throws Exception
    {
       testStress(QualityOfServiceMode.AT_MOST_ONCE, true, 50);
    }
 
+   @Test
    public void testStress_DuplicatesOk_P_50() throws Exception
    {
       testStress(QualityOfServiceMode.DUPLICATES_OK, true, 50);
    }
 
+   @Test
    public void testStress_OnceAndOnlyOnce_P_50() throws Exception
    {
       testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 50);
    }
 
+   @Test
    public void testStress_AtMostOnce_NP_50() throws Exception
    {
       testStress(QualityOfServiceMode.AT_MOST_ONCE, false, 50);
    }
 
+   @Test
    public void testStress_DuplicatesOk_NP_50() throws Exception
    {
       testStress(QualityOfServiceMode.DUPLICATES_OK, false, 50);
    }
 
+   @Test
    public void testStress_OnceAndOnlyOnce_NP_50() throws Exception
    {
       testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 50);
@@ -218,31 +250,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // Stress with batch size of 1
 
+   @Test
    public void testStress_AtMostOnce_P_1() throws Exception
    {
       testStress(QualityOfServiceMode.AT_MOST_ONCE, true, 1);
    }
 
+   @Test
    public void testStress_DuplicatesOk_P_1() throws Exception
    {
       testStress(QualityOfServiceMode.DUPLICATES_OK, true, 1);
    }
 
+   @Test
    public void testStress_OnceAndOnlyOnce_P_1() throws Exception
    {
       testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 1);
    }
 
+   @Test
    public void testStress_AtMostOnce_NP_1() throws Exception
    {
       testStress(QualityOfServiceMode.AT_MOST_ONCE, false, 1);
    }
 
+   @Test
    public void testStress_DuplicatesOk_NP_1() throws Exception
    {
       testStress(QualityOfServiceMode.DUPLICATES_OK, false, 1);
    }
 
+   @Test
    public void testStress_OnceAndOnlyOnce_NP_1() throws Exception
    {
       testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 1);
@@ -250,11 +288,13 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // Max batch time
 
+   @Test
    public void testStressMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
    {
       testStressBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 200);
    }
 
+   @Test
    public void testStressMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
    {
       testStressBatchTime(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 200);
@@ -264,31 +304,37 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // Stress with batch size of 50
 
+   @Test
    public void testStressSameServer_AtMostOnce_P_50() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, true, 50);
    }
 
+   @Test
    public void testStressSameServer_DuplicatesOk_P_50() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, true, 50);
    }
 
+   @Test
    public void testStressSameServer_OnceAndOnlyOnce_P_50() throws Exception
    {
       testStress(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 50);
    }
 
+   @Test
    public void testStressSameServer_AtMostOnce_NP_50() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, false, 50);
    }
 
+   @Test
    public void testStressSameServer_DuplicatesOk_NP_50() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, false, 50);
    }
 
+   @Test
    public void testStressSameServer_OnceAndOnlyOnce_NP_50() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 50);
@@ -296,36 +342,43 @@ public class JMSBridgeTest extends BridgeTestBase
 
    // Stress with batch size of 1
 
+   @Test
    public void testStressSameServer_AtMostOnce_P_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, true, 1);
    }
 
+   @Test
    public void testStressSameServer_DuplicatesOk_P_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, true, 1);
    }
 
+   @Test
    public void testStressSameServer_OnceAndOnlyOnce_P_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, 1);
    }
 
+   @Test
    public void testStressSameServer_AtMostOnce_NP_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.AT_MOST_ONCE, false, 1);
    }
 
+   @Test
    public void testStressSameServer_DuplicatesOk_NP_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.DUPLICATES_OK, false, 1);
    }
 
+   @Test
    public void testStressSameServer_OnceAndOnlyOnce_NP_1() throws Exception
    {
       testStressSameServer(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, 1);
    }
 
+   @Test
    public void testStartBridgeFirst() throws Exception
    {
       //stop the source server, we want to start the bridge first
@@ -406,6 +459,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testParams() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -676,6 +730,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
          }
 
+   @Test
    public void testStartStopStart() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -762,6 +817,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testSelector() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -862,6 +918,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testMaskPassword() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -944,6 +1001,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testPasswordCodec() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -1031,11 +1089,13 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testStartBridgeWithJTATransactionAlreadyRunningLargeMessage() throws Exception
    {
       internalTestStartBridgeWithJTATransactionAlreadyRunning(true);
    }
 
+   @Test
    public void testStartBridgeWithJTATransactionAlreadyRunningRegularMessage() throws Exception
    {
       internalTestStartBridgeWithJTATransactionAlreadyRunning(false);
@@ -1118,11 +1178,13 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testNonDurableSubscriberLargeMessage() throws Exception
    {
       internalTestNonDurableSubscriber(true, 1);
    }
 
+   @Test
    public void testNonDurableSubscriberRegularMessage() throws Exception
    {
       internalTestNonDurableSubscriber(false, 1);
@@ -1170,11 +1232,13 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testDurableSubscriberLargeMessage() throws Exception
    {
       internalTestDurableSubscriber(true, 1);
    }
 
+   @Test
    public void testDurableSubscriberRegularMessage() throws Exception
    {
       internalTestDurableSubscriber(false, 1);
@@ -1229,11 +1293,13 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testMessageIDInHeaderOn() throws Exception
    {
       messageIDInHeader(true);
    }
 
+   @Test
    public void testMessageIDInHeaderOff() throws Exception
    {
       messageIDInHeader(false);
@@ -1423,21 +1489,25 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testPropertiesPreservedPOn() throws Exception
    {
       propertiesPreserved(true, true);
    }
 
+   @Test
    public void testPropertiesPreservedNPoff() throws Exception
    {
       propertiesPreserved(false, true);
    }
 
+   @Test
    public void testPropertiesPreservedNPOn() throws Exception
    {
       propertiesPreserved(false, true);
    }
 
+   @Test
    public void testPropertiesPreservedPoff() throws Exception
    {
       propertiesPreserved(true, true);
@@ -1617,6 +1687,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testNoMessageIDInHeader() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -2277,6 +2348,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testSetTMClass() throws Exception
    {
       JMSBridgeImpl bridge = null;
@@ -2313,6 +2385,7 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   @Test
    public void testMBeanServer() throws Exception
    {
 

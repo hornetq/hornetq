@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.postoffice.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.Pair;
@@ -62,14 +66,16 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
    ExecutorFactory factory;
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       executor.shutdown();
       super.tearDown();
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       executor = Executors.newSingleThreadExecutor();
@@ -78,6 +84,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testReloadDuplication() throws Exception
    {
 

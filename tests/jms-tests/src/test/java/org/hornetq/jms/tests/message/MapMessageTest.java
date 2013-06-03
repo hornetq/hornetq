@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -38,6 +42,7 @@ public class MapMessageTest extends MessageTestBase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -46,6 +51,7 @@ public class MapMessageTest extends MessageTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       message = null;
@@ -53,6 +59,7 @@ public class MapMessageTest extends MessageTestBase
       super.tearDown();
    }
 
+   @Test
    public void testNullValue() throws Exception
    {
       MapMessage m = session.createMapMessage();

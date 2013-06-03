@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.unit.core.deployers.impl;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.net.URI;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
@@ -35,16 +37,19 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class FileDeploymentManagerTest extends UnitTestCase
 {
+   @Test
    public void testStartStop1() throws Exception
    {
       testStartStop1("fdm_test_file.xml");
    }
 
+   @Test
    public void testStartStop2() throws Exception
    {
       testStartStop2("fdm_test_file.xml");
    }
 
+   @Test
    public void testStartStop1WithWhitespace() throws Exception
    {
       testStartStop1("fdm test file.xml");
@@ -54,6 +59,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testStartStop2WithWhitespace() throws Exception
    {
       testStartStop2("fdm test file.xml");
@@ -144,6 +150,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRegisterUnregister() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
@@ -251,6 +258,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
    }
 
+   @Test
    public void testRedeploy() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
@@ -307,6 +315,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testUndeployAndDeployAgain() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);

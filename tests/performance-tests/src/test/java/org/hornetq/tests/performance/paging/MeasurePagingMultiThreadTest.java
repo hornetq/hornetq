@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.performance.paging;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -52,12 +55,14 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       clearData();
    }
 
+   @Test
    public void testPagingMultipleSenders() throws Throwable
    {
 

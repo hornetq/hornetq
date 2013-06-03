@@ -12,10 +12,12 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -45,6 +47,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
+   @Test
    public void testReceiveWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -77,6 +80,7 @@ public class CommitRollbackTest extends ServiceTestBase
          sendSession.close();
          }
 
+   @Test
    public void testReceiveWithRollback() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -115,6 +119,7 @@ public class CommitRollbackTest extends ServiceTestBase
          sendSession.close();
    }
 
+   @Test
    public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -160,6 +165,7 @@ public class CommitRollbackTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testAsyncConsumerCommit() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -214,6 +220,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testAsyncConsumerRollback() throws Exception
    {
       HornetQServer server = createServer(false);

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.unit.util;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +22,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -41,6 +44,7 @@ import org.hornetq.utils.UTF8Util;
 public class UTF8Test extends UnitTestCase
 {
 
+   @Test
    public void testValidateUTF() throws Exception
    {
       HornetQBuffer buffer = HornetQBuffers.fixedBuffer(60 * 1024);
@@ -59,6 +63,7 @@ public class UTF8Test extends UnitTestCase
       Assert.assertEquals(str, newStr);
    }
 
+   @Test
    public void testValidateUTFOnDataInput() throws Exception
    {
       for (int i = 0; i < 100; i++)
@@ -105,6 +110,7 @@ public class UTF8Test extends UnitTestCase
       Assert.assertEquals(str, newStr);
    }
 
+   @Test
    public void testBigSize() throws Exception
    {
 
@@ -171,7 +177,8 @@ public class UTF8Test extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       UTF8Util.clearBuffer();
       super.tearDown();

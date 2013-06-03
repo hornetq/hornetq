@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.ExceptionListener;
@@ -50,6 +52,7 @@ public class ConnectionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testManyConnections() throws Exception
    {
       for (int i = 0; i < 100; i++)
@@ -63,6 +66,7 @@ public class ConnectionTest extends JMSTestCase
    // Note: All tests related to closing a Connection should go to ConnectionClosedTest
    //
 
+   @Test
    public void testGetClientID() throws Exception
    {
       Connection connection = JMSTestCase.cf.createConnection();
@@ -76,6 +80,7 @@ public class ConnectionTest extends JMSTestCase
       connection.close();
    }
 
+   @Test
    public void testSetClientID() throws Exception
    {
       Connection connection = JMSTestCase.cf.createConnection();
@@ -102,6 +107,7 @@ public class ConnectionTest extends JMSTestCase
       connection2.setClientID(clientID);
    }
 
+   @Test
    public void testSetClientAfterStart() throws Exception
    {
       Connection connection = null;
@@ -137,6 +143,7 @@ public class ConnectionTest extends JMSTestCase
 
    }
 
+   @Test
    public void testSetClientIDFail() throws Exception
    {
       final String clientID = "my-test-client-id";
@@ -197,6 +204,7 @@ public class ConnectionTest extends JMSTestCase
       connection.close();
    }
 
+   @Test
    public void testGetMetadata() throws Exception
    {
       Connection connection = JMSTestCase.cf.createConnection();
@@ -219,6 +227,7 @@ public class ConnectionTest extends JMSTestCase
    /**
     * Test creation of QueueSession
     */
+   @Test
    public void testQueueConnection1() throws Exception
    {
       QueueConnectionFactory qcf = JMSTestCase.queueCf;
@@ -233,6 +242,7 @@ public class ConnectionTest extends JMSTestCase
    /**
     * Test creation of TopicSession
     */
+   @Test
    public void testQueueConnection2() throws Exception
    {
       TopicConnectionFactory tcf = JMSTestCase.topicCf;
@@ -248,6 +258,7 @@ public class ConnectionTest extends JMSTestCase
    /**
     * Test ExceptionListener stuff
     */
+   @Test
    public void testExceptionListener() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -268,6 +279,7 @@ public class ConnectionTest extends JMSTestCase
 
    // This test is to check netty issue in https://jira.jboss.org/jira/browse/JBMESSAGING-1618
 
+   @Test
    public void testConnectionListenerBug() throws Exception
    {
       for (int i = 0; i < 1000; i++)
@@ -288,6 +300,7 @@ public class ConnectionTest extends JMSTestCase
     *
     * @throws Exception
     */
+   @Test
    public void testDurableSubscriberOnQueueConnection() throws Exception
    {
       QueueConnection queueConnection = ((QueueConnectionFactory)JMSTestCase.queueCf).createQueueConnection();

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.server.config;
 
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.net.URL;
 
@@ -47,6 +49,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
 
+   @Test
    public void testParsing() throws Exception
    {
       Configuration config = createDefaultConfig();

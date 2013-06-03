@@ -1,9 +1,11 @@
 package org.hornetq.tests.util;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  * Test case that hijacks sys-out and sys-err.
@@ -11,7 +13,7 @@ import junit.framework.TestCase;
  * It is meant to avoid cluttering either during test execution when the tested code (expectedly)
  * writes to these.
  */
-public abstract class SilentTestCase extends TestCase
+public abstract class SilentTestCase extends Assert
 {
    private PrintStream origSysOut;
    private PrintStream origSysErr;
@@ -19,10 +21,10 @@ public abstract class SilentTestCase extends TestCase
    private PrintStream sysOut;
    private PrintStream sysErr;
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
+
       origSysOut = System.out;
       origSysErr = System.err;
       sysOut = new PrintStream(new ByteArrayOutputStream());
@@ -31,11 +33,11 @@ public abstract class SilentTestCase extends TestCase
       System.setErr(sysErr);
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       System.setOut(origSysOut);
       System.setErr(origSysErr);
-      super.tearDown();
+
    }
 }

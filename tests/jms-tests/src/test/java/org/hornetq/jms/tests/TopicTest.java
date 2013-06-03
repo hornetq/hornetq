@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -47,6 +49,7 @@ public class TopicTest extends JMSTestCase
    /**
     * The simplest possible topic test.
     */
+   @Test
    public void testTopic() throws Exception
    {
       Connection conn = null;
@@ -74,6 +77,7 @@ public class TopicTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTopic2() throws Exception
    {
       Connection conn = null;
@@ -101,6 +105,7 @@ public class TopicTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTopicName() throws Exception
    {
       Topic topic = (Topic)JMSTestCase.ic.lookup("/topic/Topic1");
@@ -110,6 +115,7 @@ public class TopicTest extends JMSTestCase
    /*
    * See http://jira.jboss.com/jira/browse/JBMESSAGING-399
    */
+   @Test
    public void testRace() throws Exception
    {
       Connection conn = null;

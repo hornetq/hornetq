@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
-import junit.framework.TestSuite;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -31,7 +31,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
 {
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(AIOJournalCompactTest.class);
    }

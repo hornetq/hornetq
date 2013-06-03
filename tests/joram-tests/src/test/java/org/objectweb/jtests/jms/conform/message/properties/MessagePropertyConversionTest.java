@@ -17,9 +17,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 
@@ -64,6 +64,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>java.lang.String</code>,
     * it can also be read as a <code>java.lang.String</code>.
     */
+   @Test
    public void testString2String()
    {
       try
@@ -84,6 +85,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>double</code>
     * (e.g. <code>"not a number"</code>).
     */
+   @Test
    public void testString2Double_2()
    {
       try
@@ -107,6 +109,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>double</code> as long as the <code>String</code>
     * is a correct representation of a <code>double</code> (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Double_1()
    {
       try
@@ -127,6 +130,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>float</code>
     * (e.g. <code>"not_a_number"</code>).
     */
+   @Test
    public void testString2Float_2()
    {
       try
@@ -150,6 +154,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>float</code> as long as the <code>String</code>
     * is a correct representation of a <code>float</code> (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Float_1()
    {
       try
@@ -170,6 +175,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>long</code>
     * (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Long_2()
    {
       try
@@ -193,6 +199,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>long</code> as long as the <code>String</code>
     * is a correct representation of a <code>long</code> (e.g. <code>"0"</code>).
     */
+   @Test
    public void testString2Long_1()
    {
       try
@@ -213,6 +220,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>int</code>
     * (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Int_2()
    {
       try
@@ -236,6 +244,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>int</code> as long as the <code>String</code>
     * is a correct representation of a <code>int</code> (e.g. <code>"0"</code>).
     */
+   @Test
    public void testString2Int_1()
    {
       try
@@ -256,6 +265,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>short</code>
     * (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Short_2()
    {
       try
@@ -279,6 +289,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>short</code> as long as the <code>String</code>
     * is a correct representation of a <code>short</code> (e.g. <code>"0"</code>).
     */
+   @Test
    public void testString2Short_1()
    {
       try
@@ -299,6 +310,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if the <code>String</code> is not a correct representation for a <code>byte</code>
     * (e.g. <code>"3.14159"</code>).
     */
+   @Test
    public void testString2Byte_2()
    {
       try
@@ -322,6 +334,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>byte</code> if the <code>String</code>
     * is a correct representation of a <code>byte</code> (e.g. <code>"0"</code>).
     */
+   @Test
    public void testString2Byte_1()
    {
       try
@@ -342,6 +355,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * null and is equal, ignoring case, to the string "true" (.eg. "True" is ok), else it
     * returns <code>false</code> (e.g. "test")
     */
+   @Test
    public void testString2Boolean_2()
    {
       try
@@ -364,6 +378,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * it can also be read as a <code>boolean</code> if the <code>String</code>
     * is a correct representation of a <code>boolean</code> (e.g. <code>"true"</code>).
     */
+   @Test
    public void testString2Boolean_1()
    {
       try
@@ -382,6 +397,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * it can also be read as a <code>java.lang.String</code>.
     */
+   @Test
    public void testDouble2String()
    {
       try
@@ -400,6 +416,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * it can also be read as a <code>double</code>.
     */
+   @Test
    public void testDouble2Double()
    {
       try
@@ -418,6 +435,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Float()
    {
       try
@@ -440,6 +458,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as a <code>long</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Long()
    {
       try
@@ -462,6 +481,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as an <code>int</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Int()
    {
       try
@@ -484,6 +504,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as a <code>short</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Short()
    {
       try
@@ -507,6 +528,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Byte()
    {
       try
@@ -530,6 +552,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>double</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testDouble2Boolean()
    {
       try
@@ -553,6 +576,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testFloat2String()
    {
       try
@@ -571,6 +595,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * it can also be read as a <code>double</code>.
     */
+   @Test
    public void testFloat2Double()
    {
       try
@@ -589,6 +614,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * it can also be read as a <code>float</code>.
     */
+   @Test
    public void testFloat2Float()
    {
       try
@@ -607,6 +633,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * to get is as a <code>long</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testFloat2Long()
    {
       try
@@ -629,6 +656,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * to get is as a <code>int</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testFloat2Int()
    {
       try
@@ -651,6 +679,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * to get is as a <code>short</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testFloat2Short()
    {
       try
@@ -674,6 +703,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testFloat2Byte()
    {
       try
@@ -697,6 +727,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>float</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testFloat2Boolean()
    {
       try
@@ -720,6 +751,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testLong2String()
    {
       try
@@ -738,6 +770,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as a <code>double</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Double()
    {
       try
@@ -760,6 +793,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Float()
    {
       try
@@ -782,6 +816,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * it can also be read as a <code>long</code>.
     */
+   @Test
    public void testLong2Long()
    {
       try
@@ -800,6 +835,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as an <code>int</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Int()
    {
       try
@@ -822,6 +858,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as a <code>short</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Short()
    {
       try
@@ -845,6 +882,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Byte()
    {
       try
@@ -868,6 +906,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>long</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testLong2Boolean()
    {
       try
@@ -891,6 +930,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as an <code>int</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testInt2String()
    {
       try
@@ -909,6 +949,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>int</code>,
     * to get is as a <code>double</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testInt2Double()
    {
       try
@@ -931,6 +972,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>int</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testInt2Float()
    {
       try
@@ -953,6 +995,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as an <code>int</code>,
     * it can also be read as a <code>long</code>.
     */
+   @Test
    public void testInt2Long()
    {
       try
@@ -971,6 +1014,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as an <code>int</code>,
     * it can also be read as an <code>int</code>.
     */
+   @Test
    public void testInt2Int()
    {
       try
@@ -989,6 +1033,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>int</code>,
     * to get is as a <code>short</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testInt2Short()
    {
       try
@@ -1012,6 +1057,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>int</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testInt2Byte()
    {
       try
@@ -1035,6 +1081,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>int</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testInt2Boolean()
    {
       try
@@ -1058,6 +1105,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testShort2String()
    {
       try
@@ -1076,6 +1124,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * to get is as a <code>double</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testShort2Double()
    {
       try
@@ -1098,6 +1147,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testShort2Float()
    {
       try
@@ -1120,6 +1170,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * it can also be read as a <code>long</code>.
     */
+   @Test
    public void testShort2Long()
    {
       try
@@ -1138,6 +1189,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * it can also be read as an <code>int</code>.
     */
+   @Test
    public void testShort2Int()
    {
       try
@@ -1156,6 +1208,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * it can also be read as a <code>short</code>.
     */
+   @Test
    public void testShort2Short()
    {
       try
@@ -1174,6 +1227,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testShort2Byte()
    {
       try
@@ -1196,6 +1250,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>short</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testShort2Boolean()
    {
       try
@@ -1219,6 +1274,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testByte2String()
    {
       try
@@ -1237,6 +1293,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * to get is as a <code>double</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testByte2Double()
    {
       try
@@ -1259,6 +1316,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testByte2Float()
    {
       try
@@ -1281,6 +1339,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * it can also be read as a <code>long</code>.
     */
+   @Test
    public void testByte2Long()
    {
       try
@@ -1299,6 +1358,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * it can also be read as an <code>int</code>.
     */
+   @Test
    public void testByte2Int()
    {
       try
@@ -1317,6 +1377,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * it can also be read as a <code>short</code>.
     */
+   @Test
    public void testByte2Short()
    {
       try
@@ -1335,6 +1396,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * it can also be read as a <code>byte</code>.
     */
+   @Test
    public void testByte2Byte()
    {
       try
@@ -1353,6 +1415,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>byte</code>,
     * to get is as a <code>boolean</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testByte2Boolean()
    {
       try
@@ -1376,6 +1439,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * it can also be read as a <code>String</code>.
     */
+   @Test
    public void testBoolean2String()
    {
       try
@@ -1394,6 +1458,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>double</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Double()
    {
       try
@@ -1417,6 +1482,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>float</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Float()
    {
       try
@@ -1440,6 +1506,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>long</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Long()
    {
       try
@@ -1463,6 +1530,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>int</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Int()
    {
       try
@@ -1486,6 +1554,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>short</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Short()
    {
       try
@@ -1509,6 +1578,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * to get is as a <code>byte</code> throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testBoolean2Byte()
    {
       try
@@ -1532,6 +1602,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
     * if a property is set as a <code>boolean</code>,
     * it can also be read as a <code>boolean</code>.
     */
+   @Test
    public void testBoolean2Boolean()
    {
       try

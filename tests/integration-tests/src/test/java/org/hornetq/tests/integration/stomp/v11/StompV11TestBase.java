@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp.v11;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +78,8 @@ public abstract class StompV11TestBase extends UnitTestCase
    // Implementation methods
    // -------------------------------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -120,7 +123,8 @@ public abstract class StompV11TestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

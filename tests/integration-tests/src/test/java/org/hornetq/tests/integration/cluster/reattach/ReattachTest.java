@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.integration.cluster.reattach;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -65,6 +69,7 @@ public class ReattachTest extends ServiceTestBase
    /*
     * Test failure on connection, but server is still up so should immediately reconnect
     */
+   @Test
    public void testImmediateReattach() throws Exception
    {
       final long retryInterval = 500;
@@ -141,6 +146,7 @@ public class ReattachTest extends ServiceTestBase
    /*
     * Test failure on connection, but server is still up so should immediately reconnect
     */
+   @Test
    public void testOverflowCredits() throws Exception
    {
       final long retryInterval = 500;
@@ -213,6 +219,7 @@ public class ReattachTest extends ServiceTestBase
     * Test failure on connection, simulate failure to create connection for a while, then
     * allow connection to be recreated
     */
+   @Test
    public void testDelayedReattach() throws Exception
    {
       final long retryInterval = 500;
@@ -301,6 +308,7 @@ public class ReattachTest extends ServiceTestBase
    }
 
    // Test an async (e.g. pinger) failure coming in while a connection manager is already reconnecting
+   @Test
    public void testAsyncFailureWhileReattaching() throws Exception
    {
       final long retryInterval = 500;
@@ -417,6 +425,7 @@ public class ReattachTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testReattachAttemptsFailsToReconnect() throws Exception
    {
       final long retryInterval = 500;
@@ -504,6 +513,7 @@ public class ReattachTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testCreateSessionFailAfterSendSeveralThreads() throws Throwable
    {
 
@@ -621,6 +631,7 @@ public class ReattachTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCreateSessionFailBeforeSendSeveralThreads() throws Throwable
    {
       final long retryInterval = 500;
@@ -719,6 +730,7 @@ public class ReattachTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       final long retryInterval = 50;
@@ -791,6 +803,7 @@ public class ReattachTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testReattachAttemptsSucceedsInReconnecting() throws Exception
    {
       final long retryInterval = 500;
@@ -858,6 +871,7 @@ public class ReattachTest extends ServiceTestBase
       sf.close();
    }
 
+   @Test
    public void testRetryInterval() throws Exception
    {
       final long retryInterval = 500;
@@ -950,6 +964,7 @@ public class ReattachTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testExponentialBackoff() throws Exception
    {
       final long retryInterval = 500;
@@ -1025,6 +1040,7 @@ public class ReattachTest extends ServiceTestBase
       sf.close();
    }
 
+   @Test
    public void testExponentialBackoffMaxRetryInterval() throws Exception
    {
       final long retryInterval = 500;
@@ -1110,7 +1126,8 @@ public class ReattachTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1122,7 +1139,8 @@ public class ReattachTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       InVMConnector.resetFailures();
 

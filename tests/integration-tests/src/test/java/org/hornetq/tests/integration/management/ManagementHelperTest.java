@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -32,7 +34,7 @@ import org.hornetq.tests.util.RandomUtil;
  *
  *
  */
-public class ManagementHelperTest extends TestCase
+public class ManagementHelperTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -47,6 +49,7 @@ public class ManagementHelperTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testArrayOfStringParameter() throws Exception
    {
       String resource = RandomUtil.randomString();
@@ -70,6 +73,7 @@ public class ManagementHelperTest extends TestCase
       }
    }
 
+   @Test
    public void testParams() throws Exception
    {
       String resource = RandomUtil.randomString();
@@ -186,6 +190,7 @@ public class ManagementHelperTest extends TestCase
       Assert.assertEquals(value3_5, mapRes3.get(key3_5));
    }
 
+   @Test
    public void testMapWithArrayValues() throws Exception
    {
       String resource = RandomUtil.randomString();
@@ -233,6 +238,7 @@ public class ManagementHelperTest extends TestCase
 
    }
 
+   @Test
    public void testFromCommaSeparatedKeyValues() throws Exception
    {
       String str = "key1=1, key2=false, key3=2.0, key4=whatever";
@@ -252,6 +258,7 @@ public class ManagementHelperTest extends TestCase
       Assert.assertEquals("whatever", map.get("key4"));
    }
 
+   @Test
    public void testFromCommaSeparatedArrayOfCommaSeparatedKeyValuesForSingleItem() throws Exception
    {
       // if there is a single item, no need to enclose it in { }
@@ -276,6 +283,7 @@ public class ManagementHelperTest extends TestCase
       Assert.assertEquals("whatever", map.get("k14"));
    }
 
+   @Test
    public void testFromCommaSeparatedArrayOfCommaSeparatedKeyValues() throws Exception
    {
       String str = "{ k11=1, k12=false, k13=2.0, k14=whatever },{ k21=2, k22=true, k23=23.0, k24=foo }";

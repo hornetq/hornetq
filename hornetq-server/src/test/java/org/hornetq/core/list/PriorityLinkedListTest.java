@@ -12,9 +12,13 @@
  */
 
 package org.hornetq.core.list;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
+
 
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedListImpl;
@@ -22,7 +26,7 @@ import org.hornetq.utils.PriorityLinkedListImpl;
 /**
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public final class PriorityLinkedListTest extends TestCase
+public final class PriorityLinkedListTest extends Assert
 {
    protected Wibble a;
 
@@ -83,10 +87,10 @@ public final class PriorityLinkedListTest extends TestCase
       return new PriorityLinkedListImpl<Wibble>(10);
    }
 
-   @Override
+   @Before
    public void setUp() throws Exception
    {
-      super.setUp();
+
 
       list = getList();
 
@@ -118,13 +122,14 @@ public final class PriorityLinkedListTest extends TestCase
       z = new Wibble("z");
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       list = null;
-      super.tearDown();
+
    }
 
+   @Test
    public void testEmpty() throws Exception
    {
       Assert.assertTrue(list.isEmpty());
@@ -140,6 +145,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(0, list.size());
    }
 
+   @Test
    public void testaddHead() throws Exception
    {
       list.addHead(a, 0);
@@ -160,6 +166,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(0, list.size());
    }
 
+   @Test
    public void testaddTail() throws Exception
    {
       list.addTail(a, 0);
@@ -180,6 +187,7 @@ public final class PriorityLinkedListTest extends TestCase
 
    }
 
+   @Test
    public void testAddLastAndFirst() throws Exception
    {
       list.addTail(a, 0);
@@ -227,6 +235,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(j, list.poll());
    }
 
+   @Test
    public void testAddLastAndFirstWithIterator() throws Exception
    {
       list.addTail(a, 0);
@@ -296,6 +305,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(j, iter.next());
    }
 
+   @Test
    public void testPoll() throws Exception
    {
       list.addTail(a, 0);
@@ -446,6 +456,7 @@ public final class PriorityLinkedListTest extends TestCase
 
    }
 
+   @Test
    public void testIterator()
    {
       list.addTail(a, 9);
@@ -774,6 +785,7 @@ public final class PriorityLinkedListTest extends TestCase
 
    }
 
+   @Test
    public void testIteratorPicksUpHigherPriorities()
    {
       list.addTail(a, 4);
@@ -810,6 +822,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(f, iter.next());
    }
 
+   @Test
    public void testClear()
    {
       list.addTail(a, 0);
@@ -828,6 +841,7 @@ public final class PriorityLinkedListTest extends TestCase
       Assert.assertNull(list.poll());
    }
 
+   @Test
    public void testMixupIterator()
    {
       list.addTail(c, 5);
@@ -847,6 +861,7 @@ public final class PriorityLinkedListTest extends TestCase
       assertEquals(d, iter.next());
    }
 
+   @Test
    public void testMixupIterator2()
    {
       list.addTail(c, 5);

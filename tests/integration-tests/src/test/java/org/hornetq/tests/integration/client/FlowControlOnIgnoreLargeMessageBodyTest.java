@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -58,6 +61,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
    private volatile boolean error = false;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -325,6 +329,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
       }
    }
 
+   @Test
    public void testFlowControl()
    {
       Context context = null;

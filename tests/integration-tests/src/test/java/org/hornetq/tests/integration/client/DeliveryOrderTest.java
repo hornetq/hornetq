@@ -11,12 +11,15 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -50,7 +53,8 @@ public class DeliveryOrderTest extends ServiceTestBase
    private ClientSessionFactory cf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();
@@ -59,6 +63,7 @@ public class DeliveryOrderTest extends ServiceTestBase
       cf = createSessionFactory(locator);
    }
 
+   @Test
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
          ClientSession sendSession = cf.createSession(false, false, true);
@@ -87,6 +92,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          sendSession.close();
          }
 
+   @Test
    public void testReceiveDeliveryOrderOnRollback() throws Exception
    {
          ClientSession sendSession = cf.createSession(false, true, false);
@@ -119,6 +125,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          sendSession.close();
          }
 
+   @Test
    public void testMultipleConsumersMessageOrder() throws Exception
    {
          ClientSession sendSession = cf.createSession(false, true, true);

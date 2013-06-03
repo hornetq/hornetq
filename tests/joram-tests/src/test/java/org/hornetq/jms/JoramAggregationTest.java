@@ -12,18 +12,20 @@
  */
 
 package org.hornetq.jms;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Properties;
 
 import junit.extensions.TestSetup;
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestListener;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+
+import org.junit.Test;
+import org.junit.Assert;
+import org.junit.TestListener;
+import org.junit.TestResult;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.admin.Admin;
 import org.objectweb.jtests.jms.admin.AdminFactory;
@@ -53,11 +55,11 @@ import org.objectweb.jtests.jms.framework.JMSTestCase;
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.2 $
  */
-public class JoramAggregationTest extends TestCase
+public class JoramAggregationTest extends Assert
 {
    public JoramAggregationTest(String name)
    {
-      super(name);
+
    }
 
    /**
@@ -66,14 +68,14 @@ public class JoramAggregationTest extends TestCase
     * So, you will realize several proxies existent here to keep these class names while executing
     * method names.
     */
-   static class TestProxy extends TestCase
+   static class TestProxy extends Assert
    {
       Hashtable<Test, Test> hashTests = new Hashtable<Test, Test>();
       Test testcase;
 
        public TestProxy(Test testcase, String name)
        {
-           super(name);
+
            this.testcase = testcase;
        }
 
@@ -124,7 +126,7 @@ public class JoramAggregationTest extends TestCase
                    result.addError(dummyTest, throwable);
                }
 
-               public void addFailure(Test subtest, AssertionFailedError assertionFailedError)
+               public void addFailure(Test subtest, AssertionError assertionFailedError)
                {
                    Test dummyTest = createDummyTest(subtest);
                    result.addFailure(dummyTest, assertionFailedError);
@@ -198,11 +200,11 @@ public class JoramAggregationTest extends TestCase
        */
       public TestAggregation(Test test)
       {
-         super(test);
+
       }
 
-      @Override
-      public void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
       {
          JMSTestCase.startServer = false;
          // Admin step
@@ -212,8 +214,8 @@ public class JoramAggregationTest extends TestCase
          admin.startServer();
       }
 
-      @Override
-      public void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
       {
          admin.stopServer();
          JMSTestCase.startServer = true;

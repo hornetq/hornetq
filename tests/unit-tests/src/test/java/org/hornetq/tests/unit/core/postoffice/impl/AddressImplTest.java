@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Address;
@@ -24,6 +26,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AddressImplTest extends UnitTestCase
 {
+   @Test
    public void testNoDots()
    {
       SimpleString s1 = new SimpleString("abcde");
@@ -33,6 +36,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a1.matches(a2));
    }
 
+   @Test
    public void testDotsSameLength2()
    {
       SimpleString s1 = new SimpleString("a.b");
@@ -42,6 +46,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a1.matches(a2));
    }
 
+   @Test
    public void testA()
    {
       SimpleString s1 = new SimpleString("a.b.c");
@@ -51,6 +56,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(a2));
    }
 
+   @Test
    public void testB()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -63,6 +69,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testC()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -75,6 +82,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testD()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e");
@@ -87,6 +95,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testE()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -99,6 +108,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testF()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -111,6 +121,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a2.matches(w));
    }
 
+   @Test
    public void testG()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -123,6 +134,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a2.matches(w));
    }
 
+   @Test
    public void testH()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -135,6 +147,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a2.matches(w));
    }
 
+   @Test
    public void testI()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -147,6 +160,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a2.matches(w));
    }
 
+   @Test
    public void testJ()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -159,6 +173,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testK()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -171,6 +186,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertTrue(a2.matches(w));
    }
 
+   @Test
    public void testL()
    {
       SimpleString s1 = new SimpleString("a.b.c.d.e.f");
@@ -183,6 +199,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testM()
    {
       SimpleString s1 = new SimpleString("a.b.c");
@@ -195,6 +212,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testN()
    {
       SimpleString s1 = new SimpleString("usd.stock");
@@ -207,6 +225,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testO()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -219,6 +238,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a2.matches(w));
    }
 
+   @Test
    public void testP()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -228,6 +248,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(w));
    }
 
+   @Test
    public void testQ()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -237,6 +258,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(w));
    }
 
+   @Test
    public void testR()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -246,6 +268,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(w));
    }
 
+   @Test
    public void testS()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -255,6 +278,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(w));
    }
 
+   @Test
    public void testT()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");
@@ -264,6 +288,7 @@ public class AddressImplTest extends UnitTestCase
       Assert.assertFalse(a1.matches(w));
    }
 
+   @Test
    public void testU()
    {
       SimpleString s1 = new SimpleString("a.b.c.d");

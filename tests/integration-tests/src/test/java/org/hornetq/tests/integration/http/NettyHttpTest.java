@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.http;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
@@ -49,7 +53,8 @@ public class NettyHttpTest extends UnitTestCase
    private ScheduledExecutorService scheduledThreadPool;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -61,7 +66,8 @@ public class NettyHttpTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (connector != null)
       {
@@ -87,6 +93,7 @@ public class NettyHttpTest extends UnitTestCase
       super.tearDown();
    }
 
+   @Test
    public void testSendAndReceiveAtSameTime() throws Exception
    {
 
@@ -142,6 +149,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testSendThenReceive() throws Exception
    {
       int numPackets = 1000;
@@ -199,6 +207,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReceiveThenSend() throws Exception
    {
 
@@ -258,6 +267,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReceivePiggyBackOnOneResponse() throws Exception
    {
 
@@ -315,6 +325,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReceivePiggyBackOnIdleClient() throws Exception
    {
 
@@ -368,6 +379,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testSendWithNoReceive() throws Exception
    {
 
@@ -415,6 +427,7 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testSendOnly() throws Exception
    {
 

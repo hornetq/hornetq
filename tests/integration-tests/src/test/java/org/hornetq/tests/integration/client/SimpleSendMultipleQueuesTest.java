@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -49,6 +53,7 @@ public class SimpleSendMultipleQueuesTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   @Test
    public void testSimpleSend() throws Exception
    {
       for (int i = 0; i < 1000; i++)
@@ -78,7 +83,8 @@ public class SimpleSendMultipleQueuesTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -108,7 +114,8 @@ public class SimpleSendMultipleQueuesTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (session != null)
       {

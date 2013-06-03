@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -54,6 +57,7 @@ public class MessageRateTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testProduceRate() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -79,6 +83,7 @@ public class MessageRateTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testConsumeRate() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -117,6 +122,7 @@ public class MessageRateTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testConsumeRateListener() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -173,7 +179,8 @@ public class MessageRateTest extends ServiceTestBase
          }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

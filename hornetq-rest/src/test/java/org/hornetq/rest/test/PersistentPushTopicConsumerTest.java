@@ -1,4 +1,6 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
+import org.junit.After;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;

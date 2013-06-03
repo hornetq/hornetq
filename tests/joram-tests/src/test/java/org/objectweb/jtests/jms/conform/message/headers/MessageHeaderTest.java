@@ -22,9 +22,9 @@ import javax.jms.TemporaryQueue;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -42,6 +42,7 @@ public class MessageHeaderTest extends PTPTestCase
     * Test that the <code>MessageProducer.setPriority()</code> changes effectively
     * priority of the message.
     */
+   @Test
    public void testJMSPriority_2()
    {
       try
@@ -67,6 +68,7 @@ public class MessageHeaderTest extends PTPTestCase
     * message is sent and that it holds the value specified when sending the message (i.e.
     * <code>Message.DEFAULT_PRIORITY</code> in this test).
     */
+   @Test
    public void testJMSPriority_1()
    {
       try
@@ -91,6 +93,7 @@ public class MessageHeaderTest extends PTPTestCase
     * Test that the value of the <code>JMSExpiration<code> header field is the same
     * for the sent message and the received one.
     */
+   @Test
    public void testJMSExpiration()
    {
       try
@@ -113,6 +116,7 @@ public class MessageHeaderTest extends PTPTestCase
     * Test that the <code>JMSMessageID</code> is set by the provider when the <code>send</code> method returns
     * and that it starts with <code>"ID:"</code>.
     */
+   @Test
    public void testJMSMessageID_2()
    {
       try
@@ -138,6 +142,7 @@ public class MessageHeaderTest extends PTPTestCase
     * Test that the <code>JMSMessageID</code> header field value is
     * ignored when the message is sent.
     */
+   @Test
    public void testJMSMessageID_1()
    {
       try
@@ -160,6 +165,7 @@ public class MessageHeaderTest extends PTPTestCase
     * when the message is sent and that it holds the value specified by the sending
     * method (i.e. <code>Message.DEFAULT_DELIVERY_MODE</code> in this test when the message is received.
     */
+   @Test
    public void testJMSDeliveryMode()
    {
       try
@@ -190,6 +196,7 @@ public class MessageHeaderTest extends PTPTestCase
     * specified by the sending method.
     * Also test that the value of the header on the received message is the same that on the sent message.
     */
+   @Test
    public void testJMSDestination()
    {
       try
@@ -231,6 +238,7 @@ public class MessageHeaderTest extends PTPTestCase
     * method on a sended message corresponds to the <code>Destination</code> get by
     * the </code>getJMSReplyTo()</code> method.
     */
+   @Test
    public void testJMSReplyTo_1()
    {
       try
@@ -258,6 +266,7 @@ public class MessageHeaderTest extends PTPTestCase
     * it will be rightly get also as a <code>TemporaryQueue</code>
     * (and not only as a <code>Queue</code>).
     */
+   @Test
    public void testJMSReplyTo_2()
    {
       try

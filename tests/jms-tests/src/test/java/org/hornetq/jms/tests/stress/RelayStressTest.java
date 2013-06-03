@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.stress;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -53,7 +57,8 @@ public class RelayStressTest extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -65,13 +70,15 @@ public class RelayStressTest extends HornetQServerTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       destroyTopic("StressTestTopic");
       ic.close();
       super.tearDown();
    }
 
+   @Test
    public void testRelay() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

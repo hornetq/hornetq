@@ -12,11 +12,13 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -62,6 +64,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    }
 
    //send some messages that can be compressed into regular size.
+   @Test
    public void testSendRegularAfterCompression() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
@@ -117,6 +120,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    }
 
    //send some messages that cannot be compressed into regular messages
+   @Test
    public void testSendLargeAfterUnableToSendRegular() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
@@ -173,6 +177,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       session.close();
    }
 
+   @Test
    public void testMixedCompressionSendReceive() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
@@ -359,6 +364,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    //this test won't leave any large messages in the large-messages dir
    //because after compression, the messages are regulars at server.
    @Override
+   @Test
    public void testDLALargeMessage() throws Exception
    {
       final int messageSize = (int) (3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -474,6 +480,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    }
 
    @Override
+   @Test
    public void testSendServerMessage() throws Exception
    {
       // doesn't make sense as compressed

@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.ssl;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -58,6 +61,7 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 
    private TransportConfiguration tc;
 
+   @Test
    public void testTwoWaySSL() throws Exception
    {
       String text = RandomUtil.randomString();
@@ -85,6 +89,7 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
       Assert.assertEquals(text, m.getBodyBuffer().readString());
    }
 
+   @Test
    public void testTwoWaySSLWithoutClientKeyStore() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
@@ -110,7 +115,8 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       ConfigurationImpl config = createBasicConfig();

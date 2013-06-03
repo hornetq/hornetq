@@ -20,9 +20,9 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -42,6 +42,7 @@ public class QueueSessionTest extends PTPTestCase
     * Test that if we rollback a transaction which has consumed a message,
     * the message is effectively redelivered.
     */
+   @Test
    public void testRollbackRececeivedMessage()
    {
       try
@@ -110,6 +111,7 @@ public class QueueSessionTest extends PTPTestCase
     * Test that a call to the <code>createBrowser()</code> method with an invalid
     * messaeg session throws a <code>javax.jms.InvalidSelectorException</code>.
     */
+   @Test
    public void testCreateBrowser_2()
    {
       try
@@ -130,6 +132,7 @@ public class QueueSessionTest extends PTPTestCase
     * Test that a call to the <code>createBrowser()</code> method with an invalid
     * <code>Queue</code> throws a <code>javax.jms.InvalidDestinationException</code>.
     */
+   @Test
    public void testCreateBrowser_1()
    {
       try
@@ -150,6 +153,7 @@ public class QueueSessionTest extends PTPTestCase
     * Test that a call to the <code>createReceiver()</code> method with an invalid
     * message selector throws a <code>javax.jms.InvalidSelectorException</code>.
     */
+   @Test
    public void testCreateReceiver_2()
    {
       try
@@ -170,6 +174,7 @@ public class QueueSessionTest extends PTPTestCase
     * Test that a call to the <code>createReceiver()</code> method with an invalid
     * <code>Queue</code> throws a <code>javax.jms.InvalidDestinationException</code>>
     */
+   @Test
    public void testCreateReceiver_1()
    {
       try

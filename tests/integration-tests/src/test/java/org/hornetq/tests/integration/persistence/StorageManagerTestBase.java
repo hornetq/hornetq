@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.persistence;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,7 +51,8 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    protected JMSStorageManager jmsJournal;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -63,7 +66,8 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       Exception exception = null;
 

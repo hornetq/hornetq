@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -40,11 +42,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
       doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(), configuredClusterPassword, true);
    }
 
+   @Test
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
       doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(),
@@ -52,11 +56,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
                               false);
    }
 
+   @Test
    public void testSendManagementMessageWithGuest() throws Exception
    {
       doSendManagementMessage("guest", "guest", false);
    }
 
+   @Test
    public void testSendManagementMessageWithoutUserCredentials() throws Exception
    {
       doSendManagementMessage(null, null, false);

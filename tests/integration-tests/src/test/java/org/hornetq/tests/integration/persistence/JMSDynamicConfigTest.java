@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 
 import javax.naming.NamingException;
@@ -48,6 +50,7 @@ public class JMSDynamicConfigTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testStart() throws Exception
    {
       ArrayList<String> connectors = new ArrayList<String>();

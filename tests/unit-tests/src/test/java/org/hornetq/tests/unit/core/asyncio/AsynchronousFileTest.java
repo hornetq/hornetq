@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,8 +34,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
@@ -53,7 +57,7 @@ import org.hornetq.utils.HornetQThreadFactory;
 public class AsynchronousFileTest extends AIOTestBase
 {
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(AsynchronousFileTest.class);
    }
@@ -75,7 +79,8 @@ public class AsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
@@ -85,7 +90,8 @@ public class AsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       destroy(buffer);
       if (controller != null)
@@ -108,6 +114,7 @@ public class AsynchronousFileTest extends AIOTestBase
     * Opening and closing a file immediately can lead to races on the native layer,
     * creating crash conditions.
     * */
+   @Test
    public void testOpenClose() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -119,6 +126,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
    }
 
+   @Test
    public void testReleaseBuffers() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -171,6 +179,7 @@ public class AsynchronousFileTest extends AIOTestBase
       Assert.assertNull(bufferCheck.get());
    }
 
+   @Test
    public void testFileNonExistent() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -201,6 +210,7 @@ public class AsynchronousFileTest extends AIOTestBase
     * simultaneous files without loose any callbacks. This test made the native
     * layer to crash at some point during development
     */
+   @Test
    public void testTwoFiles() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -285,11 +295,13 @@ public class AsynchronousFileTest extends AIOTestBase
       }
    }
 
+   @Test
    public void testAddBeyongSimultaneousLimit() throws Exception
    {
       asyncData(3000, 1024, 10);
    }
 
+   @Test
    public void testAddAsyncData() throws Exception
    {
       asyncData(10000, 1024, 30000);
@@ -313,6 +325,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
    }
 
+   @Test
    public void testReleaseNullBuffer() throws Exception
    {
       boolean failed = false;
@@ -328,6 +341,7 @@ public class AsynchronousFileTest extends AIOTestBase
       assertTrue("Exception expected", failed);
    }
 
+   @Test
    public void testInvalidReads() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -433,6 +447,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
    }
 
+   @Test
    public void testBufferCallbackUniqueBuffers() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -501,6 +516,7 @@ public class AsynchronousFileTest extends AIOTestBase
          buffers.clear();
          }
 
+   @Test
    public void testBufferCallbackAwaysSameBuffer() throws Exception
    {
 
@@ -571,6 +587,7 @@ public class AsynchronousFileTest extends AIOTestBase
          buffers.clear();
    }
 
+   @Test
    public void testRead() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -663,6 +680,7 @@ public class AsynchronousFileTest extends AIOTestBase
     *  This test will call file.close() when there are still callbacks being processed.
     *  This could cause a crash or callbacks missing and this test is validating both situations.
     *  The file is also read after being written to validate its correctness */
+   @Test
    public void testConcurrentClose() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -818,6 +836,7 @@ public class AsynchronousFileTest extends AIOTestBase
          controller.close();
          }
 
+   @Test
    public void testDirectSynchronous() throws Exception
    {
 
@@ -861,6 +880,7 @@ public class AsynchronousFileTest extends AIOTestBase
    }
 
 
+   @Test
    public void testInternalWrite() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -889,6 +909,7 @@ public class AsynchronousFileTest extends AIOTestBase
    }
 
 
+   @Test
    public void testInvalidWrite() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);
@@ -912,6 +933,7 @@ public class AsynchronousFileTest extends AIOTestBase
          Assert.assertFalse(aioBlock.doneCalled);
    }
 
+   @Test
    public void testInvalidAlloc() throws Exception
    {
       try
@@ -927,6 +949,7 @@ public class AsynchronousFileTest extends AIOTestBase
    }
 
    // This is in particular testing for http://bugs.sun.com/view_bug.do?bug_id=6791815
+   @Test
    public void testAllocations() throws Exception
    {
       final AtomicInteger errors = new AtomicInteger(0);
@@ -974,6 +997,7 @@ public class AsynchronousFileTest extends AIOTestBase
       Assert.assertEquals(0, errors.get());
    }
 
+   @Test
    public void testSize() throws Exception
    {
       controller = new AsynchronousFileImpl(executor, pollerExecutor);

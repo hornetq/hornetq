@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.unit.core.filter.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.FilterParser;
@@ -44,7 +47,8 @@ public class FilterParserTest extends UnitTestCase
 
    private FilterParser parser;
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -53,6 +57,7 @@ public class FilterParserTest extends UnitTestCase
       parser = new FilterParser(new ByteArrayInputStream(new byte[0]));
    }
 
+   @Test
    public void testSimpleUnary() throws Exception
    {
       // Neg Long
@@ -76,6 +81,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is true", b.booleanValue());
    }
 
+   @Test
    public void testPrecedenceNAssoc() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(4 + 2 * 3 / 2 = 7)");
@@ -103,6 +109,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is true", b.booleanValue());
    }
 
+   @Test
    public void testIds() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(a + b * c / d = e)");
@@ -124,6 +131,7 @@ public class FilterParserTest extends UnitTestCase
 
    }
 
+   @Test
    public void testTrueINOperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -136,6 +144,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is true", bool.booleanValue());
    }
 
+   @Test
    public void testFalseINOperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -148,6 +157,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is false", !bool.booleanValue());
    }
 
+   @Test
    public void testTrueNOTINOperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -160,6 +170,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue(bool.booleanValue());
    }
 
+   @Test
    public void testFalseNOTINOperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(Status IN ('new', 'cleared', 'acknowledged'))");
@@ -172,6 +183,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertFalse(bool.booleanValue());
    }
 
+   @Test
    public void testTrueOROperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
@@ -184,6 +196,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is true", bool.booleanValue());
    }
 
+   @Test
    public void testFalseOROperator() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse((Status = 'new') OR (Status = 'cleared') OR (Status = 'acknowledged'))");
@@ -196,6 +209,7 @@ public class FilterParserTest extends UnitTestCase
       Assert.assertTrue("is false", !bool.booleanValue());
    }
 
+   @Test
    public void testInvalidSelector() throws Exception
    {
       UnitTestLogger.LOGGER.trace("parse(definitely not a message selector!)");
@@ -214,6 +228,7 @@ public class FilterParserTest extends UnitTestCase
    /**
     * Test diffent syntax for approximate numeric literal (+6.2, -95.7, 7.)
     */
+   @Test
    public void testApproximateNumericLiteral1()
    {
       try
@@ -228,6 +243,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testApproximateNumericLiteral2()
    {
       try
@@ -242,6 +258,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testApproximateNumericLiteral3()
    {
       try
@@ -256,6 +273,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testGTExact()
    {
       try
@@ -274,6 +292,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testGTFloat()
    {
       try
@@ -292,6 +311,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testLTDouble()
    {
       try
@@ -310,6 +330,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testAndCombination()
    {
       try
@@ -332,6 +353,7 @@ public class FilterParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testINANDCombination()
    {
       try

@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.tests.util.UnitTestCase;
@@ -58,12 +61,14 @@ public class XMLDeployerTest extends UnitTestCase
    private URI url;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       url = new URI("http://localhost");
    }
 
+   @Test
    public void testDeploy() throws Exception
    {
       Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
@@ -81,6 +86,7 @@ public class XMLDeployerTest extends UnitTestCase
       Assert.assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
    }
 
+   @Test
    public void testRedeploy() throws Exception
    {
       Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
@@ -101,6 +107,7 @@ public class XMLDeployerTest extends UnitTestCase
       Assert.assertEquals(testDeployer.getNodes().get("test4").getTextContent(), "content4");
    }
 
+   @Test
    public void testRedeployRemovingNodes() throws Exception
    {
       Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
@@ -119,6 +126,7 @@ public class XMLDeployerTest extends UnitTestCase
       Assert.assertEquals(testDeployer.getNodes().get("test2").getTextContent(), "contenthaschanged2");
    }
 
+   @Test
    public void testRedeployAddingNodes() throws Exception
    {
       Element e = XMLUtil.stringToElement(XMLDeployerTest.conf1);
@@ -143,6 +151,7 @@ public class XMLDeployerTest extends UnitTestCase
       Assert.assertEquals(testDeployer.getNodes().get("test6").getTextContent(), "content6");
    }
 
+   @Test
    public void testUndeploy() throws Exception
    {
       Element e = org.hornetq.utils.XMLUtil.stringToElement(XMLDeployerTest.conf1);

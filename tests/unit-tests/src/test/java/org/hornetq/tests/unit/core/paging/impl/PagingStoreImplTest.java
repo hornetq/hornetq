@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.paging.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -27,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -69,6 +73,7 @@ public class PagingStoreImplTest extends UnitTestCase
    protected ExecutorService executor;
 
 
+   @Test
    public void testAddAndRemoveMessages()
    {
       long id1 = RandomUtil.randomLong();
@@ -100,6 +105,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testDoubleStart() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
@@ -123,12 +129,14 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testPageWithNIO() throws Exception
    {
       UnitTestCase.recreateDirectory(getTestDir());
       testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
    }
 
+   @Test
    public void testStore() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
@@ -180,6 +188,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testDepageOnCurrentPage() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
@@ -253,6 +262,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testDepageMultiplePages() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
@@ -383,6 +393,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testConcurrentDepage() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory(1, false);
@@ -639,6 +650,7 @@ public class PagingStoreImplTest extends UnitTestCase
       Assert.assertEquals(0, storeImpl.getAddressSize());
    }
 
+   @Test
    public void testRestartPage() throws Throwable
    {
       clearData();
@@ -675,6 +687,7 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.stop();
    }
 
+   @Test
    public void testOrderOnPaging() throws Throwable
    {
       clearData();
@@ -871,14 +884,16 @@ public class PagingStoreImplTest extends UnitTestCase
    // Protected ----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       executor = Executors.newSingleThreadExecutor();
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       executor.shutdown();
       super.tearDown();

@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.stress;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -39,6 +41,7 @@ public class TopicStressTest extends JMSStressTestBase
     * Half the consumers are durable and half non durable.
     *
     */
+   @Test
    public void testTopicMultipleReceivers() throws Exception
    {
       Connection conn1 = cf.createConnection();

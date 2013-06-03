@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -28,6 +30,7 @@ import org.hornetq.core.server.HornetQServers;
 public class SecurityManagementWithDefaultConfigurationTest extends SecurityManagementTestBase
 {
 
+   @Test
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
       doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(),
@@ -35,11 +38,13 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
                               true);
    }
 
+   @Test
    public void testSendManagementMessageWithGuest() throws Exception
    {
       doSendManagementMessage("guest", "guest", false);
    }
 
+   @Test
    public void testSendManagementMessageWithoutUserCredentials() throws Exception
    {
       doSendManagementMessage(null, null, false);

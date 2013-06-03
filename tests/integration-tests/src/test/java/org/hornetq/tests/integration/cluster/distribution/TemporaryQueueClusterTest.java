@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -30,7 +33,8 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
 {
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -48,6 +52,7 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
     * the test checks that the temp queue is properly propagated to the cluster
     * (assuming we wait for the bindings)
     */
+   @Test
    public void testSendToTempQueueFromAnotherClusterNode() throws Exception
    {
       setupCluster();

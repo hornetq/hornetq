@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -45,7 +49,8 @@ public class JournalPerfTuneTest extends UnitTestCase
    private Journal journal;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -147,7 +152,8 @@ public class JournalPerfTuneTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       journal.stop();
 
@@ -155,6 +161,7 @@ public class JournalPerfTuneTest extends UnitTestCase
 
    }
 
+   @Test
    public void test1() throws Exception
    {
       final int itersPerThread = 10000000;

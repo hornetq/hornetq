@@ -20,9 +20,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -41,6 +41,7 @@ public class JMSXPropertyTest extends PTPTestCase
    /**
     * Test that the JMSX property <code>JMSXGroupID</code> is supported.
     */
+   @Test
    public void testSupportsJMSXGroupID()
    {
       try
@@ -67,6 +68,7 @@ public class JMSXPropertyTest extends PTPTestCase
    /**
     * Test that the JMSX property <code>JMSXGroupID</code> works
     */
+   @Test
    public void testJMSXGroupID_1()
    {
       try
@@ -92,6 +94,7 @@ public class JMSXPropertyTest extends PTPTestCase
    /**
     * Test that the JMSX property <code>JMSXDeliveryCount</code> works.
     */
+   @Test
    public void testJMSXDeliveryCount() throws Exception
    {
       if (!supportsJMSXDeliveryCount())

@@ -12,11 +12,13 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
@@ -40,6 +42,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class NettyAcceptorFactoryTest extends UnitTestCase
 {
+   @Test
    public void testCreateAcceptor() throws Exception
    {
       NettyAcceptorFactory factory = new NettyAcceptorFactory();

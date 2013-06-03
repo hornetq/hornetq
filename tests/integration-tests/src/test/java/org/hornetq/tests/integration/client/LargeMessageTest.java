@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
@@ -22,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -84,6 +87,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       return false;
    }
 
+   @Test
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
       for (int i = 0 ; i < 1; i++)
@@ -97,6 +101,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testRollbackPartiallyConsumedBufferWithRedeliveryDelay() throws Exception
    {
       internalTestRollbackPartiallyConsumedBuffer(true);
@@ -199,6 +204,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testCloseConsumer() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -247,11 +253,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testLargeBufferTransacted() throws Exception
    {
       doTestLargeBuffer(true);
    }
 
+   @Test
    public void testLargeBufferNotTransacted() throws Exception
    {
       doTestLargeBuffer(false);
@@ -325,6 +333,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testDLALargeMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -431,6 +440,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testDeliveryCount() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -494,6 +504,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testDLAOnExpiryNonDurableMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -610,6 +621,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testDLAOnExpiry() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -724,6 +736,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testExpiryLargeMessage() throws Exception
    {
       final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
@@ -823,11 +836,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testSentWithDuplicateIDBridge() throws Exception
    {
       internalTestSentWithDuplicateID(true);
    }
 
+   @Test
    public void testSentWithDuplicateID() throws Exception
    {
       internalTestSentWithDuplicateID(false);
@@ -905,11 +920,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testResendSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
    }
 
+   @Test
    public void testResendLargeStreamMessage() throws Exception
    {
       internalTestResendMessage(150 * 1024);
@@ -986,11 +1003,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testResendCachedSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
    }
 
+   @Test
    public void testResendCachedLargeStreamMessage() throws Exception
    {
       internalTestCachedResendMessage(150 * 1024);
@@ -1078,6 +1097,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testFilePersistenceOneHugeMessage() throws Exception
    {
       testChunks(false,
@@ -1097,6 +1117,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1024 * 1024);
    }
 
+   @Test
    public void testFilePersistenceOneMessageStreaming() throws Exception
    {
       testChunks(false,
@@ -1114,6 +1135,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceSmallMessageStreaming() throws Exception
    {
       testChunks(false,
@@ -1131,6 +1153,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceOneHugeMessageConsumer() throws Exception
    {
       testChunks(false,
@@ -1150,6 +1173,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1024 * 1024);
    }
 
+   @Test
    public void testFilePersistence() throws Exception
    {
       testChunks(false,
@@ -1167,6 +1191,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1184,6 +1209,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1201,6 +1227,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAStream() throws Exception
    {
       testChunks(true,
@@ -1218,6 +1245,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAStreamRestart() throws Exception
    {
       testChunks(true,
@@ -1235,6 +1263,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1252,6 +1281,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAConsumerRestart() throws Exception
    {
       testChunks(true,
@@ -1269,6 +1299,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlocked() throws Exception
    {
       testChunks(false,
@@ -1286,6 +1317,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedConsumer() throws Exception
    {
       testChunks(false,
@@ -1303,6 +1335,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedXA() throws Exception
    {
       testChunks(true,
@@ -1320,6 +1353,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1337,6 +1371,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACK() throws Exception
    {
       testChunks(false,
@@ -1354,6 +1389,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKConsumer() throws Exception
    {
       testChunks(false,
@@ -1371,6 +1407,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXA() throws Exception
    {
       testChunks(true,
@@ -1388,6 +1425,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXARestart() throws Exception
    {
       testChunks(true,
@@ -1405,6 +1443,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1422,6 +1461,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXAConsumerRestart() throws Exception
    {
       testChunks(true,
@@ -1439,6 +1479,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1456,6 +1497,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1473,6 +1515,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1490,6 +1533,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1507,6 +1551,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testNullPersistence() throws Exception
    {
       testChunks(false,
@@ -1524,6 +1569,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1541,6 +1587,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1558,6 +1605,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1575,6 +1623,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1592,6 +1641,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1609,6 +1659,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1626,6 +1677,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1643,11 +1695,13 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testPageOnLargeMessage() throws Exception
    {
       testPageOnLargeMessage(true, false);
    }
 
+   @Test
    public void testSendSmallMessageXA() throws Exception
    {
       testChunks(true,
@@ -1665,6 +1719,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1682,6 +1737,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageNullPersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1699,6 +1755,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageNullPersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1716,6 +1773,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1733,6 +1791,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1750,6 +1809,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1767,6 +1827,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1784,6 +1845,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistence() throws Exception
    {
       testChunks(false,
@@ -1801,6 +1863,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1818,6 +1881,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1835,6 +1899,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1852,6 +1917,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1869,6 +1935,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1886,6 +1953,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedXA() throws Exception
    {
       testChunks(false,
@@ -1903,6 +1971,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(false,
@@ -1920,6 +1989,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testTwoBindingsTwoStartedConsumers() throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
@@ -1979,11 +2049,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testTwoBindingsAndRestart() throws Exception
    {
       testTwoBindings(true);
    }
 
+   @Test
    public void testTwoBindingsNoRestart() throws Exception
    {
       testTwoBindings(false);
@@ -2039,21 +2111,25 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSendRollbackXADurable() throws Exception
    {
       internalTestSendRollback(true, true);
    }
 
+   @Test
    public void testSendRollbackXANonDurable() throws Exception
    {
       internalTestSendRollback(true, false);
    }
 
+   @Test
    public void testSendRollbackDurable() throws Exception
    {
       internalTestSendRollback(false, true);
    }
 
+   @Test
    public void testSendRollbackNonDurable() throws Exception
    {
       internalTestSendRollback(false, false);
@@ -2112,11 +2188,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSimpleRollback() throws Exception
    {
       simpleRollbackInternalTest(false);
    }
 
+   @Test
    public void testSimpleRollbackXA() throws Exception
    {
       simpleRollbackInternalTest(true);
@@ -2238,6 +2316,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testBufferMultipleLargeMessages() throws Exception
    {
       ClientSession session = null;
@@ -2341,6 +2420,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testReceiveMultipleMessages() throws Exception
    {
       ClientSession session = null;
@@ -2446,6 +2526,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    // JBPAPP-6237
+   @Test
    public void testPageOnLargeMessageMultipleQueues() throws Exception
    {
       Configuration config = createDefaultConfig(isNetty());
@@ -2584,6 +2665,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
 
    // JBPAPP-6237
+   @Test
    public void testPageOnLargeMessageMultipleQueues2() throws Exception
    {
       Configuration config = createDefaultConfig(isNetty());
@@ -2703,6 +2785,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testSendStreamingSingleMessage() throws Exception
    {
       ClientSession session = null;
@@ -2776,6 +2859,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    /** Receive messages but never reads them, leaving the buffer pending */
+   @Test
    public void testIgnoreStreaming() throws Exception
    {
       ClientSession session = null;
@@ -2841,6 +2925,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
+   @Test
    public void testSendServerMessage() throws Exception
    {
       HornetQServer server = createServer(true);
@@ -2901,7 +2986,8 @@ public class LargeMessageTest extends LargeMessageTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       clearData();

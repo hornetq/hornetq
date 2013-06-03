@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -22,7 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.LoaderCallback;
@@ -92,6 +96,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    // Public --------------------------------------------------------
 
    // This test just validates basic alignment on the FakeSequentialFile itself
+   @Test
    public void testBasicAlignment() throws Exception
    {
 
@@ -141,6 +146,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testInconsistentAlignment() throws Exception
    {
       factory = new FakeSequentialFileFactory(512, true);
@@ -157,6 +163,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleAdd() throws Exception
    {
       final int JOURNAL_SIZE = 1060;
@@ -183,6 +190,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testAppendAndUpdateRecords() throws Exception
    {
 
@@ -273,6 +281,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testPartialDelete() throws Exception
    {
       final int JOURNAL_SIZE = 10000;
@@ -319,6 +328,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testAddAndDeleteReclaimWithoutTransactions() throws Exception
    {
       final int JOURNAL_SIZE = 10000;
@@ -383,6 +393,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadWithTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -418,6 +429,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadWithInterruptedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 1100;
@@ -476,6 +488,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadWithCompletedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -533,6 +546,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       Assert.assertEquals(3, factory.listFiles("tt").size());
    }
 
+   @Test
    public void testTotalSize() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -557,6 +571,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadInvalidCheckSizeOnTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -621,6 +636,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testPartiallyBrokenFile() throws Exception
    {
       final int JOURNAL_SIZE = 20000;
@@ -682,6 +698,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReduceFreeFiles() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -722,6 +739,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       Assert.assertEquals(2, factory.listFiles("tt").size());
    }
 
+   @Test
    public void testReloadIncompleteTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -783,6 +801,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testPrepareAloneOnSeparatedFile() throws Exception
    {
       final int JOURNAL_SIZE = 20000;
@@ -824,6 +843,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       Assert.assertEquals(1, records.size());
    }
 
+   @Test
    public void testCommitWithMultipleFiles() throws Exception
    {
       final int JOURNAL_SIZE = 20000;
@@ -863,6 +883,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimplePrepare() throws Exception
    {
       final int JOURNAL_SIZE = 3 * 1024;
@@ -916,6 +937,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadWithPreparedTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 3 * 1024;
@@ -1005,6 +1027,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReloadInvalidPrepared() throws Exception
    {
       final int JOURNAL_SIZE = 3000;
@@ -1056,6 +1079,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       Assert.assertEquals(0, transactions.size());
    }
 
+   @Test
    public void testReclaimAfterRollabck() throws Exception
    {
       final int JOURNAL_SIZE = 2000;
@@ -1085,6 +1109,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
 
    // It should be ok to write records on AIO, and later read then on NIO
+   @Test
    public void testDecreaseAlignment() throws Exception
    {
       final int JOURNAL_SIZE = 512 * 4;
@@ -1108,6 +1133,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
 
    // It should be ok to write records on NIO, and later read then on AIO
+   @Test
    public void testIncreaseAlignment() throws Exception
    {
       final int JOURNAL_SIZE = 512 * 4;
@@ -1130,6 +1156,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       Assert.assertEquals(10, records.size());
    }
 
+   @Test
    public void testEmptyPrepare() throws Exception
    {
       final int JOURNAL_SIZE = 512 * 4;
@@ -1173,6 +1200,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReclaimingAfterConcurrentAddsAndDeletes() throws Exception
    {
       final int JOURNAL_SIZE = 10 * 1024;
@@ -1265,6 +1293,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testAlignmentOverReload() throws Exception
    {
 
@@ -1317,7 +1346,8 @@ public class AlignedJournalImplTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1334,7 +1364,8 @@ public class AlignedJournalImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopComponent(journalImpl);
       if (factory != null)

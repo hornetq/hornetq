@@ -1,6 +1,9 @@
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -38,6 +41,7 @@ public class HornetQCrashTest extends UnitTestCase
    private volatile boolean ackReceived;
    private ServerLocator locator;
 
+   @Test
    public void testHang() throws Exception
    {
       Configuration configuration = createDefaultConfig();
@@ -132,7 +136,8 @@ public class HornetQCrashTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));

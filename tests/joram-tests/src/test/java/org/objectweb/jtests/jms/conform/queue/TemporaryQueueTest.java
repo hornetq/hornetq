@@ -19,9 +19,9 @@ import javax.jms.QueueReceiver;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -42,6 +42,7 @@ public class TemporaryQueueTest extends PTPTestCase
    /**
     * Test a TemporaryQueue
     */
+   @Test
    public void testTemporaryQueue()
    {
       try

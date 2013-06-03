@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.persistence;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +44,8 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
    private Map<String, PersistedConnectionFactory> mapExpectedCFs;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -48,7 +53,8 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       mapExpectedCFs = null;
 
@@ -61,6 +67,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       jmsJournal.storeConnectionFactory(setting);
    }
 
+   @Test
    public void testSettings() throws Exception
    {
 
@@ -101,6 +108,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       }
    }
 
+   @Test
    public void testSizeOfCF() throws Exception
    {
 
@@ -132,6 +140,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
 
    }
 
+   @Test
    public void testSettingsWithConnectorConfigs() throws Exception
    {
 

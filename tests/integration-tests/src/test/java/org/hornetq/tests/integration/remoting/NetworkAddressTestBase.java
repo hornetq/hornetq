@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.remoting;
 
+import org.junit.Test;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -24,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -98,6 +100,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testConnectToServerWithSameHost() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
@@ -111,6 +114,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       }
    }
 
+   @Test
    public void testConnectToServerAcceptingAllHosts() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
@@ -122,6 +126,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       }
    }
 
+   @Test
    public void testConnectToServerAcceptingOnlyAnotherHost() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
@@ -139,6 +144,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       testConnection(acceptorEntry.getValue().getHostName(), connectorEntry.getValue().getHostAddress(), false, 0);
    }
 
+   @Test
    public void testConnectToServerUsingLocalPort() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
@@ -156,6 +162,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       testConnection(host, host, true, 7777);
    }
 
+   @Test
    public void testConnectorToServerAcceptingAListOfHosts() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();
@@ -176,6 +183,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       testConnection(listOfHosts, entry2.getValue().getHostAddress(), true, 0);
    }
 
+   @Test
    public void testConnectorToServerAcceptingAListOfHosts_2() throws Exception
    {
       Map<NetworkInterface, InetAddress> map = NetworkAddressTestBase.getAddressForEachNetworkInterface();

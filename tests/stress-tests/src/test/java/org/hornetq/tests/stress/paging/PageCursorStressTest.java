@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.stress.paging;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -78,6 +82,7 @@ public class PageCursorStressTest extends ServiceTestBase
    private static final int PAGE_SIZE = 10 * 1024 * 1024;
 
    // Read more cache than what would fit on the memory, and validate if the memory would be cleared through soft-caches
+   @Test
    public void testReadCache() throws Exception
    {
 
@@ -106,6 +111,7 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("Cache size = " + cursorProvider.getCacheSize());
    }
 
+   @Test
    public void testSimpleCursor() throws Exception
    {
 
@@ -147,6 +153,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSimpleCursorWithFilter() throws Exception
    {
 
@@ -242,6 +249,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testReadNextPage() throws Exception
    {
 
@@ -258,6 +266,7 @@ public class PageCursorStressTest extends ServiceTestBase
       assertNull(cache);
    }
 
+   @Test
    public void testRestartWithHoleOnAck() throws Exception
    {
 
@@ -319,6 +328,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testRestartWithHoleOnAckAndTransaction() throws Exception
    {
       final int NUM_MESSAGES = 1000;
@@ -387,6 +397,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumeLivePage() throws Exception
    {
       PagingStoreImpl pageStore = lookupPageStore(ADDRESS);
@@ -526,6 +537,7 @@ public class PageCursorStressTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testConsumeLivePageMultiThread() throws Exception
    {
       final PagingStoreImpl pageStore = lookupPageStore(ADDRESS);
@@ -672,6 +684,7 @@ public class PageCursorStressTest extends ServiceTestBase
                  lookupPageStore(ADDRESS).getNumberOfPages() <= 2);
    }
 
+   @Test
    public void testLazyCommit() throws Exception
    {
       PagingStoreImpl pageStore = lookupPageStore(ADDRESS);
@@ -742,6 +755,7 @@ public class PageCursorStressTest extends ServiceTestBase
       return msg.getIntProperty("key").intValue();
    }
 
+   @Test
    public void testMultipleIterators() throws Exception
    {
 
@@ -850,7 +864,8 @@ public class PageCursorStressTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queue = null;
       queueList = null;
@@ -858,7 +873,8 @@ public class PageCursorStressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       OperationContextImpl.clearContext();

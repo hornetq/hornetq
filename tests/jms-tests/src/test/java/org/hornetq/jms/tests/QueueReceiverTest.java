@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.QueueConnection;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -41,6 +43,7 @@ public class QueueReceiverTest extends JMSTestCase
    /**
     * com.sun.ts.tests.jms.ee.all.queueconn.QueueConnTest line 171
     */
+   @Test
    public void testCreateReceiverWithMessageSelector() throws Exception
    {
       QueueConnection qc = null;

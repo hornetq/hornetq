@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +79,8 @@ public class FloodServerTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -97,7 +102,8 @@ public class FloodServerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
 
       serverManager.stop();
@@ -162,6 +168,7 @@ public class FloodServerTest extends UnitTestCase
                                             "/cf");
    }
 
+   @Test
    public void testFoo()
    {
    }

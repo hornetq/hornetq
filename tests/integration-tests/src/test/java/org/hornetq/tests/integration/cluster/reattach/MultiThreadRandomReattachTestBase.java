@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.reattach;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -69,6 +73,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testA() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -82,6 +87,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
    }
 
+   @Test
    public void testB() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -94,6 +100,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testC() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -106,6 +113,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testD() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -118,6 +126,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testE() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -130,6 +139,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testF() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -142,6 +152,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testG() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -154,6 +165,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testH() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -166,6 +178,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testI() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -178,6 +191,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testJ() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -190,6 +204,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testK() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -202,6 +217,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       }, NUM_THREADS, false);
    }
 
+   @Test
    public void testL() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -225,6 +241,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    // }, NUM_THREADS);
    // }
 
+   @Test
    public void testN() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -238,6 +255,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    }
 
    // Added do replicate HORNETQ-264
+   @Test
    public void testO() throws Exception
    {
       runTestMultipleThreads(new RunnableT()
@@ -1251,7 +1269,8 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1259,7 +1278,8 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopComponent(liveServer);
 

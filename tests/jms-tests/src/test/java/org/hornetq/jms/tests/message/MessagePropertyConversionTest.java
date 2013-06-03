@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -48,6 +52,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -65,6 +70,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       producerConnection.close();
@@ -73,6 +79,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       super.tearDown();
    }
 
+   @Test
    public void testResetToNull() throws JMSException
    {
       Message m1 = queueProducerSession.createMessage();
@@ -90,6 +97,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
    }
 
+   @Test
    public void testBooleanConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -161,6 +169,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testByteConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -207,6 +216,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testShortConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -261,6 +271,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testIntConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -323,6 +334,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testLongConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -393,6 +405,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testFloatConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -455,6 +468,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testDoubleConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -525,6 +539,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testStringConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -627,6 +642,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSXDeliveryCountConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();

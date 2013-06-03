@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message.foreign;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Message;
 import javax.jms.TextMessage;
@@ -33,6 +37,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 public class ForeignMessageTest extends MessageTestBase
 {
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -40,6 +45,7 @@ public class ForeignMessageTest extends MessageTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       super.tearDown();
@@ -54,6 +60,7 @@ public class ForeignMessageTest extends MessageTestBase
       return m;
    }
 
+   @Test
    public void testForeignMessageSetDestination() throws Exception
    {
       // create a Bytes foreign message
@@ -71,6 +78,7 @@ public class ForeignMessageTest extends MessageTestBase
 
 
 
+   @Test
    public void testForeignMessageCorrelationIDBytesDisabled() throws Exception
    {
       System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "false");
@@ -91,6 +99,7 @@ public class ForeignMessageTest extends MessageTestBase
       assertEquals("mycorrelationid", msg.getJMSCorrelationID());
    }
 
+   @Test
    public void testForeignMessageCorrelationID() throws Exception
    {
       System.setProperty(HornetQJMSConstants.JMS_HORNETQ_ENABLE_BYTE_ARRAY_JMS_CORRELATION_ID_PROPERTY_NAME, "true");

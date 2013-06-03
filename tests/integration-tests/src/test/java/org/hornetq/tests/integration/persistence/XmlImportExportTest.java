@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -51,6 +53,7 @@ public class XmlImportExportTest extends ServiceTestBase
    private HornetQServer server;
    private ClientSessionFactory factory;
 
+   @Test
    public void testMessageProperties() throws Exception
    {
       ClientSession session = basicSetUp();
@@ -146,6 +149,7 @@ public class XmlImportExportTest extends ServiceTestBase
       return addClientSession(factory.createSession(false, true, true));
    }
 
+   @Test
    public void testMessageTypes() throws Exception
    {
 
@@ -208,6 +212,7 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals(Message.DEFAULT_TYPE, msg.getType());
    }
 
+   @Test
    public void testMessageAttributes() throws Exception
    {
 
@@ -252,6 +257,7 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertNotNull(msg.getUserID());
    }
 
+   @Test
    public void testBindingAttributes() throws Exception
    {
       ClientSession session = basicSetUp();
@@ -290,6 +296,7 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals(Boolean.TRUE.booleanValue(), queueQuery.isDurable());
    }
 
+   @Test
    public void testLargeMessage() throws Exception
    {
       server = createServer(true);
@@ -361,6 +368,7 @@ public class XmlImportExportTest extends ServiceTestBase
       session.commit();
    }
 
+   @Test
    public void testPartialQueue() throws Exception
    {
       ClientSession session = basicSetUp();
@@ -409,6 +417,7 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertNotNull(msg);
    }
 
+   @Test
    public void testPaging() throws Exception
    {
       final String MY_ADDRESS = "myAddress";
@@ -475,6 +484,7 @@ public class XmlImportExportTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testTransactional() throws Exception
    {
 
@@ -514,6 +524,7 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertNotNull(msg);
    }
 
+   @Test
    public void testBody() throws Exception
    {
       final String QUEUE_NAME = "A1";
@@ -562,6 +573,7 @@ public class XmlImportExportTest extends ServiceTestBase
       server.stop();
    }
 
+   @Test
    public void testBody2() throws Exception
    {
       final String QUEUE_NAME = "A1";

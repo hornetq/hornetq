@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +29,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.Context;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -77,6 +81,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    protected Context context;
 
+   @Test
    public void testGetAttributes() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -86,6 +91,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(queue.isTemporary(), queueControl.isTemporary());
    }
 
+   @Test
    public void testGetXXXCount() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -122,6 +128,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testListMessagesWithNullFilter() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -144,6 +151,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, data.length);
    }
 
+   @Test
    public void testListMessagesAsJSONWithNullFilter() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -169,6 +177,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, array.length());
    }
 
+   @Test
    public void testRemoveMessage() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -197,6 +206,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(1, queueControl.getMessageCount());
    }
 
+   @Test
    public void testRemoveMessageWithUnknownMessage() throws Exception
    {
       String unknownMessageID = RandomUtil.randomString();
@@ -215,6 +225,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testRemoveAllMessages() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -238,6 +249,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testRemoveMatchingMessages() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -273,6 +285,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       conn.close();
    }
 
+   @Test
    public void testChangeMessagePriority() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -301,6 +314,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testChangeMessagePriorityWithInvalidPriority() throws Exception
    {
       byte invalidPriority = (byte)23;
@@ -330,6 +344,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testChangeMessagePriorityWithUnknownMessageID() throws Exception
    {
       String unkownMessageID = RandomUtil.randomString();
@@ -346,6 +361,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testChangeMessagesPriority() throws Exception
    {
       String key = "key";
@@ -385,6 +401,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testGetExpiryAddress() throws Exception
    {
       final SimpleString expiryAddress = RandomUtil.randomSimpleString();
@@ -407,6 +424,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(expiryAddress.toString(), queueControl.getExpiryAddress());
    }
 
+   @Test
    public void testSetExpiryAddress() throws Exception
    {
       final String expiryAddress = RandomUtil.randomString();
@@ -419,6 +437,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(expiryAddress, queueControl.getExpiryAddress());
    }
 
+   @Test
    public void testDuplicateJNDI() throws Exception
    {
       String someQueue = RandomUtil.randomString();
@@ -437,6 +456,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertTrue(exception);
    }
 
+   @Test
    public void testExpireMessage() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
@@ -468,6 +488,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testExpireMessageWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = RandomUtil.randomString();
@@ -484,6 +505,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testExpireMessagesWithFilter() throws Exception
    {
       String key = new String("key");
@@ -511,6 +533,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSUtil.consumeMessages(1, queue);
    }
 
+   @Test
    public void testCountMessagesWithFilter() throws Exception
    {
       String key = "key";
@@ -534,6 +557,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testGetDeadLetterAddress() throws Exception
    {
       final SimpleString deadLetterAddress = RandomUtil.randomSimpleString();
@@ -556,6 +580,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(deadLetterAddress.toString(), queueControl.getDeadLetterAddress());
    }
 
+   @Test
    public void testSetDeadLetterAddress() throws Exception
    {
       final String deadLetterAddress = RandomUtil.randomString();
@@ -568,6 +593,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
    }
 
+   @Test
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       String deadLetterQueue = RandomUtil.randomString();
@@ -607,6 +633,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(deadLetterQueue);
    }
 
+   @Test
    public void testSendMessageToDeadLetterAddressWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = RandomUtil.randomString();
@@ -624,6 +651,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testSendMessagesToDeadLetterAddress() throws Exception
    {
       String key = "key";
@@ -670,6 +698,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(deadLetterQueue);
    }
 
+   @Test
    public void testMoveMessages() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -697,6 +726,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   @Test
    public void testMoveMessagesToUknownQueue() throws Exception
    {
       String unknownQueue = RandomUtil.randomString();
@@ -713,6 +743,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testMoveMatchingMessages() throws Exception
    {
       String key = "key";
@@ -752,6 +783,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testMoveMessage() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -775,6 +807,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    }
 
 
+   @Test
    public void testMoveMessagesWithDuplicateIDSet() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -853,6 +886,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    }
 
 
+   @Test
    public void testMoveIndividualMessagesWithDuplicateIDSetUsingI() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -938,6 +972,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   @Test
    public void testMoveMessagesWithDuplicateIDSetSingleMessage() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -1005,6 +1040,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   @Test
    public void testMoveMessageWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = RandomUtil.randomString();
@@ -1027,6 +1063,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   @Test
    public void testDeleteWithPaging() throws Exception
    {
       AddressSettings pagedSetting = new AddressSettings();
@@ -1076,6 +1113,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    }
 
 
+   @Test
    public void testDeleteWithPagingAndFilter() throws Exception
    {
       AddressSettings pagedSetting = new AddressSettings();
@@ -1132,6 +1170,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       locator.close();
    }
 
+   @Test
    public void testMoveMessageToUnknownQueue() throws Exception
    {
       String unknwonQueue = RandomUtil.randomString();
@@ -1153,6 +1192,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSUtil.consumeMessages(1, queue);
    }
 
+   @Test
    public void testPauseAndResume()
    {
 
@@ -1177,6 +1217,7 @@ public class JMSQueueControlTest extends ManagementTestBase
     * on this testContaining WithRealData will use real data on the journals
     * @throws Exception
     */
+   @Test
    public void testQueueAddJndiWithRealData() throws Exception
    {
       String testQueueName = "testQueueAddJndi";
@@ -1230,7 +1271,8 @@ public class JMSQueueControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1253,7 +1295,8 @@ public class JMSQueueControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopComponent(serverManager);
       serverManager = null;

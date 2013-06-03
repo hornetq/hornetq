@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.concurrent.stomp;
 
+import org.junit.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +22,7 @@ import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.tests.integration.stomp.StompTestBase;
@@ -34,6 +36,7 @@ public class ConcurrentStompTest extends StompTestBase
    /**
     * Send messages on 1 socket and receives them concurrently on another socket.
     */
+   @Test
    public void testSendManyMessages() throws Exception
    {
       try

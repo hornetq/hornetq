@@ -21,6 +21,8 @@
 */
 package org.hornetq.tests.unit.ra;
 
+import org.junit.Test;
+
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Document;
@@ -404,6 +406,7 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
 
+   @Test
    public void testConfiguration() throws Exception
    {
       Method[] methods = HornetQResourceAdapter.class.getMethods();

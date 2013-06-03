@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.clientcrash;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -65,6 +68,7 @@ public class ClientCrashTest extends ClientTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCrashClient() throws Exception
    {
       assertActiveConnections(1);
@@ -114,6 +118,7 @@ public class ClientCrashTest extends ClientTestBase
       assertActiveSession(0);
    }
 
+   @Test
    public void testCrashClient2() throws Exception
    {
       // set the redelivery delay to avoid an attempt to redeliver the message to the dead client
@@ -160,7 +165,8 @@ public class ClientCrashTest extends ClientTestBase
    // Package protected ---------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

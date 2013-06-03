@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -52,7 +55,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    private HierarchicalRepository<AddressSettings> repository;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -61,6 +65,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, repository);
    }
 
+   @Test
    public void testDeploy() throws Exception
    {
       addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
@@ -82,6 +87,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
 
    }
 
+   @Test
    public void testDeployFromConfigurationFile() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'> " + "<address-settings>" +
@@ -112,6 +118,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertTrue(as.isSendToDLAOnNoRoute());
    }
 
+   @Test
    public void testUndeploy() throws Exception
    {
       addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));

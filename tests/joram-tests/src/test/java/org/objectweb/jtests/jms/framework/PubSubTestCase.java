@@ -12,6 +12,8 @@
  */
 
 package org.objectweb.jtests.jms.framework;
+import org.junit.Before;
+import org.junit.After;
 
 import javax.jms.Session;
 import javax.jms.Topic;
@@ -102,7 +104,8 @@ public abstract class PubSubTestCase extends JMSTestCase
     * Start connections.
     */
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -143,7 +146,8 @@ public abstract class PubSubTestCase extends JMSTestCase
     *  Close connections and delete administrated objects
     */
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

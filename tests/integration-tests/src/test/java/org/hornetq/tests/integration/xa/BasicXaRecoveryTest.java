@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,7 +25,7 @@ import javax.management.MBeanServerFactory;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -68,7 +72,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    private MBeanServer mbeanServer;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -92,7 +97,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
 
@@ -137,122 +143,146 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       super.tearDown();
    }
 
+   @Test
    public void testBasicSendWithCommit() throws Exception
    {
 
       testBasicSendWithCommit(false);
    }
 
+   @Test
    public void testBasicSendWithCommitWithServerStopped() throws Exception
    {
       testBasicSendWithCommit(true);
    }
 
+   @Test
    public void testBasicSendWithRollback() throws Exception
    {
       testBasicSendWithRollback(false);
    }
 
+   @Test
    public void testBasicSendWithRollbackWithServerStopped() throws Exception
    {
       testBasicSendWithRollback(true);
    }
 
+   @Test
    public void testMultipleBeforeSendWithCommit() throws Exception
    {
       testMultipleBeforeSendWithCommit(false);
    }
 
+   @Test
    public void testMultipleBeforeSendWithCommitWithServerStopped() throws Exception
    {
       testMultipleBeforeSendWithCommit(true);
    }
 
+   @Test
    public void testMultipleTxSendWithCommit() throws Exception
    {
       testMultipleTxSendWithCommit(false);
    }
 
+   @Test
    public void testMultipleTxSendWithCommitWithServerStopped() throws Exception
    {
       testMultipleTxSendWithCommit(true);
    }
 
+   @Test
    public void testMultipleTxSendWithRollback() throws Exception
    {
       testMultipleTxSendWithRollback(false);
    }
 
+   @Test
    public void testMultipleTxSendWithRollbackWithServerStopped() throws Exception
    {
       testMultipleTxSendWithRollback(true);
    }
 
+   @Test
    public void testMultipleTxSendWithCommitAndRollback() throws Exception
    {
       testMultipleTxSendWithCommitAndRollback(false);
    }
 
+   @Test
    public void testMultipleTxSendWithCommitAndRollbackWithServerStopped() throws Exception
    {
       testMultipleTxSendWithCommitAndRollback(true);
    }
 
+   @Test
    public void testMultipleTxSameXidSendWithCommit() throws Exception
    {
       testMultipleTxSameXidSendWithCommit(false);
    }
 
+   @Test
    public void testMultipleTxSameXidSendWithCommitWithServerStopped() throws Exception
    {
       testMultipleTxSameXidSendWithCommit(true);
    }
 
+   @Test
    public void testBasicReceiveWithCommit() throws Exception
    {
       testBasicReceiveWithCommit(false);
    }
 
+   @Test
    public void testBasicReceiveWithCommitWithServerStopped() throws Exception
    {
       testBasicReceiveWithCommit(true);
    }
 
+   @Test
    public void testBasicReceiveWithRollback() throws Exception
    {
       testBasicReceiveWithRollback(false);
    }
 
+   @Test
    public void testBasicReceiveWithRollbackWithServerStopped() throws Exception
    {
       testBasicReceiveWithRollback(true);
    }
 
+   @Test
    public void testMultipleTxReceiveWithCommit() throws Exception
    {
       testMultipleTxReceiveWithCommit(false);
    }
 
+   @Test
    public void testMultipleTxReceiveWithCommitWithServerStopped() throws Exception
    {
       testMultipleTxReceiveWithCommit(true);
    }
 
+   @Test
    public void testMultipleTxReceiveWithRollback() throws Exception
    {
       testMultipleTxReceiveWithRollback(false);
    }
 
+   @Test
    public void testMultipleTxReceiveWithRollbackWithServerStopped() throws Exception
    {
       testMultipleTxReceiveWithRollback(true);
    }
 
+   @Test
    public void testPagingServerRestarted() throws Exception
    {
       testPaging(true);
    }
 
+   @Test
    public void testPaging() throws Exception
    {
       testPaging(false);
@@ -329,11 +359,13 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testRollbackPaging() throws Exception
    {
       testRollbackPaging(false);
    }
 
+   @Test
    public void testRollbackPagingServerRestarted() throws Exception
    {
       testRollbackPaging(true);
@@ -395,6 +427,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testNonPersistent() throws Exception
    {
       testNonPersistent(true);
@@ -438,6 +471,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testNonPersistentMultipleIDs() throws Exception
    {
       for (int i = 0; i < 10; i++)

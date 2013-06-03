@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -47,7 +50,8 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
    private final SimpleString queueName = new SimpleString("queue");
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -55,6 +59,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       server.start();
    }
 
+   @Test
    public void testSetInvalidSendACK() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
@@ -92,11 +97,13 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSendAcknowledgementsNoWindowSize() throws Exception
    {
       testSendAcknowledgements(0);
    }
 
+   @Test
    public void testSendAcknowledgements() throws Exception
    {
       testSendAcknowledgements(1024);

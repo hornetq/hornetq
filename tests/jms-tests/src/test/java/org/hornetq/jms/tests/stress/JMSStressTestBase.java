@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.jms.tests.stress;
+import org.junit.After;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -59,6 +60,7 @@ public class JMSStressTestBase extends HornetQServerTestCase
    protected Topic topic4;
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       if (checkNoMessageData())

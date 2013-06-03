@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQQueueExistsException;
@@ -35,6 +38,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -47,6 +51,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
       server.start();
    }
 
+   @Test
    public void testSequentialCreateQueueIdempotency() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("SequentialCreateQueueIdempotency");
@@ -74,6 +79,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
       }
    }
 
+   @Test
     public void testConcurrentCreateQueueIdempotency() throws Exception
     {
         final String QUEUE = "ConcurrentCreateQueueIdempotency";

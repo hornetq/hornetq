@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -45,7 +48,8 @@ public class MessageHandlerTest extends ServiceTestBase
    private ClientSessionFactory sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -58,6 +62,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSetMessageHandlerWithMessagesPending() throws Exception
    {
       ClientSession session = sf.createSession(false, true, true);
@@ -117,6 +122,7 @@ public class MessageHandlerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSetResetMessageHandler() throws Exception
    {
       final ClientSession session = sf.createSession(false, true, true);
@@ -217,6 +223,7 @@ public class MessageHandlerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSetUnsetMessageHandler() throws Exception
    {
       final ClientSession session = sf.createSession(false, true, true);
@@ -303,6 +310,7 @@ public class MessageHandlerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSetUnsetResetMessageHandler() throws Exception
    {
       final ClientSession session = sf.createSession(false, true, true);

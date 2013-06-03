@@ -13,13 +13,15 @@
 
 package org.hornetq.tests.unit.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.*;
 import org.hornetq.jms.client.JMSExceptionHelper;
@@ -46,56 +48,67 @@ public class JMSExceptionHelperTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCONNECTION_TIMEDOUT() throws Exception
    {
       doConvertException(CONNECTION_TIMEDOUT, JMSException.class);
    }
 
+   @Test
    public void testILLEGAL_STATE() throws Exception
    {
       doConvertException(HornetQExceptionType.ILLEGAL_STATE, IllegalStateException.class);
    }
 
+   @Test
    public void testINTERNAL_ERROR() throws Exception
    {
       doConvertException(HornetQExceptionType.INTERNAL_ERROR, JMSException.class);
    }
 
+   @Test
    public void testINVALID_FILTER_EXPRESSION() throws Exception
    {
       doConvertException(INVALID_FILTER_EXPRESSION, InvalidSelectorException.class);
    }
 
+   @Test
    public void testNOT_CONNECTED() throws Exception
    {
       doConvertException(HornetQExceptionType.NOT_CONNECTED, JMSException.class);
    }
 
+   @Test
    public void testOBJECT_CLOSED() throws Exception
    {
       doConvertException(HornetQExceptionType.OBJECT_CLOSED, IllegalStateException.class);
    }
 
+   @Test
    public void testQUEUE_DOES_NOT_EXIST() throws Exception
    {
       doConvertException(HornetQExceptionType.QUEUE_DOES_NOT_EXIST, InvalidDestinationException.class);
    }
 
+   @Test
    public void testQUEUE_EXISTS() throws Exception
    {
       doConvertException(HornetQExceptionType.QUEUE_EXISTS, InvalidDestinationException.class);
    }
 
+   @Test
    public void testSECURITY_EXCEPTION() throws Exception
    {
       doConvertException(HornetQExceptionType.SECURITY_EXCEPTION, JMSSecurityException.class);
    }
 
+   @Test
    public void testUNSUPPORTED_PACKET() throws Exception
    {
       doConvertException(HornetQExceptionType.UNSUPPORTED_PACKET, IllegalStateException.class);
    }
 
+   @Test
    public void testDefault() throws Exception
    {
       doConvertException(GENERIC_EXCEPTION, JMSException.class);

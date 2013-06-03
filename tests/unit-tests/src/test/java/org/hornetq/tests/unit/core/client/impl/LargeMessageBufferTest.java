@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.client.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -68,7 +72,8 @@ public class LargeMessageBufferTest extends UnitTestCase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -79,12 +84,14 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
    // Test Simple getBytes
+   @Test
    public void testGetBytes() throws Exception
    {
       LargeMessageControllerImpl buffer = create15BytesSample();
@@ -112,6 +119,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    // Test for void getBytes(final int index, final byte[] dst)
+   @Test
    public void testGetBytesIByteArray() throws Exception
    {
       LargeMessageControllerImpl buffer = create15BytesSample();
@@ -135,6 +143,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
+   @Test
    public void testGetBytesILChannelBufferII() throws Exception
    {
       LargeMessageControllerImpl buffer = create15BytesSample();
@@ -152,6 +161,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
+   @Test
    public void testReadIntegers() throws Exception
    {
       LargeMessageControllerImpl buffer = createBufferWithIntegers(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -171,6 +181,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReadIntegersOverStream() throws Exception
    {
       LargeMessageControllerImpl buffer = createBufferWithIntegers(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -187,6 +198,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
+   @Test
    public void testReadLongs() throws Exception
    {
       LargeMessageControllerImpl buffer = createBufferWithLongs(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -206,6 +218,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReadLongsOverStream() throws Exception
    {
       LargeMessageControllerImpl buffer = createBufferWithLongs(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -221,6 +234,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       dataInput.close();
    }
 
+   @Test
    public void testReadData() throws Exception
    {
       HornetQBuffer dynamic = HornetQBuffers.dynamicBuffer(1);
@@ -248,6 +262,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       return new File(getTestDir(), "temp." + tmpFileCounter + ".file");
    }
 
+   @Test
    public void testReadDataOverCached() throws Exception
    {
       clearData();
@@ -281,6 +296,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       readBuffer.close();
    }
 
+   @Test
    public void testReadPartialData() throws Exception
    {
 
@@ -338,6 +354,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    }
 
+   @Test
    public void testInterruptData() throws Exception
    {
       LargeMessageControllerImpl readBuffer = splitBuffer(3, new byte[] { 0, 1, 2, 3, 4 });
@@ -351,6 +368,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testSplitBufferOnFile() throws Exception
    {
       LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
@@ -393,6 +411,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    }
 
+   @Test
    public void testStreamData() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
@@ -510,6 +529,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       input.close();
    }
 
+   @Test
    public void testStreamDataWaitCompletionOnCompleteBuffer() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = create15BytesSample();
@@ -524,6 +544,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testStreamDataWaitCompletionOnInCompleteBuffer() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
@@ -553,6 +574,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
 
+   @Test
    public void testStreamDataWaitCompletionOnSlowComingBuffer() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 1000);
@@ -593,6 +615,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       sender.join();
    }
 
+   @Test
    public void testErrorOnSetStreaming() throws Exception
    {
       long start = System.currentTimeMillis();
@@ -628,6 +651,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    }
 
+   @Test
    public void testReadBytesOnStreaming() throws Exception
    {
       byte[] byteArray = new byte[1024];

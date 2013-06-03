@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.paging.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -20,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagedMessage;
@@ -50,6 +54,7 @@ public class PagingManagerImplTest extends UnitTestCase
 {
    private final ReadLock lock = new ReentrantReadWriteLock().readLock();
 
+   @Test
    public void testPagingManager() throws Exception
    {
 
@@ -105,7 +110,8 @@ public class PagingManagerImplTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       recreateDirectory();
@@ -134,7 +140,8 @@ public class PagingManagerImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
       // deleteDirectory(new File(journalDir));

@@ -1,8 +1,11 @@
 package org.hornetq.tests.integration.spring;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
@@ -20,7 +23,8 @@ public class SpringIntegrationTest extends UnitTestCase
 {
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       // Need to force GC as the connection on the spring needs to be cleared
@@ -28,6 +32,7 @@ public class SpringIntegrationTest extends UnitTestCase
       forceGC();
    }
 
+   @Test
    public void testSpring() throws Exception
    {
       System.out.println("Creating bean factory...");

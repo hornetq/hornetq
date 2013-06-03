@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -31,7 +35,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -87,6 +91,7 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   @Test
    public void testExceptionListener() throws Exception
    {
       connect();
@@ -138,7 +143,8 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -173,7 +179,8 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

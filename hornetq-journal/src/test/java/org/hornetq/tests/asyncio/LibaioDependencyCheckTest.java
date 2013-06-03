@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.asyncio;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 
 /**
@@ -23,7 +25,7 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
  *
  *
  */
-public class LibaioDependencyCheckTest extends TestCase
+public class LibaioDependencyCheckTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -36,6 +38,7 @@ public class LibaioDependencyCheckTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDependency() throws Exception
    {
       if (System.getProperties().get("os.name").equals("Linux"))

@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.timing.util;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
@@ -22,6 +24,7 @@ import org.hornetq.utils.ReusableLatch;
  */
 public class ReusableLatchTest extends UnitTestCase
 {
+   @Test
    public void testTimeout() throws Exception
    {
       ReusableLatch latch = new ReusableLatch();

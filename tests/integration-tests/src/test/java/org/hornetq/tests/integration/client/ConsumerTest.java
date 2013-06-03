@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -48,7 +51,8 @@ public class ConsumerTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -57,6 +61,7 @@ public class ConsumerTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -90,6 +95,7 @@ public class ConsumerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testConsumerAckImmediateAutoCommitFalse() throws Exception
    {
 
@@ -124,6 +130,7 @@ public class ConsumerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testConsumerAckImmediateAckIgnored() throws Exception
    {
 
@@ -162,6 +169,7 @@ public class ConsumerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testConsumerAckImmediateCloseSession() throws Exception
    {
 
@@ -203,6 +211,7 @@ public class ConsumerTest extends ServiceTestBase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
+   @Test
    public void testAcksWithSmallSendWindow() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -261,6 +270,7 @@ public class ConsumerTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/browse/HORNETQ-410
+   @Test
    public void testConsumeWithNoConsumerFlowControl() throws Exception
    {
 
@@ -301,6 +311,7 @@ public class ConsumerTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testClearListener() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -324,6 +335,7 @@ public class ConsumerTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testNoReceiveWithListener() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -360,6 +372,7 @@ public class ConsumerTest extends ServiceTestBase
 
    // https://jira.jboss.org/jira/browse/HORNETQ-111
    // Test that, on rollback credits are released for messages cleared in the buffer
+   @Test
    public void testConsumerCreditsOnRollback() throws Exception
    {
       locator.setConsumerWindowSize(10000);
@@ -415,6 +428,7 @@ public class ConsumerTest extends ServiceTestBase
 
    // https://jira.jboss.org/jira/browse/HORNETQ-111
    // Test that, on rollback credits are released for messages cleared in the buffer
+   @Test
    public void testConsumerCreditsOnRollbackLargeMessages() throws Exception
    {
 

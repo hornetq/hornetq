@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -61,6 +64,7 @@ public class MessagePriorityTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMessagePriority() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -99,6 +103,7 @@ public class MessagePriorityTest extends UnitTestCase
     * into account.
     * We need to implement client-side message priority to handle this case: https://jira.jboss.org/jira/browse/JBMESSAGING-1560
     */
+   @Test
    public void testMessagePriorityWithClientSidePrioritization() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -138,6 +143,7 @@ public class MessagePriorityTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageOrderWithSamePriority() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -207,6 +213,7 @@ public class MessagePriorityTest extends UnitTestCase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-275
+   @Test
    public void testOutOfOrderAcknowledgement() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -268,6 +275,7 @@ public class MessagePriorityTest extends UnitTestCase
    }
 
 
+   @Test
    public void testManyMessages() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -327,7 +335,8 @@ public class MessagePriorityTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

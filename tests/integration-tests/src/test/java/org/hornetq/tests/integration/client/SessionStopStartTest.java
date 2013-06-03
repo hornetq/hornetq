@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -43,7 +46,8 @@ public class SessionStopStartTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -52,6 +56,7 @@ public class SessionStopStartTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testStopStartConsumerSyncReceiveImmediate() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -96,6 +101,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartConsumerSyncReceive() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -143,6 +149,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartConsumerAsyncSyncStoppedByHandler() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -233,6 +240,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartConsumerAsyncSync() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -331,6 +339,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartConsumerAsyncASyncStoppeeByHandler() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -433,6 +442,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartConsumerAsyncASync() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -549,6 +559,7 @@ public class SessionStopStartTest extends ServiceTestBase
       return encodeSize;
    }
 
+   @Test
    public void testStopStartMultipleConsumers() throws Exception
    {
       locator.setConsumerWindowSize(getMessageEncodeSize(QUEUE) * 33);
@@ -603,6 +614,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopStartAlreadyStartedSession() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -644,6 +656,7 @@ public class SessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testStopAlreadyStoppedSession() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);

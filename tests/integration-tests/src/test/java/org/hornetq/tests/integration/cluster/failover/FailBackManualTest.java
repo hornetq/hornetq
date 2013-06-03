@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -42,12 +45,14 @@ public class FailBackManualTest extends FailoverTestBase
    private ServerLocatorInternal locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
    }
 
+   @Test
    public void testNoAutoFailback() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);

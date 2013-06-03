@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
@@ -23,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -85,7 +89,8 @@ public class HangConsumerTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -104,13 +109,15 @@ public class HangConsumerTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       server.stop();
       locator.close();
       super.tearDown();
    }
 
+   @Test
    public void testHangOnDelivery() throws Exception
    {
       queue = server.createQueue(QUEUE, QUEUE, null, true, false);
@@ -206,6 +213,7 @@ public class HangConsumerTest extends ServiceTestBase
     * This would recreate the scenario where a queue was duplicated
     * @throws Exception
     */
+   @Test
    public void testHangDuplicateQueues() throws Exception
    {
       final Semaphore blocked = new Semaphore(1);
@@ -370,6 +378,7 @@ public class HangConsumerTest extends ServiceTestBase
     * the server shouldn't hold of from starting
     * @throws Exception
     */
+   @Test
    public void testForceDuplicationOnBindings() throws Exception
    {
       queue = server.createQueue(QUEUE, QUEUE, null, true, false);
@@ -402,6 +411,7 @@ public class HangConsumerTest extends ServiceTestBase
    }
 
    // An exception during delivery shouldn't make the message disappear
+   @Test
    public void testExceptionWhileDelivering() throws Exception
    {
       queue = server.createQueue(QUEUE, QUEUE, null, true, false);
@@ -455,6 +465,7 @@ public class HangConsumerTest extends ServiceTestBase
     * This will simulate what would happen with topic creationg where a single record is supposed to be created on the journal
     * @throws Exception
     */
+   @Test
    public void testDuplicateDestinationsOnTopic() throws Exception
    {
       for (int i = 0; i < 5; i++)

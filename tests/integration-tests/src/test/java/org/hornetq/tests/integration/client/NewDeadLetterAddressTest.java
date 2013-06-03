@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -45,6 +49,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
    private ClientSession clientSession;
    private ServerLocator locator;
 
+   @Test
    public void testSendToDLAWhenNoRoute() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -66,7 +71,8 @@ public class NewDeadLetterAddressTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -86,7 +92,8 @@ public class NewDeadLetterAddressTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {

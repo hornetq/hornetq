@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -48,6 +50,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSendReceiveMessage() throws Exception
    {
       Connection conn = null;

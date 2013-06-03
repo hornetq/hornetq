@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInternalErrorException;
@@ -51,7 +54,8 @@ public class SessionTest extends ServiceTestBase
    private ClientSessionFactory cf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -61,6 +65,7 @@ public class SessionTest extends ServiceTestBase
       waitForServer(server);
    }
 
+   @Test
    public void testFailureListener() throws Exception
    {
 
@@ -73,6 +78,7 @@ public class SessionTest extends ServiceTestBase
       Assert.assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
    }
 
+   @Test
    public void testFailureListenerRemoved() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -110,6 +116,7 @@ public class SessionTest extends ServiceTestBase
 
    // Closing a session if the underlying remoting connection is dead should cleanly
    // release all resources
+   @Test
    public void testCloseSessionOnDestroyedConnection() throws Exception
    {
          // Make sure we have a short connection TTL so sessions will be quickly closed on the server
@@ -156,6 +163,7 @@ public class SessionTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testBindingQuery() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -182,6 +190,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testQueueQuery() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -200,6 +209,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testQueueQueryWithFilter() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -215,6 +225,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testQueueQueryNoQ() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -225,6 +236,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testClose() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -242,6 +254,7 @@ public class SessionTest extends ServiceTestBase
          Assert.assertTrue(c1.isClosed());
    }
 
+   @Test
    public void testCreateMessageNonDurable() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -251,6 +264,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testCreateMessageDurable() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -260,6 +274,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          }
 
+   @Test
    public void testCreateMessageType() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -269,6 +284,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testCreateMessageOverrides() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -281,6 +297,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testGetVersion() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -289,6 +306,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testStart() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -298,6 +316,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testStop() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -308,6 +327,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testCommitWithSend() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -331,6 +351,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
    }
 
+   @Test
    public void testRollbackWithSend() throws Exception
    {
       cf = createSessionFactory(locator);
@@ -357,6 +378,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          }
 
+   @Test
    public void testCommitWithReceive() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -416,6 +438,7 @@ public class SessionTest extends ServiceTestBase
          sendSession.close();
    }
 
+   @Test
    public void testRollbackWithReceive() throws Exception
    {
          locator.setBlockOnNonDurableSend(true);

@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp.v11;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
@@ -32,7 +36,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
@@ -50,14 +54,16 @@ public class StompV11Test extends StompV11TestBase
    private StompClientConnection connV11;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -73,6 +79,7 @@ public class StompV11Test extends StompV11TestBase
       }
    }
 
+   @Test
    public void testConnection() throws Exception
    {
       server.getHornetQServer().getConfiguration().setSecurityEnabled(true);
@@ -111,6 +118,7 @@ public class StompV11Test extends StompV11TestBase
       conn.disconnect();
    }
 
+   @Test
    public void testNegotiation() throws Exception
    {
       // case 1 accept-version absent. It is a 1.0 connect
@@ -195,6 +203,7 @@ public class StompV11Test extends StompV11TestBase
 
    }
 
+   @Test
    public void testSendAndReceive() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -255,6 +264,7 @@ public class StompV11Test extends StompV11TestBase
       newConn.disconnect();
    }
 
+   @Test
    public void testHeaderContentType() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -291,6 +301,7 @@ public class StompV11Test extends StompV11TestBase
       newConn.disconnect();
    }
 
+   @Test
    public void testHeaderContentLength() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -332,6 +343,7 @@ public class StompV11Test extends StompV11TestBase
       newConn.disconnect();
    }
 
+   @Test
    public void testHeaderEncoding() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -381,6 +393,7 @@ public class StompV11Test extends StompV11TestBase
       newConn.disconnect();
    }
 
+   @Test
    public void testHeartBeat() throws Exception
    {
       //no heart beat at all if heat-beat absent
@@ -491,6 +504,7 @@ public class StompV11Test extends StompV11TestBase
    }
 
    //server ping
+   @Test
    public void testHeartBeat2() throws Exception
    {
       //heart-beat (1,1)
@@ -548,6 +562,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSendWithHeartBeatsAndReceive() throws Exception
    {
       StompClientConnection newConn = null;
@@ -613,6 +628,7 @@ public class StompV11Test extends StompV11TestBase
       }
    }
 
+   @Test
    public void testSendAndReceiveWithHeartBeats() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -675,6 +691,7 @@ public class StompV11Test extends StompV11TestBase
       }
    }
 
+   @Test
    public void testSendWithHeartBeatsAndReceiveWithHeartBeats() throws Exception
    {
       StompClientConnection newConn = null;
@@ -750,6 +767,7 @@ public class StompV11Test extends StompV11TestBase
       }
    }
 
+   @Test
    public void testNack() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -774,6 +792,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testNackWithWrongSubId() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -802,6 +821,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNotNull(message);
    }
 
+   @Test
    public void testNackWithWrongMessageId() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -831,6 +851,7 @@ public class StompV11Test extends StompV11TestBase
    }
 
 
+   @Test
    public void testAck() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -857,6 +878,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testAckWithWrongSubId() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -887,6 +909,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNotNull(message);
    }
 
+   @Test
    public void testAckWithWrongMessageId() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -915,6 +938,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNotNull(message);
    }
 
+   @Test
    public void testErrorWithReceipt() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -953,6 +977,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNotNull(message);
    }
 
+   @Test
    public void testErrorWithReceipt2() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -991,6 +1016,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNotNull(message);
    }
 
+   @Test
    public void testAckModeClient() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1025,6 +1051,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testAckModeClient2() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1064,6 +1091,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testAckModeAuto() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1095,6 +1123,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testAckModeClientIndividual() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1143,6 +1172,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testTwoSubscribers() throws Exception
    {
       connV11.connect(defUser, defPass, "myclientid");
@@ -1182,6 +1212,7 @@ public class StompV11Test extends StompV11TestBase
       newConn.disconnect();
    }
 
+   @Test
    public void testSendAndReceiveOnDifferentConnections() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1208,6 +1239,7 @@ public class StompV11Test extends StompV11TestBase
 
    //----------------Note: tests below are adapted from StompTest
 
+   @Test
    public void testBeginSameTransactionTwice() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1220,6 +1252,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertTrue(f.getCommand().equals("ERROR"));
    }
 
+   @Test
    public void testBodyWithUTF8() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1239,6 +1272,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testClientAckNotPartOfTransaction() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1271,6 +1305,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testDisconnectAndError() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1338,6 +1373,7 @@ public class StompV11Test extends StompV11TestBase
       assertTrue("Server failed to disconnect.", count == 0);
    }
 
+   @Test
    public void testDurableSubscriber() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1352,6 +1388,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testDurableSubscriberWithReconnection() throws Exception
    {
       connV11.connect(defUser, defPass, "myclientid");
@@ -1389,6 +1426,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testJMSXGroupIdCanBeSet() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1409,6 +1447,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertEquals("TEST", message.getStringProperty("JMSXGroupID"));
    }
 
+   @Test
    public void testMessagesAreInOrder() throws Exception
    {
       int ctr = 10;
@@ -1447,6 +1486,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeWithAutoAckAndSelector() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1463,6 +1503,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testRedeliveryWithClientAck() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1484,6 +1525,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertTrue(message.getJMSRedelivered());
    }
 
+   @Test
    public void testSendManyMessages() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1514,6 +1556,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSendMessage() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1539,6 +1582,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
    }
 
+   @Test
    public void testSendMessageWithContentLength() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1566,6 +1610,7 @@ public class StompV11Test extends StompV11TestBase
       assertEquals(data[3], message.readByte());
    }
 
+   @Test
    public void testSendMessageWithCustomHeadersAndSelector() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue, "foo = 'abc'");
@@ -1588,6 +1633,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
    }
 
+   @Test
    public void testSendMessageWithLeadingNewLine() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1616,6 +1662,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSendMessageWithReceipt() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1645,6 +1692,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSendMessageWithStandardHeaders() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1680,6 +1728,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSendMessageWithLongHeaders() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1721,6 +1770,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeToTopic() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1745,6 +1795,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeToTopicWithNoLocal() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1777,6 +1828,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeWithAutoAck() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1799,6 +1851,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testSubscribeWithAutoAckAndBytesMessage() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1823,6 +1876,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeWithClientAck() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1843,16 +1897,19 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception
    {
       assertSubscribeWithClientAckThenConsumeWithAutoAck(true);
    }
 
+   @Test
    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception
    {
       assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
    }
 
+   @Test
    public void testSubscribeWithID() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1868,6 +1925,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSubscribeWithMessageSentWithProperties() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -1903,6 +1961,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testSuccessiveTransactionsWithSameID() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1943,6 +2002,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testTransactionCommit() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1972,6 +2032,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testTransactionRollback() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -2011,6 +2072,7 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+   @Test
    public void testUnsubscribe() throws Exception
    {
       connV11.connect(defUser, defPass);
@@ -2290,6 +2352,7 @@ public class StompV11Test extends StompV11TestBase
       Assert.assertEquals("shouldBeNextMessage", frame.getBody());
    }
 
+   @Test
    public void testSendMessageToNonExistentJmsQueue() throws Exception
    {
       connV11.connect(defUser, defPass);

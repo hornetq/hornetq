@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,6 +40,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
    ArrayList<Long> deletedMessage = new ArrayList<Long>();
 
+   @Test
    public void testDeleteMessagesOnStartup() throws Exception
    {
       createStorage();

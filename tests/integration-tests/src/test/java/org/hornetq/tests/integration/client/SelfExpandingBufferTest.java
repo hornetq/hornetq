@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -57,21 +59,25 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSelfExpandingBufferNettyPersistent() throws Exception
    {
       testSelfExpandingBuffer(true, true);
    }
 
+   @Test
    public void testSelfExpandingBufferInVMPersistent() throws Exception
    {
       testSelfExpandingBuffer(false, true);
    }
 
+   @Test
    public void testSelfExpandingBufferNettyNonPersistent() throws Exception
    {
       testSelfExpandingBuffer(true, false);
    }
 
+   @Test
    public void testSelfExpandingBufferInVMNonPersistent() throws Exception
    {
       testSelfExpandingBuffer(false, false);

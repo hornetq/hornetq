@@ -15,9 +15,9 @@ package org.objectweb.jtests.jms.conform.connection;
 
 import javax.jms.JMSException;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PubSubTestCase;
 
@@ -36,6 +36,7 @@ public class TopicConnectionTest extends PubSubTestCase
     * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
     */
+   @Test
    public void testSetClientID_1()
    {
       try
@@ -78,6 +79,7 @@ public class TopicConnectionTest extends PubSubTestCase
     * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
     */
+   @Test
    public void testSetClientID_2()
    {
       try

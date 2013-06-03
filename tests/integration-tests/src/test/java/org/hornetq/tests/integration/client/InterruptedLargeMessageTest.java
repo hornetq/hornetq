@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -82,7 +85,8 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
    protected ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       LargeMessageTestInterceptorIgnoreLastPacket.clearInterrupt();
@@ -95,6 +99,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       return false;
    }
 
+   @Test
    public void testInterruptLargeMessageSend() throws Exception
    {
 
@@ -144,6 +149,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testCloseConsumerDuringTransmission() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
@@ -219,6 +225,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       server.stop();
    }
 
+   @Test
    public void testSendNonPersistentQueue() throws Exception
    {
 
@@ -280,6 +287,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSendPaging() throws Exception
    {
 
@@ -367,6 +375,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testSendPreparedXA() throws Exception
    {
 
@@ -489,6 +498,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testRestartBeforeDelete() throws Exception
    {
 
@@ -653,6 +663,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testConsumeAfterRestart() throws Exception
    {
       ClientSession session = null;

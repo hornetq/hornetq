@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -59,6 +61,7 @@ public class AddressSettingsTest extends ServiceTestBase
 
    private final SimpleString dlqC = new SimpleString("dlqC");
 
+   @Test
    public void testSimpleHierarchyWithDLA() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -115,6 +118,7 @@ public class AddressSettingsTest extends ServiceTestBase
 
    }
 
+   @Test
    public void test2LevelHierarchyWithDLA() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -171,6 +175,7 @@ public class AddressSettingsTest extends ServiceTestBase
 
    }
 
+   @Test
    public void test2LevelWordHierarchyWithDLA() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -225,6 +230,7 @@ public class AddressSettingsTest extends ServiceTestBase
          session.close();
          }
 
+   @Test
    public void test3LevelHierarchyWithDLA() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -300,6 +306,7 @@ public class AddressSettingsTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testOverrideHierarchyWithDLA() throws Exception
    {
       HornetQServer server = createServer(false);

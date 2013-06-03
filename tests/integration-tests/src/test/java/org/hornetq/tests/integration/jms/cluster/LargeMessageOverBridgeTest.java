@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.cluster;
 
+import org.junit.Test;
+
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -42,6 +44,7 @@ public class LargeMessageOverBridgeTest extends JMSClusteredTestBase
     * This was causing a text message to ber eventually converted into large message when sent over the bridge
     * @throws Exception
     */
+   @Test
    public void testSendHalfLargeTextMessage() throws Exception
    {
       createQueue("Q1");
@@ -120,6 +123,7 @@ public class LargeMessageOverBridgeTest extends JMSClusteredTestBase
     * This was causing a text message to ber eventually converted into large message when sent over the bridge
     * @throws Exception
     */
+   @Test
    public void testSendBytesAsLargeOnBridgeOnly() throws Exception
    {
       createQueue("Q1");
@@ -172,6 +176,7 @@ public class LargeMessageOverBridgeTest extends JMSClusteredTestBase
      * The message won't be large to the client while it will be considered large throught he bridge
      * @throws Exception
      */
+   @Test
     public void testSendLargeForBridge() throws Exception
     {
        createQueue("Q1");

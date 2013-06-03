@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +26,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -58,6 +60,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSessionClosedOnRemotingConnectionFailure() throws Exception
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
