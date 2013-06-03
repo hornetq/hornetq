@@ -1075,6 +1075,11 @@ public class HornetQServerImpl implements HornetQServer
       destroyQueue(queueName, null, true);
    }
 
+   public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
+   {
+      destroyQueue(queueName, session, true);
+   }
+
    public void destroyQueue(final SimpleString queueName, final ServerSession session, final boolean checkConsumerCount) throws Exception
    {
       addressSettingsRepository.clearCache();
