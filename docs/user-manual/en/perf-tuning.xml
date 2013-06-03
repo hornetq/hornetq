@@ -237,7 +237,7 @@ serveruser     hard    nofile  20000</programlisting>
             <listitem>
                 <para>Garbage collection. For smooth server operation we recommend using a parallel
                     garbage collection algorithm, e.g. using the JVM argument <literal
-                        >-XX:+UseParallelGC</literal> on Sun JDKs.</para>
+                        >-XX:+UseParallelOldGC</literal> on Sun JDKs.</para>
             </listitem>
             <listitem id="perf-tuning.memory">
                 <para>Memory settings. Give as much memory as you can to the server. HornetQ can run
