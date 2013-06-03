@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.integration.remoting;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -39,11 +41,13 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class ReconnectTest extends ServiceTestBase
 {
 
+   @Test
    public void testReconnectNetty() throws Exception
    {
       internalTestReconnect(true);
    }
 
+   @Test
    public void testReconnectInVM() throws Exception
    {
       internalTestReconnect(false);
@@ -121,21 +125,25 @@ public class ReconnectTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testInterruptReconnectNetty() throws Exception
    {
       internalTestInterruptReconnect(true, false);
    }
 
+   @Test
    public void testInterruptReconnectInVM() throws Exception
    {
       internalTestInterruptReconnect(false, false);
    }
 
+   @Test
    public void testInterruptReconnectNettyInterruptMainThread() throws Exception
    {
       internalTestInterruptReconnect(true, true);
    }
 
+   @Test
    public void testInterruptReconnectInVMInterruptMainThread() throws Exception
    {
       internalTestInterruptReconnect(false, true);

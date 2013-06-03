@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.IllegalStateException;
@@ -40,6 +42,7 @@ public class SecurityTest extends JMSTestCase
    /**
     * Login with no user, no password Should allow login (equivalent to guest)
     */
+   @Test
    public void testLoginNoUserNoPassword() throws Exception
    {
 
@@ -67,6 +70,7 @@ public class SecurityTest extends JMSTestCase
     * Login with no user, no password
     * Should allow login (equivalent to guest)
     */
+   @Test
    public void testLoginNoUserNoPasswordWithNoGuest() throws Exception
    {
 
@@ -94,6 +98,7 @@ public class SecurityTest extends JMSTestCase
     * Login with valid user and password
     * Should allow
     */
+   @Test
    public void testLoginValidUserAndPassword() throws Exception
    {
       Connection conn1 = null;
@@ -114,6 +119,7 @@ public class SecurityTest extends JMSTestCase
     * Login with valid user and invalid password
     * Should allow
     */
+   @Test
    public void testLoginValidUserInvalidPassword() throws Exception
    {
       Connection conn1 = null;
@@ -139,6 +145,7 @@ public class SecurityTest extends JMSTestCase
     * Login with invalid user and invalid password
     * Should allow
     */
+   @Test
    public void testLoginInvalidUserInvalidPassword() throws Exception
    {
       Connection conn1 = null;
@@ -165,6 +172,7 @@ public class SecurityTest extends JMSTestCase
    /**
     * user/pwd with preconfigured clientID, should return preconf
     */
+   @Test
    public void testPreConfClientID() throws Exception
    {
       Connection conn = null;
@@ -189,6 +197,7 @@ public class SecurityTest extends JMSTestCase
    /**
     * Try setting client ID
     */
+   @Test
    public void testSetClientID() throws Exception
    {
       Connection conn = null;
@@ -211,6 +220,7 @@ public class SecurityTest extends JMSTestCase
    /**
     * Try setting client ID on preconfigured connection - should throw exception
     */
+   @Test
    public void testSetClientIDPreConf() throws Exception
    {
       Connection conn = null;
@@ -239,6 +249,7 @@ public class SecurityTest extends JMSTestCase
    /*
     * Try setting client ID after an operation has been performed on the connection
     */
+   @Test
    public void testSetClientIDAfterOp() throws Exception
    {
       Connection conn = null;

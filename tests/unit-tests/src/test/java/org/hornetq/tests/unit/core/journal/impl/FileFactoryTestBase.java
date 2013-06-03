@@ -12,10 +12,11 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
 
 import java.nio.ByteBuffer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -33,7 +34,8 @@ public abstract class FileFactoryTestBase extends UnitTestCase
    protected SequentialFileFactory factory;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

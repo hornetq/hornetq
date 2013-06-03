@@ -13,10 +13,12 @@
 
 package org.hornetq.core.filter.impl;
 
+import org.junit.Test;
+
 import java.util.HashSet;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.Operator;
@@ -30,7 +32,7 @@ import org.hornetq.core.filter.impl.Operator;
  *
  *
  */
-public class OperatorTest extends TestCase
+public class OperatorTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -93,6 +95,7 @@ public class OperatorTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void test_EQUAL() throws Exception
    {
       OperatorTest.assertSuccess(Operator.EQUAL, 1, 1, true);
@@ -118,6 +121,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.EQUAL, null, 1.0, false);
    }
 
+   @Test
    public void test_DIFFERENT() throws Exception
    {
       OperatorTest.assertSuccess(Operator.DIFFERENT, 2, 1, true);
@@ -144,18 +148,21 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.DIFFERENT, null, null, false);
    }
 
+   @Test
    public void test_IS_NULL() throws Exception
    {
       OperatorTest.assertSuccess(Operator.IS_NULL, null, true);
       OperatorTest.assertSuccess(Operator.IS_NULL, 1, false);
    }
 
+   @Test
    public void test_IS_NOT_NULL() throws Exception
    {
       OperatorTest.assertSuccess(Operator.IS_NOT_NULL, null, false);
       OperatorTest.assertSuccess(Operator.IS_NOT_NULL, 1, true);
    }
 
+   @Test
    public void test_ADD() throws Exception
    {
       OperatorTest.assertSuccess(Operator.ADD, 1, 1, 2L);
@@ -168,6 +175,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.ADD, 1, true);
    }
 
+   @Test
    public void test_SUB() throws Exception
    {
       OperatorTest.assertSuccess(Operator.SUB, 2, 1, 1L);
@@ -180,6 +188,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.SUB, 1, true);
    }
 
+   @Test
    public void test_MUL() throws Exception
    {
       OperatorTest.assertSuccess(Operator.MUL, 2, 1, 2L);
@@ -194,6 +203,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.MUL, 1, true);
    }
 
+   @Test
    public void test_DIV() throws Exception
    {
       OperatorTest.assertSuccess(Operator.DIV, 2, 2, 1L);
@@ -208,6 +218,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.DIV, 1, true);
    }
 
+   @Test
    public void test_NEG() throws Exception
    {
       OperatorTest.assertSuccess(Operator.NEG, 1, -1L);
@@ -217,6 +228,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.NEG, true);
    }
 
+   @Test
    public void test_AND() throws Exception
    {
       // NULL and NULL -> NULL
@@ -246,6 +258,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.AND, null, 1.0);
    }
 
+   @Test
    public void test_OR() throws Exception
    {
       // NULL OR NULL -> NULL
@@ -275,6 +288,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.OR, null, 1.0);
    }
 
+   @Test
    public void test_NOT() throws Exception
    {
       // NOT NULL -> NULL
@@ -288,6 +302,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.NOT, 1.0);
    }
 
+   @Test
    public void test_GT() throws Exception
    {
       OperatorTest.assertSuccess(Operator.GT, 2, 1, true);
@@ -304,6 +319,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.GT, null, null, null);
    }
 
+   @Test
    public void test_GE() throws Exception
    {
       OperatorTest.assertSuccess(Operator.GE, 1, 1, true);
@@ -320,6 +336,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.GE, null, null, null);
    }
 
+   @Test
    public void test_LT() throws Exception
    {
       OperatorTest.assertSuccess(Operator.LT, 1, 2, true);
@@ -336,6 +353,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.LT, null, null, null);
    }
 
+   @Test
    public void test_LE() throws Exception
    {
       OperatorTest.assertSuccess(Operator.LE, 1, 1, true);
@@ -352,6 +370,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.LE, null, null, null);
    }
 
+   @Test
    public void test_BETWEEN() throws Exception
    {
       // 2 BETWEEN 1 AND 3
@@ -363,6 +382,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.BETWEEN, null, null, 3, null);
    }
 
+   @Test
    public void test_NOT_BETWEEN() throws Exception
    {
       // 2 NOT BETWEEN 3 AND 4
@@ -374,6 +394,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.NOT_BETWEEN, null, null, 3, null);
    }
 
+   @Test
    public void test_IN() throws Exception
    {
       HashSet<SimpleString> set = new HashSet<SimpleString>();
@@ -390,6 +411,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.IN, true, set);
    }
 
+   @Test
    public void test_NOT_IN() throws Exception
    {
       HashSet<SimpleString> set = new HashSet<SimpleString>();
@@ -406,6 +428,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertFailure(Operator.NOT_IN, true, set);
    }
 
+   @Test
    public void test_LIKE() throws Exception
    {
       SimpleString pattern = new SimpleString("12%3");
@@ -420,6 +443,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.LIKE, null, pattern, null);
    }
 
+   @Test
    public void test_LIKE_ESCAPE() throws Exception
    {
       SimpleString pattern = new SimpleString("\\_%");
@@ -434,6 +458,7 @@ public class OperatorTest extends TestCase
                                  new SimpleString("must be a single char"));
    }
 
+   @Test
    public void test_NOT_LIKE() throws Exception
    {
       SimpleString pattern = new SimpleString("12%3");
@@ -443,6 +468,7 @@ public class OperatorTest extends TestCase
       OperatorTest.assertSuccess(Operator.NOT_LIKE, null, pattern, null);
    }
 
+   @Test
    public void test_NOT_LIKE_ESCAPE() throws Exception
    {
       SimpleString pattern = new SimpleString("\\_%");

@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -33,6 +35,7 @@ public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testJMSDestination() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();

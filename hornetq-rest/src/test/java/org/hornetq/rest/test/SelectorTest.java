@@ -1,4 +1,5 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
 
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;

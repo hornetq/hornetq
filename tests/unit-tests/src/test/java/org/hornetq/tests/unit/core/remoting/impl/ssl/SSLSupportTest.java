@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.remoting.impl.ssl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.tests.util.UnitTestCase;
@@ -47,7 +50,8 @@ public class SSLSupportTest extends UnitTestCase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -57,23 +61,27 @@ public class SSLSupportTest extends UnitTestCase
       trustStorePassword = keyStorePassword;
    }
 
+   @Test
     public void testContextWithRightParameters() throws Exception
     {
         SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
     }
 
     // This is valid as it will create key and trust managers with system defaults
+   @Test
     public void testContextWithNullParameters() throws Exception
     {
         SSLSupport.createContext(null, null, null, null);
     }
 
+   @Test
    public void testContextWithKeyStorePathAsURL() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
       SSLSupport.createContext(url.toString(), keyStorePassword, trustStorePath, trustStorePassword);
    }
 
+   @Test
    public void testContextWithKeyStorePathAsFile() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
@@ -81,6 +89,7 @@ public class SSLSupportTest extends UnitTestCase
       SSLSupport.createContext(file.getAbsolutePath(), keyStorePassword, trustStorePath, trustStorePassword);
    }
 
+   @Test
     public void testContextWithBadKeyStorePath() throws Exception
     {
         try
@@ -93,6 +102,7 @@ public class SSLSupportTest extends UnitTestCase
         }
     }
 
+   @Test
     public void testContextWithNullKeyStorePath() throws Exception
     {
         try
@@ -105,6 +115,7 @@ public class SSLSupportTest extends UnitTestCase
         }
     }
 
+   @Test
    public void testContextWithKeyStorePathAsRelativePath() throws Exception
    {
       // this test is dependent on a path relative to the tests directory.
@@ -118,6 +129,7 @@ public class SSLSupportTest extends UnitTestCase
       SSLSupport.createContext("src/test/resources/server-side.keystore", keyStorePassword, trustStorePath, trustStorePassword);
    }
 
+   @Test
    public void testContextWithBadKeyStorePassword() throws Exception
    {
       try
@@ -130,6 +142,7 @@ public class SSLSupportTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testContextWithBadTrustStorePath() throws Exception
    {
       try
@@ -142,6 +155,7 @@ public class SSLSupportTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testContextWithBadTrustStorePassword() throws Exception
    {
       try

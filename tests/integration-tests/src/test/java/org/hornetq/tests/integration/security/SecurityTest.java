@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.security;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.security.acl.Group;
@@ -29,7 +32,7 @@ import javax.security.auth.spi.LoginModule;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.*;
 import org.hornetq.api.core.HornetQSecurityException;
@@ -68,13 +71,15 @@ public class SecurityTest extends ServiceTestBase
    private Configuration configuration;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testCreateSessionWithNullUserPass() throws Exception
    {
       HornetQServer server = createServer();
@@ -108,6 +113,7 @@ public class SecurityTest extends ServiceTestBase
       return server;
    }
 
+   @Test
    public void testCreateSessionWithNullUserPassNoGuest() throws Exception
    {
       HornetQServer server = createServer();
@@ -128,6 +134,7 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCreateSessionWithCorrectUserWrongPass() throws Exception
    {
       HornetQServer server = createServer();
@@ -151,6 +158,7 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCreateSessionWithCorrectUserCorrectPass() throws Exception
    {
       HornetQServer server = createServer();
@@ -171,6 +179,7 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCreateDurableQueueWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -189,6 +198,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testCreateDurableQueueWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -220,6 +230,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteDurableQueueWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -239,6 +250,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteDurableQueueWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -270,6 +282,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testCreateTempQueueWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -289,6 +302,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testCreateTempQueueWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -320,6 +334,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteTempQueueWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -339,6 +354,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteTempQueueWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -370,6 +386,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSendWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -436,6 +453,7 @@ public class SecurityTest extends ServiceTestBase
       assertTrue("Failure expected on send after removing the match", failed);
    }
 
+   @Test
    public void testSendWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -469,6 +487,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testNonBlockSendWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -493,6 +512,7 @@ public class SecurityTest extends ServiceTestBase
       Assert.assertEquals(0, binding.getMessageCount());
    }
 
+   @Test
    public void testCreateConsumerWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -521,6 +541,7 @@ public class SecurityTest extends ServiceTestBase
       senSession.close();
    }
 
+   @Test
    public void testCreateConsumerWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -560,6 +581,7 @@ public class SecurityTest extends ServiceTestBase
       senSession.close();
    }
 
+   @Test
    public void testSendMessageUpdateRoleCached() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -615,6 +637,7 @@ public class SecurityTest extends ServiceTestBase
       senSession.close();
    }
 
+   @Test
    public void testSendMessageUpdateRoleCached2() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -684,6 +707,7 @@ public class SecurityTest extends ServiceTestBase
       senSession.close();
    }
 
+   @Test
    public void testSendMessageUpdateSender() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -785,6 +809,7 @@ public class SecurityTest extends ServiceTestBase
       sendingSession.close();
    }
 
+   @Test
    public void testSendManagementWithRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -806,6 +831,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSendManagementWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -840,6 +866,7 @@ public class SecurityTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testNonBlockSendManagementWithoutRole() throws Exception
    {
       HornetQServer server = createServer();
@@ -869,6 +896,7 @@ public class SecurityTest extends ServiceTestBase
     * basic JAAS tests
     */
 
+   @Test
    public void testJaasCreateSessionSucceeds() throws Exception
    {
       String domainName = SimpleLogingModule.class.getName();
@@ -904,6 +932,7 @@ public class SecurityTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testJaasCreateSessionFails() throws Exception
    {
       String domainName = SimpleLogingModule.class.getName();
@@ -942,6 +971,7 @@ public class SecurityTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testComplexRoles() throws Exception
    {
       HornetQServer server = createServer();

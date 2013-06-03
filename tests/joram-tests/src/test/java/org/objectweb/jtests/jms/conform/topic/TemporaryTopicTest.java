@@ -19,10 +19,8 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.TopicSubscriber;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PubSubTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -42,6 +40,7 @@ public class TemporaryTopicTest extends PubSubTestCase
    /**
     * Test a TemporaryTopic
     */
+   @Test
    public void testTemporaryTopic()
    {
       try
@@ -72,18 +71,5 @@ public class TemporaryTopicTest extends PubSubTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(TemporaryTopicTest.class);
-   }
-
-   public TemporaryTopicTest(final String name)
-   {
-      super(name);
    }
 }

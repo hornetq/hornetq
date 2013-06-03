@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
@@ -23,7 +27,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TopicSubscriber;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ResourceNames;
@@ -73,6 +77,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetAttributes() throws Exception
    {
       Assert.assertEquals(topic.getTopicName(), proxy.retrieveAttributeValue("name"));
@@ -83,6 +88,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Assert.assertEquals(topicBinding, bindings[0]);
    }
 
+   @Test
    public void testGetXXXSubscriptionsCount() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -104,6 +110,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_3.close();
    }
 
+   @Test
    public void testGetXXXMessagesCount() throws Exception
    {
       // 1 non-durable subscriber, 2 durable subscribers
@@ -129,6 +136,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_3.close();
    }
 
+   @Test
    public void testListXXXSubscriptionsCount() throws Exception
    {
       // 1 non-durable subscriber, 2 durable subscribers
@@ -148,6 +156,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_3.close();
    }
 
+   @Test
    public void testCountMessagesForSubscription() throws Exception
    {
       String key = "key";
@@ -175,6 +184,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testCountMessagesForUnknownSubscription() throws Exception
    {
       String unknownSubscription = RandomUtil.randomString();
@@ -189,6 +199,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testCountMessagesForUnknownClientID() throws Exception
    {
       String unknownClientID = RandomUtil.randomString();
@@ -203,6 +214,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testDropDurableSubscriptionWithExistingSubscription() throws Exception
    {
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -218,6 +230,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Assert.assertEquals(0, proxy.retrieveAttributeValue("durableSubscriptionCount"));
    }
 
+   @Test
    public void testDropDurableSubscriptionWithUnknownSubscription() throws Exception
    {
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -241,6 +254,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testDropAllSubscriptions() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -268,6 +282,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_2.close();
    }
 
+   @Test
    public void testRemoveAllMessages() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -287,6 +302,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_2.close();
    }
 
+   @Test
    public void testListMessagesForSubscription() throws Exception
    {
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -303,6 +319,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection.close();
    }
 
+   @Test
    public void testListMessagesForSubscriptionWithUnknownClientID() throws Exception
    {
       String unknownClientID = RandomUtil.randomString();
@@ -319,6 +336,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testListMessagesForSubscriptionWithUnknownSubscription() throws Exception
    {
       String unknownSubscription = RandomUtil.randomString();
@@ -334,6 +352,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       }
    }
 
+   @Test
    public void testGetMessagesAdded() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -354,6 +373,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_3.close();
    }
 
+   @Test
    public void testGetMessagesDelivering() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -413,7 +433,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -449,7 +470,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
 
       session.close();

@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -20,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
@@ -40,7 +42,8 @@ public abstract class AIOTestBase extends UnitTestCase
    protected String FILE_NAME = getTestDir() + "/fileUsedOnNativeTests.log";
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -60,7 +63,8 @@ public abstract class AIOTestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
 

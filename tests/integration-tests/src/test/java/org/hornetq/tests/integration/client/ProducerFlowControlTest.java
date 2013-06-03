@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
@@ -68,7 +71,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createFactory(isNetty());
@@ -76,91 +80,109 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
    // TODO need to test crashing a producer with unused credits returns them to the pool
 
+   @Test
    public void testFlowControlSingleConsumer() throws Exception
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlAnon() throws Exception
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, true);
    }
 
+   @Test
    public void testFlowControlSingleConsumerLargeMaxSize() throws Exception
    {
       testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlMultipleConsumers() throws Exception
    {
       testFlowControl(1000, 500, -1, 1024, 1024, 1024, 5, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlZeroConsumerWindowSize() throws Exception
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 0, 1024, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlZeroAckBatchSize() throws Exception
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlSingleConsumerSlowConsumer() throws Exception
    {
       testFlowControl(100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
    }
 
+   @Test
    public void testFlowControlSmallMessages() throws Exception
    {
       testFlowControl(1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlLargerMessagesSmallWindowSize() throws Exception
    {
       testFlowControl(1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
+   @Test
    public void testFlowControlMultipleProducers() throws Exception
    {
       testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, false);
    }
 
+   @Test
    public void testFlowControlMultipleProducersAndConsumers() throws Exception
    {
       testFlowControl(500, 500, 100 * 1024, 1024, 1024, 1024, 1, 3, 3, false);
    }
 
+   @Test
    public void testFlowControlMultipleProducersAnon() throws Exception
    {
       testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages2() throws Exception
    {
       testFlowControl(1000, 10000, -1, 1024, 0, 0, 1, 1, 0, false, 1000, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages3() throws Exception
    {
       testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 0, 1, 1, 0, false, 1000, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages4() throws Exception
    {
       testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 1, 1, 0, false, 1000, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages5() throws Exception
    {
       testFlowControl(1000, 10000, 100 * 1024, 1024, -1, 1024, 1, 1, 0, false, 1000, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages6() throws Exception
    {
       testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 1, 1, 0, true, 1000, true);
    }
 
+   @Test
    public void testFlowControlLargeMessages7() throws Exception
    {
       testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 2, 2, 0, true, 1000, true);
@@ -344,6 +366,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
    }
 
+   @Test
    public void testClosingSessionUnblocksBlockedProducer() throws Exception
    {
       final SimpleString address = new SimpleString("testaddress");
@@ -418,6 +441,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       t.join();
    }
 
+   @Test
    public void testFlowControlMessageNotRouted() throws Exception
    {
       final SimpleString address = new SimpleString("testaddress");
@@ -459,6 +483,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    }
 
    // Not technically a flow control test, but what the hell
+   @Test
    public void testMultipleConsumers() throws Exception
    {
       server = createServer(false, isNetty());
@@ -523,6 +548,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching1() throws Exception
    {
       server = createServer(false, isNetty());
@@ -557,6 +583,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testProducerCreditsCaching2() throws Exception
    {
       server = createServer(false, isNetty());
@@ -592,6 +619,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching3() throws Exception
    {
       server = createServer(false, isNetty());
@@ -626,6 +654,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching4() throws Exception
    {
       server = createServer(false, isNetty());
@@ -661,6 +690,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching5() throws Exception
    {
       server = createServer(false, isNetty());
@@ -725,6 +755,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching6() throws Exception
    {
       server = createServer(false, isNetty());
@@ -749,6 +780,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsCaching7() throws Exception
    {
       server = createServer(false, isNetty());
@@ -798,6 +830,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testProducerCreditsRefCounting() throws Exception
    {
       server = createServer(false, isNetty());

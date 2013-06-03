@@ -16,11 +16,10 @@ package org.objectweb.jtests.jms.conform.message;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.JMSTestCase;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 /**
  * Test the default constants of the <code>javax.jms.Message</code> interface.
@@ -35,6 +34,7 @@ public class MessageDefaultTest extends JMSTestCase
     * test that the <code>DEFAULT_DELIVERY_MODE</code> of <code>javax.jms.Message</code>
     * corresponds to <code>javax.jms.Delivery.PERSISTENT</code>.
     */
+   @Test
    public void testDEFAULT_DELIVERY_MODE()
    {
       Assert.assertEquals("The delivery mode is persistent by default.\n",
@@ -46,21 +46,9 @@ public class MessageDefaultTest extends JMSTestCase
     * test that the <code>DEFAULT_PRIORITY</code> of <code>javax.jms.Message</code>
     * corresponds to 4.
     */
+   @Test
    public void testDEFAULT_PRIORITY()
    {
       Assert.assertEquals("The default priority is 4.\n", 4, Message.DEFAULT_PRIORITY);
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessageDefaultTest.class);
-   }
-
-   public MessageDefaultTest(final String name)
-   {
-      super(name);
    }
 }

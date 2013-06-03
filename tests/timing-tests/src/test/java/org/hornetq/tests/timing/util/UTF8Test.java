@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.timing.util;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -46,6 +49,7 @@ public class UTF8Test extends UnitTestCase
 
    final long numberOfIteractions = 1000000;
 
+   @Test
    public void testWriteUTF() throws Exception
    {
       HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024);
@@ -71,6 +75,7 @@ public class UTF8Test extends UnitTestCase
       }
    }
 
+   @Test
    public void testReadUTF() throws Exception
    {
       HornetQBuffer buffer = HornetQBuffers.fixedBuffer(10 * 1024);
@@ -101,7 +106,8 @@ public class UTF8Test extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       UTF8Util.clearBuffer();
       super.tearDown();

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +23,7 @@ import java.util.Map;
 
 import javax.management.MBeanServerFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -67,6 +70,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
@@ -94,6 +98,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       Assert.assertTrue((Boolean)proxy.retrieveAttributeValue("started"));
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
@@ -114,7 +119,8 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

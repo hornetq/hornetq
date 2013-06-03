@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +49,8 @@ public class MessageConcurrencyTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -57,7 +62,8 @@ public class MessageConcurrencyTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       locator.close();
 
@@ -69,6 +75,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    }
 
    // Test that a created message can be sent via multiple producers on different sessions concurrently
+   @Test
    public void testMessageConcurrency() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -130,6 +137,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    }
 
    // Test that a created message can be sent via multiple producers after being consumed from a single consumer
+   @Test
    public void testMessageConcurrencyAfterConsumption() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);

@@ -11,11 +11,15 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -49,6 +53,7 @@ public class LVQRecoveryTest extends ServiceTestBase
    private AddressSettings qs;
    private ServerLocator locator;
 
+   @Test
    public void testMultipleMessagesAfterRecovery() throws Exception
    {
       Xid xid = new XidImpl("bq1".getBytes(), 4, "gtid1".getBytes());
@@ -88,6 +93,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
+   @Test
    public void testManyMessagesReceivedWithRollback() throws Exception
    {
       Xid xid = new XidImpl("bq1".getBytes(), 4, "gtid1".getBytes());
@@ -158,7 +164,8 @@ public class LVQRecoveryTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {
@@ -204,7 +211,8 @@ public class LVQRecoveryTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

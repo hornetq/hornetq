@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,7 @@ public class StoreConfigTest extends JMSTestBase
       return true;
    }
 
+   @Test
    public void testCreateCF() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
@@ -118,6 +121,7 @@ public class StoreConfigTest extends JMSTestBase
       openCon("/newJNDI");
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
@@ -230,6 +234,7 @@ public class StoreConfigTest extends JMSTestBase
 
 
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));

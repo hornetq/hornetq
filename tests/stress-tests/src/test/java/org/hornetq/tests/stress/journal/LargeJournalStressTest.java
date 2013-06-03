@@ -12,11 +12,15 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -66,11 +70,13 @@ public class LargeJournalStressTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.ASYNCIO);
    }
 
+   @Test
    public void testMultiProducerAndCompactNIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.NIO);
@@ -256,7 +262,8 @@ public class LargeJournalStressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -315,7 +322,8 @@ public class LargeJournalStressTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       locator.close();
 

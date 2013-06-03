@@ -12,9 +12,13 @@
  */
 
 package org.hornetq.util;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
@@ -29,7 +33,7 @@ import org.hornetq.utils.TypedProperties;
  *
  *
  */
-public class TypedPropertiesConversionTest extends TestCase
+public class TypedPropertiesConversionTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -48,24 +52,25 @@ public class TypedPropertiesConversionTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
+
 
       key = RandomUtil.randomSimpleString();
       props = new TypedProperties();
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       key = null;
       props = null;
 
-      super.tearDown();
+
    }
 
+   @Test
    public void testBooleanProperty() throws Exception
    {
       Boolean val = RandomUtil.randomBoolean();
@@ -90,6 +95,7 @@ public class TypedPropertiesConversionTest extends TestCase
       Assert.assertFalse(props.getBooleanProperty(unknownKey));
    }
 
+   @Test
    public void testCharProperty() throws Exception
    {
       Character val = RandomUtil.randomChar();
@@ -118,6 +124,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testByteProperty() throws Exception
    {
       Byte val = RandomUtil.randomByte();
@@ -149,6 +156,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testIntProperty() throws Exception
    {
       Integer val = RandomUtil.randomInt();
@@ -184,6 +192,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testLongProperty() throws Exception
    {
       Long val = RandomUtil.randomLong();
@@ -227,6 +236,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testDoubleProperty() throws Exception
    {
       Double val = RandomUtil.randomDouble();
@@ -258,6 +268,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testFloatProperty() throws Exception
    {
       Float val = RandomUtil.randomFloat();
@@ -290,6 +301,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testShortProperty() throws Exception
    {
       Short val = RandomUtil.randomShort();
@@ -326,6 +338,7 @@ public class TypedPropertiesConversionTest extends TestCase
       }
    }
 
+   @Test
    public void testSimpleStringProperty() throws Exception
    {
       SimpleString strVal = RandomUtil.randomSimpleString();
@@ -333,6 +346,7 @@ public class TypedPropertiesConversionTest extends TestCase
       Assert.assertEquals(strVal, props.getSimpleStringProperty(key));
    }
 
+   @Test
    public void testBytesProperty() throws Exception
    {
       byte[] val = RandomUtil.randomBytes();

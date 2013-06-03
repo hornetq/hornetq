@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -46,7 +49,8 @@ public class FailoverListenerTest extends FailoverTestBase
    private ClientSessionFactoryInternal sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
@@ -57,6 +61,7 @@ public class FailoverListenerTest extends FailoverTestBase
     * events for {@link FailoverEventListener}
     * @throws Exception
     */
+   @Test
    public void testFailoverListenerCall() throws Exception
    {
       createSessionFactory(2);
@@ -139,6 +144,7 @@ public class FailoverListenerTest extends FailoverTestBase
     * the event FailoverEventType.FAILOVER_FAILED in the end
     * @throws Exception
     */
+   @Test
    public void testFailoverFailed() throws Exception
    {
      locator.setBlockOnNonDurableSend(true);

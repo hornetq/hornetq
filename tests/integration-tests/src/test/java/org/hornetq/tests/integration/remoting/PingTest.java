@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.integration.remoting;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -63,7 +66,8 @@ public class PingTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       Configuration config = createDefaultConfig(true);
@@ -93,6 +97,7 @@ public class PingTest extends ServiceTestBase
    /*
     * Test that no failure listeners are triggered in a non failure case with pinging going on
     */
+   @Test
    public void testNoFailureWithPinging() throws Exception
    {
       ServerLocator locator = createNettyNonHALocator();
@@ -154,6 +159,7 @@ public class PingTest extends ServiceTestBase
    /*
     * Test that no failure listeners are triggered in a non failure case with no pinging going on
     */
+   @Test
    public void testNoFailureNoPinging() throws Exception
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
@@ -212,6 +218,7 @@ public class PingTest extends ServiceTestBase
    /*
     * Test the server timing out a connection since it doesn't receive a ping in time
     */
+   @Test
    public void testServerFailureNoPing() throws Exception
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
@@ -291,6 +298,7 @@ public class PingTest extends ServiceTestBase
    /*
    * Test the client triggering failure due to no ping from server received in time
    */
+   @Test
    public void testClientFailureNoServerPing() throws Exception
    {
       // server must received at least one ping from the client to pass

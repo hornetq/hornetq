@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Before;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -97,16 +97,10 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    protected static Queue queue4;
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
-
       System.setProperty("java.naming.factory.initial", getContextFactory());
-
-      String banner = "####################################################### Start " + " test: " + getName();
-
-      log.info(banner);
 
       try
       {

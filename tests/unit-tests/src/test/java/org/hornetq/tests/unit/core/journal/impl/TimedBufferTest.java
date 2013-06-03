@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.journal.impl;
 
+import org.junit.Test;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -64,6 +66,7 @@ public class TimedBufferTest extends UnitTestCase
    };
 
 
+   @Test
    public void testFillBuffer()
    {
       final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
@@ -138,6 +141,7 @@ public class TimedBufferTest extends UnitTestCase
 
    }
 
+   @Test
    public void testTimingAndFlush() throws Exception
    {
       final ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
@@ -230,6 +234,7 @@ public class TimedBufferTest extends UnitTestCase
     * due to proper kernel installations
     * @throws Exception
     */
+   @Test
    public void testVerifySwitchToSpin() throws Exception
    {
       class TestObserver implements TimedBufferObserver
@@ -315,6 +320,7 @@ public class TimedBufferTest extends UnitTestCase
     * due to proper kernel installations
     * @throws Exception
     */
+   @Test
    public void testStillSleeps() throws Exception
    {
       class TestObserver implements TimedBufferObserver

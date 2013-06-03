@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
@@ -29,6 +31,7 @@ import org.hornetq.tests.util.JMSTestBase;
 public class ConnectionTest extends JMSTestBase
 {
 
+   @Test
    public void testGetSetConnectionFactory() throws Exception
    {
       conn = cf.createConnection();
@@ -39,6 +42,7 @@ public class ConnectionTest extends JMSTestBase
 
    }
 
+   @Test
    public void testXAInstanceof() throws Exception
    {
       conn = cf.createConnection();

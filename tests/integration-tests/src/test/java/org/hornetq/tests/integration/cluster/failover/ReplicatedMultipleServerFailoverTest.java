@@ -21,10 +21,12 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -43,6 +45,7 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
  */
 public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailoverTestBase
 {
+   @Test
    public void testStartLiveFirst() throws Exception
    {
       for (TestableServer liveServer : liveServers)
@@ -57,6 +60,7 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
       sendCrashReceive();
    }
 
+   @Test
    public void testStartBackupFirst() throws Exception
    {
       for (TestableServer backupServer : backupServers)

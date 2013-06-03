@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
@@ -123,7 +125,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected ServerLocator[] locators;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -161,7 +164,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       log.info("#test tearDown");
       logTopologyDiagram();

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.remoting;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +48,8 @@ public class BatchDelayTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -73,6 +77,7 @@ public class BatchDelayTest extends ServiceTestBase
       return addSessionFactory(sf);
    }
 
+   @Test
    public void testSendReceiveMany() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory();
@@ -93,6 +98,7 @@ public class BatchDelayTest extends ServiceTestBase
       receiveMessages(cons, 0, N, true);
    }
 
+   @Test
    public void testSendReceiveOne() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory();

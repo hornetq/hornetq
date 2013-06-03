@@ -12,13 +12,9 @@
  */
 
 package org.hornetq.tests.integration.twitter;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-
-import junit.framework.Assert;
-import junit.framework.TestSuite;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,7 +35,17 @@ import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import twitter4j.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import twitter4j.Paging;
+import twitter4j.ResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
 
 /**
@@ -66,48 +72,39 @@ public class TwitterTest extends ServiceTestBase
 
    // incoming
 
+   @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
    }
 
-
-
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasCredentials()
    {
-      TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
-
-      if (TWITTER_CONSUMER_KEY != null && !TWITTER_CONSUMER_KEY.equals("null"))
-      {
-         suite.addTestSuite(TwitterTest.class);
-      }
-      else
-      {
-         // System.out goes towards JUnit report
-         String errorMsg = "Test " + TwitterTest.class.getName() +
-                           " ignored as twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret is not set in system property  * * *";
-         System.out.println(errorMsg);
-         log.warn(errorMsg);
-      }
-
-      return suite;
+      Assume.assumeNotNull(TWITTER_CONSUMER_KEY);
+      Assume.assumeFalse("null".equals(TWITTER_CONSUMER_KEY));
    }
 
+   @Test
    public void testSimpleIncoming() throws Exception
    {
       internalTestIncoming(true,false);
    }
 
+   @Test
    public void testIncomingNoQueue() throws Exception
    {
       internalTestIncoming(false,false);
    }
 
+   @Test
    public void testIncomingWithRestart() throws Exception
    {
       internalTestIncoming(true,true);
    }
 
+   @Test
    public void testIncomingWithEmptyConnectorName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -115,6 +112,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestIncomingFailedToInitialize(params);
    }
 
+   @Test
    public void testIncomingWithEmptyQueueName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -122,6 +120,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestIncomingFailedToInitialize(params);
    }
 
+   @Test
    public void testIncomingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -134,20 +133,24 @@ public class TwitterTest extends ServiceTestBase
 
    //outgoing
 
+   @Test
    public void testSimpleOutgoing() throws Exception
    {
       internalTestOutgoing(true,false);
    }
 
+   @Test
    public void testOutgoingNoQueue() throws Exception
    {
       internalTestOutgoing(false,false);
    }
+   @Test
    public void testOutgoingWithRestart() throws Exception
    {
       internalTestOutgoing(true,true);
    }
 
+   @Test
    public void testOutgoingWithEmptyConnectorName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -155,6 +158,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithEmptyQueueName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -162,6 +166,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -172,6 +177,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithInReplyTo() throws Exception
    {
       internalTestOutgoingWithInReplyTo();

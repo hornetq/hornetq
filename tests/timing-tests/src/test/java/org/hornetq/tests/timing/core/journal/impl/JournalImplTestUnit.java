@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.timing.core.journal.impl;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -36,13 +39,15 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
 
       Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
 
+   @Test
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
    {
       final int numberAdds = 10000;
@@ -86,6 +91,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    }
 
+   @Test
    public void testAddUpdateDeleteManySmallFileSize() throws Exception
    {
       final int numberAdds = 10000;
@@ -130,6 +136,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    }
 
+   @Test
    public void testReclaimAndReload() throws Exception
    {
       setup(2, 10 * 1024 * 1024, false);

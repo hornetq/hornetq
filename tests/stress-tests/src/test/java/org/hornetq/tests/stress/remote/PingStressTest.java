@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.stress.remote;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +48,8 @@ public class PingStressTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       Configuration config = createDefaultConfig(true);
@@ -58,6 +62,7 @@ public class PingStressTest extends ServiceTestBase
       return 20;
    }
 
+   @Test
    public void testMultiThreadOpenAndCloses() throws Exception
    {
       for (int i = 0; i < getNumberOfIterations(); i++)

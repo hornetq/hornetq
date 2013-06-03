@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.discovery;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.BroadcastEndpointFactory;
@@ -86,7 +89,8 @@ public class DiscoveryTest extends UnitTestCase
 
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       for (HornetQComponent component : new HornetQComponent[] { bg, bg1, bg2, bg3, dg, dg1, dg2, dg3 })
       {
@@ -96,6 +100,7 @@ public class DiscoveryTest extends UnitTestCase
    }
 
 
+   @Test
    public void testSimpleBroadcast() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -130,6 +135,7 @@ public class DiscoveryTest extends UnitTestCase
    }
 
 
+   @Test
    public void testSimpleBroadcastJGropus() throws Exception
    {
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
@@ -162,6 +168,7 @@ public class DiscoveryTest extends UnitTestCase
     * Then stop 99 of the receivers, the last one could still be working.
     * @throws Exception
     */
+   @Test
    public void testJGropusChannelReferenceCounting() throws Exception
    {
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
@@ -225,6 +232,7 @@ public class DiscoveryTest extends UnitTestCase
     * 
     * @throws Exception
     */
+   @Test
    public void testJGropusChannelReferenceCounting1() throws Exception
    {
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
@@ -297,6 +305,7 @@ public class DiscoveryTest extends UnitTestCase
     * 
     * @throws Exception
     */
+   @Test
    public void testJGropusChannelReferenceCounting2() throws Exception
    {
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
@@ -375,6 +384,7 @@ public class DiscoveryTest extends UnitTestCase
       broadcaster.close(true);
    }
 
+   @Test
    public void testStraightSendReceiveJGroups() throws Exception
    {
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
@@ -430,6 +440,7 @@ public class DiscoveryTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleBroadcastSpecificNIC() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -508,6 +519,7 @@ public class DiscoveryTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleBroadcastWithStopStartDiscoveryGroup() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -555,6 +567,7 @@ public class DiscoveryTest extends UnitTestCase
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
    }
 
+   @Test
    public void testIgnoreTrafficFromOwnNode() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -594,6 +607,7 @@ public class DiscoveryTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleBroadcastDifferentPort() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(getUDPDiscoveryAddress());
@@ -627,6 +641,7 @@ public class DiscoveryTest extends UnitTestCase
       verifyNonBroadcast(bg, dg);
    }
 
+   @Test
    public void testSimpleBroadcastDifferentAddressAndPort() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -661,6 +676,7 @@ public class DiscoveryTest extends UnitTestCase
       verifyNonBroadcast(bg, dg);
    }
 
+   @Test
    public void testMultipleGroups() throws Exception
    {
       final int groupPort1 = getUDPDiscoveryPort();
@@ -808,6 +824,7 @@ public class DiscoveryTest extends UnitTestCase
    // Assert.assertTrue(ok);
    // }
 
+   @Test
    public void testDiscoveryListenersCalled() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -885,6 +902,7 @@ public class DiscoveryTest extends UnitTestCase
       Assert.assertFalse("NO broadcast received", discoveryGroup.waitForBroadcast(2000));
    }
 
+   @Test
    public void testConnectorsUpdatedMultipleBroadcasters() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -1052,6 +1070,7 @@ public class DiscoveryTest extends UnitTestCase
       Assert.assertFalse(listener2.called);
    }
 
+   @Test
    public void testMultipleDiscoveryGroups() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);
@@ -1122,6 +1141,7 @@ public class DiscoveryTest extends UnitTestCase
       dg3.stop();
    }
 
+   @Test
    public void testDiscoveryGroupNotifications() throws Exception
    {
       SimpleNotificationService notifService = new SimpleNotificationService();
@@ -1160,6 +1180,7 @@ public class DiscoveryTest extends UnitTestCase
          .toString());
    }
 
+   @Test
    public void testBroadcastGroupNotifications() throws Exception
    {
       SimpleNotificationService notifService = new SimpleNotificationService();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.persistence;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +37,8 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
    private Map<SimpleString, PersistedAddressSetting> mapExpectedAddresses;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -41,7 +46,8 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       mapExpectedAddresses = null;
 
@@ -56,6 +62,7 @@ public class AddressSettingsConfigurationStorageTest extends StorageManagerTestB
       journal1.storeAddressSetting(persistedSetting);
    }
 
+   @Test
    public void testStoreSecuritySettings() throws Exception
    {
       createStorage();

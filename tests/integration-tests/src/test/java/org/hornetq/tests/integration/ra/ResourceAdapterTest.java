@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.junit.Test;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import org.hornetq.utils.DefaultSensitiveStringCodec;
  */
 public class ResourceAdapterTest extends HornetQRATestBase
 {
+   @Test
    public void testStartStopActivationManyTimes() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
@@ -111,6 +114,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -133,6 +137,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(endpoint.released);
    }
 
+   @Test
    public void testSetters() throws Exception
    {
       Boolean b = Boolean.TRUE;
@@ -166,6 +171,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
          qResourceAdapter);
    }
 
+   @Test
    public void testSetters2() throws Exception
    {
       Boolean b = Boolean.FALSE;
@@ -285,6 +291,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
    }
 
    // https://issues.jboss.org/browse/JBPAPP-5790
+   @Test
    public void testResourceAdapterSetup() throws Exception
    {
       HornetQResourceAdapter adapter = new HornetQResourceAdapter();
@@ -338,6 +345,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
    }
 
    // https://issues.jboss.org/browse/JBPAPP-5836
+   @Test
    public void testResourceAdapterSetupOverrideCFParams() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -362,6 +370,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(endpoint.released);
    }
 
+   @Test
    public void testResourceAdapterSetupOverrideNoCFParams() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -386,6 +395,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(endpoint.released);
    }
 
+   @Test
    public void testResourceAdapterSetupNoOverrideDiscovery() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -412,6 +422,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testResourceAdapterSetupOverrideDiscovery() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -443,6 +454,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testResourceAdapterSetupNoHAOverride() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -467,6 +479,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertFalse(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testResourceAdapterSetupNoHADefault() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -490,6 +503,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertFalse(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testResourceAdapterSetupHAOverride() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -513,6 +527,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testResourceAdapterSetupNoReconnectAttemptsOverride() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -537,6 +552,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertFalse(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testResourceAdapterSetupReconnectAttemptDefault() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -560,6 +576,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertFalse(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testResourceAdapterSetupReconnectAttemptsOverride() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -583,6 +600,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(spec.isHasBeenUpdated());
    }
 
+   @Test
    public void testMaskPassword() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
@@ -620,6 +638,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(endpoint.released);
    }
 
+   @Test
    public void testMaskPassword2() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();

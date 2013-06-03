@@ -12,18 +12,17 @@
  */
 
 package org.hornetq.tests.integration.journal;
-
 import java.io.File;
 import java.nio.ByteBuffer;
-
-import junit.framework.Assert;
-import junit.framework.TestSuite;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -35,13 +34,15 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AIOSequentialFileFactoryTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -58,6 +59,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       return new AIOSequentialFileFactory(getTestDir());
    }
 
+   @Test
    public void testBuffer() throws Exception
    {
       SequentialFile file = factory.createSequentialFile("filtetmp.log", 10);

@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,7 +42,8 @@ public class RoutingTest extends ServiceTestBase
    private ClientSessionFactory cf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();
@@ -49,6 +53,7 @@ public class RoutingTest extends ServiceTestBase
       cf = createSessionFactory(locator);
    }
 
+   @Test
    public void testRouteToMultipleQueues() throws Exception
    {
          ClientSession sendSession = cf.createSession(false, true, true);
@@ -85,6 +90,7 @@ public class RoutingTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testRouteToSingleNonDurableQueue() throws Exception
    {
          ClientSession sendSession = cf.createSession(false, true, true);
@@ -109,6 +115,7 @@ public class RoutingTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testRouteToSingleDurableQueue() throws Exception
    {
       ClientSession sendSession = cf.createSession(false, true, true);
@@ -133,6 +140,7 @@ public class RoutingTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testRouteToSingleQueueWithFilter() throws Exception
    {
       ClientSession sendSession = cf.createSession(false, true, true);
@@ -159,6 +167,7 @@ public class RoutingTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testRouteToMultipleQueueWithFilters() throws Exception
    {
       ClientSession sendSession = cf.createSession(false, true, true);
@@ -208,6 +217,7 @@ public class RoutingTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testRouteToSingleTemporaryQueue() throws Exception
    {
       ClientSession sendSession = cf.createSession(false, true, true);

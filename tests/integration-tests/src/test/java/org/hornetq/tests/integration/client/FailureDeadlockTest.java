@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
@@ -53,7 +57,8 @@ public class FailureDeadlockTest extends ServiceTestBase
    private HornetQConnectionFactory cf2;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -74,7 +79,8 @@ public class FailureDeadlockTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
 
       cf1.close();
@@ -92,6 +98,7 @@ public class FailureDeadlockTest extends ServiceTestBase
    // https://jira.jboss.org/jira/browse/JBMESSAGING-1702
    // Test that two failures concurrently executing and calling the same exception listener
    // don't deadlock
+   @Test
    public void testDeadlock() throws Exception
    {
       for (int i = 0; i < 100; i++)
@@ -162,6 +169,7 @@ public class FailureDeadlockTest extends ServiceTestBase
    // https://jira.jboss.org/jira/browse/JBMESSAGING-1703
    // Make sure that failing a connection removes it from the connection manager and can't be returned in a subsequent
    // call
+   @Test
    public void testUsingDeadConnection() throws Exception
    {
       for (int i = 0; i < 100; i++)

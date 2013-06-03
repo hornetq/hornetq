@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.io.File;
 
 import org.hornetq.api.core.Message;
@@ -62,6 +64,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testExpiryMessagesThenDLQ() throws Exception
    {
       HornetQServer server = createServer(true);
@@ -272,6 +275,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
     * Tests if the system would still couple with old data where the LargeMessage was linked to its previous copy
     * @throws Exception
     */
+   @Test
    public void testCompatilityWithLinks() throws Exception
    {
       HornetQServer server = createServer(true);

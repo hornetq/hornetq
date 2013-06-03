@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
@@ -36,6 +40,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 public class ObjectMessageTest extends MessageTestBase
 {
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -43,12 +48,14 @@ public class ObjectMessageTest extends MessageTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       message = null;
       super.tearDown();
    }
 
+   @Test
    public void testClassLoaderIsolation() throws Exception
    {
 
@@ -87,6 +94,7 @@ public class ObjectMessageTest extends MessageTestBase
 
    }
 
+   @Test
    public void testVectorOnObjectMessage() throws Exception
    {
       java.util.Vector<String> vectorOnMessage = new java.util.Vector<String>();
@@ -103,6 +111,7 @@ public class ObjectMessageTest extends MessageTestBase
       ProxyAssertSupport.assertEquals(vectorOnMessage.get(0), v2.get(0));
    }
 
+   @Test
    public void testObjectIsolation() throws Exception
    {
       ObjectMessage msgTest = session.createObjectMessage();
@@ -156,6 +165,7 @@ public class ObjectMessageTest extends MessageTestBase
 
    }
 
+   @Test
    public void testReadOnEmptyObjectMessage() throws Exception
    {
       ObjectMessage obm = (ObjectMessage)message;

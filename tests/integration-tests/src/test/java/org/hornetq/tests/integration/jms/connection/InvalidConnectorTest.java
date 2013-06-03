@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.connection;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -31,19 +35,22 @@ import java.util.Map;
 public class InvalidConnectorTest extends JMSTestBase
 {
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       cf = null;
 
       super.tearDown();
    }
 
+   @Test
    public void testInvalidConnector() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.security.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -32,7 +36,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
@@ -60,7 +64,8 @@ public class JAASSecurityManagerTest extends UnitTestCase
    private static final String INVALID_ROLE = "invalidRole";
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -86,13 +91,15 @@ public class JAASSecurityManagerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       securityManager = null;
 
       super.tearDown();
    }
 
+   @Test
    public void testValidatingUser()
    {
       Assert.assertTrue(securityManager.validateUser(JAASSecurityManagerTest.USER, JAASSecurityManagerTest.PASSWORD));
@@ -100,6 +107,7 @@ public class JAASSecurityManagerTest extends UnitTestCase
                                                       JAASSecurityManagerTest.INVALID_PASSWORD));
    }
 
+   @Test
    public void testValidatingUserAndRole()
    {
       Set<Role> roles = new HashSet<Role>();

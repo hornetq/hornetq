@@ -11,10 +11,13 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.lang.ref.WeakReference;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -39,7 +42,8 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -51,6 +55,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
    /** Make sure Sessions are not leaking after closed..
     *  Also... we want to make sure the SessionFactory will close itself when there are not references into it */
+   @Test
    public void testValidateFactoryGC1() throws Exception
    {
          ClientSessionFactory factory = locator.createSessionFactory();
@@ -81,6 +86,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
+   @Test
    public void testValidateFactoryGC2() throws Exception
    {
       locator.setUseGlobalPools(false);
@@ -113,6 +119,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
          }
 
+   @Test
    public void testValidateFactoryGC3() throws Exception
    {
          ClientSessionFactory factory = locator.createSessionFactory();
@@ -141,6 +148,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
+   @Test
    public void testValidateFactoryGC4() throws Exception
    {
       ClientSessionFactory factory = locator.createSessionFactory();
@@ -166,6 +174,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
+   @Test
    public void testValidateFactoryGC5() throws Exception
    {
       ClientSessionFactory factory = locator.createSessionFactory();
@@ -180,6 +189,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          UnitTestCase.checkWeakReferences(fref);
          }
 
+   @Test
    public void testCloseOneSessionOnGC() throws Exception
    {
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
@@ -199,6 +209,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       Assert.assertEquals(1, server.getRemotingService().getConnections().size());
    }
 
+   @Test
    public void testCloseSeveralSessionOnGC() throws Exception
    {
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();

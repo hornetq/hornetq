@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster;
 
+import org.junit.Test;
+
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -29,11 +31,13 @@ import static org.hornetq.tests.integration.cluster.NodeManagerAction.*;
  */
 public class NodeManagerTest extends ServiceTestBase
 {
+   @Test
    public void testLive() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
       performWork(live1);
    }
+   @Test
    public void testSimpleLiveAndBackup() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -41,6 +45,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(live1, backup1);
    }
 
+   @Test
     public void testSimpleBackupAndLive() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -48,6 +53,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(backup1, live1);
    }
 
+   @Test
    public void testSimpleLiveAnd2Backups() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -57,6 +63,7 @@ public class NodeManagerTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testSimple2BackupsAndLive() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -65,6 +72,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(backup1, backup2, live1);
    }
 
+   @Test
    public void testSimpleLiveAnd2BackupsPaused() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -73,6 +81,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(live1, backup1, backup2);
    }
 
+   @Test
    public void testSimple2BackupsPausedAndLive() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -81,6 +90,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(backup1, backup2, live1);
    }
 
+   @Test
    public void testBackupsOnly() throws Exception
    {
       NodeManagerAction backup1 = new NodeManagerAction(DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_BACKUP, HAS_BACKUP, STOP_BACKUP, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -97,6 +107,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(backup1,backup2,backup3,backup4,backup5,backup6,backup7,backup8,backup9,backup10,backup11);
    }
 
+   @Test
    public void testLiveAndBackupLiveForcesFailback() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE);
@@ -104,6 +115,7 @@ public class NodeManagerTest extends ServiceTestBase
       performWork(live1, backup1);
    }
 
+   @Test
    public void testLiveAnd2BackupsLiveForcesFailback() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE);

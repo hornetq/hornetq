@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,7 +33,8 @@ import org.hornetq.utils.UUID;
 public class RealNodeManagerTest extends NodeManagerTest
 {
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       clearData();
@@ -41,6 +45,7 @@ public class RealNodeManagerTest extends NodeManagerTest
       }
    }
 
+   @Test
    public void testId() throws Exception
    {
       NodeManager nodeManager = new FileLockNodeManager(getTemporaryDir(), false);

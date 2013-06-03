@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -28,50 +26,42 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A SelfExpandingBufferTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created Feb 23, 2009 4:27:16 PM
- *
- *
  */
 public class SelfExpandingBufferTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
-   // Attributes ----------------------------------------------------
 
    HornetQServer service;
 
    SimpleString ADDRESS = new SimpleString("Address");
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
+   @Test
    public void testSelfExpandingBufferNettyPersistent() throws Exception
    {
       testSelfExpandingBuffer(true, true);
    }
 
+   @Test
    public void testSelfExpandingBufferInVMPersistent() throws Exception
    {
       testSelfExpandingBuffer(false, true);
    }
 
+   @Test
    public void testSelfExpandingBufferNettyNonPersistent() throws Exception
    {
       testSelfExpandingBuffer(true, false);
    }
 
+   @Test
    public void testSelfExpandingBufferInVMNonPersistent() throws Exception
    {
       testSelfExpandingBuffer(false, false);

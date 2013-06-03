@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -44,6 +46,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
     * does not mandate that all higher priority messages are delivered first - this
     * is just how we currently do it
     */
+   @Test
    public void testMessageOrder() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -214,6 +217,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testSimple() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();

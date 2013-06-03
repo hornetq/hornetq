@@ -12,12 +12,16 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -56,11 +60,13 @@ public class JournalAsyncTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAsynchronousCommit() throws Exception
    {
       doAsynchronousTest(true);
    }
 
+   @Test
    public void testAsynchronousRollback() throws Exception
    {
       doAsynchronousTest(false);
@@ -132,6 +138,7 @@ public class JournalAsyncTest extends UnitTestCase
 
    // If a callback error already arrived, we should just throw the exception
    // right away
+   @Test
    public void testPreviousError() throws Exception
    {
       final int JOURNAL_SIZE = 20000;
@@ -161,6 +168,7 @@ public class JournalAsyncTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testSyncNonTransaction() throws Exception
    {
       final int JOURNAL_SIZE = 20000;
@@ -186,7 +194,8 @@ public class JournalAsyncTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -201,7 +210,8 @@ public class JournalAsyncTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (journalImpl != null)
       {

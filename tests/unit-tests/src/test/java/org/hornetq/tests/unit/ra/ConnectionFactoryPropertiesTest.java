@@ -22,6 +22,8 @@
 
 package org.hornetq.tests.unit.ra;
 
+import org.junit.Test;
+
 import static java.beans.Introspector.getBeanInfo;
 
 import java.beans.PropertyDescriptor;
@@ -71,6 +73,7 @@ public class ConnectionFactoryPropertiesTest extends UnitTestCase {
        UNSUPPORTED_RA_PROPERTIES.add("connectionPoolName");
     }
 
+   @Test
     public void testCompareConnectionFactoryAndResourceAdapterProperties() throws Exception {
         SortedSet<String> connectionFactoryProperties = findAllPropertyNames(HornetQConnectionFactory.class);
         connectionFactoryProperties.removeAll(UNSUPPORTED_CF_PROPERTIES);

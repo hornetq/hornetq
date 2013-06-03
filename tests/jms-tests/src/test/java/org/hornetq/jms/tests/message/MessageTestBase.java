@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -23,6 +22,9 @@ import javax.jms.Session;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -51,6 +53,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -64,14 +67,13 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       conn.start();
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       conn.close();
-
-      super.tearDown();
    }
 
+   @Test
    public void testNonPersistentSend() throws Exception
    {
       prepareMessage(message);
@@ -91,6 +93,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       assertEquivalent(r, DeliveryMode.NON_PERSISTENT);
    }
 
+   @Test
    public void testPersistentSend() throws Exception
    {
       prepareMessage(message);
@@ -107,6 +110,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       assertEquivalent(r, DeliveryMode.PERSISTENT);
    }
 
+   @Test
    public void testRedelivery() throws Exception
    {
       prepareMessage(message);
@@ -139,6 +143,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testSendMoreThanOnce() throws Exception
    {
       prepareMessage(message);

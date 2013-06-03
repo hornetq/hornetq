@@ -13,21 +13,23 @@
 
 package org.hornetq.core.security;
 
+import org.junit.Test;
+
 import static org.hornetq.core.security.CheckType.CONSUME;
 import static org.hornetq.core.security.CheckType.CREATE_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.CREATE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.SEND;
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.core.security.Role;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class RoleTest extends TestCase
+public class RoleTest extends Assert
 {
    // Constants -----------------------------------------------------
 
@@ -39,6 +41,7 @@ public class RoleTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testReadRole() throws Exception
    {
       Role role = new Role("testReadRole", true, false, false, false, false, false, false);
@@ -50,6 +53,7 @@ public class RoleTest extends TestCase
       Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
 
+   @Test
    public void testWriteRole() throws Exception
    {
       Role role = new Role("testWriteRole", false, true, false, false, false, false, false);
@@ -61,6 +65,7 @@ public class RoleTest extends TestCase
       Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
 
+   @Test
    public void testCreateRole() throws Exception
    {
       Role role = new Role("testWriteRole", false, false, true, false, false, false, false);
@@ -72,6 +77,7 @@ public class RoleTest extends TestCase
       Assert.assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
 
+   @Test
    public void testEqualsAndHashcode() throws Exception
    {
       Role role = new Role("testEquals", true, true, true, false, false, false, false);

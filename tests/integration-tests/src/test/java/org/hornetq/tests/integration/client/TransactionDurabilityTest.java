@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -55,6 +57,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
     *
     *
     */
+   @Test
    public void testRolledBackAcknowledgeWithSameMessageAckedByOtherSession() throws Exception
    {
       Configuration conf = createDefaultConfig();

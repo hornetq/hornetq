@@ -11,11 +11,14 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -35,6 +38,7 @@ import org.hornetq.core.server.management.NotificationListener;
 public class ClusteredGroupingTest extends ClusterTestBase
 {
 
+   @Test
    public void testGroupingSimple() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -80,6 +84,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingTimeout() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -173,6 +178,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo2queues() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -219,6 +225,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo3queues() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -269,6 +276,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo3queuesRemoteArbitrator() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -315,6 +323,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       verifyReceiveAllInRange(20, 30, 1);
    }
 
+   @Test
    public void testGroupingSendTo3queuesNoConsumerOnLocalQueue() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -364,6 +373,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingRoundRobin() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -409,6 +419,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo3queuesQueueRemoved() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -478,6 +489,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       System.out.println("*****************************************************************************");
    }
 
+   @Test
    public void testGroupingSendTo3queuesPinnedNodeGoesDown() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -569,6 +581,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo3queuesPinnedNodeGoesDownSendBeforeStop() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -664,6 +677,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingSendTo3queuesPinnedNodeGoesDownSendAfterRestart() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -754,6 +768,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingMultipleQueuesOnAddress() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -805,6 +820,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testGroupingMultipleSending() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -858,7 +874,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       closeAllConsumers();
       closeAllSessionFactories();

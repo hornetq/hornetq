@@ -11,10 +11,13 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -44,7 +47,8 @@ public class ReceiveImmediateTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -56,26 +60,31 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
 
+   @Test
    public void testConsumerReceiveImmediateWithNoMessages() throws Exception
    {
       doConsumerReceiveImmediateWithNoMessages(false);
    }
 
+   @Test
    public void testConsumerReceiveImmediate() throws Exception
    {
       doConsumerReceiveImmediate(false);
    }
 
+   @Test
    public void testBrowserReceiveImmediateWithNoMessages() throws Exception
    {
       doConsumerReceiveImmediateWithNoMessages(true);
    }
 
+   @Test
    public void testBrowserReceiveImmediate() throws Exception
    {
       doConsumerReceiveImmediate(true);
    }
 
+   @Test
    public void testConsumerReceiveImmediateWithSessionStop() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -106,6 +115,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/browse/HORNETQ-450
+   @Test
    public void testReceivedImmediateFollowedByReceive() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -139,6 +149,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/browse/HORNETQ-450
+   @Test
    public void testReceivedImmediateFollowedByAsyncConsume() throws Exception
    {
 

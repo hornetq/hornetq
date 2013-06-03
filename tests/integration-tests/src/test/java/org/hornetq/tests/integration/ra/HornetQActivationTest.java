@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.ra;
 
+import org.junit.Test;
+
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -37,6 +39,7 @@ public class HornetQActivationTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testValidateJNDIParameters() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();

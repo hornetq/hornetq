@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.http;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Random;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -44,6 +47,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
    private ServerLocator locator;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -61,6 +65,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       addServerLocator(locator);
    }
 
+   @Test
    public void testCoreHttpClient() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -99,6 +104,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       session.close();
    }
 
+   @Test
    public void testCoreHttpClientIdle() throws Exception
    {
       locator.setConnectionTTL(500);
@@ -116,6 +122,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
    }
 
    // https://issues.jboss.org/browse/JBPAPP-5542
+   @Test
    public void testCoreHttpClient8kPlus() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);

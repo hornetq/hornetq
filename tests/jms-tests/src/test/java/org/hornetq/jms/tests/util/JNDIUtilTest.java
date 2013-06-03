@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.jms.tests.util;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -36,6 +39,7 @@ public class JNDIUtilTest extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testRebind_1() throws Exception
    {
       try
@@ -53,6 +57,7 @@ public class JNDIUtilTest extends HornetQServerTestCase
       ProxyAssertSupport.assertEquals(7, ((Integer)ic.lookup("/nosuchsubcontext/sub1/sub2/sub3/name")).intValue());
    }
 
+   @Test
    public void testRebind_2() throws Exception
    {
       try
@@ -72,6 +77,7 @@ public class JNDIUtilTest extends HornetQServerTestCase
       ic.unbind("doesnotexistyet");
    }
 
+   @Test
    public void testRebind_3() throws Exception
    {
       try
@@ -96,7 +102,8 @@ public class JNDIUtilTest extends HornetQServerTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

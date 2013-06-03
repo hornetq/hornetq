@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUID;
@@ -31,6 +33,7 @@ public class UUIDTest extends UnitTestCase
 {
    static final int MANY_TIMES = 100000;
 
+   @Test
    public void testManyUUIDs() throws Exception
    {
       Set<String> uuidsSet = new HashSet<String>();
@@ -50,6 +53,7 @@ public class UUIDTest extends UnitTestCase
       return MANY_TIMES;
    }
 
+   @Test
    public void testStringToUuidConversion()
    {
       UUIDGenerator gen = UUIDGenerator.getInstance();

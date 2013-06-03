@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -63,6 +65,7 @@ public class BridgeStartTest extends ServiceTestBase
       return INVM_CONNECTOR_FACTORY;
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -233,6 +236,7 @@ public class BridgeStartTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testTargetServerUpAndDown() throws Exception
    {
       // This test needs to use real files, since it requires duplicate detection, since when the target server is
@@ -454,6 +458,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testTargetServerNotAvailableNoReconnectTries() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -612,6 +617,7 @@ public class BridgeStartTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testManualStopStart() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();

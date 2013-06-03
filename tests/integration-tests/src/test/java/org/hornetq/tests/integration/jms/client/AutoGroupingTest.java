@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 
@@ -41,6 +43,7 @@ public class AutoGroupingTest extends GroupingTest
       return cf;
    }
 
+   @Test
    public void testManyGroups() throws Exception
    {
    }

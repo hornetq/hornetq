@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -153,6 +155,7 @@ public class JournalCrashTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testRestartJournal() throws Throwable
    {
       runExternalProcess(getTestDir(), 0, JournalCrashTest.FIRST_RUN);

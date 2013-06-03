@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.jms.referenceable;
 
+import org.junit.Test;
+
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -32,6 +34,7 @@ public class ConnectionFactoryObjectFactoryTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDummy()
    {
    }

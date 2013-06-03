@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.cluster.restart;
 
+import org.junit.Test;
+
 import java.util.Collection;
 
 import org.hornetq.api.core.SimpleString;
@@ -27,6 +29,7 @@ public class ClusterRestartTest extends ClusterTestBase
 {
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
+   @Test
    public void testRestartWithQueuesCreateInDiffOrder() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -91,6 +94,7 @@ public class ClusterRestartTest extends ClusterTestBase
       System.out.println("*****************************************************************************");
    }
 
+   @Test
    public void testRestartWithQueuesCreateInDiffOrder2() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());

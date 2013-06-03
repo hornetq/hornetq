@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 
@@ -56,11 +59,13 @@ public class NIOImportExportTest extends JournalImplTestBase
 
    // Public --------------------------------------------------------
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
+   @Test
    public void testExportImport() throws Exception
    {
       setup(10, 10 * 1024, true);
@@ -115,6 +120,7 @@ public class NIOImportExportTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testExportImport3() throws Exception
    {
       setup(10, 10 * 1024, true);
@@ -178,6 +184,7 @@ public class NIOImportExportTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testExportImport2() throws Exception
    {
       setup(10, 10 * 1024, true);

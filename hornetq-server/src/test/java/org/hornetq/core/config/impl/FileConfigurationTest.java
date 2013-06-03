@@ -13,9 +13,11 @@
 
 package org.hornetq.core.config.impl;
 
+import org.junit.Test;
+
 import java.util.Collections;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -36,6 +38,7 @@ import org.hornetq.core.server.JournalType;
 public class FileConfigurationTest extends ConfigurationImplTest
 {
    @Override
+   @Test
    public void testDefaults()
    {
       // Check they match the values from the test file
@@ -333,6 +336,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
    }
 
+   @Test
    public void testSetGetConfigurationURL()
    {
       final String file = "ghuuhhu";

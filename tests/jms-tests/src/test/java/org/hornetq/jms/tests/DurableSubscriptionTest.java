@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.List;
 
 import javax.jms.Connection;
@@ -50,6 +52,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSimplestDurableSubscription() throws Exception
    {
       Connection conn = null;
@@ -119,6 +122,7 @@ public class DurableSubscriptionTest extends JMSTestCase
     *
     * Test with a different topic (a redeployed topic is a different topic).
     */
+   @Test
    public void testDurableSubscriptionOnNewTopic() throws Exception
    {
       Connection conn = null;
@@ -171,6 +175,7 @@ public class DurableSubscriptionTest extends JMSTestCase
     *
     * Test with a different selector.
     */
+   @Test
    public void testDurableSubscriptionDifferentSelector() throws Exception
    {
       Connection conn = null;
@@ -243,6 +248,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionOnTemporaryTopic() throws Exception
    {
       Connection conn = null;
@@ -274,6 +280,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testUnsubscribeDurableSubscription() throws Exception
    {
       Connection conn = null;
@@ -311,6 +318,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testInvalidSelectorException() throws Exception
    {
       Connection c = null;
@@ -342,6 +350,7 @@ public class DurableSubscriptionTest extends JMSTestCase
    }
 
    // See JMS 1.1. spec sec 6.11
+   @Test
    public void testUnsubscribeWithActiveConsumer() throws Exception
    {
       Connection conn = null;
@@ -379,6 +388,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSubscribeWithActiveSubscription() throws Exception
    {
       Connection conn = null;
@@ -416,6 +426,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionWithPeriodsInName() throws Exception
    {
       Connection conn = null;
@@ -452,6 +463,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testNoLocal() throws Exception
    {
       internalTestNoLocal(true);

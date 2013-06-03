@@ -13,20 +13,22 @@
 
 package org.hornetq.core.version.impl;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  *
  */
-public class VersionImplTest extends TestCase
+public class VersionImplTest extends Assert
 {
    // Constants -----------------------------------------------------
 
@@ -38,6 +40,7 @@ public class VersionImplTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testVersionImpl() throws Exception
    {
 
@@ -66,6 +69,7 @@ public class VersionImplTest extends TestCase
       Assert.assertEquals(versionSuffix, version.getVersionSuffix());
    }
 
+   @Test
    public void testEquals() throws Exception
    {
       String nettyVersion = "netty";
@@ -80,6 +84,7 @@ public class VersionImplTest extends TestCase
       Assert.assertFalse(version.equals(differentVersion));
    }
 
+   @Test
    public void testSerialize() throws Exception
    {
       String nettyVersion = "netty";

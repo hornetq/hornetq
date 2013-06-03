@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.cluster;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
@@ -36,6 +38,7 @@ import org.hornetq.tests.util.JMSClusteredTestBase;
 public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
 {
 
+   @Test
    public void testMultipleOpen() throws Exception
    {
       cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),

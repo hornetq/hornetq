@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.server.cluster.impl;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.RemoteQueueBindingImpl;
@@ -40,6 +42,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAddRemoveConsumer() throws Exception
    {
 

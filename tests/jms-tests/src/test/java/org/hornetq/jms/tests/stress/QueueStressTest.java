@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.stress;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -37,6 +39,7 @@ public class QueueStressTest extends JMSStressTestBase
     * Transactional senders go through a cycle of sending and rolling back
     *
     */
+   @Test
    public void testQueueMultipleSenders() throws Exception
    {
       Connection conn1 = cf.createConnection();

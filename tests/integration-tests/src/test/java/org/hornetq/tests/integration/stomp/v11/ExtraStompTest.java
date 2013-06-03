@@ -1,4 +1,8 @@
 package org.hornetq.tests.integration.stomp.v11;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
@@ -14,7 +18,8 @@ public class ExtraStompTest extends StompV11TestBase
    private StompClientConnection connV11;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       persistenceEnabled = true;
       super.setUp();
@@ -25,7 +30,8 @@ public class ExtraStompTest extends StompV11TestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -38,6 +44,7 @@ public class ExtraStompTest extends StompV11TestBase
       }
    }
 
+   @Test
    public void testSendAndReceive10() throws Exception
    {
       String msg1 = "Hello World 1!";
@@ -101,6 +108,7 @@ public class ExtraStompTest extends StompV11TestBase
 
    }
 
+   @Test
    public void testSendAndReceive11() throws Exception
    {
       String msg1 = "Hello World 1!";
@@ -163,6 +171,7 @@ public class ExtraStompTest extends StompV11TestBase
       connV11.sendFrame(unsubFrame);
    }
 
+   @Test
    public void testNoGarbageAfterPersistentMessageV10() throws Exception
    {
          ClientStompFrame subFrame = connV10.createFrame("SUBSCRIBE");
@@ -209,6 +218,7 @@ public class ExtraStompTest extends StompV11TestBase
 
    }
 
+   @Test
    public void testNoGarbageOnPersistentRedeliveryV10() throws Exception
    {
 
@@ -268,6 +278,7 @@ public class ExtraStompTest extends StompV11TestBase
          connV10.sendFrame(unsubFrame);
       }
 
+   @Test
    public void testNoGarbageAfterPersistentMessageV11() throws Exception
    {
       ClientStompFrame subFrame = connV11.createFrame("SUBSCRIBE");
@@ -311,6 +322,7 @@ public class ExtraStompTest extends StompV11TestBase
       connV11.sendFrame(unsubFrame);
    }
 
+   @Test
    public void testNoGarbageOnPersistentRedeliveryV11() throws Exception
    {
          ClientStompFrame frame = connV11.createFrame("SEND");

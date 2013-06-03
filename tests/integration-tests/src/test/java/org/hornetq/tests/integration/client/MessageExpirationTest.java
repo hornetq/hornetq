@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -49,6 +52,7 @@ public class MessageExpirationTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   @Test
    public void testMessageExpiredWithoutExpiryAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -73,6 +77,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageExpiredWithoutExpiryAddressWithExpiryDelayOverride() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -99,6 +104,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageExpiredWithoutExpiryAddressWithExpiryDelayOverrideThatShouldNotBeApplied() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -124,6 +130,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageExpirationOnServer() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -153,6 +160,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageExpirationOnClient() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -180,6 +188,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testMessageExpiredWithExpiryAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -230,7 +239,8 @@ public class MessageExpirationTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

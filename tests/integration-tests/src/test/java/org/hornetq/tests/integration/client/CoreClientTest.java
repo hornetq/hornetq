@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -46,11 +48,13 @@ public class CoreClientTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCoreClientNetty() throws Exception
    {
       testCoreClient(NETTY_ACCEPTOR_FACTORY, NETTY_CONNECTOR_FACTORY);
    }
 
+   @Test
    public void testCoreClientInVM() throws Exception
    {
       testCoreClient(INVM_ACCEPTOR_FACTORY, INVM_CONNECTOR_FACTORY);

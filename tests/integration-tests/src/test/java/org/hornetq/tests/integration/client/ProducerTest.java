@@ -11,11 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -39,7 +42,8 @@ public class ProducerTest extends ServiceTestBase
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -48,6 +52,7 @@ public class ProducerTest extends ServiceTestBase
       server.start();
    }
 
+   @Test
    public void testProducerWithSmallWindowSizeAndLargeMessage() throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
@@ -77,6 +82,7 @@ public class ProducerTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testProducerMultiThread() throws Exception
    {
       final ServerLocator locator = createInVMNonHALocator();

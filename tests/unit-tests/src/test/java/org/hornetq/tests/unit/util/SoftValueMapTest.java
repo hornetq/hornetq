@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SoftValueHashMap;
 
@@ -36,6 +38,7 @@ public class SoftValueMapTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testEvictions()
    {
       forceGC();
@@ -61,6 +64,7 @@ public class SoftValueMapTest extends UnitTestCase
    }
 
 
+   @Test
    public void testEvictionsLeastUsed()
    {
       forceGC();
@@ -102,6 +106,7 @@ public class SoftValueMapTest extends UnitTestCase
       System.out.println("Soft cache has " + softCache.size() + " elements");
    }
 
+   @Test
    public void testEvictOldestElement()
    {
       Value one = new Value(new byte[100]);

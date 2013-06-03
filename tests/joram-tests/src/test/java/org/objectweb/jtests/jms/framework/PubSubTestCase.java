@@ -12,7 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.framework;
-
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
@@ -23,6 +22,8 @@ import javax.jms.TopicSubscriber;
 import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Creates convenient JMS Publish/Subscribe objects which can be needed for tests.
@@ -102,7 +103,8 @@ public abstract class PubSubTestCase extends JMSTestCase
     * Start connections.
     */
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -143,7 +145,8 @@ public abstract class PubSubTestCase extends JMSTestCase
     *  Close connections and delete administrated objects
     */
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -172,10 +175,5 @@ public abstract class PubSubTestCase extends JMSTestCase
       }
 
       super.tearDown();
-   }
-
-   public PubSubTestCase(final String name)
-   {
-      super(name);
    }
 }

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +49,8 @@ public class CTSMiscellaneousTest extends JMSTest
 
    // Constructors --------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       try
       {
@@ -104,6 +109,7 @@ public class CTSMiscellaneousTest extends JMSTest
    /* By default we send non persistent messages asynchronously for performance reasons
     * when running with strictTCK we send them synchronously
     */
+   @Test
    public void testNonPersistentMessagesSentSynchronously() throws Exception
    {
       Connection c = null;
@@ -140,7 +146,8 @@ public class CTSMiscellaneousTest extends JMSTest
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
       HornetQServerTestCase.undeployConnectionFactory(CTSMiscellaneousTest.ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);

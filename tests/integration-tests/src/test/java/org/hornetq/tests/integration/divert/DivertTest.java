@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.divert;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -44,6 +46,7 @@ public class DivertTest extends ServiceTestBase
 {
    private static final int TIMEOUT = 500;
 
+   @Test
    public void testSingleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -137,6 +140,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testSingleNonExclusiveDivert2() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -268,6 +272,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testSingleNonExclusiveDivert3() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -341,6 +346,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testSingleExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -436,6 +442,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testMultipleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -587,6 +594,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testMultipleExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -726,6 +734,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testMixExclusiveAndNonExclusiveDiverts() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -856,6 +865,7 @@ public class DivertTest extends ServiceTestBase
    }
 
    // If no exclusive diverts match then non exclusive ones should be called
+   @Test
    public void testSingleExclusiveNonMatchingAndNonExclusiveDiverts() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -1040,6 +1050,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testRoundRobinDiverts() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -1198,6 +1209,7 @@ public class DivertTest extends ServiceTestBase
       messagingService.stop();
    }
 
+   @Test
    public void testDeployDivertsSameUniqueName() throws Exception
    {
       Configuration conf = createDefaultConfig();

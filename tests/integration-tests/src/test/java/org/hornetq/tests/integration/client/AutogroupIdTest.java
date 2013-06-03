@@ -12,9 +12,11 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -52,6 +54,7 @@ public class AutogroupIdTest extends ServiceTestBase
    * tests when the autogroupid is set only 1 consumer (out of 2) gets all the messages from a single producer
    * */
 
+   @Test
    public void testGroupIdAutomaticallySet() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -101,6 +104,7 @@ public class AutogroupIdTest extends ServiceTestBase
    /*
    * tests when the autogroupid is set only 2 consumers (out of 3) gets all the messages from 2 producers
    * */
+   @Test
    public void testGroupIdAutomaticallySetMultipleProducers() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -155,6 +159,7 @@ public class AutogroupIdTest extends ServiceTestBase
    /*
    * tests that even tho we have an grouping round robin distributor we don't pin the consumer as autogroup is false
    * */
+   @Test
    public void testGroupIdAutomaticallyNotSet() throws Exception
    {
       HornetQServer server = createServer(false);

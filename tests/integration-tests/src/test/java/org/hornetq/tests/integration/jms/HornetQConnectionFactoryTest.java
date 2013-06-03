@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.jms;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +25,7 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -59,6 +62,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    private TransportConfiguration liveTC;
 
+   @Test
    public void testDefaultConstructor() throws Exception
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF);
@@ -114,6 +118,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       testSettersThrowException(cf);
    }
 
+   @Test
    public void testDefaultConstructorAndSetConnectorPairs() throws Exception
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
@@ -156,6 +161,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       conn.close();
    }
 
+   @Test
    public void testDiscoveryConstructor() throws Exception
    {
       DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
@@ -198,6 +204,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       conn.close();
    }
 
+   @Test
    public void testStaticConnectorListConstructor() throws Exception
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
@@ -239,6 +246,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    }
 
+   @Test
    public void testStaticConnectorLiveConstructor() throws Exception
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
@@ -282,6 +290,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    }
 
 
+   @Test
    public void testGettersAndSetters()
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
@@ -344,7 +353,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
       Assert.assertEquals(retryInterval, cf.getRetryInterval());
-      Assert.assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier());
+      Assert.assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier(), 0.0001);
       Assert.assertEquals(reconnectAttempts, cf.getReconnectAttempts());
 
       cf.close();
@@ -683,12 +692,13 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       Assert.assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);
       Assert.assertEquals(cf.getRetryInterval(), retryInterval);
-      Assert.assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier);
+      Assert.assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier, 0.00001);
       Assert.assertEquals(cf.getReconnectAttempts(), reconnectAttempts);
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

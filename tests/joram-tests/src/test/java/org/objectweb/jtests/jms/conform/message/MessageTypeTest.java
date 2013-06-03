@@ -24,10 +24,8 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -59,6 +57,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * Receive it and test that the values of the primitives of the body are correct
     */
+   @Test
    public void testStreamMessage_2()
    {
       try
@@ -86,6 +85,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test if the message is effectively an instance of
     * <code>StreamMessage</code>
     */
+   @Test
    public void testStreamMessage_1()
    {
       try
@@ -106,6 +106,7 @@ public class MessageTypeTest extends PTPTestCase
     * Test in MapMessage the conversion between <code>getObject("foo")</code> and
     * <code>getDouble("foo")</code> (the later returning a java.lang.Double and the former a double)
     */
+   @Test
    public void testMapMessageConversion()
    {
       try
@@ -133,6 +134,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * @since JMS 1.1
     */
+   @Test
    public void testNullInSetMethodsForMapMessage()
    {
       try
@@ -156,6 +158,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * @since JMS 1.1
     */
+   @Test
    public void testEmptyStringInSetMethodsForMapMessage()
    {
       try
@@ -179,16 +182,17 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * Also test that the same method returns the correct names of the map.
     */
+   @Test
    public void testgetMapNames()
    {
       try
       {
          MapMessage message = senderSession.createMapMessage();
-         Enumeration e = message.getMapNames();
+         Enumeration<?> e = message.getMapNames();
          Assert.assertTrue("No map yet defined.\n", !e.hasMoreElements());
          message.setDouble("pi", 3.14159);
          e = message.getMapNames();
-         Assert.assertEquals("pi", (String)e.nextElement());
+         Assert.assertEquals("pi", e.nextElement());
       }
       catch (JMSException e)
       {
@@ -202,6 +206,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * Receive it and test that the values of the primitives of the body are correct
     */
+   @Test
    public void testMapMessage_2()
    {
       try
@@ -229,6 +234,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test if the message is effectively an instance of
     * <code>MapMessage</code>
     */
+   @Test
    public void testMapMessage_1()
    {
       try
@@ -251,6 +257,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * Receive it and test that the values of the primitives of the body are correct
     */
+   @Test
    public void testObjectMessage_2()
    {
       try
@@ -280,6 +287,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test if the message is effectively an instance of
     * <code>ObjectMessage</code>
     */
+   @Test
    public void testObjectMessage_1()
    {
       try
@@ -302,6 +310,7 @@ public class MessageTypeTest extends PTPTestCase
     * <br />
     * Receive it and test that the values of the primitives of the body are correct
     */
+   @Test
    public void testBytesMessage_2()
    {
       try
@@ -332,6 +341,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test if the message is effectively an instance of
     * <code>BytesMessage</code>
     */
+   @Test
    public void testBytesMessage_1()
    {
       try
@@ -354,6 +364,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test that the received <code>String</code> corresponds to
     * the sent one.
     */
+   @Test
    public void testTextMessage_2()
    {
       try
@@ -379,6 +390,7 @@ public class MessageTypeTest extends PTPTestCase
     * Receive it and test if the message is effectively an instance of
     * <code>TextMessage</code>
     */
+   @Test
    public void testTextMessage_1()
    {
       try
@@ -393,18 +405,5 @@ public class MessageTypeTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessageTypeTest.class);
-   }
-
-   public MessageTypeTest(final String name)
-   {
-      super(name);
    }
 }

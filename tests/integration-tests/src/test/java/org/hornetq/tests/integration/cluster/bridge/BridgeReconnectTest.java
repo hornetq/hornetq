@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.integration.cluster.bridge;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -82,7 +86,8 @@ public class BridgeReconnectTest extends BridgeTestBase
    int reconnectAttempts = 3;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       server0Params = new HashMap<String, Object>();
@@ -98,6 +103,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       locator = null;
@@ -125,6 +131,7 @@ public class BridgeReconnectTest extends BridgeTestBase
     * Backups must successfully deploy its bridges on fail-over.
     * @see https://bugzilla.redhat.com/show_bug.cgi?id=900764
     */
+   @Test
    public void testFailoverDeploysBridge() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager(false);
@@ -176,6 +183,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    }
 
    // Fail bridge and reconnecting immediately
+   @Test
    public void testFailoverAndReconnectImmediately() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager(false);
@@ -269,6 +277,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    }
 
    // Fail bridge and attempt failover a few times before succeeding
+   @Test
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager(false);
@@ -342,6 +351,7 @@ public class BridgeReconnectTest extends BridgeTestBase
    }
 
    // Fail bridge and reconnect same node, no backup specified
+   @Test
    public void testReconnectSameNode() throws Exception
    {
       server0 = createHornetQServer(0, isNetty(), server0Params);
@@ -418,11 +428,13 @@ public class BridgeReconnectTest extends BridgeTestBase
 
    // We test that we can pause more than client failure check period (to prompt the pinger to failing)
    // before reconnecting
+   @Test
    public void testShutdownServerCleanlyAndReconnectSameNodeWithSleep() throws Exception
    {
       testShutdownServerCleanlyAndReconnectSameNode(true);
    }
 
+   @Test
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
    {
       testShutdownServerCleanlyAndReconnectSameNode(false);
@@ -559,6 +571,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          Assert.assertEquals(0, server2.getRemotingService().getConnections().size());
    }
 
+   @Test
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       server0 = createHornetQServer(0, isNetty(), server0Params);

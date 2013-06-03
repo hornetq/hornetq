@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -57,6 +60,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNonDurableMessageOnNonDurableQueue() throws Exception
    {
       boolean durable = true;
@@ -86,6 +90,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testNonDurableMessageOnDurableQueue() throws Exception
    {
       boolean durable = true;
@@ -108,6 +113,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testDurableMessageOnDurableQueue() throws Exception
    {
       boolean durable = true;
@@ -133,6 +139,7 @@ public class MessageDurabilityTest extends ServiceTestBase
    /**
     * we can send a durable msg to a non durable queue but the msg won't be persisted
     */
+   @Test
    public void testDurableMessageOnNonDurableQueue() throws Exception
    {
       boolean durable = true;
@@ -161,6 +168,7 @@ public class MessageDurabilityTest extends ServiceTestBase
    /**
     * we can send a durable msg to a temp queue but the msg won't be persisted
     */
+   @Test
    public void testDurableMessageOnTemporaryQueue() throws Exception
    {
       boolean durable = true;
@@ -190,7 +198,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

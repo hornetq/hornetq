@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -30,7 +33,8 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -55,6 +59,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
 
@@ -82,6 +87,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       stopServers(0, 1);
    }
 
+   @Test
    public void testStartPauseStartOther() throws Exception
    {
 
@@ -110,6 +116,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       stopServers(0, 1);
    }
 
+   @Test
    public void testRestartServers() throws Throwable
    {
       String name = Thread.currentThread().getName();
@@ -142,6 +149,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testStopStart() throws Exception
    {
       startServers(0, 1);

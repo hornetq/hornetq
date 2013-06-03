@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.Set;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
@@ -56,21 +58,25 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
     *  default CLUSTER_ADMIN_USER must work even when there are other
     *  configured admin users
     */
+   @Test
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
       doSendManagementMessage(HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD, true);
    }
 
+   @Test
    public void testSendManagementMessageWithAdminRole() throws Exception
    {
       doSendManagementMessage(validAdminUser, validAdminPassword, true);
    }
 
+   @Test
    public void testSendManagementMessageWithoutAdminRole() throws Exception
    {
       doSendManagementMessage(invalidAdminUser, invalidAdminPassword, false);
    }
 
+   @Test
    public void testSendManagementMessageWithoutUserCredentials() throws Exception
    {
       doSendManagementMessage(null, null, false);

@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -48,6 +50,7 @@ public class NettyFailoverTest extends FailoverTest
       return getNettyConnectorTransportConfiguration(live);
    }
 
+   @Test
    public void testFailoverWithHostAlias() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();

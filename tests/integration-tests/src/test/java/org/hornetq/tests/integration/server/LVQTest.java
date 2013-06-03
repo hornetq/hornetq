@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -48,6 +52,7 @@ public class LVQTest extends UnitTestCase
 
    private final SimpleString qName1 = new SimpleString("LVQTestQ1");
 
+   @Test
    public void testSimple() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -66,6 +71,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
    }
 
+   @Test
    public void testMultipleMessages() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -95,6 +101,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
+   @Test
    public void testFirstMessageReceivedButAckedAfter() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -117,6 +124,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
    }
 
+   @Test
    public void testFirstMessageReceivedAndCancelled() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -142,6 +150,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testManyMessagesReceivedAndCancelled() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -195,6 +204,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testSimpleInTx() throws Exception
    {
 
@@ -214,6 +224,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
    }
 
+   @Test
    public void testMultipleMessagesInTx() throws Exception
    {
       ClientProducer producer = clientSessionTxReceives.createProducer(address);
@@ -246,6 +257,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testMultipleMessagesInTxRollback() throws Exception
    {
       ClientProducer producer = clientSessionTxReceives.createProducer(address);
@@ -292,6 +304,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
+   @Test
    public void testSingleTXRollback() throws Exception
    {
       ClientProducer producer = clientSessionTxReceives.createProducer(address);
@@ -312,6 +325,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(consumer.receiveImmediate());
    }
 
+   @Test
    public void testMultipleMessagesInTxSend() throws Exception
    {
       ClientProducer producer = clientSessionTxSends.createProducer(address);
@@ -343,6 +357,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
    }
 
+   @Test
    public void testMultipleMessagesPersistedCorrectly() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -381,6 +396,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testMultipleMessagesPersistedCorrectlyInTx() throws Exception
    {
       ClientProducer producer = clientSessionTxSends.createProducer(address);
@@ -420,6 +436,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testMultipleAcksPersistedCorrectly() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address);
@@ -476,6 +493,7 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
    }
 
+   @Test
    public void testMultipleAcksPersistedCorrectlyInTx() throws Exception
    {
       ClientProducer producer = clientSessionTxReceives.createProducer(address);
@@ -534,7 +552,8 @@ public class LVQTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {
@@ -589,7 +608,8 @@ public class LVQTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

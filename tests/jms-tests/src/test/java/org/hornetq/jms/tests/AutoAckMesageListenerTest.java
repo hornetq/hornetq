@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +48,7 @@ public class AutoAckMesageListenerTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAutoAckMsgListenerQueue() throws Exception
    {
       Connection conn = null;
