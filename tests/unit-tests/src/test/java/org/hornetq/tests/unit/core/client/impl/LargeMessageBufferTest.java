@@ -265,7 +265,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    @Test
    public void testReadDataOverCached() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       HornetQBuffer dynamic = HornetQBuffers.dynamicBuffer(1);
 

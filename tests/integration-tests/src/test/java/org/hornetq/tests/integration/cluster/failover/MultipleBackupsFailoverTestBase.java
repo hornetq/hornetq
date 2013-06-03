@@ -12,13 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -36,6 +32,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase.LatchClusterTopologyListener;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
 
 /**
  * A MultipleBackupsFailoverTestBase
@@ -47,27 +44,6 @@ import org.hornetq.tests.util.ServiceTestBase;
 public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 {
    IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static -------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      clearData();
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    protected abstract boolean isNetty();
 

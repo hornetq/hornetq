@@ -12,22 +12,19 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
-import org.junit.Before;
-import org.junit.After;
-
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
  * The base class for AIO Tests
@@ -39,27 +36,18 @@ public abstract class AIOTestBase extends UnitTestCase
    // The AIO Test must use a local filesystem. Sometimes $HOME is on a NFS on
    // most enterprise systems
 
-   protected String FILE_NAME = getTestDir() + "/fileUsedOnNativeTests.log";
+   protected String fileName;
 
    @Override
    @Before
    public void setUp() throws Exception
    {
       super.setUp();
+      fileName = getTestDir() + "/fileUsedOnNativeTests.log";
 
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdir();
-
-      if (!AsynchronousFileImpl.isLoaded())
-      {
-         Assert.fail(String.format("libAIO is not loaded on %s %s %s",
-                                   System.getProperty("os.name"),
-                                   System.getProperty("os.arch"),
-                                   System.getProperty("os.version")));
-      }
+      Assert.assertTrue(String.format("libAIO is not loaded on %s %s %s", System.getProperty("os.name"),
+                                      System.getProperty("os.arch"), System.getProperty("os.version")),
+                        AsynchronousFileImpl.isLoaded());
    }
 
    @Override

@@ -71,7 +71,7 @@ public class ClientSoakTest extends ServiceTestBase
    @Before
    public void setUp() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig(ClientSoakTest.IS_NETTY);
 

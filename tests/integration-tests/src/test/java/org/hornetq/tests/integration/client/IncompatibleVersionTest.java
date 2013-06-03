@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.io.FileOutputStream;
@@ -46,6 +41,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.VersionLoader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A IncompatibleVersionTest
@@ -88,13 +86,12 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    @Override
    @After
-   public void tearDown() throws Exception
+   public void tearDown()
    {
       connection.destroy();
 
-      locator.close();
-
-      server.stop();
+      closeServerLocator(locator);
+      stopComponent(server);
       // You CANNOT CALL super.tearDown();
    }
 
@@ -215,11 +212,11 @@ public class IncompatibleVersionTest extends ServiceTestBase
       prop.setProperty("hornetq.version.incrementingVersion", Integer.toString(ver));
       prop.store(new FileOutputStream("target/test-classes/" + propFileName), null);
 
-      Process server = null;
+      Process serverProcess = null;
       boolean result = false;
       try
       {
-         server = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+         serverProcess = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
                                            new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                            "server",
                                            serverStartedString);
@@ -236,11 +233,11 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
       finally
       {
-         if(server != null)
+         if (serverProcess != null)
          {
             try
             {
-               server.destroy();
+               serverProcess.destroy();
             }
             catch(Throwable t) {/* ignore */}
          }
@@ -301,13 +298,4 @@ public class IncompatibleVersionTest extends ServiceTestBase
          throw new Exception("args[0] must be \"server\" or \"client\"");
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

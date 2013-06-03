@@ -104,7 +104,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    {
       MultiThreadAsynchronousFileTest.debug(sync ? "Sync test:" : "Async test");
       AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl(executor, pollerExecutor);
-      jlibAIO.open(FILE_NAME, 21000);
+      jlibAIO.open(fileName, 21000);
       try
       {
          MultiThreadAsynchronousFileTest.debug("Preallocating file");
