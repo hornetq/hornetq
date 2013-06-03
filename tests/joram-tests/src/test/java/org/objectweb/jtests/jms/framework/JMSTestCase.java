@@ -12,16 +12,14 @@
  */
 
 package org.objectweb.jtests.jms.framework;
-import org.junit.Before;
-import org.junit.After;
-
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.jms.JMSException;
 
+import org.junit.After;
 import org.junit.Assert;
-
+import org.junit.Before;
 import org.objectweb.jtests.jms.admin.Admin;
 import org.objectweb.jtests.jms.admin.AdminFactory;
 
@@ -69,11 +67,6 @@ public abstract class JMSTestCase extends Assert
       }
    }
 
-   public JMSTestCase(final String name)
-   {
-
-   }
-
    /**
     * Should be overriden
     * @return
@@ -88,7 +81,6 @@ public abstract class JMSTestCase extends Assert
    @Before
    public void setUp() throws Exception
    {
-
 
       // Admin step
       // gets the provider administration wrapper...

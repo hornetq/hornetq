@@ -20,8 +20,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -320,18 +318,5 @@ public class SessionTest extends PTPTestCase
       {
          Assert.fail("sec. 4.4.1 Closing a closed session must NOT throw an exception.\n");
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(SessionTest.class);
-   }
-
-   public SessionTest(final String name)
-   {
-      super(name);
    }
 }

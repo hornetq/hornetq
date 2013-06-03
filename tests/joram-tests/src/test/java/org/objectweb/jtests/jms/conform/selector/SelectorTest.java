@@ -18,8 +18,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -456,18 +454,5 @@ public class SelectorTest extends PTPTestCase
       TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
       Assert.assertTrue(msg != null);
       Assert.assertEquals("testNull:2", msg.getText());
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(SelectorTest.class);
-   }
-
-   public SelectorTest(final String name)
-   {
-      super(name);
    }
 }

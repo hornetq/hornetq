@@ -21,8 +21,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -228,18 +226,5 @@ public class ConnectionTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(ConnectionTest.class);
-   }
-
-   public ConnectionTest(final String name)
-   {
-      super(name);
    }
 }

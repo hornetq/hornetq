@@ -26,8 +26,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -190,11 +188,11 @@ public class MessageTypeTest extends PTPTestCase
       try
       {
          MapMessage message = senderSession.createMapMessage();
-         Enumeration e = message.getMapNames();
+         Enumeration<?> e = message.getMapNames();
          Assert.assertTrue("No map yet defined.\n", !e.hasMoreElements());
          message.setDouble("pi", 3.14159);
          e = message.getMapNames();
-         Assert.assertEquals("pi", (String)e.nextElement());
+         Assert.assertEquals("pi", e.nextElement());
       }
       catch (JMSException e)
       {
@@ -407,18 +405,5 @@ public class MessageTypeTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessageTypeTest.class);
-   }
-
-   public MessageTypeTest(final String name)
-   {
-      super(name);
    }
 }

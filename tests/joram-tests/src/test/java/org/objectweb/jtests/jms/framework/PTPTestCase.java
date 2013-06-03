@@ -12,9 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.framework;
-import org.junit.Before;
-import org.junit.After;
-
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -25,6 +22,8 @@ import javax.jms.Session;
 import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Creates convenient Point to Point JMS objects which can be needed for tests.
@@ -175,10 +174,5 @@ public abstract class PTPTestCase extends JMSTestCase
       }
 
       super.tearDown();
-   }
-
-   public PTPTestCase(final String name)
-   {
-      super(name);
    }
 }

@@ -22,8 +22,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -184,23 +182,11 @@ public class QueueSessionTest extends PTPTestCase
       }
       catch (InvalidDestinationException e)
       {
+         // expected
       }
       catch (JMSException e)
       {
          Assert.fail("Should throw a javax.jms.InvalidDestinationException, not a " + e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(QueueSessionTest.class);
-   }
-
-   public QueueSessionTest(final String name)
-   {
-      super(name);
    }
 }
