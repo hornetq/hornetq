@@ -818,12 +818,6 @@ public class HornetQMessage implements javax.jms.Message
 
       checkProperty(name, value);
 
-      if (value == null)
-      {
-         // This is ok - when we try to read the same key it will return null too
-         return;
-      }
-
       if (HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
