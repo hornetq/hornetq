@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +30,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -105,6 +109,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
 
+   @Test
    public void testAutomaticFailover() throws Exception
    {
       HornetQConnectionFactory jbcf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, livetc);
@@ -184,6 +189,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getEventTypeList().size());
    }
 
+   @Test
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive =
@@ -267,7 +273,8 @@ public class JMSFailoverListenerTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       startServers();
@@ -347,7 +354,8 @@ public class JMSFailoverListenerTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       backupJMSService.stop();
 

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +23,7 @@ import java.util.Map;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -93,6 +97,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetAttributes() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -148,6 +153,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.isFailoverOnServerShutdown(), serverControl.isFailoverOnServerShutdown());
    }
 
+   @Test
    public void testGetConnectors() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -161,6 +167,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(connectorConfig.getName(), config[0]);
    }
 
+   @Test
    public void testGetConnectorsAsJSON() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -175,6 +182,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(connectorConfig.getParams().size(), data.getJSONObject("params").length());
    }
 
+   @Test
    public void testCreateAndDestroyQueue() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -199,6 +207,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
 
+   @Test
    public void testCreateAndDestroyQueue_2() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -225,6 +234,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
 
+   @Test
    public void testCreateAndDestroyQueue_3() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -250,6 +260,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
 
+   @Test
    public void testCreateAndDestroyQueueWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -276,6 +287,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
 
+   @Test
    public void testCreateAndDestroyQueueWithEmptyStringForFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -302,6 +314,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getQueueObjectName(address, name));
    }
 
+   @Test
    public void testGetQueueNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -321,6 +334,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertFalse(HornetQServerControlTest.contains(name.toString(), serverControl.getQueueNames()));
    }
 
+   @Test
    public void testGetAddressNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -340,6 +354,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertFalse(HornetQServerControlTest.contains(address.toString(), serverControl.getAddressNames()));
    }
 
+   @Test
    public void testMessageCounterMaxDayCount() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -372,6 +387,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
    }
 
+   @Test
    public void testGetMessageCounterSamplePeriod() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -420,6 +436,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       server.start();
    }
 
+   @Test
    public void testSecuritySettings() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -470,6 +487,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(0, serverControl.getRoles(exactAddress).length);
    }
 
+   @Test
    public void testAddressSettings() throws Exception
    {
       HornetQServerControl serverControl = createManagementControl();
@@ -619,6 +637,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testCreateAndDestroyDivert() throws Exception
    {
       String address = RandomUtil.randomString();
@@ -699,6 +718,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testCreateAndDestroyBridge() throws Exception
    {
       String name = RandomUtil.randomString();
@@ -789,6 +809,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       locator.close();
    }
 
+   @Test
    public void testListPreparedTransactionDetails() throws Exception
    {
       SimpleString atestq = new SimpleString("BasicXaTestq");
@@ -834,6 +855,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertTrue(txDetails.matches(".*m4.*"));
    }
 
+   @Test
    public void testListPreparedTransactionDetailsAsHTML() throws Exception
    {
       SimpleString atestq = new SimpleString("BasicXaTestq");
@@ -873,6 +895,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertTrue(html.matches(".*m4.*"));
    }
 
+   @Test
    public void testCommitPreparedTransactions() throws Exception
    {
       SimpleString recQueue = new SimpleString("BasicXaTestqRec");
@@ -936,7 +959,8 @@ public class HornetQServerControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -957,7 +981,8 @@ public class HornetQServerControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (server != null)
       {

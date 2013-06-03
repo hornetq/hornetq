@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +40,7 @@ import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -114,6 +118,7 @@ public class JMSServerControlTest extends ManagementTestBase
       return 0;
    }
 
+   @Test
    public void testGetVersion() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -121,6 +126,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertEquals(serverManager.getVersion(), version);
    }
 
+   @Test
    public void testCreateQueueWithBindings() throws Exception
    {
       String[] bindings = new String[3];
@@ -158,6 +164,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[2]));
    }
 
+   @Test
    public void testCreateQueueWithCommaBindings() throws Exception
    {
       String[] bindings = new String[3];
@@ -195,6 +202,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains("third,third"));
    }
 
+   @Test
    public void testCreateQueueWithSelector() throws Exception
    {
       String[] bindings = new String[3];
@@ -249,6 +257,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[2]));
    }
 
+   @Test
    public void testCreateNonDurableQueue() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -274,6 +283,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertNull(fakeJMSStorageManager.persistedJNDIMap.get(queueName));
    }
 
+   @Test
    public void testDestroyQueue() throws Exception
    {
       String queueJNDIBinding = RandomUtil.randomString();
@@ -296,6 +306,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
    }
 
+   @Test
    public void testGetQueueNames() throws Exception
    {
       String queueJNDIBinding = RandomUtil.randomString();
@@ -315,6 +326,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertEquals(0, control.getQueueNames().length);
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       String[] bindings = new String[3];
@@ -352,6 +364,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(topicName).contains(bindings[2]));
    }
 
+   @Test
    public void testDestroyTopic() throws Exception
    {
       String topicJNDIBinding = RandomUtil.randomString();
@@ -390,6 +403,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertNull(fakeJMSStorageManager.destinationMap.get(topicName));
    }
 
+   @Test
    public void testListAllConsumers() throws Exception
    {
       String topicJNDIBinding = RandomUtil.randomString();
@@ -438,6 +452,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertNull(fakeJMSStorageManager.destinationMap.get(topicName));
    }
 
+   @Test
    public void testGetTopicNames() throws Exception
    {
       String topicJNDIBinding = RandomUtil.randomString();
@@ -457,6 +472,7 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertEquals(0, control.getTopicNames().length);
    }
 
+   @Test
    public void testCreateConnectionFactory_3b() throws Exception
    {
       server.getConfiguration()
@@ -476,6 +492,7 @@ public class JMSServerControlTest extends ManagementTestBase
       });
    }
 
+   @Test
    public void testCreateConnectionFactory_CompleteList() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -609,6 +626,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testListPreparedTransactionDetails() throws Exception
    {
       Xid xid = newXID();
@@ -648,6 +666,7 @@ public class JMSServerControlTest extends ManagementTestBase
       control.listPreparedTransactionDetailsAsJSON();
    }
 
+   @Test
    public void testListPreparedTranscationDetailsAsHTML() throws Exception
    {
       Xid xid = newXID();
@@ -689,6 +708,7 @@ public class JMSServerControlTest extends ManagementTestBase
    }
 
 
+   @Test
    public void testRemoteClientIDConnection() throws Exception
    {
       JMSServerControl control = createManagementControl();
@@ -738,7 +758,8 @@ public class JMSServerControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -774,7 +795,8 @@ public class JMSServerControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

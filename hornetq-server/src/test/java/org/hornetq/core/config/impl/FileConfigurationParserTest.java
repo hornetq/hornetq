@@ -13,6 +13,8 @@
 
 package org.hornetq.core.config.impl;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class FileConfigurationParserTest extends UnitTestCase
     * </pre>
     * @throws Exception
     */
+   @Test
    public void testSchemaValidation() throws Exception
    {
       for (int i = 0; i < 6; i++)
@@ -58,6 +61,7 @@ public class FileConfigurationParserTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testDivertRoutingNameIsNotRequired() throws Exception
    {
       String filename = "divertRoutingNameNotRequired.xml";
@@ -65,6 +69,7 @@ public class FileConfigurationParserTest extends UnitTestCase
       fc.start();
    }
 
+   @Test
    public void testParsingDefaultServerConfig() throws Exception
    {
       FileConfigurationParser parser = new FileConfigurationParser();

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -45,6 +47,7 @@ public class CreateQueueTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCreateQueueTempQueue() throws Exception
    {
       conn = cf.createConnection();
@@ -70,6 +73,7 @@ public class CreateQueueTest extends JMSTestBase
          assertNotNull(consumer.receive(10000));
    }
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       conn = cf.createConnection();
@@ -96,6 +100,7 @@ public class CreateQueueTest extends JMSTestBase
          assertNotNull(consumer.receive(10000));
          }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       conn = cf.createConnection();
@@ -121,6 +126,7 @@ public class CreateQueueTest extends JMSTestBase
          assertNotNull(consumer.receive(10000));
          }
 
+   @Test
    public void testCreateTopicTempTopic() throws Exception
    {
       conn = cf.createConnection();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -21,8 +25,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.AIOCallback;
@@ -44,7 +48,7 @@ import org.hornetq.utils.HornetQThreadFactory;
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
    }
@@ -67,7 +71,8 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
@@ -76,18 +81,21 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       executor.shutdown();
       pollerExecutor.shutdown();
       super.tearDown();
    }
 
+   @Test
    public void testMultipleASynchronousWrites() throws Throwable
    {
       executeTest(false);
    }
 
+   @Test
    public void testMultipleSynchronousWrites() throws Throwable
    {
       executeTest(true);

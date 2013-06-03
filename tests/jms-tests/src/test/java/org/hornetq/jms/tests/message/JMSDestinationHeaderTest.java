@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
@@ -33,6 +35,7 @@ public class JMSDestinationHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testJMSDestination() throws Exception
    {
       queueProducer.send(queueProducerSession.createMessage());

@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ public class QueueTest extends JMSTestCase
    /**
     * The simplest possible queue test.
     */
+   @Test
    public void testQueue() throws Exception
    {
       Connection conn = null;
@@ -64,6 +67,7 @@ public class QueueTest extends JMSTestCase
    }
 
    // http://jira.jboss.com/jira/browse/JBMESSAGING-1101
+   @Test
    public void testBytesMessagePersistence() throws Exception
    {
       Connection conn = null;
@@ -125,6 +129,7 @@ public class QueueTest extends JMSTestCase
    }
 
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
+   @Test
    public void testClosedConsumerAfterStart() throws Exception
    {
       // This loop is to increase chances of a failure.
@@ -196,6 +201,7 @@ public class QueueTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedeployQueue() throws Exception
    {
       Connection conn = null;
@@ -244,6 +250,7 @@ public class QueueTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testQueueName() throws Exception
    {
       ProxyAssertSupport.assertEquals("Queue1", HornetQServerTestCase.queue1.getQueueName());

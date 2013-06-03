@@ -12,8 +12,9 @@
  */
 
 package org.hornetq.tests.integration.clientcrash;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
@@ -32,7 +33,8 @@ public abstract class ClientTestBase extends ServiceTestBase
    protected HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

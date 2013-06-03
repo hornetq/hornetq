@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -450,6 +452,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -473,6 +476,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       producerConnection.close();

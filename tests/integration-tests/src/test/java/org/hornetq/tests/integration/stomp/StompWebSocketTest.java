@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +47,7 @@ public class StompWebSocketTest extends UnitTestCase {
      * uncomment the sleep call and run the stomp-websockets Javascript test suite
      * from http://github.com/jmesnil/stomp-websocket
      */
+   @Test
     public void testConnect() throws Exception {
        //Thread.sleep(10000000);
     }
@@ -50,7 +55,8 @@ public class StompWebSocketTest extends UnitTestCase {
     // Implementation methods
     //-------------------------------------------------------------------------
     @Override
-   protected void setUp() throws Exception {
+   @Before
+   public void setUp() throws Exception {
        server = createServer();
        server.start();
     }
@@ -81,7 +87,8 @@ public class StompWebSocketTest extends UnitTestCase {
    }
 
    @Override
-   protected void tearDown() throws Exception {
+   @After
+   public void tearDown() throws Exception {
         server.stop();
     }
 

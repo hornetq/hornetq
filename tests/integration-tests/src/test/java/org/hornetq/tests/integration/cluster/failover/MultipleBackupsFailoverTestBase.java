@@ -12,12 +12,13 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -57,7 +58,8 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       clearData();

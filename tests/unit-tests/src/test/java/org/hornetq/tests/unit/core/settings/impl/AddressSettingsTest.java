@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.core.settings.impl;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -25,6 +27,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AddressSettingsTest extends UnitTestCase
 {
+   @Test
    public void testDefaults()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -42,6 +45,7 @@ public class AddressSettingsTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSingleMerge()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -67,6 +71,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
+   @Test
    public void testMultipleMerge()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -99,6 +104,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
+   @Test
    public void testMultipleMergeAll()
    {
       AddressSettings addressSettings = new AddressSettings();

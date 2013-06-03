@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -30,6 +32,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 public class ExpiredMessageTest extends JMSTestCase
 {
 
+   @Test
    public void testSimpleExpiration() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -56,6 +59,7 @@ public class ExpiredMessageTest extends JMSTestCase
       conn.close();
    }
 
+   @Test
    public void testExpiredAndLivingMessages() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -90,6 +94,7 @@ public class ExpiredMessageTest extends JMSTestCase
       conn.close();
    }
 
+   @Test
    public void testManyExpiredMessagesAtOnce() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();

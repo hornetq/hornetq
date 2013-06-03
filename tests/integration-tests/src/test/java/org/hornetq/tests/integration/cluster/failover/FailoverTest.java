@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
@@ -53,6 +50,9 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -83,7 +83,8 @@ public class FailoverTest extends FailoverTestBase
    private ClientSessionFactoryInternal sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
@@ -117,6 +118,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-685
+   @Test
    public void testTimeoutOnFailover() throws Exception
    {
       locator.setCallTimeout(1000);
@@ -197,6 +199,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-685
+   @Test
    public void testTimeoutOnFailoverConsume() throws Exception
    {
       locator.setCallTimeout(5000);
@@ -269,6 +272,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   @Test
    public void testTimeoutOnFailoverConsumeBlocked() throws Exception
    {
       locator.setCallTimeout(5000);
@@ -389,6 +393,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-685
+   @Test
    public void testTimeoutOnFailoverTransactionCommit() throws Exception
    {
       locator.setCallTimeout(2000);
@@ -443,6 +448,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-685
+   @Test
    public void testTimeoutOnFailoverTransactionRollback() throws Exception
    {
       locator.setCallTimeout(2000);
@@ -498,6 +504,7 @@ public class FailoverTest extends FailoverTestBase
     * see http://jira.jboss.org/browse/HORNETQ-522
     * @throws Exception
     */
+   @Test
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -563,6 +570,7 @@ public class FailoverTest extends FailoverTestBase
       sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
    }
 
+   @Test
    public void testNonTransacted() throws Exception
    {
       createSessionFactory();
@@ -596,12 +604,14 @@ public class FailoverTest extends FailoverTestBase
     * Basic fail-back test.
     * @throws Exception
     */
+   @Test
    public void testFailBack() throws Exception
    {
       boolean doFailBack = true;
       simpleReplication(doFailBack);
    }
 
+   @Test
    public void testFailBackLiveRestartsBackupIsGone() throws Exception
    {
       locator.setFailoverOnInitialConnection(true);
@@ -648,12 +658,14 @@ public class FailoverTest extends FailoverTestBase
       session2.commit();
    }
 
+   @Test
    public void testSimpleReplication() throws Exception
    {
       boolean doFailBack = false;
       simpleReplication(doFailBack);
    }
 
+   @Test
    public void testWithoutUsingTheBackup() throws Exception
    {
       locator.setFailoverOnInitialConnection(true);
@@ -782,6 +794,7 @@ public class FailoverTest extends FailoverTestBase
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
    }
 
+   @Test
    public void testConsumeTransacted() throws Exception
    {
       createSessionFactory();
@@ -864,6 +877,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-285
+   @Test
    public void testFailoverOnInitialConnection() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -894,6 +908,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   @Test
    public void testTransactedMessagesSentSoRollback() throws Exception
    {
       createSessionFactory();
@@ -938,6 +953,7 @@ public class FailoverTest extends FailoverTestBase
     * Test that once the transacted session has throw a TRANSACTION_ROLLED_BACK exception,
     * it can be reused again
     */
+   @Test
    public void testTransactedMessagesSentSoRollbackAndContinueWork() throws Exception
    {
       createSessionFactory();
@@ -989,6 +1005,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   @Test
    public void testTransactedMessagesNotSentSoNoRollback() throws Exception
    {
       createSessionFactory();
@@ -1022,6 +1039,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   @Test
    public void testTransactedMessagesWithConsumerStartedBeforeFailover() throws Exception
    {
       createSessionFactory();
@@ -1061,6 +1079,7 @@ public class FailoverTest extends FailoverTestBase
       session.commit();
    }
 
+   @Test
    public void testTransactedMessagesConsumedSoRollback() throws Exception
    {
       createSessionFactory();
@@ -1101,6 +1120,7 @@ public class FailoverTest extends FailoverTestBase
       }
    }
 
+   @Test
    public void testTransactedMessagesNotConsumedSoNoRollback() throws Exception
    {
       createSessionFactory();
@@ -1148,6 +1168,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(consumer.receiveImmediate());
    }
 
+   @Test
    public void testXAMessagesSentSoRollbackOnEnd() throws Exception
    {
       createSessionFactory();
@@ -1186,7 +1207,9 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
    }
 
+
    //start a tx but sending messages after crash
+   @Test
    public void testXAMessagesSentSoRollbackOnEnd2() throws Exception
    {
       createSessionFactory();
@@ -1227,6 +1250,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testXAMessagesSentSoRollbackOnPrepare() throws Exception
    {
       createSessionFactory();
@@ -1272,6 +1296,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // This might happen if 1PC optimisation kicks in
+   @Test
    public void testXAMessagesSentSoRollbackOnCommit() throws Exception
    {
       createSessionFactory();
@@ -1314,6 +1339,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testXAMessagesNotSentSoNoRollbackOnCommit() throws Exception
    {
       createSessionFactory();
@@ -1357,6 +1383,7 @@ public class FailoverTest extends FailoverTestBase
       session.commit(xid2, false);
    }
 
+   @Test
    public void testXAMessagesConsumedSoRollbackOnEnd() throws Exception
    {
       createSessionFactory();
@@ -1395,6 +1422,7 @@ public class FailoverTest extends FailoverTestBase
       }
    }
 
+   @Test
    public void testXAMessagesConsumedSoRollbackOnEnd2() throws Exception
    {
       createSessionFactory();
@@ -1439,6 +1467,7 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer);
    }
 
+   @Test
    public void testXAMessagesConsumedSoRollbackOnPrepare() throws Exception
    {
       createSessionFactory();
@@ -1480,6 +1509,7 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // 1PC optimisation
+   @Test
    public void testXAMessagesConsumedSoRollbackOnCommit() throws Exception
    {
       createSessionFactory();
@@ -1526,6 +1556,7 @@ public class FailoverTest extends FailoverTestBase
       session2.close();
    }
 
+   @Test
    public void testCreateNewFactoryAfterFailover() throws Exception
    {
       this.disableCheckThread();
@@ -1560,6 +1591,7 @@ public class FailoverTest extends FailoverTestBase
       session = sendAndConsume(sf, true);
    }
 
+   @Test
    public void testFailoverMultipleSessionsWithConsumers() throws Exception
    {
       createSessionFactory();
@@ -1619,6 +1651,7 @@ public class FailoverTest extends FailoverTestBase
    /*
     * Browser will get reset to beginning after failover
     */
+   @Test
    public void testFailWithBrowser() throws Exception
    {
       createSessionFactory();
@@ -1650,6 +1683,7 @@ public class FailoverTest extends FailoverTestBase
       }
    }
 
+   @Test
    public void testFailThenReceiveMoreMessagesAfterFailover() throws Exception
    {
       createSessionFactory();
@@ -1738,6 +1772,7 @@ public class FailoverTest extends FailoverTestBase
       return i % 2 == 0;
    }
 
+   @Test
    public void testFailThenReceiveMoreMessagesAfterFailover2() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -1775,21 +1810,25 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer, 0, NUM_MESSAGES, true);
    }
 
+   @Test
    public void testSimpleSendAfterFailoverDurableTemporary() throws Exception
    {
       doSimpleSendAfterFailover(true, true);
    }
 
+   @Test
    public void testSimpleSendAfterFailoverNonDurableTemporary() throws Exception
    {
       doSimpleSendAfterFailover(false, true);
    }
 
+   @Test
    public void testSimpleSendAfterFailoverDurableNonTemporary() throws Exception
    {
       doSimpleSendAfterFailover(true, false);
    }
 
+   @Test
    public void testSimpleSendAfterFailoverNonDurableNonTemporary() throws Exception
    {
       doSimpleSendAfterFailover(false, false);
@@ -1882,6 +1921,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
    }
 
+   @Test
    public void testCommitOccurredUnblockedAndResendNoDuplicates() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -2040,6 +2080,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testCommitDidNotOccurUnblockedAndResend() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -2143,6 +2184,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull("expecting null message", message);
    }
 
+   @Test
    public void testBackupServerNotRemoved() throws Exception
    {
       // HORNETQ-720 Disabling test for replicating backups.
@@ -2179,6 +2221,7 @@ public class FailoverTest extends FailoverTestBase
       producer.send(message);
    }
 
+   @Test
    public void testLiveAndBackupLiveComesBack() throws Exception
    {
       locator.setFailoverOnInitialConnection(true);
@@ -2211,6 +2254,7 @@ public class FailoverTest extends FailoverTestBase
       producer.send(message);
    }
 
+   @Test
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
       locator.setFailoverOnInitialConnection(true);
@@ -2260,6 +2304,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals("message0", cm.getBodyBuffer().readString());
    }
 
+   @Test
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);

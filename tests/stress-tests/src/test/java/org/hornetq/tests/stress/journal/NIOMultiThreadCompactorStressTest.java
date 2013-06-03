@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -73,7 +76,8 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -83,6 +87,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testMultiThreadCompact() throws Throwable
    {
       setupServer(getJournalType());

@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.integration.cluster.topology;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.Topology;
@@ -40,6 +42,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class IsolatedTopologyTest extends ServiceTestBase
 {
 
+   @Test
    public void testIsolatedClusters() throws Exception
    {
 

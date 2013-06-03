@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 
@@ -22,7 +26,7 @@ import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -58,6 +62,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
    private JMSServerManager serverManager;
 
+   @Test
    public void testCreateDurableQueueUsingJMXAndRestartServer() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -90,6 +95,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
 
+   @Test
    public void testCreateDurableQueueUsingJMSAndRestartServer() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -136,7 +142,8 @@ public class JMSServerControlRestartTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -161,7 +168,8 @@ public class JMSServerControlRestartTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       String bindingDir = serverManager.getHornetQServer().getConfiguration().getBindingsDirectory();
       serverManager.stop();

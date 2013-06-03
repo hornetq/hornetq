@@ -12,13 +12,16 @@
  */
 
 package org.hornetq.tests.integration.twitter;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -66,6 +69,7 @@ public class TwitterTest extends ServiceTestBase
 
    // incoming
 
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -73,7 +77,7 @@ public class TwitterTest extends ServiceTestBase
 
 
 
-   // public static TestSuite suite()
+   // public static Object suite() // FIXME TestSuite()
    // {
    //    TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
 
@@ -93,21 +97,25 @@ public class TwitterTest extends ServiceTestBase
    //    return suite;
    // }
 
+   @Test
    public void testSimpleIncoming() throws Exception
    {
       internalTestIncoming(true,false);
    }
 
+   @Test
    public void testIncomingNoQueue() throws Exception
    {
       internalTestIncoming(false,false);
    }
 
+   @Test
    public void testIncomingWithRestart() throws Exception
    {
       internalTestIncoming(true,true);
    }
 
+   @Test
    public void testIncomingWithEmptyConnectorName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -115,6 +123,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestIncomingFailedToInitialize(params);
    }
 
+   @Test
    public void testIncomingWithEmptyQueueName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -122,6 +131,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestIncomingFailedToInitialize(params);
    }
 
+   @Test
    public void testIncomingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -134,20 +144,24 @@ public class TwitterTest extends ServiceTestBase
 
    //outgoing
 
+   @Test
    public void testSimpleOutgoing() throws Exception
    {
       internalTestOutgoing(true,false);
    }
 
+   @Test
    public void testOutgoingNoQueue() throws Exception
    {
       internalTestOutgoing(false,false);
    }
+   @Test
    public void testOutgoingWithRestart() throws Exception
    {
       internalTestOutgoing(true,true);
    }
 
+   @Test
    public void testOutgoingWithEmptyConnectorName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -155,6 +169,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithEmptyQueueName() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -162,6 +177,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
@@ -172,6 +188,7 @@ public class TwitterTest extends ServiceTestBase
       internalTestOutgoingFailedToInitialize(params);
    }
 
+   @Test
    public void testOutgoingWithInReplyTo() throws Exception
    {
       internalTestOutgoingWithInReplyTo();

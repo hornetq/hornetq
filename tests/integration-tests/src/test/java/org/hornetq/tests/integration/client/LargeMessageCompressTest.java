@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -65,6 +67,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       return locator1;
    }
 
+   @Test
    public void testLargeMessageCompression() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -109,6 +112,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testLargeMessageCompression2() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -168,6 +172,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
    }
 
+   @Test
    public void testLargeMessageCompression3() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -229,6 +234,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
    // This test will send 1 Gig of spaces. There shouldn't be enough memory to uncompress the file in memory
    // but this will make sure we can work through compressed channels on saving it to stream
+   @Test
    public void testHugeStreamingSpacesCompressed() throws Exception
    {
       final long messageSize = 1024l * 1024l * 1024l;
@@ -323,6 +329,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
 
 
+   @Test
    public void testLargeMessageCompressionRestartAndCheckSize() throws Exception
    {
       final int messageSize = 1024 * 1024;
@@ -407,6 +414,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
 
    @Override
+   @Test
    public void testSendServerMessage() throws Exception
    {
       // doesn't make sense as compressed

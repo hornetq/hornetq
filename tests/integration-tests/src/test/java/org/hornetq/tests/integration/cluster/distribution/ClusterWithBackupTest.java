@@ -21,6 +21,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -40,7 +43,8 @@ public class ClusterWithBackupTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -52,6 +56,7 @@ public class ClusterWithBackupTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testBasicRoundRobin() throws Throwable
    {
       try

@@ -1,11 +1,12 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
 
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.rest.HttpHeaderProperty;

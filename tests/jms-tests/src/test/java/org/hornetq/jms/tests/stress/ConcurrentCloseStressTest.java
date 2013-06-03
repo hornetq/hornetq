@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.stress;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +48,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
    Queue queue;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -62,6 +67,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
@@ -71,6 +77,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
       ConcurrentCloseStressTest.log.debug("tear down done");
    }
 
+   @Test
    public void testProducersAndConsumers() throws Exception
    {
       Connection connectionProducer = cf.createConnection();

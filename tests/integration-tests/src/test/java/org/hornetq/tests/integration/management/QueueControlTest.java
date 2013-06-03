@@ -12,11 +12,8 @@
  */
 
 package org.hornetq.tests.integration.management;
-
 import java.util.LinkedList;
 import java.util.Map;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -34,11 +31,15 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
@@ -53,6 +54,7 @@ public class QueueControlTest extends ManagementTestBase
    private ClientSession session;
    private ServerLocator locator;
 
+   @Test
    public void testAttributes() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -72,6 +74,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -86,6 +89,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetDeadLetterAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -113,6 +117,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testSetDeadLetterAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -129,6 +134,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetExpiryAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -156,6 +162,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testSetExpiryAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -172,6 +179,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetConsumerCount() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -192,6 +200,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetConsumerJSON() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -222,6 +231,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetMessageCount() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -243,6 +253,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetMessagesAdded() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -266,6 +277,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetScheduledCount() throws Exception
    {
       long delay = 500;
@@ -299,6 +311,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListDeliveringMessages() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -337,6 +350,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListScheduledMessages() throws Exception
    {
       long delay = 2000;
@@ -369,6 +383,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListScheduledMessagesAsJSON() throws Exception
    {
       long delay = 2000;
@@ -405,6 +420,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetDeliveringCount() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -431,6 +447,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessagesAsJSONWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -461,6 +478,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -494,6 +512,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessagesWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -517,6 +536,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessagesWithEmptyFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -540,6 +560,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessagesAsJSONWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -585,6 +606,7 @@ public class QueueControlTest extends ManagementTestBase
     * <li>consume the message from otherQueue</li>
     * </ol>
     */
+   @Test
    public void testMoveMessages() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -626,6 +648,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(otherQueue);
    }
 
+   @Test
    public void testMoveMessagesToUnknownQueue() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -670,6 +693,7 @@ public class QueueControlTest extends ManagementTestBase
     * </ol>
     */
 
+   @Test
    public void testMoveMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -721,6 +745,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(otherQueue);
    }
 
+   @Test
    public void testMoveMessage() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -758,6 +783,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(otherQueue);
    }
 
+   @Test
    public void testMoveMessageToUnknownQueue() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -802,6 +828,7 @@ public class QueueControlTest extends ManagementTestBase
     * </ol>
     */
 
+   @Test
    public void testRemoveMessages() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -846,6 +873,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testRemoveMessagesWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -869,6 +897,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testRemoveMessagesWithEmptyFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -892,6 +921,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testRemoveMessage() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -923,6 +953,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testRemoveMessage2() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -972,6 +1003,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testCountMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -1002,6 +1034,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testCountMessagesWithInvalidFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -1054,6 +1087,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testExpireMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -1098,6 +1132,7 @@ public class QueueControlTest extends ManagementTestBase
       session.close();
    }
 
+   @Test
    public void testExpireMessage() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -1136,6 +1171,7 @@ public class QueueControlTest extends ManagementTestBase
       session.close();
    }
 
+   @Test
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -1178,6 +1214,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(deadLetterQueue);
    }
 
+   @Test
    public void testChangeMessagePriority() throws Exception
    {
       byte originalPriority = (byte)1;
@@ -1213,6 +1250,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testChangeMessagePriorityWithInvalidValue() throws Exception
    {
       byte invalidPriority = (byte)23;
@@ -1252,6 +1290,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessageCounter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -1304,6 +1343,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testResetMessageCounter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -1356,6 +1396,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessageCounterAsHTML() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -1370,6 +1411,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessageCounterHistory() throws Exception
    {
       long counterPeriod = 1000;
@@ -1390,6 +1432,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testListMessageCounterHistoryAsHTML() throws Exception
    {
       long counterPeriod = 1000;
@@ -1410,6 +1453,7 @@ public class QueueControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testMoveMessagesBack() throws Exception
    {
       server.createQueue(new SimpleString("q1"), new SimpleString("q1"), null, true, false);
@@ -1480,6 +1524,7 @@ public class QueueControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testMoveMessagesBack2() throws Exception
    {
       server.createQueue(new SimpleString("q1"), new SimpleString("q1"), null, true, false);
@@ -1562,6 +1607,7 @@ public class QueueControlTest extends ManagementTestBase
       session.close();
    }
 
+   @Test
    public void testPauseAndResume()
    {
       long counterPeriod = 1000;
@@ -1588,13 +1634,14 @@ public class QueueControlTest extends ManagementTestBase
          e.printStackTrace();
       }
    }
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1615,7 +1662,8 @@ public class QueueControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       session = null;
       locator = null;

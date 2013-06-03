@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
@@ -76,7 +79,8 @@ public class SecurityDeployerTest extends UnitTestCase
    private HierarchicalRepository<Set<Role>> repository;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -85,6 +89,7 @@ public class SecurityDeployerTest extends UnitTestCase
       deployer = new SecurityDeployer(deploymentManager, repository);
    }
 
+   @Test
    public void testSingle() throws Exception
    {
       Element e = org.hornetq.utils.XMLUtil.stringToElement(conf);
@@ -131,11 +136,13 @@ public class SecurityDeployerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testWithWhiteSpace1() throws Exception
    {
       testWithWhiteSpace(confWithWhiteSpace1);
    }
 
+   @Test
    public void testWithWhiteSpace2() throws Exception
    {
       testWithWhiteSpace(confWithWhiteSpace2);
@@ -187,6 +194,7 @@ public class SecurityDeployerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testMultiple() throws Exception
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(conf));
@@ -273,6 +281,7 @@ public class SecurityDeployerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testNoRolesAdded() throws Exception
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(noRoles));
@@ -280,6 +289,7 @@ public class SecurityDeployerTest extends UnitTestCase
       Assert.assertNull(roles);
    }
 
+   @Test
    public void testDeployFromConfigurationFile() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'> " + "<security-settings>"

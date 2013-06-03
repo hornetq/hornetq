@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +27,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -76,7 +80,8 @@ public class XaTimeoutTest extends UnitTestCase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -101,7 +106,8 @@ public class XaTimeoutTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {
@@ -133,6 +139,7 @@ public class XaTimeoutTest extends UnitTestCase
       super.tearDown();
    }
 
+   @Test
    public void testSimpleTimeoutOnSendOnCommit() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -164,6 +171,7 @@ public class XaTimeoutTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testSimpleTimeoutOnReceive() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -234,6 +242,7 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession2.close();
    }
 
+   @Test
    public void testSimpleTimeoutOnSendAndReceive() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -314,6 +323,7 @@ public class XaTimeoutTest extends UnitTestCase
       clientSession2.close();
    }
 
+   @Test
    public void testPreparedTransactionNotTimedOut() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -390,6 +400,7 @@ public class XaTimeoutTest extends UnitTestCase
    }
 
 
+   @Test
    public void testTimeoutOnConsumerResend() throws Exception
    {
 
@@ -547,6 +558,7 @@ public class XaTimeoutTest extends UnitTestCase
 
     }
 
+   @Test
    public void testChangingTimeoutGetsPickedUp() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -595,6 +607,7 @@ public class XaTimeoutTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testMultipleTransactionsTimedOut() throws Exception
    {
       Xid[] xids = new XidImpl[100];
@@ -676,6 +689,7 @@ public class XaTimeoutTest extends UnitTestCase
    }
 
    // HORNETQ-1117 - Test that will timeout on a XA transaction and then will perform another XA operation
+   @Test
    public void testTimeoutOnXACall() throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);

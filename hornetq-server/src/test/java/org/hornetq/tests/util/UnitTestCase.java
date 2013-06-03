@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.util;
+import org.junit.Before;
+import org.junit.After;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -49,7 +51,7 @@ import javax.naming.Context;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -969,7 +971,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    Map<Thread, StackTraceElement[]> previousThreads;
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       //      testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" + System.currentTimeMillis();
       OperationContextImpl.clearContext();
@@ -985,7 +988,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       logAndSystemOut("#test " + getName());
    }
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();

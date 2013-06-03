@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +54,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
          setUp();
       }
    }
+   @Test
    public void testMultipleFailovers() throws Exception
    {
       nodeManager = new InVMNodeManager(!sharedStore);
@@ -180,7 +184,8 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       closeServerLocator(locator);
       for (TestableServer server : servers.values())

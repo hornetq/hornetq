@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.reattach;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,8 +25,8 @@ import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -74,6 +78,7 @@ public class RandomReattachTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testA() throws Exception
    {
       runTest(new RunnableT()
@@ -86,6 +91,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testB() throws Exception
    {
       runTest(new RunnableT()
@@ -98,6 +104,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testC() throws Exception
    {
       runTest(new RunnableT()
@@ -110,6 +117,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testD() throws Exception
    {
       runTest(new RunnableT()
@@ -122,6 +130,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testE() throws Exception
    {
       runTest(new RunnableT()
@@ -134,6 +143,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testF() throws Exception
    {
       runTest(new RunnableT()
@@ -146,6 +156,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testG() throws Exception
    {
       runTest(new RunnableT()
@@ -158,6 +169,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testH() throws Exception
    {
       runTest(new RunnableT()
@@ -170,6 +182,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testI() throws Exception
    {
       runTest(new RunnableT()
@@ -182,6 +195,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testJ() throws Exception
    {
       runTest(new RunnableT()
@@ -194,6 +208,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testK() throws Exception
    {
       runTest(new RunnableT()
@@ -206,6 +221,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testL() throws Exception
    {
       runTest(new RunnableT()
@@ -218,6 +234,7 @@ public class RandomReattachTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testN() throws Exception
    {
       runTest(new RunnableT()
@@ -1450,7 +1467,8 @@ public class RandomReattachTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1458,7 +1476,8 @@ public class RandomReattachTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       timer.cancel();
 
@@ -1541,14 +1560,14 @@ public class RandomReattachTest extends UnitTestCase
 
       public void checkAssertions()
       {
-         for (AssertionFailedError e: errors)
+         for (AssertionError e: errors)
          {
             // it will throw the first error
             throw e;
          }
       }
 
-      private final ArrayList<AssertionFailedError> errors = new ArrayList<AssertionFailedError>();
+      private final ArrayList<AssertionError> errors = new ArrayList<AssertionError>();
 
       /* (non-Javadoc)
        * @see org.hornetq.api.core.client.MessageHandler#onMessage(org.hornetq.api.core.client.ClientMessage)
@@ -1559,7 +1578,7 @@ public class RandomReattachTest extends UnitTestCase
          {
             onMessageAssert(message);
          }
-         catch (AssertionFailedError e)
+         catch (AssertionError e)
          {
             e.printStackTrace(); // System.out -> junit reports
             errors.add(e);

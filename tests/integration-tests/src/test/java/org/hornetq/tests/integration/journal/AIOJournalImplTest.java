@@ -12,11 +12,12 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
 
 import java.io.File;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -41,14 +42,15 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOJournalImplTest extends JournalImplTestUnit
 {
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       // Ignore tests if AIO is not installed
       return UnitTestCase.createAIOTestSuite(AIOJournalImplTest.class);
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       if (!AsynchronousFileImpl.isLoaded())

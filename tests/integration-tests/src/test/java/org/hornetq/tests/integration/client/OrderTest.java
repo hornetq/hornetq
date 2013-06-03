@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -40,7 +43,8 @@ public class OrderTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createNettyNonHALocator();
@@ -53,11 +57,13 @@ public class OrderTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSimpleOrderNoStorage() throws Exception
    {
       doTestSimpleOrder(false);
    }
 
+   @Test
    public void testSimpleOrderPersistence() throws Exception
    {
       doTestSimpleOrder(true);
@@ -136,11 +142,13 @@ public class OrderTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testOrderOverSessionClosePersistent() throws Exception
    {
       doTestOverCancel(true);
    }
 
+   @Test
    public void testOrderOverSessionCloseNonPersistent() throws Exception
    {
       doTestOverCancel(false);
@@ -206,11 +214,13 @@ public class OrderTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testOrderOverSessionClosePersistentWithRedeliveryDelay() throws Exception
    {
       doTestOverCancelWithRedelivery(true);
    }
 
+   @Test
    public void testOrderOverSessionCloseNonPersistentWithRedeliveryDelay() throws Exception
    {
       doTestOverCancelWithRedelivery(false);

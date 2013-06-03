@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static org.hornetq.api.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
 import static org.hornetq.api.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
@@ -19,7 +23,7 @@ import static org.hornetq.api.core.management.NotificationType.SECURITY_PERMISSI
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -69,6 +73,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSECURITY_AUTHENTICATION_VIOLATION() throws Exception
    {
       String unknownUser = RandomUtil.randomString();
@@ -93,6 +98,7 @@ public class SecurityNotificationTest extends UnitTestCase
       Assert.assertEquals(unknownUser, notifications[0].getObjectProperty(ManagementHelper.HDR_USER).toString());
    }
 
+   @Test
    public void testSECURITY_PERMISSION_VIOLATION() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -138,7 +144,8 @@ public class SecurityNotificationTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -176,7 +183,8 @@ public class SecurityNotificationTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       notifConsumer.close();
 

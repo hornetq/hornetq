@@ -13,13 +13,15 @@
 
 package org.hornetq.tests.unit.ra;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Connection;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -61,6 +63,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDefaultConnectionFactory() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -94,6 +97,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.isUseGlobalPools(), HornetQClient.DEFAULT_USE_GLOBAL_POOLS);
    }
 
+   @Test
    public void test2DefaultConnectionFactorySame() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -103,6 +107,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory, factory2);
    }
 
+   @Test
    public void testCreateConnectionFactoryNoOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -136,6 +141,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.isUseGlobalPools(), HornetQClient.DEFAULT_USE_GLOBAL_POOLS);
    }
 
+   @Test
    public void testDefaultConnectionFactoryOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -191,6 +197,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.isUseGlobalPools(), !HornetQClient.DEFAULT_USE_GLOBAL_POOLS);
    }
 
+   @Test
    public void testCreateConnectionFactoryOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -247,6 +254,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.isUseGlobalPools(), !HornetQClient.DEFAULT_USE_GLOBAL_POOLS);
    }
 
+   @Test
    public void testCreateConnectionFactoryOverrideConnector() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -260,6 +268,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertNotSame(factory, defaultFactory);
    }
 
+   @Test
    public void testCreateConnectionFactoryOverrideDiscovery() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -278,6 +287,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(udpDg.getGroupPort(), 5678);
    }
 
+   @Test
    public void testCreateConnectionFactoryMultipleConnectors()
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -294,6 +304,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(0, configurations[2].getParams().size());
    }
 
+   @Test
    public void testCreateConnectionFactoryMultipleConnectorsAndParams()
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -316,6 +327,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals("5446", configurations[2].getParams().get("port"));
    }
 
+   @Test
    public void testCreateConnectionFactoryMultipleConnectorsOverride()
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -338,6 +350,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(0, configurations[2].getParams().size());
    }
 
+   @Test
    public void testCreateConnectionFactoryMultipleConnectorsOverrideAndParams()
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -377,6 +390,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals("1", configurations[2].getParams().get("serverid"));
    }
 
+   @Test
    public void testCreateConnectionFactoryThrowsException() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
@@ -392,6 +406,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testValidateProperties() throws Exception
    {
       validateGettersAndSetters(new HornetQResourceAdapter(),
@@ -442,6 +457,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testStartActivation() throws Exception
    {
       HornetQServer server = createServer(false);

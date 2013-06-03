@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.net.URI;
 
@@ -19,7 +23,7 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -68,6 +72,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testValidateEmptyConfiguration() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
@@ -78,6 +83,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       deployer.validate(rootNode);
    }
 
+   @Test
    public void testDeployUnusualQueueNames() throws Exception
    {
       doTestDeployQueuesWithUnusualNames("queue.with.dots.in.name", "/myqueue");
@@ -93,6 +99,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
                                          "/myqueue5");
    }
 
+   @Test
    public void testDeployUnusualTopicNames() throws Exception
    {
       doTestDeployTopicsWithUnusualNames("topic.with.dots.in.name", "/mytopic");
@@ -156,6 +163,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       doTestDeployTopicsWithUnusualNames(topicName, topicName, jndiName);
    }
 
+   @Test
    public void testDeployFullConfiguration() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
@@ -241,6 +249,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testDeployFullConfiguration2() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
@@ -331,7 +340,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -356,7 +366,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.stop();
       jmsServer = null;

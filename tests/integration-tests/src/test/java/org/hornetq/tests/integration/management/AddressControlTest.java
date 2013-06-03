@@ -12,13 +12,16 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -54,6 +57,7 @@ public class AddressControlTest extends ManagementTestBase
    private ServerLocator locator;
    private ClientSessionFactory sf;
 
+   @Test
    public void testGetAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -68,6 +72,7 @@ public class AddressControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetQueueNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -94,6 +99,7 @@ public class AddressControlTest extends ManagementTestBase
       session.deleteQueue(anotherQueue);
    }
 
+   @Test
    public void testGetBindingNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -119,6 +125,7 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(divertName.toString(), bindingNames[0]);
    }
 
+   @Test
    public void testGetRoles() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -157,6 +164,7 @@ public class AddressControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetRolesAsJSON() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -199,6 +207,7 @@ public class AddressControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetNumberOfPages() throws Exception
    {
       session.close();
@@ -259,6 +268,7 @@ public class AddressControlTest extends ManagementTestBase
          Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
    }
 
+   @Test
    public void testGetNumberOfBytesPerPage() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -291,7 +301,8 @@ public class AddressControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

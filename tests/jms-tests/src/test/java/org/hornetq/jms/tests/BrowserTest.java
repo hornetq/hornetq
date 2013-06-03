@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.jms.tests;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Enumeration;
 
@@ -38,6 +41,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 public class BrowserTest extends JMSTestCase
 {
    Connection conn;
+   @Test
    public void testCreateBrowserOnNullDestination() throws Exception
    {
       conn = getConnectionFactory().createConnection();
@@ -55,6 +59,7 @@ public class BrowserTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testCreateBrowserOnNonExistentQueue() throws Exception
    {
       Connection pconn = getConnectionFactory().createConnection();
@@ -88,6 +93,7 @@ public class BrowserTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testBrowse2() throws Exception
    {
       conn = getConnectionFactory().createConnection();
@@ -120,6 +126,7 @@ public class BrowserTest extends JMSTestCase
       drainDestination(getConnectionFactory(), queue1);
    }
 
+   @Test
    public void testBrowse() throws Exception
    {
       conn = getConnectionFactory().createConnection();
@@ -150,6 +157,7 @@ public class BrowserTest extends JMSTestCase
       drainDestination(getConnectionFactory(), queue1);
    }
 
+   @Test
    public void testBrowseWithSelector() throws Exception
    {
       try
@@ -175,6 +183,7 @@ public class BrowserTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetEnumeration() throws Exception
    {
       try
@@ -225,7 +234,8 @@ public class BrowserTest extends JMSTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

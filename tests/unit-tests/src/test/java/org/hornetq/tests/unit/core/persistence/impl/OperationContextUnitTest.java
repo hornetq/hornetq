@@ -13,13 +13,15 @@
 
 package org.hornetq.tests.unit.core.persistence.impl;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -46,6 +48,7 @@ public class OperationContextUnitTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCompleteTaskAfterPaging() throws Exception
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -107,6 +110,7 @@ public class OperationContextUnitTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testCaptureExceptionOnExecutor() throws Exception
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -159,6 +163,7 @@ public class OperationContextUnitTest extends UnitTestCase
       Assert.assertEquals(1, numberOfFailures.get());
    }
 
+   @Test
    public void testCaptureExceptionOnFailure() throws Exception
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();

@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -76,6 +79,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testInsertAndLoad() throws Exception
    {
 
@@ -163,6 +167,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
    }
 
+   @Test
    public void testInsertUpdateAndLoad() throws Exception
    {
 
@@ -251,7 +256,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

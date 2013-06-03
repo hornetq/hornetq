@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.jms.tests;
+import org.junit.Before;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -98,7 +99,8 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
    protected static Queue queue4;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

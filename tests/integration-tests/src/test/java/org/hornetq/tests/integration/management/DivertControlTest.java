@@ -12,8 +12,12 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.DivertControl;
@@ -50,6 +54,7 @@ public class DivertControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(divertConfig.getName()));
@@ -76,7 +81,8 @@ public class DivertControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -113,7 +119,8 @@ public class DivertControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       service.stop();
 

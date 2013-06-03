@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 
@@ -20,7 +24,7 @@ import javax.management.MBeanServerFactory;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -61,6 +65,7 @@ public class HeuristicXATest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testInvalidCall() throws Exception
    {
       Configuration configuration = createDefaultConfig();
@@ -74,11 +79,13 @@ public class HeuristicXATest extends ServiceTestBase
       Assert.assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
    }
 
+   @Test
    public void testHeuristicCommit() throws Exception
    {
       internalTest(true);
    }
 
+   @Test
    public void testHeuristicRollback() throws Exception
    {
       internalTest(false);
@@ -167,11 +174,13 @@ public class HeuristicXATest extends ServiceTestBase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
    }
 
+   @Test
    public void testHeuristicCommitWithRestart() throws Exception
    {
       doHeuristicCompletionWithRestart(true);
    }
 
+   @Test
    public void testHeuristicRollbackWithRestart() throws Exception
    {
       doHeuristicCompletionWithRestart(false);
@@ -265,11 +274,13 @@ public class HeuristicXATest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testRecoverHeuristicCommitWithRestart() throws Exception
    {
       doRecoverHeuristicCompletedTxWithRestart(true);
    }
 
+   @Test
    public void testRecoverHeuristicRollbackWithRestart() throws Exception
    {
       doRecoverHeuristicCompletedTxWithRestart(false);
@@ -372,11 +383,13 @@ public class HeuristicXATest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testForgetHeuristicCommitAndRestart() throws Exception
    {
       doForgetHeuristicCompletedTxAndRestart(true);
    }
 
+   @Test
    public void testForgetHeuristicRollbackAndRestart() throws Exception
    {
       doForgetHeuristicCompletedTxAndRestart(false);
@@ -469,7 +482,8 @@ public class HeuristicXATest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       locator.close();
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
@@ -477,7 +491,8 @@ public class HeuristicXATest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       mbeanServer = MBeanServerFactory.createMBeanServer();

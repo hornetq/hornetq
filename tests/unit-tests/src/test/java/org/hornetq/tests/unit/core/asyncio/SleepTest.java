@@ -12,9 +12,12 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
+import org.junit.Before;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Test;
+
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -35,7 +38,7 @@ public class SleepTest extends UnitTestCase
 
    // Static --------------------------------------------------------
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(SleepTest.class);
    }
@@ -44,6 +47,7 @@ public class SleepTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNanoSleep() throws Exception
    {
       AsynchronousFileImpl.setNanoSleepInterval(1);
@@ -76,7 +80,8 @@ public class SleepTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

@@ -1,5 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +28,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       servers[5].getConfiguration().setBackupGroupName("group2");
    }
 
+   @Test
    public void testQuorumVoting() throws Exception
    {
       int[] liveServerIDs = new int[] { 0, 1, 2 };

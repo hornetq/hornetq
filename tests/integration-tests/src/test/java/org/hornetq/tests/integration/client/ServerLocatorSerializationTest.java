@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -40,7 +44,8 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       Configuration configuration = createDefaultConfig(isNetty());
@@ -49,12 +54,14 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       server.stop();
       super.tearDown();
    }
 
+   @Test
    public void testLocatorSerialization() throws Exception
    {
       log.info("Starting Netty locator");
@@ -85,6 +92,7 @@ public class ServerLocatorSerializationTest extends ServiceTestBase
       locatorImpl.close();
    }
 
+   @Test
    public void testConnectionFactorySerialization() throws Exception
    {
       log.info("Starting connection factory");

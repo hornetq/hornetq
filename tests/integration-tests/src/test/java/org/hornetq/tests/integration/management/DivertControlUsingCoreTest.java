@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -102,7 +104,8 @@ public class DivertControlUsingCoreTest extends DivertControlTest
 
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -110,7 +113,8 @@ public class DivertControlUsingCoreTest extends DivertControlTest
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (session != null)
       {

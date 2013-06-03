@@ -1,4 +1,6 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
+import org.junit.After;
 
 import org.jboss.resteasy.client.ClientExecutor;
 import org.jboss.resteasy.client.ClientResponse;

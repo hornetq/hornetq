@@ -11,6 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.bridge;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +33,7 @@ import javax.jms.Topic;
 import javax.jms.XAConnectionFactory;
 import javax.transaction.TransactionManager;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
 import com.arjuna.ats.arjuna.coordinator.TxControl;
@@ -103,7 +105,8 @@ public abstract class BridgeTestBase extends UnitTestCase
    private HashMap<String, Object> params1;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -164,7 +167,8 @@ public abstract class BridgeTestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       checkEmpty(sourceQueue, 0);
       checkEmpty(localTargetQueue, 0);

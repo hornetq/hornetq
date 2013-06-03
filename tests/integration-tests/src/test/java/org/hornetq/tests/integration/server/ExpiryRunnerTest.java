@@ -11,13 +11,17 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -54,6 +58,7 @@ public class ExpiryRunnerTest extends UnitTestCase
    private SimpleString expiryAddress;
    private ServerLocator locator;
 
+   @Test
    public void testBasicExpire() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -70,6 +75,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireFromMultipleQueues() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -94,6 +100,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireHalf() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -114,6 +121,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireConsumeHalf() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -140,6 +148,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireToExpiryQueue() throws Exception
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -178,6 +187,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       consumer.close();
    }
 
+   @Test
    public void testExpireWhilstConsumingMessagesStillInOrder() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -247,7 +257,8 @@ public class ExpiryRunnerTest extends UnitTestCase
 //   }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -276,7 +287,8 @@ public class ExpiryRunnerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {

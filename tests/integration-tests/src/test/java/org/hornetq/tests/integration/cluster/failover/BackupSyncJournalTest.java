@@ -1,4 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,7 +56,8 @@ public class BackupSyncJournalTest extends FailoverTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       startBackupServer = false;
       super.setUp();
@@ -67,6 +71,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    }
 
+   @Test
    public void testNodeID() throws Exception
    {
       startBackupFinishSyncing();
@@ -75,6 +80,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
                    backupServer.getServer().getNodeID());
    }
 
+   @Test
    public void testReserveFileIdValuesOnBackup() throws Exception
    {
       final int totalRounds = 50;
@@ -150,6 +156,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
    }
 
+   @Test
    public void testReplicationDuringSync() throws Exception
    {
       try
@@ -167,7 +174,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
          receiveMsgsInRange(0, n_msgs);
          assertNoMoreMessages();
       }
-      catch (junit.framework.AssertionFailedError error)
+      catch (AssertionError error)
       {
          printJournal(liveServer);
          printJournal(backupServer);
@@ -241,6 +248,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       }
    }
 
+   @Test
    public void testMessageSyncSimple() throws Exception
    {
       createProducerSendSomeMessages();
@@ -253,6 +261,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
     * Basic fail-back test.
     * @throws Exception
     */
+   @Test
    public void testFailBack() throws Exception
    {
       createProducerSendSomeMessages();
@@ -284,6 +293,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertNoMoreMessages();
    }
 
+   @Test
    public void testMessageSync() throws Exception
    {
       createProducerSendSomeMessages();

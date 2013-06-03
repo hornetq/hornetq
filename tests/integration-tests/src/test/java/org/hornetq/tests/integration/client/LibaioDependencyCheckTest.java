@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -39,6 +41,7 @@ public class LibaioDependencyCheckTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDependency() throws Exception
    {
       if (System.getProperties().get("os.name").equals("Linux"))

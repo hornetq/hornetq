@@ -1,5 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
@@ -8,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -45,6 +47,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
 
    // ------------------------
 
+   @Test
    public void testDeleteLargeMessages() throws Exception
    {
       File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
@@ -67,6 +70,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
    /**
     * @throws Exception
     */
+   @Test
    public void testDeleteLargeMessagesDuringSync() throws Exception
    {
       setNumberOfMessages(200);
@@ -101,6 +105,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
     * message upload from the client to the live server.
     * @throws Exception
     */
+   @Test
    public void testBackupStartsWhenLiveIsReceivingLargeMessage() throws Exception
    {
       final ClientSession session = addClientSession(sessionFactory.createSession(true, true));

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.soak.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 
@@ -58,7 +61,8 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -83,6 +87,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testSoakClientTransactions() throws Exception
    {
       final ServerLocator locator = createFactory(IS_NETTY);

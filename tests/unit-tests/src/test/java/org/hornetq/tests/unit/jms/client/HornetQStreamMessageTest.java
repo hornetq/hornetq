@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.unit.jms.client;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.tests.util.RandomUtil;
@@ -41,12 +43,14 @@ public class HornetQStreamMessageTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetType() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
       Assert.assertEquals(HornetQStreamMessage.TYPE, message.getType());
    }
 
+   @Test
    public void testReadBooleanFromBoolean() throws Exception
    {
       boolean value = RandomUtil.randomBoolean();
@@ -58,6 +62,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readBoolean());
    }
 
+   @Test
    public void testReadBooleanFromString() throws Exception
    {
       boolean value = RandomUtil.randomBoolean();
@@ -69,6 +74,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readBoolean());
    }
 
+   @Test
    public void testReadBooleanFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -80,6 +86,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadBooleanFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -91,6 +98,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadCharFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -102,6 +110,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadCharFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -113,6 +122,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadByteFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -124,6 +134,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readByte());
    }
 
+   @Test
    public void testReadByteFromString() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -135,6 +146,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readByte());
    }
 
+   @Test
    public void testReadByteFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -146,6 +158,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadByteFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -157,6 +170,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadBytesFromBytes() throws Exception
    {
       byte[] value = RandomUtil.randomBytes();
@@ -171,6 +185,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       UnitTestCase.assertEqualsByteArrays(value, v);
    }
 
+   @Test
    public void testReadBytesFromBytes_2() throws Exception
    {
       byte[] value = RandomUtil.randomBytes(512);
@@ -185,6 +200,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       UnitTestCase.assertEqualsByteArrays(256, value, v);
    }
 
+   @Test
    public void testReadBytesFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomBoolean(), new TypeReader()
@@ -196,6 +212,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadBytesFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -208,6 +225,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadShortFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -219,6 +237,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readShort());
    }
 
+   @Test
    public void testReadShortFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -230,6 +249,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readShort());
    }
 
+   @Test
    public void testReadShortFromString() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -241,6 +261,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readShort());
    }
 
+   @Test
    public void testReadShortFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -252,6 +273,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadShortFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -263,6 +285,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadIntFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -274,6 +297,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readInt());
    }
 
+   @Test
    public void testReadIntFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -285,6 +309,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readInt());
    }
 
+   @Test
    public void testReadIntFromInt() throws Exception
    {
       int value = RandomUtil.randomInt();
@@ -296,6 +321,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readInt());
    }
 
+   @Test
    public void testReadIntFromString() throws Exception
    {
       int value = RandomUtil.randomInt();
@@ -307,6 +333,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readInt());
    }
 
+   @Test
    public void testReadIntFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -318,6 +345,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadIntFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -329,6 +357,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadCharFromChar() throws Exception
    {
       char value = RandomUtil.randomChar();
@@ -340,6 +369,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readChar());
    }
 
+   @Test
    public void testReadCharFromNull() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
@@ -357,6 +387,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReadLongFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -368,6 +399,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readLong());
    }
 
+   @Test
    public void testReadLongFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -379,6 +411,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readLong());
    }
 
+   @Test
    public void testReadLongFromInt() throws Exception
    {
       int value = RandomUtil.randomInt();
@@ -390,6 +423,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readLong());
    }
 
+   @Test
    public void testReadLongFromLong() throws Exception
    {
       long value = RandomUtil.randomLong();
@@ -401,6 +435,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readLong());
    }
 
+   @Test
    public void testReadLongFromString() throws Exception
    {
       long value = RandomUtil.randomLong();
@@ -412,6 +447,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readLong());
    }
 
+   @Test
    public void testReadLongFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomFloat(), new TypeReader()
@@ -423,6 +459,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadLongFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -434,6 +471,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadFloatFromFloat() throws Exception
    {
       float value = RandomUtil.randomFloat();
@@ -445,6 +483,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readFloat(), 0.000001);
    }
 
+   @Test
    public void testReadFloatFromString() throws Exception
    {
       float value = RandomUtil.randomFloat();
@@ -456,6 +495,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readFloat(), 0.000001);
    }
 
+   @Test
    public void testReadFloatFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomBoolean(), new TypeReader()
@@ -467,6 +507,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadFloatFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -478,6 +519,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadDoubleFromFloat() throws Exception
    {
       float value = RandomUtil.randomFloat();
@@ -489,6 +531,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Float.valueOf(value).doubleValue(), message.readDouble(), 0.000001);
    }
 
+   @Test
    public void testReadDoubleFromDouble() throws Exception
    {
       double value = RandomUtil.randomDouble();
@@ -500,6 +543,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readDouble(), 0.000001);
    }
 
+   @Test
    public void testReadDoubleFromString() throws Exception
    {
       double value = RandomUtil.randomDouble();
@@ -511,6 +555,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readDouble(), 0.000001);
    }
 
+   @Test
    public void testReadDoubleFromInvalidType() throws Exception
    {
       doReadTypeFromInvalidType(RandomUtil.randomBoolean(), new TypeReader()
@@ -522,6 +567,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadDoubleFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -533,6 +579,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testReadStringFromBoolean() throws Exception
    {
       boolean value = RandomUtil.randomBoolean();
@@ -544,6 +591,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Boolean.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromChar() throws Exception
    {
       char value = RandomUtil.randomChar();
@@ -555,6 +603,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Character.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -566,6 +615,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Byte.toString(value), message.readString());
    }
 
+   @Test
    public void testString() throws Exception
    {
       String value = RandomUtil.randomString();
@@ -587,6 +637,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readString());
    }
 
+   @Test
    public void testReadStringFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -598,6 +649,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Short.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromInt() throws Exception
    {
       int value = RandomUtil.randomInt();
@@ -609,6 +661,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Integer.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromLong() throws Exception
    {
       long value = RandomUtil.randomLong();
@@ -620,6 +673,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Long.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromFloat() throws Exception
    {
       float value = RandomUtil.randomFloat();
@@ -631,6 +685,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Float.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromDouble() throws Exception
    {
       double value = RandomUtil.randomDouble();
@@ -642,6 +697,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(Double.toString(value), message.readString());
    }
 
+   @Test
    public void testReadStringFromString() throws Exception
    {
       String value = RandomUtil.randomString();
@@ -653,6 +709,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readString());
    }
 
+   @Test
    public void testReadStringFromNullString() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
@@ -663,6 +720,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertNull(message.readString());
    }
 
+   @Test
    public void testReadStringFromEmptyMessage() throws Exception
    {
       doReadTypeFromEmptyMessage(new TypeReader()
@@ -674,6 +732,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithBoolean() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomBoolean(), new TypeReader()
@@ -685,6 +744,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithChar() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomChar(), new TypeReader()
@@ -696,6 +756,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithByte() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomByte(), new TypeReader()
@@ -707,6 +768,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithBytes() throws Exception
    {
       final byte[] value = RandomUtil.randomBytes();
@@ -721,6 +783,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithShort() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomShort(), new TypeReader()
@@ -732,6 +795,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithInt() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomInt(), new TypeReader()
@@ -743,6 +807,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithLong() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomLong(), new TypeReader()
@@ -754,6 +819,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithFloat() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomFloat(), new TypeReader()
@@ -765,6 +831,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithDouble() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomDouble(), new TypeReader()
@@ -776,6 +843,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithString() throws Exception
    {
       doWriteObjectWithType(RandomUtil.randomString(), new TypeReader()
@@ -787,6 +855,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       });
    }
 
+   @Test
    public void testWriteObjectWithNull() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
@@ -794,6 +863,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       message.writeObject(null);
    }
 
+   @Test
    public void testWriteObjectWithInvalidType() throws Exception
    {
       HornetQStreamMessage message = new HornetQStreamMessage();
@@ -808,6 +878,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReadObjectFromBoolean() throws Exception
    {
       boolean value = RandomUtil.randomBoolean();
@@ -819,6 +890,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromChar() throws Exception
    {
       char value = RandomUtil.randomChar();
@@ -830,6 +902,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromByte() throws Exception
    {
       byte value = RandomUtil.randomByte();
@@ -841,6 +914,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromBytes() throws Exception
    {
       byte[] value = RandomUtil.randomBytes();
@@ -853,6 +927,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       UnitTestCase.assertEqualsByteArrays(value, v);
    }
 
+   @Test
    public void testReadObjectFromShort() throws Exception
    {
       short value = RandomUtil.randomShort();
@@ -864,6 +939,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromInt() throws Exception
    {
       int value = RandomUtil.randomInt();
@@ -875,6 +951,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromLong() throws Exception
    {
       long value = RandomUtil.randomLong();
@@ -886,6 +963,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromFloat() throws Exception
    {
       float value = RandomUtil.randomFloat();
@@ -897,6 +975,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromDouble() throws Exception
    {
       double value = RandomUtil.randomDouble();
@@ -908,6 +987,7 @@ public class HornetQStreamMessageTest extends UnitTestCase
       Assert.assertEquals(value, message.readObject());
    }
 
+   @Test
    public void testReadObjectFromString() throws Exception
    {
       String value = RandomUtil.randomString();

@@ -1,6 +1,8 @@
 package org.hornetq.tests.stress.journal;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
 import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
@@ -15,6 +17,7 @@ public class XmlImportExportStressTest extends ServiceTestBase
 {
    public static final int CONSUMER_TIMEOUT = 5000;
 
+   @Test
    public void testHighVolume() throws Exception
    {
       final String FILE_NAME = "temp";

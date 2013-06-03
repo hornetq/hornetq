@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.stress;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -50,6 +54,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMultipleSenders() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -91,7 +96,8 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -103,7 +109,8 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       destroyQueue("StressTestQueue");
       ic.close();

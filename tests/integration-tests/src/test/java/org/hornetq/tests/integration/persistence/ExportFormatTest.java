@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.io.StringReader;
 
 import org.hornetq.api.core.client.ClientConsumer;
@@ -117,6 +119,7 @@ public class ExportFormatTest extends ServiceTestBase
       ExportJournal.exportJournal(getJournalDir(), "hornetq-data", "hq", 2, 102400, System.out);
    }
 
+   @Test
    public void testConsumeFromFormat() throws Exception
    {
       ImportJournal.importJournal(getJournalDir(), "hornetq-data", "hq", 2, 102400, new StringReader(journalFile));

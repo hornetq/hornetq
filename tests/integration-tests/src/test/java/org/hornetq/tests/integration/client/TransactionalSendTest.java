@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
@@ -39,12 +42,14 @@ public class TransactionalSendTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testSendWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -73,6 +78,7 @@ public class TransactionalSendTest extends ServiceTestBase
          session.close();
          }
 
+   @Test
    public void testSendWithRollback() throws Exception
    {
       HornetQServer server = createServer(false);

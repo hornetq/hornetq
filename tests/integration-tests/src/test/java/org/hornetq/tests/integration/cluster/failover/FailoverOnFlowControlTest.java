@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,6 +46,7 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
 
    private static IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
+   @Test
    public void testOverflowSend() throws Exception
    {
       ServerLocator locator = getServerLocator();

@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -58,6 +60,7 @@ public class AckBatchSizeTest extends ServiceTestBase
       return encodeSize;
    }
 
+   @Test
    public void testAckBatchSize() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -98,6 +101,7 @@ public class AckBatchSizeTest extends ServiceTestBase
    /*
    * tests that when the ackBatchSize is 0 we ack every message directly
    * */
+   @Test
    public void testAckBatchSizeZero() throws Exception
    {
       HornetQServer server = createServer(false);

@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.integration.ssl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
@@ -57,6 +60,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
 
    private TransportConfiguration tc;
 
+   @Test
    public void testOneWaySSL() throws Exception
    {
       String text = RandomUtil.randomString();
@@ -82,6 +86,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       Assert.assertEquals(text, m.getBodyBuffer().readString());
    }
 
+   @Test
    public void testOneWaySSLWithoutTrustStore() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
@@ -102,6 +107,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testOneWaySSLWithIncorrectTrustStorePassword() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
@@ -124,6 +130,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testOneWaySSLWithIncorrectTrustStorePath() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
@@ -147,6 +154,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    }
 
    // see https://jira.jboss.org/jira/browse/HORNETQ-234
+   @Test
    public void testPlainConnectionToSSLEndpoint() throws Exception
    {
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
@@ -175,7 +183,8 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       ConfigurationImpl config = createBasicConfig();

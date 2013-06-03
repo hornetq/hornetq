@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
+import org.junit.Test;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +59,7 @@ public class BindingsImplTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testRemoveWhileRouting() throws Exception
    {
       // It would require many iterations before getting a failure
@@ -66,6 +69,7 @@ public class BindingsImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRemoveWhileRedistributing() throws Exception
    {
       // It would require many iterations before getting a failure

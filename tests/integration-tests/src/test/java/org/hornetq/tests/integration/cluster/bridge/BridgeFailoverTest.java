@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,7 @@ import org.hornetq.tests.integration.cluster.util.MultiServerTestBase;
 public class BridgeFailoverTest extends MultiServerTestBase
 {
 
+   @Test
    public void testSimpleConnectOnMultipleNodes() throws Exception
    {
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration();
@@ -95,11 +98,13 @@ public class BridgeFailoverTest extends MultiServerTestBase
       sessionConsumer.commit();
    }
 
+   @Test
    public void testFailoverOnBridgeNoRetryOnSameNode() throws Exception
    {
       internalTestFailoverOnBridge(0);
    }
 
+   @Test
    public void testFailoverOnBridgeForeverRetryOnSameNode() throws Exception
    {
       internalTestFailoverOnBridge(-1);
@@ -219,6 +224,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
    }
 
+   @Test
    public void testInitialConnectionNodeAlreadyDown() throws Exception
    {
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration();

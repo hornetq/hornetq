@@ -12,13 +12,15 @@
  */
 
 package org.objectweb.jtests.jms.framework;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.jms.JMSException;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 import org.objectweb.jtests.jms.admin.Admin;
 import org.objectweb.jtests.jms.admin.AdminFactory;
@@ -33,7 +35,7 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
  * @author Jeff Mesnil (jmesnil@gmail.com)
  * @version $Id: JMSTestCase.java,v 1.2 2007/07/19 21:20:08 csuconic Exp $
  */
-public abstract class JMSTestCase extends TestCase
+public abstract class JMSTestCase extends Assert
 {
    public static final String PROP_FILE_NAME = "provider.properties";
 
@@ -69,7 +71,7 @@ public abstract class JMSTestCase extends TestCase
 
    public JMSTestCase(final String name)
    {
-      super(name);
+
    }
 
    /**
@@ -83,10 +85,10 @@ public abstract class JMSTestCase extends TestCase
       return props;
    }
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
+
 
       // Admin step
       // gets the provider administration wrapper...
@@ -100,8 +102,8 @@ public abstract class JMSTestCase extends TestCase
       admin.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -114,7 +116,7 @@ public abstract class JMSTestCase extends TestCase
       }
       finally
       {
-         super.tearDown();
+
       }
    }
 

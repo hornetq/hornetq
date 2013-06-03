@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -54,6 +56,7 @@ public class ExpiryMessageTest extends JMSTestBase
       return conf;
    }
 
+   @Test
    public void testSendTopicNoSubscription() throws Exception
    {
 

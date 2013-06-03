@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -19,15 +21,16 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.handler.codec.embedder.DecoderEmbedder;
 import org.jboss.netty.util.CharsetUtil;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  *
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  *
  */
-public class HornetQFrameDecoderTest extends TestCase{
+public class HornetQFrameDecoderTest extends Assert{
 
+   @Test
     public void testDecoding() {
         final ChannelBuffer buffer = ChannelBuffers.copiedBuffer("TestBytes", CharsetUtil.US_ASCII);
 

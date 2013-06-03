@@ -22,6 +22,8 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import org.junit.Test;
+
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -34,6 +36,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
+   @Test
    public void testStopAllStartAll() throws Throwable
    {
       try
@@ -134,6 +137,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
    }
 
    @Override
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesAndConsumersBeforeAllServersAreStarted() throws Exception
    {
       setupCluster();

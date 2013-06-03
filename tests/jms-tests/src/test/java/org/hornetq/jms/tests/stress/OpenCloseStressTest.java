@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.stress;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -57,6 +61,7 @@ public class OpenCloseStressTest extends HornetQServerTestCase
    Topic topic;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -75,6 +80,7 @@ public class OpenCloseStressTest extends HornetQServerTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
@@ -84,6 +90,7 @@ public class OpenCloseStressTest extends HornetQServerTestCase
       log.debug("tear down done");
    }
 
+   @Test
    public void testOpenClose() throws Exception
    {
       Connection conn1 = null;

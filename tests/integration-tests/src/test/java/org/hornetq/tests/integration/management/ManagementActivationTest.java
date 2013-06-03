@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -57,7 +61,8 @@ public class ManagementActivationTest extends FailoverTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       backupJmsServer = new JMSServerManagerImpl(backupServer.getServer());
@@ -67,12 +72,14 @@ public class ManagementActivationTest extends FailoverTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       backupJmsServer.stop();
       super.tearDown();
    }
 
+   @Test
    public void testCreateConnectionFactory() throws Exception
    {
       List<String> connectorNames = new ArrayList<String>();
@@ -121,6 +128,7 @@ public class ManagementActivationTest extends FailoverTestBase
       assertNotNull(factory);
    }
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       backupJmsServer.createQueue(false, "myQueue", null, false, "/myQueue");
@@ -165,6 +173,7 @@ public class ManagementActivationTest extends FailoverTestBase
       assertNotNull(queue);
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       backupJmsServer.createTopic(false, "myTopic", "/myTopic");
@@ -215,6 +224,7 @@ public class ManagementActivationTest extends FailoverTestBase
     *
     * @throws Exception
     */
+   @Test
    public void testDestroyConnectionFactory() throws Exception
    {
 
@@ -244,6 +254,7 @@ public class ManagementActivationTest extends FailoverTestBase
     *
     * @throws Exception
     */
+   @Test
    public void testRemoveQueue() throws Exception
    {
       boolean exception = false;
@@ -265,6 +276,7 @@ public class ManagementActivationTest extends FailoverTestBase
     *
     * @throws Exception
     */
+   @Test
    public void testRemoveTopic() throws Exception
    {
       boolean exception = false;

@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -38,6 +40,7 @@ public class BytesMessageTest extends MessageTestBase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -45,6 +48,7 @@ public class BytesMessageTest extends MessageTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       message = null;

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,11 +55,13 @@ public class NIOvsOIOTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNIOPerf() throws Exception
    {
       testPerf(true);
    }
 
+   @Test
    public void testOIOPerf() throws Exception
    {
       testPerf(false);

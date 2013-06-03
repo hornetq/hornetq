@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +31,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -58,6 +62,7 @@ public class ReSendMessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testResendWithLargeMessage() throws Exception
    {
       conn = cf.createConnection();
@@ -94,6 +99,7 @@ public class ReSendMessageTest extends JMSTestBase
          internalTestResend(msgs, sess);
    }
 
+   @Test
    public void testResendWithMapMessagesOnly() throws Exception
    {
       conn = cf.createConnection();
@@ -306,14 +312,16 @@ public class ReSendMessageTest extends JMSTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       queue = createQueue("queue1");
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queue = null;
       super.tearDown();

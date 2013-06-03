@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.core.filter.impl;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -37,12 +40,14 @@ public class FilterTest extends SilentTestCase
    private ServerMessage message;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       message = new ServerMessageImpl(1, 1000);
    }
 
+   @Test
    public void testFilterForgets() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("color = 'RED'"));
@@ -53,6 +58,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertFalse(filter.match(message));
    }
 
+   @Test
    public void testInvalidString() throws Exception
    {
       testInvalidFilter("color = 'red");
@@ -62,6 +68,7 @@ public class FilterTest extends SilentTestCase
       testInvalidFilter(new SimpleString("3"));
    }
 
+   @Test
    public void testNullFilter() throws Exception
    {
       Assert.assertNull(FilterImpl.createFilter((String) null));
@@ -70,6 +77,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertNull(FilterImpl.createFilter(new SimpleString("")));
    }
 
+   @Test
    public void testHQDurable() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("HQDurable='DURABLE'"));
@@ -95,6 +103,7 @@ public class FilterTest extends SilentTestCase
 
    }
 
+   @Test
    public void testHQSize() throws Exception
    {
       message.setAddress(RandomUtil.randomSimpleString());
@@ -115,6 +124,7 @@ public class FilterTest extends SilentTestCase
 
    }
 
+   @Test
    public void testHQPriority() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("HQPriority=3"));
@@ -134,6 +144,7 @@ public class FilterTest extends SilentTestCase
       }
    }
 
+   @Test
    public void testHQTimestamp() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("HQTimestamp=12345678"));
@@ -147,6 +158,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertTrue(filter.match(message));
    }
 
+   @Test
    public void testBooleanTrue() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("MyBoolean=true"));
@@ -154,6 +166,7 @@ public class FilterTest extends SilentTestCase
       testBoolean("MyBoolean", true);
    }
 
+   @Test
    public void testIdentifier() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("MyBoolean"));
@@ -161,6 +174,7 @@ public class FilterTest extends SilentTestCase
       testBoolean("MyBoolean", true);
    }
 
+   @Test
    public void testDifferentNullString() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
@@ -178,6 +192,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertFalse(filter.match(message));
    }
 
+   @Test
    public void testBooleanFalse() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("MyBoolean=false"));
@@ -193,6 +208,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertTrue(!filter.match(message));
    }
 
+   @Test
    public void testStringEquals() throws Exception
    {
       // First, simple test of string equality and inequality
@@ -227,6 +243,7 @@ public class FilterTest extends SilentTestCase
 
    }
 
+   @Test
    public void testNOT_INWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT IN ('foo','jms','test')"));
@@ -237,6 +254,7 @@ public class FilterTest extends SilentTestCase
       assertTrue(filter.match(message));
    }
 
+   @Test
    public void testNOT_LIKEWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT LIKE '1_3'"));
@@ -247,6 +265,7 @@ public class FilterTest extends SilentTestCase
       assertTrue(filter.match(message));
    }
 
+   @Test
    public void testIS_NOT_NULLWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp IS NOT NULL"));
@@ -257,6 +276,7 @@ public class FilterTest extends SilentTestCase
       assertTrue(filter.match(message));
    }
 
+   @Test
    public void testStringLike() throws Exception
    {
       // test LIKE operator with no wildcards
@@ -307,6 +327,7 @@ public class FilterTest extends SilentTestCase
       // test lower-case 'like' operator?
    }
 
+   @Test
    public void testStringLikeUnderbarWildcard() throws Exception
    {
       // test LIKE operator with the _ wildcard, which
@@ -438,6 +459,7 @@ public class FilterTest extends SilentTestCase
       // test match failures
    }
 
+   @Test
    public void testNotLikeExpression() throws Exception
    {
       // Should evaluate to false when the property MyString is not set
@@ -446,6 +468,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertFalse(filter.match(message));
    }
 
+   @Test
    public void testStringLikePercentWildcard() throws Exception
    {
       // test LIKE operator with the % wildcard, which
@@ -578,6 +601,7 @@ public class FilterTest extends SilentTestCase
 
    }
 
+   @Test
    public void testStringLikePunctuation() throws Exception
    {
       // test proper handling of some punctuation characters.
@@ -663,6 +687,7 @@ public class FilterTest extends SilentTestCase
       Assert.assertTrue(filter.match(message));
    }
 
+   @Test
    public void testStringLongToken() throws Exception
    {
       String largeString;

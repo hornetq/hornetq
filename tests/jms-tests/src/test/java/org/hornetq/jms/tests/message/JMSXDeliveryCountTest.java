@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -53,6 +55,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
    // Public ---------------------------------------------------------------------------------------
 
+   @Test
    public void testSimpleJMSXDeliveryCount() throws Exception
    {
       Connection conn = null;
@@ -102,6 +105,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSXDeliveryCountNotDeliveredMessagesNotUpdated() throws Exception
    {
       Connection conn = null;
@@ -177,6 +181,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testRedeliveryOnQueue() throws Exception
    {
       Connection conn = null;
@@ -238,6 +243,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testRedeliveryOnTopic() throws Exception
    {
       Connection conn = null;
@@ -304,6 +310,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testDeliveryCountUpdatedOnCloseTransacted() throws Exception
    {
       Connection conn = null;
@@ -388,6 +395,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testDeliveryCountUpdatedOnCloseClientAck() throws Exception
    {
       Connection conn = null;
@@ -470,6 +478,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testDeliveryCountUpdatedOnCloseXA() throws Exception
    {
       XAConnection xaConn = null;

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +24,7 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -53,6 +56,7 @@ public class BridgeControlTest extends ManagementTestBase
 
    private BridgeConfiguration bridgeConfig;
 
+   @Test
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
@@ -75,6 +79,7 @@ public class BridgeControlTest extends ManagementTestBase
       Assert.assertTrue(bridgeControl.isStarted());
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
@@ -90,6 +95,7 @@ public class BridgeControlTest extends ManagementTestBase
       Assert.assertTrue(bridgeControl.isStarted());
    }
 
+   @Test
    public void testNotifications() throws Exception
    {
       SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
@@ -119,7 +125,8 @@ public class BridgeControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

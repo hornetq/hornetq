@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.stress.journal;
 
-import junit.framework.TestSuite;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.UnitTestCase;
@@ -28,7 +28,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOMultiThreadCompactorStressTest extends NIOMultiThreadCompactorStressTest
 {
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(AIOMultiThreadCompactorStressTest.class);
    }

@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.integration.paging;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -51,7 +54,8 @@ public class PagingSendTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       server = newHornetQServer();
@@ -73,11 +77,13 @@ public class PagingSendTest extends ServiceTestBase
       return server;
    }
 
+   @Test
    public void testSameMessageOverAndOverBlocking() throws Exception
    {
       dotestSameMessageOverAndOver(true);
    }
 
+   @Test
    public void testSameMessageOverAndOverNonBlocking() throws Exception
    {
       dotestSameMessageOverAndOver(false);
@@ -137,6 +143,7 @@ public class PagingSendTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testOrderOverTX() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);

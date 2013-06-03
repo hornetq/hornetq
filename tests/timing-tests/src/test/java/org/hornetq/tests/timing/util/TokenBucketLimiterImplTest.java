@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.timing.util;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -30,61 +32,73 @@ public class TokenBucketLimiterImplTest extends UnitTestCase
 {
    private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
+   @Test
    public void testRateWithSpin1() throws Exception
    {
       testRate(1, true);
    }
 
+   @Test
    public void testRateWithSpin10() throws Exception
    {
       testRate(10, true);
    }
 
+   @Test
    public void testRateWithSpin100() throws Exception
    {
       testRate(100, true);
    }
 
+   @Test
    public void testRateWithSpin1000() throws Exception
    {
       testRate(1000, true);
    }
 
+   @Test
    public void testRateWithSpin10000() throws Exception
    {
       testRate(10000, true);
    }
 
+   @Test
    public void testRateWithSpin100000() throws Exception
    {
       testRate(100000, true);
    }
 
+   @Test
    public void testRateWithoutSpin1() throws Exception
    {
       testRate(1, false);
    }
 
+   @Test
    public void testRateWithoutSpin10() throws Exception
    {
       testRate(10, false);
    }
 
+   @Test
    public void testRateWithoutSpin100() throws Exception
    {
       testRate(100, false);
    }
 
+   @Test
    public void testRateWithoutSpin1000() throws Exception
    {
       testRate(1000, false);
    }
 
+   @Test
    public void testRateWithoutSpin10000() throws Exception
    {
       testRate(10000, false);
    }
 
+   @Test
    public void testRateWithoutSpin100000() throws Exception
    {
       testRate(100000, false);

@@ -21,9 +21,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PubSubTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -43,6 +43,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that if we rollback a transaction which has consumed a message,
     * the message is effectively redelivered.
     */
+   @Test
    public void testRollbackReceivedMessage()
    {
       try
@@ -101,6 +102,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that a durable subscriber effectively receives the messages sent to its
     * topic while it was inactive.
     */
+   @Test
    public void testDurableSubscriber()
    {
       try
@@ -132,6 +134,7 @@ public class TopicSessionTest extends PubSubTestCase
    /**
     * Test the unsubscription of a durable subscriber.
     */
+   @Test
    public void testUnsubscribe()
    {
       try
@@ -151,6 +154,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that a call to the <code>createDurableSubscriber()</code> method with an invalid
     * message selector throws a <code>javax.jms.InvalidSelectorException</code>.
     */
+   @Test
    public void testCreateDurableSubscriber_2()
    {
       try
@@ -171,6 +175,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that a call to the <code>createDurableSubscriber()</code> method with an invalid
     * <code>Topic</code> throws a <code>javax.jms.InvalidDestinationException</code>.
     */
+   @Test
    public void testCreateDurableSubscriber_1()
    {
       try
@@ -191,6 +196,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that a call to the <code>createSubscriber()</code> method with an invalid
     * message selector throws a <code>javax.jms.InvalidSelectorException</code>.
     */
+   @Test
    public void testCreateSubscriber_2()
    {
       try
@@ -211,6 +217,7 @@ public class TopicSessionTest extends PubSubTestCase
     * Test that a call to the <code>createSubscriber()</code> method with an invalid
     * <code>Topic</code> throws a <code>javax.jms.InvalidDestinationException</code>.
     */
+   @Test
    public void testCreateSubscriber_1()
    {
       try

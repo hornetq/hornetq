@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
@@ -69,7 +73,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       server = createServer(false, false);
       server.getConfiguration().setConnectionTTLOverride(500);
@@ -82,7 +87,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       connection.destroy();
 
@@ -92,41 +98,49 @@ public class IncompatibleVersionTest extends ServiceTestBase
       // You CANNOT CALL super.tearDown();
    }
 
+   @Test
    public void testCompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(true);
    }
 
+   @Test
    public void testIncompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(false);
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 1));
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 5));
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 10));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 0));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 4));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 100));

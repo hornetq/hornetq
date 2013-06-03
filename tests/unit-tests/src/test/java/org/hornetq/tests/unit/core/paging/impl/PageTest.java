@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
+import org.junit.Test;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -50,24 +52,28 @@ public class PageTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testPageWithNIO() throws Exception
    {
       recreateDirectory(getTestDir());
       testAdd(new NIOSequentialFileFactory(getTestDir()), 1000);
    }
 
+   @Test
    public void testDamagedDataWithNIO() throws Exception
    {
       recreateDirectory(getTestDir());
       testDamagedPage(new NIOSequentialFileFactory(getTestDir()), 1000);
    }
 
+   @Test
    public void testPageFakeWithoutCallbacks() throws Exception
    {
       testAdd(new FakeSequentialFileFactory(1, false), 10);
    }
 
    /** Validate if everything we add is recovered */
+   @Test
    public void testDamagedPage() throws Exception
    {
       testDamagedPage(new FakeSequentialFileFactory(1, false), 100);

@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
@@ -58,6 +60,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
    private final Object lockFail = new Object();
 
+   @Test
    public void testNonTransactional() throws Throwable
    {
       runTest(new TestRunner()
@@ -77,6 +80,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       });
    }
 
+   @Test
    public void testTransactional() throws Throwable
    {
       runTest(new TestRunner()

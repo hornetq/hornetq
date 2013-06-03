@@ -21,6 +21,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 
@@ -50,7 +53,8 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    protected abstract void setupServers() throws Exception;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       setupServers();
@@ -61,6 +65,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testFailLiveNodes() throws Throwable
    {
          setupCluster();
@@ -197,6 +202,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
    }
 
+   @Test
    public void testFailBackupNodes() throws Exception
    {
       setupCluster();
@@ -322,6 +328,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       return sessionsArray;
    }
 
+   @Test
    public void testFailAllNodes() throws Exception
    {
       setupCluster();

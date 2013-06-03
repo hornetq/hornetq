@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
@@ -52,6 +54,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDeleteQueueAndRestart() throws Exception
    {
       // This test could eventually pass, even when the queue was being deleted in the wrong order,

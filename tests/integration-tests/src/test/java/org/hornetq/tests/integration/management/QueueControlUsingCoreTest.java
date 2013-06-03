@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -295,7 +296,8 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

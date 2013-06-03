@@ -13,13 +13,16 @@
 
 package org.hornetq.utils;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.api.core.Pair;
 
 
-public class PairTest extends TestCase
+public class PairTest extends Assert
 {
 
+   @Test
    public void testPair()
    {
       Pair<Integer, Integer> p = new Pair<Integer, Integer>(Integer.valueOf(12), Integer.valueOf(13));

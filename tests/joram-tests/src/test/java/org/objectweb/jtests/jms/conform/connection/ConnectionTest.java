@@ -19,9 +19,9 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -41,6 +41,7 @@ public class ConnectionTest extends PTPTestCase
     * Test that invoking the <code>acknowledge()</code> method of a received message
     * from a closed connection's session must throw an <code>IllegalStateException</code>.
     */
+   @Test
    public void testAcknowledge()
    {
       try
@@ -81,6 +82,7 @@ public class ConnectionTest extends PTPTestCase
     * Test that an attempt to use a <code>Connection</code> which has been closed
     * throws a <code>javax.jms.IllegalStateException</code>.
     */
+   @Test
    public void testUseClosedConnection()
    {
       try
@@ -106,6 +108,7 @@ public class ConnectionTest extends PTPTestCase
     * Test that a <code>MessageProducer</code> can send messages while a
     * <code>Connection</code> is stopped.
     */
+   @Test
    public void testMessageSentWhenConnectionClosed()
    {
       try
@@ -125,6 +128,7 @@ public class ConnectionTest extends PTPTestCase
    /**
     * Test that closing a closed connectiondoes not throw an exception.
     */
+   @Test
    public void testCloseClosedConnection()
    {
       try
@@ -144,6 +148,7 @@ public class ConnectionTest extends PTPTestCase
    /**
     * Test that starting a started connection is ignored
     */
+   @Test
    public void testStartStartedConnection()
    {
       try
@@ -161,6 +166,7 @@ public class ConnectionTest extends PTPTestCase
    /**
     * Test that stopping a stopped connection is ignored
     */
+   @Test
    public void testStopStoppedConnection()
    {
       try
@@ -180,6 +186,7 @@ public class ConnectionTest extends PTPTestCase
    /**
     * Test that delivery of message is stopped if the message consumer connection is stopped
     */
+   @Test
    public void testStopConsumerConnection()
    {
       try

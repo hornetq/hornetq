@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,6 +65,7 @@ public class MessageConsumerTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testReceiveWithClientAckThenCloseSession() throws Exception
    {
       Connection conn = null;
@@ -114,6 +117,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRelayMessage() throws Exception
    {
       Connection conn = null;
@@ -207,6 +211,7 @@ public class MessageConsumerTest extends JMSTestCase
     * Eventually the first client will have it's resources cleared up so the delivery gets
     * cancelled but we need to prompt deliver() so the reconnected client gets it
     */
+   @Test
    public void testRedeliveryToCompetingConsumerOnQueue() throws Exception
    {
       Connection conn = null;
@@ -269,6 +274,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The simplest possible receive() test for a non-persistent message.
     */
+   @Test
    public void testReceive() throws Exception
    {
       Connection producerConnection = null;
@@ -316,6 +322,7 @@ public class MessageConsumerTest extends JMSTestCase
 
    }
 
+   @Test
    public void testReceivePersistent() throws Exception
    {
       Connection producerConnection = null;
@@ -365,6 +372,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The simplest possible receive(timeout) test.
     */
+   @Test
    public void testReceiveTimeout() throws Exception
    {
       Connection producerConnection = null;
@@ -412,6 +420,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The simplest possible receiveNoWait() test.
     */
+   @Test
    public void testReceiveNoWait() throws Exception
    {
       Connection producerConnection = null;
@@ -468,6 +477,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The simplest possible message listener test.
     */
+   @Test
    public void testReceiveOnListener() throws Exception
    {
       Connection producerConnection = null;
@@ -523,6 +533,7 @@ public class MessageConsumerTest extends JMSTestCase
    // Invalid destination test
    //
 
+   @Test
    public void testCreateConsumerOnNonExistentTopic() throws Exception
    {
       Connection pconn = null;
@@ -558,6 +569,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testCreateConsumerOnNonExistentQueue() throws Exception
    {
       Connection pconn = null;
@@ -601,6 +613,7 @@ public class MessageConsumerTest extends JMSTestCase
     * Acks are scoped per session.
     */
 
+   @Test
    public void testAckAfterConsumerClosed() throws Exception
    {
       Connection connSend = null;
@@ -662,6 +675,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testClientAcknowledgmentOnClosedConsumer() throws Exception
    {
       Connection producerConnection = null;
@@ -721,6 +735,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSendMessageAndCloseConsumer1() throws Exception
    {
       Connection producerConnection = null;
@@ -776,6 +791,7 @@ public class MessageConsumerTest extends JMSTestCase
     * Basically the same test as before, with more than one message and a slightly different
     * way of checking the messages are back in the queue.
     */
+   @Test
    public void testSendMessageAndCloseConsumer2() throws Exception
    {
       Connection producerConnection = null;
@@ -841,6 +857,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel0() throws Exception
    {
       Connection conn = null;
@@ -895,6 +912,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel1() throws Exception
    {
       Connection conn = null;
@@ -949,6 +967,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel2() throws Exception
    {
       Connection conn = null;
@@ -1003,6 +1022,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel3() throws Exception
    {
       Connection conn = null;
@@ -1061,6 +1081,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel4() throws Exception
    {
       Connection conn = null;
@@ -1124,6 +1145,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel5() throws Exception
    {
       Connection conn = null;
@@ -1179,6 +1201,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedel6() throws Exception
    {
       Connection conn = null;
@@ -1245,6 +1268,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * http://www.jboss.org/index.html?module=bb&op=viewtopic&t=71350
     */
+   @Test
    public void testRedel7() throws Exception
    {
       Connection conn = null;
@@ -1303,6 +1327,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * http://www.jboss.org/index.html?module=bb&op=viewtopic&t=71350
     */
+   @Test
    public void testRedel8() throws Exception
    {
       Connection conn = null;
@@ -1347,6 +1372,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
       Connection connSend = null;
@@ -1413,6 +1439,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMultipleConcurrentConsumers() throws Exception
    {
       Connection producerConnection = null;
@@ -1529,6 +1556,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetSelector() throws Exception
    {
       Connection consumerConnection = null;
@@ -1554,6 +1582,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetSelectorOnClosedConsumer() throws Exception
    {
       Connection consumerConnection = null;
@@ -1587,6 +1616,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetNoLocalOnClosedConsumer() throws Exception
    {
       Connection consumerConnection = null;
@@ -1621,6 +1651,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetTopic() throws Exception
    {
       Connection consumerConnection = null;
@@ -1646,6 +1677,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetTopicOnClosedConsumer() throws Exception
    {
       Connection consumerConnection = null;
@@ -1679,6 +1711,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetQueue() throws Exception
    {
       Connection consumerConnection = null;
@@ -1704,6 +1737,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetQueueOnClosedConsumer() throws Exception
    {
       Connection consumerConnection = null;
@@ -1737,6 +1771,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveOnTopicTimeoutNoMessage() throws Exception
    {
       Connection consumerConnection = null;
@@ -1762,6 +1797,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveOnTopicConnectionStopped() throws Exception
    {
       Connection producerConnection = null;
@@ -1815,6 +1851,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveOnTopicTimeout() throws Exception
    {
       Connection producerConnection = null;
@@ -1871,6 +1908,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveOnTopic() throws Exception
    {
       Connection producerConnection = null;
@@ -1928,6 +1966,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveNoWaitOnTopic() throws Exception
    {
       Connection producerConnection = null;
@@ -1980,6 +2019,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The test sends a burst of messages and verifies if the consumer receives all of them.
     */
+   @Test
    public void testStressReceiveOnQueue() throws Exception
    {
       Connection producerConnection = null;
@@ -2047,6 +2087,7 @@ public class MessageConsumerTest extends JMSTestCase
    /**
     * The test sends a burst of messages and verifies if the consumer receives all of them.
     */
+   @Test
    public void testStressReceiveOnTopic() throws Exception
    {
       Connection producerConnection = null;
@@ -2114,6 +2155,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceiveOnClose() throws Exception
    {
       Connection consumerConnection = null;
@@ -2253,6 +2295,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTimeoutReceiveOnClose() throws Exception
    {
       Connection consumerConnection = null;
@@ -2308,6 +2351,7 @@ public class MessageConsumerTest extends JMSTestCase
    // MessageListener tests
    //
 
+   @Test
    public void testMessageListenerOnTopic() throws Exception
    {
       Connection producerConnection = null;
@@ -2355,6 +2399,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMessageListenerOnTopicMultipleMessages() throws Exception
    {
       Connection producerConnection = null;
@@ -2415,6 +2460,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMessageListenerOnQueueMultipleMessages() throws Exception
    {
 
@@ -2475,6 +2521,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetMessageListenerTwice() throws Exception
    {
       Connection producerConnection = null;
@@ -2529,6 +2576,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetMessageListenerWhileReceiving() throws Exception
    {
       Connection consumerConnection = null;
@@ -2582,6 +2630,7 @@ public class MessageConsumerTest extends JMSTestCase
    }
 
    // This is commented out until http:// jira.jboss.com/jira/browse/JBMESSAGING-983 is complete
+   @Test
    public void testStopConnectionDuringOnMessage() throws Exception
    {
       if (log.isTraceEnabled())
@@ -2685,6 +2734,7 @@ public class MessageConsumerTest extends JMSTestCase
 
    // Test that stop doesn't in any way break subsequent close
 
+   @Test
    public void testCloseAfterStop() throws Exception
    {
       Connection producerConnection = null;
@@ -2753,6 +2803,7 @@ public class MessageConsumerTest extends JMSTestCase
    // Multiple consumers
    //
 
+   @Test
    public void testTwoConsumersNonTransacted() throws Exception
    {
       Connection producerConnection = null;
@@ -2807,6 +2858,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTwoConsumersTransacted() throws Exception
    {
       Connection producerConnection = null;
@@ -2867,6 +2919,7 @@ public class MessageConsumerTest extends JMSTestCase
    // NoLocal
    //
 
+   @Test
    public void testNoLocal() throws Exception
    {
       if (log.isTraceEnabled())
@@ -2969,6 +3022,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testNoLocalMemoryExhaustion() throws Exception
    {
       Connection conn = null;
@@ -3011,6 +3065,7 @@ public class MessageConsumerTest extends JMSTestCase
     *
     * Also see JMS 1.1 Spec. 6.12
     */
+   @Test
    public void testTopicRedelivery() throws Exception
    {
       Connection conn1 = null;
@@ -3077,6 +3132,7 @@ public class MessageConsumerTest extends JMSTestCase
     * even if delivery mode of persistent is specified
     * See JMS spec. sec. 6.12
     */
+   @Test
    public void testNoRedeliveryOnNonDurableSubscriber() throws Exception
    {
       Connection conn1 = null;
@@ -3137,6 +3193,7 @@ public class MessageConsumerTest extends JMSTestCase
    }
 
    // Check messages have correct type after being resurrected from persistent storage
+   @Test
    public void testPersistedMessageType() throws Exception
    {
       Connection theConn = null;
@@ -3222,6 +3279,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionSimple() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3276,6 +3334,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionMultipleSubscriptions() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3369,6 +3428,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionDataRemaining() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3506,6 +3566,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionReconnect() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3588,6 +3649,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionReconnectDifferentClientID() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3674,6 +3736,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionInvalidUnsubscribe() throws Exception
    {
       final String CLIENT_ID1 = "test-client-id1";
@@ -3706,6 +3769,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testDurableSubscriptionClientIDNotSet() throws Exception
    {
       // Client id must be set before creating a durable subscription
@@ -3742,6 +3806,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedeliveredDifferentSessions() throws Exception
    {
       Connection producerConnection = null;
@@ -3794,6 +3859,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedelMessageListener1() throws Exception
    {
       Connection conn = null;
@@ -3841,6 +3907,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedelMessageListener2() throws Exception
    {
       Connection conn = null;
@@ -3890,6 +3957,7 @@ public class MessageConsumerTest extends JMSTestCase
    }
 
    // http://jira.jboss.org/jira/browse/JBMESSAGING-1294 - commented out until 2.0 beta
+   @Test
    public void testExceptionMessageListener1() throws Exception
    {
       Connection conn = null;
@@ -3936,6 +4004,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testExceptionMessageListener2() throws Exception
    {
       Connection conn = null;
@@ -3982,6 +4051,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testExceptionMessageListener3() throws Exception
    {
       Connection conn = null;
@@ -4030,6 +4100,7 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testExceptionMessageListener4() throws Exception
    {
       Connection conn = null;

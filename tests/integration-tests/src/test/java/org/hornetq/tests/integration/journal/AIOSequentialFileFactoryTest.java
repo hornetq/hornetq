@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -35,13 +38,14 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
-   public static TestSuite suite()
+   public static Object suite() // FIXME TestSuite()
    {
       return UnitTestCase.createAIOTestSuite(AIOSequentialFileFactoryTest.class);
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -58,6 +62,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       return new AIOSequentialFileFactory(getTestDir());
    }
 
+   @Test
    public void testBuffer() throws Exception
    {
       SequentialFile file = factory.createSequentialFile("filtetmp.log", 10);

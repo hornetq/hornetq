@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.core.deployers.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -42,6 +45,7 @@ public class QueueDeployerTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   @Test
    public void testParseQueueConfiguration() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'>"
@@ -76,7 +80,8 @@ public class QueueDeployerTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

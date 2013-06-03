@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.stress.paging;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -82,6 +86,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
 
    ArrayList<Throwable> exceptions = new ArrayList<Throwable>();
 
+   @Test
    public void testOpenConsumerEveryTimeDefaultFlowControl0() throws Throwable
    {
       shareConnectionFactory = true;
@@ -98,6 +103,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
    }
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -113,6 +119,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       for (Tester tst : producers)
@@ -129,6 +136,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
       super.tearDown();
    }
 
+   @Test
    public void testOpenConsumerEveryTimeDefaultFlowControl() throws Throwable
    {
       shareConnectionFactory = true;
@@ -146,6 +154,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testReuseConsumersFlowControl0() throws Throwable
    {
       shareConnectionFactory = true;

@@ -12,11 +12,15 @@
  */
 
 package org.hornetq.util;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Iterator;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -27,7 +31,7 @@ import org.hornetq.utils.ConcurrentSet;
  *
  *
  */
-public class ConcurrentHashSetTest extends TestCase
+public class ConcurrentHashSetTest extends Assert
 {
    // Constants -----------------------------------------------------
 
@@ -43,18 +47,21 @@ public class ConcurrentHashSetTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAdd() throws Exception
    {
       Assert.assertTrue(set.add(element));
       Assert.assertFalse(set.add(element));
    }
 
+   @Test
    public void testAddIfAbsent() throws Exception
    {
       Assert.assertTrue(set.addIfAbsent(element));
       Assert.assertFalse(set.addIfAbsent(element));
    }
 
+   @Test
    public void testRemove() throws Exception
    {
       Assert.assertTrue(set.add(element));
@@ -63,6 +70,7 @@ public class ConcurrentHashSetTest extends TestCase
       Assert.assertFalse(set.remove(element));
    }
 
+   @Test
    public void testContains() throws Exception
    {
       Assert.assertFalse(set.contains(element));
@@ -74,6 +82,7 @@ public class ConcurrentHashSetTest extends TestCase
       Assert.assertFalse(set.contains(element));
    }
 
+   @Test
    public void testSize() throws Exception
    {
       Assert.assertEquals(0, set.size());
@@ -85,6 +94,7 @@ public class ConcurrentHashSetTest extends TestCase
       Assert.assertEquals(0, set.size());
    }
 
+   @Test
    public void testClear() throws Exception
    {
       Assert.assertTrue(set.add(element));
@@ -94,6 +104,7 @@ public class ConcurrentHashSetTest extends TestCase
       Assert.assertFalse(set.contains(element));
    }
 
+   @Test
    public void testIsEmpty() throws Exception
    {
       Assert.assertTrue(set.isEmpty());
@@ -105,6 +116,7 @@ public class ConcurrentHashSetTest extends TestCase
       Assert.assertTrue(set.isEmpty());
    }
 
+   @Test
    public void testIterator() throws Exception
    {
       set.add(element);
@@ -119,22 +131,22 @@ public class ConcurrentHashSetTest extends TestCase
 
    // TestCase overrides --------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
+
 
       set = new ConcurrentHashSet<String>();
       element = RandomUtil.randomString();
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       set = null;
       element = null;
 
-      super.tearDown();
+
    }
    // Package protected ---------------------------------------------
 

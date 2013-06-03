@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.clientcrash;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -61,6 +64,7 @@ public class ClientExitTest extends ClientTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   @Test
    public void testGracefulClientExit() throws Exception
    {
       // spawn a JVM that creates a JMS client, which sends a test message
@@ -100,7 +104,8 @@ public class ClientExitTest extends ClientTestBase
    // Package protected ----------------------------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

@@ -16,9 +16,9 @@ package org.objectweb.jtests.jms.conform.selector;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.Test;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 
@@ -37,6 +37,7 @@ public class SelectorSyntaxTest extends PTPTestCase
     *
     * @see <a href="http://java.sun.com/j2se/1.3/docs/api/java/lang/Character.html#isJavaIdentifierStart(char)">Character.isJavaIdentifierStart(char)</a>
     */
+   @Test
    public void testValidIdentifiersStart()
    {
       String identifier = null;
@@ -63,6 +64,7 @@ public class SelectorSyntaxTest extends PTPTestCase
     *
     * @see #testValidIdentifiersStart()
     */
+   @Test
    public void testInvalidIdentifiersStart()
    {
       String identifier = null;
@@ -97,6 +99,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that message selector can be an empty string.
     */
+   @Test
    public void testEmptyStringAsSelector()
    {
       try
@@ -112,6 +115,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>NULL</code>.
     */
+   @Test
    public void testIdentifierNULL()
    {
       try
@@ -131,6 +135,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>TRUE</code>.
     */
+   @Test
    public void testIdentifierTRUE()
    {
       try
@@ -146,6 +151,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>FALSE</code>.
     */
+   @Test
    public void testIdentifierFALSE()
    {
       try
@@ -161,6 +167,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>NOT</code>.
     */
+   @Test
    public void testIdentifierNOT()
    {
       try
@@ -176,6 +183,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>AND</code>.
     */
+   @Test
    public void testIdentifierAND()
    {
       try
@@ -191,6 +199,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>OR</code>.
     */
+   @Test
    public void testIdentifierOR()
    {
       try
@@ -206,6 +215,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>BETWEEN</code>.
     */
+   @Test
    public void testIdentifierBETWEEN()
    {
       try
@@ -221,6 +231,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>LIKE</code>.
     */
+   @Test
    public void testIdentifierLIKE()
    {
       try
@@ -236,6 +247,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>IN</code>.
     */
+   @Test
    public void testIdentifierIN()
    {
       try
@@ -251,6 +263,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>IS</code>.
     */
+   @Test
    public void testIdentifierIS()
    {
       try
@@ -266,6 +279,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test that identifiers can't be <code>ESCAPE</code>.
     */
+   @Test
    public void testIdentifierESCAPE()
    {
       try
@@ -281,6 +295,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test syntax of "<em>identifier</em> IS [NOT] NULL"
     */
+   @Test
    public void testNull()
    {
       try
@@ -297,6 +312,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test syntax of "<em>identifier</em> [NOT] LIKE <em>pattern-value</em> [ESCAPE <em>escape-character</em>]"
     */
+   @Test
    public void testLike()
    {
       try
@@ -315,6 +331,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test syntax of "<em>identifier</em> [NOT] IN (<em>string-literal1</em>, <em>string-literal2</em>,...)"
     */
+   @Test
    public void testIn()
    {
       try
@@ -331,6 +348,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test syntax of "<em>arithmetic-expr1</em> [NOT] BETWEEN <em>arithmetic-expr2</em> and <em>arithmetic-expr3</em>"
     */
+   @Test
    public void testBetween()
    {
       try
@@ -347,6 +365,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test diffent syntax for approximate numeric literal (+6.2, -95.7, 7.)
     */
+   @Test
    public void testApproximateNumericLiteral()
    {
       try
@@ -364,6 +383,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test diffent syntax for exact numeric literal (+62, -957, 57)
     */
+   @Test
    public void testExactNumericLiteral()
    {
       try
@@ -381,6 +401,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test diffent syntax for zero as an exact or an approximate numeric literal (0, 0.0, 0.)
     */
+   @Test
    public void testZero()
    {
       try
@@ -398,6 +419,7 @@ public class SelectorSyntaxTest extends PTPTestCase
    /**
     * Test diffent syntax for string literal ('literal' and 'literal''s')
     */
+   @Test
    public void testString()
    {
       try

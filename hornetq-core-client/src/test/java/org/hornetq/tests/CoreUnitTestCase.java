@@ -1,22 +1,22 @@
 package org.hornetq.tests;
 
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public abstract class CoreUnitTestCase extends TestCase
+public abstract class CoreUnitTestCase extends Assert
 {
    public CoreUnitTestCase()
    {
-      super();
+
    }
 
    public CoreUnitTestCase(String name)
    {
-      super(name);
+
    }
 
    public static void assertEqualsByteArrays(final byte[] expected, final byte[] actual)

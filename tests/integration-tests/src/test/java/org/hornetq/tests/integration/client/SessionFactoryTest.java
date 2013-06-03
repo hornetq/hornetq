@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -57,13 +60,15 @@ public class SessionFactoryTest extends ServiceTestBase
    private TransportConfiguration liveTC;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
       startServer();
    }
 
+   @Test
    public void testSerializable() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -91,6 +96,7 @@ public class SessionFactoryTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testCloseUnusedClientSessionFactoryWithoutGlobalPools() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(liveTC);
@@ -99,6 +105,7 @@ public class SessionFactoryTest extends ServiceTestBase
       csf.close();
    }
 
+   @Test
    public void testDiscoveryConstructor() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(groupConfiguration);
@@ -139,6 +146,7 @@ public class SessionFactoryTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testStaticConnectorListConstructor() throws Exception
    {
       TransportConfiguration[] tc = new TransportConfiguration[] { liveTC };
@@ -178,6 +186,7 @@ public class SessionFactoryTest extends ServiceTestBase
       cf.close();
    }
 
+   @Test
    public void testGettersAndSetters() throws Exception
    {
 
