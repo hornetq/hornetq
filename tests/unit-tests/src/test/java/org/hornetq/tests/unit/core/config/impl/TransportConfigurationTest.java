@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.core.config.impl;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.tests.util.UnitTestCase;
@@ -40,6 +42,7 @@ public class TransportConfigurationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSplitNullAddress() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts(null);
@@ -48,6 +51,7 @@ public class TransportConfigurationTest extends UnitTestCase
       Assert.assertEquals(0, addresses.length);
    }
 
+   @Test
    public void testSplitSingleAddress() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts("localhost");
@@ -57,6 +61,7 @@ public class TransportConfigurationTest extends UnitTestCase
       Assert.assertEquals("localhost", addresses[0]);
    }
 
+   @Test
    public void testSplitManyAddresses() throws Exception
    {
       String[] addresses = TransportConfiguration.splitHosts("localhost, 127.0.0.1, 192.168.0.10");

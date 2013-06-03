@@ -12,6 +12,8 @@
  */
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -38,6 +40,7 @@ public class ConsumerClosedTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMessagesSentDuringClose() throws Exception
    {
       Connection c = null;

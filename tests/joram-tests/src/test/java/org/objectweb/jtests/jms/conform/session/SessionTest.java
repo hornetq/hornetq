@@ -18,10 +18,8 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -41,6 +39,7 @@ public class SessionTest extends PTPTestCase
     * <strong>transacted </strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
+   @Test
    public void testRecoverTransactedSession()
    {
       try
@@ -71,6 +70,7 @@ public class SessionTest extends PTPTestCase
     * <strong>transacted</strong> <code>Session</code> rollbacks all
     * the messages sent in the transaction.
     */
+   @Test
    public void testRollbackTransactedSession()
    {
       try
@@ -103,6 +103,7 @@ public class SessionTest extends PTPTestCase
     * <strong>transacted</strong> <code>Session</code> rollbacks all
     * the messages sent in the transaction.
     */
+   @Test
    public void testCommitTransactedSession()
    {
       try
@@ -139,6 +140,7 @@ public class SessionTest extends PTPTestCase
     * <strong>non transacted</strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
+   @Test
    public void testRollbackNonTransactedSession()
    {
       try
@@ -166,6 +168,7 @@ public class SessionTest extends PTPTestCase
     * <strong>non transacted</strong> <code>Session</code> throws a
     * <code>javax.jms.IllegalStateException</code>.
     */
+   @Test
    public void testCommitNonTransactedSession()
    {
       try
@@ -192,6 +195,7 @@ public class SessionTest extends PTPTestCase
     * Test that the <code>getTransacted()</code> method of a <code>Session</code> returns <code>true</code>
     * if the session is transacted, <code>false</code> else.
     */
+   @Test
    public void testGetTransacted()
    {
       try
@@ -212,6 +216,7 @@ public class SessionTest extends PTPTestCase
     * Test that invoking the <code>acknowledge()</code> method of a received message
     * from a closed session must throw an <code>IllegalStateException</code>.
     */
+   @Test
    public void testAcknowledge()
    {
       try
@@ -249,6 +254,7 @@ public class SessionTest extends PTPTestCase
     * Test that it is valid to use message objects created or received via the [closed] session with the
     * exception of a received message <code>acknowledge()</code> method.
     */
+   @Test
    public void testUseMessage()
    {
       try
@@ -271,6 +277,7 @@ public class SessionTest extends PTPTestCase
     * Test that an attempt to use a <code>Session</code> which has been closed
     * throws a <code>javax.jms.IllegalStateException</code>.
     */
+   @Test
    public void testUsedClosedSession()
    {
       try
@@ -296,6 +303,7 @@ public class SessionTest extends PTPTestCase
     * Test that closing a closed session does <strong>not</strong> throw
     * an exception.
     */
+   @Test
    public void testCloseClosedSession()
    {
       try
@@ -310,18 +318,5 @@ public class SessionTest extends PTPTestCase
       {
          Assert.fail("sec. 4.4.1 Closing a closed session must NOT throw an exception.\n");
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(SessionTest.class);
-   }
-
-   public SessionTest(final String name)
-   {
-      super(name);
    }
 }

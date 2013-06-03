@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -37,7 +40,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
    private ClientSessionFactory cf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       locator = createInVMNonHALocator();
       super.setUp();
@@ -51,6 +55,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       clientSession = (ClientSessionInternal)addClientSession(cf.createSession(false, true, true));
    }
 
+   @Test
    public void testCreateConsumer() throws Exception
    {
          clientSession.createQueue(queueName, queueName, false);
@@ -58,6 +63,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          Assert.assertNotNull(consumer);
    }
 
+   @Test
    public void testCreateConsumerNoQ() throws Exception
    {
          try
@@ -75,6 +81,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testCreateConsumerWithFilter() throws Exception
    {
          clientSession.createQueue(queueName, queueName, false);
@@ -82,6 +89,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          Assert.assertNotNull(consumer);
    }
 
+   @Test
    public void testCreateConsumerWithInvalidFilter() throws Exception
    {
          clientSession.createQueue(queueName, queueName, false);
@@ -100,6 +108,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          }
    }
 
+   @Test
    public void testCreateConsumerWithBrowseOnly() throws Exception
    {
          clientSession.createQueue(queueName, queueName, false);
@@ -107,6 +116,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          Assert.assertNotNull(consumer);
    }
 
+   @Test
    public void testCreateConsumerWithOverrides() throws Exception
    {
          clientSession.createQueue(queueName, queueName, false);

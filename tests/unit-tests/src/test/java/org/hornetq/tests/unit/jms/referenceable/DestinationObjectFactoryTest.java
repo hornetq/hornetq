@@ -13,9 +13,11 @@
 
 package org.hornetq.tests.unit.jms.referenceable;
 
+import org.junit.Test;
+
 import javax.naming.Reference;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.client.HornetQDestination;
@@ -40,6 +42,7 @@ public class DestinationObjectFactoryTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testReference() throws Exception
    {
       HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue(RandomUtil.randomString());

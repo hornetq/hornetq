@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.divert;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -46,11 +48,13 @@ public class PersistentDivertTest extends ServiceTestBase
 {
    final int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
 
+   @Test
    public void testPersistentDivert() throws Exception
    {
       doTestPersistentDivert(false);
    }
 
+   @Test
    public void testPersistentDiverLargeMessage() throws Exception
    {
       doTestPersistentDivert(true);
@@ -247,11 +251,13 @@ public class PersistentDivertTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testPersistentDivertRestartBeforeConsume() throws Exception
    {
       doTestPersistentDivertRestartBeforeConsume(false);
    }
 
+   @Test
    public void testPersistentDivertRestartBeforeConsumeLargeMessage() throws Exception
    {
       doTestPersistentDivertRestartBeforeConsume(true);

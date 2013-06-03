@@ -12,16 +12,13 @@
  */
 
 package org.objectweb.jtests.jms.conform.message;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -35,18 +32,10 @@ public class MessageBodyTest extends PTPTestCase
 {
 
    /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessageBodyTest.class);
-   }
-
-
-   /**
     * Test that the <code>TextMessage.clearBody()</code> method does nto clear the
     * message properties.
     */
+   @Test
    public void testClearBody_2()
    {
       try
@@ -67,6 +56,7 @@ public class MessageBodyTest extends PTPTestCase
    /**
     * Test that the <code>TextMessage.clearBody()</code> effectively clear the body of the message
     */
+   @Test
    public void testClearBody_1()
    {
       try
@@ -89,6 +79,7 @@ public class MessageBodyTest extends PTPTestCase
     * Test that a call to the <code>TextMessage.setText()</code> method on a
     * received message raises a <code>javax.jms.MessageNotWriteableException</code>.
     */
+   @Test
    public void testWriteOnReceivedBody()
    {
       try
@@ -110,24 +101,5 @@ public class MessageBodyTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   public MessageBodyTest(final String name)
-   {
-      super(name);
-   }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-
-      super.setUp();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-
    }
 }

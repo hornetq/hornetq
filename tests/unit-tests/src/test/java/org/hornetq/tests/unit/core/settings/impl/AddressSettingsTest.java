@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.core.settings.impl;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -25,6 +27,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class AddressSettingsTest extends UnitTestCase
 {
+   @Test
    public void testDefaults()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -37,10 +40,12 @@ public class AddressSettingsTest extends UnitTestCase
                           addressSettings.getMessageCounterHistoryDayLimit());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER,
-                          addressSettings.getRedeliveryMultiplier());
+ addressSettings.getRedeliveryMultiplier(),
+                          0.000001);
 
    }
 
+   @Test
    public void testSingleMerge()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -66,6 +71,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
+   @Test
    public void testMultipleMerge()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -94,10 +100,11 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 2003);
-      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 2.5);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 2.5, 0.000001);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 
+   @Test
    public void testMultipleMergeAll()
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -132,7 +139,7 @@ public class AddressSettingsTest extends UnitTestCase
       Assert.assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       Assert.assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
       Assert.assertEquals(addressSettings.getRedeliveryDelay(), 1003);
-      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0);
+      Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0, 0.000001);
       Assert.assertEquals(addressSettings.getMaxRedeliveryDelay(), 5000);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
@@ -49,7 +52,8 @@ public class ConcurrentCreateDeleteProduceTest extends ServiceTestBase
 
 
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -69,6 +73,7 @@ public class ConcurrentCreateDeleteProduceTest extends ServiceTestBase
       locator.setBlockOnAcknowledge(true);
    }
 
+   @Test
    public void testConcurrentProduceCreateAndDelete() throws Throwable
    {
       ClientSessionFactory factory = locator.createSessionFactory();

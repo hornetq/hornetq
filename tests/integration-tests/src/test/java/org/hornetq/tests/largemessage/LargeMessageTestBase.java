@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.largemessage;
+import org.junit.After;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -71,7 +72,8 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (server != null && server.isStarted())
       {

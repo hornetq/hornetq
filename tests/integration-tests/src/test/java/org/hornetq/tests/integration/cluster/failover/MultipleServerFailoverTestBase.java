@@ -20,6 +20,8 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +80,8 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    public abstract String getNodeGroupName();
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       liveServers = new ArrayList<TestableServer>();
@@ -147,7 +150,8 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       for (TestableServer backupServer : backupServers)
       {

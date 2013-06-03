@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -37,6 +39,7 @@ import org.hornetq.utils.VersionLoader;
 public class NettyConnectorTest extends UnitTestCase
 {
 
+   @Test
    public void testVersionPropertiesAreCorrect()
    {
       assertTrue("pom.xml 'netty.version.string' property set to expect\n'" +
@@ -45,6 +48,7 @@ public class NettyConnectorTest extends UnitTestCase
                  org.jboss.netty.util.Version.ID.equals(VersionLoader.getVersion().getNettyVersion()));
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new BufferHandler()
@@ -85,6 +89,7 @@ public class NettyConnectorTest extends UnitTestCase
       Assert.assertFalse(connector.isStarted());
    }
 
+   @Test
    public void testNullParams() throws Exception
    {
       BufferHandler handler = new BufferHandler()
@@ -145,6 +150,7 @@ public class NettyConnectorTest extends UnitTestCase
          // Ok
       }
    }
+   @Test
    public void testSystemPropertyOverrides() throws Exception
    {
       BufferHandler handler = new BufferHandler()

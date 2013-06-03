@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.Map;
 
@@ -145,7 +147,8 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
 
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -153,7 +156,8 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (session != null)
       {

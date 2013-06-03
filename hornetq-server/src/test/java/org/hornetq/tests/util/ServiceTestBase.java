@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.util;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -25,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -91,7 +93,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    private int sendMsgCount = 0;
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
       if (InVMRegistry.instance.size() > 0)
@@ -101,7 +104,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       sendMsgCount = 0;
       super.setUp();

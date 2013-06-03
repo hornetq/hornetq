@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +38,9 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.jboss.tm.TxUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -71,6 +73,7 @@ public class XATest extends HornetQServerTestCase
    // TestCase overrides -------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -86,7 +89,7 @@ public class XATest extends HornetQServerTestCase
       suspendedTx = tm.suspend();
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       if (TxUtils.isUncommitted(tm))
@@ -116,12 +119,11 @@ public class XATest extends HornetQServerTestCase
       {
          tm.resume(suspendedTx);
       }
-
-      super.tearDown();
    }
 
    // Public --------------------------------------------------------
 
+   @Test
    public void test2PCSendCommit1PCOptimization() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
@@ -180,6 +182,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCSendCommit() throws Exception
    {
       XAConnection conn = null;
@@ -241,6 +244,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCSendRollback1PCOptimization() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -295,6 +299,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCSendFailOnPrepare() throws Exception
    {
       XAConnection conn = null;
@@ -364,6 +369,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCSendRollback() throws Exception
    {
       XAConnection conn = null;
@@ -419,6 +425,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCReceiveCommit1PCOptimization() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -497,6 +504,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void test2PCReceiveCommit() throws Exception
    {
       XAConnection conn = null;
@@ -574,6 +582,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void test2PCReceiveRollback1PCOptimization() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -655,6 +664,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test2PCReceiveRollback() throws Exception
    {
       XAConnection conn = null;
@@ -737,6 +747,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void test1PCSendCommit() throws Exception
    {
       XAConnection conn = null;
@@ -790,6 +801,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void test1PCSendRollback() throws Exception
    {
       XAConnection conn = null;
@@ -838,6 +850,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void test1PCReceiveCommit() throws Exception
    {
       XAConnection conn = null;
@@ -907,6 +920,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void test1PCReceiveRollback() throws Exception
    {
       XAConnection conn = null;
@@ -987,6 +1001,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxCommitAcknowledge1PCOptimization() throws Exception
    {
       XAConnection conn = null;
@@ -1063,6 +1078,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxCommitAcknowledge() throws Exception
    {
       XAConnection conn = null;
@@ -1139,6 +1155,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxRollbackAcknowledge1PCOptimization() throws Exception
    {
       XAConnection conn = null;
@@ -1299,6 +1316,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxRollbackAcknowledge() throws Exception
    {
       XAConnection conn = null;
@@ -1460,6 +1478,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testMultipleSessionsOneTxRollbackAcknowledgeForceFailureInCommit() throws Exception
    {
       XAConnection conn = null;
@@ -1589,6 +1608,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxCommitSend1PCOptimization() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -1657,6 +1677,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testMultipleSessionsOneTxCommitSend() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -1730,6 +1751,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMultipleSessionsOneTxRollbackSend1PCOptimization() throws Exception
    {
       // Since both resources have some RM, TM will probably use 1PC optimization
@@ -1793,6 +1815,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testMultipleSessionsOneTxRollbackSend() throws Exception
    {
       XAConnection conn = null;
@@ -1856,6 +1879,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testOneSessionTwoTransactionsCommitAcknowledge() throws Exception
    {
       XAConnection conn = null;
@@ -1940,6 +1964,7 @@ public class XATest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testOneSessionTwoTransactionsRollbackAcknowledge() throws Exception
    {
       XAConnection conn = null;
@@ -2040,6 +2065,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testOneSessionTwoTransactionsCommitSend() throws Exception
    {
       XAConnection conn = null;
@@ -2120,6 +2146,7 @@ public class XATest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testIsSamRM() throws Exception
    {
       XAConnection conn = null;
@@ -2137,6 +2164,7 @@ public class XATest extends HornetQServerTestCase
       ProxyAssertSupport.assertTrue(res1.isSameRM(res2));
    }
 
+   @Test
    public void testOneSessionTwoTransactionsRollbackSend() throws Exception
    {
       XAConnection conn = null;

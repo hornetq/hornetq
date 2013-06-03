@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -33,6 +31,8 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A LargeMessageCompressTest
@@ -65,6 +65,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       return locator1;
    }
 
+   @Test
    public void testLargeMessageCompression() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -77,9 +78,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -89,7 +90,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
@@ -109,6 +110,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testLargeMessageCompression2() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -121,9 +123,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -133,7 +135,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
@@ -168,6 +170,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
    }
 
+   @Test
    public void testLargeMessageCompression3() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -180,9 +183,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -192,7 +195,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
@@ -229,6 +232,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
    // This test will send 1 Gig of spaces. There shouldn't be enough memory to uncompress the file in memory
    // but this will make sure we can work through compressed channels on saving it to stream
+   @Test
    public void testHugeStreamingSpacesCompressed() throws Exception
    {
       final long messageSize = 1024l * 1024l * 1024l;
@@ -246,9 +250,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       ClientMessage clientMessage = session.createMessage(true);
 
@@ -293,7 +297,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
@@ -323,6 +327,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
 
 
+   @Test
    public void testLargeMessageCompressionRestartAndCheckSize() throws Exception
    {
       final int messageSize = 1024 * 1024;
@@ -336,9 +341,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       byte [] msgs = new byte[1024 * 1024];
       for (int i = 0 ; i < msgs.length; i++)
@@ -372,7 +377,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
@@ -407,6 +412,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
 
    @Override
+   @Test
    public void testSendServerMessage() throws Exception
    {
       // doesn't make sense as compressed

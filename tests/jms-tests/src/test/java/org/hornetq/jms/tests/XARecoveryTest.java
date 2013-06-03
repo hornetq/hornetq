@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -46,6 +48,7 @@ public class XARecoveryTest extends JMSTestCase
     * messages to each queue, and ack the original 4 in a tx Then recover it without restarting the
     * server
     */
+   @Test
    public void testComplexTransactionalRecoveryWithoutRestart() throws Exception
    {
       Connection conn1 = null;
@@ -280,6 +283,7 @@ public class XARecoveryTest extends JMSTestCase
     * Then recover it without restarting the server, then rollback
     *
     */
+   @Test
    public void testComplexTransactionalRecoveryWithoutRestartRollback() throws Exception
    {
       Connection conn1 = null;
@@ -530,6 +534,7 @@ public class XARecoveryTest extends JMSTestCase
     * Then recover it after restarting the server
     *
     */
+   @Test
    public void testComplexTransactionalRecoveryWithRestart() throws Exception
    {
       Connection conn1 = null;
@@ -794,6 +799,7 @@ public class XARecoveryTest extends JMSTestCase
     * Then recover it after restarting the server, then rollback
     *
     */
+   @Test
    public void testComplexTransactionalRecoveryWithRestartRollback() throws Exception
    {
       Connection conn1 = null;
@@ -1051,6 +1057,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    /* Not really necessary - but it does no harm */
+   @Test
    public void testComplexTransactional() throws Exception
    {
       Connection conn1 = null;
@@ -1271,6 +1278,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    /* A simple send in a transaction - recovered without restarting the server */
+   @Test
    public void testSimpleTransactionalSendRecoveryWithoutRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalDeliveryRecoveryWithoutRestart");
@@ -1404,6 +1412,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    /* A simple send in a transaction - recovered after restarting the server */
+   @Test
    public void testSimpleTransactionalSendRecoveryWithRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalDeliveryRecoveryWithRestart");
@@ -1567,6 +1576,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    /* A simple acknowledgement in a transaction, recovered without restart */
+   @Test
    public void testSimpleTransactionalAcknowledgementRecoveryWithoutRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalAcknowledgementRecovery");
@@ -1701,6 +1711,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    /* A simple acknowledgement in a transaction, recovered with restart */
+   @Test
    public void testSimpleTransactionalAcknowledgementRecoveryWithRestart() throws Exception
    {
       log.trace("starting testSimpleTransactionalAcknowledgementRecoveryWithRestart");
@@ -1856,6 +1867,7 @@ public class XARecoveryTest extends JMSTestCase
     * We don't restart in this test
     *
     */
+   @Test
    public void testRecoveryWithTwoDurableSubsWithoutRestart() throws Exception
    {
       Connection conn1 = null;
@@ -2112,6 +2124,7 @@ public class XARecoveryTest extends JMSTestCase
     * We do restart in this test
     *
     */
+   @Test
    public void testRecoveryWithTwoDurableSubsWithRestart() throws Exception
    {
       Connection conn1 = null;
@@ -2379,6 +2392,7 @@ public class XARecoveryTest extends JMSTestCase
     * NOTE this test only tests transactional sends, not transactional acknowledgments
     *
     */
+   @Test
    public void testTransactionalDeliveryRecovery() throws Exception
    {
       log.trace("starting testTransactionalDeliveryRecovery");
@@ -2583,6 +2597,7 @@ public class XARecoveryTest extends JMSTestCase
     * This test sends some messages in a couple of txs, crashes then recovers
     * NOTE it does not test transactional acknowledgements
     */
+   @Test
    public void testMockCoordinatorRecovery() throws Exception
    {
       XAConnection conn1 = null;
@@ -2736,6 +2751,7 @@ public class XARecoveryTest extends JMSTestCase
     * It uses the JBoss TS XId implementation - so we can show compatibility
     * NOTE it does not test transactional acknowledgements
     */
+   @Test
    public void testMockCoordinatorRecoveryWithJBossTSXids() throws Exception
    {
       XAConnection conn1 = null;
@@ -2875,6 +2891,7 @@ public class XARecoveryTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMockCoordinatorRecovery3() throws Exception
    {
       XAConnection conn1 = null;
@@ -3013,6 +3030,7 @@ public class XARecoveryTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMultiChannelRecovery() throws Exception
    {
       XAConnection conn1 = null;

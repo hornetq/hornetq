@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -57,7 +59,8 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -69,7 +72,8 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       session.close();
 

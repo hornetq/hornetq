@@ -13,13 +13,15 @@
 
 package org.hornetq.util;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 import org.hornetq.utils.DeflaterReader;
 import org.hornetq.utils.InflaterReader;
@@ -31,9 +33,10 @@ import org.hornetq.utils.InflaterWriter;
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
-public class CompressionUtilTest extends TestCase
+public class CompressionUtilTest extends Assert
 {
 
+   @Test
    public void testDeflaterReader() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
@@ -71,6 +74,7 @@ public class CompressionUtilTest extends TestCase
       reader.close();
    }
 
+   @Test
    public void testDeflaterReader2() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
@@ -112,6 +116,7 @@ public class CompressionUtilTest extends TestCase
       reader.close();
    }
 
+   @Test
    public void testInflaterReader() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
@@ -150,6 +155,7 @@ public class CompressionUtilTest extends TestCase
       inflater.close();
    }
 
+   @Test
    public void testInflaterWriter() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";

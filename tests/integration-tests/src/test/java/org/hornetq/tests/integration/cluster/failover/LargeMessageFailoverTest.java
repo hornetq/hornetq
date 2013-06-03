@@ -16,30 +16,19 @@ package org.hornetq.tests.integration.cluster.failover;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.junit.Test;
 
 /**
  * A LargeMessageFailoverTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
- *
  */
 public class LargeMessageFailoverTest extends FailoverTest
 {
 
-
-   public LargeMessageFailoverTest(String name)
-   {
-      super(name);
-   }
-
-   public LargeMessageFailoverTest()
-   {
-      super();
-   }
-
-
    @Override
+   @Test
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
       // skip test because it triggers OutOfMemoryError.
@@ -47,6 +36,7 @@ public class LargeMessageFailoverTest extends FailoverTest
    }
 
    @Override
+   @Test
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
    {
       // skip test because it triggers OutOfMemoryError.

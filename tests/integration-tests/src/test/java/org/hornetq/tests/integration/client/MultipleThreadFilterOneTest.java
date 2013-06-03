@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -207,21 +209,25 @@ public class MultipleThreadFilterOneTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSendingNetty() throws Exception
    {
       testSending(true, false);
    }
 
+   @Test
    public void testSendingNettyPaging() throws Exception
    {
       testSending(true, true);
    }
 
+   @Test
    public void testSendingInVM() throws Exception
    {
       testSending(false, false);
    }
 
+   @Test
    public void testSendingInVMPaging() throws Exception
    {
       testSending(false, true);

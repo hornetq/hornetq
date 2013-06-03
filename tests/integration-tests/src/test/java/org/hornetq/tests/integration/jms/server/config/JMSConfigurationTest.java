@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.server.config;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -52,6 +54,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class JMSConfigurationTest extends ServiceTestBase
 {
 
+   @Test
    public void testSetupJMSConfiguration() throws Exception
    {
       Context context = new InVMContext();

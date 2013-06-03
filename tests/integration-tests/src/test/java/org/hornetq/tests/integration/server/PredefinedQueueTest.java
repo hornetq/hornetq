@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.server;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQQueueExistsException;
@@ -51,6 +53,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
+   @Test
    public void testFailOnCreatePredefinedQueues() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -139,6 +142,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       server.stop();
    }
 
+   @Test
    public void testDeploySameNames() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -223,6 +227,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       server.stop();
    }
 
+   @Test
    public void testDeployPreexistingQueues() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -331,6 +336,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       server.stop();
    }
 
+   @Test
    public void testDurableNonDurable() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -423,6 +429,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       server.stop();
    }
 
+   @Test
    public void testDeployWithFilter() throws Exception
    {
       Configuration conf = createDefaultConfig();

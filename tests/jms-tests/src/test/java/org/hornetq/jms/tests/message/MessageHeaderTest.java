@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -73,6 +75,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testClearMessage() throws Exception
    {
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -91,6 +94,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    }
 
+   @Test
    public void testMessageOrderQueue() throws Exception
    {
       final int NUM_MESSAGES = 10;
@@ -128,6 +132,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
    }
 
+   @Test
    public void testMessageOrderTopic() throws Exception
    {
       final int NUM_MESSAGES = 10;
@@ -165,6 +170,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
    }
 
+   @Test
    public void testProperties() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
@@ -756,6 +762,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
    }
 
+   @Test
    public void testSendReceiveForeignMessage() throws JMSException
    {
 
@@ -786,6 +793,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       log.trace("Done that test");
    }
 
+   @Test
    public void testCopyOnJBossMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -805,6 +813,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(jbossMessage, copy);
    }
 
+   @Test
    public void testCopyOnForeignMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -823,6 +832,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    }
 
+   @Test
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -847,6 +857,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(foreignBytesMessage, copy);
    }
 
+   @Test
    public void testCopyOnForeignMapMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -865,6 +876,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(foreignMapMessage, copy);
    }
 
+   @Test
    public void testCopyOnForeignObjectMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -882,6 +894,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(foreignObjectMessage, copy);
    }
 
+   @Test
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -902,6 +915,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(foreignStreamMessage, copy);
    }
 
+   @Test
    public void testCopyOnForeignTextMessage() throws JMSException
    {
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE,
@@ -918,6 +932,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       MessageHeaderTestBase.ensureEquivalent(foreignTextMessage, copy);
    }
 
+   @Test
    public void testForeignJMSDestination() throws JMSException
    {
       Message message = queueProducerSession.createMessage();

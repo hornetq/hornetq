@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -53,6 +57,7 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCreateCF() throws Exception
    {
       JMSServerControl control = createJMSControl();
@@ -85,7 +90,8 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -117,7 +123,8 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopServer();
 

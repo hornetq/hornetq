@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ObjectInputStreamWithClassLoader;
@@ -81,6 +83,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testClassLoaderIsolation() throws Exception
    {
 
@@ -110,6 +113,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 
    }
 
+   @Test
    public void testClassLoaderIsolationWithProxy() throws Exception
    {
 

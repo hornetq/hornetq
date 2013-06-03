@@ -12,7 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.conform.session;
-
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -21,11 +20,11 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.UnifiedTestCase;
 
 /**
@@ -68,6 +67,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateDurableConnectionConsumerOnQueueConnection()
    {
       try
@@ -92,6 +92,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateDurableSubscriberOnQueueSession()
    {
       try
@@ -116,6 +117,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateTemporaryTopicOnQueueSession()
    {
       try
@@ -140,6 +142,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateTopicOnQueueSession()
    {
       try
@@ -164,6 +167,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testUnsubscribeOnQueueSession()
    {
       try
@@ -188,6 +192,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateBrowserOnTopicSession()
    {
       try
@@ -212,6 +217,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateQueueOnTopicSession()
    {
       try
@@ -236,6 +242,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
     *
     * @since JMS 1.1
     */
+   @Test
    public void testCreateTemporaryQueueOnTopicSession()
    {
       try
@@ -253,6 +260,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -273,6 +281,7 @@ public class UnifiedSessionTest extends UnifiedTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       try
@@ -291,18 +300,5 @@ public class UnifiedSessionTest extends UnifiedTestCase
          topicSession = null;
          super.tearDown();
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(UnifiedSessionTest.class);
-   }
-
-   public UnifiedSessionTest(final String name)
-   {
-      super(name);
    }
 }

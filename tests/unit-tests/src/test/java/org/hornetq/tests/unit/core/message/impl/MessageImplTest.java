@@ -13,9 +13,11 @@
 
 package org.hornetq.tests.unit.core.message.impl;
 
+import org.junit.Test;
+
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -79,6 +81,7 @@ public class MessageImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testExpired()
    {
       Message message = new ClientMessageImpl();
@@ -99,6 +102,7 @@ public class MessageImplTest extends UnitTestCase
       Assert.assertFalse(message.isExpired());
    }
 
+   @Test
    public void testProperties()
    {
       for (int j = 0; j < 10; j++)

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.core.message.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,6 +43,7 @@ public class MessagePropertyTest extends ServiceTestBase
    private static final SimpleString SIMPLE_STRING_KEY = new SimpleString("StringToSimpleString");
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -49,6 +54,7 @@ public class MessagePropertyTest extends ServiceTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       try
@@ -95,6 +101,7 @@ public class MessagePropertyTest extends ServiceTestBase
       return new byte[] { (byte)i, (byte)(i / 2) };
    }
 
+   @Test
    public void testProperties() throws Exception
    {
       sendMessages();

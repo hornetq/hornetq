@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -47,7 +51,8 @@ public class GroupingTest extends JMSTestBase
    private Queue queue;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -55,7 +60,8 @@ public class GroupingTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.destroyQueue("TestQueue");
 
@@ -72,6 +78,7 @@ public class GroupingTest extends JMSTestBase
       return cf;
    }
 
+   @Test
    public void testGrouping() throws Exception
    {
       ConnectionFactory fact = getCF();
@@ -132,6 +139,7 @@ public class GroupingTest extends JMSTestBase
    }
 
 
+   @Test
    public void testManyGroups() throws Exception
    {
       ConnectionFactory fact = getCF();
@@ -183,6 +191,7 @@ public class GroupingTest extends JMSTestBase
 
    }
 
+   @Test
    public void testGroupingRollbackOnClose() throws Exception
    {
       HornetQConnectionFactory fact = (HornetQConnectionFactory) getCF();

@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -38,7 +41,8 @@ public class QueueBrowserTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -51,6 +55,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
 
+   @Test
    public void testSimpleConsumerBrowser() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -97,6 +102,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumerBrowserWithSelector() throws Exception
    {
 
@@ -142,6 +148,7 @@ public class QueueBrowserTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testConsumerBrowserWithStringSelector() throws Exception
    {
 
@@ -179,6 +186,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumerMultipleBrowser() throws Exception
    {
 
@@ -216,6 +224,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumerMultipleBrowserWithSelector() throws Exception
    {
 
@@ -261,11 +270,13 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumerBrowserMessages() throws Exception
    {
       testConsumerBrowserMessagesArentAcked(false);
    }
 
+   @Test
    public void testConsumerBrowserMessagesPreACK() throws Exception
    {
       testConsumerBrowserMessagesArentAcked(false);
@@ -305,6 +316,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testConsumerBrowserMessageAckDoesNothing() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -341,6 +353,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testBrowseWithZeroConsumerWindowSize() throws Exception
    {
       locator.setConsumerWindowSize(0);

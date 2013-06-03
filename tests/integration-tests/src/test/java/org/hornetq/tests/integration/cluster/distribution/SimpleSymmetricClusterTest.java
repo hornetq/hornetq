@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 
@@ -38,12 +42,14 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       log.info("#test tearDown " + loopNumber);
@@ -56,6 +62,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testSimpleWithBackup() throws Exception
    {
       // The backups
@@ -106,6 +113,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
    }
 
 
+   @Test
    public void testSimple() throws Exception
    {
       setupServer(0, true, isNetty());
@@ -144,6 +152,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testSimple_TwoNodes() throws Exception
    {
       setupServer(0, false, isNetty());
@@ -189,6 +198,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
 
 
+   @Test
    public void testSimple2() throws Exception
    {
       setupServer(0, true, isNetty());
@@ -241,6 +251,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testSimpleRoundRobbin() throws Exception
    {
 

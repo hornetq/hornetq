@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -45,6 +47,7 @@ public class QueueRequestorTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testQueueRequestor() throws Exception
    {
       // Set up the requestor

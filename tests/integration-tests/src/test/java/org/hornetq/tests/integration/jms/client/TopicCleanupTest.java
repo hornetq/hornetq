@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -46,6 +48,7 @@ public class TopicCleanupTest extends JMSTestBase
       return true;
    }
  
+   @Test
    public void testSendTopic() throws Exception
    {
       Topic topic = createTopic("topic");

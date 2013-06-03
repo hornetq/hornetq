@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.connection;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +40,8 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
    private HornetQConnectionFactory cf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -47,7 +52,8 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (cf != null)
          cf.close();
@@ -57,6 +63,7 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
    }
 
    // https://jira.jboss.org/browse/HORNETQ-525
+   @Test
    public void testConcurrentClose() throws Exception
    {
       final Connection con = cf.createConnection();

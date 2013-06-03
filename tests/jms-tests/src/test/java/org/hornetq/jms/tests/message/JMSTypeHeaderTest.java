@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -32,6 +34,7 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testJMSType() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -42,6 +45,7 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertEquals(originalType, gotType);
    }
 
+   @Test
    public void testNULLJMSType() throws Exception
    {
       Message m = queueProducerSession.createMessage();

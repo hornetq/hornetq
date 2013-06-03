@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.jms.tests.message.foreign;
+import org.junit.Before;
+import org.junit.After;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -33,6 +35,7 @@ public class ForeignObjectMessageTest extends ForeignMessageTest
    private ForeignTestObject testObj;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       testObj = new ForeignTestObject("hello", 2.2D);
@@ -41,6 +44,7 @@ public class ForeignObjectMessageTest extends ForeignMessageTest
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       super.tearDown();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.server.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -52,7 +56,8 @@ public class QueueImplTest extends UnitTestCase
    private ExecutorService executor;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -60,7 +65,8 @@ public class QueueImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       scheduledExecutor.shutdownNow();
       executor.shutdownNow();
@@ -71,6 +77,7 @@ public class QueueImplTest extends UnitTestCase
 
    private static final SimpleString address1 = new SimpleString("address1");
 
+   @Test
    public void testName()
    {
       final SimpleString name = new SimpleString("oobblle");
@@ -90,6 +97,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(name, queue.getName());
    }
 
+   @Test
    public void testDurable()
    {
       QueueImpl queue = new QueueImpl(1,
@@ -121,6 +129,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertTrue(queue.isDurable());
    }
 
+   @Test
    public void testAddRemoveConsumer() throws Exception
    {
       Consumer cons1 = new FakeConsumer();
@@ -178,6 +187,7 @@ public class QueueImplTest extends UnitTestCase
       queue.removeConsumer(cons3);
    }
 
+   @Test
    public void testGetFilter()
    {
       QueueImpl queue = new QueueImpl(1,
@@ -223,6 +233,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleadd()
    {
       QueueImpl queue = new QueueImpl(1,
@@ -252,6 +263,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testSimpleNonDirectDelivery() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -300,6 +312,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(numMessages, queue.getDeliveringCount());
    }
 
+   @Test
    public void testBusyConsumer() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -354,6 +367,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(10, queue.getDeliveringCount());
    }
 
+   @Test
    public void testBusyConsumerThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -431,6 +445,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(30, queue.getDeliveringCount());
    }
 
+   @Test
    public void testaddHeadadd() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -495,6 +510,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(allRefs, consumer.getReferences());
    }
 
+   @Test
    public void testChangeConsumersAndDeliver() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -668,6 +684,7 @@ public class QueueImplTest extends UnitTestCase
    }
 
 
+   @Test
    public void testRoundRobinWithQueueing() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -730,6 +747,7 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testWithPriorities() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -780,16 +798,19 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testConsumerWithFiltersDirect() throws Exception
    {
       testConsumerWithFilters(true);
    }
 
+   @Test
    public void testConsumerWithFiltersQueueing() throws Exception
    {
       testConsumerWithFilters(false);
    }
 
+   @Test
    public void testConsumerWithFilterAddAndRemove()
    {
       QueueImpl queue = new QueueImpl(1,
@@ -809,6 +830,7 @@ public class QueueImplTest extends UnitTestCase
       FakeConsumer consumer = new FakeConsumer(filter);
    }
 
+   @Test
    public void testIterator()
    {
       QueueImpl queue = new QueueImpl(1,
@@ -856,6 +878,7 @@ public class QueueImplTest extends UnitTestCase
       future.await(10000);
    }
 
+   @Test
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
 
@@ -940,6 +963,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
+   @Test
    public void testBusyConsumerWithFilterFirstCallBusy() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -991,6 +1015,7 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testBusyConsumerWithFilterThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1075,6 +1100,7 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testConsumerWithFilterThenAddMoreMessages() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1249,6 +1275,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(4, queue.getDeliveringCount());
    }
 
+   @Test
    public void testMessageOrder() throws Exception
    {
       FakeConsumer consumer = new FakeConsumer();
@@ -1280,6 +1307,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(messageReference2, consumer.getReferences().get(2));
    }
    
+   @Test
    public void testMessagesAdded() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1302,6 +1330,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(queue.getMessagesAdded(), 3);
    }
 
+   @Test
    public void testGetReference() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1325,6 +1354,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testGetNonExistentReference() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1352,6 +1382,7 @@ public class QueueImplTest extends UnitTestCase
     * Test the paused and resumed states with async deliveries.
     * @throws Exception
     */
+   @Test
    public void testPauseAndResumeWithAsync() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1419,6 +1450,7 @@ public class QueueImplTest extends UnitTestCase
     * @throws Exception
     */
 
+   @Test
    public void testPauseAndResumeWithDirect() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -1472,6 +1504,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
    
+   @Test
    public void testResetMessagesAdded() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,

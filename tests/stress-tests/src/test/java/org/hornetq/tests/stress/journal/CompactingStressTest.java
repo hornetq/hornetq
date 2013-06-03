@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.stress.journal;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -72,6 +74,7 @@ public class CompactingStressTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCleanupAIO() throws Throwable
    {
       if (AsynchronousFileImpl.isLoaded())
@@ -80,6 +83,7 @@ public class CompactingStressTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCleanupNIO() throws Throwable
    {
       internalTestCleanup(JournalType.NIO);
@@ -165,6 +169,7 @@ public class CompactingStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       if (AsynchronousFileImpl.isLoaded())
@@ -173,6 +178,7 @@ public class CompactingStressTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testMultiProducerAndCompactNIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.NIO);

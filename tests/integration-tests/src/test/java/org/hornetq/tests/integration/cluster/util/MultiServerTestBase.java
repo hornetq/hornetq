@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.util;
+import org.junit.Before;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,8 @@ public class MultiServerTestBase extends ServiceTestBase
    }
 
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

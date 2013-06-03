@@ -22,7 +22,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;

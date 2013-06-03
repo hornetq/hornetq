@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -40,6 +43,7 @@ public class ProducerCloseTest extends ServiceTestBase
    private ClientSession session;
    private ServerLocator locator;
 
+   @Test
    public void testCanNotUseAClosedProducer() throws Exception
    {
       final ClientProducer producer = session.createProducer(RandomUtil.randomSimpleString());
@@ -64,7 +68,8 @@ public class ProducerCloseTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       Configuration config = createDefaultConfig();

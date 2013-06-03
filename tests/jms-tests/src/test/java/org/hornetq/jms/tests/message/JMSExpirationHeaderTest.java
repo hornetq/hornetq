@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +52,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -57,6 +62,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       super.tearDown();
@@ -64,6 +70,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
    // Tests ---------------------------------------------------------
 
+   @Test
    public void testZeroExpiration() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -71,6 +78,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertEquals(0, queueConsumer.receive().getJMSExpiration());
    }
 
+   @Test
    public void testNoExpirationOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -83,6 +91,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
 
+   @Test
    public void testExpirationOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -94,6 +103,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertNull(queueConsumer.receive(100));
    }
 
+   @Test
    public void testExpirationOnReceiveNoWait() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -105,6 +115,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertNull(queueConsumer.receiveNoWait());
    }
 
+   @Test
    public void testExpiredMessageDiscardingOnTimeoutReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -139,6 +150,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertNull(expectedMessage);
    }
 
+   @Test
    public void testReceiveTimeoutPreservation() throws Exception
    {
       final long timeToWaitForReceive = 5000;
@@ -226,6 +238,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertNull(expectedMessage);
    }
 
+   @Test
    public void testNoExpirationOnReceive() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -234,6 +247,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertEquals(m.getJMSMessageID(), result.getJMSMessageID());
    }
 
+   @Test
    public void testExpirationOnReceive() throws Exception
    {
       final AtomicBoolean received = new AtomicBoolean(true);
@@ -300,6 +314,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
     * Need to make sure that expired messages are acked so they get removed from the
     * queue/subscription, when delivery is attempted
     */
+   @Test
    public void testExpiredMessageDoesNotGoBackOnQueue() throws Exception
    {
       Message m = queueProducerSession.createMessage();

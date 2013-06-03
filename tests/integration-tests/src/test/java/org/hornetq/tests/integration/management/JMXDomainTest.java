@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,7 @@ public class JMXDomainTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void test2HornetQServersManagedFrom1MBeanServer() throws Exception
    {
 

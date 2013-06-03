@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.consumer;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -25,7 +29,7 @@ import javax.jms.TextMessage;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -50,7 +54,8 @@ public class ConsumerTest extends JMSTestBase
    private javax.jms.Queue jBossQueue;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -59,13 +64,15 @@ public class ConsumerTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       cf = null;
 
       super.tearDown();
    }
 
+   @Test
    public void testPreCommitAcks() throws Exception
    {
       conn = cf.createConnection();
@@ -91,6 +98,7 @@ public class ConsumerTest extends JMSTestBase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
    }
 
+   @Test
    public void testIndividualACK() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -143,6 +151,7 @@ public class ConsumerTest extends JMSTestBase
       conn.close();
    }
 
+   @Test
    public void testIndividualACKMessageConsumer() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -227,6 +236,7 @@ public class ConsumerTest extends JMSTestBase
       conn.close();
    }
 
+   @Test
    public void testPreCommitAcksSetOnConnectionFactory() throws Exception
    {
       ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
@@ -255,6 +265,7 @@ public class ConsumerTest extends JMSTestBase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
    }
 
+   @Test
    public void testPreCommitAcksWithMessageExpiry() throws Exception
    {
       ConsumerTest.log.info("starting test");
@@ -285,6 +296,7 @@ public class ConsumerTest extends JMSTestBase
 
    }
 
+   @Test
    public void testPreCommitAcksWithMessageExpirySetOnConnectionFactory() throws Exception
    {
       ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
@@ -313,6 +325,7 @@ public class ConsumerTest extends JMSTestBase
    }
 
 
+   @Test
    public void testBrowserAndConsumerSimultaneous() throws Exception
    {
       ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
@@ -359,6 +372,7 @@ public class ConsumerTest extends JMSTestBase
       // which can cause delivering count to flip to 1
    }
 
+   @Test
    public void testBrowserAndConsumerSimultaneousDifferentConnections() throws Exception
    {
       ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
@@ -402,6 +416,7 @@ public class ConsumerTest extends JMSTestBase
       conn.close();
    }
 
+   @Test
    public void testBrowserOnly() throws Exception
    {
       ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
@@ -439,6 +454,7 @@ public class ConsumerTest extends JMSTestBase
       // which can cause delivering count to flip to 1
    }
 
+   @Test
    public void testClearExceptionListener() throws Exception
    {
       conn = cf.createConnection();
@@ -456,6 +472,7 @@ public class ConsumerTest extends JMSTestBase
       consumer.receiveNoWait();
    }
 
+   @Test
    public void testCantReceiveWhenListenerIsSet() throws Exception
    {
       conn = cf.createConnection();

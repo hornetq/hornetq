@@ -21,10 +21,12 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -40,6 +42,7 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 public class ReplicatedMultipleServerFailoverExtraBackupsTest extends ReplicatedMultipleServerFailoverTest
 {
    @Override
+   @Test
    public void testStartLiveFirst() throws Exception
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
@@ -71,6 +74,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
    }
 
    @Override
+   @Test
    public void testStartBackupFirst() throws Exception
    {
       backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");

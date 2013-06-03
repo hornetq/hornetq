@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -36,7 +40,8 @@ public class ReceiveNoWaitTest extends JMSTestBase
    private Queue queue;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -44,7 +49,8 @@ public class ReceiveNoWaitTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.destroyQueue("TestQueue");
 
@@ -57,6 +63,7 @@ public class ReceiveNoWaitTest extends JMSTestBase
     * that all messages are available for consumption by receiveNoWait()
     * https://jira.jboss.org/jira/browse/HORNETQ-284
     */
+   @Test
    public void testReceiveNoWait() throws Exception
    {
       assertNotNull(queue);

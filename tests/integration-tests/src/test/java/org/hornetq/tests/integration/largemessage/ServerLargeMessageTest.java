@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.largemessage;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -50,6 +52,7 @@ public class ServerLargeMessageTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
+   @Test
    public void testSendServerMessage() throws Exception
    {
       HornetQServer server = createServer(true);

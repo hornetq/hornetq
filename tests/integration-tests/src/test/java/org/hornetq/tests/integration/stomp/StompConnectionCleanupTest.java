@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.stomp;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.jms.server.JMSServerManager;
@@ -32,6 +34,7 @@ public class StompConnectionCleanupTest extends StompTestBase
 {
    private static final long CONNECTION_TTL = 2000;
 
+   @Test
    public void testConnectionCleanup() throws Exception
    {
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
@@ -81,6 +84,7 @@ public class StompConnectionCleanupTest extends StompTestBase
       }
    }
 
+   @Test
    public void testConnectionNotCleanedUp() throws Exception
    {
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;

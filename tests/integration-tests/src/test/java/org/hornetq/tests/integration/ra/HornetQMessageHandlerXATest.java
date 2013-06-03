@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -41,6 +43,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       return false;
    }
 
+   @Test
    public void testXACommit() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -72,6 +75,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testXARollback() throws Exception
    {
       setupDLQ(10);

@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.connection;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +24,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -56,7 +60,8 @@ public class ExceptionListenerTest extends UnitTestCase
    private static final String Q_NAME = "ConnectionTestQueue";
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -76,7 +81,8 @@ public class ExceptionListenerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.stop();
       cf = null;
@@ -106,6 +112,7 @@ public class ExceptionListenerTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testListenerCalledForOneConnection() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -125,6 +132,7 @@ public class ExceptionListenerTest extends UnitTestCase
       conn.close();
    }
 
+   @Test
    public void testListenerCalledForOneConnectionAndSessions() throws Exception
    {
       Connection conn = cf.createConnection();

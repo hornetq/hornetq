@@ -12,10 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.security.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
@@ -32,7 +36,8 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
    private HornetQSecurityManagerImpl securityManager;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -40,13 +45,15 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       securityManager = null;
 
       super.tearDown();
    }
 
+   @Test
    public void testDefaultSecurity()
    {
       securityManager.addUser("guest", "guest");
@@ -76,6 +83,7 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       Assert.assertFalse(securityManager.validateUserAndRole(null, null, roles, CheckType.CONSUME));
    }
 
+   @Test
    public void testAddingUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
@@ -102,6 +110,7 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRemovingUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
@@ -110,6 +119,7 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       Assert.assertFalse(securityManager.validateUser("newuser1", "newpassword1"));
    }
 
+   @Test
    public void testRemovingInvalidUsers()
    {
       securityManager.addUser("newuser1", "newpassword1");
@@ -118,6 +128,7 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       Assert.assertTrue(securityManager.validateUser("newuser1", "newpassword1"));
    }
 
+   @Test
    public void testAddingRoles()
    {
       securityManager.addUser("newuser1", "newpassword1");
@@ -142,6 +153,7 @@ public class HornetQSecurityManagerImplTest extends UnitTestCase
       Assert.assertFalse(securityManager.validateUserAndRole("newuser1", "newpassword1", roles, CheckType.SEND));
    }
 
+   @Test
    public void testRemovingRoles()
    {
       securityManager.addUser("newuser1", "newpassword1");

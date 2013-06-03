@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.junit.Test;
+
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +49,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       return false;
    }
 
+   @Test
    public void testSimpleMessageReceivedOnQueue() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -90,6 +93,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       return qResourceAdapter;
    }
 
+   @Test
    public void testServerShutdownAndReconnect() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -147,6 +151,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testInvalidAckMode() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -165,6 +170,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testSimpleMessageReceivedOnQueueInLocalTX() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -204,6 +210,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testSimpleMessageReceivedOnQueueWithSelector() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -240,6 +247,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testEndpointDeactivated() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -263,6 +271,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testMaxSessions() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -285,6 +294,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testSimpleTopic() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -315,6 +325,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testDurableSubscription() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -371,6 +382,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testNonDurableSubscription() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -419,6 +431,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    }
 
    //https://issues.jboss.org/browse/JBPAPP-8017
+   @Test
    public void testNonDurableSubscriptionDeleteAfterCrash() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -466,6 +479,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertFalse(query.isExists());
    }
 
+   @Test
    public void testSelectorChangedWithTopic() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -528,6 +542,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testSharedSubscription() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -592,6 +607,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    }
 
+   @Test
    public void testSelectorNotChangedWithTopic() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();

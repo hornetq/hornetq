@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.util;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -35,6 +37,7 @@ public class UUIDGeneratorTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetHardwareAddress() throws Exception
    {
       String javaVersion = System.getProperty("java.vm.version");
@@ -50,6 +53,7 @@ public class UUIDGeneratorTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testZeroPaddedBytes() throws Exception
    {
       Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(null));

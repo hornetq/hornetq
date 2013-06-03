@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover.remote;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -28,6 +30,7 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 public class FailoverWithSharedStoreTest extends ClusterTestBase
 {
 
+   @Test
    public void testNoConnection() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));

@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -32,6 +34,7 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testJMSTimestamp() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -45,6 +48,7 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertTrue(timestamp <= t2);
    }
 
+   @Test
    public void testDisabledTimestamp() throws Exception
    {
       Message m = queueProducerSession.createMessage();

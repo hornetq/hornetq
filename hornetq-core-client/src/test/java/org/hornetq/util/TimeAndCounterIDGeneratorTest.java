@@ -13,10 +13,12 @@
 
 package org.hornetq.util;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -27,7 +29,7 @@ import org.hornetq.utils.TimeAndCounterIDGenerator;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> Created 24-Sep-08 3:42:25 PM
  */
-public class TimeAndCounterIDGeneratorTest extends TestCase
+public class TimeAndCounterIDGeneratorTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -40,6 +42,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCalculation()
    {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
@@ -58,6 +61,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
 
    }
 
+   @Test
    public void testCalculationRefresh()
    {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
@@ -76,6 +80,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
 
    }
 
+   @Test
    public void testCalculationOnMultiThread() throws Throwable
    {
       final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
@@ -152,6 +157,7 @@ public class TimeAndCounterIDGeneratorTest extends TestCase
 
    }
 
+   @Test
    public void testWrapID() throws Throwable
    {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();

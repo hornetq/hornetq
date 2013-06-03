@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
+import org.junit.Test;
+
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -35,6 +37,7 @@ public class PagePositionTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNextSequenceOf()
    {
 

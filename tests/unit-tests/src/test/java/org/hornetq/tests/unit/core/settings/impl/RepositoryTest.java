@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.settings.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -32,13 +35,15 @@ public class RepositoryTest extends UnitTestCase
    HierarchicalRepository<HashSet<Role>> securityRepository;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
       securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    }
 
+   @Test
    public void testDefault()
    {
       securityRepository.setDefault(new HashSet<Role>());
@@ -47,6 +52,7 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals(roles.size(), 0);
    }
 
+   @Test
    public void testSingleMatch()
    {
       securityRepository.addMatch("queues.*", new HashSet<Role>());
@@ -54,6 +60,7 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals(hashSet.size(), 0);
    }
 
+   @Test
    public void testSingletwo()
    {
       securityRepository.addMatch("queues.another.aq.*", new HashSet<Role>());
@@ -71,6 +78,7 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals(hashSet.size(), 3);
    }
 
+   @Test
    public void testWithoutWildcard()
    {
       securityRepository.addMatch("queues.1.*", new HashSet<Role>());
@@ -82,6 +90,7 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals(hashSet.size(), 2);
    }
 
+   @Test
    public void testMultipleWildcards()
    {
       HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
@@ -126,6 +135,7 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals("#", val);
    }
 
+   @Test
    public void testRepositoryMerge()
    {
       HierarchicalRepository<DummyMergeable> repository = new HierarchicalObjectRepository<DummyMergeable>();
@@ -156,6 +166,7 @@ public class RepositoryTest extends UnitTestCase
       DummyMergeable.reset();
    }
 
+   @Test
    public void testIllegalMatches()
    {
       HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();

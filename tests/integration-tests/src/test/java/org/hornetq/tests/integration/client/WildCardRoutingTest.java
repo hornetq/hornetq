@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -39,6 +43,7 @@ public class WildCardRoutingTest extends UnitTestCase
    private ClientSession clientSession;
    private ClientSessionFactory sessionFactory;
 
+   @Test
    public void testBasicWildcardRouting() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -68,6 +73,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testBasicWildcardRoutingQueuesDontExist() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -99,6 +105,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
+   @Test
    public void testBasicWildcardRoutingQueuesDontExist2() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -138,6 +145,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
+   @Test
    public void testBasicWildcardRoutingWithHash() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -167,6 +175,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingQueuesAddedAfter() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -196,6 +205,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingQueuesAddedThenDeleted() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -229,6 +239,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
    }
 
+   @Test
    public void testWildcardRoutingLotsOfQueuesAddedThenDeleted() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -326,6 +337,7 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.deleteQueue(queueName);
    }
 
+   @Test
    public void testWildcardRoutingLotsOfQueuesAddedThenDeletedHash() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -423,6 +435,7 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.deleteQueue(queueName);
    }
 
+   @Test
    public void testWildcardRoutingWithSingleHash() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -452,6 +465,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingWithHash() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.f");
@@ -481,6 +495,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingWithHashMultiLengthAddresses() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c.f");
@@ -511,6 +526,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingWithDoubleStar() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -540,6 +556,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingPartialMatchStar() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");
@@ -565,6 +582,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingVariableLengths() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c");
@@ -592,6 +610,7 @@ public class WildCardRoutingTest extends UnitTestCase
       m.acknowledge();
    }
 
+   @Test
    public void testWildcardRoutingVariableLengthsStar() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c");
@@ -617,6 +636,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingMultipleStars() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c");
@@ -642,6 +662,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingStarInMiddle() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c");
@@ -667,6 +688,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingStarAndHash() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c.d");
@@ -692,6 +714,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testWildcardRoutingHashAndStar() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c");
@@ -717,6 +740,7 @@ public class WildCardRoutingTest extends UnitTestCase
       Assert.assertNull(m);
    }
 
+   @Test
    public void testLargeWildcardRouting() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z");
@@ -755,7 +779,8 @@ public class WildCardRoutingTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -776,7 +801,8 @@ public class WildCardRoutingTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {

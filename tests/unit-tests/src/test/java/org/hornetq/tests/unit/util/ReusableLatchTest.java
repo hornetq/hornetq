@@ -13,9 +13,11 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -28,6 +30,7 @@ import org.hornetq.utils.ReusableLatch;
  */
 public class ReusableLatchTest extends UnitTestCase
 {
+   @Test
    public void testLatchWithParameterizedDown() throws Exception
    {
       ReusableLatch latch = new ReusableLatch(1000);
@@ -40,6 +43,7 @@ public class ReusableLatchTest extends UnitTestCase
       assertEquals(0, latch.getCount());
    }
 
+   @Test
    public void testLatchOnSingleThread() throws Exception
    {
       ReusableLatch latch = new ReusableLatch();
@@ -71,6 +75,7 @@ public class ReusableLatchTest extends UnitTestCase
     *
     * @throws Exception
     */
+   @Test
    public void testLatchOnMultiThread() throws Exception
    {
       final ReusableLatch latch = new ReusableLatch();
@@ -238,6 +243,7 @@ public class ReusableLatchTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testReuseLatch() throws Exception
    {
       final ReusableLatch latch = new ReusableLatch(5);

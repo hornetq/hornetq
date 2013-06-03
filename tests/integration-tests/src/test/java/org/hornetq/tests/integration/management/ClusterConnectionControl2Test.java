@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +25,7 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -67,6 +71,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNodes() throws Exception
    {
       ClusterConnectionControl clusterConnectionControl_0 = createManagementControl(clusterConnectionConfig_0.getName());
@@ -96,7 +101,8 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -161,7 +167,8 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       server0 = null;
       server1 = null;

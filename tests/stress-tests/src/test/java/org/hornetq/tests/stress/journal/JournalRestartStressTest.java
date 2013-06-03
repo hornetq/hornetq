@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.stress.journal;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -49,6 +51,7 @@ public class JournalRestartStressTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testLoad() throws Throwable
    {
       HornetQServer server2 = createServer(true, false);

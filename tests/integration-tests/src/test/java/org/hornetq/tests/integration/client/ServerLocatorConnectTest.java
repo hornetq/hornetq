@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +41,8 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       Configuration configuration = createDefaultConfig(isNetty());
@@ -46,6 +50,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       server.start();
    }
 
+   @Test
    public void testSingleConnectorSingleServer() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
@@ -54,6 +59,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testSingleConnectorSingleServerConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
@@ -63,6 +69,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testMultipleConnectorSingleServerConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
@@ -78,6 +85,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testMultipleConnectorSingleServerConnectReconnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
@@ -94,6 +102,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testMultipleConnectorSingleServerNoConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
@@ -121,6 +130,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
    public void testMultipleConnectorSingleServerNoConnectAttemptReconnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(

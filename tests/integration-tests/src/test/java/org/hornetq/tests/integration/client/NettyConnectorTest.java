@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -31,7 +35,8 @@ public class NettyConnectorTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -41,6 +46,7 @@ public class NettyConnectorTest extends ServiceTestBase
    }
 
    //make sure the 'connect-timeout' passed to netty.
+   @Test
    public void testConnectionTimeoutConfig() throws Exception
    {
       final int timeout = 23456;
@@ -61,7 +67,8 @@ public class NettyConnectorTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
       server.stop();

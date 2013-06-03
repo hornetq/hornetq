@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -56,6 +58,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAttributes() throws Exception
    {
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
@@ -95,6 +98,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       Assert.assertTrue(broadcastGroupControl.isStarted());
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);

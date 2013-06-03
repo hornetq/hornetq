@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -42,7 +45,8 @@ public class ConsumerFilterTest extends ServiceTestBase
    private ClientConsumer consumer;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -62,6 +66,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       consumer = session.createConsumer("foo", "animal='giraffe'");
    }
 
+   @Test
    public void testLargeToken() throws Exception
    {
       StringBuffer token = new StringBuffer();
@@ -77,6 +82,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       consumer = session.createConsumer("foo", "animal=" + token.toString());
    }
 
+   @Test
    public void testNonMatchingMessagesFollowedByMatchingMessages() throws Exception
    {
 
@@ -108,6 +114,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testNonMatchingMessagesFollowedByMatchingMessagesMany() throws Exception
    {
 
@@ -145,6 +152,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testTwoConsumers() throws Exception
    {
       ClientConsumer consumer2 = session.createConsumer("foo", "animal='elephant'");
@@ -219,6 +227,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testLinkedListOrder() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();

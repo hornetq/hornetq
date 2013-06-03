@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -44,6 +46,7 @@ public class BlockingSendTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSinglePersistentBlockingNonSync() throws Exception
    {
       HornetQServer server = createServer(true);

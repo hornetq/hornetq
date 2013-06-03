@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.selector;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -46,6 +48,7 @@ public class SelectorTest extends HornetQServerTestCase
     * is then closed. A new receiver is now attached to the queue. Redelivery of the remaining
     * message is now attempted. The message should be redelivered.
     */
+   @Test
    public void testSelectiveClosingConsumer() throws Exception
    {
       Connection conn = null;
@@ -100,6 +103,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testManyTopic() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -154,6 +158,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testManyQueue() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -244,6 +249,7 @@ public class SelectorTest extends HornetQServerTestCase
 
    // http://jira.jboss.org/jira/browse/JBMESSAGING-775
 
+   @Test
    public void testManyQueueWithExpired() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -339,6 +345,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testManyRedeliveriesTopic() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -396,6 +403,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testManyRedeliveriesQueue() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -456,6 +464,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testWithSelector() throws Exception
    {
       String selector1 = "beatle = 'john'";
@@ -540,6 +549,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testManyConsumersWithDifferentSelectors() throws Exception
    {
       Connection conn = null;
@@ -650,6 +660,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testDeliveryModeOnSelector() throws Exception
    {
       Connection conn = null;
@@ -702,6 +713,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSMessageIDOnSelector() throws Exception
    {
       Connection conn = null;
@@ -745,6 +757,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSPriorityOnSelector() throws Exception
    {
       Connection conn = null;
@@ -788,6 +801,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSTimestampOnSelector() throws Exception
    {
       Connection conn = null;
@@ -833,6 +847,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSExpirationOnSelector() throws Exception
    {
       Connection conn = null;
@@ -881,6 +896,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSTypeOnSelector() throws Exception
    {
       Connection conn = null;
@@ -926,6 +942,7 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
 
+   @Test
    public void testJMSCorrelationIDOnSelector() throws Exception
    {
       Connection conn = null;

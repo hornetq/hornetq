@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -31,6 +33,7 @@ public class PersistenceTest extends JMSTestCase
    /**
     * Test that the messages in a persistent queue survive starting and stopping and server,
     */
+   @Test
    public void testQueuePersistence() throws Exception
    {
       Connection conn = null;
@@ -86,6 +89,7 @@ public class PersistenceTest extends JMSTestCase
     * Test that the JMSRedelivered and delivery count survives a restart
     *
     */
+   @Test
    public void testJMSRedeliveredRestart() throws Exception
    {
       Connection conn = null;
@@ -176,6 +180,7 @@ public class PersistenceTest extends JMSTestCase
    /**
     * First test that message order survives a restart
     */
+   @Test
    public void testMessageOrderPersistence_1() throws Exception
    {
       Connection conn = null;
@@ -289,6 +294,7 @@ public class PersistenceTest extends JMSTestCase
    /**
     * Second test that message order survives a restart
     */
+   @Test
    public void testMessageOrderPersistence_2() throws Exception
    {
       Connection conn = null;
@@ -401,6 +407,7 @@ public class PersistenceTest extends JMSTestCase
    /*
     * Test durable subscription state survives a server crash
     */
+   @Test
    public void testDurableSubscriptionPersistence_1() throws Exception
    {
       Connection conn = null;
@@ -457,6 +464,7 @@ public class PersistenceTest extends JMSTestCase
    /*
     * Test durable subscription state survives a restart
     */
+   @Test
    public void testDurableSubscriptionPersistence_2() throws Exception
    {
       Connection conn = null;

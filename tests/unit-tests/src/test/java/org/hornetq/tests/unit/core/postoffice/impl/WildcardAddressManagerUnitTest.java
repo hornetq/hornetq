@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -37,6 +39,7 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
 {
 
 
+   @Test
    public void testUnitOnWildCardFailingScenario() throws Exception
    {
       int errors = 0;

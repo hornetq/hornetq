@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.server.config;
 
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.net.URL;
 
@@ -47,6 +49,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
 
+   @Test
    public void testParsing() throws Exception
    {
       Configuration config = createDefaultConfig();
@@ -87,7 +90,7 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals("FooClass", cfConfig.getLoadBalancingPolicyClassName());
       assertEquals(34, cfConfig.getReconnectAttempts());
       assertEquals(5, cfConfig.getRetryInterval());
-      assertEquals(6.0, cfConfig.getRetryIntervalMultiplier());
+      assertEquals(6.0, cfConfig.getRetryIntervalMultiplier(), 0.000001);
       assertEquals(300, cfConfig.getMaxRetryInterval());
       assertEquals(true, cfConfig.isCacheLargeMessagesClient());
 

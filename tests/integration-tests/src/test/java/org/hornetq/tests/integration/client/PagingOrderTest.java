@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -72,7 +75,8 @@ public class PagingOrderTest extends ServiceTestBase
    private Connection conn;
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -85,6 +89,7 @@ public class PagingOrderTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testOrder1() throws Throwable
    {
       boolean persistentMessages = true;
@@ -194,6 +199,7 @@ public class PagingOrderTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testPageCounter() throws Throwable
    {
       boolean persistentMessages = true;
@@ -347,6 +353,7 @@ public class PagingOrderTest extends ServiceTestBase
 
       }
 
+   @Test
    public void testPageCounter2() throws Throwable
    {
       boolean persistentMessages = true;
@@ -462,6 +469,7 @@ public class PagingOrderTest extends ServiceTestBase
          assertEquals(numberOfMessages, q2.getMessagesAdded());
    }
 
+   @Test
    public void testOrderOverRollback() throws Throwable
    {
       boolean persistentMessages = true;
@@ -562,6 +570,7 @@ public class PagingOrderTest extends ServiceTestBase
          session.commit();
    }
 
+   @Test
    public void testOrderOverRollback2() throws Throwable
    {
       boolean persistentMessages = true;
@@ -710,6 +719,7 @@ public class PagingOrderTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testPagingOverCreatedDestinationTopics() throws Exception
    {
 
@@ -784,6 +794,7 @@ public class PagingOrderTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testPagingOverCreatedDestinationQueues() throws Exception
    {
 

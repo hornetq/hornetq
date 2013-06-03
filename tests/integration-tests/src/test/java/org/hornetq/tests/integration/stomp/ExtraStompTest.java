@@ -1,4 +1,7 @@
 package org.hornetq.tests.integration.stomp;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.net.SocketException;
 import java.util.Enumeration;
@@ -10,7 +13,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -30,12 +33,14 @@ import org.hornetq.tests.unit.util.InVMContext;
 public class ExtraStompTest extends StompTestBase
 {
    @Override
+   @Before
    public void setUp() throws Exception
    {
       autoCreateServer = false;
       super.setUp();
    }
 
+   @Test
    public void testConnectionTTL() throws Exception
    {
       try
@@ -86,16 +91,19 @@ public class ExtraStompTest extends StompTestBase
       }
    }
 
+   @Test
    public void testEnableMessageID() throws Exception
    {
       enableMessageIDTest(true);
    }
 
+   @Test
    public void testDisableMessageID() throws Exception
    {
       enableMessageIDTest(false);
    }
 
+   @Test
    public void testDefaultEnableMessageID() throws Exception
    {
       enableMessageIDTest(null);

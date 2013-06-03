@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -40,6 +43,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
    private ServerLocator locator;
 
 
+   @Test
    public void testDurableFalse() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -51,6 +55,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDurableTrue() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -62,6 +67,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testTemporaryFalse() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -73,6 +79,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testTemporaryTrue() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -84,6 +91,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testcreateWithFilter() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -96,6 +104,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testAddressSettingUSed() throws Exception
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -110,6 +119,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteQueue() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -122,6 +132,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testDeleteQueueNotExist() throws Exception
    {
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
@@ -142,7 +153,8 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       server = createServer(false);

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.unit.util;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -35,13 +38,15 @@ public class LinkedListTest extends UnitTestCase
    private LinkedListImpl<Integer> list;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
       list = new LinkedListImpl<Integer>();
    }
 
+   @Test
    public void testAddAndRemove()
    {
       final AtomicInteger count = new AtomicInteger(0);
@@ -104,6 +109,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testAddHeadAndRemove()
    {
       final AtomicInteger count = new AtomicInteger(0);
@@ -211,6 +217,7 @@ public class LinkedListTest extends UnitTestCase
       assertEquals(expected, count.get());
    }
 
+   @Test
    public void testAddTail()
    {
       int num = 10;
@@ -232,6 +239,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testAddHead()
    {
       int num = 10;
@@ -253,6 +261,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testAddHeadAndTail()
    {
       int num = 10;
@@ -299,6 +308,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testPoll()
    {
       int num = 10;
@@ -337,6 +347,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testIterateNoElements()
    {
       LinkedListIterator<Integer> iter = list.iterator();
@@ -357,6 +368,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testCreateIteratorBeforeAddElements()
    {
       int num = 10;
@@ -373,6 +385,7 @@ public class LinkedListTest extends UnitTestCase
       testIterate1(num, iter);
    }
 
+   @Test
    public void testCreateIteratorAfterAddElements()
    {
       int num = 10;
@@ -389,6 +402,7 @@ public class LinkedListTest extends UnitTestCase
       testIterate1(num, iter);
    }
 
+   @Test
    public void testIterateThenAddMoreAndIterateAgain()
    {
       int num = 10;
@@ -478,6 +492,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRemoveAll()
    {
       int num = 10;
@@ -524,6 +539,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveOdd()
    {
       int num = 10;
@@ -583,6 +599,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveHead1()
    {
       int num = 10;
@@ -606,6 +623,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveHead2()
    {
       int num = 10;
@@ -631,6 +649,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveHead3()
    {
       int num = 10;
@@ -663,6 +682,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testRemoveTail1()
    {
       int num = 10;
@@ -696,6 +716,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveMiddle()
    {
       int num = 10;
@@ -730,6 +751,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveTail2()
    {
       int num = 10;
@@ -772,6 +794,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRemoveTail3()
    {
       int num = 10;
@@ -809,6 +832,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRemoveHeadAndTail1()
    {
       LinkedListIterator<Integer> iter = list.iterator();
@@ -825,6 +849,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testRemoveHeadAndTail2()
    {
       LinkedListIterator<Integer> iter = list.iterator();
@@ -842,6 +867,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testRemoveHeadAndTail3()
    {
       LinkedListIterator<Integer> iter = list.iterator();
@@ -866,6 +892,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testRemoveInTurn()
    {
       LinkedListIterator<Integer> iter = list.iterator();
@@ -889,6 +916,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testClear()
    {
 
@@ -944,6 +972,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testMultipleIterators1()
    {
       int num = 10;
@@ -978,6 +1007,7 @@ public class LinkedListTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testRepeat()
    {
       int num = 10;
@@ -1019,6 +1049,7 @@ public class LinkedListTest extends UnitTestCase
       assertFalse(iter.hasNext());
    }
 
+   @Test
    public void testRepeatAndRemove()
    {
       int num = 10;
@@ -1075,6 +1106,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testMultipleIterators2()
    {
       int num = 10;
@@ -1212,6 +1244,7 @@ public class LinkedListTest extends UnitTestCase
 
    }
 
+   @Test
    public void testResizing()
    {
       int numIters = 1000;

@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.remoting;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -48,7 +51,8 @@ public class SynchronousCloseTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -82,6 +86,7 @@ public class SynchronousCloseTest extends ServiceTestBase
     * Server side resources should be cleaned up befor call to close has returned or client could launch
     * DoS attack
     */
+   @Test
    public void testSynchronousClose() throws Exception
    {
       Assert.assertEquals(0, server.getHornetQServerControl().listRemoteAddresses().length);

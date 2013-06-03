@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
@@ -22,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -64,11 +67,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    private final int LARGE_MESSAGE_SIZE = 20 * 1024;
 
-   // Attributes ----------------------------------------------------
-
-   static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-
-   // Static --------------------------------------------------------
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected ServerLocator locator;
@@ -84,6 +82,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       return false;
    }
 
+   @Test
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
       for (int i = 0 ; i < 1; i++)
@@ -97,6 +96,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testRollbackPartiallyConsumedBufferWithRedeliveryDelay() throws Exception
    {
       internalTestRollbackPartiallyConsumedBuffer(true);
@@ -133,7 +133,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0 ; i < 20; i++)
       {
@@ -152,7 +152,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       consumer.setMessageHandler(new MessageHandler()
       {
@@ -199,6 +199,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testCloseConsumer() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -213,9 +214,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = addClientSession(sf.createSession(false, false, false));
 
-      session.createTemporaryQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+      session.createTemporaryQueue(ADDRESS, ADDRESS);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -225,7 +226,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(1000);
       msg1.acknowledge();
       session.commit();
@@ -247,11 +248,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testLargeBufferTransacted() throws Exception
    {
       doTestLargeBuffer(true);
    }
 
+   @Test
    public void testLargeBufferNotTransacted() throws Exception
    {
       doTestLargeBuffer(false);
@@ -279,9 +282,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = addClientSession(sf.createSession(!transacted, !transacted, 0));
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = session.createMessage(true);
       for (int i = 0; i < messageSize; i++)
@@ -298,7 +301,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumer.receive(5000);
       assertNotNull(msg1);
 
@@ -325,6 +328,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testDLALargeMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -339,10 +343,10 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = addClientSession(sf.createSession(false, false, false));
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-2"), true);
+      session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-2"), true);
 
-      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
+      SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
 
       AddressSettings addressSettings = new AddressSettings();
 
@@ -353,7 +357,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -365,7 +369,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
 
-      ClientConsumer consumerRollback = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumerRollback = session.createConsumer(ADDRESS);
       ClientMessage msg1 = consumerRollback.receive(1000);
       Assert.assertNotNull(msg1);
       msg1.acknowledge();
@@ -411,7 +415,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       validateNoFilesOnLargeDir(isCompressedTest ? 0 : 1);
 
-      consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-2"));
+      consumer = session.createConsumer(ADDRESS.concat("-2"));
 
       msg1 = consumer.receive(10000);
 
@@ -431,6 +435,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testDeliveryCount() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -445,9 +450,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false, false);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
       producer.send(clientFile);
@@ -456,7 +461,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       ClientMessage msg = consumer.receive(10000);
       Assert.assertNotNull(msg);
@@ -476,7 +481,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       session = sf.createSession(false, false, false);
       session.start();
 
-      consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(10000);
       Assert.assertNotNull(msg);
       msg.acknowledge();
@@ -494,6 +499,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testDLAOnExpiryNonDurableMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -506,8 +512,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
-      SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
+      SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+      SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
 
       AddressSettings addressSettings = new AddressSettings();
 
@@ -519,12 +525,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false, false);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
       session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
       session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, false);
       clientFile.setExpiration(System.currentTimeMillis());
@@ -535,7 +541,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
       // to kick expiry quicker than waiting reaper thread
       Assert.assertNull(consumerExpired.receiveImmediate());
       consumerExpired.close();
@@ -610,6 +616,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testDLAOnExpiry() throws Exception
    {
       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -622,8 +629,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
-      SimpleString ADDRESS_DLA = LargeMessageTest.ADDRESS.concat("-dla");
-      SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
+      SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+      SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
 
       AddressSettings addressSettings = new AddressSettings();
 
@@ -635,12 +642,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false, false);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
       session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
       session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
       clientFile.setExpiration(System.currentTimeMillis());
@@ -651,7 +658,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer consumerExpired = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
       // to kick expiry quicker than waiting reaper thread
       Assert.assertNull(consumerExpired.receiveImmediate());
       consumerExpired.close();
@@ -724,6 +731,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testExpiryLargeMessage() throws Exception
    {
       final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
@@ -738,7 +746,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          AddressSettings addressSettings = new AddressSettings();
 
-         SimpleString ADDRESS_EXPIRY = LargeMessageTest.ADDRESS.concat("-expiry");
+         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
 
          addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
 
@@ -748,11 +756,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+         session.createQueue(ADDRESS, ADDRESS, true);
 
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -767,7 +775,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientConsumer consumer = session.createConsumer(ADDRESS_EXPIRY);
 
          // Creating a consumer just to make the expiry process go faster and not have to wait for the reaper
-         ClientConsumer consumer2 = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumer consumer2 = session.createConsumer(ADDRESS);
          Assert.assertNull(consumer2.receiveImmediate());
 
          ClientMessage msg1 = consumer.receive(50000);
@@ -823,11 +831,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testSentWithDuplicateIDBridge() throws Exception
    {
       internalTestSentWithDuplicateID(true);
    }
 
+   @Test
    public void testSentWithDuplicateID() throws Exception
    {
       internalTestSentWithDuplicateID(false);
@@ -849,9 +859,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(true, true, 0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+         session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          String someDuplicateInfo = "Anything";
 
@@ -905,11 +915,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testResendSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
    }
 
+   @Test
    public void testResendLargeStreamMessage() throws Exception
    {
       internalTestResendMessage(150 * 1024);
@@ -930,13 +942,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+         session.createQueue(ADDRESS, ADDRESS, true);
 
-         SimpleString ADDRESS2 = LargeMessageTest.ADDRESS.concat("-2");
+         SimpleString ADDRESS2 = ADDRESS.concat("-2");
 
          session.createQueue(ADDRESS2, ADDRESS2, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          ClientProducer producer2 = session.createProducer(ADDRESS2);
 
@@ -948,7 +960,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
          ClientConsumer consumer2 = session.createConsumer(ADDRESS2);
 
          ClientMessage msg1 = consumer.receive(10000);
@@ -986,11 +998,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testResendCachedSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
    }
 
+   @Test
    public void testResendCachedLargeStreamMessage() throws Exception
    {
       internalTestCachedResendMessage(150 * 1024);
@@ -1014,9 +1028,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+         session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          Message originalMsg = createLargeClientMessage(session, messageSize, false);
 
@@ -1024,7 +1038,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
 
          session.start();
 
@@ -1078,6 +1092,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testFilePersistenceOneHugeMessage() throws Exception
    {
       testChunks(false,
@@ -1097,6 +1112,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1024 * 1024);
    }
 
+   @Test
    public void testFilePersistenceOneMessageStreaming() throws Exception
    {
       testChunks(false,
@@ -1114,6 +1130,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceSmallMessageStreaming() throws Exception
    {
       testChunks(false,
@@ -1131,6 +1148,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceOneHugeMessageConsumer() throws Exception
    {
       testChunks(false,
@@ -1150,6 +1168,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1024 * 1024);
    }
 
+   @Test
    public void testFilePersistence() throws Exception
    {
       testChunks(false,
@@ -1167,6 +1186,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1184,6 +1204,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1201,6 +1222,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAStream() throws Exception
    {
       testChunks(true,
@@ -1218,6 +1240,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAStreamRestart() throws Exception
    {
       testChunks(true,
@@ -1235,6 +1258,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1252,6 +1276,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceXAConsumerRestart() throws Exception
    {
       testChunks(true,
@@ -1269,6 +1294,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlocked() throws Exception
    {
       testChunks(false,
@@ -1286,6 +1312,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedConsumer() throws Exception
    {
       testChunks(false,
@@ -1303,6 +1330,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedXA() throws Exception
    {
       testChunks(true,
@@ -1320,6 +1348,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1337,6 +1366,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACK() throws Exception
    {
       testChunks(false,
@@ -1354,6 +1384,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKConsumer() throws Exception
    {
       testChunks(false,
@@ -1371,6 +1402,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXA() throws Exception
    {
       testChunks(true,
@@ -1388,6 +1420,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXARestart() throws Exception
    {
       testChunks(true,
@@ -1405,6 +1438,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1422,6 +1456,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceBlockedPreACKXAConsumerRestart() throws Exception
    {
       testChunks(true,
@@ -1439,6 +1474,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testFilePersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1456,6 +1492,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1473,6 +1510,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1490,6 +1528,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testFilePersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1507,6 +1546,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  2000);
    }
 
+   @Test
    public void testNullPersistence() throws Exception
    {
       testChunks(false,
@@ -1524,6 +1564,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1541,6 +1582,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1558,6 +1600,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1575,6 +1618,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testNullPersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1592,6 +1636,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1609,6 +1654,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1626,6 +1672,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testNullPersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1643,11 +1690,13 @@ public class LargeMessageTest extends LargeMessageTestBase
                  100);
    }
 
+   @Test
    public void testPageOnLargeMessage() throws Exception
    {
       testPageOnLargeMessage(true, false);
    }
 
+   @Test
    public void testSendSmallMessageXA() throws Exception
    {
       testChunks(true,
@@ -1665,6 +1714,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1682,6 +1732,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageNullPersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1699,6 +1750,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendSmallMessageNullPersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1716,6 +1768,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1733,6 +1786,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1750,6 +1804,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
    {
       testChunks(true,
@@ -1767,6 +1822,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessageNullPersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1784,6 +1840,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistence() throws Exception
    {
       testChunks(false,
@@ -1801,6 +1858,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceConsumer() throws Exception
    {
       testChunks(false,
@@ -1818,6 +1876,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceXA() throws Exception
    {
       testChunks(true,
@@ -1835,6 +1894,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceXAConsumer() throws Exception
    {
       testChunks(true,
@@ -1852,6 +1912,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  0);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
       testChunks(false,
@@ -1869,6 +1930,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedConsumer() throws Exception
    {
       testChunks(false,
@@ -1886,6 +1948,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedXA() throws Exception
    {
       testChunks(false,
@@ -1903,6 +1966,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testSendRegularMessagePersistenceDelayedXAConsumer() throws Exception
    {
       testChunks(false,
@@ -1920,6 +1984,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  1000);
    }
 
+   @Test
    public void testTwoBindingsTwoStartedConsumers() throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
@@ -1935,14 +2000,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-      session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
-      session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
+      session.createQueue(ADDRESS, queue[0], null, true);
+      session.createQueue(ADDRESS, queue[1], null, true);
 
       int numberOfBytes = 400000;
 
       Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       session.start();
 
@@ -1979,11 +2044,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testTwoBindingsAndRestart() throws Exception
    {
       testTwoBindings(true);
    }
 
+   @Test
    public void testTwoBindingsNoRestart() throws Exception
    {
       testTwoBindings(false);
@@ -2003,14 +2070,14 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-      session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
-      session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
+      session.createQueue(ADDRESS, queue[0], null, true);
+      session.createQueue(ADDRESS, queue[1], null, true);
 
       int numberOfBytes = 400000;
 
       Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
       producer.send(clientFile);
 
       producer.close();
@@ -2039,21 +2106,25 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSendRollbackXADurable() throws Exception
    {
       internalTestSendRollback(true, true);
    }
 
+   @Test
    public void testSendRollbackXANonDurable() throws Exception
    {
       internalTestSendRollback(true, false);
    }
 
+   @Test
    public void testSendRollbackDurable() throws Exception
    {
       internalTestSendRollback(false, true);
    }
 
+   @Test
    public void testSendRollbackNonDurable() throws Exception
    {
       internalTestSendRollback(false, false);
@@ -2071,7 +2142,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(isXA, false, false);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
       Xid xid = null;
 
@@ -2081,7 +2152,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.start(xid, XAResource.TMNOFLAGS);
       }
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, 50000, durable);
 
@@ -2112,11 +2183,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSimpleRollback() throws Exception
    {
       simpleRollbackInternalTest(false);
    }
 
+   @Test
    public void testSimpleRollbackXA() throws Exception
    {
       simpleRollbackInternalTest(true);
@@ -2142,15 +2215,15 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.start(xid, XAResource.TMNOFLAGS);
       }
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+      session.createQueue(ADDRESS, ADDRESS, null, true);
 
       int numberOfBytes = 200000;
 
       session.start();
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       for (int n = 0; n < 10; n++)
       {
@@ -2238,6 +2311,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testBufferMultipleLargeMessages() throws Exception
    {
       ClientSession session = null;
@@ -2259,9 +2333,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -2275,7 +2349,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
 
          // Wait the consumer to be complete with 10 messages before getting others
          long timeout = System.currentTimeMillis() + 10000;
@@ -2316,9 +2390,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2341,6 +2415,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testReceiveMultipleMessages() throws Exception
    {
       ClientSession session = null;
@@ -2362,9 +2437,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, false, false, false, 0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -2382,7 +2457,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int trans = 0; trans < 2; trans++)
          {
 
-            ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(LargeMessageTest.ADDRESS);
+            ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
 
             // Wait the consumer to be complete with 10 messages before getting others
             long timeout = System.currentTimeMillis() + 10000;
@@ -2420,9 +2495,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2446,6 +2521,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    // JBPAPP-6237
+   @Test
    public void testPageOnLargeMessageMultipleQueues() throws Exception
    {
       Configuration config = createDefaultConfig(isNetty());
@@ -2457,7 +2533,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
       AddressSettings value = new AddressSettings();
-      map.put(LargeMessageTest.ADDRESS.toString(), value);
+      map.put(ADDRESS.toString(), value);
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
@@ -2473,10 +2549,10 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-0"), null, true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-1"), null, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       ClientMessage message = null;
 
@@ -2522,7 +2598,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          session = sf.createSession(false, false, false);
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+         ClientConsumer consumer = session.createConsumer(ADDRESS.concat("-" + ad));
 
          session.start();
 
@@ -2584,6 +2660,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
 
    // JBPAPP-6237
+   @Test
    public void testPageOnLargeMessageMultipleQueues2() throws Exception
    {
       Configuration config = createDefaultConfig(isNetty());
@@ -2595,7 +2672,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
       AddressSettings value = new AddressSettings();
-      map.put(LargeMessageTest.ADDRESS.toString(), value);
+      map.put(ADDRESS.toString(), value);
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
@@ -2612,10 +2689,10 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-0"), null, true);
+      session.createQueue(ADDRESS, ADDRESS.concat("-1"), null, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
       int msgId = 0;
 
       for (int i = 0; i < 100; i++)
@@ -2652,7 +2729,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          session = sf.createSession(false, false, false);
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+         ClientConsumer consumer = session.createConsumer(ADDRESS.concat("-" + ad));
 
          session.start();
 
@@ -2703,6 +2780,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   @Test
    public void testSendStreamingSingleMessage() throws Exception
    {
       ClientSession session = null;
@@ -2722,12 +2800,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
          ClientMessage clientFile = session.createMessage(true);
          clientFile.setBodyInputStream(UnitTestCase.createFakeLargeStream(SIZE));
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         ClientProducer producer = session.createProducer(ADDRESS);
 
          session.start();
 
@@ -2738,7 +2816,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          log.debug("Waiting");
 
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
 
          ClientMessage msg2 = consumer.receive(10000);
 
@@ -2750,9 +2828,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.commit();
 
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2776,6 +2854,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    /** Receive messages but never reads them, leaving the buffer pending */
+   @Test
    public void testIgnoreStreaming() throws Exception
    {
       ClientSession session = null;
@@ -2794,9 +2873,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(null, null, false, true, true, false, 0);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+      session.createQueue(ADDRESS, ADDRESS, null, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -2816,7 +2895,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       log.debug("Waiting");
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -2833,14 +2912,15 @@ public class LargeMessageTest extends LargeMessageTestBase
       session.commit();
 
       Assert.assertEquals(0,
-                          ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getDeliveringCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
       Assert.assertEquals(0,
-                          ((Queue)server.getPostOffice().getBinding(LargeMessageTest.ADDRESS).getBindable()).getMessageCount());
+ ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       log.debug("Thread done");
    }
 
    // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
+   @Test
    public void testSendServerMessage() throws Exception
    {
       HornetQServer server = createServer(true);
@@ -2866,9 +2946,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       fileMessage.releaseResources();
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer prod = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer prod = session.createProducer(ADDRESS);
 
       prod.send(fileMessage);
 
@@ -2878,7 +2958,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session.start();
 
-      ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(ADDRESS);
 
       ClientMessage msg = cons.receive(5000);
 
@@ -2901,7 +2981,8 @@ public class LargeMessageTest extends LargeMessageTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       clearData();
@@ -2919,7 +3000,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
       AddressSettings value = new AddressSettings();
-      map.put(LargeMessageTest.ADDRESS.toString(), value);
+      map.put(ADDRESS.toString(), value);
       HornetQServer server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
@@ -2938,9 +3019,9 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+      session.createQueue(ADDRESS, ADDRESS, null, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       ClientMessage message = null;
 
@@ -2977,7 +3058,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(null, null, false, true, true, false, 0);
 
-      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       session.start();
 
@@ -3005,7 +3086,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(null, null, false, true, true, false, 0);
 
-      readMessage(session, LargeMessageTest.ADDRESS, numberOfBytesBigMessage);
+      readMessage(session, ADDRESS, numberOfBytesBigMessage);
 
       // printBuffer("message received : ", message2.getBody());
 

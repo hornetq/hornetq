@@ -12,7 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.framework;
-
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -23,6 +22,8 @@ import javax.jms.Session;
 import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Creates convenient Point to Point JMS objects which can be needed for tests.
@@ -102,7 +103,8 @@ public abstract class PTPTestCase extends JMSTestCase
     * Start connections.
     */
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -141,7 +143,8 @@ public abstract class PTPTestCase extends JMSTestCase
     *  Close connections and delete administrated objects
     */
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -171,10 +174,5 @@ public abstract class PTPTestCase extends JMSTestCase
       }
 
       super.tearDown();
-   }
-
-   public PTPTestCase(final String name)
-   {
-      super(name);
    }
 }

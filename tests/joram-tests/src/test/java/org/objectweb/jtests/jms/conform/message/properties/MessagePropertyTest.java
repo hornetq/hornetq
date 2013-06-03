@@ -21,10 +21,8 @@ import javax.jms.Message;
 import javax.jms.MessageFormatException;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 
 /**
@@ -43,6 +41,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Float, Double</code> and <code>String</code> used in the <code>Message.setObjectProperty()</code>
     * method throws a <code>javax.jms.MessageFormatException</code>.
     */
+   @Test
    public void testSetObjectProperty_2()
    {
       try
@@ -64,6 +63,7 @@ public class MessagePropertyTest extends PTPTestCase
     * if a property is set as a <code>Float</code> with the <code>Message.setObjectProperty()</code>
     * method, it can be retrieve directly as a <code>double</code> by <code>Message.getFloatProperty()</code>
     */
+   @Test
    public void testSetObjectProperty_1()
    {
       try
@@ -82,6 +82,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that a <code>null</code> value is returned by the <code>Message.getObjectProperty()</code> method
     * if a property by the specified name does not exits.
     */
+   @Test
    public void testGetObjectProperty()
    {
       try
@@ -101,6 +102,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that a <code>null</code> value is returned by the <code>Message.getStringProperty()</code> method
     * if a property by the specified name does not exits.
     */
+   @Test
    public void testGetStringProperty()
    {
       try
@@ -120,6 +122,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>double</code> property which does not exist throw
     * a <code>java.lang.NullPointerException</code>
     */
+   @Test
    public void testGetDoubleProperty()
    {
       try
@@ -141,6 +144,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>float</code> property which does not exist throw
     * a <code>java.lang.NullPointerException</code>
     */
+   @Test
    public void testGetFloatProperty()
    {
       try
@@ -162,6 +166,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>long</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
+   @Test
    public void testGetLongProperty()
    {
       try
@@ -183,6 +188,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>int</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
+   @Test
    public void testGetIntProperty()
    {
       try
@@ -204,6 +210,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>short</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
+   @Test
    public void testGetShortProperty()
    {
       try
@@ -225,6 +232,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>byte</code> property which does not exist throw
     * a <code>java.lang.NumberFormatException</code>
     */
+   @Test
    public void testGetByteProperty()
    {
       try
@@ -246,6 +254,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that an attempt to get a <code>boolean</code> property which does not exist
     * returns <code>false</code>
     */
+   @Test
    public void testGetBooleanProperty()
    {
       try
@@ -263,6 +272,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that the <code>Message.getPropertyNames()</code> method does not return
     * the name of the JMS standard header fields (e.g. <code>JMSCorrelationID</code>).
     */
+   @Test
    public void testGetPropertyNames()
    {
       try
@@ -288,6 +298,7 @@ public class MessagePropertyTest extends PTPTestCase
    /**
     * Test that the <code>Message.getPropertyNames()</code> methods.
     */
+   @Test
    public void testPropertyIteration()
    {
       try
@@ -327,6 +338,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that the <code>Message.clearProperties()</code> method does not clear the
     * value of the Message's body.
     */
+   @Test
    public void testClearProperties_2()
    {
       try
@@ -348,6 +360,7 @@ public class MessagePropertyTest extends PTPTestCase
     * Test that the <code>Message.clearProperties()</code> method deletes all the
     * properties of the Message.
     */
+   @Test
    public void testClearProperties_1()
    {
       try
@@ -363,18 +376,5 @@ public class MessagePropertyTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessagePropertyTest.class);
-   }
-
-   public MessagePropertyTest(final String name)
-   {
-      super(name);
    }
 }

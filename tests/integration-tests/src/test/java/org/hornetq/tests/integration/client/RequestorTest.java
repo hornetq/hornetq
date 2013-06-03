@@ -12,8 +12,12 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -48,6 +52,7 @@ public class RequestorTest extends ServiceTestBase
    private ClientSessionFactory sf;
    private ServerLocator locator;
 
+   @Test
    public void testRequest() throws Exception
    {
       final SimpleString key = RandomUtil.randomSimpleString();
@@ -76,6 +81,7 @@ public class RequestorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testManyRequestsOverBlocked() throws Exception
    {
       final SimpleString key = RandomUtil.randomSimpleString();
@@ -126,6 +132,7 @@ public class RequestorTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testTwoRequests() throws Exception
    {
       final SimpleString key = RandomUtil.randomSimpleString();
@@ -161,6 +168,7 @@ public class RequestorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testRequestWithRequestConsumerWhichDoesNotReply() throws Exception
    {
       SimpleString requestAddress = RandomUtil.randomSimpleString();
@@ -192,6 +200,7 @@ public class RequestorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientRequestorConstructorWithClosedSession() throws Exception
    {
       final SimpleString requestAddress = RandomUtil.randomSimpleString();
@@ -212,6 +221,7 @@ public class RequestorTest extends ServiceTestBase
                                           });
    }
 
+   @Test
    public void testClose() throws Exception
    {
       final SimpleString key = RandomUtil.randomSimpleString();
@@ -255,7 +265,8 @@ public class RequestorTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -270,7 +281,8 @@ public class RequestorTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       locator = null;
 

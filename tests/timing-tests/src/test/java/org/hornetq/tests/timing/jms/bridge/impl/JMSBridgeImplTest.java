@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.timing.jms.bridge.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +42,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -169,6 +173,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testStartWithRepeatedFailure() throws Exception
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
@@ -214,6 +219,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testStartWithFailureThenSuccess() throws Exception
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
@@ -275,6 +281,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    * we receive only 1 message. The message is sent when the maxBatchTime
    * expires even if the maxBatchSize is not reached
    */
+   @Test
    public void testSendMessagesWhenMaxBatchTimeExpires() throws Exception
    {
       int maxBatchSize = 2;
@@ -336,6 +343,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       targetConn.close();
    }
 
+   @Test
    public void testSendMessagesWithMaxBatchSize() throws Exception
    {
       final int numMessages = 10;
@@ -412,6 +420,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       targetConn.close();
    }
 
+   @Test
    public void testExceptionOnSourceAndRetrySucceeds() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
@@ -464,6 +473,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       Assert.assertFalse(bridge.isStarted());
    }
 
+   @Test
    public void testExceptionOnSourceAndRetryFails() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
@@ -529,7 +539,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -548,7 +559,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.stop();
 

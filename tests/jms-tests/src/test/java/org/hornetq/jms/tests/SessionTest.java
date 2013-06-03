@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -49,6 +51,7 @@ public class SessionTest extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCreateProducer() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -57,6 +60,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateProducerOnNullQueue() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -78,6 +82,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateConsumer() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -87,6 +92,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testGetSession2() throws Exception
    {
       XAConnection conn = getXAConnectionFactory().createXAConnection();
@@ -100,6 +106,7 @@ public class SessionTest extends HornetQServerTestCase
    // createQueue()/createTopic()
    //
 
+   @Test
    public void testCreateNonExistentQueue() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -115,6 +122,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateQueueOnATopicSession() throws Exception
    {
       TopicConnection c = (TopicConnection)getConnectionFactory().createConnection();
@@ -132,6 +140,7 @@ public class SessionTest extends HornetQServerTestCase
       c.close();
    }
 
+   @Test
    public void testCreateQueueWhileTopicWithSameNameExists() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -148,6 +157,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -167,6 +177,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateNonExistentTopic() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -183,6 +194,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateTopicOnAQueueSession() throws Exception
    {
       QueueConnection c = (QueueConnection)getConnectionFactory().createConnection();
@@ -200,6 +212,7 @@ public class SessionTest extends HornetQServerTestCase
       c.close();
    }
 
+   @Test
    public void testCreateTopicWhileQueueWithSameNameExists() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -216,6 +229,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -270,6 +284,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testGetXAResource2() throws Exception
    {
       XAConnection conn = getXAConnectionFactory().createXAConnection();
@@ -279,6 +294,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testIllegalState() throws Exception
    {
       // IllegalStateException should be thrown if commit or rollback
@@ -318,6 +334,7 @@ public class SessionTest extends HornetQServerTestCase
    // Test session state
    //
 
+   @Test
    public void testCreateTwoSessions() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -333,6 +350,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCloseAndCreateSession() throws Exception
    {
       Connection c = getConnectionFactory().createConnection();
@@ -347,6 +365,7 @@ public class SessionTest extends HornetQServerTestCase
       c.close();
    }
 
+   @Test
    public void testCloseNoClientAcknowledgment() throws Exception
    {
       // send a message to the queue
@@ -377,6 +396,7 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
+   @Test
    public void testCloseInTransaction() throws Exception
    {
       // send a message to the queue

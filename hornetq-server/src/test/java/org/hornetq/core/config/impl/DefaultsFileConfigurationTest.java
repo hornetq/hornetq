@@ -13,9 +13,11 @@
 
 package org.hornetq.core.config.impl;
 
+import org.junit.Test;
+
 import java.util.Collections;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -32,6 +34,7 @@ import org.hornetq.core.journal.impl.JournalConstants;
 public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 {
    @Override
+   @Test
    public void testDefaults()
    {
       Assert.assertEquals(HornetQDefaultConfiguration.isDefaultBackup(), conf.isBackup());

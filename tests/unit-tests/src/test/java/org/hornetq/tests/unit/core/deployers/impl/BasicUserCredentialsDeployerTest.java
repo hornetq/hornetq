@@ -12,8 +12,12 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.security.CheckType;
@@ -103,7 +107,8 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
          + "</configuration>";
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       DeploymentManager deploymentManager = new FakeDeploymentManager();
@@ -114,13 +119,15 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       deployer = null;
 
       super.tearDown();
    }
 
+   @Test
    public void testSimpleDefaultSecurity() throws Exception
    {
 
@@ -138,6 +145,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("guest", roles.get(0));
    }
 
+   @Test
    public void testSingleUserDeploySecurity() throws Exception
    {
 
@@ -155,6 +163,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("guest", roles.get(0));
    }
 
+   @Test
    public void testMultipleUserDeploySecurity() throws Exception
    {
 
@@ -183,6 +192,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("bar", roles.get(2));
    }
 
+   @Test
    public void testMaskedPassword() throws Exception
    {
       String password1 = "helloworld1";
@@ -210,6 +220,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       assertEquals(password3, user3.password);
    }
 
+   @Test
    public void testPasswordCodec() throws Exception
    {
       String password1 = "helloworld1";
@@ -243,6 +254,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       assertEquals(password3, user3.password);
    }
 
+   @Test
    public void testUndeploy() throws Exception
    {
 
@@ -257,6 +269,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertNull(roles);
    }
 
+   @Test
    public void testUndeployDifferentXml() throws Exception
    {
 
@@ -289,6 +302,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("bar", roles.get(2));
    }
 
+   @Test
    public void testRedeploy() throws Exception
    {
 
@@ -307,6 +321,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertEquals("guest", roles.get(0));
    }
 
+   @Test
    public void testRedeploySingleUser() throws Exception
    {
 
@@ -333,6 +348,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       Assert.assertNull(roles);
    }
 
+   @Test
    public void testRedeployMultipleUser() throws Exception
    {
 

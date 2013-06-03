@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.stress.stomp;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +24,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -48,6 +52,7 @@ public class StompStressTest extends UnitTestCase
 
    private HornetQServer server;
 
+   @Test
    public void testSendAndReceiveMessage() throws Exception
    {
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
@@ -83,7 +88,8 @@ public class StompStressTest extends UnitTestCase
    // Implementation methods
    // -------------------------------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -111,7 +117,8 @@ public class StompStressTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (stompSocket != null)
       {
