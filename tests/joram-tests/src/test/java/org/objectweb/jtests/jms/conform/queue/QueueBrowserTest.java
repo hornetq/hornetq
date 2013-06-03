@@ -12,9 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.conform.queue;
-import org.junit.Before;
-import org.junit.After;
-
 import java.util.Enumeration;
 
 import javax.jms.JMSException;
@@ -22,11 +19,11 @@ import javax.jms.Message;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
-import org.junit.Assert;
-import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -186,18 +183,5 @@ public class QueueBrowserTest extends PTPTestCase
          receiverBrowser = null;
          senderBrowser = null;
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(QueueBrowserTest.class);
-   }
-
-   public QueueBrowserTest(final String name)
-   {
-      super(name);
    }
 }

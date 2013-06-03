@@ -21,8 +21,6 @@ import javax.jms.TopicSubscriber;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PubSubTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -73,18 +71,5 @@ public class TemporaryTopicTest extends PubSubTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(TemporaryTopicTest.class);
-   }
-
-   public TemporaryTopicTest(final String name)
-   {
-      super(name);
    }
 }

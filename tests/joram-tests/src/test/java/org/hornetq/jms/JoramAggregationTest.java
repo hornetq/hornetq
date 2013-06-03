@@ -12,21 +12,15 @@
  */
 
 package org.hornetq.jms;
-import org.junit.Before;
-import org.junit.After;
-
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.Properties;
 
-import junit.extensions.TestSetup;
-
-import org.junit.Test;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.TestListener;
-import org.junit.TestResult;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 import org.objectweb.jtests.jms.admin.Admin;
 import org.objectweb.jtests.jms.admin.AdminFactory;
 import org.objectweb.jtests.jms.conform.connection.ConnectionTest;
@@ -49,135 +43,29 @@ import org.objectweb.jtests.jms.conform.session.UnifiedSessionTest;
 import org.objectweb.jtests.jms.conform.topic.TemporaryTopicTest;
 import org.objectweb.jtests.jms.framework.JMSTestCase;
 
-/**
- * JoramAggregationTest.
- *
- * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * @version $Revision: 1.2 $
- */
+@RunWith(Suite.class)
+@SuiteClasses({
+TopicConnectionTest.class,
+               ConnectionTest.class,
+               MessageBodyTest.class,
+               MessageDefaultTest.class,
+               MessageTypeTest.class,
+               MessageHeaderTest.class,
+               JMSXPropertyTest.class,
+               MessagePropertyConversionTest.class,
+               MessagePropertyTest.class,
+               QueueBrowserTest.class,
+               TemporaryQueueTest.class,
+               SelectorSyntaxTest.class,
+               SelectorTest.class,
+               QueueSessionTest.class,
+               SessionTest.class,
+               TopicSessionTest.class,
+               UnifiedSessionTest.class,
+               TemporaryTopicTest.class,
+    })
 public class JoramAggregationTest extends Assert
 {
-   public JoramAggregationTest(String name)
-   {
-
-   }
-
-   /**
-    * One of the goals of this class also is to keep original classNames into testNames.
-    * <p>
-    * So, you will realize several proxies existent here to keep these class names while executing
-    * method names.
-    */
-   static class TestProxy extends Assert
-   {
-      Hashtable<Test, Test> hashTests = new Hashtable<Test, Test>();
-      Test testcase;
-
-       public TestProxy(Test testcase, String name)
-       {
-
-           this.testcase = testcase;
-       }
-
-       @Override
-      public int countTestCases()
-       {
-           return testcase.countTestCases();
-       }
-
-       /**
-        * Create a dummy test renaming its content
-        * @param test
-        * @return
-        */
-       private Test createDummyTest(Test test)
-       {
-           Test dummyTest = hashTests.get(test);
-           if (dummyTest==null)
-           {
-            if (test instanceof TestCase || test instanceof TestSuite)
-               {
-               dummyTest = new TestCase(this.getName() + ":" + ((TestCase)test).getName())
-               {
-               };
-               }
-               else
-               {
-               dummyTest = new TestCase(test.getClass().getName())
-               {
-               };
-               }
-
-               hashTests.put(test,dummyTest);
-           }
-
-           return dummyTest;
-       }
-
-       @Override
-      public void run(final TestResult result)
-       {
-           TestResult subResult = new TestResult();
-           subResult.addListener(new TestListener()
-           {
-               public void addError(Test subtest, Throwable throwable)
-               {
-                   Test dummyTest = createDummyTest(subtest);
-                   result.addError(dummyTest, throwable);
-               }
-
-               public void addFailure(Test subtest, AssertionError assertionFailedError)
-               {
-                   Test dummyTest = createDummyTest(subtest);
-                   result.addFailure(dummyTest, assertionFailedError);
-               }
-
-               public void endTest(Test subtest)
-               {
-                   Test dummyTest = createDummyTest(subtest);
-                   result.endTest(dummyTest);
-               }
-
-               public void startTest(Test subtest)
-               {
-                   Test dummyTest = createDummyTest(subtest);
-                   result.startTest(dummyTest);
-               }
-           });
-           testcase.run(subResult);
-       }
-   }
-
-
-
-
-
-   public static org.junit.Test suite() throws Exception
-   {
-      TestSuite suite = new TestSuite();
-
-      suite.addTest(new TestProxy(TopicConnectionTest.suite(),TopicConnectionTest.class.getName()));
-      suite.addTest(new TestProxy(ConnectionTest.suite(), ConnectionTest.class.getName()));
-      suite.addTest(new TestProxy(MessageBodyTest.suite(), MessageBodyTest.class.getName()));
-      suite.addTest(new TestProxy(MessageDefaultTest.suite(), MessageDefaultTest.class.getName()));
-      suite.addTest(new TestProxy(MessageTypeTest.suite(), MessageTypeTest.class.getName()));
-      suite.addTest(new TestProxy(MessageHeaderTest.suite(), MessageHeaderTest.class.getName()));
-      suite.addTest(new TestProxy(JMSXPropertyTest.suite(), JMSXPropertyTest.class.getName()));
-      suite.addTest(new TestProxy(MessagePropertyConversionTest.suite(), MessagePropertyConversionTest.class.getName()));
-      suite.addTest(new TestProxy(MessagePropertyTest.suite(), MessagePropertyTest.class.getName()));
-      suite.addTest(new TestProxy(QueueBrowserTest.suite(), QueueBrowserTest.class.getName()));
-      suite.addTest(new TestProxy(TemporaryQueueTest.suite(), TemporaryQueueTest.class.getName()));
-      suite.addTest(new TestProxy(SelectorSyntaxTest.suite(), SelectorSyntaxTest.class.getName()));
-      suite.addTest(new TestProxy(SelectorTest.suite(), SelectorTest.class.getName()));
-      suite.addTest(new TestProxy(QueueSessionTest.suite(), QueueSessionTest.class.getName()));
-      suite.addTest(new TestProxy(SessionTest.suite(), SessionTest.class.getName()));
-      suite.addTest(new TestProxy(TopicSessionTest.suite(), TopicSessionTest.class.getName()));
-      suite.addTest(new TestProxy(UnifiedSessionTest.suite(), UnifiedSessionTest.class.getName()));
-      suite.addTest(new TestProxy(TemporaryTopicTest.suite(), TemporaryTopicTest.class.getName()));
-
-      return new TestAggregation(suite);
-   }
-
    /**
     * Should be overridden
     * @return
@@ -189,36 +77,23 @@ public class JoramAggregationTest extends Assert
       return props;
    }
 
+   static Admin admin;
 
-   static class TestAggregation extends TestSetup
+   @BeforeClass
+   public static void setUpServer() throws Exception
    {
+      JMSTestCase.startServer = false;
+      // Admin step
+      // gets the provider administration wrapper...
+      Properties props = getProviderProperties();
+      admin = AdminFactory.getAdmin(props);
+      admin.startServer();
+   }
 
-      Admin admin;
-
-      /**
-       * @param test
-       */
-      public TestAggregation(Test test)
-      {
-
-      }
-
-   @Before
-   public void setUp() throws Exception
-      {
-         JMSTestCase.startServer = false;
-         // Admin step
-         // gets the provider administration wrapper...
-         Properties props = getProviderProperties();
-         admin = AdminFactory.getAdmin(props);
-         admin.startServer();
-      }
-
-   @After
-   public void tearDown() throws Exception
-      {
-         admin.stopServer();
-         JMSTestCase.startServer = true;
-      }
+   @AfterClass
+   public static void tearDownServer() throws Exception
+   {
+      admin.stopServer();
+      JMSTestCase.startServer = true;
    }
 }

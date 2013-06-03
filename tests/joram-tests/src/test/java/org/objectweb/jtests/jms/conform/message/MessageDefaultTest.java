@@ -18,9 +18,8 @@ import javax.jms.Message;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.JMSTestCase;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 /**
  * Test the default constants of the <code>javax.jms.Message</code> interface.
@@ -51,18 +50,5 @@ public class MessageDefaultTest extends JMSTestCase
    public void testDEFAULT_PRIORITY()
    {
       Assert.assertEquals("The default priority is 4.\n", 4, Message.DEFAULT_PRIORITY);
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessageDefaultTest.class);
-   }
-
-   public MessageDefaultTest(final String name)
-   {
-      super(name);
    }
 }

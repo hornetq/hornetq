@@ -12,9 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.conform.session;
-import org.junit.Before;
-import org.junit.After;
-
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -23,11 +20,11 @@ import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
-import org.junit.Assert;
-import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.UnifiedTestCase;
 
 /**
@@ -303,18 +300,5 @@ public class UnifiedSessionTest extends UnifiedTestCase
          topicSession = null;
          super.tearDown();
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(UnifiedSessionTest.class);
-   }
-
-   public UnifiedSessionTest(final String name)
-   {
-      super(name);
    }
 }

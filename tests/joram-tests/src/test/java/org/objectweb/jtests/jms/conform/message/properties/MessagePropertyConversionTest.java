@@ -19,8 +19,6 @@ import javax.jms.MessageFormatException;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 
 /**
@@ -1615,18 +1613,5 @@ public class MessagePropertyConversionTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(MessagePropertyConversionTest.class);
-   }
-
-   public MessagePropertyConversionTest(final String name)
-   {
-      super(name);
    }
 }

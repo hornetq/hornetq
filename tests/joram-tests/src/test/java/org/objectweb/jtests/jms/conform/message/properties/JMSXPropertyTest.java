@@ -22,8 +22,6 @@ import javax.jms.TextMessage;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -187,18 +185,5 @@ public class JMSXPropertyTest extends PTPTestCase
          }
       }
       return false;
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(JMSXPropertyTest.class);
-   }
-
-   public JMSXPropertyTest(final String name)
-   {
-      super(name);
    }
 }

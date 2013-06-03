@@ -17,9 +17,8 @@ import javax.jms.JMSException;
 
 import org.junit.Assert;
 import org.junit.Test;
-// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
-
 import org.objectweb.jtests.jms.framework.PubSubTestCase;
+// FIXME include in TestSuite @RunWith(Suite.class)@Suite.SuiteClasses(...)
 
 /**
  * Test topic-specific connection features.
@@ -158,16 +157,4 @@ public class TopicConnectionTest extends PubSubTestCase
       }
    }*/
 
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(TopicConnectionTest.class);
-   }
-
-   public TopicConnectionTest(final String name)
-   {
-      super(name);
-   }
 }
