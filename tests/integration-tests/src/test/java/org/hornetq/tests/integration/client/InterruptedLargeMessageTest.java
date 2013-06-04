@@ -83,7 +83,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
    {
       super.setUp();
       LargeMessageTestInterceptorIgnoreLastPacket.clearInterrupt();
-      clearData();
       locator = createFactory(isNetty());
    }
 

@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +19,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.UUID;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -32,19 +28,6 @@ import org.hornetq.utils.UUID;
  */
 public class RealNodeManagerTest extends NodeManagerTest
 {
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      clearData();
-      File file = new File(getTemporaryDir(), "server.lock");
-      if(file.exists())
-      {
-         file.delete();
-      }
-   }
-
    @Test
    public void testId() throws Exception
    {

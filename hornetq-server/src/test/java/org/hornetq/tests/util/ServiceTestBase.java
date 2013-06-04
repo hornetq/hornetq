@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
-
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
@@ -26,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -73,6 +68,9 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
  *
@@ -326,16 +324,6 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    private final HornetQServerLogger log = HornetQServerLogger.LOGGER;
-
-   public ServiceTestBase()
-   {
-      super();
-   }
-
-   public ServiceTestBase(final String name)
-   {
-      super(name);
-   }
 
    protected void waitForServer(HornetQServer server) throws InterruptedException
    {
@@ -710,7 +698,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param serverID
     * @return
     */
-   protected final TransportConfiguration createInVMTransportConnectorConfig(final int serverID, String name)
+   protected final TransportConfiguration createInVMTransportConnectorConfig(final int serverID, String name1)
    {
       Map<String, Object> server1Params = new HashMap<String, Object>();
 
@@ -719,7 +707,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, serverID);
       }
 
-      TransportConfiguration tnspConfig = new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params, name);
+      TransportConfiguration tnspConfig = new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params, name1);
       return tnspConfig;
    }
 

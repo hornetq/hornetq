@@ -12,15 +12,8 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -30,6 +23,8 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -250,24 +245,4 @@ public class AddAndRemoveStressTest extends UnitTestCase
       System.out.println("Size = " + impl.getDataFilesCount());
 
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-      deleteDirectory(file);
-      file.mkdirs();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

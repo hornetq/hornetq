@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -24,8 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -49,6 +43,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A LargeMessageTest
@@ -929,7 +926,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void internalTestResendMessage(final long messageSize) throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
       ClientSession session = null;
 
       try
@@ -2985,7 +2982,6 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       locator = createFactory(isNetty());
    }
 

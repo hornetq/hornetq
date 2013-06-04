@@ -12,19 +12,15 @@
  */
 
 package org.hornetq.util;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import org.junit.Assert;
-
-
 import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.TypedProperties;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TypedPropertiesConversionTest
@@ -33,7 +29,7 @@ import org.hornetq.utils.TypedProperties;
  *
  *
  */
-public class TypedPropertiesConversionTest extends Assert
+public class TypedPropertiesConversionTest
 {
 
    // Constants -----------------------------------------------------

@@ -12,19 +12,11 @@
  */
 
 package org.hornetq.tests.unit.core.paging.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagedMessage;
@@ -43,7 +35,9 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.OrderedExecutorFactory;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -66,8 +60,7 @@ public class PagingManagerImplTest extends UnitTestCase
       final StorageManager storageManager = new NullStorageManager();
 
       PagingStoreFactoryNIO storeFactory =
-               new PagingStoreFactoryNIO(storageManager, getPageDir(), 100, null,
-                                         new OrderedExecutorFactory(Executors.newCachedThreadPool()), true, null);
+               new PagingStoreFactoryNIO(storageManager, getPageDir(), 100, null, getOrderedExecutor(), true, null);
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory, addressSettings);
 
@@ -114,7 +107,11 @@ public class PagingManagerImplTest extends UnitTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      recreateDirectory();
+      File fileJournalDir = new File(getJournalDir());
+      fileJournalDir.mkdirs();
+      
+      File pageDirDir = new File(getPageDir());
+      pageDirDir.mkdirs();
    }
 
    protected ServerMessage createMessage(final long messageId, final SimpleString destination, final ByteBuffer buffer)
@@ -138,28 +135,4 @@ public class PagingManagerImplTest extends UnitTestCase
       }
       return buffer;
    }
-
-   @Override
-   @After
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-      // deleteDirectory(new File(journalDir));
-   }
-
-   // Private -------------------------------------------------------
-
-   private void recreateDirectory()
-   {
-      File fileJournalDir = new File(getJournalDir());
-      deleteDirectory(fileJournalDir);
-      fileJournalDir.mkdirs();
-
-      File pageDirDir = new File(getPageDir());
-      deleteDirectory(pageDirDir);
-      pageDirDir.mkdirs();
-   }
-
-   // Inner classes -------------------------------------------------
-
 }

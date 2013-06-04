@@ -12,16 +12,10 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.LoaderCallback;
@@ -34,6 +28,8 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -120,21 +116,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    }
 
    // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-      deleteDirectory(file);
-      file.mkdir();
-   }
-
-   // Private -------------------------------------------------------
 
    private void internalTest(final String type,
                              final String journalDir,

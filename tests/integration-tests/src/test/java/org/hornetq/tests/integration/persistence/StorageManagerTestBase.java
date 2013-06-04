@@ -12,15 +12,10 @@
  */
 
 package org.hornetq.tests.integration.persistence;
-import org.junit.Before;
-import org.junit.After;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -32,8 +27,9 @@ import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A StorageManagerTestBase
@@ -56,13 +52,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    {
       super.setUp();
 
-      executor = Executors.newCachedThreadPool();
-
-      execFactory = new OrderedExecutorFactory(executor);
-
-      File testdir = new File(getTestDir());
-
-      deleteDirectory(testdir);
+      execFactory = getOrderedExecutor();
    }
 
    @Override
@@ -99,7 +89,6 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
          jmsJournal = null;
       }
-      executor.shutdown();
 
       super.tearDown();
       if (exception != null)

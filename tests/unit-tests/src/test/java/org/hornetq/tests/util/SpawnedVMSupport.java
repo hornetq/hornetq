@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
-import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.unit.UnitTestLogger;
 import org.junit.Assert;
 
 
@@ -37,7 +37,7 @@ import org.junit.Assert;
  */
 public final class SpawnedVMSupport
 {
-   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    public static Process spawnVM(final String className, final String... args) throws Exception
    {

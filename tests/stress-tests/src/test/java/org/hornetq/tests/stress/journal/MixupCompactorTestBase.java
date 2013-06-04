@@ -12,15 +12,8 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.io.FilenameFilter;
-
-import org.junit.Assert;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
@@ -28,6 +21,10 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This class will control mix up compactor between each operation of a test
@@ -75,12 +72,6 @@ public abstract class MixupCompactorTestBase extends JournalImplTestBase
       startedCompactingLatch = new ReusableLatch(1);
 
       releaseCompactingLatch = new ReusableLatch(1);
-
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdir();
 
       setup(2, 60 * 1024, false);
 
