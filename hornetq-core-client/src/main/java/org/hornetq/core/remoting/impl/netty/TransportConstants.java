@@ -73,6 +73,15 @@ public class TransportConstants
 
    public static final String BACKLOG_PROP_NAME = "backlog";
 
+   /**
+    * Disable Nagle's algorithm.<br/>
+    * Valid for (client) Sockets.
+    * @see <a
+    *      href="http://design.jboss.org/jbossorg/branding/Javadocs/doc/api/org/jboss/netty/channel/socket/SocketChannelConfig.html#setTcpNoDelay%28boolean%29">
+    *      Netty note on this option</a>
+    * @see <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/net/socketOpt.html">Oracle
+    *      doc on tcpNoDelay</a>
+    */
    public static final String TCP_NODELAY_PROPNAME = "tcp-no-delay";
 
    public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "tcp-send-buffer-size";
