@@ -34,7 +34,7 @@
       <netty.version.string>${netty.version}-90e1eb2</netty.version.string>
       <hornetq.version.versionName>colonizer</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
-      <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
+      <hornetq.version.minorVersion>4</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>123</hornetq.version.incrementingVersion>
       <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
