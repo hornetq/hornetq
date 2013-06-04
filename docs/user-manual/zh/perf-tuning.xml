@@ -185,7 +185,7 @@ serveruser     hard    nofile  20000
         <itemizedlist>
             <listitem>
                 <para>拉圾回收。为了使服务器的运行比较平滑，我们建议使用并行拉圾回收的算法。例如在Sun的JDK使用
-                    JVM选项<literal>-XX:+UseParallelGC</literal>.</para>
+                    JVM选项<literal>-XX:+UseParallelOldGC</literal>.</para>
             </listitem>
             <listitem id="perf-tuning.memory">
                 <para>内存设置。尽量为服务器分配更多的内存。HornetQ利用其分页转存技术可以在很少的内存下运行（在
