@@ -12,14 +12,7 @@
  */
 
 package org.hornetq.tests.unit.core.persistence.impl;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.File;
 import java.util.ArrayList;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -33,6 +26,8 @@ import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator;
 import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A BatchIDGeneratorUnitTest
@@ -147,16 +142,6 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
             batch.loadState(record.id, buffer);
          }
       }
-   }
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      File file = new File(getTestDir());
-      deleteDirectory(file);
-      file.mkdir();
    }
 
    private StorageManager getJournalStorageManager(final Journal bindingsJournal)

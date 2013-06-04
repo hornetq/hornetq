@@ -1348,7 +1348,7 @@ public class PagingTest extends ServiceTestBase
     * This test will remove all the page directories during a restart, simulating a crash scenario. The server should still start after this
     */
    @Test
-   public void testDeletePhisicalPages() throws Exception
+   public void testDeletePhysicalPages() throws Exception
    {
       clearDataRecreateServerDirs();
 

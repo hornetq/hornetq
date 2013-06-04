@@ -12,21 +12,12 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.io.File;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -47,6 +38,10 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A JMSServerControlRestartTest
@@ -171,12 +166,8 @@ public class JMSServerControlRestartTest extends ManagementTestBase
    @After
    public void tearDown() throws Exception
    {
-      String bindingDir = serverManager.getHornetQServer().getConfiguration().getBindingsDirectory();
       serverManager.stop();
       serverManager = null;
-      System.out.println(bindingDir);
-      deleteDirectory(new File(bindingDir));
-
       super.tearDown();
    }
 

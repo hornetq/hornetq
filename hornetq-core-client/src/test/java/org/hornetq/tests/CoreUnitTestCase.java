@@ -1,33 +1,20 @@
 package org.hornetq.tests;
 
 
-import org.junit.Assert;
-
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
+
 public abstract class CoreUnitTestCase extends Assert
 {
-   public CoreUnitTestCase()
-   {
-
-   }
-
-   public CoreUnitTestCase(String name)
-   {
-
-   }
-
    public static void assertEqualsByteArrays(final byte[] expected, final byte[] actual)
    {
-      // assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
       {
          Assert.assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
-
 
    /**
     * Asserts that latch completes within a (rather large interval).

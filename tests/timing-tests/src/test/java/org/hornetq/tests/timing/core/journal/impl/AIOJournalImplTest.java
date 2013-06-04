@@ -16,7 +16,6 @@ import java.io.File;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.junit.Before;
 import org.junit.BeforeClass;
 
 /**
@@ -32,13 +31,6 @@ public class AIOJournalImplTest extends JournalImplTestUnit
    public static void hasAIO()
    {
       org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
-   }
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
    }
 
    @Override

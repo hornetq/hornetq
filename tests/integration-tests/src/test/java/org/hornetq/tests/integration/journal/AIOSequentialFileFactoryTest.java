@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.journal.SequentialFile;
@@ -20,7 +19,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -38,19 +36,6 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    public static void hasAIO()
    {
       org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
-   }
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdirs();
    }
 
    @Override

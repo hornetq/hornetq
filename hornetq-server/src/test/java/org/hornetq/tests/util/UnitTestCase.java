@@ -41,6 +41,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,6 +101,7 @@ import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.CoreUnitTestCase;
+import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 import org.junit.After;
 import org.junit.Assert;
@@ -158,6 +161,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    private final Collection<ClientConsumer> clientConsumers = new HashSet<ClientConsumer>();
    private final Collection<ClientProducer> clientProducers = new HashSet<ClientProducer>();
    private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
+   private final Set<ExecutorService> executorSet = new HashSet<ExecutorService>();
 
    private boolean checkThread = true;
 
@@ -231,6 +235,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
 
       return configuration;
+   }
+
+   protected final OrderedExecutorFactory getOrderedExecutor()
+   {
+      final ExecutorService executor = Executors.newCachedThreadPool();
+      executorSet.add(executor);
+      return new OrderedExecutorFactory(executor);
    }
 
    protected ConfigurationImpl createBasicConfig() throws Exception
@@ -322,19 +333,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          return JournalType.NIO;
       }
-   }
-
-   /**
-    * @param name
-    */
-   public UnitTestCase(final String name)
-   {
-      super(name);
-   }
-
-   public UnitTestCase()
-   {
-      super();
    }
 
    public static void forceGC()
@@ -970,11 +968,16 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    @After
    public void tearDown() throws Exception
    {
+      for (ExecutorService s : executorSet)
+      {
+         s.shutdown();
+      }
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
 
       try
       {
+         assertAllExecutorsFinished();
          assertAllClientConsumersAreClosed();
          assertAllClientProducersAreClosed();
          assertAllClientSessionsAreClosed();
@@ -1098,6 +1101,14 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
 
          checkFilesUsage();
+      }
+   }
+
+   private void assertAllExecutorsFinished() throws InterruptedException
+   {
+      for (ExecutorService s : executorSet)
+      {
+         Assert.assertTrue(s.awaitTermination(5, TimeUnit.SECONDS));
       }
    }
 

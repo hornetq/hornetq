@@ -12,26 +12,22 @@
  */
 
 package org.hornetq.util;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 import java.util.Iterator;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.CoreUnitTestCase;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.TypedProperties;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class TypedPropertiesTest extends Assert
+public class TypedPropertiesTest
 {
 
    private static void assertEqualsTypeProperties(final TypedProperties expected, final TypedProperties actual)
@@ -248,18 +244,7 @@ public class TypedPropertiesTest extends Assert
    @Before
    public void setUp() throws Exception
    {
-
-
       props = new TypedProperties();
       key = RandomUtil.randomSimpleString();
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-      key = null;
-      props = null;
-
-
    }
 }

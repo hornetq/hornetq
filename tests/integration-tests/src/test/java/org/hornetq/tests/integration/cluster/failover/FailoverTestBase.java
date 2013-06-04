@@ -80,18 +80,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected boolean startBackupServer = true;
 
-   /**
-    * @param name
-    */
-   public FailoverTestBase(final String name)
-   {
-      super(name);
-   }
-
-   public FailoverTestBase()
-   {
-   }
-
    @Override
    @Before
    public void setUp() throws Exception
