@@ -78,7 +78,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       int minLargeSize = locator.getMinLargeMessageSize();
 
       TestLargeMessageInputStream input = new TestLargeMessageInputStream(minLargeSize);
-      this.adjustLargeCompression(true, input, 1024);
+      adjustLargeCompression(true, input, 1024);
 
       int num = 20;
       for (int i = 0; i < num; i++)
@@ -135,7 +135,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       int minLargeSize = locator.getMinLargeMessageSize();
       TestLargeMessageInputStream input = new TestLargeMessageInputStream(minLargeSize);
       input.setSize(80 * minLargeSize);
-      this.adjustLargeCompression(false, input, 40 * minLargeSize);
+      adjustLargeCompression(false, input, 40 * minLargeSize);
 
       int num = 10;
       for (int i = 0; i < num; i++)
@@ -188,11 +188,11 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       final int minLargeSize = locator.getMinLargeMessageSize();
       TestLargeMessageInputStream regularInput = new TestLargeMessageInputStream(minLargeSize);
-      this.adjustLargeCompression(true, regularInput, 1024);
+      adjustLargeCompression(true, regularInput, 1024);
 
       TestLargeMessageInputStream largeInput = new TestLargeMessageInputStream(minLargeSize);
       largeInput.setSize(100 * minLargeSize);
-      this.adjustLargeCompression(false, largeInput, 50 * minLargeSize);
+      adjustLargeCompression(false, largeInput, 50 * minLargeSize);
 
       int num = 6;
       for (int i = 0; i < num; i++)

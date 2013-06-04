@@ -170,6 +170,29 @@ hq-message-id : STOMP12345</programlisting>
             If <literal>stomp-enable-message-id</literal> is not specified in the configuration, default
             is <literal>false</literal>. </para>
           </section>
+          <section>
+            <title>Handling of Large Messages with Stomp</title>
+            <para>Stomp clients may send very large bodys of frames which can exceed the size of HornetQ 
+            server's internal buffer, causing unexpected errors. To prevent this situation from happening,
+            HornetQ provides a stomp configuration attribute <literal>stomp-min-large-message-size</literal>. 
+            This attribute can be configured inside a stomp acceptor, as a parameter. For example: </para>
+<programlisting>
+   &lt;acceptor name="stomp-acceptor">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol" value="stomp"/>
+   &lt;param key="port" value="61613"/>
+   &lt;param key="stomp-min-large-message-size" value="10240"/>
+&lt;/acceptor></programlisting>
+            <para>The type of this attribute is integer. When this attributed is configured, HornetQ server 
+            will check the size of the body of each Stomp frame arrived from connections established with 
+            this acceptor. If the size of the body is equal or greater than the value of 
+            <literal>stomp-min-large-message</literal>, the message will be persisted as a large message.
+            When a large message is delievered to a stomp consumer, the HorentQ server will automatically 
+            handle the conversion from a large message to a normal message, before sending it to the client.</para>
+            <para>If a large message is compressed, the server will uncompressed it before sending it to
+            stomp clients. The default value of <literal>stomp-min-large-message-size</literal> is the same
+            as the default value of <link linkend="large-messages.core.config">min-large-message-size</link>.</para>
+          </section>
         </section>
         
         <section id="stomp.websockets">
