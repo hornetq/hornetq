@@ -412,14 +412,15 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public Session createSession(int sessionMode) throws JMSException
    {
       checkClosed();
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createSessionInternal(false, false, sessionMode, HornetQSession.TYPE_GENERIC_SESSION);
+
    }
 
    @Override
    public Session createSession() throws JMSException
    {
       checkClosed();
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return createSessionInternal(false, false, Session.AUTO_ACKNOWLEDGE, HornetQSession.TYPE_GENERIC_SESSION);
    }
 
     // QueueConnection implementation ---------------------------------------------------------------
