@@ -78,19 +78,38 @@ public class ConsumersResource implements TimeoutTask.Callback
       this.consumerTimeoutSeconds = consumerTimeoutSeconds;
    }
 
-   public void testTimeout(String target)
+   public boolean testTimeout(String target, boolean autoShutdown)
+   {
+      QueueConsumer consumer = queueConsumers.get(target);
+      if (consumer == null) return false;
+      if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
+      {
+         HornetQRestLogger.LOGGER.shutdownRestConsumer(consumer.getId());
+         if(autoShutdown)
+         {
+            shutdown(consumer);
+         }
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public void shutdown(String target)
    {
       QueueConsumer consumer = queueConsumers.get(target);
       if (consumer == null) return;
-      synchronized (consumer)
+      shutdown(consumer);
+   }
+
+   private void shutdown(QueueConsumer consumer)
+   {
+      synchronized(consumer)
       {
-         if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
-         {
-            HornetQRestLogger.LOGGER.shutdownRestConsumer(consumer.getId());
-            consumer.shutdown();
-            queueConsumers.remove(consumer.getId());
-            serviceManager.getTimeoutTask().remove(consumer.getId());
-         }
+         consumer.shutdown();
+         queueConsumers.remove(consumer.getId());
       }
    }
 
