@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.journal.RecordInfo;
@@ -26,6 +21,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.utils.DataConstants;
+import org.junit.Test;
 
 /**
  * A OldFormatTest
@@ -152,26 +148,4 @@ public class OldFormatTest extends JournalImplTestBase
    {
       return new NIOSequentialFileFactory(getTestDir());
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdir();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

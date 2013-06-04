@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -30,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
@@ -56,6 +49,9 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -1926,19 +1922,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    }
 
    @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdir();
-   }
-
-   @Override
    @After
    public void tearDown() throws Exception
    {
@@ -1962,9 +1945,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       super.tearDown();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase#getFileFactory()
-    */
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {

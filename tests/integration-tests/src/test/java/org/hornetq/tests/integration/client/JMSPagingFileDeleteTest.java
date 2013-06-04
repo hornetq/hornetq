@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -30,6 +25,9 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -75,7 +73,6 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    @Before
    public void setUp() throws Exception
    {
-      clearData();
       super.setUp();
 
       topic1 = createTopic("topic1");

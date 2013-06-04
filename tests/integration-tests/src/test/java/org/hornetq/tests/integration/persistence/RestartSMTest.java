@@ -12,18 +12,12 @@
  */
 
 package org.hornetq.tests.integration.persistence;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -35,7 +29,8 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.OrderedExecutorFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A DeleteMessagesRestartTest
@@ -70,18 +65,7 @@ public class RestartSMTest extends ServiceTestBase
    {
       super.setUp();
 
-      executor = Executors.newCachedThreadPool();
-
-      execFactory = new OrderedExecutorFactory(executor);
-   }
-
-   @Override
-   @After
-   public void tearDown() throws Exception
-   {
-      executor.shutdown();
-
-      super.tearDown();
+      execFactory = getOrderedExecutor();
    }
 
    @Test

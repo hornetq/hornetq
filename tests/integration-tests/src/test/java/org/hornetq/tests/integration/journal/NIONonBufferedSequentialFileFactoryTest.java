@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-
-import java.io.File;
-
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
@@ -29,19 +25,6 @@ import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
  */
 public class NIONonBufferedSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      File file = new File(getTestDir());
-
-      deleteDirectory(file);
-
-      file.mkdir();
-   }
 
    @Override
    protected SequentialFileFactory createFactory()

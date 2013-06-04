@@ -41,6 +41,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,11 +101,13 @@ import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.CoreUnitTestCase;
+import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 /**
@@ -118,7 +122,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 {
    // Constants -----------------------------------------------------
 
-   @Rule public TestName name = new TestName();
+   @Rule
+   public TestName name = new TestName();
+
+   @Rule
+   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+   private String testDir;
 
    private static final HornetQServerLogger log = HornetQServerLogger.LOGGER;
 
@@ -142,9 +151,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" +
-            System.currentTimeMillis();
-
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
@@ -155,6 +161,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    private final Collection<ClientConsumer> clientConsumers = new HashSet<ClientConsumer>();
    private final Collection<ClientProducer> clientProducers = new HashSet<ClientProducer>();
    private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
+   private final Set<ExecutorService> executorSet = new HashSet<ExecutorService>();
 
    private boolean checkThread = true;
 
@@ -228,6 +235,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
 
       return configuration;
+   }
+
+   protected final OrderedExecutorFactory getOrderedExecutor()
+   {
+      final ExecutorService executor = Executors.newCachedThreadPool();
+      executorSet.add(executor);
+      return new OrderedExecutorFactory(executor);
    }
 
    protected ConfigurationImpl createBasicConfig() throws Exception
@@ -319,19 +333,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          return JournalType.NIO;
       }
-   }
-
-   /**
-    * @param name
-    */
-   public UnitTestCase(final String name)
-   {
-      super(name);
-   }
-
-   public UnitTestCase()
-   {
-      super();
    }
 
    public static void forceGC()
@@ -604,11 +605,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       ArrayList<String> connectors = new ArrayList<String>();
       for (TransportConfiguration tnsp : connectorConfigs)
       {
-         String name = RandomUtil.randomString();
+         String name1 = RandomUtil.randomString();
 
-         server.getConfiguration().getConnectorConfigurations().put(name, tnsp);
+         server.getConfiguration().getConnectorConfigurations().put(name1, tnsp);
 
-         connectors.add(name);
+         connectors.add(name1);
       }
       return connectors;
    }
@@ -655,9 +656,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       this.testDir = testDir;
    }
 
-   protected final void clearData()
+   protected final void clearDataRecreateServerDirs()
    {
-      clearData(getTestDir());
+      clearDataRecreateServerDirs(getTestDir());
    }
 
    protected final void deleteTmpDir()
@@ -666,7 +667,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       deleteDirectory(file);
    }
 
-   protected void clearData(final String testDir1)
+   protected void clearDataRecreateServerDirs(final String testDir1)
    {
       // Need to delete the root
 
@@ -951,10 +952,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    @Before
    public void setUp() throws Exception
    {
-      //      testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" + System.currentTimeMillis();
+      testDir = temporaryFolder.getRoot().getAbsolutePath();
+      clearDataRecreateServerDirs();
       OperationContextImpl.clearContext();
-
-      deleteDirectory(new File(getTestDir()));
 
       InVMRegistry.instance.clear();
 
@@ -968,11 +968,16 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    @After
    public void tearDown() throws Exception
    {
+      for (ExecutorService s : executorSet)
+      {
+         s.shutdown();
+      }
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
 
       try
       {
+         assertAllExecutorsFinished();
          assertAllClientConsumersAreClosed();
          assertAllClientProducersAreClosed();
          assertAllClientSessionsAreClosed();
@@ -1095,11 +1100,16 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          checkThread = true;
       }
 
-      checkFilesUsage();
-         // System.out.println("SLEEP!");
-         // Thread.sleep(60000);
-         deleteTmpDir();
+         checkFilesUsage();
+      }
    }
+
+   private void assertAllExecutorsFinished() throws InterruptedException
+   {
+      for (ExecutorService s : executorSet)
+      {
+         Assert.assertTrue(s.awaitTermination(5, TimeUnit.SECONDS));
+      }
    }
 
    private ArrayList<Exception> checkCsfStopped()

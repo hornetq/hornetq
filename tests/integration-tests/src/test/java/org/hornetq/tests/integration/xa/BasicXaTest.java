@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -23,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -42,6 +36,9 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -71,7 +68,6 @@ public class BasicXaTest extends ServiceTestBase
    {
       super.setUp();
 
-      clearData();
       addressSettings.clear();
       configuration = createDefaultConfig(true);
       configuration.setSecurityEnabled(false);

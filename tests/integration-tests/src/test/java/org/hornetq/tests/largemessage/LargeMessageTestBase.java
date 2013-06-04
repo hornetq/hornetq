@@ -139,7 +139,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                              final int producerWindow,
                              final int minSize) throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       server = createServer(realFiles);
       server.start();
