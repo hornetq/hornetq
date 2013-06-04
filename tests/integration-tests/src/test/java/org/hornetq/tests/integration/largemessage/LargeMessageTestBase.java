@@ -15,7 +15,9 @@ package org.hornetq.tests.integration.largemessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,6 +40,7 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.DeflaterReader;
 
 /**
  * A LargeMessageTestBase
@@ -672,6 +675,141 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
       };
 
+   }
+
+   //depending on the value of regular argument, it can produce a text stream
+   //whose size is above minLargeMessageSize but whose compressed size is either
+   //below minLargeMessageSize (regular = true) or above it (regular = false)
+   public static void adjustLargeCompression(boolean regular, TestLargeMessageInputStream stream, int step) throws IOException
+   {
+      int absoluteStep = Math.abs(step);
+      while (true)
+      {
+         DeflaterReader compressor = new DeflaterReader(stream, new AtomicLong());
+         try
+         {
+            byte[] buffer = new byte[1048 * 50];
+
+            int totalCompressed = 0;
+            int n = compressor.read(buffer);
+            while (n != -1)
+            {
+               totalCompressed += n;
+               n = compressor.read(buffer);
+            }
+
+            // check compressed size
+            if (regular && (totalCompressed < stream.getMinLarge()))
+            {
+               // ok it can be sent as regular
+               stream.resetAdjust(0);
+               break;
+            }
+            else if ((!regular) && (totalCompressed > stream.getMinLarge()))
+            {
+               // now it cannot be sent as regular
+               stream.resetAdjust(0);
+               break;
+            }
+            else
+            {
+               stream.resetAdjust(regular ? -absoluteStep : absoluteStep);
+            }
+         }
+         finally
+         {
+            compressor.close();
+         }
+      }
+   }
+   
+   public static class TestLargeMessageInputStream extends InputStream
+   {
+      private final int minLarge;
+      private int size;
+      private int pos;
+      private boolean random;
+
+      public TestLargeMessageInputStream(int minLarge)
+      {
+         this(minLarge, false);
+      }
+
+      public TestLargeMessageInputStream(int minLarge, boolean random)
+      {
+         pos = 0;
+         this.minLarge = minLarge;
+         this.size = minLarge + 1024;
+         this.random = random;
+      }
+
+      public int getChar(int index)
+      {
+         if (random)
+         {
+            Random r = new Random();
+            return 'A' + r.nextInt(26);
+         }
+         else
+         {
+            return 'A' + index % 26;
+         }
+      }
+
+      public void setSize(int size)
+      {
+         this.size = size;
+      }
+
+      public TestLargeMessageInputStream(TestLargeMessageInputStream other)
+      {
+         this.minLarge = other.minLarge;
+         this.size = other.size;
+         this.pos = other.pos;
+      }
+
+      public int getSize()
+      {
+         return size;
+      }
+
+      public int getMinLarge()
+      {
+         return this.minLarge;
+      }
+
+      @Override
+      public int read() throws IOException
+      {
+         if (pos == size) return -1;
+         pos++;
+         
+         return getChar(pos - 1);
+      }
+      
+      public void resetAdjust(int step)
+      {
+         size += step;
+         if (size <= minLarge)
+         {
+            throw new IllegalStateException("Couldn't adjust anymore, size smaller than minLarge " + minLarge);
+         }
+         pos = 0;
+      }
+      
+      public TestLargeMessageInputStream clone()
+      {
+         return new TestLargeMessageInputStream(this);
+      }
+
+      public char[] toArray() throws IOException {
+         char[] result = new char[size];
+         for (int i = 0; i < result.length; i++)
+         {
+            result[i] = (char)read();
+         }
+         return result;
+      }
    }
 
    // Private -------------------------------------------------------

@@ -341,6 +341,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                               final SimpleString filterString,
                               final boolean browseOnly) throws Exception
    {
+      this.createConsumer(consumerID, queueName, filterString, browseOnly, true);
+   }
+
+   public void createConsumer(final long consumerID,
+                              final SimpleString queueName,
+                              final SimpleString filterString,
+                              final boolean browseOnly,
+                              final boolean supportLargeMessage) throws Exception
+   {
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
@@ -362,7 +371,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                        callback,
                                                        preAcknowledge,
                                                        strictUpdateDeliveryCount,
-                                                       managementService);
+                                                       managementService,
+                                                       supportLargeMessage);
 
       consumers.put(consumer.getID(), consumer);
 
@@ -1229,12 +1239,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
-      long id = storageManager.generateUniqueID();
+      //large message may come from StompSession directly, in which
+      //case the id header already generated.
+      if (!message.isLargeMessage())
+      {
+         long id = storageManager.generateUniqueID();
+
+         message.setMessageID(id);
+         message.encodeMessageIDToBuffer();
+      }
 
       SimpleString address = message.getAddress();
-
-      message.setMessageID(id);
-      message.encodeMessageIDToBuffer();
 
       if (defaultAddress == null && address != null)
       {
@@ -1400,6 +1415,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public long getCreationTime()
    {
       return this.creationTime;
+   }
+
+   public StorageManager getStorageManager()
+   {
+      return this.storageManager;
    }
 
    @Override

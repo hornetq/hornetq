@@ -24,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v12.StompFrameHandlerV12;
 import org.hornetq.core.remoting.CloseListener;
@@ -88,6 +89,8 @@ public final class StompConnection implements RemotingConnection
 
    private final Object sendLock = new Object();
 
+   private int minLargeMessageSize;
+
    public StompFrame decode(HornetQBuffer buffer) throws HornetQStompException
    {
       StompFrame frame = null;
@@ -135,6 +138,9 @@ public final class StompConnection implements RemotingConnection
       this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
                                                                  false,
                                                                  acceptorUsed.getConfiguration());
+      this.minLargeMessageSize = ConfigurationHelper.getIntProperty(TransportConstants.STOMP_MIN_LARGE_MESSAGE_SIZE,
+                                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                                 acceptorUsed.getConfiguration());
    }
 
    @Override
@@ -591,9 +597,21 @@ public final class StompConnection implements RemotingConnection
       {
          message.putStringProperty(CONNECTION_ID_PROP, getID().toString());
       }
+      if (enableMessageID())
+      {
+         message.putStringProperty("hqMessageId",
+               "STOMP" + message.getMessageID());
+      }
       try
       {
-         stompSession.sendInternal(message, true);
+         if (minLargeMessageSize == -1 || (message.getBodyBuffer().writerIndex() < minLargeMessageSize))
+         {
+            stompSession.sendInternal(message, true);
+         }
+         else
+         {
+            stompSession.sendInternalLarge(message, true);
+         }
       }
       catch (Exception e)
       {
@@ -782,6 +800,11 @@ public final class StompConnection implements RemotingConnection
    public boolean enableMessageID()
    {
       return enableMessageID;
+   }
+
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
    }
 
 }
