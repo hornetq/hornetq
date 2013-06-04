@@ -12,10 +12,7 @@
  */
 
 package org.hornetq.tests.integration.discovery;
-import org.junit.After;
-
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -28,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.BroadcastEndpointFactory;
@@ -53,6 +48,9 @@ import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * This will test Discovery test on JGroups and UDP.
@@ -76,6 +74,8 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class DiscoveryTest extends UnitTestCase
 {
+   private static final String TEST_JGROUPS_CONF_FILE = "test-jgroups-file_ping.xml";
+
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    private final String address1 = getUDPDiscoveryAddress();
@@ -92,6 +92,8 @@ public class DiscoveryTest extends UnitTestCase
    @After
    public void tearDown() throws Exception
    {
+      /** This file path is defined at {@link #TEST_JGROUPS_CONF_FILE} */
+      deleteDirectory(new File("/tmp/hqtest.ping.dir"));
       for (HornetQComponent component : new HornetQComponent[] { bg, bg1, bg2, bg3, dg, dg1, dg2, dg3 })
       {
          stopComponent(component);
@@ -144,7 +146,7 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID), "broadcast", 100, null,
-         new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory());
+                                      new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -153,7 +155,7 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = new DiscoveryGroup(nodeID + "1", "broadcast", 5000l,
-            new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst").createBroadcastEndpointFactory(),
+                                  new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory(),
             null);
 
       dg.start();
@@ -174,7 +176,8 @@ public class DiscoveryTest extends UnitTestCase
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
       disableCheckThread();
 
-      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      JGroupsBroadcastGroupConfiguration jgroupsConfig =
+               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -186,10 +189,10 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i] = factory.createBroadcastEndpoint();
          receivers[i].openClient();
       }
-      
+
       final byte[] data = new byte[] {1,2,3,4,5};
       broadcaster.broadcast(data);
-      
+
       for (int i = 0; i < num; i++)
       {
          byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
@@ -201,15 +204,15 @@ public class DiscoveryTest extends UnitTestCase
          assertEquals(4, received[3]);
          assertEquals(5, received[4]);
       }
-      
+
       for (int i = 0; i < num -1; i++)
       {
          receivers[i].close(false);
       }
-      
+
       byte[] data1 = receivers[num - 1].receiveBroadcast(5, TimeUnit.SECONDS);
       assertNull(data1);
-      
+
       broadcaster.broadcast(data);
       data1 = receivers[num - 1].receiveBroadcast(5, TimeUnit.SECONDS);
 
@@ -220,7 +223,7 @@ public class DiscoveryTest extends UnitTestCase
       assertEquals(3, data1[2]);
       assertEquals(4, data1[3]);
       assertEquals(5, data1[4]);
-      
+
       receivers[num - 1].close(false);
       broadcaster.close(true);
    }
@@ -229,7 +232,7 @@ public class DiscoveryTest extends UnitTestCase
     * Create one broadcaster and 50 receivers. Make sure broadcasting works.
     * Then stop all of the receivers, and create 50 new ones. Make sure the
     * 50 new ones are receiving data from the broadcasting.
-    * 
+    *
     * @throws Exception
     */
    @Test
@@ -238,7 +241,8 @@ public class DiscoveryTest extends UnitTestCase
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
       disableCheckThread();
 
-      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      JGroupsBroadcastGroupConfiguration jgroupsConfig =
+               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -250,10 +254,10 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i] = factory.createBroadcastEndpoint();
          receivers[i].openClient();
       }
-      
+
       final byte[] data = new byte[] {1,2,3,4,5};
       broadcaster.broadcast(data);
-      
+
       for (int i = 0; i < num; i++)
       {
          byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
@@ -265,7 +269,7 @@ public class DiscoveryTest extends UnitTestCase
          assertEquals(4, received[3]);
          assertEquals(5, received[4]);
       }
-      
+
       for (int i = 0; i < num; i++)
       {
          receivers[i].close(false);
@@ -279,7 +283,7 @@ public class DiscoveryTest extends UnitTestCase
       }
 
       broadcaster.broadcast(data);
-      
+
       for (int i = 0; i < num; i++)
       {
          byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
@@ -291,7 +295,7 @@ public class DiscoveryTest extends UnitTestCase
          assertEquals(4, received[3]);
          assertEquals(5, received[4]);
       }
-      
+
       for (int i = 0; i < num; i++)
       {
          receivers[i].close(false);
@@ -302,7 +306,7 @@ public class DiscoveryTest extends UnitTestCase
    /**
     * Create one broadcaster and 50 receivers. Then stop half of the receivers.
     * Then add the half back, plus some more. Make sure all receivers receive data.
-    * 
+    *
     * @throws Exception
     */
    @Test
@@ -311,7 +315,8 @@ public class DiscoveryTest extends UnitTestCase
       // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
       disableCheckThread();
 
-      JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+      JGroupsBroadcastGroupConfiguration jgroupsConfig =
+               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -323,7 +328,7 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i] = factory.createBroadcastEndpoint();
          receivers[i].openClient();
       }
-      
+
       for (int i = 0; i < num/2; i++)
       {
          receivers[i].close(false);
@@ -337,16 +342,16 @@ public class DiscoveryTest extends UnitTestCase
 
       int num2 = 10;
       BroadcastEndpoint[] moreReceivers = new BroadcastEndpoint[num2];
-      
+
       for (int i = 0; i < num2; i++)
       {
          moreReceivers[i] = factory.createBroadcastEndpoint();
          moreReceivers[i].openClient();
       }
-      
+
       final byte[] data = new byte[] {1,2,3,4,5};
       broadcaster.broadcast(data);
-      
+
       for (int i = 0; i < num; i++)
       {
          byte[] received = receivers[i].receiveBroadcast(5000, TimeUnit.MILLISECONDS);
@@ -370,12 +375,12 @@ public class DiscoveryTest extends UnitTestCase
          assertEquals(4, received[3]);
          assertEquals(5, received[4]);
       }
-      
+
       for (int i = 0; i < num; i++)
       {
          receivers[i].close(false);
       }
-      
+
       for (int i = 0; i < num2; i++)
       {
          moreReceivers[i].close(false);
@@ -394,7 +399,8 @@ public class DiscoveryTest extends UnitTestCase
       BroadcastEndpoint client = null;
       try
       {
-         JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
+         JGroupsBroadcastGroupConfiguration jgroupsConfig =
+                  new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
          broadcaster = jgroupsConfig.createBroadcastEndpointFactory().createBroadcastEndpoint();
 
          broadcaster.openBroadcaster();
