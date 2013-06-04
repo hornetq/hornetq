@@ -111,7 +111,7 @@ public class InflaterReader extends InputStream
                else
                {
                   //feed the data in
-                  inflater.setInput(inputBuffer);
+                  inflater.setInput(inputBuffer, 0, m);
                   n = inflater.inflate(buf, offset, len);
                   if (n > 0)
                   {

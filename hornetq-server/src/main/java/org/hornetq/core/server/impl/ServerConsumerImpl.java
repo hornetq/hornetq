@@ -84,6 +84,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private final ServerSession session;
 
    private final Object lock = new Object();
+   
+   private final boolean supportLargeMessage;
 
    /**
     * We get a readLock when a message is handled, and return the readLock when the message is finally delivered
@@ -138,6 +140,22 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerConsumerImpl(final long id,
+         final ServerSession session,
+         final QueueBinding binding,
+         final Filter filter,
+         final boolean started,
+         final boolean browseOnly,
+         final StorageManager storageManager,
+         final SessionCallback callback,
+         final boolean preAcknowledge,
+         final boolean strictUpdateDeliveryCount,
+         final ManagementService managementService) throws Exception
+   {
+      this(id, session, binding, filter, started, browseOnly, storageManager, callback, 
+            preAcknowledge, strictUpdateDeliveryCount, managementService, true);
+   }
+
+   public ServerConsumerImpl(final long id,
                              final ServerSession session,
                              final QueueBinding binding,
                              final Filter filter,
@@ -147,7 +165,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                              final SessionCallback callback,
                              final boolean preAcknowledge,
                              final boolean strictUpdateDeliveryCount,
-                             final ManagementService managementService) throws Exception
+                             final ManagementService managementService,
+                             final boolean supportLargeMessage) throws Exception
    {
       this.id = id;
 
@@ -187,6 +206,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          messageQueue.addConsumer(this);
       }
+      this.supportLargeMessage = supportLargeMessage;
    }
 
    // ServerConsumer implementation
@@ -322,7 +342,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          }
 
-         if (message.isLargeMessage())
+         if (message.isLargeMessage() && this.supportLargeMessage)
          {
             largeMessageDeliverer = new LargeMessageDeliverer((LargeServerMessage) message, ref);
          }
@@ -339,7 +359,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          ServerMessage message = reference.getMessage();
 
-         if (message.isLargeMessage())
+         if (message.isLargeMessage() && supportLargeMessage)
          {
             if (largeMessageDeliverer == null)
             {
