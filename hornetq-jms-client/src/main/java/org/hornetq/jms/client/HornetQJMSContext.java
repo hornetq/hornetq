@@ -582,11 +582,9 @@ public class HornetQJMSContext implements JMSContext
          throw new IllegalStateRuntimeException("Context is closed");
       try
       {
-         if (session.getAcknowledgeMode() == Session.SESSION_TRANSACTED ||
-               session.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
-         return;
-      //todo add ack on session for all consumers
-         throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+         if (ackMode == Session.SESSION_TRANSACTED || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+            return;
+         session.commit();
       }
       catch (JMSException e)
       {

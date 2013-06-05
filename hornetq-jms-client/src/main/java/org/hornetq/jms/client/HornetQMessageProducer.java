@@ -184,40 +184,17 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void send(final Message message) throws JMSException
    {
-      checkClosed();
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, null);
+      send(defaultDestination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive);
    }
 
    public void send(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
-      checkClosed();
-
-      message.setJMSDeliveryMode(deliveryMode);
-
-      message.setJMSPriority(priority);
-
-      doSend(message, timeToLive, null);
+      send(defaultDestination, message, deliveryMode, priority, timeToLive);
    }
 
    public void send(final Destination destination, final Message message) throws JMSException
    {
-      checkClosed();
-
-      if (destination != null && !(destination instanceof HornetQDestination))
-      {
-         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
-      }
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, (HornetQDestination)destination);
+      send(destination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive);
    }
 
    public void send(final Destination destination,
@@ -261,7 +238,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public void send(Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      send(defaultDestination, message, deliveryMode, priority, timeToLive, completionListener);
    }
 
    @Override
@@ -273,7 +250,21 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      checkClosed();
+      if (completionListener == null)
+      {
+         throw new IllegalArgumentException();
+      }
+      if (destination != null && !(destination instanceof HornetQDestination))
+      {
+         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
+      }
+
+      message.setJMSDeliveryMode(deliveryMode);
+
+      message.setJMSPriority(priority);
+
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented " + completionListener);
    }
 
     // TopicPublisher Implementation ---------------------------------

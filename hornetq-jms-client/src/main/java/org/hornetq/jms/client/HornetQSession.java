@@ -491,7 +491,17 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      HornetQTopic localTopic;
+      if (topic instanceof HornetQTopic)
+      {
+         localTopic = (HornetQTopic)topic;
+      }
+      else
+      {
+         localTopic = new HornetQTopic(topic.getTopicName());
+      }
+      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
+      return createConsumer(localTopic, sharedSubscriptionName, messageSelector, false);
    }
 
    @Override
@@ -503,7 +513,17 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      HornetQTopic localTopic;
+      if (topic instanceof HornetQTopic)
+      {
+         localTopic = (HornetQTopic)topic;
+      }
+      else
+      {
+         localTopic = new HornetQTopic(topic.getTopicName());
+      }
+      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
+      return createConsumer(localTopic, name, messageSelector, noLocal);
    }
 
    @Override
@@ -515,7 +535,17 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      HornetQTopic localTopic;
+      if (topic instanceof HornetQTopic)
+      {
+         localTopic = (HornetQTopic)topic;
+      }
+      else
+   {
+         localTopic = new HornetQTopic(topic.getTopicName());
+      }
+      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
+      return createConsumer(localTopic, name, messageSelector, false);
    }
 
    private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
@@ -680,6 +710,11 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
+   }
+
+   public void ackAllConsumers() throws JMSException
+   {
+      checkClosed();
    }
 
    public QueueBrowser createBrowser(final Queue queue) throws JMSException
