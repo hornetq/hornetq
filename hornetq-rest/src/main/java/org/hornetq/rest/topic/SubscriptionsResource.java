@@ -82,22 +82,41 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       this.destination = destination;
    }
 
-
-   public void testTimeout(String target)
+   public boolean testTimeout(String target, boolean autoShutdown)
    {
       QueueConsumer consumer = queueConsumers.get(target);
       Subscription subscription = (Subscription)consumer;
-      if (consumer == null) return;
-      synchronized (consumer)
+      if (consumer == null) return false;
+      if (System.currentTimeMillis() - consumer.getLastPingTime() > subscription.getTimeout())
       {
-         if (System.currentTimeMillis() - consumer.getLastPingTime() > subscription.getTimeout())
+         HornetQRestLogger.LOGGER.shutdownRestSubscription(consumer.getId());
+         if(autoShutdown)
          {
-            HornetQRestLogger.LOGGER.shutdownRestSubscription(consumer.getId());
-            consumer.shutdown();
-            queueConsumers.remove(consumer.getId());
-            serviceManager.getTimeoutTask().remove(consumer.getId());
-            if (subscription.isDeleteWhenIdle()) deleteSubscriberQueue(consumer);
+            shutdown(consumer);
          }
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public void shutdown(String target)
+   {
+      QueueConsumer consumer = queueConsumers.get(target);
+      if (consumer == null) return;
+      shutdown(consumer);
+   }
+
+   private void shutdown(QueueConsumer consumer)
+   {
+      synchronized(consumer)
+      {
+         consumer.shutdown();
+         queueConsumers.remove(consumer.getId());
+         Subscription subscription = (Subscription)consumer;
+         if (subscription.isDeleteWhenIdle()) deleteSubscriberQueue(consumer);
       }
    }
 
