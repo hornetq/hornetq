@@ -460,13 +460,13 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    @Override
    public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
    }
 
    @Override
    public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
    }
 
     // Public ---------------------------------------------------------------------------------------
