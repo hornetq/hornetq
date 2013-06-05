@@ -194,13 +194,13 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    @Override
    public XAJMSContext createXAContext()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
    }
 
    @Override
    public XAJMSContext createXAContext(String userName, String password)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------
