@@ -375,9 +375,7 @@ public class HornetQSession implements QueueSession, TopicSession
                                 " from another JMS connection");
       }
 
-      HornetQMessageConsumer consumer = createConsumer(jbdest, null, messageSelector, noLocal);
-
-      return consumer;
+      return createConsumer(jbdest, null, messageSelector, noLocal, ConsumerDurability.NON_DURABLE);
    }
 
    public Queue createQueue(final String queueName) throws JMSException
@@ -479,7 +477,7 @@ public class HornetQSession implements QueueSession, TopicSession
          throw new InvalidDestinationException("Cannot create a subscriber on a queue");
       }
 
-      return createConsumer(jbdest, name, messageSelector, noLocal);
+      return createConsumer(jbdest, name, messageSelector, noLocal, ConsumerDurability.DURABLE);
    }
 
    @Override
@@ -501,7 +499,7 @@ public class HornetQSession implements QueueSession, TopicSession
          localTopic = new HornetQTopic(topic.getTopicName());
       }
       // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
-      return createConsumer(localTopic, sharedSubscriptionName, messageSelector, false);
+      return createConsumer(localTopic, sharedSubscriptionName, messageSelector, false, ConsumerDurability.NON_DURABLE);
    }
 
    @Override
@@ -523,7 +521,7 @@ public class HornetQSession implements QueueSession, TopicSession
          localTopic = new HornetQTopic(topic.getTopicName());
       }
       // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
-      return createConsumer(localTopic, name, messageSelector, noLocal);
+      return createConsumer(localTopic, name, messageSelector, noLocal, ConsumerDurability.DURABLE);
    }
 
    @Override
@@ -545,13 +543,19 @@ public class HornetQSession implements QueueSession, TopicSession
          localTopic = new HornetQTopic(topic.getTopicName());
       }
       // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
-      return createConsumer(localTopic, name, messageSelector, false);
+      return createConsumer(localTopic, name, messageSelector, false, ConsumerDurability.DURABLE);
+   }
+
+   enum ConsumerDurability
+   {
+      DURABLE, NON_DURABLE;
    }
 
    private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
                                                  final String subscriptionName,
                                                  String selectorString,
-                                                 final boolean noLocal) throws JMSException
+ final boolean noLocal,
+                                                 ConsumerDurability durability) throws JMSException
    {
       try
       {
@@ -618,6 +622,8 @@ public class HornetQSession implements QueueSession, TopicSession
 
             if (subscriptionName == null)
             {
+               if (durability != ConsumerDurability.NON_DURABLE)
+                  throw new RuntimeException();
                // Non durable sub
 
                queueName = new SimpleString(UUID.randomUUID().toString());
@@ -631,7 +637,8 @@ public class HornetQSession implements QueueSession, TopicSession
             else
             {
                // Durable sub
-
+               if (durability != ConsumerDurability.DURABLE)
+                  throw new RuntimeException();
                if (connection.getClientID() == null)
                {
                   throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
