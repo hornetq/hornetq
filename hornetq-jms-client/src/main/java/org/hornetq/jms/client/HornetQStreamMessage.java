@@ -410,8 +410,8 @@ public final class HornetQStreamMessage extends HornetQMessage implements Stream
             case DataConstants.STRING:
                return getBuffer().readNullableString();
             case DataConstants.BYTES:
-               int len = getBuffer().readInt();
-               byte[] bytes = new byte[len];
+               int bufferLen = getBuffer().readInt();
+               byte[] bytes = new byte[bufferLen];
                getBuffer().readBytes(bytes);
                return bytes;
             default:
@@ -567,7 +567,7 @@ public final class HornetQStreamMessage extends HornetQMessage implements Stream
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -587,7 +587,7 @@ public final class HornetQStreamMessage extends HornetQMessage implements Stream
 
    @SuppressWarnings("rawtypes")
    @Override
-   public boolean isBodyAssignableTo(Class c) throws JMSException
+   public boolean isBodyAssignableTo(Class c)
    {
       return false;
    }

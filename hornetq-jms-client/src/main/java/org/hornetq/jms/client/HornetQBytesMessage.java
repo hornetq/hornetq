@@ -405,7 +405,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -440,7 +440,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+   Class c)
    {
       if (bodyLength == 0)
          return true;

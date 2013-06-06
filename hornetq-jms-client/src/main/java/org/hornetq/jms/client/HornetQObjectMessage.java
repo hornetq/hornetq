@@ -168,7 +168,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    }
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -190,7 +190,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+   Class c)
    {
       if (data == null) // we have no body
          return true;

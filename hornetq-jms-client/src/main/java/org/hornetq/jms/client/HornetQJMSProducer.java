@@ -232,7 +232,7 @@ public class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage());
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
       return this;
    }
@@ -246,7 +246,7 @@ public class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage());
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
    }
 
@@ -259,7 +259,7 @@ public class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage());
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
       return this;
    }
@@ -273,7 +273,7 @@ public class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage());
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
       }
    }
 

@@ -117,7 +117,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    }
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -125,12 +125,6 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    }
 
    // HornetQRAMessage override -----------------------------------------
-
-   @Override
-   public void doBeforeSend() throws Exception
-   {
-      super.doBeforeSend();
-   }
 
    @Override
    public void doBeforeReceive() throws HornetQException
@@ -148,7 +142,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+   Class c)
    {
       if (text == null)
          return true;
