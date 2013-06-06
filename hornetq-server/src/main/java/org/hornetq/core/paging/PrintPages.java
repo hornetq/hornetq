@@ -72,7 +72,7 @@ public class PrintPages // NO_UCD (unused code)
    {
       if (arg.length != 2)
       {
-         System.err.println("Usage: PrintPages <page foler> <journal folder>");
+         System.err.println("Usage: PrintPages <page folder> <journal folder>");
          System.exit(-1);
       }
       try
