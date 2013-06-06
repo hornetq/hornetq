@@ -395,37 +395,63 @@ public class HornetQRAMessageProducer implements MessageProducer
    @Override
    public void setDeliveryDelay(long deliveryDelay) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setDeliveryDelay(" + deliveryDelay + ")");
+      }
+      producer.setDeliveryDelay(deliveryDelay);
    }
 
    @Override
    public long getDeliveryDelay() throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getDeliveryDelay()");
+      }
+      return producer.getDeliveryDelay();
    }
 
    @Override
    public void send(Message message, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("send(" + message + ", " + completionListener + ")");
+      }
+      producer.send(message, completionListener);
    }
 
    @Override
    public void send(Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("send(" + message + ", " + deliveryMode + ", " + priority + ", " + timeToLive +
+                  ", " + completionListener + ")");
+      }
+      producer.send(message, deliveryMode, priority, timeToLive, completionListener);
    }
 
    @Override
    public void send(Destination destination, Message message, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("send(" + destination + ", " + message + ", " + completionListener + ")");
+      }
+      producer.send(destination, message, completionListener);
    }
 
    @Override
    public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive, CompletionListener completionListener) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessageProducer.trace)
+      {
+         HornetQRALogger.LOGGER.trace("send(" + destination + ", " + message + ", " + deliveryMode + ", " + priority +
+                  ", " + timeToLive + ", " + completionListener + ")");
+      }
+      producer.send(destination, message, deliveryMode, priority, timeToLive, completionListener);
    }
 
     /**
