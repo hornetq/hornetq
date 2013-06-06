@@ -553,8 +553,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
    private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
                                                  final String subscriptionName,
-                                                 String selectorString,
- final boolean noLocal,
+                                                 String selectorString, final boolean noLocal,
                                                  ConsumerDurability durability) throws JMSException
    {
       try
