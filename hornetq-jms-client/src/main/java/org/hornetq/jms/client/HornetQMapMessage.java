@@ -371,7 +371,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -437,11 +437,10 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+   Class c)
    {
       if (hasNoBody())
       {
-         System.out.println("has no body?");
          return true;
       }
       return c.isAssignableFrom(java.util.Map.class);

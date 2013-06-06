@@ -584,7 +584,7 @@ public class HornetQMessage implements javax.jms.Message
       propertiesReadOnly = false;
    }
 
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       readOnly = false;
    }
@@ -901,7 +901,7 @@ public class HornetQMessage implements javax.jms.Message
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+   Class c)
    {
       /**
        * From the specs:
