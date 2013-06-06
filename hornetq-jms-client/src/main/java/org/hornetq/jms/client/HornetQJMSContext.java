@@ -20,6 +20,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
+import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -30,6 +31,7 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
+import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
@@ -52,6 +54,7 @@ public class HornetQJMSContext implements JMSContext
    private final HornetQConnection connection;
    private final HornetQSession session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
+   private boolean closed;
 
    // Constants -----------------------------------------------------
 
@@ -201,6 +204,7 @@ public class HornetQJMSContext implements JMSContext
       {
          session.close();
          connection.close();
+         closed = true;
       } catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
@@ -574,8 +578,20 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public void acknowledge()
    {
+      if (closed)
+         throw new IllegalStateRuntimeException("Context is closed");
+      try
+      {
+         if (session.getAcknowledgeMode() == Session.SESSION_TRANSACTED ||
+               session.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
+         return;
       //todo add ack on session for all consumers
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+         throw new UnsupportedOperationException("JMS 2.0 / not implemented");
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    // Public --------------------------------------------------------
