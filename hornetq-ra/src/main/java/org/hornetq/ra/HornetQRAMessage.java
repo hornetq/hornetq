@@ -378,6 +378,7 @@ public class HornetQRAMessage implements Message
     * @return The values
     * @exception JMSException Thrown if an error occurs
     */
+   @SuppressWarnings("rawtypes")
    public Enumeration getPropertyNames() throws JMSException
    {
       if (HornetQRAMessage.trace)
@@ -748,25 +749,43 @@ public class HornetQRAMessage implements Message
    @Override
    public long getJMSDeliveryTime() throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getJMSDeliveryTime()");
+      }
+      return getJMSDeliveryTime();
    }
 
    @Override
    public void setJMSDeliveryTime(long deliveryTime) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setJMSDeliveryTime(" + deliveryTime + ")");
+      }
+      message.setJMSDeliveryTime(deliveryTime);
    }
 
    @Override
    public <T> T getBody(Class<T> c) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getBody(" + c + ")");
+      }
+      return message.getBody(c);
    }
 
    @Override
-   public boolean isBodyAssignableTo(Class c) throws JMSException
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isBodyAssignableTo(" + c + ")");
+      }
+      return message.isBodyAssignableTo(c);
    }
 
     /**
