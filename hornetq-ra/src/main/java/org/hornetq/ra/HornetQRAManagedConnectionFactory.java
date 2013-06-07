@@ -183,9 +183,8 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     * @return The managed connection
     * @throws ResourceException Thrown if the managed connection can not be found
     */
-   public ManagedConnection matchManagedConnections(final Set connectionSet,
-                                                    final Subject subject,
-                                                    final ConnectionRequestInfo cxRequestInfo) throws ResourceException
+   public ManagedConnection matchManagedConnections(@SuppressWarnings("rawtypes")
+   final Set connectionSet, final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (HornetQRAManagedConnectionFactory.trace)
       {
@@ -205,7 +204,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
          HornetQRALogger.LOGGER.trace("Looking for connection matching credentials: " + credential);
       }
 
-      Iterator connections = connectionSet.iterator();
+      Iterator<?> connections = connectionSet.iterator();
 
       while (connections.hasNext())
       {
