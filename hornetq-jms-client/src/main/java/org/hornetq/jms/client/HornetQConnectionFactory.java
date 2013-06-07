@@ -140,7 +140,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       {
          HornetQConnection connection =
                createConnectionInternal(userName, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
-         return new HornetQJMSContext(connection, sessionMode);
+         return HornetQJMSContext.newContext(connection, sessionMode);
       }
       catch (JMSSecurityException e)
       {

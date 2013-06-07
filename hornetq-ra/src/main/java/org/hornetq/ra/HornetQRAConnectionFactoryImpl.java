@@ -16,6 +16,7 @@ package org.hornetq.ra;
 import javax.jms.Connection;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
@@ -27,6 +28,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.spi.ConnectionManager;
 
+import org.hornetq.jms.client.HornetQJMSContext;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 
@@ -447,7 +449,16 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public JMSContext createContext(String userName, String password, int sessionMode)
    {
-      return new HornetQRAJMSContext();
+      Connection connection;
+      try
+      {
+         connection = createConnection(userName, password);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+      return HornetQJMSContext.newContext(connection, sessionMode);
    }
 
    @Override
@@ -459,7 +470,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public XAJMSContext createXAContext()
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
    }
 
    @Override
