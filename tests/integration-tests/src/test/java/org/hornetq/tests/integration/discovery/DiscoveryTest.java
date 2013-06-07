@@ -132,9 +132,6 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testSimpleBroadcastJGropus() throws Exception
    {
-      // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
-      disableCheckThread();
-
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID), "broadcast", 100, null,
@@ -164,9 +161,6 @@ public class DiscoveryTest extends UnitTestCase
     */
    public void testJGropusChannelReferenceCounting() throws Exception
    {
-      // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
-      disableCheckThread();
-
       JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
@@ -227,9 +221,6 @@ public class DiscoveryTest extends UnitTestCase
     */
    public void testJGropusChannelReferenceCounting1() throws Exception
    {
-      // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
-      disableCheckThread();
-
       JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
@@ -299,9 +290,6 @@ public class DiscoveryTest extends UnitTestCase
     */
    public void testJGropusChannelReferenceCounting2() throws Exception
    {
-      // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
-      disableCheckThread();
-
       JGroupsBroadcastGroupConfiguration jgroupsConfig = new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
@@ -377,9 +365,6 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testStraightSendReceiveJGroups() throws Exception
    {
-      // There are some executors on JGroups that won't be stopped right away, and they do not represent leakages
-      disableCheckThread();
-
       BroadcastEndpoint broadcaster = null;
       BroadcastEndpoint client = null;
       try
