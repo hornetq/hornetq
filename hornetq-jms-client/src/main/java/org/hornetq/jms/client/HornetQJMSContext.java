@@ -16,6 +16,7 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -47,30 +48,17 @@ public class HornetQJMSContext implements JMSContext
    private static final boolean DEFAULT_AUTO_START = true;
    private final int ackMode;
 
-   private final HornetQConnection connection;
-   private final HornetQSession session;
+   private final Connection connection;
+   private final Session session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
    private boolean closed;
 
-   // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public HornetQJMSContext(HornetQConnection connection, int ackMode)
+   public HornetQJMSContext(Connection connection, Session session,int ackMode)
    {
-      this.ackMode = ackMode;
       this.connection = connection;
-      try
-      {
-         this.session = (HornetQSession)connection.createSession(ackMode);
-      } catch (JMSException e)
-      {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
-      }
+      this.session = session;
+      this.ackMode = ackMode;
    }
 
    // JMSContext implementation -------------------------------------
@@ -78,7 +66,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public JMSContext createContext(int sessionMode)
    {
-      return new HornetQJMSContext(connection, sessionMode);
+      return newContext(connection, sessionMode);
    }
 
    @Override
@@ -574,7 +562,7 @@ public class HornetQJMSContext implements JMSContext
          throw new IllegalStateRuntimeException("Context is closed");
       try
       {
-         if (ackMode == Session.SESSION_TRANSACTED || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
             return;
          session.commit();
       }
@@ -594,11 +582,28 @@ public class HornetQJMSContext implements JMSContext
 
    private synchronized void checkAutoStart() throws JMSException
    {
-      if(autoStart && !connection.isStarted())
+      if (autoStart)
       {
          connection.start();
       }
    }
-   // Inner classes -------------------------------------------------
 
+   /**
+    * @param connection2
+    * @param sessionMode
+    * @return
+    */
+   public static JMSContext newContext(Connection connection2, int sessionMode)
+   {
+      Session session2;
+      try
+      {
+         session2 = connection2.createSession(sessionMode);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+      return new HornetQJMSContext(connection2, session2, sessionMode);
+   }
 }
