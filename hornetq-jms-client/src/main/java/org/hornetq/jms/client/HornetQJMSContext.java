@@ -16,7 +16,6 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.BytesMessage;
-import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -46,10 +45,7 @@ import javax.jms.Topic;
 public class HornetQJMSContext implements JMSContext
 {
    private static final boolean DEFAULT_AUTO_START = true;
-   private final ConnectionFactory cf;
    private final int ackMode;
-   private final String userName;
-   private final String password;
 
    private final HornetQConnection connection;
    private final HornetQSession session;
@@ -64,17 +60,13 @@ public class HornetQJMSContext implements JMSContext
 
    // Constructors --------------------------------------------------
 
-   public HornetQJMSContext(ConnectionFactory cf, int ackMode, String userName, String password)
+   public HornetQJMSContext(HornetQConnection connection, int ackMode)
    {
-      this.cf = cf;
       this.ackMode = ackMode;
-      this.userName = userName;
-      this.password = password;
-
+      this.connection = connection;
       try
       {
-         connection = (HornetQConnection) cf.createConnection(userName, password);
-         session = (HornetQSession) connection.createSession(ackMode);
+         this.session = (HornetQSession)connection.createSession(ackMode);
       } catch (JMSException e)
       {
          throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
@@ -86,7 +78,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public JMSContext createContext(int sessionMode)
    {
-      return new HornetQJMSContext(cf, sessionMode, userName, password);
+      return new HornetQJMSContext(connection, sessionMode);
    }
 
    @Override
