@@ -404,6 +404,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
          {
             channel.setReceiver(null);
             channel.disconnect();
+            channel.close();
             JChannelWrapper<?> wrapper = channels.remove(key);
             if (wrapper == null)
             {
