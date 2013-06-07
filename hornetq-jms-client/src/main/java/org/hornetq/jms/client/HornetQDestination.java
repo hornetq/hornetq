@@ -54,7 +54,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
    private static final char SEPARATOR = '.';
 
-   protected static String escape(final String input)
+   private static String escape(final String input)
    {
       if (input == null)
       {
@@ -77,15 +77,15 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
          return createTopic(name);
       }
-      else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+      else if (address.startsWith(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
 
          return new HornetQTemporaryQueue(address, name, null);
       }
-      else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+      else if (address.startsWith(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
 
          return new HornetQTemporaryTopic(address, name, null);
       }

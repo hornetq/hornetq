@@ -145,7 +145,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public Enumeration<Object> getJMSXPropertyNames()
    {
-      Vector v = new Vector();
+      Vector<Object> v = new Vector<Object>();
       v.add("JMSXGroupID");
       v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
