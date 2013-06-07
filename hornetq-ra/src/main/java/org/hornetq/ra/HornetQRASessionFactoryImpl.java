@@ -714,13 +714,25 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
    @Override
    public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRASessionFactoryImpl.trace)
+      {
+         HornetQRALogger.LOGGER.trace("createSharedConnectionConsumer(" + topic + ", " + subscriptionName + ", " +
+                  messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      }
+
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
    @Override
    public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      if (HornetQRASessionFactoryImpl.trace)
+      {
+         HornetQRALogger.LOGGER.trace("createSharedDurableConnectionConsumer(" + topic + ", " + subscriptionName +
+                  ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      }
+
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
     /**
