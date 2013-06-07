@@ -19,6 +19,9 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
+import javax.jms.JMSSecurityException;
+import javax.jms.JMSSecurityRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
@@ -133,7 +136,20 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    public JMSContext createContext(String userName, String password, int sessionMode)
    {
       validateSessionMode(sessionMode);
-      return new HornetQJMSContext(this, sessionMode, userName, password);
+      try
+      {
+         HornetQConnection connection =
+               createConnectionInternal(userName, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+         return new HornetQJMSContext(connection, sessionMode);
+      }
+      catch (JMSSecurityException e)
+      {
+         throw new JMSSecurityRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
    }
 
    /**
