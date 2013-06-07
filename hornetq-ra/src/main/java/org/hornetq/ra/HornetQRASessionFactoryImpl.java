@@ -702,13 +702,13 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
    @Override
    public Session createSession(int sessionMode) throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return allocateConnection(sessionMode);
    }
 
    @Override
    public Session createSession() throws JMSException
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      return allocateConnection(Session.AUTO_ACKNOWLEDGE);
    }
 
    @Override
