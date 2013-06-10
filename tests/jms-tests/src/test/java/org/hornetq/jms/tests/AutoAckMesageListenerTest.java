@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +23,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+
+import org.junit.Test;
 
 /**
  * A AutoAckMesageListenerTest
@@ -57,7 +57,7 @@ public class AutoAckMesageListenerTest extends JMSTestCase
       {
          CountDownLatch latch = new CountDownLatch(1);
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
          MessageConsumer consumer = session.createConsumer(HornetQServerTestCase.queue1);

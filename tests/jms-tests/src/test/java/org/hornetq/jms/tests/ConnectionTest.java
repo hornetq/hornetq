@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.ExceptionListener;
@@ -24,9 +22,10 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Connection tests. Contains all connection tests, except tests relating to closing a connection,
@@ -57,7 +56,7 @@ public class ConnectionTest extends JMSTestCase
    {
       for (int i = 0; i < 100; i++)
       {
-         Connection conn = JMSTestCase.cf.createConnection();
+         Connection conn = createConnection();
          conn.close();
       }
    }
@@ -69,7 +68,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testGetClientID() throws Exception
    {
-      Connection connection = JMSTestCase.cf.createConnection();
+      Connection connection = createConnection();
       String clientID = connection.getClientID();
 
       // We don't currently set client ids on the server, so this should be null.
@@ -83,7 +82,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testSetClientID() throws Exception
    {
-      Connection connection = JMSTestCase.cf.createConnection();
+      Connection connection = createConnection();
 
       final String clientID = "my-test-client-id";
 
@@ -91,11 +90,11 @@ public class ConnectionTest extends JMSTestCase
 
       ProxyAssertSupport.assertEquals(clientID, connection.getClientID());
 
-      Connection connection2 = JMSTest.cf.createConnection();
+      Connection connection2 = createConnection();
       try
       {
          connection2.setClientID(clientID);
-         fail("setClientID was expected to throw an exception");
+         Assert.fail("setClientID was expected to throw an exception");
       }
       catch (JMSException e)
       {
@@ -113,7 +112,7 @@ public class ConnectionTest extends JMSTestCase
       Connection connection = null;
       try
       {
-         connection = JMSTestCase.cf.createConnection();
+         connection = createConnection();
 
          // we startthe connection
          connection.start();
@@ -151,7 +150,7 @@ public class ConnectionTest extends JMSTestCase
       // Setting a client id must be the first thing done to the connection
       // otherwise a javax.jms.IllegalStateException must be thrown
 
-      Connection connection = JMSTestCase.cf.createConnection();
+      Connection connection = createConnection();
       connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
@@ -167,7 +166,7 @@ public class ConnectionTest extends JMSTestCase
 
       // TODO: This will probably go away, remove it enterily after we
       //       make sure this rule can go away
-//      connection = JMSTestCase.cf.createConnection();
+//      connection = createConnection();
 //      connection.getClientID();
 //      try
 //      {
@@ -179,7 +178,7 @@ public class ConnectionTest extends JMSTestCase
 //      }
 //      connection.close();
 
-      connection = JMSTestCase.cf.createConnection();
+      connection = createConnection();
       ExceptionListener listener = connection.getExceptionListener();
       try
       {
@@ -191,7 +190,7 @@ public class ConnectionTest extends JMSTestCase
       }
       connection.close();
 
-      connection = JMSTestCase.cf.createConnection();
+      connection = createConnection();
       connection.setExceptionListener(listener);
       try
       {
@@ -207,7 +206,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testGetMetadata() throws Exception
    {
-      Connection connection = JMSTestCase.cf.createConnection();
+      Connection connection = createConnection();
 
       ConnectionMetaData metaData = connection.getMetaData();
 
@@ -230,9 +229,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testQueueConnection1() throws Exception
    {
-      QueueConnectionFactory qcf = JMSTestCase.queueCf;
-
-      QueueConnection qc = qcf.createQueueConnection();
+      QueueConnection qc = queueCf.createQueueConnection();
 
       qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -243,16 +240,11 @@ public class ConnectionTest extends JMSTestCase
     * Test creation of TopicSession
     */
    @Test
-   public void testQueueConnection2() throws Exception
+   public void testTopicConnection() throws Exception
    {
-      TopicConnectionFactory tcf = JMSTestCase.topicCf;
-
-      TopicConnection tc = tcf.createTopicConnection();
+      TopicConnection tc = topicCf.createTopicConnection();
 
       tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      tc.close();
-
    }
 
    /**
@@ -261,7 +253,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testExceptionListener() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
       ExceptionListener listener1 = new MyExceptionListener();
 
@@ -284,7 +276,7 @@ public class ConnectionTest extends JMSTestCase
    {
       for (int i = 0; i < 1000; i++)
       {
-         Connection conn = JMSTestCase.cf.createConnection();
+         Connection conn = createConnection();
 
          MyExceptionListener listener = new MyExceptionListener();
 
@@ -303,7 +295,7 @@ public class ConnectionTest extends JMSTestCase
    @Test
    public void testDurableSubscriberOnQueueConnection() throws Exception
    {
-      QueueConnection queueConnection = ((QueueConnectionFactory)JMSTestCase.queueCf).createQueueConnection();
+      QueueConnection queueConnection = ((QueueConnectionFactory)queueCf).createQueueConnection();
 
       try
       {

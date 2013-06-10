@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.IllegalStateException;
@@ -22,6 +20,7 @@ import javax.jms.JMSSecurityException;
 import javax.jms.Session;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * Test JMS Security.
@@ -45,25 +44,8 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testLoginNoUserNoPassword() throws Exception
    {
-
-      Connection conn1 = null;
-      Connection conn2 = null;
-      try
-      {
-         conn1 = JMSTestCase.cf.createConnection();
-         conn2 = JMSTestCase.cf.createConnection(null, null);
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
-      }
+      createConnection();
+      createConnection(null, null);
    }
 
    /**
@@ -73,25 +55,8 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testLoginNoUserNoPasswordWithNoGuest() throws Exception
    {
-
-      Connection conn1 = null;
-      Connection conn2 = null;
-      try
-      {
-         conn1 = JMSTestCase.cf.createConnection();
-         conn2 = JMSTestCase.cf.createConnection(null, null);
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
-      }
+      createConnection();
+      createConnection(null, null);
    }
 
    /**
@@ -101,18 +66,7 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testLoginValidUserAndPassword() throws Exception
    {
-      Connection conn1 = null;
-      try
-      {
-         conn1 = JMSTestCase.cf.createConnection("guest", "guest");
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-      }
+      createConnection("guest", "guest");
    }
 
    /**
@@ -122,22 +76,14 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testLoginValidUserInvalidPassword() throws Exception
    {
-      Connection conn1 = null;
       try
       {
-         conn1 = JMSTestCase.cf.createConnection("guest", "not.the.valid.password");
+         Connection conn1 = createConnection("guest", "not.the.valid.password");
          ProxyAssertSupport.fail();
       }
       catch (JMSSecurityException e)
       {
          // Expected
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
       }
    }
 
@@ -148,24 +94,16 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testLoginInvalidUserInvalidPassword() throws Exception
    {
-      Connection conn1 = null;
       try
       {
-         conn1 = JMSTestCase.cf.createConnection("not.the.valid.user", "not.the.valid.password");
+         Connection conn1 = createConnection("not.the.valid.user", "not.the.valid.password");
          ProxyAssertSupport.fail();
       }
       catch (JMSSecurityException e)
       {
          // Expected
       }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
          }
-      }
-   }
 
    /* Now some client id tests */
 
@@ -200,21 +138,10 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testSetClientID() throws Exception
    {
-      Connection conn = null;
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          conn.setClientID("myID");
          String clientID = conn.getClientID();
          ProxyAssertSupport.assertEquals("Invalid ClientID", "myID", clientID);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    /**
@@ -252,24 +179,16 @@ public class SecurityTest extends JMSTestCase
    @Test
    public void testSetClientIDAfterOp() throws Exception
    {
-      Connection conn = null;
+      Connection conn = createConnection();
+         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
-         conn = JMSTestCase.cf.createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.setClientID("myID");
          ProxyAssertSupport.fail();
       }
       catch (IllegalStateException e)
       {
          // Expected
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
       }
    }
 }

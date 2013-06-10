@@ -28,6 +28,7 @@ import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -245,7 +246,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       int ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
 
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
@@ -268,7 +269,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -672,6 +673,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       ProxyAssertSupport.assertFalse(m2.itemExists("sausages"));
 
       HashSet<String> itemNames = new HashSet<String>();
+      @SuppressWarnings("unchecked")
       Enumeration<String> en = m2.getMapNames();
       while (en.hasMoreElements())
       {
@@ -1313,7 +1315,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       int ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
 
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -1342,7 +1344,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -1597,32 +1599,4 @@ public class MessageBodyTest extends MessageBodyTestCase
       ProxyAssertSupport.assertNull(m2.getText());
       m2.setText("Now it is read-write");
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)
-   {
-      if (bytes1 == null | bytes2 == null)
-      {
-         ProxyAssertSupport.fail();
-      }
-
-      if (bytes1.length != bytes2.length)
-      {
-         ProxyAssertSupport.fail();
-      }
-
-      for (int i = 0; i < bytes1.length; i++)
-      {
-         ProxyAssertSupport.assertEquals(bytes1[i], bytes2[i]);
-      }
-
-   }
-
-   // Inner classes -------------------------------------------------
-
 }

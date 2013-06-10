@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.Enumeration;
 
 import javax.jms.Connection;
@@ -32,6 +28,9 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -117,12 +116,12 @@ public class BrowserTest extends JMSTestCase
       producer.send(m);
 
 
-      assertNotNull(browser.receiveImmediate());
+      Assert.assertNotNull(browser.receiveImmediate());
 
       coreSession.close();
 
 
-      System.out.println("Draining destination...");
+
       drainDestination(getConnectionFactory(), queue1);
    }
 
@@ -150,10 +149,8 @@ public class BrowserTest extends JMSTestCase
       producer.send(m);
       Message m2 = en.nextElement();
 
-      assertNotNull(m2);
+      Assert.assertNotNull(m2);
 
-
-      System.out.println("Draining destination...");
       drainDestination(getConnectionFactory(), queue1);
    }
 

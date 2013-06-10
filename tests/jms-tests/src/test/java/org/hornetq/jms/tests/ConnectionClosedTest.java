@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -28,6 +26,7 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * All tests related to closing a Connection.
@@ -53,14 +52,14 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testCloseOnce() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
       conn.close();
    }
 
    @Test
    public void testCloseTwice() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
       conn.close();
       conn.close();
    }
@@ -69,8 +68,8 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testCannotReceiveMessageOnStoppedConnection() throws Exception
    {
-      TopicConnection conn1 = ((TopicConnectionFactory)JMSTestCase.topicCf).createTopicConnection();
-      TopicConnection conn2 = ((TopicConnectionFactory)JMSTestCase.topicCf).createTopicConnection();
+      TopicConnection conn1 = ((TopicConnectionFactory)topicCf).createTopicConnection();
+      TopicConnection conn2 = ((TopicConnectionFactory)topicCf).createTopicConnection();
 
       TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -80,7 +79,7 @@ public class ConnectionClosedTest extends JMSTestCase
 
       conn1.start();
 
-      Connection conn3 = JMSTestCase.cf.createConnection();
+      Connection conn3 = createConnection();
 
       Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess3.createProducer(HornetQServerTestCase.topic1);
@@ -132,7 +131,7 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testCloseWhileReceiving() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -191,7 +190,7 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testGetMetadataOnClosedConnection() throws Exception
    {
-      Connection connection = JMSTestCase.cf.createConnection();
+      Connection connection = createConnection();
 
       connection.close();
 
@@ -209,7 +208,7 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testCreateSessionOnClosedConnection() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
       conn.close();
 
       try
@@ -229,7 +228,7 @@ public class ConnectionClosedTest extends JMSTestCase
    @Test
    public void testCloseHierarchy() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer consumer = sess.createConsumer(HornetQServerTestCase.topic1);
       MessageProducer producer = sess.createProducer(HornetQServerTestCase.topic1);

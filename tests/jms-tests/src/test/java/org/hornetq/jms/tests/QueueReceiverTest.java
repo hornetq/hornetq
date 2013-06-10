@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.QueueConnection;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
@@ -23,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  *
@@ -30,16 +29,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class QueueReceiverTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /**
     * com.sun.ts.tests.jms.ee.all.queueconn.QueueConnTest line 171
     */
@@ -50,7 +39,7 @@ public class QueueReceiverTest extends JMSTestCase
 
       try
       {
-         qc = JMSTestCase.cf.createQueueConnection();
+         qc = createQueueConnection();
          QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
          QueueReceiver qreceiver = qs.createReceiver(HornetQServerTestCase.queue1, "targetMessage = TRUE");

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -46,6 +44,8 @@ import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -72,7 +72,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -124,7 +124,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -218,7 +218,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -283,9 +283,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -331,9 +331,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -381,9 +381,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -429,9 +429,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -486,9 +486,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -540,7 +540,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         pconn = JMSTestCase.cf.createConnection();
+         pconn = createConnection();
 
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -576,7 +576,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         pconn = JMSTestCase.cf.createConnection();
+         pconn = createConnection();
 
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -621,7 +621,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         connSend = JMSTestCase.cf.createConnection();
+         connSend = createConnection();
 
          connSend.start();
 
@@ -637,7 +637,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          sessSend.commit();
 
-         connReceive = JMSTestCase.cf.createConnection();
+         connReceive = createConnection();
 
          connReceive.start();
 
@@ -684,9 +684,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -744,9 +744,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -800,9 +800,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -864,7 +864,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -919,7 +919,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -974,7 +974,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -1029,7 +1029,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -1088,7 +1088,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -1152,7 +1152,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -1208,7 +1208,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -1275,7 +1275,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.start();
 
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -1334,7 +1334,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1380,7 +1380,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         connSend = JMSTestCase.cf.createConnection();
+         connSend = createConnection();
 
          connSend.start();
 
@@ -1396,7 +1396,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          sessSend.commit();
 
-         connReceive = JMSTestCase.cf.createConnection();
+         connReceive = createConnection();
 
          connReceive.start();
 
@@ -1416,7 +1416,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          connReceive.close();
 
-         connReceive = JMSTestCase.cf.createConnection();
+         connReceive = createConnection();
 
          connReceive.start();
 
@@ -1448,9 +1448,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          consumerConnection.start();
          Session sess1 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1563,7 +1563,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1589,7 +1589,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1600,7 +1600,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             topicConsumer.getMessageSelector();
-            fail("must throw a JMS IllegalStateException");
+            Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1623,7 +1623,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
          TopicConnection tc = (TopicConnection)consumerConnection;
 
          TopicSession consumerSession = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1635,7 +1635,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             topicConsumer.getNoLocal();
-            fail("must throw a JMS IllegalStateException");
+            Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1658,7 +1658,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1684,7 +1684,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1695,7 +1695,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             ((TopicSubscriber)topicConsumer).getTopic();
-            fail("must throw a JMS IllegalStateException");
+            Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1718,7 +1718,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1744,7 +1744,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1755,7 +1755,7 @@ public class MessageConsumerTest extends JMSTestCase
          try
          {
             ((QueueReceiver)queueConsumer).getQueue();
-            fail("must throw a JMS IllegalStateException");
+            Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
          {
@@ -1778,7 +1778,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1806,9 +1806,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1860,9 +1860,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1917,9 +1917,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1975,9 +1975,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2028,9 +2028,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          final Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2096,9 +2096,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          final Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2162,7 +2162,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2302,7 +2302,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2360,9 +2360,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2408,9 +2408,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2470,9 +2470,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2530,9 +2530,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2583,7 +2583,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2662,9 +2662,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2743,9 +2743,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2812,7 +2812,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2825,7 +2825,7 @@ public class MessageConsumerTest extends JMSTestCase
          queueProducer.send(tm);
 
          // recreate the connection and receive the first message
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
          Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer queueConsumer = consumerSession.createConsumer(HornetQServerTestCase.queue1);
          consumerConnection.start();
@@ -2837,7 +2837,7 @@ public class MessageConsumerTest extends JMSTestCase
          consumerConnection = null;
 
          // recreate the connection and receive the second message
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
          consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          queueConsumer = consumerSession.createConsumer(HornetQServerTestCase.queue1);
          consumerConnection.start();
@@ -2867,7 +2867,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -2880,7 +2880,7 @@ public class MessageConsumerTest extends JMSTestCase
          queueProducer.send(tm);
 
          // recreate the connection and receive the first message
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
          Session consumerSession = consumerConnection.createSession(true, -1);
          MessageConsumer queueConsumer = consumerSession.createConsumer(HornetQServerTestCase.queue1);
          consumerConnection.start();
@@ -2893,7 +2893,7 @@ public class MessageConsumerTest extends JMSTestCase
          consumerConnection = null;
 
          // recreate the connection and receive the second message
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
          consumerSession = consumerConnection.createSession(true, -1);
          queueConsumer = consumerSession.createConsumer(HornetQServerTestCase.queue1);
          consumerConnection.start();
@@ -2932,14 +2932,14 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer producer1 = sess1.createProducer(HornetQServerTestCase.topic1);
          producer1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          MessageConsumer consumer1 = sess1.createConsumer(HornetQServerTestCase.topic1, null, true);
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          ProxyAssertSupport.assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
@@ -3029,7 +3029,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -3072,7 +3072,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
          conn1.start();
 
          // Create 2 non durable subscribers on topic
@@ -3141,7 +3141,7 @@ public class MessageConsumerTest extends JMSTestCase
       try
       {
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
          conn1.start();
 
          Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -3201,7 +3201,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         theConn = JMSTestCase.cf.createConnection();
+         theConn = createConnection();
          theConn.start();
 
          // Send some persistent messages to a queue with no receivers
@@ -3236,7 +3236,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          theConn.close();
 
-         theOtherConn = JMSTestCase.cf.createConnection();
+         theOtherConn = createConnection();
          theOtherConn.start();
 
          Session sessReceive = theOtherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3288,7 +3288,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -3345,7 +3345,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -3357,7 +3357,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          conn1.close();
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
          conn2.setClientID(CLIENT_ID1);
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3376,7 +3376,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          conn2.close();
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
          conn3.setClientID(CLIENT_ID1);
          conn3.start();
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3448,14 +3448,14 @@ public class MessageConsumerTest extends JMSTestCase
       try
       {
          // Create a durable subscriber on one connection and close it
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
          conn1.setClientID(CLIENT_ID1);
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer durable = sess1.createDurableSubscriber(HornetQServerTestCase.topic1, "mySubscription");
          conn1.close();
 
          // Send some messages on another connection and close it
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
          conn2.setClientID(CLIENT_ID1);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.topic1);
@@ -3469,7 +3469,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn2.close();
 
          // Receive the messages on another connection
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
          conn3.setClientID(CLIENT_ID1);
          conn3.start();
          sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3489,7 +3489,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn3.close();
 
          // Try and receive them again
-         conn4 = JMSTestCase.cf.createConnection();
+         conn4 = createConnection();
          conn4.setClientID(CLIENT_ID1);
          conn4.start();
          sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3500,7 +3500,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn4.close();
 
          // Send some more messages and unsubscribe
-         conn5 = JMSTestCase.cf.createConnection();
+         conn5 = createConnection();
          conn5.setClientID(CLIENT_ID1);
          conn5.start();
          Session sess5 = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3522,7 +3522,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn5.close();
 
          // Resubscribe with the same name
-         conn6 = JMSTestCase.cf.createConnection();
+         conn6 = createConnection();
          conn6.setClientID(CLIENT_ID1);
          conn6.start();
          sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3576,7 +3576,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
          conn1.setClientID(CLIENT_ID1);
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -3607,7 +3607,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn1.close();
          conn1 = null;
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          conn2.setClientID(CLIENT_ID1);
 
@@ -3660,7 +3660,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -3695,7 +3695,7 @@ public class MessageConsumerTest extends JMSTestCase
          conn1.close();
          conn1 = null;
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          conn2.setClientID(CLIENT_ID2);
 
@@ -3715,7 +3715,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          // Now need to remove the original subscription
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -3745,7 +3745,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -3781,7 +3781,7 @@ public class MessageConsumerTest extends JMSTestCase
       try
       {
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          ProxyAssertSupport.assertNull(conn1.getClientID());
 
@@ -3815,9 +3815,9 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
-         consumerConnection = JMSTestCase.cf.createConnection();
+         consumerConnection = createConnection();
 
          Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
@@ -3866,7 +3866,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -3914,7 +3914,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -3964,7 +3964,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -4011,7 +4011,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -4058,7 +4058,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -4107,7 +4107,7 @@ public class MessageConsumerTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -28,6 +26,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -50,20 +49,13 @@ public class QueueRequestorTest extends JMSTestCase
    @Test
    public void testQueueRequestor() throws Exception
    {
-      // Set up the requestor
-      QueueConnection conn1 = null;
-      QueueConnection conn2 = null;
-
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createQueueConnection();
+      QueueConnection conn1 = createQueueConnection();
          QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          QueueRequestor requestor = new QueueRequestor(sess1, HornetQServerTestCase.queue1);
          conn1.start();
 
          // And the responder
-         conn2 = JMSTestCase.cf.createQueueConnection();
+      QueueConnection conn2 = createQueueConnection();
          QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          TestMessageListener listener = new TestMessageListener(sess2);
          QueueReceiver receiver = sess2.createReceiver(HornetQServerTestCase.queue1);
@@ -76,18 +68,6 @@ public class QueueRequestorTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals("This is the response", m2.getText());
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
-      }
    }
 
    // Package protected ---------------------------------------------

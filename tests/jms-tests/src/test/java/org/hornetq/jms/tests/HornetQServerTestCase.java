@@ -57,7 +57,7 @@ import org.junit.runner.Description;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 @Deprecated
-public abstract class HornetQServerTestCase extends ProxyAssertSupport
+public abstract class HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

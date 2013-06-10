@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -23,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * A PersistenceTest
@@ -40,7 +39,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -60,7 +59,7 @@ public class PersistenceTest extends JMSTestCase
          // HornetQ server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
          MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
@@ -96,7 +95,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -151,7 +150,7 @@ public class PersistenceTest extends JMSTestCase
          // HornetQ server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
          cons = sess.createConsumer(HornetQServerTestCase.queue1);
@@ -187,7 +186,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -222,7 +221,7 @@ public class PersistenceTest extends JMSTestCase
          // HornetQ server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
          MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
@@ -301,7 +300,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -335,7 +334,7 @@ public class PersistenceTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
          MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
@@ -414,7 +413,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("five");
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -436,7 +435,7 @@ public class PersistenceTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("five");
 
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -471,7 +470,7 @@ public class PersistenceTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("Sausages");
 
          Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -499,7 +498,7 @@ public class PersistenceTest extends JMSTestCase
          // HornetQ server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("Sausages");
 
          sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
