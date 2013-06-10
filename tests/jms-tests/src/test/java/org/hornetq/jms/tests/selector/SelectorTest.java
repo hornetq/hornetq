@@ -13,7 +13,8 @@
 
 package org.hornetq.jms.tests.selector;
 
-import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -202,7 +205,7 @@ public class SelectorTest extends HornetQServerTestCase
 
             ProxyAssertSupport.assertNotNull(m);
 
-            assertEquals(j, m.getIntProperty("wibble"));
+            Assert.assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("john", m.getStringProperty("beatle"));
 
@@ -223,7 +226,7 @@ public class SelectorTest extends HornetQServerTestCase
 
             ProxyAssertSupport.assertNotNull(m);
 
-            assertEquals(j, m.getIntProperty("wibble"));
+            Assert.assertEquals(j, m.getIntProperty("wibble"));
 
             ProxyAssertSupport.assertEquals("kermit the frog", m.getStringProperty("beatle"));
          }
@@ -743,7 +746,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -787,7 +790,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -833,7 +836,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -882,7 +885,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -928,7 +931,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -974,7 +977,7 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(rec);
 
-         assertEquals("msg2", rec.getText());
+         Assert.assertEquals("msg2", rec.getText());
 
          assertNull(cons.receiveNoWait());
 
@@ -1061,8 +1064,8 @@ public class SelectorTest extends HornetQServerTestCase
 
          assertNotNull(tm);
 
-         assertEquals("3", tm.getText());
-         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         Assert.assertEquals("3", tm.getText());
+         Assert.assertEquals("VALUE2", tm.getStringProperty("PROP2"));
 
          tm.acknowledge();
 
@@ -1079,27 +1082,27 @@ public class SelectorTest extends HornetQServerTestCase
          msgConsumer = session.createConsumer(HornetQServerTestCase.queue1);
 
          tm = (TextMessage)msgConsumer.receive(5000);
-         assertEquals("1", tm.getText());
-         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         Assert.assertEquals("1", tm.getText());
+         Assert.assertEquals("VALUE1", tm.getStringProperty("PROP1"));
 
 
          tm = (TextMessage)msgConsumer.receive(5000);
-         assertEquals("2", tm.getText());
-         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         Assert.assertEquals("2", tm.getText());
+         Assert.assertEquals("VALUE1", tm.getStringProperty("PROP1"));
 
          tm = (TextMessage)msgConsumer.receive(5000);
-         assertEquals("4", tm.getText());
-         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         Assert.assertEquals("4", tm.getText());
+         Assert.assertEquals("VALUE2", tm.getStringProperty("PROP2"));
 
 
          tm = (TextMessage)msgConsumer.receive(5000);
-         assertEquals("5", tm.getText());
-         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         Assert.assertEquals("5", tm.getText());
+         Assert.assertEquals("VALUE1", tm.getStringProperty("PROP1"));
 
          tm = (TextMessage)msgConsumer.receive(5000);
-         assertEquals("6", tm.getText());
-         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
-         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         Assert.assertEquals("6", tm.getText());
+         Assert.assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         Assert.assertEquals("VALUE2", tm.getStringProperty("PROP2"));
 
          tm.acknowledge();
 

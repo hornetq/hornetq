@@ -12,13 +12,13 @@
  */
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.InitialContext;
+
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -47,7 +47,7 @@ public class ConsumerClosedTest extends JMSTestCase
 
       try
       {
-         c = JMSTestCase.cf.createConnection();
+         c = createConnection();
          c.start();
 
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);

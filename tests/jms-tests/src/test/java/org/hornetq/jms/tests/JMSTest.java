@@ -61,7 +61,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void test_NonPersistent_NonTransactional() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -74,7 +74,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -92,7 +92,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testCreateTextMessageNull() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -107,7 +107,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -123,7 +123,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testPersistent_NonTransactional() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -136,7 +136,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -152,7 +152,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testNonPersistent_Transactional_Send() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -168,7 +168,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -185,7 +185,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testPersistent_Transactional_Send() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -201,7 +201,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -218,7 +218,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testNonPersistent_Transactional_Acknowledgment() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -229,7 +229,7 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -246,7 +246,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testAsynchronous_to_Client() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -305,7 +305,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testMessageListener() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -342,7 +342,7 @@ public class JMSTest extends JMSTestCase
    @Test
    public void testClientAcknowledge() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer p = session.createProducer(HornetQServerTestCase.queue1);

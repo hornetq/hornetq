@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.InvalidSelectorException;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
@@ -22,6 +20,7 @@ import javax.jms.TopicSession;
 import javax.naming.InitialContext;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * Non-durable subscriber tests.
@@ -49,11 +48,7 @@ public class NonDurableSubscriberTest extends JMSTestCase
    @Test
    public void testNonDurableSubscriberOnNullTopic() throws Exception
    {
-      TopicConnection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createTopicConnection();
+      TopicConnection conn = createTopicConnection();
 
          TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -66,14 +61,6 @@ public class NonDurableSubscriberTest extends JMSTestCase
          {
             // OK
          }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    /**
@@ -82,12 +69,8 @@ public class NonDurableSubscriberTest extends JMSTestCase
    @Test
    public void testNonDurableSubscriberInvalidUnsubscribe() throws Exception
    {
-      TopicConnection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createTopicConnection();
-         conn.setClientID("sofiavergara");
+      TopicConnection conn = createTopicConnection();
+         conn.setClientID("clientIDxyz123");
 
          TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -100,23 +83,12 @@ public class NonDurableSubscriberTest extends JMSTestCase
          {
             // OK
          }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testInvalidSelectorOnSubscription() throws Exception
    {
-      TopicConnection c = null;
-      try
-      {
-         c = JMSTestCase.cf.createTopicConnection();
+      TopicConnection c = createTopicConnection();
          c.setClientID("something");
 
          TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -130,11 +102,6 @@ public class NonDurableSubscriberTest extends JMSTestCase
          {
             // OK
          }
-      }
-      finally
-      {
-         c.close();
-      }
    }
 
    // Package protected ---------------------------------------------

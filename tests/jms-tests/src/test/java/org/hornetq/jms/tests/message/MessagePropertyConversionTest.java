@@ -23,6 +23,7 @@ import javax.jms.Session;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -87,9 +88,9 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
 
       queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(1000);
-      assertEquals("key should be true", m2.getObjectProperty("key"), Boolean.TRUE);
-      assertEquals("key2 should be null", null, m2.getObjectProperty("key2"));
-      assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
+      Assert.assertEquals("key should be true", m2.getObjectProperty("key"), Boolean.TRUE);
+      Assert.assertEquals("key2 should be null", null, m2.getObjectProperty("key2"));
+      Assert.assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
    }
 
    @Test

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,6 +25,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -45,7 +44,7 @@ public class QueueTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
@@ -76,7 +75,7 @@ public class QueueTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -99,7 +98,7 @@ public class QueueTest extends JMSTestCase
          // HornetQ server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
          MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
@@ -141,9 +140,9 @@ public class QueueTest extends JMSTestCase
 
          try
          {
-            conn1 = JMSTestCase.cf.createConnection();
+            conn1 = createConnection();
 
-            conn2 = JMSTestCase.cf.createConnection();
+            conn2 = createConnection();
 
             Session s = conn1.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -204,11 +203,7 @@ public class QueueTest extends JMSTestCase
    @Test
    public void testRedeployQueue() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
@@ -228,7 +223,7 @@ public class QueueTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          p = s.createProducer(HornetQServerTestCase.queue1);
          c = s.createConsumer(HornetQServerTestCase.queue1);
@@ -240,14 +235,6 @@ public class QueueTest extends JMSTestCase
             ProxyAssertSupport.assertNotNull(message);
             ProxyAssertSupport.assertNotNull(message.getJMSDestination());
          }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test

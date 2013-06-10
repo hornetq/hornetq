@@ -17,7 +17,6 @@ import java.util.Iterator;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.TypedProperties;
 import org.junit.Assert;
@@ -46,7 +45,7 @@ public class TypedPropertiesTest
          {
             byte[] expectedBytes = (byte[])expectedValue;
             byte[] actualBytes = (byte[])actualValue;
-            CoreUnitTestCase.assertEqualsByteArrays(expectedBytes, actualBytes);
+            Assert.assertArrayEquals(expectedBytes, actualBytes);
          }
          else
          {

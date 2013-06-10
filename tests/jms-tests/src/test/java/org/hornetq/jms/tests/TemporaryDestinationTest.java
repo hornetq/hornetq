@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,6 +25,7 @@ import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -52,7 +51,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -108,7 +107,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -153,7 +152,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -185,7 +184,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -224,7 +223,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -263,7 +262,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -295,7 +294,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          tempQueue.delete();
          conn.close();
-         conn = JMSTestCase.cf.createConnection("guest", "guest");
+         conn = createConnection("guest", "guest");
          try
          {
             producer.send(m);
@@ -321,7 +320,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -384,7 +383,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
       try
       {
-         producerConnection = JMSTestCase.cf.createConnection();
+         producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -412,11 +411,7 @@ public class TemporaryDestinationTest extends JMSTestCase
    @Test
    public void testTemporaryTopicShouldNotBeInJNDI() throws Exception
    {
-      Connection producerConnection = null;
-
-      try
-      {
-         producerConnection = JMSTestCase.cf.createConnection();
+      Connection producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -425,31 +420,19 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          try
          {
-            JMSTestCase.ic.lookup("/topic/" + topicName);
+            ic.lookup("/topic/" + topicName);
             ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
          }
          catch (NamingException e)
          {
             // Expected
          }
-      }
-      finally
-      {
-         if (producerConnection != null)
-         {
-            producerConnection.close();
-         }
-      }
    }
 
    @Test
    public void testTemporaryQueueShouldNotBeInJNDI() throws Exception
    {
-      Connection producerConnection = null;
-
-      try
-      {
-         producerConnection = JMSTestCase.cf.createConnection();
+      Connection producerConnection = createConnection();
 
          Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -458,21 +441,13 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          try
          {
-            JMSTestCase.ic.lookup("/queue/" + queueName);
+            ic.lookup("/queue/" + queueName);
             ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
          }
          catch (NamingException e)
          {
             // Expected
          }
-      }
-      finally
-      {
-         if (producerConnection != null)
-         {
-            producerConnection.close();
-         }
-      }
    }
 
    /**
@@ -481,13 +456,13 @@ public class TemporaryDestinationTest extends JMSTestCase
    @Test
    public void testCanNotCreateConsumerFromAnotherConnectionForTemporaryQueue() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       TemporaryQueue tempQueue = sess.createTemporaryQueue();
 
-      Connection anotherConn = JMSTestCase.cf.createConnection();
+      Connection anotherConn = createConnection();
 
       Session sessFromAnotherConn = anotherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -510,13 +485,13 @@ public class TemporaryDestinationTest extends JMSTestCase
    @Test
    public void testCanNotCreateConsumerFromAnotherCnnectionForTemporaryTopic() throws Exception
    {
-      Connection conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       TemporaryTopic tempTopic = sess.createTemporaryTopic();
 
-      Connection anotherConn = JMSTestCase.cf.createConnection();
+      Connection anotherConn = createConnection();
 
       Session sessFromAnotherConn = anotherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -528,9 +503,6 @@ public class TemporaryDestinationTest extends JMSTestCase
       catch (JMSException e)
       {
       }
-
-      conn.close();
-      anotherConn.close();
    }
 
    // Package protected ---------------------------------------------

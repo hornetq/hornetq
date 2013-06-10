@@ -39,14 +39,11 @@ import org.junit.Test;
  */
 public class AcknowledgementTest extends JMSTestCase
 {
-   private Connection conn;
-   private TopicConnection topicConn;
-
    /** Topics shouldn't hold on to messages if there are no subscribers */
    @Test
    public void testPersistentMessagesForTopicDropped() throws Exception
    {
-         topicConn = JMSTestCase.cf.createTopicConnection();
+      TopicConnection topicConn = createTopicConnection();
          TopicSession sess = topicConn.createTopicSession(true, 0);
          TopicPublisher pub = sess.createPublisher(HornetQServerTestCase.topic1);
          pub.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -64,7 +61,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testPersistentMessagesForTopicDropped2() throws Exception
    {
-      topicConn = JMSTestCase.cf.createTopicConnection();
+      TopicConnection topicConn = createTopicConnection();
       topicConn.start();
       TopicSession sess = topicConn.createTopicSession(true, 0);
          TopicPublisher pub = sess.createPublisher(HornetQServerTestCase.topic1);
@@ -91,7 +88,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testRollbackRecover() throws Exception
    {
-      topicConn = JMSTestCase.cf.createTopicConnection();
+      TopicConnection topicConn = createTopicConnection();
       TopicSession sess = topicConn.createTopicSession(true, 0);
          TopicPublisher pub = sess.createPublisher(HornetQServerTestCase.topic1);
          TopicSubscriber cons = sess.createSubscriber(HornetQServerTestCase.topic1);
@@ -113,7 +110,7 @@ public class AcknowledgementTest extends JMSTestCase
 
       topicConn.close();
 
-      topicConn = JMSTestCase.cf.createTopicConnection();
+      topicConn = createTopicConnection();
       topicConn.start();
 
          // test 2
@@ -151,7 +148,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testTransactionalAcknowledgement() throws Exception
    {
-      conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -227,7 +224,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testClientAcknowledgeNoAcknowledgement() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -305,7 +302,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testIndividualClientAcknowledge() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -351,7 +348,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testBulkClientAcknowledge() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -414,9 +411,10 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testPartialClientAcknowledge() throws Exception
    {
+      Connection conn = null;
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -498,7 +496,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testAutoAcknowledge() throws Exception
    {
-      conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -562,7 +560,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testDupsOKAcknowledgeQueue() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 
@@ -628,11 +626,10 @@ public class AcknowledgementTest extends JMSTestCase
 
       deployConnectionFactory(null, "MyConnectionFactory2", -1, -1, -1, -1, false, false, BATCH_SIZE, true, "mycf");
       Connection conn = null;
-
       try
       {
 
-         ConnectionFactory myCF = (ConnectionFactory)JMSTestCase.ic.lookup("/mycf");
+         ConnectionFactory myCF = (ConnectionFactory)ic.lookup("/mycf");
 
          conn = myCF.createConnection();
 
@@ -681,7 +678,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testLazyAcknowledge() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -742,11 +739,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testMessageListenerAutoAck() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -790,15 +783,7 @@ public class AcknowledgementTest extends JMSTestCase
          assertRemainingMessages(0);
 
          ProxyAssertSupport.assertFalse(listener.failed);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
          }
-      }
-   }
 
    /*
     * This test will: - Send two messages over a producer - Receive one message over a consumer - Call Recover - Receive
@@ -808,11 +793,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testRecoverAutoACK() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -826,7 +807,7 @@ public class AcknowledgementTest extends JMSTestCase
 
          assertRemainingMessages(2);
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.start();
 
@@ -853,26 +834,12 @@ public class AcknowledgementTest extends JMSTestCase
          // xasession.close();
 
          assertRemainingMessages(0);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testMessageListenerDupsOK() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -916,24 +883,12 @@ public class AcknowledgementTest extends JMSTestCase
          assertRemainingMessages(0);
 
          ProxyAssertSupport.assertFalse(listener.failed);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testMessageListenerClientAck() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -962,24 +917,12 @@ public class AcknowledgementTest extends JMSTestCase
          conn.close();
 
          ProxyAssertSupport.assertFalse(listener.failed);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testMessageListenerTransactionalAck() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
 
@@ -1007,14 +950,6 @@ public class AcknowledgementTest extends JMSTestCase
          conn.close();
 
          ProxyAssertSupport.assertFalse(listener.failed);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    // Package protected ---------------------------------------------
@@ -1409,7 +1344,7 @@ public class AcknowledgementTest extends JMSTestCase
    @Test
    public void testTransactionalIgnoreACK() throws Exception
    {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
@@ -1480,20 +1415,5 @@ public class AcknowledgementTest extends JMSTestCase
          assertRemainingMessages(0);
 
          checkEmpty(HornetQServerTestCase.queue1);
-   }
-
-   @Override
-   public void tearDown() throws Exception {
-      try
-      {
-         if (conn != null)
-            conn.close();
-         if (topicConn != null)
-            topicConn.close();
-      }
-      finally
-      {
-         super.tearDown();
-      }
    }
 }

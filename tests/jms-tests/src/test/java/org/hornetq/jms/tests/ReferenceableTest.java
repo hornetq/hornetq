@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -35,6 +33,7 @@ import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  *
@@ -62,7 +61,7 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testSerializable() throws Exception
    {
-      ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Serializable);
+      ProxyAssertSupport.assertTrue(cf instanceof Serializable);
 
       ProxyAssertSupport.assertTrue(HornetQServerTestCase.queue1 instanceof Serializable);
 
@@ -73,7 +72,7 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testReferenceable() throws Exception
    {
-      ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Referenceable);
+      ProxyAssertSupport.assertTrue(cf instanceof Referenceable);
 
       ProxyAssertSupport.assertTrue(HornetQServerTestCase.queue1 instanceof Referenceable);
 
@@ -83,11 +82,11 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testReferenceCF() throws Exception
    {
-      Reference cfRef = ((Referenceable)JMSTestCase.cf).getReference();
+      Reference cfRef = ((Referenceable)cf).getReference();
 
       String factoryName = cfRef.getFactoryClassName();
 
-      Class factoryClass = Class.forName(factoryName);
+      Class<?> factoryClass = Class.forName(factoryName);
 
       ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
 
@@ -107,7 +106,7 @@ public class ReferenceableTest extends JMSTestCase
 
       String factoryName = queueRef.getFactoryClassName();
 
-      Class factoryClass = Class.forName(factoryName);
+      Class<?> factoryClass = Class.forName(factoryName);
 
       DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
 
@@ -119,7 +118,7 @@ public class ReferenceableTest extends JMSTestCase
 
       ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1.getQueueName(), queue2.getQueueName());
 
-      simpleSendReceive(JMSTestCase.cf, queue2);
+      simpleSendReceive(cf, queue2);
 
    }
 
@@ -142,16 +141,12 @@ public class ReferenceableTest extends JMSTestCase
 
       ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1.getTopicName(), topic2.getTopicName());
 
-      simpleSendReceive(JMSTestCase.cf, topic2);
+      simpleSendReceive(cf, topic2);
    }
 
-   protected void simpleSendReceive(final ConnectionFactory cf, final Destination dest) throws Exception
+   protected void simpleSendReceive(final ConnectionFactory cf1, final Destination dest) throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
+      Connection conn = createConnection(cf1);
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -170,13 +165,6 @@ public class ReferenceableTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(tm);
 
          ProxyAssertSupport.assertEquals("ref test", tm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
+
 }

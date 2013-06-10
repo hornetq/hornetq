@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -25,6 +23,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * A MessageWithReadResolveTest
@@ -53,11 +52,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
    @Test
    public void testSendReceiveMessage() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection  conn =  createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -87,16 +82,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
          ProxyAssertSupport.assertEquals(123, tm2.getID());
 
          conn.close();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
          }
-      }
-
-   }
 
    // Package protected ---------------------------------------------
 

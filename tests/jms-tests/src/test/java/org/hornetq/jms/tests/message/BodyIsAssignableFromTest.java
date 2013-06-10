@@ -1,7 +1,5 @@
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -14,6 +12,9 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class BodyIsAssignableFromTest extends MessageBodyTestCase
 {
@@ -68,26 +69,27 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
     */
    private void bodyAssignableFrom(final JmsMessageType type, final boolean bool, Class... clazz) throws JMSException
    {
-      assertNotNull("clazz!=null", clazz);
-      assertTrue("clazz[] not empty", clazz.length > 0);
+      Assert.assertNotNull("clazz!=null", clazz);
+      Assert.assertTrue("clazz[] not empty", clazz.length > 0);
       Object body = createBodySendAndReceive(type);
       Message msg = queueConsumer.receive(500);
-      assertNotNull("must have a msg", msg);
-      assertEquals(type.toString(), msg.getStringProperty("type"));
+      Assert.assertNotNull("must have a msg", msg);
+      Assert.assertEquals(type.toString(), msg.getStringProperty("type"));
       for (Class<?> c : clazz)
       {
-         assertEquals(msg + " " + type + " & " + c + ": " + bool, bool, msg.isBodyAssignableTo(c));
+         Assert.assertEquals(msg + " " + type + " & " + c + ": " + bool, bool, msg.isBodyAssignableTo(c));
          if (bool)
          {
             Object receivedBody = msg.getBody(c);
-            assertTrue("correct type " + c, c.isInstance(receivedBody));
+            Assert.assertTrue("correct type " + c, c.isInstance(receivedBody));
             if (body.getClass().isAssignableFrom(byte[].class))
             {
                Arrays.equals((byte[])body, (byte[])receivedBody);
             }
             else
             {
-               assertEquals("clazz=" + c + ", bodies must match.. " + body.equals(receivedBody), body, receivedBody);
+               Assert.assertEquals("clazz=" + c + ", bodies must match.. " + body.equals(receivedBody), body,
+                                   receivedBody);
             }
          }
          else
@@ -95,7 +97,7 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
             try
             {
                Object foo = msg.getBody(c);
-               fail("expected a " + MessageFormatException.class);
+               Assert.fail("expected a " + MessageFormatException.class);
             }
             catch (MessageFormatException e)
             {
@@ -150,9 +152,9 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
             res = map;
             break;
          default:
-            fail("no default...");
+            Assert.fail("no default...");
        }
-      assertNotNull(msg);
+      Assert.assertNotNull(msg);
       msg.setStringProperty("type", type.toString());
       queueProducer.send(msg);
       return res;

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -31,6 +29,7 @@ import com.arjuna.ats.jta.xa.XidImple;
 
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  *
@@ -59,7 +58,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -88,7 +87,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn1.close();
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -176,7 +175,7 @@ public class XARecoveryTest extends JMSTestCase
          res.prepare(xid1);
          log.trace("Prepared xid " + xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -201,7 +200,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -294,7 +293,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -321,7 +320,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -407,7 +406,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -432,7 +431,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -545,7 +544,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -572,7 +571,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -673,7 +672,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -694,7 +693,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("committed the tx");
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -810,7 +809,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -837,7 +836,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -937,7 +936,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -960,7 +959,7 @@ public class XARecoveryTest extends JMSTestCase
 
          Thread.sleep(1000);
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -1068,7 +1067,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1095,7 +1094,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -1187,7 +1186,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -1291,7 +1290,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -1322,7 +1321,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("prepared tx");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1338,7 +1337,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1425,7 +1424,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -1456,7 +1455,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("prepared tx");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1486,7 +1485,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1504,7 +1503,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("recovered");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1590,7 +1589,7 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
          // First send a message to the queue
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1600,7 +1599,7 @@ public class XARecoveryTest extends JMSTestCase
 
          prod.send(tm1);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess2 = conn2.createXASession();
 
@@ -1631,7 +1630,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1657,7 +1656,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn3.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1725,7 +1724,7 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
          // First send a message to the queue
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1735,7 +1734,7 @@ public class XARecoveryTest extends JMSTestCase
 
          prod.send(tm1);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess2 = conn2.createXASession();
 
@@ -1782,7 +1781,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1804,7 +1803,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn3.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1878,7 +1877,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -1906,7 +1905,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.setClientID("wib1");
 
@@ -1986,7 +1985,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -2011,7 +2010,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2135,7 +2134,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2163,7 +2162,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.setClientID("wib1");
 
@@ -2257,7 +2256,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -2280,7 +2279,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("committed the tx");
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2405,9 +2404,9 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2480,7 +2479,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2500,7 +2499,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("Creating conn");
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue4);
@@ -2609,9 +2608,9 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2664,7 +2663,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2681,7 +2680,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xid2, false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue2);
@@ -2759,13 +2758,9 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
+         conn1 = createXAConnection();
 
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -2818,7 +2813,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2835,7 +2830,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xid2, false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
@@ -2849,46 +2844,6 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals("testing2", m2.getText());
-
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 
    @Test
@@ -2899,13 +2854,9 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
+         conn1 = createXAConnection();;
 
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2958,7 +2909,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2975,7 +2926,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xids[1], false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
@@ -2989,62 +2940,15 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals("testing2", m2.getText());
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 
    @Test
    public void testMultiChannelRecovery() throws Exception
    {
-      XAConnection conn1 = null;
 
-      XAConnection conn2 = null;
+      XAConnection conn1 = createXAConnection();;
 
-      Connection conn3 = null;
-
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+      XAConnection conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -3100,7 +3004,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -3117,7 +3021,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xids[1], false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+      Connection conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -3139,44 +3043,5 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m3);
          ProxyAssertSupport.assertEquals("testing3", m3.getText());
 
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 }

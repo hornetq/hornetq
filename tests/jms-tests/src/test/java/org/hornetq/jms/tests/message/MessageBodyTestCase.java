@@ -11,9 +11,6 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.junit.After;
 import org.junit.Before;
 
-/**
- *
- */
 public abstract class MessageBodyTestCase extends HornetQServerTestCase
 {
    protected Connection producerConnection, consumerConnection;
@@ -50,5 +47,4 @@ public abstract class MessageBodyTestCase extends HornetQServerTestCase
       producerConnection.close();
       consumerConnection.close();
    }
-
 }
