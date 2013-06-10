@@ -55,6 +55,8 @@ public class JMSTestBase extends ServiceTestBase
 
    protected ConnectionFactory cf;
    protected Connection conn;
+   private final Set<JMSContext> contextSet = new HashSet<JMSContext>();
+
    protected InVMNamingContext namingContext;
 
 
@@ -86,6 +88,17 @@ public class JMSTestBase extends ServiceTestBase
    protected boolean usePersistence()
    {
       return false;
+   }
+
+   protected final JMSContext addContext(JMSContext context0)
+   {
+      contextSet.add(context0);
+      return context0;
+   }
+
+   protected final JMSContext createContext()
+   {
+      return addContext(cf.createContext());
    }
 
    /**
@@ -171,6 +184,20 @@ public class JMSTestBase extends ServiceTestBase
    @After
    public void tearDown() throws Exception
    {
+      try
+      {
+         for (JMSContext jmsContext: contextSet) {
+            jmsContext.close();
+         }
+      }
+      catch (RuntimeException ignored)
+      {
+         // no-op
+      }
+      finally
+      {
+         contextSet.clear();
+      }
       try
       {
          if (conn != null)
