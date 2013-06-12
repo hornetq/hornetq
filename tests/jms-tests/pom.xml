@@ -132,8 +132,6 @@
             <configuration>
                <skipTests>${skipJmsTests}</skipTests>
                <excludes>
-                  <exclude>org/hornetq/jms/tests/JMSTestCase.java</exclude>
-                  <exclude>org/hornetq/jms/tests/HornetqServerTestCase.java</exclude>
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/XARecoveryTest.java</exclude>
                   <exclude>org/hornetq/jms/tests/XAResourceRecoveryTest.java</exclude>
