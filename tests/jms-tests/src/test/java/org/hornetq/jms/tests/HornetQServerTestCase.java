@@ -116,6 +116,12 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
       {
          log.info(String.format("#*#*# Finished test: %s()...", description.getMethodName()));
       }
+
+      @Override
+      protected void failed(Throwable e, Description description)
+      {
+         HornetQServerTestCase.tearDownAllServers();
+      };
    };
 
    @Before
