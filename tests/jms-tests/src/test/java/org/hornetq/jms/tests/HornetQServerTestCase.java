@@ -41,6 +41,10 @@ import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -96,6 +100,22 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
    protected static Queue queue3;
 
    protected static Queue queue4;
+
+   @Rule
+   public TestRule watcher = new TestWatcher()
+   {
+      @Override
+      protected void starting(Description description)
+      {
+         log.info(String.format("#*#*# Starting test: %s()...", description.getMethodName()));
+      };
+
+      @Override
+      protected void finished(Description description)
+      {
+         log.info(String.format("#*#*# Finished test: %s()...", description.getMethodName()));
+      }
+   };
 
    @Before
    public void setUp() throws Exception
