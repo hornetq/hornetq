@@ -1,22 +1,18 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
-import org.junit.After;
+import java.lang.reflect.Field;
 
+import org.hornetq.rest.MessageServiceManager;
+import org.hornetq.rest.util.LinkHeaderLinkStrategy;
+import org.hornetq.rest.util.LinkStrategy;
 import org.jboss.resteasy.client.ClientExecutor;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.client.core.BaseClientResponse;
 import org.jboss.resteasy.spi.Link;
-import org.hornetq.rest.MessageServiceManager;
-import org.hornetq.rest.util.LinkHeaderLinkStrategy;
-import org.hornetq.rest.util.LinkStrategy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import java.lang.reflect.Field;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class MessageTestBase
 {
