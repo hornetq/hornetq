@@ -108,16 +108,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
          HornetQServerTestCase.servers.add(ServerManagement.create());
 
          // start the servers if needed
-         boolean started = false;
-         try
-         {
-            started = HornetQServerTestCase.servers.get(0).isStarted();
-         }
-         catch (Exception e)
-         {
-            // ignore, incase its a remote server
-         }
-         if (!started)
+         if (!HornetQServerTestCase.servers.get(0).isStarted())
          {
             HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), true);
          }

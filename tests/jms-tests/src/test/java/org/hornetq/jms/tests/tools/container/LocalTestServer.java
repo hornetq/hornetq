@@ -103,7 +103,7 @@ public class LocalTestServer implements Server, Runnable
       {
          // Delete the Journal environment
 
-         File dir = new File("data");
+         File dir = new File("target/data");
 
          boolean deleted = LocalTestServer.deleteDirectory(dir);
 

@@ -25,10 +25,8 @@ import org.hornetq.jms.tests.tools.container.Server;
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
  * is also use to start/stop a remote server.
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *          <p/>
  */
 public class ServerManagement
 {
