@@ -134,7 +134,7 @@ public class QueueImpl implements Queue
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
-   private volatile long messagesAdded;
+   private long messagesAdded;
 
    protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
@@ -2036,10 +2036,13 @@ public class QueueImpl implements Queue
    {
       depagePending = false;
 
+      synchronized (this)
+      {
          if (paused || pageIterator == null)
          {
             return;
          }
+      }
 
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
 
