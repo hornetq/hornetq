@@ -23,8 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -187,7 +187,7 @@ public class QueueImpl implements Queue
 
    private AddressSettingsRepositoryListener addressSettingsRepositoryListener;
 
-   private ExpiryScanner expiryScanner = new ExpiryScanner();
+   private final ExpiryScanner expiryScanner = new ExpiryScanner();
 
    private final ReusableLatch deliveriesInTransit = new ReusableLatch(0);
 
@@ -801,7 +801,7 @@ public class QueueImpl implements Queue
    {
       return new SynchronizedIterator(messageReferences.iterator());
    }
-   
+
    public TotalQueueIterator totalIterator()
    {
       return new TotalQueueIterator();
@@ -1982,19 +1982,18 @@ public class QueueImpl implements Queue
             {
                pos = 0;
             }
-         }
 
-         if (handledconsumer != null)
-         {
-            proceedDeliver(handledconsumer, ref);
+            if (handledconsumer != null)
+            {
+               proceedDeliver(handledconsumer, ref);
+            }
          }
-
       }
 
       if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
-      {
-         scheduleDepage(false);
-      }
+         {
+            scheduleDepage(false);
+         }
    }
 
    /**
@@ -2037,10 +2036,10 @@ public class QueueImpl implements Queue
    {
       depagePending = false;
 
-      if (paused || pageIterator == null)
-      {
-         return;
-      }
+         if (paused || pageIterator == null)
+         {
+            return;
+         }
 
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
 
@@ -2548,12 +2547,12 @@ public class QueueImpl implements Queue
 
       return delay;
    }
-   
+
    public synchronized void resetMessagesAdded()
    {
 	  messagesAdded = 0;
    }
-   
+
 
    // Inner classes
    // --------------------------------------------------------------------------
@@ -2827,7 +2826,7 @@ public class QueueImpl implements Queue
             return true;
          }
          return messagesIterator.hasNext();
-         
+
       }
 
       @Override
