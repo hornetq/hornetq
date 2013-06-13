@@ -244,6 +244,22 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
       destroyQueue("Queue4");
    }
 
+   public static final void tearDownAllServers()
+   {
+      for (Server s : servers)
+      {
+         try
+         {
+            s.stop();
+         }
+         catch (Exception cause)
+         {
+            // ignore
+         }
+      }
+      servers.clear();
+   }
+
    // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
    public String[] getContainerConfig()
    {
