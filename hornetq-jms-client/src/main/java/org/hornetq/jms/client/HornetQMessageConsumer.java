@@ -209,41 +209,40 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
    {
       try
       {
-         ClientMessage message;
+         ClientMessage coreMessage;
 
          if (noWait)
          {
-            message = consumer.receiveImmediate();
+            coreMessage = consumer.receiveImmediate();
          }
          else
          {
-            message = consumer.receive(timeout);
+            coreMessage = consumer.receive(timeout);
          }
 
-         HornetQMessage msg = null;
+         HornetQMessage jmsMsg = null;
 
-         if (message != null)
+         if (coreMessage != null)
          {
-            msg = HornetQMessage.createMessage(message,
-                                               (ackMode == Session.CLIENT_ACKNOWLEDGE |
-                                                ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE) ?
-                                                                session.getCoreSession() : null);
+            boolean needSession =
+                     ackMode == Session.CLIENT_ACKNOWLEDGE || ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE;
+            jmsMsg = HornetQMessage.createMessage(coreMessage, needSession ? session.getCoreSession() : null);
 
-            msg.doBeforeReceive();
+            jmsMsg.doBeforeReceive();
 
             // We Do the ack after doBeforeRecive, as in the case of large messages, this may fail so we don't want messages redelivered
             // https://issues.jboss.org/browse/JBPAPP-6110
             if (session.getAcknowledgeMode() == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
             {
-               msg.setIndividualAcknowledge();
+               jmsMsg.setIndividualAcknowledge();
             }
             else
             {
-               message.acknowledge();
+               coreMessage.acknowledge();
             }
          }
 
-         return msg;
+         return jmsMsg;
       }
       catch (HornetQException e)
       {
