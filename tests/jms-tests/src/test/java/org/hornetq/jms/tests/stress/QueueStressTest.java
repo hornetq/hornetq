@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.stress;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -22,6 +20,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -31,8 +32,15 @@ import javax.jms.XASession;
  * @version <tt>$Revision: 2349 $</tt>
  *
  */
+
 public class QueueStressTest extends JMSStressTestBase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    /*
     * Stress a queue with transational, non transactional and 2pc senders sending both persistent
     * and non persistent messages

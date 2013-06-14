@@ -24,6 +24,7 @@ import javax.naming.InitialContext;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -33,6 +34,12 @@ import org.junit.Test;
  */
 public class CorruptMessageStressTest extends HornetQServerTestCase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    public static int PRODUCER_COUNT = 30;
 
    public static int MESSAGE_COUNT = 10000;

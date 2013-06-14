@@ -29,6 +29,7 @@ import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -37,6 +38,12 @@ import org.junit.Test;
  */
 public class ConcurrentCloseStressTest extends HornetQServerTestCase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    InitialContext ic;
 
    ConnectionFactory cf;
