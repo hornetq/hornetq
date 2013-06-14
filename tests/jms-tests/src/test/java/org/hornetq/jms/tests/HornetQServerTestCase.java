@@ -40,6 +40,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.AfterClass;
 import org.junit.Before;
 
 /**
@@ -236,6 +237,23 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
       destroyQueue("Queue2");
       destroyQueue("Queue3");
       destroyQueue("Queue4");
+   }
+
+   @AfterClass
+   public static final void tearDownAllServers()
+   {
+      for (Server s : servers)
+      {
+         try
+         {
+            s.stop();
+         }
+         catch (Exception cause)
+         {
+            // ignore
+         }
+      }
+      servers.clear();
    }
 
    // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
