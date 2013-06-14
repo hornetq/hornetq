@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.stress;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -37,13 +39,14 @@ import org.junit.Test;
  * Create 500 connections each with a consumer, consuming from a topic
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: $</tt>4 Jul 2007
- *
- *
  */
 public class ManyConnectionsStressTest extends HornetQServerTestCase
 {
-   // Constants -----------------------------------------------------
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
 
    private static final int NUM_CONNECTIONS = 500;
 

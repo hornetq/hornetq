@@ -29,6 +29,7 @@ import com.arjuna.ats.jta.xa.XidImple;
 
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -2847,6 +2848,7 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    @Test
+   @Ignore("Ignored because: (i) it was ignored by our pom.xml, (ii) currently it still fails")
    public void testMockCoordinatorRecovery3() throws Exception
    {
       XAConnection conn1 = null;
