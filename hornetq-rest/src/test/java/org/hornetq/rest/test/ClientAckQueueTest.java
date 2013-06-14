@@ -1,5 +1,5 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 import org.hornetq.rest.queue.QueueDeployment;
 import org.hornetq.rest.util.Constants;
@@ -12,11 +12,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class ClientAckQueueTest extends MessageTestBase
 {
@@ -31,7 +28,6 @@ public class ClientAckQueueTest extends MessageTestBase
    @Test
    public void testAckTimeoutX2() throws Exception
    {
-      System.out.println("\ntestAckTimeoutX2");
       QueueDeployment deployment = new QueueDeployment();
       deployment.setConsumerSessionTimeoutSeconds(1);
       deployment.setDuplicatesAllowed(true);
@@ -47,7 +43,6 @@ public class ClientAckQueueTest extends MessageTestBase
 
    public void testAckTimeout() throws Exception
    {
-      System.out.println("testAckTimeout");
       ClientRequest request = new ClientRequest(generateURL("/queues/testAck"));
 
       ClientResponse<?> response = Util.head(request);
@@ -116,7 +111,6 @@ public class ClientAckQueueTest extends MessageTestBase
    public void testSuccessFirstX2() throws Exception
    {
       String testName = "testSuccessFirstX2";
-      System.out.println("\n" + testName);
 
       QueueDeployment queueDeployment = new QueueDeployment(testName, true);
       manager.getQueueManager().deploy(queueDeployment);
@@ -129,7 +123,6 @@ public class ClientAckQueueTest extends MessageTestBase
 
    public void testSuccessFirst(int start, String queueName) throws Exception
    {
-      System.out.println("testSuccessFirst");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
       ClientResponse<?> response = Util.head(request);
@@ -198,7 +191,6 @@ public class ClientAckQueueTest extends MessageTestBase
    public void testPullX2() throws Exception
    {
       String testName = "testPullX2";
-      System.out.println("\n" + testName);
 
       QueueDeployment queueDeployment = new QueueDeployment(testName, true);
       manager.getQueueManager().deploy(queueDeployment);
@@ -211,7 +203,6 @@ public class ClientAckQueueTest extends MessageTestBase
 
    public void testPull(int start, String queueName) throws Exception
    {
-      System.out.println("testPull");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
       ClientResponse<?> response = Util.head(request);
@@ -285,7 +276,6 @@ public class ClientAckQueueTest extends MessageTestBase
    public void testReconnectX2() throws Exception
    {
       String testName = "testReconnectX2";
-      System.out.println("\n" + testName);
 
       QueueDeployment queueDeployment = new QueueDeployment(testName, true);
       manager.getQueueManager().deploy(queueDeployment);
@@ -298,7 +288,6 @@ public class ClientAckQueueTest extends MessageTestBase
 
    public void testReconnect(String queueName) throws Exception
    {
-      System.out.println("testReconnect");
       ClientRequest request = new ClientRequest(generateURL(Util.getUrlPath(queueName)));
 
       ClientResponse<?> response = Util.head(request);
