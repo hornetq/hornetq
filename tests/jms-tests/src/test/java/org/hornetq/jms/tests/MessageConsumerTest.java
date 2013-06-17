@@ -3951,11 +3951,7 @@ public class MessageConsumerTest extends JMSTestCase
    @Test
    public void testExceptionMessageListener1() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnection();
+      Connection conn = createConnection();
 
          conn.start();
 
@@ -3981,28 +3977,12 @@ public class MessageConsumerTest extends JMSTestCase
          listener.waitForMessages();
 
          ProxyAssertSupport.assertFalse(listener.message, listener.failed);
-
-         conn.close();
-
-         conn = null;
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testExceptionMessageListener2() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnection();
+      Connection conn = createConnection();
 
          conn.start();
 
@@ -4028,28 +4008,12 @@ public class MessageConsumerTest extends JMSTestCase
          listener.waitForMessages();
 
          ProxyAssertSupport.assertFalse(listener.message, listener.failed);
-
-         conn.close();
-
-         conn = null;
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testExceptionMessageListener3() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnection();
+      Connection conn = createConnection();
 
          conn.start();
 
@@ -4075,21 +4039,9 @@ public class MessageConsumerTest extends JMSTestCase
          listener.waitForMessages();
 
          ProxyAssertSupport.assertFalse(listener.failed);
-
-         conn.close();
-
-         conn = null;
-
+      conn.close();
+      removeAllMessages(queue1.getQueueName(), true);
       }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-         removeAllMessages(queue1.getQueueName(), true);
-      }
-   }
 
    @Test
    public void testExceptionMessageListener4() throws Exception
