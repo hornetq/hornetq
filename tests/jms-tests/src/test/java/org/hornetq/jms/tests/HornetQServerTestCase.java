@@ -42,6 +42,10 @@ import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -98,6 +102,28 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    protected static Queue queue4;
 
+   @Rule
+   public TestRule watcher = new TestWatcher()
+   {
+      @Override
+      protected void starting(Description description)
+      {
+         log.info(String.format("#*#*# Starting test: %s()...", description.getMethodName()));
+      };
+
+      @Override
+      protected void finished(Description description)
+      {
+         log.info(String.format("#*#*# Finished test: %s()...", description.getMethodName()));
+      }
+
+      @Override
+      protected void failed(Throwable e, Description description)
+      {
+         HornetQServerTestCase.tearDownAllServers();
+      };
+   };
+
    @Before
    public void setUp() throws Exception
    {
@@ -109,16 +135,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
          HornetQServerTestCase.servers.add(ServerManagement.create());
 
          // start the servers if needed
-         boolean started = false;
-         try
-         {
-            started = HornetQServerTestCase.servers.get(0).isStarted();
-         }
-         catch (Exception e)
-         {
-            // ignore, incase its a remote server
-         }
-         if (!started)
+         if (!HornetQServerTestCase.servers.get(0).isStarted())
          {
             HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), true);
          }
