@@ -56,12 +56,12 @@ public class MessageWithReadResolveTest extends JMSTestCase
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sess.createProducer(queue1);
 
          // Make persistent to make sure message gets serialized
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sess.createConsumer(queue1);
 
          TestMessage tm = new TestMessage(123, false);
 

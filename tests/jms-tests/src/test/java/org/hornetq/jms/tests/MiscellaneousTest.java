@@ -48,7 +48,7 @@ public class MiscellaneousTest extends JMSTestCase
    @After
    public void tearDown() throws Exception
    {
-      removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+      removeAllMessages(queue1.getQueueName(), true);
 
       super.tearDown();
    }
@@ -65,7 +65,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          conn = createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = session.createProducer(queue1);
 
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -76,7 +76,7 @@ public class MiscellaneousTest extends JMSTestCase
          // Give the message time to reach the queue
          Thread.sleep(2000);
 
-         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+         QueueBrowser browser = session.createBrowser(queue1);
 
          Enumeration e = browser.getEnumeration();
 
@@ -91,7 +91,7 @@ public class MiscellaneousTest extends JMSTestCase
             conn.close();
          }
 
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -107,7 +107,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -122,7 +122,7 @@ public class MiscellaneousTest extends JMSTestCase
       final Result result = new Result();
       Connection conn = createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      final MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+      final MessageConsumer cons = s.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
          public void onMessage(final Message m)
@@ -168,7 +168,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -183,7 +183,7 @@ public class MiscellaneousTest extends JMSTestCase
       final Result result = new Result();
       Connection conn = createConnection();
       final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
          public void onMessage(final Message m)
@@ -225,7 +225,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -240,7 +240,7 @@ public class MiscellaneousTest extends JMSTestCase
       final Result result = new Result();
       final Connection conn = createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = s.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
          public void onMessage(final Message m)
@@ -285,7 +285,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -300,7 +300,7 @@ public class MiscellaneousTest extends JMSTestCase
       final Result result = new Result();
       Connection conn = createConnection();
       Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      final MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+      final MessageConsumer cons = s.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
          public void onMessage(final Message m)
@@ -340,17 +340,17 @@ public class MiscellaneousTest extends JMSTestCase
    {
       Connection c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
 
       final Result result = new Result();
       Connection conn = createConnection();
       final Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
-         public void onMessage(final Message m)
+         public void onMessage(final Message m1)
          {
             // close the connection on the same thread that processed the message
             try
@@ -389,7 +389,7 @@ public class MiscellaneousTest extends JMSTestCase
       {
          c = createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = s.createProducer(queue1);
          Message m = s.createMessage();
          prod.send(m);
       }
@@ -404,7 +404,7 @@ public class MiscellaneousTest extends JMSTestCase
       final Result result = new Result();
       final Connection conn = createConnection();
       Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = s.createConsumer(queue1);
       cons.setMessageListener(new MessageListener()
       {
          public void onMessage(final Message m)
@@ -451,7 +451,7 @@ public class MiscellaneousTest extends JMSTestCase
 
          Session session2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = session2.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = session2.createProducer(queue1);
 
          Message msg = session2.createMessage();
 
@@ -468,7 +468,7 @@ public class MiscellaneousTest extends JMSTestCase
             conn.close();
          }
 
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -34,6 +32,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  *
@@ -64,7 +63,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
       {
          conn = getConnectionFactory().createConnection();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer p = s.createProducer(queue1);
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          p.send(s.createTextMessage("xoxo"));
@@ -72,7 +71,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          s.close();
 
          s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer c = s.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer c = s.createConsumer(queue1);
 
          conn.start();
 
@@ -116,7 +115,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          Session s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer p = s.createProducer(queue1);
 
          p.send(s.createTextMessage("message1"));
          p.send(s.createTextMessage("message2"));
@@ -124,7 +123,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          p.send(s.createTextMessage("message4"));
          p.send(s.createTextMessage("message5"));
 
-         MessageConsumer c = s.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer c = s.createConsumer(queue1);
 
          conn.start();
 
@@ -138,7 +137,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         c = s.createConsumer(HornetQServerTestCase.queue1);
+         c = s.createConsumer(queue1);
 
          tm = (TextMessage)c.receive(1000);
 
@@ -192,7 +191,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess1.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess1.createProducer(queue1);
 
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -209,7 +208,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess2.createConsumer(queue1);
 
          conn.start();
 
@@ -320,10 +319,10 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          conn = getConnectionFactory().createConnection();
 
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = producerSess.createProducer(queue1);
 
          Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageConsumer consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
 
          TextMessage tm = producerSess.createTextMessage("message1");
@@ -372,7 +371,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         consumer = consumerSess.createConsumer(queue1);
 
          rm = (TextMessage)consumer.receive(1000);
 
@@ -405,10 +404,10 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          conn = getConnectionFactory().createConnection();
 
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = producerSess.createProducer(queue1);
 
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
 
          TextMessage tm = producerSess.createTextMessage("message1");
@@ -455,7 +454,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         consumer = consumerSess.createConsumer(queue1);
 
          rm = (TextMessage)consumer.receive(1000);
 
@@ -499,7 +498,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          // Send a message
 
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = producerSess.createProducer(queue1);
 
          TextMessage tm = producerSess.createTextMessage("message1");
 
@@ -508,7 +507,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
          xaConn = getXAConnectionFactory().createXAConnection();
 
          XASession consumerSess = xaConn.createXASession();
-         MessageConsumer consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          xaConn.start();
 
          DummyXAResource res = new DummyXAResource();
@@ -593,7 +592,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          consumerSess = xaConn.createXASession();
 
-         consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);
+         consumer = consumerSess.createConsumer(queue1);
 
          mgr.begin();
 

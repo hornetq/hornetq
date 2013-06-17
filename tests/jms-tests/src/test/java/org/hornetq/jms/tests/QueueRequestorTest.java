@@ -34,31 +34,19 @@ import org.junit.Test;
  */
 public class QueueRequestorTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
    @Test
    public void testQueueRequestor() throws Exception
    {
       QueueConnection conn1 = createQueueConnection();
          QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-         QueueRequestor requestor = new QueueRequestor(sess1, HornetQServerTestCase.queue1);
+      QueueRequestor requestor = new QueueRequestor(sess1, queue1);
          conn1.start();
 
          // And the responder
       QueueConnection conn2 = createQueueConnection();
          QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          TestMessageListener listener = new TestMessageListener(sess2);
-         QueueReceiver receiver = sess2.createReceiver(HornetQServerTestCase.queue1);
+      QueueReceiver receiver = sess2.createReceiver(queue1);
          receiver.setMessageListener(listener);
          conn2.start();
 

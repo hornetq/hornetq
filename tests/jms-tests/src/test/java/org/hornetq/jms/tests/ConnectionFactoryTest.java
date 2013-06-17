@@ -251,17 +251,17 @@ public class ConnectionFactoryTest extends JMSTestCase
 
          final SlowListener slow = new SlowListener();
 
-         MessageConsumer cons1 = session1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = session1.createConsumer(queue1);
 
          cons1.setMessageListener(slow);
 
-         MessageConsumer cons2 = session2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons2 = session2.createConsumer(queue1);
 
          cons2.setMessageListener(fast);
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          conn.start();
 

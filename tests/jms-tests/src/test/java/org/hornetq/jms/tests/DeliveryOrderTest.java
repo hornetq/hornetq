@@ -48,9 +48,9 @@ public class DeliveryOrderTest extends JMSTestCase
 
          Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sess.createProducer(queue1);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sess2.createConsumer(queue1);
 
          CountDownLatch latch = new CountDownLatch(1);
 

@@ -26,7 +26,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Assert;
 import org.junit.Test;
@@ -226,7 +225,7 @@ public class MessageBodyTest extends MessageBodyTestCase
          // OK
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(queue1, m);
 
       BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
 
@@ -573,7 +572,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       {
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(queue1, m1);
 
       MapMessage m2 = (MapMessage)queueConsumer.receive(2000);
 
@@ -1137,7 +1136,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       ObjectMessage m1 = queueProducerSession.createObjectMessage(obj);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(queue1, m1);
 
       ObjectMessage m2 = (ObjectMessage)queueConsumer.receive(2000);
 
@@ -1151,7 +1150,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       m3.setObject(obj);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m3);
+      queueProducer.send(queue1, m3);
 
       obj.str = "xyz123";
 
@@ -1297,7 +1296,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       {
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(queue1, m);
 
       StreamMessage m2 = (StreamMessage)queueConsumer.receive(2000);
 
@@ -1573,14 +1572,14 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       m.setText(myString);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(queue1, m);
 
       TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myString, m2.getText());
 
       m = queueProducerSession.createTextMessage(myString);
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(queue1, m);
 
       m2 = (TextMessage)queueConsumer.receive(2000);
 

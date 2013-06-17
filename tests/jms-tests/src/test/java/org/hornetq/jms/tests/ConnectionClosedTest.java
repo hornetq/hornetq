@@ -232,7 +232,7 @@ public class ConnectionClosedTest extends JMSTestCase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer consumer = sess.createConsumer(HornetQServerTestCase.topic1);
       MessageProducer producer = sess.createProducer(HornetQServerTestCase.topic1);
-      sess.createBrowser(HornetQServerTestCase.queue1);
+      sess.createBrowser(queue1);
       Message m = sess.createMessage();
 
       conn.close();
@@ -283,7 +283,7 @@ public class ConnectionClosedTest extends JMSTestCase
 
       try
       {
-         sess.createProducer(HornetQServerTestCase.queue1);
+         sess.createProducer(queue1);
          ProxyAssertSupport.fail("should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
@@ -293,7 +293,7 @@ public class ConnectionClosedTest extends JMSTestCase
 
       try
       {
-         sess.createConsumer(HornetQServerTestCase.queue1);
+         sess.createConsumer(queue1);
          ProxyAssertSupport.fail("should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -33,6 +31,7 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -69,9 +68,9 @@ public class SessionTest extends HornetQServerTestCase
 
       MessageProducer p = sess.createProducer(null);
 
-      p.send(HornetQServerTestCase.queue1, m);
+      p.send(queue1, m);
 
-      MessageConsumer c = sess.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer c = sess.createConsumer(queue1);
       conn.start();
 
       // receiveNoWait is not guaranteed to return message immediately
@@ -302,7 +301,7 @@ public class SessionTest extends HornetQServerTestCase
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sess.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       Message m = sess.createTextMessage("hello");
       prod.send(m);
@@ -327,7 +326,7 @@ public class SessionTest extends HornetQServerTestCase
 
       conn.close();
 
-      removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+      removeAllMessages(queue1.getQueueName(), true);
    }
 
    //
@@ -372,14 +371,14 @@ public class SessionTest extends HornetQServerTestCase
 
       Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(HornetQServerTestCase.queue1).send(s.createTextMessage("wont_ack"));
+      s.createProducer(queue1).send(s.createTextMessage("wont_ack"));
       conn.close();
 
       conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       conn.start();
 
-      TextMessage m = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
+      TextMessage m = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       ProxyAssertSupport.assertEquals("wont_ack", m.getText());
 
@@ -389,7 +388,7 @@ public class SessionTest extends HornetQServerTestCase
 
       // get the message again
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      m = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
+      m = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       ProxyAssertSupport.assertEquals("wont_ack", m.getText());
 
@@ -403,14 +402,14 @@ public class SessionTest extends HornetQServerTestCase
 
       Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(HornetQServerTestCase.queue1).send(s.createTextMessage("bex"));
+      s.createProducer(queue1).send(s.createTextMessage("bex"));
       conn.close();
 
       conn = getConnectionFactory().createConnection();
       Session session = conn.createSession(true, -1);
       conn.start();
 
-      TextMessage m = (TextMessage)session.createConsumer(HornetQServerTestCase.queue1).receive(1000);
+      TextMessage m = (TextMessage)session.createConsumer(queue1).receive(1000);
 
       ProxyAssertSupport.assertEquals("bex", m.getText());
 
@@ -431,19 +430,10 @@ public class SessionTest extends HornetQServerTestCase
       conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       conn.start();
-      TextMessage rm = (TextMessage)s.createConsumer(HornetQServerTestCase.queue1).receive(1000);
+      TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       ProxyAssertSupport.assertEquals("bex", rm.getText());
 
       conn.close();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

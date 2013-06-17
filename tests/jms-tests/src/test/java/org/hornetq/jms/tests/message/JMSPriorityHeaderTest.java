@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -24,6 +22,7 @@ import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -31,16 +30,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class JMSPriorityHeaderTest extends HornetQServerTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    /*
     * Note - this test is testing our current implementation of message ordering since the spec
     * does not mandate that all higher priority messages are delivered first - this
@@ -55,7 +44,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
 
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
 
       TextMessage m0 = sessSend.createTextMessage("a");
       TextMessage m1 = sessSend.createTextMessage("b");
@@ -84,7 +73,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
 
       {
          TextMessage t = (TextMessage)cons.receive(1000);
@@ -157,7 +146,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
       // Give them time to hit the server
       Thread.sleep(2000);
 
-      cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+      cons = sessReceive.createConsumer(queue1);
 
       {
          TextMessage t = (TextMessage)cons.receive(1000);
@@ -226,7 +215,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
 
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sessSend.createProducer(queue1);
 
       TextMessage m0 = sessSend.createTextMessage("a");
 
@@ -237,7 +226,7 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
 
       {
          TextMessage t = (TextMessage)cons.receive(1000);
@@ -257,13 +246,4 @@ public class JMSPriorityHeaderTest extends HornetQServerTestCase
 
       conn.close();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

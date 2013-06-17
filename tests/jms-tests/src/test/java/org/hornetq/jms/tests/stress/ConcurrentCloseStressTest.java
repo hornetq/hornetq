@@ -37,8 +37,6 @@ import org.junit.Test;
  */
 public class ConcurrentCloseStressTest extends HornetQServerTestCase
 {
-   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
-
    InitialContext ic;
 
    ConnectionFactory cf;
@@ -61,13 +59,15 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
       queue = (Queue)ic.lookup("queue/TestQueue");
 
-      ConcurrentCloseStressTest.log.debug("setup done");
+      log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
+      super.tearDown();
    }
 
    @Test
@@ -111,7 +111,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
             for (Exception element : threads[i].exceptions)
             {
                Exception ex = element;
-               ConcurrentCloseStressTest.log.error("Exception occurred in one of the threads - " + ex, ex);
+               log.error("Exception occurred in one of the threads - " + ex, ex);
             }
          }
       }

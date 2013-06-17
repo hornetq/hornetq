@@ -42,7 +42,7 @@ public class QueueReceiverTest extends JMSTestCase
          qc = createQueueConnection();
          QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         QueueReceiver qreceiver = qs.createReceiver(HornetQServerTestCase.queue1, "targetMessage = TRUE");
+         QueueReceiver qreceiver = qs.createReceiver(queue1, "targetMessage = TRUE");
 
          qc.start();
 
@@ -50,7 +50,7 @@ public class QueueReceiverTest extends JMSTestCase
          m.setText("one");
          m.setBooleanProperty("targetMessage", false);
 
-         QueueSender qsender = qs.createSender(HornetQServerTestCase.queue1);
+         QueueSender qsender = qs.createSender(queue1);
 
          qsender.send(m);
 
@@ -70,16 +70,8 @@ public class QueueReceiverTest extends JMSTestCase
             qc.close();
          }
          Thread.sleep(2000);
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
-         checkEmpty(HornetQServerTestCase.queue1);
+         removeAllMessages(queue1.getQueueName(), true);
+         checkEmpty(queue1);
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

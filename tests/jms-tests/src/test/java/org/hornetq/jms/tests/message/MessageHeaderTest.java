@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -54,8 +52,8 @@ import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQObjectMessage;
 import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  *
@@ -212,7 +210,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(queue1, m1);
 
       Message m2 = queueConsumer.receive(2000);
 
@@ -945,7 +943,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       queueProducer.send(message);
 
-      ProxyAssertSupport.assertSame(HornetQServerTestCase.queue1, message.getJMSDestination());
+      ProxyAssertSupport.assertSame(queue1, message.getJMSDestination());
 
       Message receivedMessage = queueConsumer.receive(2000);
 

@@ -65,7 +65,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -78,7 +78,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -96,7 +96,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage();
@@ -111,7 +111,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -127,7 +127,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -140,7 +140,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -156,7 +156,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -172,7 +172,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -189,7 +189,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -205,7 +205,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -222,7 +222,7 @@ public class JMSTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          TextMessage m = session.createTextMessage("one");
          prod.send(m);
@@ -233,7 +233,7 @@ public class JMSTest extends JMSTestCase
 
          session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -250,7 +250,7 @@ public class JMSTest extends JMSTestCase
 
          final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         final MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      final MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -287,7 +287,7 @@ public class JMSTest extends JMSTestCase
 
          synchronized (session)
          {
-            MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = session.createProducer(queue1);
             prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
             TextMessage m = session.createTextMessage("message one");
@@ -309,7 +309,7 @@ public class JMSTest extends JMSTestCase
 
          Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = sessionConsumer.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessionConsumer.createConsumer(queue1);
 
          final AtomicReference<Message> message = new AtomicReference<Message>();
          final CountDownLatch latch = new CountDownLatch(1);
@@ -327,7 +327,7 @@ public class JMSTest extends JMSTestCase
 
 
          Session sessionProducer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessionProducer.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sessionProducer.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          TextMessage m = sessionProducer.createTextMessage("one");
          prod.send(m);
@@ -345,10 +345,10 @@ public class JMSTest extends JMSTestCase
       conn = createConnection();
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer p = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer p = session.createProducer(queue1);
          p.send(session.createTextMessage("CLACK"));
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
