@@ -25,11 +25,11 @@ import org.junit.After;
 import org.junit.Before;
 
 /**
+ * @deprecated this infrastructure should not be used for new code. New tests should go into
+ *             org.hornetq.tests.integration.jms at the integration-tests project.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: $</tt>23 Jul 2007
- *          <p/>
- *          $Id: $
  */
+@Deprecated
 public class JMSTestCase extends HornetQServerTestCase
 {
 
