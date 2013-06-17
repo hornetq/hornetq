@@ -43,7 +43,7 @@ import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 
 public class TopicControlUsingJMSTest extends ManagementTestBase
@@ -448,7 +448,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
-      serverManager.setContext(new InVMContext());
+      serverManager.setContext(new InVMNamingContext());
       serverManager.activated();
 
       clientID = RandomUtil.randomString();

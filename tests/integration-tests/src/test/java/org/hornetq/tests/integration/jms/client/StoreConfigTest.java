@@ -216,10 +216,10 @@ public class StoreConfigTest extends JMSTestBase
 
    private void checkDestination(String name) throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory) context.lookup("/someCF");
+      ConnectionFactory cf = (ConnectionFactory) namingContext.lookup("/someCF");
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Destination dest = (Destination)context.lookup(name);
+      Destination dest = (Destination)namingContext.lookup(name);
 
       conn.start();
       MessageConsumer cons = sess.createConsumer(dest);
@@ -335,7 +335,7 @@ public class StoreConfigTest extends JMSTestBase
       Object obj = null;
       try
       {
-         obj = context.lookup(name);
+         obj = namingContext.lookup(name);
       }
       catch (Exception expected)
       {
@@ -349,7 +349,7 @@ public class StoreConfigTest extends JMSTestBase
     */
    private void openCon(String name) throws NamingException, JMSException
    {
-      ConnectionFactory cf = (ConnectionFactory)context.lookup(name);
+      ConnectionFactory cf = (ConnectionFactory)namingContext.lookup(name);
 
       Connection conn = cf.createConnection();
 

@@ -56,7 +56,7 @@ import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.ra.MessageEndpointFactory;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -73,7 +73,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private JMSServerManagerImpl serverManager;
 
-   private InVMContext context;
+   private InVMNamingContext context;
 
    // Static --------------------------------------------------------
 
@@ -86,7 +86,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, true));
       server.start();
 
-      context = new InVMContext();
+      context = new InVMNamingContext();
       serverManager = new JMSServerManagerImpl(server);
       addHornetQComponent(serverManager);
       serverManager.setContext(context);

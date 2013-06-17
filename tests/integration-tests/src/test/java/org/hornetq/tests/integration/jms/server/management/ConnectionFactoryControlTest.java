@@ -27,7 +27,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 
 /**
  * A Connection Factory Control Test
@@ -49,7 +49,7 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
 
    private JMSServerManagerImpl serverManager;
 
-   private InVMContext ctx;
+   private InVMNamingContext ctx;
 
    // Static --------------------------------------------------------
 
@@ -116,7 +116,7 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
 
-      ctx = new InVMContext();
+      ctx = new InVMNamingContext();
 
       serverManager.setContext(ctx);
       serverManager.activated();
