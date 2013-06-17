@@ -14,6 +14,7 @@
 package org.hornetq.jms.tests;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -38,6 +39,7 @@ import javax.jms.XATopicConnectionFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -46,6 +48,16 @@ import org.junit.Test;
  */
 public class ConnectionFactoryTest extends JMSTestCase
 {
+   private final Random random = new Random();
+   private String testClientId;
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      testClientId = "hq" + random.nextInt();
+   }
 
    /**
     * Test that ConnectionFactory can be cast to QueueConnectionFactory and QueueConnection can be
@@ -75,12 +87,12 @@ public class ConnectionFactoryTest extends JMSTestCase
    public void testAdministrativelyConfiguredClientID() throws Exception
    {
       // deploy a connection factory that has an administatively configured clientID
-      HornetQServerTestCase.deployConnectionFactory("sofiavergara", "TestConnectionFactory", "TestConnectionFactory");
+      HornetQServerTestCase.deployConnectionFactory(testClientId, "TestConnectionFactory", "TestConnectionFactory");
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
 
-      ProxyAssertSupport.assertEquals("sofiavergara", c.getClientID());
+      ProxyAssertSupport.assertEquals(testClientId, c.getClientID());
 
       try
       {
@@ -121,8 +133,8 @@ public class ConnectionFactoryTest extends JMSTestCase
 
       // set the client id immediately after the connection is created
 
-      c.setClientID("sofiavergara2");
-      ProxyAssertSupport.assertEquals("sofiavergara2", c.getClientID());
+      c.setClientID(testClientId);
+      ProxyAssertSupport.assertEquals(testClientId, c.getClientID());
 
       c.close();
    }
@@ -327,62 +339,62 @@ public class ConnectionFactoryTest extends JMSTestCase
       factory = (HornetQConnectionFactory)ic.lookup("/ConnectionFactory");
 
       Assert.assertTrue(factory instanceof ConnectionFactory);
-      Assert.assertEquals(3, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_XA_TRUE");
 
       Assert.assertTrue(factory instanceof XAConnectionFactory);
-      Assert.assertEquals(6, getTypes(factory));
+      assertNTypes(factory, 6);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_XA_FALSE");
 
       Assert.assertTrue(factory instanceof ConnectionFactory);
-      Assert.assertEquals(3, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_GENERIC");
 
       Assert.assertTrue(factory instanceof ConnectionFactory);
-      Assert.assertEquals(3, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_GENERIC_XA_TRUE");
 
       Assert.assertTrue(factory instanceof XAConnectionFactory);
-      Assert.assertEquals(6, getTypes(factory));
+      assertNTypes(factory, 6);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_GENERIC_XA_FALSE");
 
       Assert.assertTrue(factory instanceof ConnectionFactory);
-      Assert.assertEquals(3, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_QUEUE");
 
       Assert.assertTrue(factory instanceof QueueConnectionFactory);
-      Assert.assertEquals(2, getTypes(factory));
+      assertNTypes(factory, 3);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_QUEUE_XA_TRUE");
 
       Assert.assertTrue(factory instanceof XAQueueConnectionFactory);
-      Assert.assertEquals(4, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_QUEUE_XA_FALSE");
 
       Assert.assertTrue(factory instanceof QueueConnectionFactory);
-      Assert.assertEquals(2, getTypes(factory));
+      assertNTypes(factory, 3);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_TOPIC");
 
       Assert.assertTrue(factory instanceof TopicConnectionFactory);
-      Assert.assertEquals(2, getTypes(factory));
+      assertNTypes(factory, 3);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_TOPIC_XA_TRUE");
 
       Assert.assertTrue(factory instanceof XATopicConnectionFactory);
-      Assert.assertEquals(4, getTypes(factory));
+      assertNTypes(factory, 4);
 
       factory = (HornetQConnectionFactory)ic.lookup("/CF_TOPIC_XA_FALSE");
 
       Assert.assertTrue(factory instanceof TopicConnectionFactory);
-      Assert.assertEquals(2, getTypes(factory));
+      assertNTypes(factory, 3);
    }
 
    @Test
@@ -452,42 +464,41 @@ public class ConnectionFactoryTest extends JMSTestCase
       }
    }
 
-   private int getTypes(HornetQConnectionFactory factory)
+   private void assertNTypes(HornetQConnectionFactory factory, final int total)
    {
+      StringBuilder text = new StringBuilder();
+      text.append(factory + "\n is instance of ");
       int num = 0;
       if (factory instanceof ConnectionFactory)
       {
          num++;
+         text.append("ConnectionFactory ");
       }
       if (factory instanceof XAConnectionFactory)
       {
          num++;
+         text.append("XAConnectionFactory ");
       }
       if (factory instanceof QueueConnectionFactory)
       {
          num++;
+         text.append("QueueConnectionFactory ");
       }
       if (factory instanceof TopicConnectionFactory)
       {
          num++;
+         text.append("TopicConnectionFactory ");
       }
       if (factory instanceof XAQueueConnectionFactory)
       {
          num++;
+         text.append("XAQueueConnectionFactory ");
       }
       if (factory instanceof XATopicConnectionFactory)
       {
          num++;
+         text.append("XATopicConnectionFactory ");
       }
-      return num;
+      Assert.assertEquals(text.toString(), total, num);
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
