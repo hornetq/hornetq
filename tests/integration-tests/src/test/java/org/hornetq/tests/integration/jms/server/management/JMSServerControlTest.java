@@ -66,7 +66,7 @@ import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
@@ -84,7 +84,7 @@ public class JMSServerControlTest extends ManagementTestBase
 {
    // Attributes ----------------------------------------------------
 
-   protected InVMContext context;
+   protected InVMNamingContext context;
 
    private HornetQServer server;
 
@@ -784,7 +784,7 @@ public class JMSServerControlTest extends ManagementTestBase
       server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, true));
 
       serverManager = new JMSServerManagerImpl(server);
-      context = new InVMContext();
+      context = new InVMNamingContext();
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();

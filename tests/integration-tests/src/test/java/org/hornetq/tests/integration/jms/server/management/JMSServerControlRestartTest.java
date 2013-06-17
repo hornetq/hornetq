@@ -35,7 +35,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
@@ -53,7 +53,7 @@ import org.junit.Test;
 public class JMSServerControlRestartTest extends ManagementTestBase
 {
 
-   protected InVMContext context;
+   protected InVMNamingContext context;
 
    private JMSServerManager serverManager;
 
@@ -155,7 +155,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer);
 
-      context = new InVMContext();
+      context = new InVMNamingContext();
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);

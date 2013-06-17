@@ -58,7 +58,7 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.jms.server.management.JMSUtil;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -84,9 +84,9 @@ public class JMSFailoverTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected InVMContext ctx1 = new InVMContext();
+   protected InVMNamingContext ctx1 = new InVMNamingContext();
 
-   protected InVMContext ctx2 = new InVMContext();
+   protected InVMNamingContext ctx2 = new InVMNamingContext();
 
    protected Configuration backupConf;
 

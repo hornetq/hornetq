@@ -12,14 +12,14 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSContext;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
@@ -33,7 +33,9 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A JMSBaseTest
@@ -53,8 +55,9 @@ public class JMSTestBase extends ServiceTestBase
 
    protected ConnectionFactory cf;
    protected Connection conn;
+   protected InVMNamingContext namingContext;
 
-   protected InVMContext context;
+
 
    // Static --------------------------------------------------------
 
@@ -107,14 +110,14 @@ public class JMSTestBase extends ServiceTestBase
    {
       jmsServer.createQueue(storeConfig, name, null, true, "/jms/" + name);
 
-      return (Queue)context.lookup("/jms/" + name);
+      return (Queue)namingContext.lookup("/jms/" + name);
    }
 
    protected Topic createTopic(final boolean storeConfig, final String name) throws Exception, NamingException
    {
       jmsServer.createTopic(storeConfig, name, "/jms/" + name);
 
-      return (Topic)context.lookup("/jms/" + name);
+      return (Topic)namingContext.lookup("/jms/" + name);
    }
 
    @Override
@@ -132,8 +135,8 @@ public class JMSTestBase extends ServiceTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
       addServer(server);
       jmsServer = new JMSServerManagerImpl(server);
-      context = new InVMContext();
-      jmsServer.setContext(context);
+      namingContext = new InVMNamingContext();
+      jmsServer.setContext(namingContext);
       jmsServer.start();
 
       registerConnectionFactory();
@@ -152,8 +155,8 @@ public class JMSTestBase extends ServiceTestBase
 
    protected void restartServer() throws Exception
    {
-      context = new InVMContext();
-      jmsServer.setContext(context);
+      namingContext = new InVMNamingContext();
+      jmsServer.setContext(namingContext);
       jmsServer.start();
       jmsServer.activated();
       registerConnectionFactory();
@@ -177,13 +180,13 @@ public class JMSTestBase extends ServiceTestBase
       {
          // no-op
       }
-      context.close();
+      namingContext.close();
       jmsServer.stop();
       server = null;
 
       jmsServer = null;
 
-      context = null;
+      namingContext = null;
 
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
 
@@ -203,8 +206,7 @@ public class JMSTestBase extends ServiceTestBase
 
       createCF(connectorConfigs, "/cf");
 
-      cf = (ConnectionFactory)context.lookup("/cf");
-
+      cf = (ConnectionFactory)namingContext.lookup("/cf");
    }
 
    /**

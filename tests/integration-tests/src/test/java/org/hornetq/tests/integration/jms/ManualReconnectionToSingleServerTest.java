@@ -48,7 +48,7 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -70,7 +70,7 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
 
    private JMSServerManager serverManager;
 
-   private InVMContext context;
+   private InVMNamingContext context;
 
    private static final String QUEUE_NAME = ManualReconnectionToSingleServerTest.class.getSimpleName() + ".queue";
 
@@ -155,7 +155,7 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
       server = createServer(false, conf);
 
       JMSConfiguration configuration = new JMSConfigurationImpl();
-      context = new InVMContext();
+      context = new InVMNamingContext();
       configuration.setContext(context);
       configuration.getQueueConfigurations().add(new JMSQueueConfigurationImpl(QUEUE_NAME, null, true, QUEUE_NAME));
 
