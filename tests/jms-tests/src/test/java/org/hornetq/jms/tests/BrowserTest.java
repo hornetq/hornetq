@@ -99,7 +99,7 @@ public class BrowserTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(queue1);
 
       HornetQConnectionFactory cf1 = (HornetQConnectionFactory)getConnectionFactory();
 
@@ -132,11 +132,11 @@ public class BrowserTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(queue1);
 
-      QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+      QueueBrowser browser = session.createBrowser(queue1);
 
-      ProxyAssertSupport.assertEquals(browser.getQueue(), HornetQServerTestCase.queue1);
+      ProxyAssertSupport.assertEquals(browser.getQueue(), queue1);
 
       ProxyAssertSupport.assertNull(browser.getMessageSelector());
 
@@ -163,7 +163,7 @@ public class BrowserTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = session.createProducer(queue1);
 
          final int numMessages = 100;
 
@@ -176,7 +176,7 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -189,7 +189,7 @@ public class BrowserTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = session.createProducer(queue1);
 
          // send a message to the queue
 
@@ -198,7 +198,7 @@ public class BrowserTest extends JMSTestCase
 
          // make sure we can browse it
 
-         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+         QueueBrowser browser = session.createBrowser(queue1);
 
          Enumeration en = browser.getEnumeration();
 
@@ -226,7 +226,7 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

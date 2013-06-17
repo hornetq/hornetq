@@ -8,7 +8,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
-import org.junit.After;
 import org.junit.Before;
 
 public abstract class MessageBodyTestCase extends HornetQServerTestCase
@@ -29,22 +28,15 @@ public abstract class MessageBodyTestCase extends HornetQServerTestCase
    {
       super.setUp();
 
-      producerConnection = getConnectionFactory().createConnection();
-      consumerConnection = getConnectionFactory().createConnection();
+      producerConnection = addConnection(getConnectionFactory().createConnection());
+      consumerConnection = addConnection(getConnectionFactory().createConnection());
 
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
-      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
+      queueProducer = queueProducerSession.createProducer(queue1);
+      queueConsumer = queueConsumerSession.createConsumer(queue1);
 
       consumerConnection.start();
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-      producerConnection.close();
-      consumerConnection.close();
    }
 }

@@ -59,9 +59,9 @@ public class MessageProducerTest extends JMSTestCase
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer p = sess.createProducer(queue1);
 
-         MessageConsumer c = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer c = sess.createConsumer(queue1);
 
          conn.start();
 
@@ -117,8 +117,8 @@ public class MessageProducerTest extends JMSTestCase
 
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
-         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          cconn.start();
 
@@ -169,8 +169,8 @@ public class MessageProducerTest extends JMSTestCase
 
          Session ts = pconn.createSession(true, -1);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ts.createProducer(HornetQServerTestCase.queue1);
-         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
+         MessageProducer p = ts.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          TextMessage m = ts.createTextMessage("test");
          p.send(m);
@@ -338,8 +338,8 @@ public class MessageProducerTest extends JMSTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
-         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          // send a message that is not created by the session
 
@@ -491,7 +491,7 @@ public class MessageProducerTest extends JMSTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
-         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer qp = ps.createProducer(queue1);
          ProxyAssertSupport.assertFalse(tp.getDisableMessageTimestamp());
          ProxyAssertSupport.assertFalse(qp.getDisableMessageTimestamp());
       }
@@ -511,8 +511,8 @@ public class MessageProducerTest extends JMSTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(HornetQServerTestCase.queue1);
-         MessageConsumer c = cs.createConsumer(HornetQServerTestCase.queue1);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          cconn.start();
 
@@ -588,7 +588,7 @@ public class MessageProducerTest extends JMSTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
-         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer qp = ps.createProducer(queue1);
 
          ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, tp.getDeliveryMode());
          ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, qp.getDeliveryMode());
@@ -662,7 +662,7 @@ public class MessageProducerTest extends JMSTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
-         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer qp = ps.createProducer(queue1);
 
          ProxyAssertSupport.assertEquals(4, tp.getPriority());
          ProxyAssertSupport.assertEquals(4, qp.getPriority());
@@ -733,7 +733,7 @@ public class MessageProducerTest extends JMSTestCase
       Connection pconn = createConnection();
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
-         MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer qp = ps.createProducer(queue1);
 
          ProxyAssertSupport.assertEquals(0l, tp.getTimeToLive());
          ProxyAssertSupport.assertEquals(0l, qp.getTimeToLive());

@@ -42,25 +42,21 @@ public class JMSStressTestBase extends HornetQServerTestCase
 
    protected Destination topic;
 
-   protected Destination queue1;
-
-   protected Destination queue2;
-
-   protected Destination queue3;
-
-   protected Destination queue4;
+   protected Destination destinationQueue1;
+   protected Destination destinationQueue2;
+   protected Destination destinationQueue3;
+   protected Destination destinationQueue4;
 
    protected Topic topic1;
-
    protected Topic topic2;
-
    protected Topic topic3;
-
    protected Topic topic4;
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
+      super.tearDown();
       if (checkNoMessageData())
       {
          ProxyAssertSupport.fail("Message data still exists");

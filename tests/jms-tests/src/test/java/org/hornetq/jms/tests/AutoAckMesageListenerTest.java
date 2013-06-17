@@ -59,8 +59,8 @@ public class AutoAckMesageListenerTest extends JMSTestCase
 
          conn = createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
-         MessageConsumer consumer = session.createConsumer(HornetQServerTestCase.queue1);
+         MessageProducer producer = session.createProducer(queue1);
+         MessageConsumer consumer = session.createConsumer(queue1);
          AutoAckMsgListener listener = new AutoAckMsgListener(latch, session);
          consumer.setMessageListener(listener);
 

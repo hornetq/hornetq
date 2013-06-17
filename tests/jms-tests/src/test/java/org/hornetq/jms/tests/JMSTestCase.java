@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -60,9 +58,6 @@ public class JMSTestCase extends HornetQServerTestCase
    protected static final String defaultConf = "all";
 
    protected static String conf;
-
-   private final Set<Connection> connectionsSet = new HashSet<Connection>();
-   private final Set<JMSContext> contextSet = new HashSet<JMSContext>();
 
    @Override
    @Before
@@ -196,41 +191,31 @@ public class JMSTestCase extends HornetQServerTestCase
       return addContext(cf.createContext());
    }
 
-   /**
-    * @param createContext
-    * @return
-    */
-   private JMSContext addContext(JMSContext createContext)
-   {
-      contextSet.add(createContext);
-      return createContext;
-   }
 
    protected final Connection createConnection() throws JMSException
    {
       Connection c = cf.createConnection();
-      connectionsSet.add(c);
-      return c;
+      return addConnection(c);
    }
 
    protected final TopicConnection createTopicConnection() throws JMSException
    {
       TopicConnection c = cf.createTopicConnection();
-      connectionsSet.add(c);
+      addConnection(c);
       return c;
    }
 
    protected final QueueConnection createQueueConnection() throws JMSException
    {
       QueueConnection c = cf.createQueueConnection();
-      connectionsSet.add(c);
+      addConnection(c);
       return c;
    }
 
    protected final XAConnection createXAConnection() throws JMSException
    {
       XAConnection c = cf.createXAConnection();
-      connectionsSet.add(c);
+      addConnection(c);
       return c;
    }
 
@@ -238,25 +223,15 @@ public class JMSTestCase extends HornetQServerTestCase
    protected final Connection createConnection(String user, String password) throws JMSException
    {
       Connection c = cf.createConnection(user, password);
-      connectionsSet.add(c);
+      addConnection(c);
       return c;
    }
 
-   private Connection addConnection(Connection conn)
-   {
-      connectionsSet.add(conn);
-      return conn;
-   }
-
+   @Override
    @After
    public void tearDown() throws Exception
    {
-      for (Connection localConn : connectionsSet)
-      {
-         localConn.close();
-      }
-      connectionsSet.clear();
-
+      super.tearDown();
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
       if (cf != null)
       {

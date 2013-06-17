@@ -41,7 +41,7 @@ public class PersistenceTest extends JMSTestCase
       {
          conn = createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          for (int i = 0; i < 10; i++)
@@ -62,7 +62,7 @@ public class PersistenceTest extends JMSTestCase
          conn = createConnection();
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          for (int i = 0; i < 10; i++)
          {
             TextMessage tm = (TextMessage)cons.receive(3000);
@@ -97,7 +97,7 @@ public class PersistenceTest extends JMSTestCase
       {
          conn = createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          for (int i = 0; i < 10; i++)
@@ -108,7 +108,7 @@ public class PersistenceTest extends JMSTestCase
 
          Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess2.createConsumer(queue1);
 
          conn.start();
 
@@ -153,7 +153,7 @@ public class PersistenceTest extends JMSTestCase
          conn = createConnection();
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
-         cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         cons = sess.createConsumer(queue1);
          for (int i = 0; i < 10; i++)
          {
             TextMessage tm = (TextMessage)cons.receive(3000);
@@ -188,7 +188,7 @@ public class PersistenceTest extends JMSTestCase
       {
          conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          TextMessage m0 = sessSend.createTextMessage("a");
          TextMessage m1 = sessSend.createTextMessage("b");
@@ -224,7 +224,7 @@ public class PersistenceTest extends JMSTestCase
          conn = createConnection();
          Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
-         MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceive.createConsumer(queue1);
 
          {
             TextMessage t = (TextMessage)cons.receive(1000);
@@ -302,7 +302,7 @@ public class PersistenceTest extends JMSTestCase
       {
          conn = createConnection();
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessSend.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          TextMessage m0 = sessSend.createTextMessage("a");
          TextMessage m1 = sessSend.createTextMessage("b");
@@ -337,7 +337,7 @@ public class PersistenceTest extends JMSTestCase
          conn = createConnection();
          Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
-         MessageConsumer cons = sessReceive.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceive.createConsumer(queue1);
 
          {
             TextMessage t = (TextMessage)cons.receive(1000);

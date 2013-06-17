@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
@@ -40,6 +41,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,15 +61,11 @@ import org.junit.runner.Description;
 @Deprecated
 public abstract class HornetQServerTestCase
 {
-   // Constants -----------------------------------------------------
-
    public final static int MAX_TIMEOUT = 1000 * 10 /* seconds */;
 
    public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
 
    protected final JmsTestLogger log = JmsTestLogger.LOGGER;
-
-   // Static --------------------------------------------------------
 
    /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
    public static void forceGC()
@@ -87,23 +85,19 @@ public abstract class HornetQServerTestCase
       }
    }
 
-   // Attributes ----------------------------------------------------
-
    protected static List<Server> servers = new ArrayList<Server>();
 
    protected static Topic topic1;
-
    protected static Topic topic2;
-
    protected static Topic topic3;
 
-   protected static Queue queue1;
+   protected Queue queue1;
+   protected Queue queue2;
+   protected Queue queue3;
+   protected Queue queue4;
 
-   protected static Queue queue2;
-
-   protected static Queue queue3;
-
-   protected static Queue queue4;
+   private final Set<Connection> connectionsSet = new HashSet<Connection>();
+   private final Set<JMSContext> contextSet = new HashSet<JMSContext>();
 
    @Rule
    public TestRule watcher = new TestWatcher()
@@ -154,16 +148,32 @@ public abstract class HornetQServerTestCase
          throw e;
       }
       // empty the queues
-      checkEmpty(HornetQServerTestCase.queue1);
-      checkEmpty(HornetQServerTestCase.queue2);
-      checkEmpty(HornetQServerTestCase.queue3);
-      checkEmpty(HornetQServerTestCase.queue4);
+      checkEmpty(queue1);
+      checkEmpty(queue2);
+      checkEmpty(queue3);
+      checkEmpty(queue4);
 
       // Check no subscriptions left lying around
 
-      checkNoSubscriptions(HornetQServerTestCase.topic1);
-      checkNoSubscriptions(HornetQServerTestCase.topic2);
-      checkNoSubscriptions(HornetQServerTestCase.topic3);
+      checkNoSubscriptions(topic1);
+      checkNoSubscriptions(topic2);
+      checkNoSubscriptions(topic3);
+   }
+
+   @After
+   public void tearDown() throws Exception
+   {
+      for (JMSContext context : contextSet)
+      {
+         context.close();
+      }
+      contextSet.clear();
+
+      for (Connection localConn : connectionsSet)
+      {
+         localConn.close();
+      }
+      connectionsSet.clear();
    }
 
    public void stop() throws Exception
@@ -234,10 +244,10 @@ public abstract class HornetQServerTestCase
       HornetQServerTestCase.topic1 = (Topic)ic.lookup("/topic/Topic1");
       HornetQServerTestCase.topic2 = (Topic)ic.lookup("/topic/Topic2");
       HornetQServerTestCase.topic3 = (Topic)ic.lookup("/topic/Topic3");
-      HornetQServerTestCase.queue1 = (Queue)ic.lookup("/queue/Queue1");
-      HornetQServerTestCase.queue2 = (Queue)ic.lookup("/queue/Queue2");
-      HornetQServerTestCase.queue3 = (Queue)ic.lookup("/queue/Queue3");
-      HornetQServerTestCase.queue4 = (Queue)ic.lookup("/queue/Queue4");
+      queue1 = (Queue)ic.lookup("/queue/Queue1");
+      queue2 = (Queue)ic.lookup("/queue/Queue2");
+      queue3 = (Queue)ic.lookup("/queue/Queue3");
+      queue4 = (Queue)ic.lookup("/queue/Queue4");
    }
 
    protected void undeployAdministeredObjects() throws Exception
@@ -291,16 +301,6 @@ public abstract class HornetQServerTestCase
    {
       return HornetQServerTestCase.servers.get(0).getJMSServerManager();
    }
-
-   /*protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      //undeployAdministeredObjects();
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).stopServerPeer();
-      }
-   }*/
 
    protected void checkNoSubscriptions(final Topic topic) throws Exception
    {
@@ -549,5 +549,17 @@ public abstract class HornetQServerTestCase
    protected void setSecurityConfigOnManager(final String destination, final boolean isQueue, final Set<Role> roles) throws Exception
    {
       HornetQServerTestCase.servers.get(0).configureSecurityForDestination(destination, isQueue, roles);
+   }
+
+   protected final JMSContext addContext(JMSContext createContext)
+   {
+      contextSet.add(createContext);
+      return createContext;
+   }
+
+   protected final Connection addConnection(Connection conn)
+   {
+      connectionsSet.add(conn);
+      return conn;
    }
 }

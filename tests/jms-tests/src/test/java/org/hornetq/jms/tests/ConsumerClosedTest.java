@@ -51,7 +51,7 @@ public class ConsumerClosedTest extends JMSTestCase
          c.start();
 
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer p = s.createProducer(queue1);
 
          for (int i = 0; i < ConsumerClosedTest.NUMBER_OF_MESSAGES; i++)
          {
@@ -60,7 +60,7 @@ public class ConsumerClosedTest extends JMSTestCase
 
          log.debug("all messages sent");
 
-         MessageConsumer cons = s.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = s.createConsumer(queue1);
          cons.close();
 
          log.debug("consumer closed");
@@ -76,7 +76,7 @@ public class ConsumerClosedTest extends JMSTestCase
             c.close();
          }
 
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

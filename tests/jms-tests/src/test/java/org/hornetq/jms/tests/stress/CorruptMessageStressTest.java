@@ -22,7 +22,6 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
-import org.hornetq.jms.tests.JmsTestLogger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,10 +33,6 @@ import org.junit.Test;
  */
 public class CorruptMessageStressTest extends HornetQServerTestCase
 {
-   // Constants -----------------------------------------------------
-
-   private static JmsTestLogger log = JmsTestLogger.LOGGER;
-
    public static int PRODUCER_COUNT = 30;
 
    public static int MESSAGE_COUNT = 10000;
@@ -102,13 +97,13 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
       // ServerManagement.start("all");
       ic = getInitialContext();
       createQueue("StressTestQueue");
-
-      CorruptMessageStressTest.log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
+      super.tearDown();
       destroyQueue("StressTestQueue");
       ic.close();
    }
@@ -150,7 +145,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
             }
             catch (Exception e)
             {
-               CorruptMessageStressTest.log.error("Sender thread failed", e);
+               log.error("Sender thread failed", e);
                break;
             }
          }

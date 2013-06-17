@@ -27,7 +27,6 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
-import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Before;
@@ -45,8 +44,6 @@ import org.junit.Test;
 public class ManyConnectionsStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
-
-   private static JmsTestLogger log = JmsTestLogger.LOGGER;
 
    private static final int NUM_CONNECTIONS = 500;
 
@@ -77,16 +74,15 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
       ic = getInitialContext();
 
       createTopic("StressTestTopic");
-
-      ManyConnectionsStressTest.log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
       destroyTopic("StressTestTopic");
-
       ic.close();
+      super.tearDown();
    }
 
    @Test
@@ -98,13 +94,9 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
 
       Connection[] conns = new Connection[ManyConnectionsStressTest.NUM_CONNECTIONS];
 
-      Connection connSend = null;
-
-      try
-      {
          for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
          {
-            conns[i] = cf.createConnection();
+            conns[i] = addConnection(cf.createConnection());
 
             Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -121,12 +113,12 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
 
             conns[i].start();
 
-            ManyConnectionsStressTest.log.info("Created " + i);
+            log.info("Created " + i);
          }
 
          // Thread.sleep(100 * 60 * 1000);
 
-         connSend = cf.createConnection();
+      Connection connSend = addConnection(cf.createConnection());
 
          Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -166,38 +158,13 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
          }
 
          ProxyAssertSupport.assertFalse(failed);
-
-         ManyConnectionsStressTest.log.info("Done");
-      }
-      finally
-      {
-         for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
-         {
-            try
-            {
-               if (conns[i] != null)
-               {
-                  conns[i].close();
-               }
-            }
-            catch (Throwable t)
-            {
-               ManyConnectionsStressTest.log.error("Failed to close connection", t);
-            }
-         }
-
-         if (connSend != null)
-         {
-            connSend.close();
-         }
-      }
    }
 
    private void finished(final MyListener listener)
    {
       synchronized (listeners)
       {
-         ManyConnectionsStressTest.log.info("consumer " + listener + " has finished");
+         log.info("consumer " + listener + " has finished");
 
          listeners.remove(listener);
 
@@ -209,7 +176,7 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
    {
       synchronized (listeners)
       {
-         ManyConnectionsStressTest.log.error("consumer " + listener + " has failed");
+         log.error("consumer " + listener + " has failed");
 
          listeners.remove(listener);
 
@@ -236,7 +203,7 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
          }
          catch (JMSException e)
          {
-            ManyConnectionsStressTest.log.error("Failed to get int property", e);
+            log.error("Failed to get int property", e);
 
             failed(this);
          }
