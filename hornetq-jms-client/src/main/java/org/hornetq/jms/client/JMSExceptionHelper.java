@@ -27,11 +27,8 @@ import org.hornetq.api.core.HornetQException;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class JMSExceptionHelper
+public final class JMSExceptionHelper
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
 
    public static JMSException convertFromHornetQException(final HornetQException me)
    {
