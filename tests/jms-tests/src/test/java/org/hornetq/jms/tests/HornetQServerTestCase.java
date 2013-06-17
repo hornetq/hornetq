@@ -23,6 +23,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
@@ -65,6 +66,7 @@ public abstract class HornetQServerTestCase
 
    public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
 
+   private final static int DRAIN_WAIT_TIME = 250;
    protected final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
@@ -307,7 +309,7 @@ public abstract class HornetQServerTestCase
 
    }
 
-   protected void drainDestination(final ConnectionFactory cf, final Destination dest) throws Exception
+   protected void drainDestination(final ConnectionFactory cf, final Destination dest) throws JMSException
    {
       Connection conn = null;
       try
@@ -320,7 +322,7 @@ public abstract class HornetQServerTestCase
          log.trace("Draining messages from " + dest);
          while (true)
          {
-            m = cons.receive(500);
+            m = cons.receive(DRAIN_WAIT_TIME);
             if (m == null)
             {
                break;
