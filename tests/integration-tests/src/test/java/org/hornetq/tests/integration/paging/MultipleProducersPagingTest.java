@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.hornetq.jms.tests.message;
+package org.hornetq.tests.integration.paging;
 
 import java.util.Arrays;
 import java.util.Collections;
