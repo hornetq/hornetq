@@ -2694,13 +2694,21 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class DeliverRunner implements Runnable
+   private final class DeliverRunner implements Runnable
    {
+      private final Object deliveryGuard = new Object();
+
       public void run()
       {
          try
          {
-            deliver();
+            // during the transition between paging and nonpaging, we could have this using a different executor
+            // and at this short period we could have more than one delivery thread running in async mode
+            // this will avoid that possibility
+            synchronized (deliveryGuard)
+            {
+                deliver();
+            }
          }
          catch (Exception e)
          {
