@@ -1982,18 +1982,17 @@ public class QueueImpl implements Queue
             {
                pos = 0;
             }
-
+         }
 
          if (handledconsumer != null)
          {
-            proceedDeliver(handledconsumer, ref);
+             proceedDeliver(handledconsumer, ref);
          }
-         }
+      }
 
       if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
       {
          scheduleDepage(false);
-         }
       }
    }
 
@@ -2688,11 +2687,19 @@ public class QueueImpl implements Queue
 
    private final class DeliverRunner implements Runnable
    {
+      private final Object deliveryGuard = new Object();
+
       public void run()
       {
          try
          {
-            deliver();
+            // during the transition between paging and nonpaging, we could have this using a different executor
+            // and at this short period we could have more than one delivery thread running in async mode
+            // this will avoid that possibility
+            synchronized (deliveryGuard)
+            {
+                deliver();
+            }
          }
          catch (Exception e)
          {
