@@ -2694,10 +2694,13 @@ public class QueueImpl implements Queue
       }
    }
 
+   /**
+    * There's no need of having multiple instances of this class. a Single instance per QueueImpl should be more than sufficient.
+    * previous versions of this class were using a synchronized object. The current version is using the deliverRunner
+    * instance, and to avoid confusion on the implementation I'm requesting to keep this single instanced per QueueImpl.
+    */
    private final class DeliverRunner implements Runnable
    {
-      private final Object deliveryGuard = new Object();
-
       public void run()
       {
          try
@@ -2705,7 +2708,9 @@ public class QueueImpl implements Queue
             // during the transition between paging and nonpaging, we could have this using a different executor
             // and at this short period we could have more than one delivery thread running in async mode
             // this will avoid that possibility
-            synchronized (deliveryGuard)
+            // We will be using the deliverRunner instance as the guard object to avoid multiple threads executing
+            // an asynchronous delivery
+            synchronized (QueueImpl.this.deliverRunner)
             {
                 deliver();
             }
