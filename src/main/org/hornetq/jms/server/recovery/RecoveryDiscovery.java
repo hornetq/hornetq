@@ -196,4 +196,22 @@ public class RecoveryDiscovery implements SessionFailureListener
       return "RecoveryDiscovery [config=" + config + ", started=" + started + "]";
    }
 
+   @Override
+   public int hashCode()
+   {
+      return config.hashCode();
+   }
+   
+   @Override
+   public boolean equals(Object o)
+   {
+      if (o == null || (! (o instanceof RecoveryDiscovery)))
+      {
+         return false;
+      }
+      RecoveryDiscovery discovery = (RecoveryDiscovery)o;
+      
+      return config.equals(discovery.config);
+   }
+
 }
