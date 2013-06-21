@@ -12,10 +12,6 @@
  */
 package org.hornetq.tests.integration.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicLong;
-
 import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
@@ -30,7 +26,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.DeflaterReader;
 
 /**
  * The test extends the LargeMessageTest and tests
@@ -246,114 +241,6 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       consumer.close();
 
       session.close();
-   }
-   
-   private void adjustLargeCompression(boolean regular, TestLargeMessageInputStream stream, int step) throws IOException
-   {
-      int absoluteStep = Math.abs(step);
-      while (true)
-      {
-         DeflaterReader compressor = new DeflaterReader(stream, new AtomicLong());
-         try
-         {
-            byte[] buffer = new byte[1048 * 50];
-
-            int totalCompressed = 0;
-            int n = compressor.read(buffer);
-            while (n != -1)
-            {
-               totalCompressed += n;
-               n = compressor.read(buffer);
-            }
-
-            // check compressed size
-            if (regular && (totalCompressed < stream.getMinLarge()))
-            {
-               // ok it can be sent as regular
-               stream.resetAdjust(0);
-               break;
-            }
-            else if ((!regular) && (totalCompressed > stream.getMinLarge()))
-            {
-               // now it cannot be sent as regular
-               stream.resetAdjust(0);
-               break;
-            }
-            else
-            {
-               stream.resetAdjust(regular ? -absoluteStep : absoluteStep);
-            }
-         }
-         finally
-         {
-            compressor.close();
-         }
-      }
-   }
-   
-   private static class TestLargeMessageInputStream extends InputStream
-   {
-      private final int minLarge;
-      private int size;
-      private int pos;
-
-      public TestLargeMessageInputStream(int minLarge)
-      {
-         pos = 0;
-         this.minLarge = minLarge;
-         this.size = minLarge + 1024;
-      }
-
-      public int getChar(int index)
-      {
-         return 'A' + index % 26;
-      }
-
-      public void setSize(int size)
-      {
-         this.size = size;
-      }
-
-      public TestLargeMessageInputStream(TestLargeMessageInputStream other)
-      {
-         this.minLarge = other.minLarge;
-         this.size = other.size;
-         this.pos = other.pos;
-      }
-
-      public int getSize()
-      {
-         return size;
-      }
-
-      public int getMinLarge()
-      {
-         return this.minLarge;
-      }
-
-      @Override
-      public int read() throws IOException
-      {
-         if (pos == size) return -1;
-         pos++;
-         
-         return getChar(pos - 1);
-      }
-      
-      public void resetAdjust(int step)
-      {
-         size += step;
-         if (size <= minLarge)
-         {
-            throw new IllegalStateException("Couldn't adjust anymore, size smaller than minLarge " + minLarge);
-         }
-         pos = 0;
-      }
-      
-      public TestLargeMessageInputStream clone()
-      {
-         return new TestLargeMessageInputStream(this);
-      }
    }
 
    //this test won't leave any large messages in the large-messages dir
