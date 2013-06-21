@@ -167,6 +167,8 @@ public class TransportConstants
 
    public static final String STOMP_ENABLE_MESSAGE_ID = "stomp-enable-message-id";
 
+   public static final String STOMP_MIN_LARGE_MESSAGE_SIZE = "stomp-min-large-message-size";
+
    public static final String NETTY_CONNECT_TIMEOUT = "connect-timeout-millis";
 
    public static final int DEFAULT_NETTY_CONNECT_TIMEOUT = -1;
@@ -196,6 +198,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.DIRECT_DELIVER);
       allowableAcceptorKeys.add(TransportConstants.CLUSTER_CONNECTION);
       allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
+      allowableAcceptorKeys.add(TransportConstants.STOMP_MIN_LARGE_MESSAGE_SIZE);
       allowableAcceptorKeys.add(TransportConstants.CONNECTION_TTL);
       allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
       allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
