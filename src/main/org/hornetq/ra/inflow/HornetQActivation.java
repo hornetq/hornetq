@@ -329,6 +329,8 @@ public class HornetQActivation
          }
       }
 
+      resourceRecovery = ra.getRecoveryManager().register(factory, spec.getUser(), spec.getPassword());
+
       HornetQActivation.log.debug("Setup complete " + this);
    }
 
@@ -414,7 +416,6 @@ public class HornetQActivation
       if (spec.isHasBeenUpdated())
       {
          factory = ra.createHornetQConnectionFactory(spec);
-         resourceRecovery = ra.getRecoveryManager().register(factory, spec.getUser(), spec.getPassword());
       }
       else
       {
