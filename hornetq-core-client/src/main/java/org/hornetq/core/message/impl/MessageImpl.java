@@ -956,7 +956,7 @@ public abstract class MessageImpl implements MessageInternal
       bufferValid = true;
    }
 
-   protected void createBody(final int initialMessageBufferSize)
+   public void createBody(final int initialMessageBufferSize)
    {
       buffer = HornetQBuffers.dynamicBuffer(initialMessageBufferSize);
 
