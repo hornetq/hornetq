@@ -156,4 +156,9 @@ public class RecoveryManager
       }
 
    }
+
+   public Set<XARecoveryConfig> getResources()
+   {
+      return resources;
+   }
 }
