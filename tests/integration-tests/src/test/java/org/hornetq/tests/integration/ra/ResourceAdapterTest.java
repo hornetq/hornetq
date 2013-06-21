@@ -17,6 +17,7 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -26,6 +27,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -35,6 +37,8 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.server.recovery.RecoveryDiscovery;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -681,6 +685,22 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       qResourceAdapter.stop();
       assertTrue(endpoint.released);
+   }
+
+   @Test
+   public void testRecoveryDiscoveryAsKey() throws Exception
+   {
+      Set<RecoveryDiscovery> discoverySet = new HashSet<RecoveryDiscovery>();
+      String factClass = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
+      TransportConfiguration transportConfig = new TransportConfiguration(factClass, null, "netty");
+      XARecoveryConfig config = new XARecoveryConfig(false, new TransportConfiguration[] {transportConfig},
+                                                     null, null);
+
+      RecoveryDiscovery discovery1 = new RecoveryDiscovery(config);
+      RecoveryDiscovery discovery2 = new RecoveryDiscovery(config);
+      assertTrue(discoverySet.add(discovery1));
+      assertFalse(discoverySet.add(discovery2));
+      assertEquals("should have only one in the set", 1, discoverySet.size());
    }
 
    @Override
