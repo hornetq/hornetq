@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -29,16 +24,15 @@ import javax.jms.TextMessage;
 
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
-
-import java.util.Iterator;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * GroupingTest
@@ -82,7 +76,6 @@ public class GroupingTest extends JMSTestBase
    public void testGrouping() throws Exception
    {
       ConnectionFactory fact = getCF();
-
       Connection connection = fact.createConnection();
 
       Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -143,6 +136,7 @@ public class GroupingTest extends JMSTestBase
    public void testManyGroups() throws Exception
    {
       ConnectionFactory fact = getCF();
+      Assume.assumeFalse("only makes sense withOUT auto-group", ((HornetQConnectionFactory)fact).isAutoGroup());
 
       Connection connection = fact.createConnection();
 
