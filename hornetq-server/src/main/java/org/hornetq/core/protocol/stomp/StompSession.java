@@ -16,15 +16,24 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.Inflater;
 
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.message.BodyEncoder;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
@@ -85,34 +94,77 @@ public class StompSession implements SessionCallback
 
    public int sendMessage(ServerMessage serverMessage, long consumerID, int deliveryCount)
    {
+      LargeServerMessageImpl largeMessage = null;
+      ServerMessage newServerMessage = serverMessage;
       try
       {
          StompSubscription subscription = subscriptions.get(consumerID);
+         StompFrame frame = null;
+         if (serverMessage.isLargeMessage())
+         {
+            newServerMessage = serverMessage.copy();
 
-         StompFrame frame = connection.createStompMessage(serverMessage, subscription, deliveryCount);
+            largeMessage = (LargeServerMessageImpl)serverMessage;
+            BodyEncoder encoder = largeMessage.getBodyEncoder();
+            encoder.open();
+            int bodySize = (int)encoder.getLargeBodySize();
+
+            //large message doesn't have a body.
+            ((ServerMessageImpl)newServerMessage).createBody(bodySize);
+            encoder.encode(newServerMessage.getBodyBuffer(), bodySize);
+            encoder.close();
+         }
+
+         if (serverMessage.getBooleanProperty(Message.HDR_LARGE_COMPRESSED))
+         {
+            //decompress
+            HornetQBuffer qbuff = newServerMessage.getBodyBuffer();
+            int bytesToRead = qbuff.writerIndex() - MessageImpl.BODY_OFFSET;
+            Inflater inflater = new Inflater();
+            inflater.setInput(qbuff.readBytes(bytesToRead).toByteBuffer().array());
+            
+            
+            //get the real size of large message
+            long sizeBody = newServerMessage.getLongProperty(Message.HDR_LARGE_BODY_SIZE);
+
+            byte[] data = new byte[(int)sizeBody];
+            inflater.inflate(data);
+            inflater.end();
+            qbuff.resetReaderIndex();
+            qbuff.resetWriterIndex();
+            qbuff.writeBytes(data);
+         }
+
+         frame = connection.createStompMessage(newServerMessage, subscription, deliveryCount);
 
          int length = frame.getEncodedSize();
 
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
-            session.acknowledge(consumerID, serverMessage.getMessageID());
+            session.acknowledge(consumerID, newServerMessage.getMessageID());
             session.commit();
          }
          else
          {
-            messagesToAck.put(serverMessage.getMessageID(), new Pair<Long, Integer>(consumerID, length));
+            messagesToAck.put(newServerMessage.getMessageID(), new Pair<Long, Integer>(consumerID, length));
          }
 
          // Must send AFTER adding to messagesToAck - or could get acked from client BEFORE it's been added!
          manager.send(connection, frame);
 
          return length;
-
       }
       catch (Exception e)
       {
-         e.printStackTrace();
          return 0;
+      }
+      finally
+      {
+         if (largeMessage != null)
+         {
+            largeMessage.releaseResources();
+            largeMessage = null;
+         }
       }
 
    }
@@ -212,7 +264,8 @@ public class StompSession implements SessionCallback
             session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
          }
       }
-      session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
+      
+      ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false);
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
@@ -285,12 +338,34 @@ public class StompSession implements SessionCallback
    public void sendInternal(ServerMessageImpl message, boolean direct)
          throws Exception
    {
-      if (connection.enableMessageID())
-      {
-         message.putStringProperty("hqMessageId",
-               "STOMP" + message.getMessageID());
-      }
       session.send(message, direct);
+   }
+
+   public void sendInternalLarge(ServerMessageImpl message, boolean direct)
+         throws Exception
+   {
+      int headerSize = message.getHeadersAndPropertiesEncodeSize();
+      if (headerSize >= connection.getMinLargeMessageSize())
+      {
+         throw new Exception("Message header too big, increase minLargeMessageSize please.");
+      }
+
+      StorageManager storageManager = ((ServerSessionImpl)session).getStorageManager();
+      long id = storageManager.generateUniqueID();
+      LargeServerMessage largeMessage = storageManager.createLargeMessage(id, message);
+      
+      byte[] bytes = new byte[message.getBodyBuffer().writerIndex() - MessageImpl.BODY_OFFSET];
+      message.getBodyBuffer().readBytes(bytes);
+      
+      largeMessage.addBytes(bytes);
+      
+      largeMessage.releaseResources();
+
+      largeMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, bytes.length);
+
+      session.send(largeMessage, direct);
+
+      largeMessage = null;
    }
 
 }

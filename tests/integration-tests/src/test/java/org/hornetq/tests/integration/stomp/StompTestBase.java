@@ -45,6 +45,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.JMSConfiguration;
@@ -58,7 +59,7 @@ import org.hornetq.tests.util.UnitTestCase;
 
 public abstract class StompTestBase extends UnitTestCase
 {
-   private final int port = 61613;
+   protected final int port = 61613;
 
    private Socket stompSocket;
 
@@ -110,8 +111,16 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected void setUpAfterServer() throws Exception
    {
-      connectionFactory = createConnectionFactory();
+      setUpAfterServer(false);
+   }
 
+   protected void setUpAfterServer(boolean jmsCompressLarge) throws Exception
+   {
+      connectionFactory = createConnectionFactory();
+      HornetQConnectionFactory hqFact = (HornetQConnectionFactory)connectionFactory;
+
+      hqFact.setCompressLargeMessage(jmsCompressLarge);
+      
       stompSocket = createSocket();
       inputBuffer = new ByteArrayOutputStream();
 
