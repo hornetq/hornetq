@@ -55,7 +55,7 @@ import org.hornetq.utils.VersionLoader;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
-public class HornetQConnection implements TopicConnection, QueueConnection
+public class HornetQConnection extends HornetQConnectionForContextImpl implements TopicConnection, QueueConnection
 {
    // Constants ------------------------------------------------------------------------------------
    public static final int TYPE_GENERIC_CONNECTION = 0;
@@ -806,6 +806,5 @@ public class HornetQConnection implements TopicConnection, QueueConnection
          }
 
       }
-
    }
 }
