@@ -16,7 +16,6 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -48,13 +47,13 @@ public class HornetQJMSContext implements JMSContext
    private static final boolean DEFAULT_AUTO_START = true;
    private final int ackMode;
 
-   private final Connection connection;
+   private final HornetQConnectionForContext connection;
    private final Session session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
    private boolean closed;
 
 
-   public HornetQJMSContext(Connection connection, Session session,int ackMode)
+   public HornetQJMSContext(HornetQConnectionForContext connection, Session session, int ackMode)
    {
       this.connection = connection;
       this.session = session;
@@ -66,7 +65,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public JMSContext createContext(int sessionMode)
    {
-      return newContext(connection, sessionMode);
+      return connection.createContext(sessionMode);
    }
 
    @Override
@@ -183,7 +182,7 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          session.close();
-         connection.close();
+         connection.closeFromContext();
          closed = true;
       } catch (JMSException e)
       {
@@ -572,38 +571,11 @@ public class HornetQJMSContext implements JMSContext
       }
    }
 
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private synchronized void checkAutoStart() throws JMSException
    {
       if (autoStart)
       {
          connection.start();
       }
-   }
-
-   /**
-    * @param connection2
-    * @param sessionMode
-    * @return
-    */
-   public static JMSContext newContext(Connection connection2, int sessionMode)
-   {
-      Session session2;
-      try
-      {
-         session2 = connection2.createSession(sessionMode);
-      }
-      catch (JMSException e)
-      {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
-      }
-      return new HornetQJMSContext(connection2, session2, sessionMode);
    }
 }
