@@ -128,12 +128,6 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
                                                      ", using connection manager: " +
                                                      cm);
       }
-
-      if (recoveryConnectionFactory == null)
-      {
-         recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
-         resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
-      }
       return cf;
    }
 
@@ -172,7 +166,23 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
          HornetQRALogger.LOGGER.trace("created new managed connection: " + mc);
       }
 
+      registerRecovery();
+
       return mc;
+   }
+
+   private synchronized void registerRecovery()
+   {
+      if (recoveryConnectionFactory == null)
+      {
+         recoveryConnectionFactory = ra.createRecoveryHornetQConnectionFactory(mcfProperties);
+         resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
+      }
+   }
+   
+   public XARecoveryConfig getResourceRecovery()
+   {
+      return resourceRecovery;
    }
 
    /**
