@@ -261,4 +261,45 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          //pass
       }
    }
+
+   public void testConnectionCredentialsFailRecovery() throws Exception
+   {
+      resourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+      QueueConnection queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
+      try
+      {
+         queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
+         fail("should throw esxception");
+      }
+      catch (JMSException e)
+      {
+         //make sure the recovery is null
+         assertNull(mcf.getResourceRecovery());
+      }
+   }
+
+   public void testConnectionCredentialsOKRecovery() throws Exception
+   {
+      resourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+      QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
+      QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      assertNotNull(mcf.getResourceRecovery());
+
+      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
+      queueConnection.close();
+      mc.destroy();
+   }
 }
