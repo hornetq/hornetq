@@ -96,6 +96,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       Field f = Class.forName(ServerLocatorImpl.class.getName()).getDeclaredField("factories");
 
+      Set<XARecoveryConfig> resources = ra.getRecoveryManager().getResources();
+
       f.setAccessible(true);
 
       Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>)f.get(serverLocator);
@@ -106,12 +108,14 @@ public class ResourceAdapterTest extends HornetQRATestBase
          assertEquals(factories.size(), 0);
          activation.start();
          assertEquals(factories.size(), 15);
+         assertEquals(1, resources.size());
          activation.stop();
          assertEquals(factories.size(), 0);
       }
 
       System.out.println("before RA stop => " + factories.size());
       ra.stop();
+      assertEquals(0, resources.size());
       System.out.println("after RA stop => " + factories.size());
       assertEquals(factories.size(), 0);
       locator.close();
@@ -370,8 +374,39 @@ public class ResourceAdapterTest extends HornetQRATestBase
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(new CountDownLatch(1));
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
+      //make sure 2 recovery resources, one is default, one is in activation.
+      assertEquals(2, qResourceAdapter.getRecoveryManager().getResources().size());
       qResourceAdapter.stop();
       assertTrue(endpoint.released);
+   }
+
+   @Test
+   public void testRecoveryRegistrationOnFailure() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      // now override the connector class
+      spec.setConnectorClassName(NETTY_CONNECTOR_FACTORY);
+      spec.setSetupAttempts(2);
+      // using a wrong port number
+      spec.setConnectionParameters("port=6776");
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(new CountDownLatch(1));
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+
+      assertEquals(1, qResourceAdapter.getRecoveryManager().getResources().size());
+      qResourceAdapter.stop();
+      assertFalse(endpoint.released);
    }
 
    @Test
