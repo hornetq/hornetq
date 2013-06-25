@@ -35,7 +35,7 @@
       <hornetq.version.versionName>Killer Bee</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
-      <hornetq.version.microVersion>2</hornetq.version.microVersion>
+      <hornetq.version.microVersion>3</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>123</hornetq.version.incrementingVersion>
       <hornetq.version.versionSuffix>Snapshot</hornetq.version.versionSuffix>
       <hornetq.version.versionTag>Snapshot</hornetq.version.versionTag>
