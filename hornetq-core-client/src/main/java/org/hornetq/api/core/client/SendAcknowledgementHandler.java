@@ -23,7 +23,12 @@ import org.hornetq.api.core.Message;
  * a SendAcknowledgementHandler to be notified later when the messages has been received by the
  * server. The method {@link #sendAcknowledged(Message)} will be called with the message that was
  * sent asynchronously.
- *
+ * <p>
+ * The rate of notification can be controlled through
+ * {@link ServerLocator#setConfirmationWindowSize(int)}.
+ * <p>
+ * Notice that this notification will only take place if {@code ConfirmationWindowSize} is set to a
+ * positive value at {@link ServerLocator#setConfirmationWindowSize(int)}.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface SendAcknowledgementHandler
