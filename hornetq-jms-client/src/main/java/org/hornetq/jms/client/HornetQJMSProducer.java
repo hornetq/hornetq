@@ -24,7 +24,6 @@ import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
@@ -45,9 +44,9 @@ import org.hornetq.utils.TypedProperties;
  * We allow/tolerate this because these are just optional optimizations.
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-public class HornetQJMSProducer implements JMSProducer
+public final class HornetQJMSProducer implements JMSProducer
 {
-   private final JMSContext context;
+   private final HornetQJMSContext context;
    private final MessageProducer producer;
    private final TypedProperties properties = new TypedProperties();
 
@@ -62,7 +61,7 @@ public class HornetQJMSProducer implements JMSProducer
    private byte[] jmsHeaderCorrelationIDAsBytes;
    private String jmsHeaderType;
 
-   HornetQJMSProducer(JMSContext context, MessageProducer producer)
+   HornetQJMSProducer(HornetQJMSContext context, MessageProducer producer)
    {
       this.context = context;
       this.producer = producer;

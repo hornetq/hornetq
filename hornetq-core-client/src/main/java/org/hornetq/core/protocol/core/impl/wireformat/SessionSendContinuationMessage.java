@@ -14,25 +14,31 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**
- * A SessionSendContinuationMessage
- *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
+ * A SessionSendContinuationMessage<br/>
  * Created Dec 4, 2008 12:25:14 PM
- *
- *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class SessionSendContinuationMessage extends SessionContinuationMessage
 {
-
-
    private boolean requiresResponse;
 
    // Used on confirmation handling
    private MessageInternal message;
+   /**
+    * In case, we are using a different handler than the one set on the {@link ClientSession}
+    * <p>
+    * This field is only used at the client side.
+    * @see ClientSession#setSendAcknowledgementHandler(SendAcknowledgementHandler)
+    * @see ClientProducer#send(SimpleString, Message, SendAcknowledgementHandler)
+    */
+   private transient final SendAcknowledgementHandler handler;
 
    /**
     * to be sent on the last package
@@ -46,6 +52,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    public SessionSendContinuationMessage()
    {
       super(SESS_SEND_CONTINUATION);
+      handler = null;
    }
 
    /**
@@ -53,11 +60,13 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues, final boolean requiresResponse)
+   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues,
+                                         final boolean requiresResponse, SendAcknowledgementHandler handler)
    {
       super(SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
       this.message = message;
+      this.handler = handler;
    }
 
    /**
@@ -65,9 +74,11 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues, final boolean requiresResponse, final long messageBodySize)
+   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues,
+                                         final boolean requiresResponse, final long messageBodySize,
+                                         SendAcknowledgementHandler handler)
    {
-      this(message, body, continues, requiresResponse);
+      this(message, body, continues, requiresResponse, handler);
       this.messageBodySize = messageBodySize;
    }
 
@@ -152,6 +163,8 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
       return true;
    }
 
-
-
+   public SendAcknowledgementHandler getHandler()
+   {
+      return handler;
+   }
 }

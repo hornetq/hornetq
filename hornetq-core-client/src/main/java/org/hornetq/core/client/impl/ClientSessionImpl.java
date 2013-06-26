@@ -279,6 +279,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       this.groupID = groupID;
 
       producerCreditManager = new ClientProducerCreditManagerImpl(this, producerWindowSize);
+      if (confirmationWindowSize >= 0)
+      {
+         this.channel.setCommandConfirmationHandler(this);
+      }
    }
 
    // ClientSession implementation
@@ -1355,18 +1359,28 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       if (packet.getType() == PacketImpl.SESS_SEND)
       {
          SessionSendMessage ssm = (SessionSendMessage)packet;
-
-         sendAckHandler.sendAcknowledged(ssm.getMessage());
+         callSendAck(ssm.getHandler(), ssm.getMessage());
       }
       else if (packet.getType() == PacketImpl.SESS_SEND_CONTINUATION)
       {
          SessionSendContinuationMessage scm = (SessionSendContinuationMessage) packet;
          if (!scm.isContinues())
          {
-            sendAckHandler.sendAcknowledged(scm.getMessage());
+            callSendAck(scm.getHandler(), scm.getMessage());
          }
       }
+   }
 
+   private void callSendAck(SendAcknowledgementHandler handler, final Message message)
+   {
+      if (handler != null)
+      {
+         handler.sendAcknowledged(message);
+      }
+      else if (sendAckHandler != null)
+      {
+         sendAckHandler.sendAcknowledged(message);
+      }
    }
 
    // XAResource implementation

@@ -27,11 +27,11 @@ import javax.management.MBeanServerFactory;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.junit.After;
@@ -59,22 +59,6 @@ public class JMSTestBase extends ServiceTestBase
 
    protected InVMNamingContext namingContext;
 
-
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    protected boolean useSecurity()
    {
       return false;
@@ -99,6 +83,11 @@ public class JMSTestBase extends ServiceTestBase
    protected final JMSContext createContext()
    {
       return addContext(cf.createContext());
+   }
+
+   protected final JMSContext createContext(int sessionMode)
+   {
+      return addContext(cf.createContext(null, null, sessionMode));
    }
 
    /**
@@ -247,42 +236,53 @@ public class JMSTestBase extends ServiceTestBase
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
       int callTimeout = 30000;
+      final boolean ha = false;
+      List<String> connectorNames = registerConnectors(server, connectorConfigs);
 
-      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                        false,
-                                        JMSFactoryType.CF,
-                                        registerConnectors(server, connectorConfigs),
-                                        null,
-                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                        callTimeout,
-                                        HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
-                                        HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
-                                        HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
-                                        HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
-                                        HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                                        HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                                        HornetQClient.DEFAULT_AUTO_GROUP,
-                                        HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
-                                        HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                                        HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
-                                        HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
-                                        retryInterval,
-                                        retryIntervalMultiplier,
-                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                        reconnectAttempts,
-                                        HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                        null,
-                                        jndiBindings);
+      ConnectionFactoryConfiguration configuration =
+               new ConnectionFactoryConfigurationImpl(name.getMethodName(), ha, connectorNames);
+      configuration.setRetryInterval(retryInterval);
+      configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      configuration.setCallTimeout(callTimeout);
+      configuration.setReconnectAttempts(reconnectAttempts);
+      configuration.setConfirmationWindowSize(0);
+      configuration.setPreAcknowledge(false);
+      configuration.setBlockOnDurableSend(false);
+      jmsServer.createConnectionFactory(false, configuration, jndiBindings);
+
+      // jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
+//                                        false,
+//                                        JMSFactoryType.CF,
+//                                        registerConnectors(server, connectorConfigs),
+//                                        null,
+//                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+//                                        HornetQClient.DEFAULT_CONNECTION_TTL,
+//                                        callTimeout,
+//                                        HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
+//                                        HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+//                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+//                                        HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
+// 1,
+//                                        HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+// 1,
+// 1,
+//                                        HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+//                                        HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+// false,
+//                                        HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
+//                                        HornetQClient.DEFAULT_AUTO_GROUP,
+//                                        HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+//                                        HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+// 1, 1,
+//                                        HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+//                                        HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+//                                        HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+//                                        retryInterval,
+//                                        retryIntervalMultiplier,
+//                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+//                                        reconnectAttempts,
+//                                        HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
+//                                        null,
+//                                        jndiBindings);
    }
-
 }
