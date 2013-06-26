@@ -105,6 +105,7 @@ public class JmsContextTest extends JMSTestBase
       Assert.assertNotNull(c2);
       Assert.assertEquals(Session.DUPS_OK_ACKNOWLEDGE, c2.getSessionMode());
       Message m2 = c2.createMessage();
+      Assert.assertNotNull(m2);
       c2.close(); // should close its session, but not its (shared) connection
       try
       {
@@ -117,5 +118,14 @@ public class JmsContextTest extends JMSTestBase
       }
       Message m1 = context.createMessage();
       Assert.assertNotNull("connection must be open", m1);
+   }
+
+   @Test
+   public void testGetClientId()
+   {
+      JMSContext context2 = context.createContext(Session.AUTO_ACKNOWLEDGE);
+      final String id = "ID: " + random.nextInt();
+      context.setClientID(id);
+      Assert.assertEquals("id's must match because the connection is shared", id, context2.getClientID());
    }
 }
