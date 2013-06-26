@@ -434,7 +434,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
       }
 
-      server.createQueue(address, name, filterString, durable, temporary);
+      Queue queue = server.createQueue(address, name, filterString, durable, temporary);
 
       if (temporary)
       {
@@ -460,6 +460,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
    }
+
+   @Override
+   public void createTransientQueue(final SimpleString address,
+                                    final SimpleString name,
+                                    final SimpleString filterString) throws Exception
+   {
+      securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
+
+      server.createTransientQueue(address, name, filterString);
+   }
+
+
 
    public RemotingConnection getRemotingConnection()
    {

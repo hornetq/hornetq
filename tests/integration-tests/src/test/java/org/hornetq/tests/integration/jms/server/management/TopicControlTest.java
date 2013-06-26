@@ -385,7 +385,7 @@ public class TopicControlTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                                                          subscriptionName));
       Assert.assertEquals(3, messages.length);
 
@@ -402,7 +402,7 @@ public class TopicControlTest extends ManagementTestBase
       String[] ids = JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                                                   subscriptionName));
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
@@ -424,7 +424,7 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(unknownClientID,
+         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(true, unknownClientID,
                                                                                                            subscriptionName));
          Assert.fail();
       }
@@ -442,7 +442,7 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+         topicControl.listMessagesForSubscription(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                            unknownSubscription));
          Assert.fail();
       }

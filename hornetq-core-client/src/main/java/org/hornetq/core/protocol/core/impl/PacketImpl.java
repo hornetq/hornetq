@@ -66,6 +66,8 @@ public class PacketImpl implements Packet
 
    public static final byte DELETE_QUEUE = 35;
 
+   public static final byte CREATE_TRANSIENT_QUEUE = 36;
+
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 

@@ -312,7 +312,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       Object[] data = (Object[])proxy.invokeOperation("listMessagesForSubscription",
-                                                      HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                      HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                                subscriptionName));
       Assert.assertEquals(3, data.length);
 
@@ -327,7 +327,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQDestination.createQueueNameForDurableSubscription(unknownClientID,
+                               HornetQDestination.createQueueNameForDurableSubscription(true, unknownClientID,
                                                                                         subscriptionName));
          Assert.fail();
       }
@@ -344,7 +344,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQDestination.createQueueNameForDurableSubscription(clientID, unknownSubscription));
+                               HornetQDestination.createQueueNameForDurableSubscription(true, clientID, unknownSubscription));
          Assert.fail();
       }
       catch (Exception e)

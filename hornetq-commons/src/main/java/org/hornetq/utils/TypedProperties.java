@@ -1106,7 +1106,7 @@ public final class TypedProperties
       }
       else if (value instanceof Character)
       {
-         properties.putCharProperty(key, (char)value);
+         properties.putCharProperty(key, (Character)value);
       }
       else if (value instanceof Short)
       {

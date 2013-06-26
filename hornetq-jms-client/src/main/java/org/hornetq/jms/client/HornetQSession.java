@@ -49,6 +49,7 @@ import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -486,9 +487,27 @@ public class HornetQSession implements QueueSession, TopicSession
       return createSharedConsumer(topic, sharedSubscriptionName, null);
    }
 
+   /**
+    * Note: Needs to throw an exception if a subscriptionName is already in use by another topic, or if the messageSelector is different
+    *
+    * validate multiple subscriptions on the same session.
+    * validate multiple subscriptions on different sessions
+    * validate failure in one connection while another connection stills fine.
+    * Validate different filters in different possible scenarios
+    *
+    * @param topic
+    * @param sharedSubscriptionName
+    * @param messageSelector
+    * @return
+    * @throws JMSException
+    */
    @Override
-   public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector) throws JMSException
+   public MessageConsumer createSharedConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
+      if (topic == null)
+      {
+         throw new IllegalStateException("topic should not be null");
+      }
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
       {
@@ -498,8 +517,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          localTopic = new HornetQTopic(topic.getTopicName());
       }
-      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
-      return createConsumer(localTopic, sharedSubscriptionName, messageSelector, false, ConsumerDurability.NON_DURABLE);
+      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.NON_DURABLE);
    }
 
    @Override
@@ -520,7 +538,6 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          localTopic = new HornetQTopic(topic.getTopicName());
       }
-      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
       return createConsumer(localTopic, name, messageSelector, noLocal, ConsumerDurability.DURABLE);
    }
 
@@ -534,22 +551,119 @@ public class HornetQSession implements QueueSession, TopicSession
    public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
       HornetQTopic localTopic;
+
+      if (topic == null)
+      {
+         throw new IllegalStateException("topic should not be null");
+      }
       if (topic instanceof HornetQTopic)
       {
          localTopic = (HornetQTopic)topic;
       }
       else
-   {
+      {
          localTopic = new HornetQTopic(topic.getTopicName());
       }
-      // Need someone to review this. XXX HORNETQ-1209 JMS 2.0
-      return createConsumer(localTopic, name, messageSelector, false, ConsumerDurability.DURABLE);
+      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.DURABLE);
    }
 
    enum ConsumerDurability
    {
       DURABLE, NON_DURABLE;
    }
+
+
+   /**
+    * This is an internal method for shared consumers
+    */
+   private HornetQMessageConsumer internalCreateSharedConsumer(final HornetQDestination dest,
+                                                 final String subscriptionName,
+                                                 String selectorString,
+                                                 ConsumerDurability durability) throws JMSException
+   {
+      try
+      {
+
+         if (dest.isQueue())
+         {
+            // This is not really possible unless someone makes a mistake on code
+            // createSharedConsumer only accpets Topics by declaration
+            throw new RuntimeException("Internal error: createSharedConsumer is only meant for Topics");
+         }
+
+         if (subscriptionName == null)
+         {
+            throw HornetQJMSClientBundle.BUNDLE.invalidSubscriptionName();
+         }
+
+         selectorString = "".equals(selectorString) ? null : selectorString;
+
+         SimpleString coreFilterString = null;
+
+         if (selectorString != null)
+         {
+            coreFilterString = new SimpleString(SelectorTranslator.convertToHornetQFilterString(selectorString));
+         }
+
+         ClientConsumer consumer;
+
+         SimpleString autoDeleteQueueName = null;
+
+         BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
+
+         if (!response.isExists())
+         {
+            throw HornetQJMSClientBundle.BUNDLE.destinationDoesNotExist(dest.getSimpleAddress());
+         }
+
+         SimpleString queueName;
+
+         if (dest.isTemporary() && durability == ConsumerDurability.DURABLE)
+         {
+            throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
+         }
+
+         queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(durability == ConsumerDurability.DURABLE, connection.getClientID(),
+                                                                                               subscriptionName));
+
+         if (durability == ConsumerDurability.DURABLE)
+         {
+            try
+            {
+               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true);
+            }
+            catch (HornetQQueueExistsException ignored)
+            {
+               // We ignore this because querying and then creating the queue wouldn't be idempotent
+               // we could also add a parameter to ignore existence what would require a bigger work around to avoid
+               // compatibility.
+            }
+         }
+         else
+         {
+            session.createTransientQueue(dest.getSimpleAddress(), queueName, coreFilterString);
+         }
+
+         consumer = session.createConsumer(queueName, null, false);
+
+         HornetQMessageConsumer jbc = new HornetQMessageConsumer(this,
+                                                                 consumer,
+                                                                 false,
+                                                                 dest,
+                                                                 selectorString,
+                                                                 autoDeleteQueueName);
+
+         consumers.add(jbc);
+
+         return jbc;
+      }
+      catch (HornetQException e)
+      {
+         throw JMSExceptionHelper.convertFromHornetQException(e);
+      }
+   }
+
+
 
    private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
                                                  final String subscriptionName,
@@ -648,7 +762,7 @@ public class HornetQSession implements QueueSession, TopicSession
                   throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
                }
 
-               queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
+               queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, connection.getClientID(),
                                                                                                      subscriptionName));
 
                QueueQuery subResponse = session.queueQuery(queueName);
@@ -850,7 +964,7 @@ public class HornetQSession implements QueueSession, TopicSession
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
 
-      SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
+      SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, connection.getClientID(),
                                                                                                          name));
 
       try

@@ -49,6 +49,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateTransientQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
@@ -302,6 +303,35 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       createQueue(SimpleString.toSimpleString(address), SimpleString.toSimpleString(queueName), durable);
    }
+
+   public void createTransientQueue(SimpleString address,
+                                    SimpleString queueName) throws HornetQException
+   {
+      createTransientQueue(address, queueName, null);
+   }
+
+   public void createTransientQueue(SimpleString address,
+                                    SimpleString queueName,
+                                    SimpleString filterString) throws HornetQException
+   {
+
+      checkClosed();
+
+
+      CreateTransientQueueMessage request = new CreateTransientQueueMessage(address, queueName, filterString, true);
+
+      startCall();
+      try
+      {
+         channel.sendBlocking(request, PacketImpl.NULL_RESPONSE);
+      }
+      finally
+      {
+         endCall();
+      }
+
+   }
+
 
    public void createQueue(final SimpleString address,
                            final SimpleString queueName,

@@ -1097,8 +1097,45 @@ public class HornetQServerImpl implements HornetQServer
                             final boolean durable,
                             final boolean temporary) throws Exception
    {
-      return createQueue(address, queueName, filterString, durable, temporary, false);
+      return createQueue(address, queueName, filterString, durable, temporary, false, false);
    }
+
+   /**
+    * Creates a transient queue. A queue that will exist as long as there are consumers.
+    * The queue will be deleted as soon as all the consumers are removed.
+    *
+    * Notice: the queue won't be deleted until the first consumer arrives.
+    * @param address
+    * @param name
+    * @param filterString
+    * @throws Exception
+    */
+   public void createTransientQueue(final SimpleString address,
+                             final SimpleString name,
+                             final SimpleString filterString) throws Exception
+   {
+      Queue queue = createQueue(address, name, filterString, false, true, true, true);
+
+      if (!queue.getAddress().equals(address))
+      {
+         throw HornetQMessageBundle.BUNDLE.queueSubscriptionBelongsToDifferentAddress(name);
+      }
+
+      if (filterString != null && (queue.getFilter() == null || !queue.getFilter().getFilterString().equals(filterString)) ||
+         filterString == null && queue.getFilter() != null)
+      {
+         throw HornetQMessageBundle.BUNDLE.queueSubscriptionBelongsToDifferentFilter(name);
+      }
+
+      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      {
+         HornetQServerLogger.LOGGER.debug("Transient Queue " + name + " created on address " + name +
+            " with filter=" + filterString);
+      }
+
+   }
+
+
 
    public Queue locateQueue(SimpleString queueName) throws Exception
    {
@@ -1127,7 +1164,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       HornetQServerLogger.LOGGER.deployQueue(queueName);
 
-      return createQueue(address, queueName, filterString, durable, temporary, true);
+      return createQueue(address, queueName, filterString, durable, temporary, true, false);
    }
 
    public void destroyQueue(final SimpleString queueName) throws Exception
@@ -1794,7 +1831,8 @@ public class HornetQServerImpl implements HornetQServer
                              final SimpleString filterString,
                              final boolean durable,
                              final boolean temporary,
-                             final boolean ignoreIfExists) throws Exception
+                             final boolean ignoreIfExists,
+                             final boolean transientQueue) throws Exception
    {
       QueueBinding binding = (QueueBinding)postOffice.getBinding(queueName);
 
@@ -1812,7 +1850,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Filter filter = FilterImpl.createFilter(filterString);
 
-      long txID = storageManager.generateUniqueID();;
+      long txID = storageManager.generateUniqueID();
       long queueID = storageManager.generateUniqueID();
 
       PageSubscription pageSubscription;
@@ -1835,6 +1873,11 @@ public class HornetQServerImpl implements HornetQServer
          pageSubscription,
          durable,
          temporary);
+
+      if (transientQueue)
+      {
+         queue.setConsumersRefCount(this);
+      }
 
       binding = new LocalQueueBinding(address, queue, nodeManager.getNodeId());
 

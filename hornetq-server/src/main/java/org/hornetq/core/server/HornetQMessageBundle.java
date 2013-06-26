@@ -31,6 +31,7 @@ import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQIncompatibleClientServerException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
+import org.hornetq.api.core.HornetQInvalidTransientQueueUseException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.HornetQSecurityException;
@@ -315,4 +316,12 @@ public interface HornetQMessageBundle
 
    @Message(id = 119081, value =  "No Discovery Group configuration named {0} found", format = Message.Format.MESSAGE_FORMAT)
    HornetQException noDiscoveryGroupFound(DiscoveryGroupConfiguration dg);
+
+   @Message(id = 119082, value =  "Queue {0} already exists on another subscription", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInvalidTransientQueueUseException queueSubscriptionBelongsToDifferentAddress(SimpleString queueName);
+
+   @Message(id = 119083, value =  "Queue {0} has a different filter than requested", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInvalidTransientQueueUseException queueSubscriptionBelongsToDifferentFilter(SimpleString queueName);
+
+
 }

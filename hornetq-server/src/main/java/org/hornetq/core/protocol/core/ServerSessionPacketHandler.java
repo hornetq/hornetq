@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core;
 
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_TRANSIENT_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
@@ -58,6 +59,7 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateTransientQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
@@ -237,6 +239,19 @@ public class ServerSessionPacketHandler implements ChannelHandler
                                       request.getFilterString(),
                                       request.isTemporary(),
                                       request.isDurable());
+                  if (requiresResponse)
+                  {
+                     response = new NullResponseMessage();
+                  }
+                  break;
+               }
+               case CREATE_TRANSIENT_QUEUE:
+               {
+                  CreateTransientQueueMessage request = (CreateTransientQueueMessage)packet;
+                  requiresResponse = request.isRequiresResponse();
+                  session.createTransientQueue(request.getAddress(),
+                                               request.getQueueName(),
+                                               request.getFilterString());
                   if (requiresResponse)
                   {
                      response = new NullResponseMessage();

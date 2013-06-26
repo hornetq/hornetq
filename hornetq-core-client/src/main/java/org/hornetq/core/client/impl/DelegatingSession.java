@@ -278,6 +278,18 @@ public class DelegatingSession implements ClientSessionInternal
       session.createQueue(address, queueName, durable);
    }
 
+   @Override
+   public void createTransientQueue(SimpleString address, SimpleString queueName) throws HornetQException
+   {
+      session.createTransientQueue(address, queueName);
+   }
+
+   @Override
+   public void createTransientQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
+   {
+      session.createTransientQueue(address, queueName, filter);
+   }
+
    public void createQueue(final SimpleString address,
                            final SimpleString queueName,
                            final SimpleString filterString,

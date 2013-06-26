@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.hornetq.tests.util.SingleServerTestBase;
 import org.junit.Before;
 import org.junit.After;
 
@@ -66,7 +67,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author Clebert Suconic
  */
-public class TemporaryQueueTest extends ServiceTestBase
+public class TemporaryQueueTest extends SingleServerTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -75,14 +76,6 @@ public class TemporaryQueueTest extends ServiceTestBase
    private static final long CONNECTION_TTL = 2000;
 
    // Attributes ----------------------------------------------------
-
-   private HornetQServer server;
-
-   private ClientSession session;
-
-   private ClientSessionFactory sf;
-
-   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -196,8 +189,8 @@ public class TemporaryQueueTest extends ServiceTestBase
    @After
    public void tearDown() throws Exception
    {
-      Thread.sleep(5000l);
-      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
+
+      super.tearDown();
    }
 
    @Test
@@ -699,27 +692,12 @@ public class TemporaryQueueTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      Configuration configuration = createDefaultConfig();
-      configuration.setSecurityEnabled(false);
-      server = createServer(false, configuration);
-      server.start();
-
-      locator = createLocator();
-      sf = createSessionFactory(locator);
-      session = addClientSession(sf.createSession(false, true, true));
-   }
-
    protected ServerLocator createLocator()
    {
-      ServerLocator retlocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      addServerLocator(retlocator);
+      ServerLocator retlocator = super.createLocator();
       retlocator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
       retlocator.setClientFailureCheckPeriod(TemporaryQueueTest.CONNECTION_TTL / 3);
       return retlocator;
    }
+
 }

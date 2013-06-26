@@ -143,4 +143,8 @@ public interface ServerSession
    long getCreationTime();
 
    OperationContext getSessionContext();
+
+   void createTransientQueue(SimpleString address,
+                             SimpleString name,
+                             SimpleString filterString) throws Exception;
 }

@@ -984,6 +984,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
+
+
       public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
       {
          // TODO Auto-generated method stub
@@ -1011,6 +1013,16 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
+      {
+      }
+
+      @Override
+      public void createTransientQueue(SimpleString address, SimpleString queueName) throws HornetQException
+      {
+      }
+
+      @Override
+      public void createTransientQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
       {
       }
 

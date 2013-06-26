@@ -212,7 +212,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
-      String queueName = HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      String queueName = HornetQDestination.createQueueNameForDurableSubscription(true, clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
@@ -241,7 +241,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    public void dropDurableSubscription(final String clientID, final String subscriptionName) throws Exception
    {
-      String queueName = HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName);
+      String queueName = HornetQDestination.createQueueNameForDurableSubscription(true, clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {

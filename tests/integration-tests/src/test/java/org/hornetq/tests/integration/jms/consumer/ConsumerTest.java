@@ -51,7 +51,13 @@ public class ConsumerTest extends JMSTestBase
 
    private static final String Q_NAME = "ConsumerTestQueue";
 
+   private static final String T_NAME = "ConsumerTestTopic";
+
+   private static final String T2_NAME = "ConsumerTestTopic2";
+
    private javax.jms.Queue jBossQueue;
+   private javax.jms.Topic topic;
+   private javax.jms.Topic topic2;
 
    @Override
    @Before
@@ -59,7 +65,14 @@ public class ConsumerTest extends JMSTestBase
    {
       super.setUp();
 
+
+      topic = HornetQJMSClient.createTopic(T_NAME);
+      topic2 = HornetQJMSClient.createTopic(T2_NAME);
+
+
       jmsServer.createQueue(false, ConsumerTest.Q_NAME, null, true, ConsumerTest.Q_NAME);
+      jmsServer.createTopic(true, T_NAME, "/topic/" +T_NAME);
+      jmsServer.createTopic(true, T2_NAME, "/topic/" +T2_NAME);
       cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 
@@ -495,5 +508,237 @@ public class ConsumerTest extends JMSTestBase
       {
          // Ok
       }
+   }
+
+   @Test
+   public void testSharedConsumer() throws Exception
+   {
+      conn = cf.createConnection();
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      topic = HornetQJMSClient.createTopic(T_NAME);
+
+
+      MessageConsumer cons = session.createSharedConsumer(topic, "test1");
+
+      MessageProducer producer = session.createProducer(topic);
+
+      producer.send(session.createTextMessage("test"));
+
+      TextMessage txt = (TextMessage)cons.receive(5000);
+
+      assertNotNull(txt);
+   }
+
+   @Test
+   public void testSharedDurableConsumer() throws Exception
+   {
+      conn = cf.createConnection();
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      topic = HornetQJMSClient.createTopic(T_NAME);
+
+
+      MessageConsumer cons = session.createSharedDurableConsumer(topic, "test1");
+
+      MessageProducer producer = session.createProducer(topic);
+
+      producer.send(session.createTextMessage("test"));
+
+      TextMessage txt = (TextMessage)cons.receive(5000);
+
+      assertNotNull(txt);
+   }
+
+   @Test
+   public void testSharedDurableConsumerWithClientID() throws Exception
+   {
+      conn = cf.createConnection();
+      conn.setClientID("C1");
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      Connection conn2 = cf.createConnection();
+      conn2.setClientID("C2");
+      Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      {
+         Connection conn3 = cf.createConnection();
+
+         boolean exception = false;
+         try
+         {
+            conn3.setClientID("C2");
+         }
+         catch (Exception e)
+         {
+            exception = true;
+         }
+
+         assertTrue(exception);
+         conn3.close();
+      }
+
+      topic = HornetQJMSClient.createTopic(T_NAME);
+
+
+      MessageConsumer cons = session.createSharedDurableConsumer(topic, "test1");
+
+      MessageProducer producer = session.createProducer(topic);
+
+      producer.send(session.createTextMessage("test"));
+
+      TextMessage txt = (TextMessage)cons.receive(5000);
+
+      assertNotNull(txt);
+   }
+
+   @Test
+   public void testValidateExceptionsThroughSharedConsumers() throws Exception
+   {
+      conn = cf.createConnection();
+      conn.setClientID("C1");
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Connection conn2 = cf.createConnection();
+      conn2.setClientID("C2");
+
+
+
+       MessageConsumer cons = session.createSharedConsumer(topic, "cons1");
+      boolean exceptionHappened = false;
+      try
+      {
+         MessageConsumer cons2Error = session.createSharedConsumer(topic2, "cons1");
+      }
+      catch (JMSException e)
+      {
+         exceptionHappened = true;
+      }
+
+      assertTrue(exceptionHappened);
+
+
+      MessageProducer producer = session.createProducer(topic2);
+
+      // This is durable, different than the one on topic... So it should go through
+      MessageConsumer cons2 = session.createSharedDurableConsumer(topic2, "cons1");
+
+      conn.start();
+
+
+      producer.send(session.createTextMessage("hello!"));
+
+      TextMessage msg = (TextMessage)cons2.receive(5000);
+      assertNotNull(msg);
+
+
+      exceptionHappened = false;
+      try
+      {
+         session.unsubscribe("cons1");
+      }
+      catch (JMSException e)
+      {
+         exceptionHappened = true;
+      }
+
+
+      assertTrue(exceptionHappened);
+      cons2.close();
+      conn.close();
+      conn2.close();
+
+   }
+
+   @Test
+   public void testUnsubscribeDurable() throws Exception
+   {
+      conn = cf.createConnection();
+      conn.setClientID("C1");
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createSharedDurableConsumer(topic, "c1");
+
+      MessageProducer prod = session.createProducer(topic);
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         prod.send(topic, session.createTextMessage("msg" + i));
+      }
+
+      assertNotNull(cons.receive(5000));
+
+      cons.close();
+
+      session.unsubscribe("c1");
+
+      cons = session.createSharedDurableConsumer(topic, "c1");
+
+      // it should be null since the queue was deleted through unsubscribe
+      assertNull(cons.receiveNoWait());
+   }
+
+   @Test
+   public void testShareDurale() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
+      conn = cf.createConnection();
+      conn.start();
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createSharedDurableConsumer(topic, "c1");
+      MessageConsumer cons2 = session2.createSharedDurableConsumer(topic, "c1");
+
+      MessageProducer prod = session.createProducer(topic);
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         prod.send(topic, session.createTextMessage("msg" + i));
+      }
+
+
+      for (int i = 0; i < 50; i++)
+      {
+         Message msg = cons.receive(5000);
+         assertNotNull(msg);
+         msg = cons2.receive(5000);
+         assertNotNull(msg);
+      }
+
+      assertNull(cons.receiveNoWait());
+      assertNull(cons2.receiveNoWait());
+
+      cons.close();
+
+      boolean exceptionHappened = false;
+
+      try
+      {
+         session.unsubscribe("c1");
+      }
+      catch (JMSException e)
+      {
+         exceptionHappened = true;
+      }
+
+      assertTrue(exceptionHappened);
+
+      cons2.close();
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         prod.send(topic, session.createTextMessage("msg" + i));
+      }
+
+
+      session.unsubscribe("c1");
+
+      cons = session.createSharedDurableConsumer(topic, "c1");
+
+      // it should be null since the queue was deleted through unsubscribe
+      assertNull(cons.receiveNoWait());
    }
 }
