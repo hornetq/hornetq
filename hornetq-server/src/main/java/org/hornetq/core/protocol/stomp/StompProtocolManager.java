@@ -169,7 +169,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    // Public --------------------------------------------------------
 
-   public void send(final StompConnection connection, final StompFrame frame)
+   public boolean send(final StompConnection connection, final StompFrame frame)
    {
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
@@ -180,7 +180,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          if (connection.isDestroyed())
          {
             HornetQServerLogger.LOGGER.connectionClosed(connection);
-            return;
+            return false;
          }
 
          try
@@ -190,7 +190,9 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          catch (Exception e)
          {
             HornetQServerLogger.LOGGER.errorSendingFrame(e, frame);
+            return false;
          }
+         return true;
       }
    }
 

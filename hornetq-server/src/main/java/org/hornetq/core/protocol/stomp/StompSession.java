@@ -141,16 +141,19 @@ public class StompSession implements SessionCallback
 
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
-            session.acknowledge(consumerID, newServerMessage.getMessageID());
-            session.commit();
+            if (manager.send(connection, frame))
+            {
+               //we ack and commit only if the send is successful
+               session.acknowledge(consumerID, newServerMessage.getMessageID());
+               session.commit();
+            }
          }
          else
          {
             messagesToAck.put(newServerMessage.getMessageID(), new Pair<Long, Integer>(consumerID, length));
+            // Must send AFTER adding to messagesToAck - or could get acked from client BEFORE it's been added!
+            manager.send(connection, frame);
          }
-
-         // Must send AFTER adding to messagesToAck - or could get acked from client BEFORE it's been added!
-         manager.send(connection, frame);
 
          return length;
       }

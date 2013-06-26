@@ -2322,6 +2322,54 @@ public class StompV12Test extends StompV11TestBase
       connV12.disconnect();
    }
 
+   @Test
+   public void testDisconnectWithoutUnsubscribe() throws Exception
+   {
+      connV12.connect(defUser, defPass);
+
+      this.subscribe(connV12, "sub1", "auto");
+
+      // send a message to our queue
+      sendMessage("first message");
+
+      // receive message from socket
+      ClientStompFrame frame = connV12.receiveFrame();
+
+      Assert.assertTrue(frame.getCommand().equals("MESSAGE"));
+      
+      //now disconnect without unsubscribe
+      connV12.disconnect();
+
+      // send a message to our queue
+      sendMessage("second message");
+      
+      //reconnect
+      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12.connect(defUser, defPass);
+      
+      frame = connV12.receiveFrame(1000);
+      assertNull("not expected: " + frame, frame);
+
+      //subscribe again.
+      this.subscribe(connV12, "sub1", "auto");
+      
+      // receive message from socket
+      frame = connV12.receiveFrame();
+
+      assertNotNull(frame);
+      Assert.assertTrue(frame.getCommand().equals("MESSAGE"));
+
+      frame = connV12.receiveFrame(1000);
+      assertNull("not expected: " + frame, frame);
+      
+      this.unsubscribe(connV12, "sub1", true);
+
+      frame = connV12.receiveFrame(1000);
+      assertNull(frame);
+
+      connV12.disconnect();
+   }
+
    //-----------------private help methods
 
    private void abortTransaction(StompClientConnection conn, String txID) throws IOException, InterruptedException
