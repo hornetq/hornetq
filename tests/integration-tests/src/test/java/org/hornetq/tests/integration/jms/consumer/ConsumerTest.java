@@ -18,7 +18,10 @@ import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -740,5 +743,62 @@ public class ConsumerTest extends JMSTestBase
 
       // it should be null since the queue was deleted through unsubscribe
       assertNull(cons.receiveNoWait());
+   }
+
+
+   @Test
+   public void testShareDuraleWithJMSContext() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setConsumerWindowSize(0);
+      JMSContext conn = cf.createContext(JMSContext.AUTO_ACKNOWLEDGE);
+
+      JMSConsumer consumer = conn.createSharedDurableConsumer(topic, "c1");
+
+      JMSProducer producer = conn.createProducer();
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         producer.setProperty("count", i).send(topic, "test" + i);
+      }
+
+
+      JMSContext conn2 = conn.createContext(JMSContext.AUTO_ACKNOWLEDGE);
+      JMSConsumer consumer2 = conn2.createSharedDurableConsumer(topic, "c1");
+
+      for (int i = 0 ; i < 50; i++)
+      {
+         String txt = consumer.receiveBody(String.class, 5000);
+         System.out.println("TXT:" + txt);
+         assertNotNull(txt);
+
+         txt = consumer.receiveBody(String.class, 5000);
+         System.out.println("TXT:" + txt);
+         assertNotNull(txt);
+      }
+
+      assertNull(consumer.receiveNoWait());
+      assertNull(consumer2.receiveNoWait());
+
+      boolean exceptionHappened = false;
+
+
+      try
+      {
+         conn.unsubscribe("c1");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         exceptionHappened = true;
+      }
+
+      assertTrue(exceptionHappened);
+
+      consumer.close();
+      consumer2.close();
+      conn2.close();
+
+      conn.unsubscribe("c1");
+
    }
 }
