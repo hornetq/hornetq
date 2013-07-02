@@ -33,7 +33,7 @@ import org.hornetq.core.client.impl.Topology;
  * client. But the listeners will listen for updates on grouping.
  * @author Tim Fox
  */
-public interface ServerLocator
+public interface ServerLocator extends AutoCloseable
 {
 
    /**

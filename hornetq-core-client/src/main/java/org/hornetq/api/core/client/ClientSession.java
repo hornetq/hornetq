@@ -28,7 +28,7 @@ import org.hornetq.api.core.SimpleString;
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface ClientSession extends XAResource
+public interface ClientSession extends XAResource, AutoCloseable
 {
    /**
     * Information returned by a binding query

@@ -25,7 +25,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public interface ClientSessionFactory
+public interface ClientSessionFactory extends AutoCloseable
 {
    /**
     * Creates a session with XA transaction semantics.
