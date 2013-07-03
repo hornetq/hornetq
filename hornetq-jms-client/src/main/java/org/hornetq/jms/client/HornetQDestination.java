@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
@@ -91,7 +92,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
       }
       else
       {
-         throw new IllegalArgumentException("Invalid address " + address);
+         throw new JMSRuntimeException("Invalid address " + address);
       }
    }
 
@@ -159,7 +160,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
             currentPart++;
             if (currentPart >= parts.length)
             {
-               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+               throw new JMSRuntimeException("Invalid message queue name: " + queueName);
             }
 
             continue;
@@ -169,7 +170,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
          {
             if (pos >= queueName.length())
             {
-               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+               throw new JMSRuntimeException("Invalid message queue name: " + queueName);
             }
             ch = queueName.charAt(pos);
             pos++;
@@ -180,7 +181,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
       if (currentPart != 1)
       {
-         throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+         throw new JMSRuntimeException("Invalid message queue name: " + queueName);
       }
 
       Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());

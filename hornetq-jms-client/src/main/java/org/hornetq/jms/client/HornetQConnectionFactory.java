@@ -167,7 +167,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
             return;
          }
          default:
-            throw new IllegalArgumentException();
+            throw new JMSRuntimeException("Invalid Session Mode: " + mode);
       }
    }
 

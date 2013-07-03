@@ -281,7 +281,7 @@ public final class HornetQJMSProducer implements JMSProducer
    {
       if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
       {
-         throw new IllegalArgumentException("Illegal deliveryMode value: " + deliveryMode);
+         throw new JMSRuntimeException("Illegal deliveryMode value: " + deliveryMode);
       }
       this.deliveryMode = deliveryMode;
       return this;
@@ -298,7 +298,7 @@ public final class HornetQJMSProducer implements JMSProducer
    {
       if (priority < 0 || priority > 9)
       {
-         throw new IllegalArgumentException("Illegal priority value: " + priority);
+         throw new JMSRuntimeException("Illegal priority value: " + priority);
       }
       this.priority = priority;
       return this;

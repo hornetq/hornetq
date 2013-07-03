@@ -29,6 +29,7 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
@@ -186,7 +187,7 @@ public class HornetQMessage implements javax.jms.Message
          }
          default:
          {
-            throw new IllegalArgumentException("Invalid message type " + type);
+            throw new JMSRuntimeException("Invalid message type " + type);
          }
       }
 
@@ -1084,22 +1085,22 @@ public class HornetQMessage implements javax.jms.Message
 
       if (name == null)
       {
-         throw new IllegalArgumentException("The name of a property must not be null.");
+         throw new JMSRuntimeException("The name of a property must not be null.");
       }
 
       if (name.equals(""))
       {
-         throw new IllegalArgumentException("The name of a property must not be an empty String.");
+         throw new JMSRuntimeException("The name of a property must not be an empty String.");
       }
 
       if (!isValidJavaIdentifier(name))
       {
-         throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
+         throw new JMSRuntimeException("The property name '" + name + "' is not a valid java identifier.");
       }
 
       if (HornetQMessage.reservedIdentifiers.contains(name))
       {
-         throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
+         throw new JMSRuntimeException("The property name '" + name + "' is reserved due to selector syntax.");
       }
 
       if (name.startsWith("JMS"))
@@ -1113,13 +1114,13 @@ public class HornetQMessage implements javax.jms.Message
                // (java.jms.Message javadoc)
                // "Property names must obey the rules for a message selector identifier"
                // "Any name that does not begin with 'JMS' is an application-specific property name"
-               throw new IllegalArgumentException("The property name '" + name +
+               throw new JMSRuntimeException("The property name '" + name +
                                                   "' is illegal since it starts with JMS");
             }
          }
          else
          {
-            throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
+            throw new JMSRuntimeException("The property name '" + name + "' is illegal since it starts with JMS");
          }
       }
    }

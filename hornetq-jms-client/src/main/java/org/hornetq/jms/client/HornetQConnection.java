@@ -23,6 +23,7 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -610,7 +611,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          }
          else
          {
-            throw new IllegalArgumentException("Invalid ackmode: " + acknowledgeMode);
+            throw new JMSRuntimeException("Invalid ackmode: " + acknowledgeMode);
          }
 
          justCreated = false;
