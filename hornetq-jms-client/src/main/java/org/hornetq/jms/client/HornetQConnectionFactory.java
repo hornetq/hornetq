@@ -663,6 +663,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
 
          jmse.initCause(e);
          jmse.setLinkedException(e);
+         jmse.initCause(e);
 
          throw jmse;
       }

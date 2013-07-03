@@ -828,6 +828,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }
@@ -925,6 +926,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }

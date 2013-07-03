@@ -225,6 +225,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       {
          JMSException je = new JMSException("Failed to get UTF");
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }
@@ -312,6 +313,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       {
          JMSException je = new JMSException("Failed to write UTF");
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }

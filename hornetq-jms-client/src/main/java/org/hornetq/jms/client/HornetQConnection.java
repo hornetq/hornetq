@@ -239,6 +239,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       {
          JMSException ex = new JMSException("Internal error setting metadata jms-client-id");
          ex.setLinkedException(e);
+         ex.initCause(e);
          throw ex;
       }
 

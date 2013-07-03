@@ -139,6 +139,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
          {
             JMSException je = new JMSException("Failed to serialize object");
             je.setLinkedException(e);
+            je.initCause(e);
             throw je;
          }
       }
