@@ -413,7 +413,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void connectionDestroyed(final Object connectionID)
    {
-      // The exception has to be created in the same thread where it's being caleld
+      // The exception has to be created in the same thread where it's being called
       // as to avoid a different stack trace cause
       final HornetQException ex = HornetQClientMessageBundle.BUNDLE.channelDisconnected();
 
@@ -757,9 +757,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                session.cleanUp(true);
             }
-            catch (Exception e)
+            catch (Exception cause)
             {
-               HornetQClientLogger.LOGGER.failedToCleanupSession(e);
+               HornetQClientLogger.LOGGER.failedToCleanupSession(cause);
             }
          }
       }
@@ -838,17 +838,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   response = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
                }
-               catch (HornetQException e)
+               catch (HornetQException cause)
                {
-                  if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+                  if (cause.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
                   {
                      connection.destroy();
                   }
 
                   if (exitLoop)
-                     throw e;
+                     throw cause;
 
-                  if (e.getType() == HornetQExceptionType.UNBLOCKED)
+                  if (cause.getType() == HornetQExceptionType.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
                      // so failover could occur
@@ -859,7 +859,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                   else
                   {
-                     throw e;
+                     throw cause;
                   }
                }
 
@@ -1305,11 +1305,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
             }
          }
-         catch (Exception e)
+         catch (Exception cause)
          {
             // Sanity catch for badly behaved remoting plugins
 
-            HornetQClientLogger.LOGGER.createConnectorException(e);
+            HornetQClientLogger.LOGGER.createConnectorException(cause);
 
             if (tc != null)
             {
@@ -1458,7 +1458,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return false;
          return true;
          }
-      catch (InterruptedException e)
+      catch (InterruptedException cause)
       {
          return false;
       }
