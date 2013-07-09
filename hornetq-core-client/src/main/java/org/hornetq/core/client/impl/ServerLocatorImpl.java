@@ -1380,6 +1380,14 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       if (latch != null)
          latch.countDown();
 
+      synchronized (connectingFactories)
+      {
+         for (ClientSessionFactoryInternal csf : connectingFactories)
+         {
+            csf.causeExit();
+         }
+      }
+
       if (discoveryGroup != null)
       {
          synchronized (this)
