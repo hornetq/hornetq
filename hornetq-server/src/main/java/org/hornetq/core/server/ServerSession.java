@@ -21,6 +21,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.transaction.Transaction;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.json.JSONArray;
 
@@ -51,6 +52,8 @@ public interface ServerSession
    void acknowledge(long consumerID, long messageID) throws Exception;
 
    void individualAcknowledge(long consumerID, long messageID) throws Exception;
+
+   void individualCancel(final long consumerID, final long messageID, boolean failed) throws Exception;
 
    void expire(long consumerID, long messageID) throws Exception;
 
@@ -143,4 +146,6 @@ public interface ServerSession
    long getCreationTime();
 
    OperationContext getSessionContext();
+
+   Transaction getCurrentTransaction();
 }
