@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
@@ -54,7 +55,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
    private static final char SEPARATOR = '.';
 
-   protected static String escape(final String input)
+   private static String escape(final String input)
    {
       if (input == null)
       {
@@ -77,27 +78,67 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
          return createTopic(name);
       }
-      else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+      else if (address.startsWith(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
 
          return new HornetQTemporaryQueue(address, name, null);
       }
-      else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+      else if (address.startsWith(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
       {
-         String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+         String name = address.substring(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
 
          return new HornetQTemporaryTopic(address, name, null);
       }
       else
       {
-         throw new IllegalArgumentException("Invalid address " + address);
+         throw new JMSRuntimeException("Invalid address " + address);
       }
    }
 
-   public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
+   public static String createQueueNameForDurableSubscription(final boolean isDurable, final String clientID, final String subscriptionName)
    {
-      return HornetQDestination.escape(clientID) + SEPARATOR + HornetQDestination.escape(subscriptionName);
+      if (clientID != null)
+      {
+         if (isDurable)
+         {
+            return HornetQDestination.escape(clientID) + SEPARATOR +
+               HornetQDestination.escape(subscriptionName);
+         }
+         else
+         {
+            return "nonDurable" + SEPARATOR +
+               HornetQDestination.escape(clientID) + SEPARATOR +
+               HornetQDestination.escape(subscriptionName);
+         }
+      }
+      else
+      {
+         if (isDurable)
+         {
+            return HornetQDestination.escape(subscriptionName);
+         }
+         else
+         {
+            return "nonDurable" + SEPARATOR +
+               HornetQDestination.escape(subscriptionName);
+         }
+      }
+   }
+
+   public static String createQueueNameForSharedSubscription(final boolean isDurable, final String clientID, final String subscriptionName)
+   {
+      if (clientID != null)
+      {
+         return (isDurable ? "Durable" : "nonDurable") + SEPARATOR +
+            HornetQDestination.escape(clientID) + SEPARATOR +
+            HornetQDestination.escape(subscriptionName);
+      }
+      else
+      {
+         return (isDurable ? "Durable" : "nonDurable") + SEPARATOR +
+            HornetQDestination.escape(subscriptionName);
+      }
    }
 
    public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
@@ -119,7 +160,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
             currentPart++;
             if (currentPart >= parts.length)
             {
-               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+               throw new JMSRuntimeException("Invalid message queue name: " + queueName);
             }
 
             continue;
@@ -129,7 +170,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
          {
             if (pos >= queueName.length())
             {
-               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+               throw new JMSRuntimeException("Invalid message queue name: " + queueName);
             }
             ch = queueName.charAt(pos);
             pos++;
@@ -140,7 +181,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
 
       if (currentPart != 1)
       {
-         throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+         throw new JMSRuntimeException("Invalid message queue name: " + queueName);
       }
 
       Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());
@@ -259,6 +300,11 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    {
       if (session != null)
       {
+         if (session.getCoreSession().isClosed())
+         {
+            // Temporary queues will be deleted when the connection is closed.. nothing to be done then!
+            return;
+         }
          if (queue)
          {
             session.deleteTemporaryQueue(this);

@@ -378,6 +378,7 @@ public class HornetQRAMessage implements Message
     * @return The values
     * @exception JMSException Thrown if an error occurs
     */
+   @SuppressWarnings("rawtypes")
    public Enumeration getPropertyNames() throws JMSException
    {
       if (HornetQRAMessage.trace)
@@ -745,7 +746,49 @@ public class HornetQRAMessage implements Message
       message.setStringProperty(name, value);
    }
 
-   /**
+   @Override
+   public long getJMSDeliveryTime() throws JMSException
+   {
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getJMSDeliveryTime()");
+      }
+      return getJMSDeliveryTime();
+   }
+
+   @Override
+   public void setJMSDeliveryTime(long deliveryTime) throws JMSException
+   {
+
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setJMSDeliveryTime(" + deliveryTime + ")");
+      }
+      message.setJMSDeliveryTime(deliveryTime);
+   }
+
+   @Override
+   public <T> T getBody(Class<T> c) throws JMSException
+   {
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getBody(" + c + ")");
+      }
+      return message.getBody(c);
+   }
+
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c) throws JMSException
+   {
+      if (HornetQRAMessage.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isBodyAssignableTo(" + c + ")");
+      }
+      return message.isBodyAssignableTo(c);
+   }
+
+    /**
     * Return the hash code
     * @return The hash code
     */

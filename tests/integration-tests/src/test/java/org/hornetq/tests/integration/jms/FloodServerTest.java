@@ -39,7 +39,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -60,7 +60,7 @@ public class FloodServerTest extends UnitTestCase
 
    private JMSServerManagerImpl serverManager;
 
-   private InVMContext initialContext;
+   private InVMNamingContext initialContext;
 
    private final String topicName = "my-topic";
 
@@ -92,7 +92,7 @@ public class FloodServerTest extends UnitTestCase
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);
-      initialContext = new InVMContext();
+      initialContext = new InVMNamingContext();
       serverManager.setContext(initialContext);
       serverManager.start();
       serverManager.activated();

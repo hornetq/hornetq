@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +23,9 @@ import javax.jms.Session;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -119,7 +117,7 @@ public class CTSMiscellaneousTest extends JMSTest
          c = CTSMiscellaneousTest.cf.createConnection();
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = s.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer p = s.createProducer(queue1);
 
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -141,7 +139,7 @@ public class CTSMiscellaneousTest extends JMSTest
             c.close();
          }
 
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

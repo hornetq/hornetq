@@ -54,17 +54,17 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 
    public String getJMSVersion() throws JMSException
    {
-      return "1.1";
+      return "2.0";
    }
 
    public int getJMSMajorVersion() throws JMSException
    {
-      return 1;
+      return 2;
    }
 
    public int getJMSMinorVersion() throws JMSException
    {
-      return 1;
+      return 0;
    }
 
    public String getJMSProviderName() throws JMSException
@@ -89,21 +89,10 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 
    public Enumeration getJMSXPropertyNames() throws JMSException
    {
-      Vector v = new Vector();
+      Vector<Object> v = new Vector<Object>();
       v.add("JMSXGroupID");
       v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
       return v.elements();
    }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

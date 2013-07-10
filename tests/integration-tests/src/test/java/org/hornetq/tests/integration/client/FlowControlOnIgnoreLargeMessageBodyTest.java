@@ -66,7 +66,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
    {
       super.setUp();
       jmsServer.createTopic(true, "topicIn", "/topic/topicIn");
-      topic = (Topic)context.lookup("/topic/topicIn");
+      topic = (Topic)namingContext.lookup("/topic/topicIn");
    }
 
    @Override

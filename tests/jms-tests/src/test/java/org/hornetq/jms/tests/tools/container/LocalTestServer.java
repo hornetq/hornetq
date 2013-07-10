@@ -394,6 +394,7 @@ public class LocalTestServer implements Server, Runnable
 
    }
 
+   @Override
    public Long getMessageCountForQueue(final String queueName) throws Exception
    {
       JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()

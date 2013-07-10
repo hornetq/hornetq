@@ -350,7 +350,7 @@ public class MessageTest extends JMSTestBase
 
          MessageProducer prod2 = session3.createProducer(HornetQJMSClient.createTopic("Topic2"));
 
-         prod2.send(HornetQJMSClient.createTopic("Topic2"), session3.createTextMessage("test"));
+         prod2.send(session3.createTextMessage("test"));
 
          assertNull(cons.receiveNoWait());
 

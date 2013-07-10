@@ -51,7 +51,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -730,7 +730,7 @@ public class PagingOrderTest extends ServiceTestBase
       HornetQServer server = createServer(true, config, PAGE_SIZE, -1, new HashMap<String, AddressSettings>());
 
       JMSServerManagerImpl jmsServer = new JMSServerManagerImpl(server);
-      InVMContext context = new InVMContext();
+      InVMNamingContext context = new InVMNamingContext();
       jmsServer.setContext(context);
       jmsServer.start();
 
@@ -776,7 +776,7 @@ public class PagingOrderTest extends ServiceTestBase
       server = createServer(true, config, PAGE_SIZE, -1, new HashMap<String, AddressSettings>());
 
       jmsServer = new JMSServerManagerImpl(server);
-      context = new InVMContext();
+      context = new InVMNamingContext();
       jmsServer.setContext(context);
       jmsServer.start();
 
@@ -805,7 +805,7 @@ public class PagingOrderTest extends ServiceTestBase
       HornetQServer server = createServer(true, config, -1, -1, AddressFullMessagePolicy.BLOCK, new HashMap<String, AddressSettings>());
 
       JMSServerManagerImpl jmsServer = new JMSServerManagerImpl(server);
-      InVMContext context = new InVMContext();
+      InVMNamingContext context = new InVMNamingContext();
       jmsServer.setContext(context);
       jmsServer.start();
 
@@ -857,7 +857,7 @@ public class PagingOrderTest extends ServiceTestBase
       server = createServer(true, config, -1, -1, AddressFullMessagePolicy.BLOCK, new HashMap<String, AddressSettings>());
 
       jmsServer = new JMSServerManagerImpl(server);
-      context = new InVMContext();
+      context = new InVMNamingContext();
       jmsServer.setContext(context);
       jmsServer.start();
 

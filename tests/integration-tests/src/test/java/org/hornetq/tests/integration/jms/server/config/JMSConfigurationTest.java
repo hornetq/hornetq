@@ -40,7 +40,7 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -57,7 +57,7 @@ public class JMSConfigurationTest extends ServiceTestBase
    @Test
    public void testSetupJMSConfiguration() throws Exception
    {
-      Context context = new InVMContext();
+      Context context = new InVMNamingContext();
 
       Configuration coreConfiguration = createDefaultConfig(false);
       HornetQServer coreServer = new HornetQServerImpl(coreConfiguration);

@@ -197,6 +197,15 @@ public enum HornetQExceptionType
          return new HornetQInterceptorRejectedPacketException(msg);
       }
    },
+   INVALID_TRANSIENT_QUEUE_USE(118)
+   {
+      @Override
+      public HornetQException createException(String msg)
+      {
+         return new HornetQInvalidTransientQueueUseException(msg);
+      }
+   },
+
    GENERIC_EXCEPTION(999),
    NATIVE_ERROR_INTERNAL(200),
    NATIVE_ERROR_INVALID_BUFFER(201),

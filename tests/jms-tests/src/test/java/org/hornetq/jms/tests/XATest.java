@@ -89,6 +89,7 @@ public class XATest extends HornetQServerTestCase
       suspendedTx = tm.suspend();
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
@@ -146,12 +147,12 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -161,7 +162,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(1000);
          ProxyAssertSupport.assertNotNull(m2);
          ProxyAssertSupport.assertEquals("XATest1", m2.getText());
@@ -208,12 +209,12 @@ public class XATest extends HornetQServerTestCase
 
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -223,7 +224,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
          ProxyAssertSupport.assertEquals("XATest1", m2.getText());
@@ -266,12 +267,12 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -281,7 +282,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
          ProxyAssertSupport.assertNull(m2);
 
@@ -326,12 +327,12 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res3);
          tx.enlistResource(res4);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -352,7 +353,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
          ProxyAssertSupport.assertNull(m2);
       }
@@ -392,12 +393,12 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -407,7 +408,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
          ProxyAssertSupport.assertNull(m2);
 
@@ -438,7 +439,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -458,7 +459,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -515,7 +516,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -536,7 +537,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -594,7 +595,7 @@ public class XATest extends HornetQServerTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
 
@@ -615,7 +616,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
@@ -674,7 +675,7 @@ public class XATest extends HornetQServerTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
 
@@ -696,7 +697,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
@@ -765,12 +766,12 @@ public class XATest extends HornetQServerTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
 
@@ -779,7 +780,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
          ProxyAssertSupport.assertEquals("XATest1", m2.getText());
@@ -818,12 +819,12 @@ public class XATest extends HornetQServerTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(HornetQServerTestCase.queue1, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
 
@@ -832,7 +833,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
          ProxyAssertSupport.assertNull(m2);
 
@@ -861,7 +862,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -878,7 +879,7 @@ public class XATest extends HornetQServerTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -930,7 +931,7 @@ public class XATest extends HornetQServerTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -947,7 +948,7 @@ public class XATest extends HornetQServerTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -1014,7 +1015,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1036,7 +1037,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res2);
 
          // Receive the messages, one on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r1);
@@ -1044,7 +1045,7 @@ public class XATest extends HornetQServerTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r2);
@@ -1057,7 +1058,7 @@ public class XATest extends HornetQServerTestCase
          tm.commit();
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r3 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
@@ -1089,7 +1090,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1113,7 +1114,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res2);
 
          // Receive the messages, one on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r1);
@@ -1121,7 +1122,7 @@ public class XATest extends HornetQServerTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r2);
@@ -1134,7 +1135,7 @@ public class XATest extends HornetQServerTestCase
          tm.commit();
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r3 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
@@ -1168,7 +1169,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1194,7 +1195,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res2);
 
          // Receive the messages, two on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r1);
@@ -1207,7 +1208,7 @@ public class XATest extends HornetQServerTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r2);
@@ -1234,7 +1235,7 @@ public class XATest extends HornetQServerTestCase
          // the sessions - this is implementation dependent
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -1327,7 +1328,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1355,7 +1356,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res2);
 
          // Receive the messages, two on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r1);
@@ -1371,7 +1372,7 @@ public class XATest extends HornetQServerTestCase
          // Cancel is asynch
          Thread.sleep(500);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r2);
@@ -1398,7 +1399,7 @@ public class XATest extends HornetQServerTestCase
          // the sessions - this is implementation dependent
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -1489,7 +1490,7 @@ public class XATest extends HornetQServerTestCase
          // First send 4 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
 
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
@@ -1513,7 +1514,7 @@ public class XATest extends HornetQServerTestCase
          tx.enlistResource(res1);
          tx.enlistResource(res2);
 
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
          ProxyAssertSupport.assertNotNull(r1);
@@ -1563,7 +1564,7 @@ public class XATest extends HornetQServerTestCase
          Thread.sleep(1000);
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -1636,8 +1637,8 @@ public class XATest extends HornetQServerTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -1652,7 +1653,7 @@ public class XATest extends HornetQServerTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -1708,8 +1709,8 @@ public class XATest extends HornetQServerTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -1724,7 +1725,7 @@ public class XATest extends HornetQServerTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -1779,8 +1780,8 @@ public class XATest extends HornetQServerTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -1795,7 +1796,7 @@ public class XATest extends HornetQServerTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
@@ -1844,8 +1845,8 @@ public class XATest extends HornetQServerTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -1860,7 +1861,7 @@ public class XATest extends HornetQServerTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
@@ -1891,7 +1892,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1904,7 +1905,7 @@ public class XATest extends HornetQServerTestCase
          XAResource res1 = sess1.getXAResource();
 
          conn.start();
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
 
          tm.begin();
 
@@ -1942,7 +1943,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r3 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
          ProxyAssertSupport.assertNull(r3);
 
@@ -1976,7 +1977,7 @@ public class XATest extends HornetQServerTestCase
          // First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProducer.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -1989,7 +1990,7 @@ public class XATest extends HornetQServerTestCase
          XAResource res1 = sess1.getXAResource();
 
          conn.start();
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
 
          tm.begin();
 
@@ -2029,7 +2030,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage r3 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -2080,7 +2081,7 @@ public class XATest extends HornetQServerTestCase
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
 
          tm.begin();
 
@@ -2113,7 +2114,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(r1);
          ProxyAssertSupport.assertEquals("kangaroo2", r1.getText());
@@ -2180,7 +2181,7 @@ public class XATest extends HornetQServerTestCase
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod1 = sess1.createProducer(queue1);
 
          tm.begin();
 
@@ -2211,7 +2212,7 @@ public class XATest extends HornetQServerTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons.receive(HornetQServerTestCase.MIN_TIMEOUT);
 
          ProxyAssertSupport.assertNull(r1);

@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.stress;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -22,6 +20,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -31,8 +32,15 @@ import javax.jms.XASession;
  * @version <tt>$Revision: 2349 $</tt>
  *
  */
+
 public class QueueStressTest extends JMSStressTestBase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    /*
     * Stress a queue with transational, non transactional and 2pc senders sending both persistent
     * and non persistent messages
@@ -88,59 +96,59 @@ public class QueueStressTest extends JMSStressTestBase
       Session sess23 = xaSess7.getSession();
       Session sess24 = xaSess8.getSession();
 
-      MessageProducer prod1 = sess1.createProducer(queue1);
+      MessageProducer prod1 = sess1.createProducer(destinationQueue1);
       prod1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod2 = sess2.createProducer(queue1);
+      MessageProducer prod2 = sess2.createProducer(destinationQueue1);
       prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod3 = sess3.createProducer(queue1);
+      MessageProducer prod3 = sess3.createProducer(destinationQueue1);
       prod3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod4 = sess4.createProducer(queue1);
+      MessageProducer prod4 = sess4.createProducer(destinationQueue1);
       prod4.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod5 = sess5.createProducer(queue1);
+      MessageProducer prod5 = sess5.createProducer(destinationQueue1);
       prod5.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod6 = sess6.createProducer(queue1);
+      MessageProducer prod6 = sess6.createProducer(destinationQueue1);
       prod6.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod7 = sess7.createProducer(queue1);
+      MessageProducer prod7 = sess7.createProducer(destinationQueue1);
       prod7.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod8 = sess8.createProducer(queue1);
+      MessageProducer prod8 = sess8.createProducer(destinationQueue1);
       prod8.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod9 = sess9.createProducer(queue1);
+      MessageProducer prod9 = sess9.createProducer(destinationQueue1);
       prod9.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod10 = sess10.createProducer(queue1);
+      MessageProducer prod10 = sess10.createProducer(destinationQueue1);
       prod10.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod11 = sess11.createProducer(queue1);
+      MessageProducer prod11 = sess11.createProducer(destinationQueue1);
       prod11.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod12 = sess12.createProducer(queue1);
+      MessageProducer prod12 = sess12.createProducer(destinationQueue1);
       prod12.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod13 = sess13.createProducer(queue1);
+      MessageProducer prod13 = sess13.createProducer(destinationQueue1);
       prod13.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod14 = sess14.createProducer(queue1);
+      MessageProducer prod14 = sess14.createProducer(destinationQueue1);
       prod14.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod15 = sess15.createProducer(queue1);
+      MessageProducer prod15 = sess15.createProducer(destinationQueue1);
       prod15.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod16 = sess16.createProducer(queue1);
+      MessageProducer prod16 = sess16.createProducer(destinationQueue1);
       prod16.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod17 = sess17.createProducer(queue1);
+      MessageProducer prod17 = sess17.createProducer(destinationQueue1);
       prod17.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod18 = sess18.createProducer(queue1);
+      MessageProducer prod18 = sess18.createProducer(destinationQueue1);
       prod18.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod19 = sess19.createProducer(queue1);
+      MessageProducer prod19 = sess19.createProducer(destinationQueue1);
       prod19.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod20 = sess20.createProducer(queue1);
+      MessageProducer prod20 = sess20.createProducer(destinationQueue1);
       prod20.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod21 = sess21.createProducer(queue1);
+      MessageProducer prod21 = sess21.createProducer(destinationQueue1);
       prod21.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod22 = sess22.createProducer(queue1);
+      MessageProducer prod22 = sess22.createProducer(destinationQueue1);
       prod22.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageProducer prod23 = sess23.createProducer(queue1);
+      MessageProducer prod23 = sess23.createProducer(destinationQueue1);
       prod23.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      MessageProducer prod24 = sess24.createProducer(queue1);
+      MessageProducer prod24 = sess24.createProducer(destinationQueue1);
       prod24.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       Connection conn2 = cf.createConnection();
       conn2.start();
       Session sessReceive = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = sessReceive.createConsumer(queue1);
+      MessageConsumer cons = sessReceive.createConsumer(destinationQueue1);
 
       Runner[] runners = new Runner[] { new Sender("prod1", sess1, prod1, JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES),
                                        new Sender("prod2", sess2, prod2, JMSStressTestBase.NUM_PERSISTENT_MESSAGES),

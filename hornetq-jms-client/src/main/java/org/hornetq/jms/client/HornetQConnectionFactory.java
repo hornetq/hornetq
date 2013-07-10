@@ -16,10 +16,17 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
+import javax.jms.JMSSecurityException;
+import javax.jms.JMSSecurityRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XAJMSContext;
 import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
 import javax.naming.NamingException;
@@ -41,7 +48,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class HornetQConnectionFactory implements Serializable, Referenceable
+public class HornetQConnectionFactory implements Serializable, Referenceable, ConnectionFactory, XAConnectionFactory
 {
    private final static long serialVersionUID = -2810634789345348326L;
 
@@ -107,7 +114,64 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return createConnectionInternal(username, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
-   // QueueConnectionFactory implementation --------------------------------------------------------
+   @Override
+   public JMSContext createContext()
+   {
+      return createContext(null, null);
+   }
+
+   @Override
+   public JMSContext createContext(final int sessionMode)
+   {
+      return createContext(null, null, sessionMode);
+   }
+
+   @Override
+   public JMSContext createContext(final String userName, final String password)
+   {
+      return createContext(userName, password, JMSContext.AUTO_ACKNOWLEDGE);
+   }
+
+   @Override
+   public JMSContext createContext(String userName, String password, int sessionMode)
+   {
+      validateSessionMode(sessionMode);
+      try
+      {
+         HornetQConnection connection =
+               createConnectionInternal(userName, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+         return connection.createContext(sessionMode);
+      }
+      catch (JMSSecurityException e)
+      {
+         throw new JMSSecurityRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+      catch (JMSException e)
+      {
+         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+   }
+
+   /**
+    * @param mode
+    */
+   private static void validateSessionMode(int mode)
+   {
+      switch (mode)
+      {
+         case JMSContext.AUTO_ACKNOWLEDGE:
+         case JMSContext.CLIENT_ACKNOWLEDGE:
+         case JMSContext.DUPS_OK_ACKNOWLEDGE:
+         case JMSContext.SESSION_TRANSACTED:
+         {
+            return;
+         }
+         default:
+            throw new JMSRuntimeException("Invalid Session Mode: " + mode);
+      }
+   }
+
+    // QueueConnectionFactory implementation --------------------------------------------------------
 
    public QueueConnection createQueueConnection() throws JMSException
    {
@@ -143,6 +207,18 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return (XAConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
+   @Override
+   public XAJMSContext createXAContext()
+   {
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+   }
+
+   @Override
+   public XAJMSContext createXAContext(String userName, String password)
+   {
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+   }
+
    // XAQueueConnectionFactory implementation ------------------------------------------------------
 
    public XAQueueConnection createXAQueueConnection() throws JMSException
@@ -167,8 +243,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return (XATopicConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
-   // Referenceable implementation -----------------------------------------------------------------
-
+   @Override
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),
@@ -730,6 +805,4 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       }
       super.finalize();
    }
-   // Inner classes --------------------------------------------------------------------------------
-
 }

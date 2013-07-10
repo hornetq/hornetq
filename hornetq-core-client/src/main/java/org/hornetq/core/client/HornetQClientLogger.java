@@ -23,6 +23,7 @@ package org.hornetq.core.client;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -393,5 +394,15 @@ public interface HornetQClientLogger extends BasicLogger
       value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
       format = Message.Format.MESSAGE_FORMAT)
    void packetOutOfOrder(Object obj, @Cause Throwable t);
+
+   /**
+    * Warns about usage of {@link SendAcknowledgementHandler} or JMS's {@code CompletionWindow} with
+    * confirmations disabled (confirmationWindowSize=-1).
+    */
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214023,
+            value = "CompletionListener/SendAcknowledgementHandler used with confirmationWindowSize=-1. Enable confirmationWindowSize to receive acks from server!",
+            format = Message.Format.MESSAGE_FORMAT)
+   void confirmationWindowDisabledWarning();
 
 }

@@ -148,4 +148,8 @@ public interface ServerSession
    OperationContext getSessionContext();
 
    Transaction getCurrentTransaction();
+   
+   void createTransientQueue(SimpleString address,
+                             SimpleString name,
+                             SimpleString filterString) throws Exception;
 }

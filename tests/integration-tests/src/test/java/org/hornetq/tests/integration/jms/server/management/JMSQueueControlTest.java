@@ -53,7 +53,7 @@ import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
@@ -1284,7 +1284,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       server = createServer(this.getName().contains("WithRealData"), conf, mbeanServer);
 
       serverManager = new JMSServerManagerImpl(server);
-      context = new InVMContext();
+      context = new InVMNamingContext();
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();

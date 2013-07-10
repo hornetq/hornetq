@@ -21,7 +21,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
@@ -97,7 +97,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
       addServer(server);
 
       final JMSServerManagerImpl jmsServer = new JMSServerManagerImpl(server);
-      final InVMContext context = new InVMContext();
+      final InVMNamingContext context = new InVMNamingContext();
       jmsServer.setContext(context);
 
       jmsServer.start();

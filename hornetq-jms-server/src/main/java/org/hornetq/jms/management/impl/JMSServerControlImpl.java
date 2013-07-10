@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.jms.JMSRuntimeException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
@@ -1019,6 +1020,10 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
             obj.put("durable", true);
          }
          catch (IllegalArgumentException e)
+         {
+            obj.put("durable", false);
+         }
+         catch (JMSRuntimeException e)
          {
             obj.put("durable", false);
          }

@@ -13,23 +13,44 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import org.junit.Test;
-
+import javax.jms.Connection;
+import javax.jms.InvalidClientIDException;
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A ConnectionTest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ConnectionTest extends JMSTestBase
 {
+
+   private Connection conn2;
+
+   @Test
+   public void testSetSameIdToDifferentConnections() throws Exception
+   {
+      String id = "somethingElse" + name.getMethodName();
+      conn = cf.createConnection();
+      conn2 = cf.createConnection();
+      conn.getClientID();
+      conn.setClientID(id);
+      try
+      {
+         conn2.setClientID(id);
+         Assert.fail("should not happen.");
+      }
+      catch (InvalidClientIDException expected)
+      {
+         // expected
+      }
+   }
 
    @Test
    public void testGetSetConnectionFactory() throws Exception
@@ -39,7 +60,6 @@ public class ConnectionTest extends JMSTestBase
       conn.getClientID();
 
       conn.setClientID("somethingElse");
-
    }
 
    @Test
@@ -51,5 +71,16 @@ public class ConnectionTest extends JMSTestBase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       assertFalse(sess instanceof XASession);
+   }
+
+   @Override
+   @After
+   public void tearDown() throws Exception
+   {
+      if (conn2 != null)
+      {
+         conn2.close();
+      }
+      super.tearDown();
    }
 }

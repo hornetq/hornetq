@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -29,9 +27,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * 
+ *
  * A DeliveryOrderTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -42,18 +42,15 @@ public class DeliveryOrderTest extends JMSTestCase
    @Test
    public void testOutOfOrder() throws Exception
    {
-      Connection conn = null;
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
          Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sess.createProducer(queue1);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sess2.createConsumer(queue1);
 
          CountDownLatch latch = new CountDownLatch(1);
 
@@ -80,21 +77,12 @@ public class DeliveryOrderTest extends JMSTestCase
          // need extra commit for cases in which the last message index is not a multiple of 10
          sess.commit();
 
-         assertTrue(latch.await(20000, MILLISECONDS));
+         Assert.assertTrue(latch.await(20000, MILLISECONDS));
 
          if (listener.failed)
          {
             ProxyAssertSupport.fail("listener failed: " + listener.getError());
          }
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    class MyListener implements MessageListener
@@ -108,7 +96,7 @@ public class DeliveryOrderTest extends JMSTestCase
       private volatile boolean failed;
 
       private String error;
-      
+
       private final Session sess;
 
       MyListener(final CountDownLatch latch, final Session sess, final int num)
@@ -139,7 +127,7 @@ public class DeliveryOrderTest extends JMSTestCase
             }
 
             c++;
-            
+
             if (c % 500 == 0)
             {
                sess.commit();
@@ -171,7 +159,5 @@ public class DeliveryOrderTest extends JMSTestCase
       {
          error = s;
       }
-
    }
-
 }

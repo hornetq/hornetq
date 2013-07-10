@@ -38,7 +38,6 @@ import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
-import org.junit.After;
 import org.junit.Before;
 
 /**
@@ -136,9 +135,9 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       ProxyAssertSupport.assertEquals(m1.getJMSPriority(), m2.getJMSPriority());
 
       int m1PropertyCount = 0, m2PropertyCount = 0;
-      for (Enumeration p = m1.getPropertyNames(); p.hasMoreElements();)
+      for (Enumeration<String> p = m1.getPropertyNames(); p.hasMoreElements();)
       {
-         String name = (String)p.nextElement();
+         String name = p.nextElement();
 
          if (!name.startsWith("JMSX"))
          {
@@ -340,19 +339,20 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       }
    }
 
+   @SuppressWarnings("unchecked")
    public static void ensureEquivalent(final MapMessage m1, final HornetQMapMessage m2) throws JMSException
    {
       MessageHeaderTestBase.ensureEquivalent((Message)m1, m2);
 
-      for (Enumeration e = m1.getMapNames(); e.hasMoreElements();)
+      for (Enumeration<String> e = m1.getMapNames(); e.hasMoreElements();)
       {
-         String name = (String)e.nextElement();
+         String name = e.nextElement();
          ProxyAssertSupport.assertEquals(m1.getObject(name), m2.getObject(name));
       }
 
-      for (Enumeration e = m2.getMapNames(); e.hasMoreElements();)
+      for (Enumeration<String> e = m2.getMapNames(); e.hasMoreElements();)
       {
-         String name = (String)e.nextElement();
+         String name = e.nextElement();
          ProxyAssertSupport.assertEquals(m2.getObject(name), m1.getObject(name));
       }
    }
@@ -436,7 +436,6 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    protected Session queueProducerSession, queueConsumerSession;
 
    protected MessageProducer queueProducer;
-
    protected MessageConsumer queueConsumer;
 
    protected Session topicProducerSession, topicConsumerSession;
@@ -445,24 +444,20 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
 
    protected MessageConsumer topicConsumer;
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    @Override
    @Before
    public void setUp() throws Exception
    {
       super.setUp();
 
-      producerConnection = getConnectionFactory().createConnection();
-      consumerConnection = getConnectionFactory().createConnection();
+      producerConnection = addConnection(getConnectionFactory().createConnection());
+      consumerConnection = addConnection(getConnectionFactory().createConnection());
 
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
-      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
+      queueProducer = queueProducerSession.createProducer(queue1);
+      queueConsumer = queueConsumerSession.createConsumer(queue1);
 
       topicProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       topicConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -471,12 +466,5 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       topicConsumer = topicConsumerSession.createConsumer(HornetQServerTestCase.topic1);
 
       consumerConnection.start();
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-      producerConnection.close();
-      consumerConnection.close();
    }
 }

@@ -328,7 +328,7 @@ Content-Type: application/xml
       &lt;/dependency>
       &lt;dependency>
          &lt;groupId>org.jboss.spec.javax.jms&lt;/groupId>
-         &lt;artifactId>jboss-jms-api_1.1_spec&lt;/artifactId>
+         &lt;artifactId>jboss-jms-api_2.0_spec&lt;/artifactId>
          &lt;version>1.0.0.Final&lt;/version>
       &lt;/dependency>
       &lt;dependency>
