@@ -359,7 +359,31 @@ public class SimpleJMSMessage implements Message
    {
    }
 
-   // Public --------------------------------------------------------
+   @Override
+   public long getJMSDeliveryTime() throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public void setJMSDeliveryTime(long deliveryTime) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public <T> T getBody(Class<T> c) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+   @Override
+   public boolean isBodyAssignableTo(Class c) throws JMSException
+   {
+      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+   }
+
+    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 

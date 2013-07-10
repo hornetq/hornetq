@@ -83,7 +83,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    @Test
    public void testNullLocalBindAddress() throws Exception
    {
-      cf = (HornetQConnectionFactory) context.lookup("/MyConnectionFactory");
+      cf = (HornetQConnectionFactory) namingContext.lookup("/MyConnectionFactory");
 
       // apparently looking up the connection factory with the org.hornetq.jms.tests.tools.container.InVMInitialContextFactory
       // is not enough to actually serialize it so we serialize it manually

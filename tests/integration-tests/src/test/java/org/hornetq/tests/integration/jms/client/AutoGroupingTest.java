@@ -34,11 +34,14 @@ public class AutoGroupingTest extends GroupingTest
    @Override
    protected ConnectionFactory getCF() throws Exception
    {
-      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      HornetQJMSConnectionFactory cf1 =
+               (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                              new TransportConfiguration(
+                                                                                                                         INVM_CONNECTOR_FACTORY));
 
-      cf.setAutoGroup(true);
+      cf1.setAutoGroup(true);
 
-      return cf;
+      return cf1;
    }
 
    @Override

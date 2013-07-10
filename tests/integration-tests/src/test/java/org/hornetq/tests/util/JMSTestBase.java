@@ -12,14 +12,21 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.JMSProducer;
+import javax.jms.JMSRuntimeException;
+import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
@@ -27,20 +34,20 @@ import javax.management.MBeanServerFactory;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
  * A JMSBaseTest
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JMSTestBase extends ServiceTestBase
 {
@@ -53,22 +60,9 @@ public class JMSTestBase extends ServiceTestBase
 
    protected ConnectionFactory cf;
    protected Connection conn;
-
-   protected InVMContext context;
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
+   private final Set<JMSContext> contextSet = new HashSet<JMSContext>();
+   private final Random random = new Random();
+   protected InVMNamingContext namingContext;
 
    protected boolean useSecurity()
    {
@@ -85,36 +79,52 @@ public class JMSTestBase extends ServiceTestBase
       return false;
    }
 
+   protected final JMSContext addContext(JMSContext context0)
+   {
+      contextSet.add(context0);
+      return context0;
+   }
+
+   protected final JMSContext createContext()
+   {
+      return addContext(cf.createContext());
+   }
+
+   protected final JMSContext createContext(int sessionMode)
+   {
+      return addContext(cf.createContext(null, null, sessionMode));
+   }
+
    /**
     * @throws Exception
     * @throws NamingException
     */
-   protected Queue createQueue(final String name) throws Exception, NamingException
+   protected Queue createQueue(final String queueName) throws Exception, NamingException
    {
-      return createQueue(false, name);
+      return createQueue(false, queueName);
    }
 
-   protected Topic createTopic(final String name) throws Exception, NamingException
+   protected Topic createTopic(final String topicName) throws Exception, NamingException
    {
-      return createTopic(false, name);
+      return createTopic(false, topicName);
    }
 
    /**
     * @throws Exception
     * @throws NamingException
     */
-   protected Queue createQueue(final boolean storeConfig, final String name) throws Exception, NamingException
+   protected Queue createQueue(final boolean storeConfig, final String queueName) throws Exception, NamingException
    {
-      jmsServer.createQueue(storeConfig, name, null, true, "/jms/" + name);
+      jmsServer.createQueue(storeConfig, queueName, null, true, "/jms/" + queueName);
 
-      return (Queue)context.lookup("/jms/" + name);
+      return (Queue)namingContext.lookup("/jms/" + queueName);
    }
 
-   protected Topic createTopic(final boolean storeConfig, final String name) throws Exception, NamingException
+   protected Topic createTopic(final boolean storeConfig, final String topicName) throws Exception, NamingException
    {
-      jmsServer.createTopic(storeConfig, name, "/jms/" + name);
+      jmsServer.createTopic(storeConfig, topicName, "/jms/" + topicName);
 
-      return (Topic)context.lookup("/jms/" + name);
+      return (Topic)namingContext.lookup("/jms/" + topicName);
    }
 
    @Override
@@ -132,8 +142,8 @@ public class JMSTestBase extends ServiceTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
       addServer(server);
       jmsServer = new JMSServerManagerImpl(server);
-      context = new InVMContext();
-      jmsServer.setContext(context);
+      namingContext = new InVMNamingContext();
+      jmsServer.setContext(namingContext);
       jmsServer.start();
 
       registerConnectionFactory();
@@ -152,8 +162,8 @@ public class JMSTestBase extends ServiceTestBase
 
    protected void restartServer() throws Exception
    {
-      context = new InVMContext();
-      jmsServer.setContext(context);
+      namingContext = new InVMNamingContext();
+      jmsServer.setContext(namingContext);
       jmsServer.start();
       jmsServer.activated();
       registerConnectionFactory();
@@ -170,6 +180,21 @@ public class JMSTestBase extends ServiceTestBase
    {
       try
       {
+         for (JMSContext jmsContext : contextSet)
+         {
+            jmsContext.close();
+         }
+      }
+      catch (RuntimeException ignored)
+      {
+         // no-op
+      }
+      finally
+      {
+         contextSet.clear();
+      }
+      try
+      {
          if (conn != null)
             conn.close();
       }
@@ -177,13 +202,14 @@ public class JMSTestBase extends ServiceTestBase
       {
          // no-op
       }
-      context.close();
+
+      namingContext.close();
       jmsServer.stop();
       server = null;
-
+      cf = null;
       jmsServer = null;
 
-      context = null;
+      namingContext = null;
 
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
 
@@ -192,10 +218,6 @@ public class JMSTestBase extends ServiceTestBase
       super.tearDown();
    }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
    protected void registerConnectionFactory() throws Exception
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
@@ -203,8 +225,7 @@ public class JMSTestBase extends ServiceTestBase
 
       createCF(connectorConfigs, "/cf");
 
-      cf = (ConnectionFactory)context.lookup("/cf");
-
+      cf = (ConnectionFactory)namingContext.lookup("/cf");
    }
 
    /**
@@ -212,48 +233,77 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
+   protected void
+            createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings)
+                                                                                                       throws Exception
    {
-      int retryInterval = 1000;
-      double retryIntervalMultiplier = 1.0;
-      int reconnectAttempts = -1;
-      int callTimeout = 30000;
+      final int retryInterval = 1000;
+      final double retryIntervalMultiplier = 1.0;
+      final int reconnectAttempts = -1;
+      final int callTimeout = 30000;
+      final boolean ha = false;
+      List<String> connectorNames = registerConnectors(server, connectorConfigs);
 
-      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                        false,
-                                        JMSFactoryType.CF,
-                                        registerConnectors(server, connectorConfigs),
-                                        null,
-                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                        HornetQClient.DEFAULT_CONNECTION_TTL,
-                                        callTimeout,
-                                        HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
-                                        HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
-                                        HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
-                                        HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
-                                        HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND,
-                                        HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND,
-                                        HornetQClient.DEFAULT_AUTO_GROUP,
-                                        HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
-                                        HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                                        HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                                        HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
-                                        HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                        HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
-                                        retryInterval,
-                                        retryIntervalMultiplier,
-                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                        reconnectAttempts,
-                                        HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                        null,
-                                        jndiBindings);
+      ConnectionFactoryConfiguration configuration =
+               new ConnectionFactoryConfigurationImpl(name.getMethodName(), ha, connectorNames);
+      configuration.setRetryInterval(retryInterval);
+      configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      configuration.setCallTimeout(callTimeout);
+      configuration.setReconnectAttempts(reconnectAttempts);
+      testCaseCfExtraConfig(configuration);
+      jmsServer.createConnectionFactory(false, configuration, jndiBindings);
    }
 
+   /**
+    * Allows test-cases to set their own options to the {@link ConnectionFactoryConfiguration}
+    * @param configuration
+    */
+   protected void testCaseCfExtraConfig(ConnectionFactoryConfiguration configuration)
+   {
+      // no-op
+
+   }
+
+   protected final void sendMessages(JMSContext context, JMSProducer producer, Queue queue, final int total)
+   {
+      try
+      {
+         for (int j = 0; j < total; j++)
+         {
+            StringBuilder sb = new StringBuilder();
+            for (int m = 0; m < 200; m++)
+            {
+               sb.append(random.nextLong());
+            }
+            Message msg = context.createTextMessage(sb.toString());
+            msg.setIntProperty("counter", j);
+            producer.send(queue, msg);
+         }
+      }
+      catch (JMSException cause)
+      {
+         throw new JMSRuntimeException(cause.getMessage(), cause.getErrorCode(), cause);
+      }
+   }
+
+   protected final void receiveMessages(JMSConsumer consumer, final int start, final int msgCount, final boolean ack)
+
+   {
+      try
+      {
+         for (int i = start; i < msgCount; i++)
+         {
+            Message message = consumer.receive(100);
+            Assert.assertNotNull("Expecting a message " + i, message);
+            final int actual = message.getIntProperty("counter");
+            Assert.assertEquals("expected=" + i + ". Got: property['counter']=" + actual, i, actual);
+            if (ack)
+               message.acknowledge();
+         }
+      }
+      catch (JMSException cause)
+      {
+         throw new JMSRuntimeException(cause.getMessage(), cause.getErrorCode(), cause);
+      }
+   }
 }

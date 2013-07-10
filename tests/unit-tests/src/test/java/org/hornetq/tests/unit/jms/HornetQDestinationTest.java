@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.jms;
 
 import org.junit.Test;
 
+import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -87,7 +88,7 @@ public class HornetQDestinationTest extends UnitTestCase
          HornetQDestination.fromAddress(address);
          Assert.fail("IllegalArgumentException");
       }
-      catch (IllegalArgumentException e)
+      catch (JMSRuntimeException e)
       {
       }
    }

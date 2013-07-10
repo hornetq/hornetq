@@ -38,6 +38,8 @@ import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
 
+import org.hornetq.jms.client.HornetQConnectionForContext;
+import org.hornetq.jms.client.HornetQConnectionForContextImpl;
 
 /**
  * Implements the JMS Connection API and produces {@link HornetQRASession} objects.
@@ -45,7 +47,8 @@ import javax.resource.spi.ConnectionManager;
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Referenceable
+public final class HornetQRASessionFactoryImpl extends HornetQConnectionForContextImpl implements
+         HornetQRASessionFactory, HornetQConnectionForContext, Referenceable
 {
    /** Trace enabled */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
@@ -176,6 +179,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The client ID
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public String getClientID() throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -198,6 +202,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @param cID The client ID
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public void setClientID(final String cID) throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -370,6 +375,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
                                                              final String subscriptionName,
                                                              final String messageSelector,
@@ -427,6 +433,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public ConnectionConsumer createConnectionConsumer(final Destination destination,
                                                       final String name,
                                                       final ServerSessionPool pool,
@@ -454,6 +461,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The session
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -486,6 +494,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The connection metadata
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public ConnectionMetaData getMetaData() throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -502,6 +511,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @return The exception listener
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public ExceptionListener getExceptionListener() throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -517,6 +527,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @param listener The exception listener
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -531,6 +542,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * Start
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public void start() throws JMSException
    {
       checkClosed();
@@ -559,6 +571,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * @throws IllegalStateException
     * @throws JMSException Thrown if an error occurs
     */
+   @Override
    public void stop() throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -573,6 +586,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
     * Close
     * @exception JMSException Thrown if an error occurs
     */
+   @Override
    public void close() throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
@@ -699,7 +713,43 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
       }
    }
 
-   /**
+   @Override
+   public Session createSession(int sessionMode) throws JMSException
+   {
+      return allocateConnection(sessionMode);
+   }
+
+   @Override
+   public Session createSession() throws JMSException
+   {
+      return allocateConnection(Session.AUTO_ACKNOWLEDGE);
+   }
+
+   @Override
+   public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+      if (HornetQRASessionFactoryImpl.trace)
+      {
+         HornetQRALogger.LOGGER.trace("createSharedConnectionConsumer(" + topic + ", " + subscriptionName + ", " +
+                  messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      }
+
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
+   }
+
+   @Override
+   public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+      if (HornetQRASessionFactoryImpl.trace)
+      {
+         HornetQRALogger.LOGGER.trace("createSharedDurableConnectionConsumer(" + topic + ", " + subscriptionName +
+                  ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      }
+
+      throw new IllegalStateException(HornetQRASessionFactory.ISE);
+   }
+
+    /**
     * Allocation a connection
     * @param sessionType The session type
     * @return The session
@@ -778,6 +828,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }
@@ -875,6 +926,7 @@ public final class HornetQRASessionFactoryImpl implements HornetQRASessionFactor
 
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
+         je.initCause(e);
          throw je;
       }
    }

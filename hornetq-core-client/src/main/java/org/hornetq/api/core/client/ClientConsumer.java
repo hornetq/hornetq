@@ -31,7 +31,7 @@ import org.hornetq.api.core.HornetQException;
  *
  * @see ClientSession#createConsumer(String)
  */
-public interface ClientConsumer
+public interface ClientConsumer extends AutoCloseable
 {
    /**
     * Receives a message from a queue.

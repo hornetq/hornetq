@@ -20,7 +20,7 @@ import org.junit.Assert;
  * This class will proxy any JUnit assertions and send then to our log outputs.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ProxyAssertSupport extends Assert
+public class ProxyAssertSupport
 {
    private static JmsTestLogger log = JmsTestLogger.LOGGER;
 

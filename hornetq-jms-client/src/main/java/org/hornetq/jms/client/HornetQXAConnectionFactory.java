@@ -74,4 +74,6 @@ public class HornetQXAConnectionFactory extends HornetQConnectionFactory impleme
       return JMSFactoryType.XA_CF.intValue();
    }
 
+
+
 }

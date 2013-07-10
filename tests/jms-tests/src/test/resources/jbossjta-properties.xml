@@ -31,7 +31,7 @@
         default is under user.home - must be writeable!)
       -->
         <property
-            name="com.arjuna.ats.arjuna.objectstore.objectStoreDir" value="ObjectStore"/>
+            name="com.arjuna.ats.arjuna.objectstore.objectStoreDir" value="target/ObjectStore"/>
         <!--
         (default is ON)
       -->

@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,9 +19,11 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -330,7 +327,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
       // Need to check message isn't still in queue
 
-      checkEmpty(HornetQServerTestCase.queue1);
+      checkEmpty(queue1);
    }
 
    // Package protected ---------------------------------------------

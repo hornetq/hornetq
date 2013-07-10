@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -31,6 +29,8 @@ import com.arjuna.ats.jta.xa.XidImple;
 
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  *
@@ -59,13 +59,13 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -88,7 +88,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn1.close();
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -100,7 +100,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod3 = sess2.createProducer(queue2);
 
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -112,7 +112,7 @@ public class XARecoveryTest extends JMSTestCase
          prod3.send(tm11);
          prod3.send(tm12);
 
-         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod4 = sess2.createProducer(queue3);
 
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -124,7 +124,7 @@ public class XARecoveryTest extends JMSTestCase
          prod4.send(tm15);
          prod4.send(tm16);
 
-         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
 
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -146,7 +146,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
 
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -176,7 +176,7 @@ public class XARecoveryTest extends JMSTestCase
          res.prepare(xid1);
          log.trace("Prepared xid " + xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -201,7 +201,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -209,7 +209,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("creating a consumer");
 
-         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+         cons1 = sess1.createConsumer(queue2);
 
          log.trace("created a consumer");
 
@@ -233,7 +233,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+         cons2 = sess1.createConsumer(queue3);
 
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
@@ -294,13 +294,13 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -321,7 +321,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -333,7 +333,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod3 = sess2.createProducer(queue2);
 
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -345,7 +345,7 @@ public class XARecoveryTest extends JMSTestCase
          prod3.send(tm11);
          prod3.send(tm12);
 
-         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod4 = sess2.createProducer(queue3);
 
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -357,7 +357,7 @@ public class XARecoveryTest extends JMSTestCase
          prod4.send(tm15);
          prod4.send(tm16);
 
-         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
 
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -379,7 +379,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
 
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -407,7 +407,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -432,7 +432,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -440,7 +440,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("creating a consumer");
 
-         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+         cons1 = sess1.createConsumer(queue2);
 
          log.trace("created a consumer");
 
@@ -464,7 +464,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+         cons2 = sess1.createConsumer(queue3);
 
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
@@ -545,13 +545,13 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -572,7 +572,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -584,7 +584,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod3 = sess2.createProducer(queue2);
 
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -596,7 +596,7 @@ public class XARecoveryTest extends JMSTestCase
          prod3.send(tm11);
          prod3.send(tm12);
 
-         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod4 = sess2.createProducer(queue3);
 
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -608,7 +608,7 @@ public class XARecoveryTest extends JMSTestCase
          prod4.send(tm15);
          prod4.send(tm16);
 
-         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
 
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -630,7 +630,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
 
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -673,7 +673,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -694,7 +694,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("committed the tx");
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -702,7 +702,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("creating a consumer");
 
-         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+         cons1 = sess1.createConsumer(queue2);
 
          log.trace("created a consumer");
 
@@ -726,7 +726,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+         cons2 = sess1.createConsumer(queue3);
 
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
@@ -786,8 +786,8 @@ public class XARecoveryTest extends JMSTestCase
             }
          }
          Thread.sleep(1000);
-         removeAllMessages(HornetQServerTestCase.queue2.getQueueName(), true);
-         removeAllMessages(HornetQServerTestCase.queue3.getQueueName(), true);
+         removeAllMessages(queue2.getQueueName(), true);
+         removeAllMessages(queue3.getQueueName(), true);
       }
    }
 
@@ -810,13 +810,13 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -837,7 +837,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -849,7 +849,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod3 = sess2.createProducer(queue2);
 
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -861,7 +861,7 @@ public class XARecoveryTest extends JMSTestCase
          prod3.send(tm11);
          prod3.send(tm12);
 
-         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod4 = sess2.createProducer(queue3);
 
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -873,7 +873,7 @@ public class XARecoveryTest extends JMSTestCase
          prod4.send(tm15);
          prod4.send(tm16);
 
-         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
 
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -895,7 +895,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
 
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -937,7 +937,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -960,7 +960,7 @@ public class XARecoveryTest extends JMSTestCase
 
          Thread.sleep(1000);
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
@@ -968,7 +968,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("creating a consumer");
 
-         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+         cons1 = sess1.createConsumer(queue2);
 
          log.trace("created a consumer");
 
@@ -992,7 +992,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+         cons2 = sess1.createConsumer(queue3);
 
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
@@ -1068,13 +1068,13 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -1095,7 +1095,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.start();
 
@@ -1107,7 +1107,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod3 = sess2.createProducer(queue2);
 
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -1119,7 +1119,7 @@ public class XARecoveryTest extends JMSTestCase
          prod3.send(tm11);
          prod3.send(tm12);
 
-         MessageProducer prod4 = sess2.createProducer(HornetQServerTestCase.queue3);
+         MessageProducer prod4 = sess2.createProducer(queue3);
 
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -1131,7 +1131,7 @@ public class XARecoveryTest extends JMSTestCase
          prod4.send(tm15);
          prod4.send(tm16);
 
-         MessageConsumer cons1 = sess2.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
 
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
@@ -1153,7 +1153,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue3);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
 
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
@@ -1187,13 +1187,13 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.start();
 
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         cons1 = sess1.createConsumer(HornetQServerTestCase.queue2);
+         cons1 = sess1.createConsumer(queue2);
 
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
@@ -1215,7 +1215,7 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         cons2 = sess1.createConsumer(HornetQServerTestCase.queue3);
+         cons2 = sess1.createConsumer(queue3);
 
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
@@ -1291,7 +1291,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -1306,7 +1306,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod1 = sess1.createProducer(queue4);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
 
@@ -1322,11 +1322,11 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("prepared tx");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons2 = sess2.createConsumer(queue4);
 
          conn2.start();
 
@@ -1338,7 +1338,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1425,7 +1425,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -1440,7 +1440,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod1 = sess1.createProducer(queue4);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
 
@@ -1456,11 +1456,11 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("prepared tx");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons2 = sess2.createConsumer(queue4);
 
          conn2.start();
 
@@ -1486,7 +1486,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1504,11 +1504,11 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("recovered");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         conn2 = createConnection();
 
          sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         cons2 = sess2.createConsumer(HornetQServerTestCase.queue4);
+         cons2 = sess2.createConsumer(queue4);
 
          conn2.start();
 
@@ -1590,17 +1590,17 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
          // First send a message to the queue
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess1.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod = sess1.createProducer(queue4);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
 
          prod.send(tm1);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess2 = conn2.createXASession();
 
@@ -1611,7 +1611,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons = sess2.createConsumer(queue4);
 
          conn2.start();
 
@@ -1631,7 +1631,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1657,11 +1657,11 @@ public class XARecoveryTest extends JMSTestCase
 
          conn3.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons1 = sess1.createConsumer(queue4);
 
          conn1.start();
 
@@ -1725,17 +1725,17 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
          // First send a message to the queue
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess1.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod = sess1.createProducer(queue4);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
 
          prod.send(tm1);
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess2 = conn2.createXASession();
 
@@ -1746,7 +1746,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons = sess2.createConsumer(queue4);
 
          conn2.start();
 
@@ -1782,7 +1782,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -1804,11 +1804,11 @@ public class XARecoveryTest extends JMSTestCase
 
          conn3.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons1 = sess1.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons1 = sess1.createConsumer(queue4);
 
          conn1.start();
 
@@ -1878,7 +1878,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -1906,7 +1906,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.setClientID("wib1");
 
@@ -1986,7 +1986,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -2011,7 +2011,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2135,7 +2135,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2163,7 +2163,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          conn2.setClientID("wib1");
 
@@ -2257,7 +2257,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = JMSTestCase.cf.createXAConnection();
+         conn3 = createXAConnection();;
 
          XASession sess3 = conn3.createXASession();
 
@@ -2280,7 +2280,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("committed the tx");
 
-         conn1 = JMSTestCase.cf.createConnection();
+         conn1 = createConnection();
 
          conn1.setClientID("wib1");
 
@@ -2405,9 +2405,9 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2427,7 +2427,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod1 = sess1.createProducer(queue4);
 
          TextMessage tm1 = sess1.createTextMessage("tm1");
 
@@ -2443,7 +2443,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res2.start(xid2, XAResource.TMNOFLAGS);
 
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue4);
+         MessageProducer prod2 = sess2.createProducer(queue4);
 
          TextMessage tm3 = sess2.createTextMessage("tm3");
 
@@ -2480,7 +2480,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2500,10 +2500,10 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("Creating conn");
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue4);
+         MessageConsumer cons = sessRec.createConsumer(queue4);
          conn3.start();
 
          log.trace("Created conn3");
@@ -2609,9 +2609,9 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2629,7 +2629,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod1 = sess1.createProducer(queue2);
 
          TextMessage tm1 = sess1.createTextMessage("alpha");
 
@@ -2639,7 +2639,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res2.start(xid2, XAResource.TMNOFLAGS);
 
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue2);
+         MessageProducer prod2 = sess2.createProducer(queue2);
 
          TextMessage tm2 = sess2.createTextMessage("beta");
 
@@ -2664,7 +2664,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2681,10 +2681,10 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xid2, false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue2);
+         MessageConsumer cons = sessRec.createConsumer(queue2);
          conn3.start();
 
          Message msg = cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -2759,13 +2759,9 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
+         conn1 = createXAConnection();
 
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -2783,7 +2779,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod1 = sess1.createProducer(queue1);
 
          TextMessage tm1 = sess1.createTextMessage("testing1");
 
@@ -2793,7 +2789,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res2.start(xid2, XAResource.TMNOFLAGS);
 
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod2 = sess2.createProducer(queue1);
 
          TextMessage tm2 = sess2.createTextMessage("testing2");
 
@@ -2818,7 +2814,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2835,10 +2831,10 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xid2, false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessRec.createConsumer(queue1);
          conn3.start();
 
          TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -2849,49 +2845,10 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals("testing2", m2.getText());
-
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 
    @Test
+   @Ignore("Ignored because: (i) it was ignored by our pom.xml, (ii) currently it still fails")
    public void testMockCoordinatorRecovery3() throws Exception
    {
       XAConnection conn1 = null;
@@ -2899,13 +2856,9 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
+         conn1 = createXAConnection();;
 
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+         conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -2923,7 +2876,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod1 = sess1.createProducer(queue1);
 
          TextMessage tm1 = sess1.createTextMessage("testing1");
 
@@ -2933,7 +2886,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res2.start(xid2, XAResource.TMNOFLAGS);
 
-         MessageProducer prod2 = sess2.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod2 = sess2.createProducer(queue1);
 
          TextMessage tm2 = sess2.createTextMessage("testing2");
 
@@ -2958,7 +2911,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2975,10 +2928,10 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xids[1], false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+         conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessRec.createConsumer(queue1);
          conn3.start();
 
          TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
@@ -2989,62 +2942,15 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals("testing2", m2.getText());
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 
    @Test
    public void testMultiChannelRecovery() throws Exception
    {
-      XAConnection conn1 = null;
 
-      XAConnection conn2 = null;
+      XAConnection conn1 = createXAConnection();;
 
-      Connection conn3 = null;
-
-      try
-      {
-
-         conn1 = JMSTestCase.cf.createXAConnection();
-
-         conn2 = JMSTestCase.cf.createXAConnection();
+      XAConnection conn2 = createXAConnection();;
 
          XASession sess1 = conn1.createXASession();
 
@@ -3062,8 +2968,8 @@ public class XARecoveryTest extends JMSTestCase
 
          res1.start(xid1, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(HornetQServerTestCase.queue2);
-         MessageProducer prod2 = sess1.createProducer(HornetQServerTestCase.queue3);
+      MessageProducer prod1 = sess1.createProducer(queue2);
+      MessageProducer prod2 = sess1.createProducer(queue3);
 
          TextMessage tm1 = sess1.createTextMessage("testing1");
          TextMessage tm2 = sess1.createTextMessage("testing2");
@@ -3075,7 +2981,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res2.start(xid2, XAResource.TMNOFLAGS);
 
-         MessageProducer prod3 = sess2.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod3 = sess2.createProducer(queue1);
 
          TextMessage tm3 = sess2.createTextMessage("testing3");
 
@@ -3100,7 +3006,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = JMSTestCase.cf.createXAConnection();
+         conn1 = createXAConnection();;
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -3117,13 +3023,13 @@ public class XARecoveryTest extends JMSTestCase
 
          res.commit(xids[1], false);
 
-         conn3 = JMSTestCase.cf.createConnection();
+      Connection conn3 = createConnection();
 
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons1 = sessRec.createConsumer(HornetQServerTestCase.queue2);
-         MessageConsumer cons2 = sessRec.createConsumer(HornetQServerTestCase.queue3);
-         MessageConsumer cons3 = sessRec.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons1 = sessRec.createConsumer(queue2);
+      MessageConsumer cons2 = sessRec.createConsumer(queue3);
+      MessageConsumer cons3 = sessRec.createConsumer(queue1);
 
          conn3.start();
 
@@ -3139,44 +3045,5 @@ public class XARecoveryTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(m3);
          ProxyAssertSupport.assertEquals("testing3", m3.getText());
 
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            try
-            {
-               conn1.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn2 != null)
-         {
-            try
-            {
-               conn2.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-
-         if (conn3 != null)
-         {
-            try
-            {
-               conn3.close();
-            }
-            catch (Exception e)
-            {
-               // Ignore
-            }
-         }
-      }
    }
 }

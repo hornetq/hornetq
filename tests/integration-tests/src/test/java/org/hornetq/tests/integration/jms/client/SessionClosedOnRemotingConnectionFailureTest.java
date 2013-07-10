@@ -103,7 +103,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         null,
                                         "/cffoo");
 
-      cf = (ConnectionFactory)context.lookup("/cffoo");
+      cf = (ConnectionFactory)namingContext.lookup("/cffoo");
 
       Connection conn = cf.createConnection();
 

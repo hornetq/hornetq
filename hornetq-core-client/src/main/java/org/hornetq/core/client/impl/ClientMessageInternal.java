@@ -20,10 +20,6 @@ import org.hornetq.core.message.impl.MessageInternal;
  * A ClientMessageInternal
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 10 Dec 2008 18:05:24
- *
- *
  */
 public interface ClientMessageInternal extends ClientMessage, MessageInternal
 {

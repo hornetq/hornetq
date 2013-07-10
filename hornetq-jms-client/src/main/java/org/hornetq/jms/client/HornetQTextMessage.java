@@ -104,7 +104,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
       buff.writeNullableSimpleString(this.text);
    }
 
-   public String getText() throws JMSException
+   public String getText()
    {
       if (text != null)
       {
@@ -117,7 +117,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    }
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -127,12 +127,6 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    // HornetQRAMessage override -----------------------------------------
 
    @Override
-   public void doBeforeSend() throws Exception
-   {
-      super.doBeforeSend();
-   }
-
-   @Override
    public void doBeforeReceive() throws HornetQException
    {
       super.doBeforeReceive();
@@ -140,13 +134,18 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
       text = message.getBodyBuffer().readNullableSimpleString();
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   protected <T> T getBodyInternal(Class<T> c)
+   {
+      return (T)getText();
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   // Public --------------------------------------------------------
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c)
+   {
+      if (text == null)
+         return true;
+      return c.isAssignableFrom(java.lang.String.class);
+   }
 }

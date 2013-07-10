@@ -31,26 +31,29 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.utils.UUIDGenerator;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
  * A OpenCloseStressTest.
- *
- * This stress test starts several publisher connections and several subscriber connections, then sends and consumes
- * messages while concurrently closing the sessions.
- *
- * This test will help catch race conditions that occurred with rapid open/closing of sessions when messages are being
- * sent/received
- *
+ * <p>
+ * This stress test starts several publisher connections and several subscriber connections, then
+ * sends and consumes messages while concurrently closing the sessions.
+ * <p>
+ * This test will help catch race conditions that occurred with rapid open/closing of sessions when
+ * messages are being sent/received
+ * <p>
  * E.g. http://jira.jboss.com/jira/browse/JBMESSAGING-982
- *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 2349 $</tt>
- *
  */
 public class OpenCloseStressTest extends HornetQServerTestCase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    InitialContext ic;
 
    ConnectionFactory cf;
@@ -76,6 +79,7 @@ public class OpenCloseStressTest extends HornetQServerTestCase
       log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {

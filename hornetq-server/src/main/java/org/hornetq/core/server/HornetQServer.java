@@ -163,6 +163,20 @@ public interface HornetQServer extends HornetQComponent
     */
    boolean waitForBackupSync(long timeout, TimeUnit unit) throws InterruptedException;
 
+   /**
+    * Creates a transient queue. A queue that will exist as long as there are consumers.
+    * The queue will be deleted as soon as all the consumers are removed.
+    *
+    * Notice: the queue won't be deleted until the first consumer arrives.
+    * @param address
+    * @param name
+    * @param filterString
+    * @throws Exception
+    */
+   void createTransientQueue(final SimpleString address,
+                             final SimpleString name,
+                             final SimpleString filterString) throws Exception;
+
    Queue createQueue(SimpleString address,
                      SimpleString queueName,
                      SimpleString filter,

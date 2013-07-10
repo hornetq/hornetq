@@ -43,7 +43,7 @@ import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 
 public class TopicControlUsingJMSTest extends ManagementTestBase
@@ -312,7 +312,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       Object[] data = (Object[])proxy.invokeOperation("listMessagesForSubscription",
-                                                      HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                      HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                                subscriptionName));
       Assert.assertEquals(3, data.length);
 
@@ -327,7 +327,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQDestination.createQueueNameForDurableSubscription(unknownClientID,
+                               HornetQDestination.createQueueNameForDurableSubscription(true, unknownClientID,
                                                                                         subscriptionName));
          Assert.fail();
       }
@@ -344,7 +344,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQDestination.createQueueNameForDurableSubscription(clientID, unknownSubscription));
+                               HornetQDestination.createQueueNameForDurableSubscription(true, clientID, unknownSubscription));
          Assert.fail();
       }
       catch (Exception e)
@@ -448,7 +448,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
-      serverManager.setContext(new InVMContext());
+      serverManager.setContext(new InVMNamingContext());
       serverManager.activated();
 
       clientID = RandomUtil.randomString();

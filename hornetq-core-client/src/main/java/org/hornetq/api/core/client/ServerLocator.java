@@ -33,7 +33,7 @@ import org.hornetq.core.client.impl.Topology;
  * client. But the listeners will listen for updates on grouping.
  * @author Tim Fox
  */
-public interface ServerLocator
+public interface ServerLocator extends AutoCloseable
 {
 
    /**
@@ -248,18 +248,17 @@ public interface ServerLocator
 
    /**
     * Returns the size for the confirmation window of clients using this factory.
-    *
-    * Value is in bytes or -1 (to disable the window). Default value is {@link HornetQClient#DEFAULT_CONFIRMATION_WINDOW_SIZE}.
-    *
+    * <p>
+    * Value is in bytes or -1 (to disable the window). Default value is
+    * {@link HornetQClient#DEFAULT_CONFIRMATION_WINDOW_SIZE}.
     * @return the size for the confirmation window of clients using this factory
     */
    int getConfirmationWindowSize();
 
    /**
     * Sets the size for the confirmation window buffer of clients using this factory.
-    *
+    * <p>
     * Value must be -1 (to disable the window) or greater than 0.
-
     * @param confirmationWindowSize size of the confirmation window (in bytes)
     */
    void setConfirmationWindowSize(int confirmationWindowSize);

@@ -17,23 +17,17 @@ import java.util.Enumeration;
 import java.util.HashSet;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.MapMessage;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
-import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -44,50 +38,8 @@ import org.junit.Test;
  *
  *
  */
-public class MessageBodyTest extends HornetQServerTestCase
+public class MessageBodyTest extends MessageBodyTestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   protected Connection producerConnection, consumerConnection;
-
-   protected Session queueProducerSession, queueConsumerSession;
-
-   protected MessageProducer queueProducer;
-
-   protected MessageConsumer queueConsumer;
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   @Before
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      producerConnection = getConnectionFactory().createConnection();
-      consumerConnection = getConnectionFactory().createConnection();
-
-      queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
-      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
-
-      consumerConnection.start();
-   }
-
-   @After
-   public void tearDown() throws Exception
-   {
-      producerConnection.close();
-      consumerConnection.close();
-   }
 
    @Test
    public void testSMBodyReadable() throws Exception
@@ -273,7 +225,7 @@ public class MessageBodyTest extends HornetQServerTestCase
          // OK
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(m);
 
       BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
 
@@ -293,7 +245,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       int ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
 
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       byte[] bytes2 = new byte[3];
       ret = m2.readBytes(bytes2);
@@ -316,7 +268,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -620,7 +572,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
 
       MapMessage m2 = (MapMessage)queueConsumer.receive(2000);
 
@@ -720,6 +672,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       ProxyAssertSupport.assertFalse(m2.itemExists("sausages"));
 
       HashSet<String> itemNames = new HashSet<String>();
+      @SuppressWarnings("unchecked")
       Enumeration<String> en = m2.getMapNames();
       while (en.hasMoreElements())
       {
@@ -1183,7 +1136,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       ObjectMessage m1 = queueProducerSession.createObjectMessage(obj);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
 
       ObjectMessage m2 = (ObjectMessage)queueConsumer.receive(2000);
 
@@ -1197,7 +1150,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m3.setObject(obj);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m3);
+      queueProducer.send(m3);
 
       obj.str = "xyz123";
 
@@ -1343,7 +1296,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       {
       }
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(m);
 
       StreamMessage m2 = (StreamMessage)queueConsumer.receive(2000);
 
@@ -1361,7 +1314,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       int ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
 
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -1390,7 +1343,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       bytes = new byte[6];
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(6, ret);
-      assertByteArraysEqual(myBytes, bytes);
+      Assert.assertArrayEquals(myBytes, bytes);
 
       ret = m2.readBytes(bytes);
       ProxyAssertSupport.assertEquals(-1, ret);
@@ -1619,14 +1572,14 @@ public class MessageBodyTest extends HornetQServerTestCase
 
       m.setText(myString);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(m);
 
       TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myString, m2.getText());
 
       m = queueProducerSession.createTextMessage(myString);
-      queueProducer.send(HornetQServerTestCase.queue1, m);
+      queueProducer.send(m);
 
       m2 = (TextMessage)queueConsumer.receive(2000);
 
@@ -1645,32 +1598,4 @@ public class MessageBodyTest extends HornetQServerTestCase
       ProxyAssertSupport.assertNull(m2.getText());
       m2.setText("Now it is read-write");
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)
-   {
-      if (bytes1 == null | bytes2 == null)
-      {
-         ProxyAssertSupport.fail();
-      }
-
-      if (bytes1.length != bytes2.length)
-      {
-         ProxyAssertSupport.fail();
-      }
-
-      for (int i = 0; i < bytes1.length; i++)
-      {
-         ProxyAssertSupport.assertEquals(bytes1[i], bytes2[i]);
-      }
-
-   }
-
-   // Inner classes -------------------------------------------------
-
 }

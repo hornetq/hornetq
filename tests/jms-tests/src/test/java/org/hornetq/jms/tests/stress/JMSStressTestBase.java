@@ -20,6 +20,7 @@ import javax.jms.XASession;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -28,8 +29,16 @@ import org.junit.After;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  *
 */
-public class JMSStressTestBase extends HornetQServerTestCase
+public abstract class JMSStressTestBase extends HornetQServerTestCase
 {
+   public static final boolean STRESS_TESTS_ENABLED = false;
+
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    protected static final int NUM_PERSISTENT_MESSAGES = 4000;
 
    protected static final int NUM_NON_PERSISTENT_MESSAGES = 6000;
@@ -42,25 +51,21 @@ public class JMSStressTestBase extends HornetQServerTestCase
 
    protected Destination topic;
 
-   protected Destination queue1;
-
-   protected Destination queue2;
-
-   protected Destination queue3;
-
-   protected Destination queue4;
+   protected Destination destinationQueue1;
+   protected Destination destinationQueue2;
+   protected Destination destinationQueue3;
+   protected Destination destinationQueue4;
 
    protected Topic topic1;
-
    protected Topic topic2;
-
    protected Topic topic3;
-
    protected Topic topic4;
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
+      super.tearDown();
       if (checkNoMessageData())
       {
          ProxyAssertSupport.fail("Message data still exists");

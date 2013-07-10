@@ -96,7 +96,7 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.spec.javax.jms</groupId>
-         <artifactId>jboss-jms-api_1.1_spec</artifactId>
+         <artifactId>jboss-jms-api_2.0_spec</artifactId>
       </dependency>
        <dependency>
            <groupId>org.jboss.logging</groupId>
@@ -132,7 +132,6 @@
             <configuration>
                <skipTests>${skipJmsTests}</skipTests>
                <excludes>
-                  <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/XARecoveryTest.java</exclude>
                   <exclude>org/hornetq/jms/tests/XAResourceRecoveryTest.java</exclude>
                   <exclude>org/hornetq/jms/tests/XATest.java</exclude>
