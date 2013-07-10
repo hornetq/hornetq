@@ -670,6 +670,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    }
 
+   public void individualCancel(final long consumerID, final long messageID, boolean failed) throws Exception
+   {
+      ServerConsumer consumer = consumers.get(consumerID);
+
+      if(consumer != null)
+      {
+         consumer.individualCancel(messageID, failed);
+      }
+
+   }
+
+
    public void expire(final long consumerID, final long messageID) throws Exception
    {
       MessageReference ref = consumers.get(consumerID).removeReferenceByID(messageID);
@@ -1215,6 +1227,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       consumer.receiveCredits(credits);
+   }
+
+   @Override
+   public Transaction getCurrentTransaction()
+   {
+      return tx;
    }
 
    public void sendLarge(final MessageInternal message) throws Exception

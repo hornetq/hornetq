@@ -52,6 +52,14 @@
          <artifactId>netty</artifactId>
       </dependency>
       <dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-jms</artifactId>
+      </dependency>
+      <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <scope>test</scope>
