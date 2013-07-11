@@ -35,16 +35,15 @@ public interface ClientMessage extends Message
    int getDeliveryCount();
 
    /**
-    * Set the delivery count for this message.
-    *
+    * Sets the delivery count for this message.
+    * <p>
     * This method is not meant to be called by HornetQ clients.
-    *
     * @param deliveryCount message delivery count
     */
    void setDeliveryCount(int deliveryCount);
 
    /**
-    * Acknowledge reception of this message.
+    * Acknowledges reception of this message.
     * <p>
     * If the session responsible to acknowledge this message has {@code autoCommitAcks} set to
     * {@code true}, the transaction will automatically commit the current transaction. Otherwise,
@@ -55,14 +54,12 @@ public interface ClientMessage extends Message
    void acknowledge() throws HornetQException;
 
    /**
-    * Acknowledge reception of a single message.
-    *
-    * If the session responsible to acknowledge this message has  {@code autoCommitAcks}
-    * set to {@code true}, the transaction will automatically commit the current transaction.
-    * Otherwise, this acknwoledgement will not be committed until the client commits the session transaction.
-    *
-    * @throws HornetQException if an error occured while acknowledging the message.
-    *
+    * Acknowledges reception of a single message.
+    * <p>
+    * If the session responsible to acknowledge this message has {@code autoCommitAcks} set to
+    * {@code true}, the transaction will automatically commit the current transaction. Otherwise,
+    * this acknowledgement will not be committed until the client commits the session transaction.
+    * @throws HornetQException if an error occurred while acknowledging the message.
     * @see ClientSession#isAutoCommitAcks()
     */
    void individualAcknowledge() throws HornetQException;
@@ -78,7 +75,7 @@ public interface ClientMessage extends Message
    void checkCompletion() throws HornetQException;
 
    /**
-    * Return the size (in bytes) of this message's body
+    * Returns the size (in bytes) of this message's body
     */
    int getBodySize();
 

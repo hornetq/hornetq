@@ -36,7 +36,7 @@ import org.hornetq.api.core.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
-public interface ClientProducer
+public interface ClientProducer extends AutoCloseable
 {
    /**
     * Returns the address where messages will be sent.
@@ -65,6 +65,18 @@ public interface ClientProducer
    /**
     * Sends a message to the specified address instead of the ClientProducer's address. <br>
     * <br>
+    * This message will be sent asynchronously.
+    * <p>
+    * The handler will only get called if {@link ServerLocator#setConfirmationWindowSize(int) -1}.
+    * @param message the message to send
+    * @param handler handler to call after receiving a SEND acknowledgement from the server
+    * @throws HornetQException if an exception occurs while sending the message
+    */
+   void send(Message message, SendAcknowledgementHandler handler) throws HornetQException;
+
+   /**
+    * Sends a message to the specified address instead of the ClientProducer's address. <br>
+    * <br>
     * This will block until confirmation that the message has reached the server has been received
     * if {@link ServerLocator#setBlockOnDurableSend(boolean)} or
     * {@link ServerLocator#setBlockOnNonDurableSend(boolean)} are set to true for the specified
@@ -74,6 +86,19 @@ public interface ClientProducer
     * @throws HornetQException if an exception occurs while sending the message
     */
    void send(SimpleString address, Message message) throws HornetQException;
+
+   /**
+    * Sends a message to the specified address instead of the ClientProducer's address. <br>
+    * <br>
+    * This message will be sent asynchronously.
+    * <p>
+    * The handler will only get called if {@link ServerLocator#setConfirmationWindowSize(int) -1}.
+    * @param address the address where the message will be sent
+    * @param message the message to send
+    * @param handler handler to call after receiving a SEND acknowledgement from the server
+    * @throws HornetQException if an exception occurs while sending the message
+    */
+   void send(SimpleString address, Message message, SendAcknowledgementHandler handler) throws HornetQException;
 
    /**
     * Sends a message to the specified address instead of the ClientProducer's address. <br>

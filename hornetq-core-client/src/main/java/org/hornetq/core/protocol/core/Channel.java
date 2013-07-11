@@ -31,8 +31,7 @@ import org.hornetq.api.core.HornetQException;
 public interface Channel
 {
    /**
-    * returns the id of this channel.
-    *
+    * Returns the id of this channel.
     * @return the id
     */
    long getID();
@@ -41,32 +40,32 @@ public interface Channel
    boolean supports(byte packetID);
 
    /**
-    * sends a packet on this channel.
-    *
+    * Sends a packet on this channel.
     * @param packet the packet to send
-    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was
+    *         successful
     */
    boolean send(Packet packet);
 
    /**
-    * sends a packet on this channel using batching algorithm if appropriate
-    *
+    * Sends a packet on this channel using batching algorithm if appropriate
     * @param packet the packet to send
-    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was
+    *         successful
     */
    boolean sendBatched(Packet packet);
 
    /**
-    * sends a packet on this channel and then blocks until it has been written to the connection.
-    *
+    * Sends a packet on this channel and then blocks until it has been written to the connection.
     * @param packet the packet to send
-    * @return false if the packet was rejected by an outgoing interceptor; true if the send was successful
+    * @return false if the packet was rejected by an outgoing interceptor; true if the send was
+    *         successful
     */
    boolean sendAndFlush(Packet packet);
 
    /**
-    * sends a packet on this channel and then blocks until a response is received or a timeout occurs.
-    *
+    * Sends a packet on this channel and then blocks until a response is received or a timeout
+    * occurs.
     * @param packet the packet to send
     * @param expectedPacket the packet being expected.
     * @return the response
@@ -89,17 +88,16 @@ public interface Channel
    ChannelHandler getHandler();
 
    /**
-    * closes this channel.
+    * Closes this channel.
     * <p/>
     * once closed no packets can be sent.
     */
    void close();
 
    /**
-    * transfers the connection used by this channel to the one specified.
+    * Transfers the connection used by this channel to the one specified.
     * <p/>
     * All new packets will be sent via this connection.
-    *
     * @param newConnection the new connection
     */
    void transferConnection(CoreRemotingConnection newConnection);

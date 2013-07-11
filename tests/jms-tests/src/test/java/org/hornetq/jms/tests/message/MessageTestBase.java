@@ -61,8 +61,8 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       conn = getConnectionFactory().createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProd = session.createProducer(HornetQServerTestCase.queue1);
-      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
+      queueProd = session.createProducer(queue1);
+      queueCons = session.createConsumer(queue1);
 
       conn.start();
    }
@@ -70,7 +70,8 @@ public abstract class MessageTestBase extends HornetQServerTestCase
    @After
    public void tearDown() throws Exception
    {
-      conn.close();
+      if (conn != null)
+         conn.close();
    }
 
    @Test
@@ -118,9 +119,9 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       session.close();
       session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-      queueProd = session.createProducer(HornetQServerTestCase.queue1);
+      queueProd = session.createProducer(queue1);
       queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
-      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
+      queueCons = session.createConsumer(queue1);
 
       queueProd.send(message);
 
@@ -132,7 +133,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       session.close();
 
       session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
+      queueCons = session.createConsumer(queue1);
       r = queueCons.receive(1000);
 
       assertEquivalent(r, DeliveryMode.PERSISTENT, true);
@@ -151,9 +152,9 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       session.close();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProd = session.createProducer(HornetQServerTestCase.queue1);
+      queueProd = session.createProducer(queue1);
       queueProd.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      queueCons = session.createConsumer(HornetQServerTestCase.queue1);
+      queueCons = session.createConsumer(queue1);
 
       queueProd.send(message);
       queueProd.send(message);
@@ -217,7 +218,7 @@ public abstract class MessageTestBase extends HornetQServerTestCase
       ProxyAssertSupport.assertEquals("this is the correlation ID", m.getJMSCorrelationID());
       ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1, m.getJMSReplyTo());
       ProxyAssertSupport.assertEquals("someArbitraryType", m.getJMSType());
-      ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1, m.getJMSDestination());
+      ProxyAssertSupport.assertEquals(queue1, m.getJMSDestination());
       ProxyAssertSupport.assertEquals("JMS Redelivered property", m.getJMSRedelivered(), redelivered);
       ProxyAssertSupport.assertEquals(mode, m.getJMSDeliveryMode());
    }

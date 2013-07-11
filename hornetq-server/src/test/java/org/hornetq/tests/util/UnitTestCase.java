@@ -1138,7 +1138,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          {
             if (closeRunnable != null)
             {
-               exceptions.add(closeRunnable.stop().e);
+               exceptions.add(closeRunnable.stop().traceException);
             }
          }
       }

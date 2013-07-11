@@ -30,7 +30,7 @@ import org.hornetq.utils.UUID;
  * <p>
  * Message can contain properties specified by the users. It is possible to convert from some types
  * to other types as specified by the following table:
- * 
+ *
  * <pre>
  * |        | boolean byte short int long float double String byte[]
  * |----------------------------------------------------------------
@@ -45,7 +45,7 @@ import org.hornetq.utils.UUID;
  * |byte[]  |                                                   X
  * |-----------------------------------------------------------------
  * </pre>
- * 
+ *
  * <br>
  * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a
  * {@code boolean}), a {@link PropertyConversionException} will be thrown.
@@ -263,6 +263,18 @@ public interface Message
    void putShortProperty(String key, short value);
 
    /**
+    * Puts a char property in this message.
+    * @param key property name
+    * @param value property value
+    */
+   void putCharProperty(SimpleString key, char value);
+
+   /**
+    * @see #putCharProperty(SimpleString, char)
+    */
+   void putCharProperty(String key, char value);
+
+   /**
     * Puts a int property in this message.
     *
     * @param key property name
@@ -331,27 +343,25 @@ public interface Message
    void putStringProperty(String key, String value);
 
    /**
-    * Puts an Object property in this message.
-    * <br>
+    * Puts an Object property in this message. <br>
     * Accepted types are:
     * <ul>
-    *   <li>Boolean</li>
-    *   <li>Byte</li>
-    *   <li>Short</li>
-    *   <li>Integer</li>
-    *   <li>Long</li>
-    *   <li>Float</li>
-    *   <li>Double</li>
-    *   <li>String</li>
-    *   <li>SimpleString</li>
+    * <li>Boolean</li>
+    * <li>Byte</li>
+    * <li>Short</li>
+    * <li>Character</li>
+    * <li>Integer</li>
+    * <li>Long</li>
+    * <li>Float</li>
+    * <li>Double</li>
+    * <li>String</li>
+    * <li>SimpleString</li>
     * </ul>
-    *
     * Using any other type will throw a PropertyConversionException.
-    *
     * @param key property name
     * @param value property value
-    *
-    * @throws HornetQPropertyConversionException if the value is not one of the accepted property types.
+    * @throws HornetQPropertyConversionException if the value is not one of the accepted property
+    *            types.
     */
    void putObjectProperty(SimpleString key, Object value) throws HornetQPropertyConversionException;
 

@@ -31,12 +31,7 @@ import org.junit.Test;
 
 /**
  * A SendAcknowledgementsTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 9 Feb 2009 13:29:19
- *
- *
  */
 public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
@@ -66,10 +61,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
 
-      try
-      {
-
-         boolean failed = false;
+      boolean failed = false;
          try
          {
             session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
@@ -87,11 +79,6 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
          assertTrue("Expected a failure on setting ACK Handler", failed);
 
          session.createQueue(address, queueName, false);
-      }
-      finally
-      {
-         session.close();
-      }
    }
 
    @Test
@@ -104,6 +91,18 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
    public void testSendAcknowledgements() throws Exception
    {
       verifySendAcknowledgements(1024);
+   }
+
+   @Test
+   public void testSendAcknowledgementsNoWindowSizeProducerOnly() throws Exception
+   {
+      verifySendAcknowledgementsProducerOnly(0);
+   }
+
+   @Test
+   public void testSendAcknowledgementsProducer() throws Exception
+   {
+      verifySendAcknowledgementsProducerOnly(1024);
    }
 
    public void verifySendAcknowledgements(int windowSize) throws Exception
@@ -121,28 +120,76 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
       final int numMessages = 1000;
 
-      final CountDownLatch latch = new CountDownLatch(numMessages);
+      LatchAckHandler handler = new LatchAckHandler("session", new CountDownLatch(numMessages));
 
-      session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
-      {
-         public void sendAcknowledged(final Message message)
-         {
-            latch.countDown();
-         }
-      });
+      LatchAckHandler producerHandler = new LatchAckHandler("producer", new CountDownLatch(numMessages));
+
+      session.setSendAcknowledgementHandler(handler);
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage msg = session.createMessage(false);
+         ClientMessage msg2 = session.createMessage(false);
 
          prod.send(msg);
+         prod.send(address, msg2, producerHandler);
       }
 
-      session.close();
+      Assert.assertTrue("session must have acked, " + handler, handler.latch.await(5, TimeUnit.SECONDS));
+      Assert.assertTrue("producer specific handler must have acked, " + producerHandler,
+                        producerHandler.latch.await(5, TimeUnit.SECONDS));
+   }
 
-      locator.close();
-      boolean ok = latch.await(5000, TimeUnit.MILLISECONDS);
+   public void verifySendAcknowledgementsProducerOnly(int windowSize) throws Exception
+   {
+      ServerLocator locator = createInVMNonHALocator();
 
-      Assert.assertTrue(ok);
+      locator.setConfirmationWindowSize(windowSize);
+
+      ClientSessionFactory csf = createSessionFactory(locator);
+      ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
+
+      session.createQueue(address, queueName, false);
+
+      ClientProducer prod = session.createProducer(address);
+
+      final int numMessages = 1000;
+
+      LatchAckHandler producerHandler = new LatchAckHandler("producer", new CountDownLatch(numMessages));
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg2 = session.createMessage(false);
+
+         prod.send(address, msg2, producerHandler);
+      }
+
+      Assert.assertTrue("producer specific handler must have acked, " + producerHandler,
+                        producerHandler.latch.await(5, TimeUnit.SECONDS));
+   }
+
+   public static final class LatchAckHandler implements SendAcknowledgementHandler
+   {
+
+      public CountDownLatch latch;
+      private final String name;
+
+      public LatchAckHandler(String name, CountDownLatch latch)
+      {
+         this.name = name;
+         this.latch = latch;
+      }
+
+      @Override
+      public void sendAcknowledged(Message message)
+      {
+         latch.countDown();
+      }
+
+      @Override
+      public String toString()
+      {
+         return "SendAckHandler(name=" + name + ", latch=" + latch + ")";
+      }
    }
 }

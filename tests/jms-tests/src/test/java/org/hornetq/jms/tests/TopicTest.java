@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -29,6 +27,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -52,11 +51,7 @@ public class TopicTest extends JMSTestCase
    @Test
    public void testTopic() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
@@ -67,24 +62,12 @@ public class TopicTest extends JMSTestCase
          TextMessage m = (TextMessage)c.receive();
 
          ProxyAssertSupport.assertEquals("payload", m.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testTopic2() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
@@ -95,20 +78,12 @@ public class TopicTest extends JMSTestCase
          TextMessage m = (TextMessage)c.receive();
 
          ProxyAssertSupport.assertEquals("payload", m.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testTopicName() throws Exception
    {
-      Topic topic = (Topic)JMSTestCase.ic.lookup("/topic/Topic1");
+      Topic topic = (Topic)ic.lookup("/topic/Topic1");
       ProxyAssertSupport.assertEquals("Topic1", topic.getTopicName());
    }
 
@@ -118,11 +93,7 @@ public class TopicTest extends JMSTestCase
    @Test
    public void testRace() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
 
          Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -168,14 +139,6 @@ public class TopicTest extends JMSTestCase
          ProxyAssertSupport.assertFalse(l1.failed);
          ProxyAssertSupport.assertFalse(l2.failed);
          ProxyAssertSupport.assertFalse(l3.failed);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    // Package protected ---------------------------------------------

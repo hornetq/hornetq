@@ -30,13 +30,8 @@ import javax.jms.Session;
 import org.hornetq.jms.tests.JmsTestLogger;
 
 /**
- *
- * A Receiver.
- *
- * Receives messages from a dstination for stress testing
- *
+ * Receives messages from a destination for stress testing
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class Receiver extends Runner implements MessageListener
 {

@@ -41,7 +41,7 @@ import org.hornetq.utils.DataConstants;
  * @version $Revision: 3412 $
  *
  */
-public class HornetQStreamMessage extends HornetQMessage implements StreamMessage
+public final class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
@@ -410,8 +410,8 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
             case DataConstants.STRING:
                return getBuffer().readNullableString();
             case DataConstants.BYTES:
-               int len = getBuffer().readInt();
-               byte[] bytes = new byte[len];
+               int bufferLen = getBuffer().readInt();
+               byte[] bytes = new byte[bufferLen];
                getBuffer().readBytes(bytes);
                return bytes;
             default:
@@ -567,7 +567,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       super.clearBody();
 
@@ -580,16 +580,15 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       reset();
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private HornetQBuffer getBuffer()
    {
       return message.getBodyBuffer();
    }
 
-   // Inner classes -------------------------------------------------
+   @SuppressWarnings("rawtypes")
+   @Override
+   public boolean isBodyAssignableTo(Class c)
+   {
+      return false;
+   }
 }

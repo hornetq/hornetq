@@ -32,6 +32,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,10 +52,11 @@ clebert        hard    nofile          10240
  */
 public class SeveralClientsStressTest extends HornetQServerTestCase
 {
-
-   // Constants ------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
 
    protected boolean info = false;
 

@@ -101,7 +101,7 @@ public class InvalidConnectorTest extends JMSTestBase
             null,
             "/invalid-cf");
 
-      HornetQConnectionFactory invalidCf = (HornetQConnectionFactory) context.lookup("/invalid-cf");
+      HornetQConnectionFactory invalidCf = (HornetQConnectionFactory) namingContext.lookup("/invalid-cf");
 
       TransportConfiguration[] tcs = invalidCf.getServerLocator().getStaticTransportConfigurations();
 

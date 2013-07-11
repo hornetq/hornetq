@@ -43,6 +43,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -63,6 +64,7 @@ import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
+import org.hornetq.utils.ReferenceCounter;
 import org.hornetq.utils.ReusableLatch;
 
 /**
@@ -110,6 +112,8 @@ public class QueueImpl implements Queue
    private volatile boolean queueDestroyed = false;
 
    private final PageSubscription pageSubscription;
+
+   private ReferenceCounter refCountForConsumers;
 
    private final LinkedListIterator<PagedReference> pageIterator;
 
@@ -354,6 +358,19 @@ public class QueueImpl implements Queue
    }
 
    // Queue implementation ----------------------------------------------------------------------------------------
+   public synchronized void setConsumersRefCount(final HornetQServer server)
+   {
+      if (refCountForConsumers == null)
+      {
+         this.refCountForConsumers = new TransientQueueManagerImpl(server, this.name);
+      }
+   }
+
+   public ReferenceCounter getConsumersRefCount()
+   {
+      return refCountForConsumers;
+   }
+
 
    public boolean isDurable()
    {
@@ -630,67 +647,84 @@ public class QueueImpl implements Queue
       return result;
    }
 
-   public synchronized void addConsumer(final Consumer consumer) throws Exception
+   public void addConsumer(final Consumer consumer) throws Exception
    {
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug(this + " adding consumer " + consumer);
       }
 
-      flushDeliveriesInTransit();
-
-      consumersChanged = true;
-
-      cancelRedistributor();
-
-      consumerList.add(new ConsumerHolder(consumer));
-
-      consumerSet.add(consumer);
-   }
-
-   public synchronized void removeConsumer(final Consumer consumer)
-   {
-      consumersChanged = true;
-
-       for (ConsumerHolder holder : consumerList) {
-           if (holder.consumer == consumer) {
-               if (holder.iter != null) {
-                   holder.iter.close();
-               }
-               consumerList.remove(holder);
-               break;
-           }
-       }
-
-      if (pos > 0 && pos >= consumerList.size())
+      synchronized (this)
       {
-         pos = consumerList.size() - 1;
-      }
+         flushDeliveriesInTransit();
 
-      consumerSet.remove(consumer);
+         consumersChanged = true;
 
-      LinkedList<SimpleString> groupsToRemove = null;
+         cancelRedistributor();
 
-      for (SimpleString groupID : groups.keySet())
-      {
-         if (consumer == groups.get(groupID))
+         consumerList.add(new ConsumerHolder(consumer));
+
+         consumerSet.add(consumer);
+
+         if (refCountForConsumers != null)
          {
-            if (groupsToRemove == null)
-            {
-               groupsToRemove = new LinkedList<SimpleString>();
-            }
-            groupsToRemove.add(groupID);
+            refCountForConsumers.increment();
          }
       }
 
-      // We use an auxiliary List here to avoid concurrent modification exceptions on the keySet
-      // while the iteration is being done.
-      // Since that's a simple HashMap there's no Iterator's support with a remove operation
-      if (groupsToRemove != null)
+   }
+
+   public void removeConsumer(final Consumer consumer)
+   {
+      synchronized (this)
       {
-         for (SimpleString groupID: groupsToRemove)
+         consumersChanged = true;
+
+          for (ConsumerHolder holder : consumerList) {
+              if (holder.consumer == consumer) {
+                  if (holder.iter != null) {
+                      holder.iter.close();
+                  }
+                  consumerList.remove(holder);
+                  break;
+              }
+          }
+
+         if (pos > 0 && pos >= consumerList.size())
          {
-            groups.remove(groupID);
+            pos = consumerList.size() - 1;
+         }
+
+         consumerSet.remove(consumer);
+
+         LinkedList<SimpleString> groupsToRemove = null;
+
+         for (SimpleString groupID : groups.keySet())
+         {
+            if (consumer == groups.get(groupID))
+            {
+               if (groupsToRemove == null)
+               {
+                  groupsToRemove = new LinkedList<SimpleString>();
+               }
+               groupsToRemove.add(groupID);
+            }
+         }
+
+         // We use an auxiliary List here to avoid concurrent modification exceptions on the keySet
+         // while the iteration is being done.
+         // Since that's a simple HashMap there's no Iterator's support with a remove operation
+         if (groupsToRemove != null)
+         {
+            for (SimpleString groupID: groupsToRemove)
+            {
+               groups.remove(groupID);
+            }
+         }
+
+         if (refCountForConsumers != null)
+         {
+            refCountForConsumers.decrement();
          }
       }
    }

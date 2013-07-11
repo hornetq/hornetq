@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
 import java.util.List;
 
 import javax.jms.Connection;
@@ -31,6 +29,7 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * Tests focused on durable subscription behavior. More durable subscription tests can be found in
@@ -59,7 +58,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.setClientID("brookeburke");
 
@@ -87,7 +86,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          ProxyAssertSupport.assertEquals("monicabelucci", subs.get(0));
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("brookeburke");
 
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -129,7 +128,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.setClientID("brookeburke");
 
@@ -143,7 +142,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.setClientID("brookeburke");
 
@@ -182,7 +181,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.setClientID("brookeburke");
 
@@ -218,7 +217,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
 
          conn.setClientID("brookeburke");
 
@@ -253,7 +252,7 @@ public class DurableSubscriptionTest extends JMSTestCase
    {
       Connection conn = null;
 
-      conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
       try
       {
@@ -287,7 +286,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
       try
       {
-         conn = JMSTestCase.cf.createConnection();
+         conn = createConnection();
          conn.setClientID("ak47");
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -321,12 +320,7 @@ public class DurableSubscriptionTest extends JMSTestCase
    @Test
    public void testInvalidSelectorException() throws Exception
    {
-      Connection c = null;
-
-      try
-      {
-
-         c = JMSTestCase.cf.createConnection();
+      Connection c = createConnection();
          c.setClientID("sofiavergara");
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -339,26 +333,13 @@ public class DurableSubscriptionTest extends JMSTestCase
          {
             // OK
          }
-      }
-      finally
-      {
-         if (c != null)
-         {
-            c.close();
-         }
-      }
    }
 
    // See JMS 1.1. spec sec 6.11
    @Test
    public void testUnsubscribeWithActiveConsumer() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          conn.setClientID("zeke");
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -378,25 +359,12 @@ public class DurableSubscriptionTest extends JMSTestCase
          dursub.close();
 
          s.unsubscribe("dursub0");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testSubscribeWithActiveSubscription() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          conn.setClientID("zeke");
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -416,24 +384,12 @@ public class DurableSubscriptionTest extends JMSTestCase
          dursub1.close();
 
          s.unsubscribe("dursub1");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
    public void testDurableSubscriptionWithPeriodsInName() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      Connection conn = createConnection();
          conn.setClientID(".client.id.with.periods.");
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -453,14 +409,6 @@ public class DurableSubscriptionTest extends JMSTestCase
          subscriber.close();
 
          s.unsubscribe(".subscription.name.with.periods.");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
@@ -472,15 +420,11 @@ public class DurableSubscriptionTest extends JMSTestCase
 
    private void internalTestNoLocal(final boolean noLocal) throws Exception
    {
-      Connection conn1 = null;
-      Connection conn2 = null;
 
-      try
-      {
-         conn1 = JMSTestCase.cf.createConnection();
+         Connection conn1 = createConnection();
          conn1.setClientID(".client.id.with.periods.");
 
-         conn2 = JMSTestCase.cf.createConnection();
+         Connection conn2 = createConnection();
          conn2.setClientID(".client.id.with.periods2.");
 
          Session s1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -522,26 +466,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          s1.unsubscribe(".subscription.name.with.periods.");
          s2.unsubscribe(".subscription.name.with.periods.");
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
-      }
+      conn1.close();
+      conn2.close();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

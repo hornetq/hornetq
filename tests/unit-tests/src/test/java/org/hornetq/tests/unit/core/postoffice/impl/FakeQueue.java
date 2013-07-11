@@ -22,12 +22,14 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.server.Consumer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.LinkedListIterator;
+import org.hornetq.utils.ReferenceCounter;
 
 /**
  * A FakeQueue
@@ -44,6 +46,12 @@ public class FakeQueue implements Queue
    {
       // no-op
       return false;
+   }
+
+   @Override
+   public void setConsumersRefCount(HornetQServer server)
+   {
+
    }
 
    @Override
@@ -260,6 +268,12 @@ public class FakeQueue implements Queue
    {
       // no-op
       return 0;
+   }
+
+   @Override
+   public ReferenceCounter getConsumersRefCount()
+   {
+      return null;  //To change body of implemented methods use File | Settings | File Templates.
    }
 
    @Override

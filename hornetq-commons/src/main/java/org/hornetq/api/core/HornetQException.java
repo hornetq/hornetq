@@ -71,7 +71,7 @@ public class HornetQException extends Exception
    @Override
    public String toString()
    {
-      return "HornetQException[errorType=" + type + " message=" + getMessage() + "]";
+      return this.getClass().getSimpleName() + "[errorType=" + type + " message=" + getMessage() + "]";
    }
 
 }

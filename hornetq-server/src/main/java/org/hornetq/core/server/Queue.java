@@ -23,6 +23,7 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.LinkedListIterator;
+import org.hornetq.utils.ReferenceCounter;
 
 /**
  *
@@ -52,6 +53,17 @@ public interface Queue extends Bindable
    void removeConsumer(Consumer consumer);
 
    int getConsumerCount();
+
+   /**
+    * This will set a reference counter for every consumer present on the queue.
+    * The ReferenceCounter will know what to do when the counter became zeroed.
+    * This is used to control what to do with temporary queues, especially
+    * on shared subscriptions where the queue needs to be deleted when all the
+    * consumers are closed.
+    */
+   void setConsumersRefCount(HornetQServer server);
+
+   ReferenceCounter getConsumersRefCount();
 
    void reload(MessageReference ref);
 

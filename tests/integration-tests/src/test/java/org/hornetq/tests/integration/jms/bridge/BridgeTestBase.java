@@ -60,7 +60,7 @@ import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -98,9 +98,9 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected JMSServerManager jmsServer1;
 
-   private InVMContext context0;
+   private InVMNamingContext context0;
 
-   protected InVMContext context1;
+   protected InVMNamingContext context1;
 
    private HashMap<String, Object> params1;
 
@@ -118,7 +118,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       server0 = addServer(HornetQServers.newHornetQServer(conf0, false));
 
-      context0 = new InVMContext();
+      context0 = new InVMNamingContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
       jmsServer0.setContext(context0);
       jmsServer0.start();
@@ -133,7 +133,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       server1 = addServer(HornetQServers.newHornetQServer(conf1, false));
 
-      context1 = new InVMContext();
+      context1 = new InVMNamingContext();
 
       jmsServer1 = new JMSServerManagerImpl(server1);
       jmsServer1.setContext(context1);

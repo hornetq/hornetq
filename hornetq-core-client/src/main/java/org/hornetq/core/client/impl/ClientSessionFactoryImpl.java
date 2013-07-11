@@ -73,6 +73,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.ConfirmationWindowWarning;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
@@ -163,13 +164,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private volatile boolean closed;
 
-   public final Exception e = new Exception();
+   public final Exception traceException = new Exception();
 
    private final CountDownLatch waitLatch = new CountDownLatch(1);
 
    public final static Set<CloseRunnable> CLOSE_RUNNABLES = Collections.synchronizedSet(new HashSet<CloseRunnable>());
 
    private final PacketDecoder packetDecoder;
+
+   private final ConfirmationWindowWarning confirmationWindowWarning;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -194,7 +197,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                             PacketDecoder packetDecoder)
    {
 
-      e.fillInStackTrace();
+      traceException.fillInStackTrace();
 
       this.serverLocator = serverLocator;
 
@@ -233,6 +236,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       this.outgoingInterceptors = outgoingInterceptors;
 
       this.packetDecoder = packetDecoder;
+      confirmationWindowWarning = new ConfirmationWindowWarning(serverLocator.getConfirmationWindowSize() < 0);
    }
 
    public void disableFinalizeCheck()
@@ -413,7 +417,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void connectionDestroyed(final Object connectionID)
    {
-      // The exception has to be created in the same thread where it's being caleld
+      // The exception has to be created in the same thread where it's being called
       // as to avoid a different stack trace cause
       final HornetQException ex = HornetQClientMessageBundle.BUNDLE.channelDisconnected();
 
@@ -757,9 +761,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                session.cleanUp(true);
             }
-            catch (Exception e)
+            catch (Exception cause)
             {
-               HornetQClientLogger.LOGGER.failedToCleanupSession(e);
+               HornetQClientLogger.LOGGER.failedToCleanupSession(cause);
             }
          }
       }
@@ -838,17 +842,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   response = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
                }
-               catch (HornetQException e)
+               catch (HornetQException cause)
                {
-                  if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+                  if (cause.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
                   {
                      connection.destroy();
                   }
 
                   if (exitLoop)
-                     throw e;
+                     throw cause;
 
-                  if (e.getType() == HornetQExceptionType.UNBLOCKED)
+                  if (cause.getType() == HornetQExceptionType.UNBLOCKED)
                   {
                      // This means the thread was blocked on create session and failover unblocked it
                      // so failover could occur
@@ -859,7 +863,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                   else
                   {
-                     throw e;
+                     throw cause;
                   }
                }
 
@@ -893,7 +897,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      response.getServerVersion(),
                                                                      sessionChannel,
                                                                      orderedExecutorFactory.getExecutor(),
-                                                                     orderedExecutorFactory.getExecutor());
+                                              orderedExecutorFactory.getExecutor(),
+                                              orderedExecutorFactory.getExecutor());
 
                synchronized (sessions)
                {
@@ -1102,7 +1107,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                   catch (InterruptedException ignore)
                   {
-                     throw new HornetQInterruptedException(e);
+                     throw new HornetQInterruptedException(traceException);
                   }
 
                   // Exponential back-off
@@ -1305,11 +1310,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
             }
          }
-         catch (Exception e)
+         catch (Exception cause)
          {
             // Sanity catch for badly behaved remoting plugins
 
-            HornetQClientLogger.LOGGER.createConnectorException(e);
+            HornetQClientLogger.LOGGER.createConnectorException(cause);
 
             if (tc != null)
             {
@@ -1423,7 +1428,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       if (!closed && finalizeCheck)
       {
-         HornetQClientLogger.LOGGER.factoryLeftOpen(e, System.identityHashCode(this));
+         HornetQClientLogger.LOGGER.factoryLeftOpen(traceException, System.identityHashCode(this));
 
          close();
       }
@@ -1458,7 +1463,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return false;
          return true;
          }
-      catch (InterruptedException e)
+      catch (InterruptedException cause)
       {
          return false;
       }
@@ -1595,7 +1600,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                      ", isLast=" +
                                                      topMessage.isLast() +
                                                      " csf created at\nserverLocator=" +
-                                                     serverLocator, e);
+                                                     serverLocator, traceException);
                }
 
                Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
@@ -1792,5 +1797,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public Object getConnector()
    {
       return connector;
+   }
+
+   @Override
+   public ConfirmationWindowWarning getConfirmationWindowWarning()
+   {
+      return confirmationWindowWarning;
    }
 }

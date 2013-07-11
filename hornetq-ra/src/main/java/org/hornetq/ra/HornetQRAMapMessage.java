@@ -181,6 +181,7 @@ public class HornetQRAMapMessage extends HornetQRAMessage implements MapMessage
     * @return The values
     * @exception JMSException Thrown if an error occurs
     */
+   @SuppressWarnings("rawtypes")
    public Enumeration getMapNames() throws JMSException
    {
       if (HornetQRAMapMessage.trace)

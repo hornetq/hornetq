@@ -52,7 +52,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRALogger.LOGGER.trace("getJMSVersion()");
       }
 
-      return "1.1";
+      return "2.0";
    }
 
    /**
@@ -66,7 +66,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRALogger.LOGGER.trace("getJMSMajorVersion()");
       }
 
-      return 1;
+      return 2;
    }
 
    /**
@@ -80,7 +80,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRALogger.LOGGER.trace("getJMSMinorVersion()");
       }
 
-      return 1;
+      return 0;
    }
 
    /**
@@ -108,7 +108,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRALogger.LOGGER.trace("getJMSProviderName()");
       }
 
-      return "2.1";
+      return "2.4";
    }
 
    /**
@@ -136,7 +136,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRALogger.LOGGER.trace("getProviderMinorVersion()");
       }
 
-      return 1;
+      return 4;
    }
 
    /**
@@ -145,7 +145,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
     */
    public Enumeration<Object> getJMSXPropertyNames()
    {
-      Vector v = new Vector();
+      Vector<Object> v = new Vector<Object>();
       v.add("JMSXGroupID");
       v.add("JMSXGroupSeq");
       v.add("JMSXDeliveryCount");
