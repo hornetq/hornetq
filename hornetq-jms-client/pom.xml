@@ -27,10 +27,6 @@
           <artifactId>jboss-jms-api_2.0_spec</artifactId>
       </dependency>
       <dependency>
-          <groupId>org.apache.qpid</groupId>
-          <artifactId>proton-jms</artifactId>
-      </dependency>
-      <dependency>
           <groupId>javax.inject</groupId>
           <artifactId>javax.inject</artifactId>
       </dependency>
