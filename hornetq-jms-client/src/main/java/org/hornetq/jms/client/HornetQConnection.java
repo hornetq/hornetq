@@ -22,7 +22,9 @@ import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
@@ -55,7 +57,7 @@ import org.hornetq.utils.VersionLoader;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
-public class HornetQConnection implements TopicConnection, QueueConnection
+public class HornetQConnection extends HornetQConnectionForContextImpl implements TopicConnection, QueueConnection
 {
    // Constants ------------------------------------------------------------------------------------
    public static final int TYPE_GENERIC_CONNECTION = 0;
@@ -225,7 +227,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       {
          if (e.getType() == HornetQExceptionType.DUPLICATE_METADATA)
          {
-            throw new IllegalStateException("clientID=" + clientID + " was already set into another connection");
+            throw new InvalidClientIDException("clientID=" + clientID + " was already set into another connection");
          }
       }
 
@@ -238,6 +240,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       {
          JMSException ex = new JMSException("Internal error setting metadata jms-client-id");
          ex.setLinkedException(e);
+         ex.initCause(e);
          throw ex;
       }
 
@@ -376,6 +379,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       checkClosed();
 
       checkTempQueues(destination);
+      // XXX "JMS 2.0" HORNETQ-1209 is this valid?
       return null;
    }
 
@@ -407,7 +411,22 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return null;
    }
 
-   // QueueConnection implementation ---------------------------------------------------------------
+   @Override
+   public Session createSession(int sessionMode) throws JMSException
+   {
+      checkClosed();
+      return createSessionInternal(false, false, sessionMode, HornetQSession.TYPE_GENERIC_SESSION);
+
+   }
+
+   @Override
+   public Session createSession() throws JMSException
+   {
+      checkClosed();
+      return createSessionInternal(false, false, Session.AUTO_ACKNOWLEDGE, HornetQSession.TYPE_GENERIC_SESSION);
+   }
+
+    // QueueConnection implementation ---------------------------------------------------------------
 
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
@@ -441,7 +460,19 @@ public class HornetQConnection implements TopicConnection, QueueConnection
       return null;
    }
 
-   // Public ---------------------------------------------------------------------------------------
+   @Override
+   public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+   }
+
+   @Override
+   public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   {
+      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+   }
+
+    // Public ---------------------------------------------------------------------------------------
 
    /**
     * Sets a FailureListener for the session which is notified if a failure occurs on the session.
@@ -582,7 +613,7 @@ public class HornetQConnection implements TopicConnection, QueueConnection
          }
          else
          {
-            throw new IllegalArgumentException("Invalid ackmode: " + acknowledgeMode);
+            throw new JMSRuntimeException("Invalid ackmode: " + acknowledgeMode);
          }
 
          justCreated = false;
@@ -670,6 +701,11 @@ public class HornetQConnection implements TopicConnection, QueueConnection
    public void setReference(HornetQConnectionFactory factory)
    {
       this.factoryReference = factory;
+   }
+
+   public boolean isStarted()
+   {
+      return started;
    }
 
    // Inner classes --------------------------------------------------------------------------------
@@ -773,6 +809,5 @@ public class HornetQConnection implements TopicConnection, QueueConnection
          }
 
       }
-
    }
 }

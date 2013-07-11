@@ -54,7 +54,7 @@ import org.hornetq.tests.integration.largemessage.LargeMessageTestBase.TestLarge
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 
 public class ExtraStompTest extends StompTestBase
 {
@@ -710,7 +710,7 @@ public class ExtraStompTest extends StompTestBase
                .add(new JMSQueueConfigurationImpl(getQueueName(), null, true, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
-      server.setContext(new InVMContext());
+      server.setContext(new InVMNamingContext());
       return server;
    }
 
@@ -812,7 +812,7 @@ public class ExtraStompTest extends StompTestBase
                .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
-      server.setContext(new InVMContext());
+      server.setContext(new InVMNamingContext());
       return server;
    }
 

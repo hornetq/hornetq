@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.core.message.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -26,6 +21,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -39,7 +36,7 @@ public class MessagePropertyTest extends ServiceTestBase
    private ClientSessionFactory sf;
    private final int numMessages = 20;
 
-   private static final String ADDRESS = "aAddress123";
+   private static final String ADDRESS = "anAddress123";
    private static final SimpleString SIMPLE_STRING_KEY = new SimpleString("StringToSimpleString");
 
    @Override
@@ -51,22 +48,6 @@ public class MessagePropertyTest extends ServiceTestBase
       server.start();
       locator = createInVMNonHALocator();
       sf = createSessionFactory(locator);
-   }
-
-   @Override
-   @After
-   public void tearDown() throws Exception
-   {
-      try
-      {
-         sf.close();
-         locator.close();
-         server.stop();
-      }
-      finally
-      {
-         super.tearDown();
-      }
    }
 
    private void sendMessages() throws Exception

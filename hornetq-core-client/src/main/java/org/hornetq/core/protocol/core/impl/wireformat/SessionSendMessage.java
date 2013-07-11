@@ -14,6 +14,10 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.DataConstants;
@@ -27,16 +31,27 @@ public class SessionSendMessage extends MessagePacket
 
    private boolean requiresResponse;
 
-   public SessionSendMessage(final MessageInternal message, final boolean requiresResponse)
+   /**
+    * In case, we are using a different handler than the one set on the {@link ClientSession}
+    * <p>
+    * This field is only used at the client side.
+    * @see ClientSession#setSendAcknowledgementHandler(SendAcknowledgementHandler)
+    * @see ClientProducer#send(SimpleString, Message, SendAcknowledgementHandler)
+    */
+   private transient final SendAcknowledgementHandler handler;
+
+   public SessionSendMessage(final MessageInternal message, final boolean requiresResponse,
+                             final SendAcknowledgementHandler handler)
    {
       super(SESS_SEND, message);
-
+      this.handler = handler;
       this.requiresResponse = requiresResponse;
    }
 
    public SessionSendMessage(final MessageInternal message)
    {
       super(SESS_SEND, message);
+      this.handler = null;
    }
 
    // Public --------------------------------------------------------
@@ -46,9 +61,10 @@ public class SessionSendMessage extends MessagePacket
       return requiresResponse;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
+   public SendAcknowledgementHandler getHandler()
+   {
+      return handler;
+   }
 
    @Override
    public HornetQBuffer encode(final RemotingConnection connection)

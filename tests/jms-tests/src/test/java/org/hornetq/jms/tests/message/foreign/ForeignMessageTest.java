@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message.foreign;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
@@ -25,6 +20,10 @@ import org.hornetq.jms.tests.message.MessageTestBase;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -94,9 +93,9 @@ public class ForeignMessageTest extends MessageTestBase
       Message rec = queueCons.receive();
       ProxyAssertSupport.assertNotNull(rec);
 
-      assertNull(rec.getJMSCorrelationIDAsBytes());
+      Assert.assertNull(rec.getJMSCorrelationIDAsBytes());
 
-      assertEquals("mycorrelationid", msg.getJMSCorrelationID());
+      Assert.assertEquals("mycorrelationid", msg.getJMSCorrelationID());
    }
 
    @Test
@@ -120,7 +119,7 @@ public class ForeignMessageTest extends MessageTestBase
 
       assertByteArraysEqual(bytes, bytesrec);
 
-      assertNull(rec.getJMSCorrelationID());
+      Assert.assertNull(rec.getJMSCorrelationID());
    }
 
    private void assertByteArraysEqual(final byte[] bytes1, final byte[] bytes2)

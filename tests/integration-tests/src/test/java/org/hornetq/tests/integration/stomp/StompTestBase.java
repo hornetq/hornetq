@@ -56,7 +56,7 @@ import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 public abstract class StompTestBase extends UnitTestCase
@@ -159,7 +159,7 @@ public abstract class StompTestBase extends UnitTestCase
                .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
-      server.setContext(new InVMContext());
+      server.setContext(new InVMNamingContext());
       return server;
    }
 

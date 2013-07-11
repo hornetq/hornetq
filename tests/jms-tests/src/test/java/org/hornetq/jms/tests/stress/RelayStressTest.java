@@ -28,6 +28,7 @@ import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -40,6 +41,12 @@ import org.junit.Test;
  */
 public class RelayStressTest extends HornetQServerTestCase
 {
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
+
    // Constants -----------------------------------------------------
 
    private static JmsTestLogger log = JmsTestLogger.LOGGER;
@@ -67,6 +74,7 @@ public class RelayStressTest extends HornetQServerTestCase
       RelayStressTest.log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {

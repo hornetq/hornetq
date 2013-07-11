@@ -22,7 +22,7 @@ import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
 import javax.jms.ConnectionFactory;
@@ -43,7 +43,7 @@ import java.util.List;
 public class ManagementActivationTest extends FailoverTestBase
 {
    private JMSServerManagerImpl backupJmsServer;
-   private InVMContext context;
+   private InVMNamingContext context;
    private String connectorName;
 
    @Override
@@ -66,7 +66,7 @@ public class ManagementActivationTest extends FailoverTestBase
    {
       super.setUp();
       backupJmsServer = new JMSServerManagerImpl(backupServer.getServer());
-      context = new InVMContext();
+      context = new InVMNamingContext();
       backupJmsServer.setContext(context);
       backupJmsServer.start();
    }

@@ -17,6 +17,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -115,4 +116,11 @@ public interface ClientSessionInternal extends ClientSession
     * Sets a stop signal to true. This will cancel
     */
    void setStopSignal();
+
+   boolean isConfirmationWindowEnabled();
+
+   /**
+    * @param handler
+    */
+   void scheduleConfirmation(SendAcknowledgementHandler handler, Message message);
 }

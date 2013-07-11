@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2013 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,14 +11,13 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.tests;
-
-import org.junit.Test;
+package org.hornetq.tests.integration.jms.client;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueRequestor;
@@ -27,66 +26,52 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Test;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author Clebert Suconic
  */
-public class QueueRequestorTest extends JMSTestCase
+
+public class NewQueueRequestorTest extends JMSTestBase
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // TestCase overrides -------------------------------------------
-
-   // Public --------------------------------------------------------
+   private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Test
    public void testQueueRequestor() throws Exception
    {
-      // Set up the requestor
-      QueueConnection conn1 = null;
-      QueueConnection conn2 = null;
+      QueueConnection conn1 = null, conn2 = null;
 
       try
       {
-
-         conn1 = JMSTestCase.cf.createQueueConnection();
+         Queue queue1 = createQueue(true, "myQueue");
+         conn1 = (QueueConnection)cf.createConnection();
          QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-         QueueRequestor requestor = new QueueRequestor(sess1, HornetQServerTestCase.queue1);
+         QueueRequestor requestor = new QueueRequestor(sess1, queue1);
          conn1.start();
 
          // And the responder
-         conn2 = JMSTestCase.cf.createQueueConnection();
+         conn2 = (QueueConnection)cf.createConnection();
          QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          TestMessageListener listener = new TestMessageListener(sess2);
-         QueueReceiver receiver = sess2.createReceiver(HornetQServerTestCase.queue1);
+         QueueReceiver receiver = sess2.createReceiver(queue1);
          receiver.setMessageListener(listener);
          conn2.start();
 
          Message m1 = sess1.createMessage();
          log.trace("Sending request message");
          TextMessage m2 = (TextMessage)requestor.request(m1);
-         ProxyAssertSupport.assertNotNull(m2);
+         assertNotNull(m2);
 
-         ProxyAssertSupport.assertEquals("This is the response", m2.getText());
+         assertEquals("This is the response", m2.getText());
+
+         requestor.close();
       }
       finally
       {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
+         conn1.close();
+         conn2.close();
       }
    }
 

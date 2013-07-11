@@ -23,15 +23,13 @@ import javax.jms.Session;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
- * Testing of message property conversion. See javax.jms.Message for details
- *
+ * Testing of message property conversion. See {@link javax.jms.Message} for details
  * @author <a href="mailto:afu@novell.com">Alex Fu</a>
- *
  */
 public class MessagePropertyConversionTest extends HornetQServerTestCase
 {
@@ -61,12 +59,13 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(HornetQServerTestCase.queue1);
-      queueConsumer = queueConsumerSession.createConsumer(HornetQServerTestCase.queue1);
+      queueProducer = queueProducerSession.createProducer(queue1);
+      queueConsumer = queueConsumerSession.createConsumer(queue1);
 
       consumerConnection.start();
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
@@ -85,11 +84,11 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       m1.setStringProperty("key3", "fish");
       m1.setObjectProperty("key3", null);
 
-      queueProducer.send(queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(1000);
-      assertEquals("key should be true", m2.getObjectProperty("key"), Boolean.TRUE);
-      assertEquals("key2 should be null", null, m2.getObjectProperty("key2"));
-      assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
+      Assert.assertEquals("key should be true", m2.getObjectProperty("key"), Boolean.TRUE);
+      Assert.assertEquals("key2 should be null", null, m2.getObjectProperty("key2"));
+      Assert.assertEquals("key3 should be null", null, m2.getObjectProperty("key3"));
    }
 
    @Test
@@ -100,7 +99,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       boolean myBool = true;
       m1.setBooleanProperty("myBool", myBool);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Boolean property can be read as boolean and String but not anything
@@ -172,7 +171,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       byte myByte = 13;
       m1.setByteProperty("myByte", myByte);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Byte property can be read as byte, short, int, long or String
@@ -219,7 +218,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       short myShort = 15321;
       m1.setShortProperty("myShort", myShort);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Short property can be read as short, int, long or String
@@ -274,7 +273,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       int myInt = 0x71ab6c80;
       m1.setIntProperty("myInt", myInt);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Int property can be read as int, long or String
@@ -337,7 +336,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       long myLong = 0x20bf1e3fb6fa31dfL;
       m1.setLongProperty("myLong", myLong);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Long property can be read as long and String
@@ -408,7 +407,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       float myFloat = Float.MAX_VALUE - 23465;
       m1.setFloatProperty("myFloat", myFloat);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Float property can be read as float, double or String
@@ -471,7 +470,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       m1.setDoubleProperty("myDouble", myDouble);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Double property can be read as double and String
@@ -550,7 +549,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
 
       m1.setStringProperty("myString", myString);
 
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
       Message m2 = queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myString, m2.getStringProperty("myString"));
@@ -573,7 +572,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       m3.setStringProperty("myDouble", String.valueOf(myDouble));
       m3.setStringProperty("myIllegal", "xyz123");
 
-      queueProducer.send(HornetQServerTestCase.queue1, m3);
+      queueProducer.send(m3);
 
       Message m4 = queueConsumer.receive(2000);
 
@@ -641,7 +640,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    public void testJMSXDeliveryCountConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
-      queueProducer.send(HornetQServerTestCase.queue1, m1);
+      queueProducer.send(m1);
 
       Message m2 = queueConsumer.receive(2000);
 

@@ -125,10 +125,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          HornetQRALogger.LOGGER.trace("lock()");
       }
 
-      HornetQRAManagedConnection mc = this.mc;
-      if (mc != null)
+      final HornetQRAManagedConnection mcLocal = this.mc;
+      if (mcLocal != null)
       {
-         mc.tryLock();
+         mcLocal.tryLock();
       }
       else
       {
@@ -146,10 +146,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          HornetQRALogger.LOGGER.trace("unlock()");
       }
 
-      HornetQRAManagedConnection mc = this.mc;
-      if (mc != null)
+      final HornetQRAManagedConnection mcLocal = this.mc;
+      if (mcLocal != null)
       {
-         mc.unlock();
+         mcLocal.unlock();
       }
 
       // We recreate the lock when returned to the pool
@@ -184,7 +184,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
       if (HornetQRASession.trace)
       {
-         HornetQRALogger.LOGGER.trace("createMapMessage" + session);
+         HornetQRALogger.LOGGER.trace("createMapMessage(), " + session);
       }
 
       return session.createMapMessage();
@@ -1311,7 +1311,199 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
    }
 
-   /**
+   @Override
+   public MessageConsumer createSharedConsumer(final Topic topic, final String sharedSubscriptionName) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createSharedConsumer " + session + " topic=" + topic
+                                         +", sharedSubscriptionName="+sharedSubscriptionName);
+         }
+
+         MessageConsumer result = session.createSharedConsumer(topic, sharedSubscriptionName);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   @Override
+   public MessageConsumer createSharedConsumer(final Topic topic, final String sharedSubscriptionName,
+                                               final String messageSelector) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createSharedConsumer " + session + " topic=" + topic +
+                     ", sharedSubscriptionName=" + sharedSubscriptionName + ", messageSelector=" + messageSelector);
+         }
+
+         MessageConsumer result = session.createSharedConsumer(topic, sharedSubscriptionName, messageSelector);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+   {
+         unlock();
+   }
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(final Topic topic, final String name) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createSharedConsumer " + session + " topic=" + topic + ", name=" + name);
+         }
+
+         MessageConsumer result = session.createDurableConsumer(topic, name);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   @Override
+   public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createDurableConsumer " + session + " topic=" + topic + ", name=" + name +
+                     ", messageSelector=" + messageSelector + ", noLocal=" + noLocal);
+         }
+
+         MessageConsumer result = session.createDurableConsumer(topic, name, messageSelector, noLocal);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createSharedDurableConsumer " + session + " topic=" + topic + ", name=" +
+                     name);
+         }
+
+         MessageConsumer result = session.createDurableConsumer(topic, name);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+   @Override
+   public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
+   {
+      lock();
+      try
+      {
+         Session session = getSessionInternal();
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createSharedDurableConsumer " + session + " topic=" + topic + ", name=" +
+                     name + ", messageSelector=" + messageSelector);
+         }
+
+         MessageConsumer result = session.createSharedDurableConsumer(topic, name, messageSelector);
+         result = new HornetQRAMessageConsumer(result, this);
+
+         if (HornetQRASession.trace)
+         {
+            HornetQRALogger.LOGGER.trace("createdConsumer " + session + " consumer=" + result);
+         }
+
+         addConsumer(result);
+
+         return result;
+      }
+      finally
+      {
+         unlock();
+      }
+   }
+
+    /**
     * Set the managed connection
     * @param managedConnection The managed connection
     */

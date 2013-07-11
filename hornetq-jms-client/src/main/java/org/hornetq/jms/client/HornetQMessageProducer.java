@@ -14,7 +14,7 @@
 package org.hornetq.jms.client;
 
 import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
+import javax.jms.CompletionListener;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
@@ -35,57 +35,45 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
  * HornetQ implementation of a JMS MessageProducer.
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
  */
 public class HornetQMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final HornetQConnection jbossConn;
 
    private final SimpleString connID;
 
-   private final ClientProducer producer;
+   private final ClientProducer clientProducer;
+   private final ClientSession clientSession;
 
    private boolean disableMessageID = false;
 
    private boolean disableMessageTimestamp = false;
 
-   private int defaultPriority = 4;
-
-   private long defaultTimeToLive = 0;
-
-   private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
+   private int defaultPriority = Message.DEFAULT_PRIORITY;
+   private long defaultTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
+   private int defaultDeliveryMode = Message.DEFAULT_DELIVERY_MODE;
+   private long defaultDeliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
 
    private final HornetQDestination defaultDestination;
-
-   private final ClientSession clientSession;
-
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageProducer(final HornetQConnection jbossConn,
-                                    final ClientProducer producer,
-                                    final HornetQDestination defaultDestination,
-                                    final ClientSession clientSession) throws JMSException
+   protected HornetQMessageProducer(final HornetQConnection jbossConn, final ClientProducer producer,
+                                    final HornetQDestination defaultDestination, final ClientSession clientSession) throws JMSException
    {
       this.jbossConn = jbossConn;
 
       connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
 
-      this.producer = producer;
+      this.clientProducer = producer;
 
       this.defaultDestination = defaultDestination;
 
@@ -175,7 +163,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       try
       {
-         producer.close();
+         clientProducer.close();
       }
       catch (HornetQException e)
       {
@@ -185,60 +173,77 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void send(final Message message) throws JMSException
    {
-      checkClosed();
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, null);
+      checkDefaultDestination();
+      doSendx(defaultDestination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, null);
    }
 
-   public void send(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
+   public void send(final Message message,
+                   final int deliveryMode,
+                   final int priority, final long timeToLive) throws JMSException
    {
-      checkClosed();
-
-      message.setJMSDeliveryMode(deliveryMode);
-
-      message.setJMSPriority(priority);
-
-      doSend(message, timeToLive, null);
+      checkDefaultDestination();
+      doSendx(defaultDestination, message, deliveryMode, priority, timeToLive, null);
    }
 
    public void send(final Destination destination, final Message message) throws JMSException
    {
-      checkClosed();
-
-      if (destination != null && !(destination instanceof HornetQDestination))
-      {
-         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
-      }
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, (HornetQDestination)destination);
+      send(destination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive);
    }
 
-   public void send(final Destination destination,
-                    final Message message,
-                    final int deliveryMode,
-                    final int priority,
+   public void send(final Destination destination, final Message message, final int deliveryMode, final int priority,
                     final long timeToLive) throws JMSException
    {
       checkClosed();
 
-      if (destination != null && !(destination instanceof HornetQDestination))
-      {
-         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
-      }
+      checkDestination(destination);
 
-      message.setJMSDeliveryMode(deliveryMode);
+      doSendx((HornetQDestination)destination, message, deliveryMode, priority, timeToLive,  null);
+   }
 
-      message.setJMSPriority(priority);
+   @Override
+   public void setDeliveryDelay(long deliveryDelay) throws JMSException
+   {
+      this.defaultDeliveryDelay = deliveryDelay;
+   }
 
-      doSend(message, timeToLive, (HornetQDestination)destination);
+   @Override
+   public long getDeliveryDelay() throws JMSException
+   {
+      return defaultDeliveryDelay;
+   }
+
+   @Override
+   public void send(Message message, CompletionListener completionListener) throws JMSException
+   {
+      send(message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, completionListener);
+   }
+
+   @Override
+   public void send(Message message, int deliveryMode, int priority, long timeToLive,
+                    CompletionListener completionListener) throws JMSException
+   {
+      checkDefaultDestination();
+      doSendx(defaultDestination, message, deliveryMode, priority, timeToLive, completionListener);
+   }
+
+   @Override
+   public void send(Destination destination, Message message, CompletionListener completionListener)
+                                                                                                    throws JMSException
+   {
+      send(destination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, completionListener);
+   }
+
+   @Override
+   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive,
+                    CompletionListener completionListener) throws JMSException
+   {
+      checkClosed();
+
+      checkCompletionListener(completionListener);
+
+      checkDestination(destination);
+
+      doSendx((HornetQDestination)destination, message, deliveryMode, priority, timeToLive,  completionListener);
    }
 
    // TopicPublisher Implementation ---------------------------------
@@ -258,18 +263,17 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       send(topic, message);
    }
 
-   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
+   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive)
+                                                                                                             throws JMSException
    {
       send(message, deliveryMode, priority, timeToLive);
    }
 
-   public void publish(final Topic topic,
-                       final Message message,
-                       final int deliveryMode,
-                       final int priority,
+   public void publish(final Topic topic, final Message message, final int deliveryMode, final int priority,
                        final long timeToLive) throws JMSException
    {
-      send(topic, message, deliveryMode, priority, timeToLive);
+      checkDestination(topic);
+      doSendx((HornetQDestination) topic, message, deliveryMode, priority, timeToLive, null);
    }
 
    // QueueSender Implementation ------------------------------------
@@ -279,13 +283,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       send((Destination)queue, message);
    }
 
-   public void send(final Queue queue,
-                    final Message message,
-                    final int deliveryMode,
-                    final int priority,
+   public void send(final Queue queue, final Message message, final int deliveryMode, final int priority,
                     final long timeToLive) throws JMSException
    {
-      send((Destination)queue, message, deliveryMode, priority, timeToLive);
+      checkDestination(queue);
+      doSendx((HornetQDestination) queue, message, deliveryMode, priority, timeToLive, null);
    }
 
    public Queue getQueue() throws JMSException
@@ -298,33 +300,69 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    @Override
    public String toString()
    {
-      return "HornetQMessageProducer->" + producer;
+      return "HornetQMessageProducer->" + clientProducer;
+   }
+   /**
+    * Check if the default destination has been set
+    */
+   private void checkDefaultDestination()
+   {
+      if (defaultDestination == null)
+      {
+         throw new UnsupportedOperationException("Cannot specify destination if producer has a default destination");
+      }
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   private void doSend(final Message message, final long timeToLive, HornetQDestination destination) throws JMSException
+   /**
+    * Check if the destination is sent correctly
+    */
+   private void checkDestination(Destination destination) throws InvalidDestinationException
    {
+      if (destination != null && !(destination instanceof HornetQDestination))
+      {
+         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
+      }
+      if (destination != null && defaultDestination != null)
+      {
+         throw new UnsupportedOperationException("Cannot specify destination if producer has a default destination");
+      }
+   }
+
+   private void checkCompletionListener(CompletionListener completionListener)
+   {
+      if (completionListener == null)
+      {
+         throw new IllegalArgumentException("Invalid completionListener used");
+      }
+   }
+
+
+   private void doSendx(HornetQDestination destination, final Message jmsMessage, final int deliveryMode,
+                        final int priority, final long timeToLive,
+                       CompletionListener completionListener) throws JMSException
+   {
+
+      jmsMessage.setJMSDeliveryMode(deliveryMode);
+
+      jmsMessage.setJMSPriority(priority);
+
+
       if (timeToLive == 0)
       {
-         message.setJMSExpiration(0);
+         jmsMessage.setJMSExpiration(0);
       }
       else
       {
-         message.setJMSExpiration(System.currentTimeMillis() + timeToLive);
+         jmsMessage.setJMSExpiration(System.currentTimeMillis() + timeToLive);
       }
 
       if (!disableMessageTimestamp)
       {
-         message.setJMSTimestamp(System.currentTimeMillis());
+         jmsMessage.setJMSTimestamp(System.currentTimeMillis());
       }
       else
       {
-         message.setJMSTimestamp(0);
+         jmsMessage.setJMSTimestamp(0);
       }
 
       SimpleString address = null;
@@ -353,49 +391,49 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          address = destination.getSimpleAddress();
       }
 
-      HornetQMessage msg;
+      HornetQMessage hqJmsMessage;
 
       boolean foreign = false;
 
       // First convert from foreign message if appropriate
-      if (!(message instanceof HornetQMessage))
+      if (!(jmsMessage instanceof HornetQMessage))
       {
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
 
-         if (message instanceof BytesMessage)
+         if (jmsMessage instanceof BytesMessage)
          {
-            msg = new HornetQBytesMessage((BytesMessage)message, clientSession);
+            hqJmsMessage = new HornetQBytesMessage((BytesMessage)jmsMessage, clientSession);
          }
-         else if (message instanceof MapMessage)
+         else if (jmsMessage instanceof MapMessage)
          {
-            msg = new HornetQMapMessage((MapMessage)message, clientSession);
+            hqJmsMessage = new HornetQMapMessage((MapMessage)jmsMessage, clientSession);
          }
-         else if (message instanceof ObjectMessage)
+         else if (jmsMessage instanceof ObjectMessage)
          {
-            msg = new HornetQObjectMessage((ObjectMessage)message, clientSession);
+            hqJmsMessage = new HornetQObjectMessage((ObjectMessage)jmsMessage, clientSession);
          }
-         else if (message instanceof StreamMessage)
+         else if (jmsMessage instanceof StreamMessage)
          {
-            msg = new HornetQStreamMessage((StreamMessage)message, clientSession);
+            hqJmsMessage = new HornetQStreamMessage((StreamMessage)jmsMessage, clientSession);
          }
-         else if (message instanceof TextMessage)
+         else if (jmsMessage instanceof TextMessage)
          {
-            msg = new HornetQTextMessage((TextMessage)message, clientSession);
+            hqJmsMessage = new HornetQTextMessage((TextMessage)jmsMessage, clientSession);
          }
          else
          {
-            msg = new HornetQMessage(message, clientSession);
+            hqJmsMessage = new HornetQMessage(jmsMessage, clientSession);
          }
 
          // Set the destination on the original message
-         message.setJMSDestination(destination);
+         jmsMessage.setJMSDestination(destination);
 
          foreign = true;
       }
       else
       {
-         msg = (HornetQMessage)message;
+         hqJmsMessage = (HornetQMessage)jmsMessage;
       }
 
       if (!disableMessageID)
@@ -404,21 +442,21 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          UUID uid = UUIDGenerator.getInstance().generateUUID();
 
-         msg.getCoreMessage().setUserID(uid);
+         hqJmsMessage.getCoreMessage().setUserID(uid);
 
-         msg.resetMessageID(null);
+         hqJmsMessage.resetMessageID(null);
       }
 
       if (foreign)
       {
-         message.setJMSMessageID(msg.getJMSMessageID());
+         jmsMessage.setJMSMessageID(hqJmsMessage.getJMSMessageID());
       }
 
-      msg.setJMSDestination(destination);
+      hqJmsMessage.setJMSDestination(destination);
 
       try
       {
-         msg.doBeforeSend();
+         hqJmsMessage.doBeforeSend();
       }
       catch (Exception e)
       {
@@ -429,13 +467,25 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw je;
       }
 
-      ClientMessage coreMessage = msg.getCoreMessage();
+      hqJmsMessage.setJMSDeliveryTime(System.currentTimeMillis());
 
-         coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
+      ClientMessage coreMessage = hqJmsMessage.getCoreMessage();
+      coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
 
       try
       {
-         producer.send(address, coreMessage);
+         /**
+          * Using a completionListener requires wrapping using a {@link CompletionListenerWrapper},
+          * so we avoid it if we can.
+          */
+         if (completionListener != null)
+         {
+            clientProducer.send(address, coreMessage, new CompletionListenerWrapper(completionListener, jmsMessage));
+         }
+         else
+         {
+            clientProducer.send(address, coreMessage);
+         }
       }
       catch (HornetQException e)
       {
@@ -445,11 +495,37 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private void checkClosed() throws JMSException
    {
-      if (producer.isClosed())
+      if (clientProducer.isClosed())
       {
          throw new IllegalStateException("Producer is closed");
       }
    }
 
-   // Inner classes -------------------------------------------------
+   private static final class CompletionListenerWrapper implements SendAcknowledgementHandler
+   {
+      private final CompletionListener completionListener;
+      private final Message jmsMessage;
+
+      /**
+       * @param jmsMessage
+       *
+       */
+      public CompletionListenerWrapper(CompletionListener listener, Message jmsMessage)
+      {
+         this.completionListener = listener;
+         this.jmsMessage = jmsMessage;
+      }
+
+      @Override
+      public void sendAcknowledged(org.hornetq.api.core.Message clientMessage)
+      {
+         completionListener.onCompletion(jmsMessage);
+      }
+
+      @Override
+      public String toString()
+      {
+         return CompletionListenerWrapper.class.getSimpleName() + "( completionListener=" + completionListener + ")";
+      }
+   }
 }

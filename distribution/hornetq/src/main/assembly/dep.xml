@@ -322,7 +322,7 @@
    <dependencySets>
       <dependencySet>
          <includes>
-            <include>org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec</include>
+            <include>org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>

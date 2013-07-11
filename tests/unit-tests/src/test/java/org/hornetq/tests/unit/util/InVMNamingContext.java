@@ -40,7 +40,7 @@ import org.hornetq.tests.unit.UnitTestLogger;
  * @version <tt>$Revision: 2868 $</tt>
  *
  */
-public class InVMContext implements Context, Serializable
+public class InVMNamingContext implements Context, Serializable
 {
    // Constants -----------------------------------------------------
 
@@ -58,12 +58,12 @@ public class InVMContext implements Context, Serializable
 
    // Constructors --------------------------------------------------
 
-   public InVMContext()
+   public InVMNamingContext()
    {
       map = Collections.synchronizedMap(new HashMap<String, Object>());
    }
 
-   public InVMContext(final String nameInNamespace)
+   public InVMNamingContext(final String nameInNamespace)
    {
       this();
       this.nameInNamespace = nameInNamespace;
@@ -86,9 +86,9 @@ public class InVMContext implements Context, Serializable
       {
          throw new NameNotFoundException("Name not found: " + tok);
       }
-      if (value instanceof InVMContext && i != -1)
+      if (value instanceof InVMNamingContext && i != -1)
       {
-         return ((InVMContext)value).lookup(name.substring(i));
+         return ((InVMNamingContext)value).lookup(name.substring(i));
       }
       if (value instanceof Reference)
       {
@@ -142,7 +142,7 @@ public class InVMContext implements Context, Serializable
       else
       {
          String tok = name.substring(0, i);
-         InVMContext c = (InVMContext)map.get(tok);
+         InVMNamingContext c = (InVMNamingContext)map.get(tok);
          if (c == null)
          {
             throw new NameNotFoundException("Context not found: " + tok);
@@ -183,7 +183,7 @@ public class InVMContext implements Context, Serializable
       {
          try
          {
-            return ((InVMContext)lookup(contextName)).listBindings("");
+            return ((InVMNamingContext)lookup(contextName)).listBindings("");
          }
          catch (Throwable t)
          {
@@ -223,7 +223,7 @@ public class InVMContext implements Context, Serializable
       {
          throw new NameAlreadyBoundException(name);
       }
-      InVMContext c = new InVMContext(getNameInNamespace());
+      InVMNamingContext c = new InVMNamingContext(getNameInNamespace());
       map.put(name, c);
       return c;
    }
@@ -322,11 +322,11 @@ public class InVMContext implements Context, Serializable
       UnitTestLogger.LOGGER.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
       name = trimSlashes(name);
       int i = name.lastIndexOf("/");
-      InVMContext c = this;
+      InVMNamingContext c = this;
       if (i != -1)
       {
          String path = name.substring(0, i);
-         c = (InVMContext)lookup(path);
+         c = (InVMNamingContext)lookup(path);
       }
       name = name.substring(i + 1);
       if (!rebind && c.map.get(name) != null)

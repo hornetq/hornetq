@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -22,9 +20,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JMSTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -39,7 +37,7 @@ public class ExpiredMessageTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
       prod.setTimeToLive(1);
 
       Message m = session.createTextMessage("This message will die");
@@ -50,7 +48,7 @@ public class ExpiredMessageTest extends JMSTestCase
 
       Thread.sleep(250);
 
-      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
       conn.start();
 
@@ -64,7 +62,7 @@ public class ExpiredMessageTest extends JMSTestCase
    {
       Connection conn = getConnectionFactory().createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
 
       // sent 2 messages: 1 expiring, 1 living
       TextMessage livingMessage = session.createTextMessage("This message will live");
@@ -79,7 +77,7 @@ public class ExpiredMessageTest extends JMSTestCase
       // wait for the expiring message to die
       Thread.sleep(250);
 
-      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
       conn.start();
 
       // receive living message
@@ -101,7 +99,7 @@ public class ExpiredMessageTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
       prod.setTimeToLive(1);
 
       Message m = session.createTextMessage("This message will die");
@@ -113,19 +111,11 @@ public class ExpiredMessageTest extends JMSTestCase
          prod.send(m);
       }
 
-      MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
       conn.start();
 
       ProxyAssertSupport.assertNull(cons.receive(2000));
 
       conn.close();
    }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
 }

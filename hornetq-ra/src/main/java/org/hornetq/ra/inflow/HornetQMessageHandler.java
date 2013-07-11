@@ -111,7 +111,7 @@ public class HornetQMessageHandler implements MessageHandler
                                                " - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                             subscriptionName));
 
          QueueQuery subResponse = session.queueQuery(queueName);

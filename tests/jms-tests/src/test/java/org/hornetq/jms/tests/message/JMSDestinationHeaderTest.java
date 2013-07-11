@@ -13,12 +13,10 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Message;
 
-import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -40,7 +38,7 @@ public class JMSDestinationHeaderTest extends MessageHeaderTestBase
    {
       queueProducer.send(queueProducerSession.createMessage());
       Message m = queueConsumer.receive();
-      ProxyAssertSupport.assertEquals(HornetQServerTestCase.queue1, m.getJMSDestination());
+      ProxyAssertSupport.assertEquals(queue1, m.getJMSDestination());
    }
 
    // Package protected ---------------------------------------------

@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.Enumeration;
 
 import javax.jms.Connection;
@@ -32,6 +28,9 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -100,7 +99,7 @@ public class BrowserTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(queue1);
 
       HornetQConnectionFactory cf1 = (HornetQConnectionFactory)getConnectionFactory();
 
@@ -117,12 +116,12 @@ public class BrowserTest extends JMSTestCase
       producer.send(m);
 
 
-      assertNotNull(browser.receiveImmediate());
+      Assert.assertNotNull(browser.receiveImmediate());
 
       coreSession.close();
 
 
-      System.out.println("Draining destination...");
+
       drainDestination(getConnectionFactory(), queue1);
    }
 
@@ -133,11 +132,11 @@ public class BrowserTest extends JMSTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer producer = session.createProducer(queue1);
 
-      QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+      QueueBrowser browser = session.createBrowser(queue1);
 
-      ProxyAssertSupport.assertEquals(browser.getQueue(), HornetQServerTestCase.queue1);
+      ProxyAssertSupport.assertEquals(browser.getQueue(), queue1);
 
       ProxyAssertSupport.assertNull(browser.getMessageSelector());
 
@@ -150,10 +149,8 @@ public class BrowserTest extends JMSTestCase
       producer.send(m);
       Message m2 = en.nextElement();
 
-      assertNotNull(m2);
+      Assert.assertNotNull(m2);
 
-
-      System.out.println("Draining destination...");
       drainDestination(getConnectionFactory(), queue1);
    }
 
@@ -166,7 +163,7 @@ public class BrowserTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = session.createProducer(queue1);
 
          final int numMessages = 100;
 
@@ -179,7 +176,7 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -192,7 +189,7 @@ public class BrowserTest extends JMSTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer producer = session.createProducer(queue1);
 
          // send a message to the queue
 
@@ -201,7 +198,7 @@ public class BrowserTest extends JMSTestCase
 
          // make sure we can browse it
 
-         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
+         QueueBrowser browser = session.createBrowser(queue1);
 
          Enumeration en = browser.getEnumeration();
 
@@ -229,7 +226,7 @@ public class BrowserTest extends JMSTestCase
       }
       finally
       {
-         removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

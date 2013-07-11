@@ -16,6 +16,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.utils.ConfirmationWindowWarning;
 
 /**
  * A ClientSessionFactoryInternal
@@ -54,4 +55,6 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    Object getBackupConnector();
 
    void setReconnectAttempts(int i);
+
+   ConfirmationWindowWarning getConfirmationWindowWarning();
 }

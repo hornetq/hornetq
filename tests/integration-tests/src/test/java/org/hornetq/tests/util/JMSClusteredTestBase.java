@@ -40,7 +40,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 
 /**
  * A JMSBaseTest
@@ -70,9 +70,9 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
    protected ConnectionFactory cf2;
 
-   protected InVMContext context1;
+   protected InVMNamingContext context1;
 
-   protected InVMContext context2;
+   protected InVMNamingContext context2;
 
    private static final int MAX_HOPS = 1;
 
@@ -152,7 +152,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       mBeanServer2 = MBeanServerFactory.createMBeanServer();
       server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, false);
       jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
-      context2 = new InVMContext();
+      context2 = new InVMNamingContext();
       jmsServer2.setContext(context2);
    }
 
@@ -200,7 +200,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       mBeanServer1 = MBeanServerFactory.createMBeanServer();
       server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, false);
       jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
-      context1 = new InVMContext();
+      context1 = new InVMNamingContext();
       jmsServer1.setContext(context1);
    }
 

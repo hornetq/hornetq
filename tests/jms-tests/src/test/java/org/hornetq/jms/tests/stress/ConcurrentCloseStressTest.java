@@ -29,6 +29,7 @@ import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -37,7 +38,11 @@ import org.junit.Test;
  */
 public class ConcurrentCloseStressTest extends HornetQServerTestCase
 {
-   private static final JmsTestLogger log = JmsTestLogger.LOGGER;
+   @BeforeClass
+   public static void stressTestsEnabled()
+   {
+      org.junit.Assume.assumeTrue(JMSStressTestBase.STRESS_TESTS_ENABLED);
+   }
 
    InitialContext ic;
 
@@ -61,13 +66,15 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
 
       queue = (Queue)ic.lookup("queue/TestQueue");
 
-      ConcurrentCloseStressTest.log.debug("setup done");
+      log.debug("setup done");
    }
 
+   @Override
    @After
    public void tearDown() throws Exception
    {
       destroyQueue("TestQueue");
+      super.tearDown();
    }
 
    @Test
@@ -111,7 +118,7 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
             for (Exception element : threads[i].exceptions)
             {
                Exception ex = element;
-               ConcurrentCloseStressTest.log.error("Exception occurred in one of the threads - " + ex, ex);
+               log.error("Exception occurred in one of the threads - " + ex, ex);
             }
          }
       }

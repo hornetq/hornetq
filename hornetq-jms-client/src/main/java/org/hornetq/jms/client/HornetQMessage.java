@@ -14,6 +14,7 @@
 package org.hornetq.jms.client;
 
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
@@ -41,6 +43,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.utils.UUID;
 
 /**
@@ -184,7 +187,7 @@ public class HornetQMessage implements javax.jms.Message
          }
          default:
          {
-            throw new IllegalArgumentException("Invalid message type " + type);
+            throw new JMSRuntimeException("Invalid message type " + type);
          }
       }
 
@@ -220,6 +223,8 @@ public class HornetQMessage implements javax.jms.Message
    private String jmsType;
 
    private boolean individualAck;
+
+   private long jmsDeliveryTime;
 
    // Constructors --------------------------------------------------
 
@@ -580,7 +585,7 @@ public class HornetQMessage implements javax.jms.Message
       propertiesReadOnly = false;
    }
 
-   public void clearBody() throws JMSException
+   public void clearBody()
    {
       readOnly = false;
    }
@@ -725,6 +730,8 @@ public class HornetQMessage implements javax.jms.Message
       return val;
    }
 
+   @SuppressWarnings("rawtypes")
+   @Override
    public Enumeration getPropertyNames() throws JMSException
    {
       HashSet<String> set = new HashSet<String>();
@@ -745,50 +752,50 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
 
       message.putBooleanProperty(new SimpleString(name), value);
    }
 
    public void setByteProperty(final String name, final byte value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putByteProperty(new SimpleString(name), value);
    }
 
    public void setShortProperty(final String name, final short value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putShortProperty(new SimpleString(name), value);
    }
 
    public void setIntProperty(final String name, final int value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putIntProperty(new SimpleString(name), value);
    }
 
    public void setLongProperty(final String name, final long value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putLongProperty(new SimpleString(name), value);
    }
 
    public void setFloatProperty(final String name, final float value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putFloatProperty(new SimpleString(name), value);
    }
 
    public void setDoubleProperty(final String name, final double value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
       message.putDoubleProperty(new SimpleString(name), value);
    }
 
    public void setStringProperty(final String name, final String value) throws JMSException
    {
-      checkProperty(name, value);
+      checkProperty(name);
 
       if (HornetQMessage.JMSXGROUPID.equals(name))
       {
@@ -815,7 +822,7 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      checkProperty(name, value);
+      checkProperty(name);
 
       if (HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
@@ -854,6 +861,67 @@ public class HornetQMessage implements javax.jms.Message
       }
    }
 
+   @Override
+   public long getJMSDeliveryTime() throws JMSException
+   {
+      return jmsDeliveryTime;
+   }
+
+   @Override
+   public void setJMSDeliveryTime(long deliveryTime) throws JMSException
+   {
+      this.jmsDeliveryTime = deliveryTime;
+   }
+
+   @Override
+   public <T> T getBody(Class<T> c) throws JMSException
+   {
+      if (isBodyAssignableTo(c))
+      {
+         return getBodyInternal(c);
+      }
+      // XXX HORNETQ-1209 Do we need translations here?
+      throw new MessageFormatException("Body not assignable to " + c);
+   }
+
+   @SuppressWarnings("unchecked")
+   protected <T> T getBodyInternal(Class<T> c) throws MessageFormatException
+   {
+      InputStream is = ((MessageInternal)message).getBodyInputStream();
+      try
+      {
+         ObjectInputStream ois = new ObjectInputStream(is);
+         return (T)ois.readObject();
+      }
+      catch (Exception e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
+   }
+
+
+   @Override
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
+   Class c)
+   {
+      /**
+       * From the specs:
+       * <p>
+       * If the message is a {@code Message} (but not one of its subtypes) then this method will
+       * return true irrespective of the value of this parameter.
+       */
+      return true;
+   }
+
+   /**
+    * Helper method for {@link #isBodyAssignableTo(Class)}.
+    * @return true if the message has no body.
+    */
+   protected boolean hasNoBody()
+   {
+      return message.getBodySize() == 0;
+   }
+
    // Public --------------------------------------------------------
 
    public void setIndividualAcknowledge()
@@ -861,9 +929,9 @@ public class HornetQMessage implements javax.jms.Message
       this.individualAck = true;
    }
 
-   public void resetMessageID(final String msgID)
+   public void resetMessageID(final String newMsgID)
    {
-      this.msgID = msgID;
+      this.msgID = newMsgID;
    }
 
    public ClientMessage getCoreMessage()
@@ -998,7 +1066,7 @@ public class HornetQMessage implements javax.jms.Message
       }
    }
 
-   private void checkProperty(final String name, final Object value) throws JMSException
+   private void checkProperty(final String name) throws JMSException
    {
       if (propertiesReadOnly)
       {
@@ -1017,22 +1085,22 @@ public class HornetQMessage implements javax.jms.Message
 
       if (name == null)
       {
-         throw new IllegalArgumentException("The name of a property must not be null.");
+         throw new JMSRuntimeException("The name of a property must not be null.");
       }
 
       if (name.equals(""))
       {
-         throw new IllegalArgumentException("The name of a property must not be an empty String.");
+         throw new JMSRuntimeException("The name of a property must not be an empty String.");
       }
 
       if (!isValidJavaIdentifier(name))
       {
-         throw new IllegalArgumentException("The property name '" + name + "' is not a valid java identifier.");
+         throw new JMSRuntimeException("The property name '" + name + "' is not a valid java identifier.");
       }
 
       if (HornetQMessage.reservedIdentifiers.contains(name))
       {
-         throw new IllegalArgumentException("The property name '" + name + "' is reserved due to selector syntax.");
+         throw new JMSRuntimeException("The property name '" + name + "' is reserved due to selector syntax.");
       }
 
       if (name.startsWith("JMS"))
@@ -1046,13 +1114,13 @@ public class HornetQMessage implements javax.jms.Message
                // (java.jms.Message javadoc)
                // "Property names must obey the rules for a message selector identifier"
                // "Any name that does not begin with 'JMS' is an application-specific property name"
-               throw new IllegalArgumentException("The property name '" + name +
+               throw new JMSRuntimeException("The property name '" + name +
                                                   "' is illegal since it starts with JMS");
             }
          }
          else
          {
-            throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
+            throw new JMSRuntimeException("The property name '" + name + "' is illegal since it starts with JMS");
          }
       }
    }

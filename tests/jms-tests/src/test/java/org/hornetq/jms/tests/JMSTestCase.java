@@ -14,6 +14,13 @@
 package org.hornetq.jms.tests;
 import java.util.ArrayList;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.TopicConnection;
+import javax.jms.XAConnection;
 import javax.naming.InitialContext;
 
 import org.hornetq.api.core.client.HornetQClient;
@@ -40,13 +47,13 @@ public class JMSTestCase extends HornetQServerTestCase
       NETTY_CONNECTOR.add("netty");
    }
 
-   protected static HornetQJMSConnectionFactory cf;
+   protected HornetQJMSConnectionFactory cf;
 
-   protected static HornetQQueueConnectionFactory queueCf;
+   protected HornetQQueueConnectionFactory queueCf;
 
-   protected static HornetQTopicConnectionFactory topicCf;
+   protected HornetQTopicConnectionFactory topicCf;
 
-   protected static InitialContext ic;
+   protected InitialContext ic;
 
    protected static final String defaultConf = "all";
 
@@ -58,7 +65,7 @@ public class JMSTestCase extends HornetQServerTestCase
    {
       super.setUp();
 
-      JMSTestCase.ic = getInitialContext();
+      ic = getInitialContext();
 
       // All jms tests should use a specific cg which has blockOnAcknowledge = true and
       // both np and p messages are sent synchronously
@@ -172,22 +179,72 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     null,
                                                     "/testsuitecf_topic");
 
-      JMSTestCase.cf = (HornetQJMSConnectionFactory)getInitialContext().lookup("/testsuitecf");
-      JMSTestCase.queueCf = (HornetQQueueConnectionFactory)getInitialContext().lookup("/testsuitecf_queue");
-      JMSTestCase.topicCf = (HornetQTopicConnectionFactory)getInitialContext().lookup("/testsuitecf_topic");
+      cf = (HornetQJMSConnectionFactory)getInitialContext().lookup("/testsuitecf");
+      queueCf = (HornetQQueueConnectionFactory)getInitialContext().lookup("/testsuitecf_queue");
+      topicCf = (HornetQTopicConnectionFactory)getInitialContext().lookup("/testsuitecf_topic");
 
       assertRemainingMessages(0);
    }
 
+   protected final JMSContext createContext()
+   {
+      return addContext(cf.createContext());
+   }
+
+
+   protected final Connection createConnection() throws JMSException
+   {
+      Connection c = cf.createConnection();
+      return addConnection(c);
+   }
+
+   protected final TopicConnection createTopicConnection() throws JMSException
+   {
+      TopicConnection c = cf.createTopicConnection();
+      addConnection(c);
+      return c;
+   }
+
+   protected final QueueConnection createQueueConnection() throws JMSException
+   {
+      QueueConnection c = cf.createQueueConnection();
+      addConnection(c);
+      return c;
+   }
+
+   protected final XAConnection createXAConnection() throws JMSException
+   {
+      XAConnection c = cf.createXAConnection();
+      addConnection(c);
+      return c;
+   }
+
+
+   protected final Connection createConnection(String user, String password) throws JMSException
+   {
+      Connection c = cf.createConnection(user, password);
+      addConnection(c);
+      return c;
+   }
+
+   @Override
    @After
    public void tearDown() throws Exception
    {
+      super.tearDown();
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
       if (cf != null)
+      {
          cf.close();
+      }
 
-      JMSTestCase.cf = null;
+      cf = null;
 
       assertRemainingMessages(0);
+   }
+
+   protected Connection createConnection(ConnectionFactory cf1) throws JMSException
+   {
+      return addConnection(cf1.createConnection());
    }
 }

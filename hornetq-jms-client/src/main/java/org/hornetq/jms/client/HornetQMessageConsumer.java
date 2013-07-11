@@ -37,12 +37,6 @@ import org.hornetq.api.jms.HornetQJMSConstants;
  */
 public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscriber
 {
-   // Constants -----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private final ClientConsumer consumer;
 
    private MessageListener listener;

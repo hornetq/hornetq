@@ -60,12 +60,12 @@ public class JMSDynamicConfigTest extends JMSTestBase
       ConnectionFactoryConfiguration cfg = new ConnectionFactoryConfigurationImpl("tst", false, connectors, "tt");
       jmsServer.createConnectionFactory(true, cfg, "tst");
 
-      assertNotNull(context.lookup("tst"));
+      assertNotNull(namingContext.lookup("tst"));
       jmsServer.removeConnectionFactoryFromJNDI("tst");
 
       try
       {
-         context.lookup("tst");
+         namingContext.lookup("tst");
          fail("failure expected");
       }
       catch (NamingException excepted)
@@ -79,7 +79,7 @@ public class JMSDynamicConfigTest extends JMSTestBase
 
       try
       {
-         context.lookup("tst");
+         namingContext.lookup("tst");
          fail("failure expected");
       }
       catch (NamingException excepted)

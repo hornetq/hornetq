@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-
-import org.junit.Test;
-
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +28,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Test;
+
 
 /**
  * The most comprehensive, yet simple, unit test.
@@ -41,28 +41,31 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class JMSTest extends JMSTestCase
 {
-   // Constants -----------------------------------------------------
+    Connection conn = null;
 
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   @Override
+   @After
+   public void tearDown() throws Exception {
+      try
+     {
+         if (conn != null)
+         {
+             conn.close();
+             conn=null;
+         }
+     }  finally {
+          super.tearDown();
+     }
+    }
 
    @Test
    public void test_NonPersistent_NonTransactional() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -71,11 +74,11 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -84,28 +87,16 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertNotNull(rm);
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_CreateTextMessageNull() throws Exception
+   public void testCreateTextMessageNull() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage();
@@ -116,39 +107,27 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
          TextMessage rm = (TextMessage)cons.receive();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_Persistent_NonTransactional() throws Exception
+   public void testPersistent_NonTransactional() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -157,39 +136,27 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
          TextMessage rm = (TextMessage)cons.receive();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_NonPersistent_Transactional_Send() throws Exception
+   public void testNonPersistent_Transactional_Send() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -201,11 +168,11 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -213,28 +180,16 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("message one", rm.getText());
          rm = (TextMessage)cons.receive();
          ProxyAssertSupport.assertEquals("message two", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_Persistent_Transactional_Send() throws Exception
+   public void testPersistent_Transactional_Send() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          TextMessage m = session.createTextMessage("message one");
@@ -246,11 +201,11 @@ public class JMSTest extends JMSTestCase
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -258,39 +213,27 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("message one", rm.getText());
          rm = (TextMessage)cons.receive();
          ProxyAssertSupport.assertEquals("message two", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
+   public void testNonPersistent_Transactional_Acknowledgment() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = session.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          TextMessage m = session.createTextMessage("one");
          prod.send(m);
 
          conn.close();
 
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -298,28 +241,16 @@ public class JMSTest extends JMSTestCase
          ProxyAssertSupport.assertEquals("one", rm.getText());
 
          session.commit();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_Asynchronous_to_Client() throws Exception
+   public void testAsynchronous_to_Client() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         final MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      final MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -356,7 +287,7 @@ public class JMSTest extends JMSTestCase
 
          synchronized (session)
          {
-            MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         MessageProducer prod = session.createProducer(queue1);
             prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
             TextMessage m = session.createTextMessage("message one");
@@ -369,28 +300,16 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)message.get();
 
          ProxyAssertSupport.assertEquals("message one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_MessageListener() throws Exception
+   public void testMessageListener() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = sessionConsumer.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = sessionConsumer.createConsumer(queue1);
 
          final AtomicReference<Message> message = new AtomicReference<Message>();
          final CountDownLatch latch = new CountDownLatch(1);
@@ -408,7 +327,7 @@ public class JMSTest extends JMSTestCase
 
 
          Session sessionProducer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessionProducer.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer prod = sessionProducer.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          TextMessage m = sessionProducer.createTextMessage("one");
          prod.send(m);
@@ -418,30 +337,18 @@ public class JMSTest extends JMSTestCase
          TextMessage rm = (TextMessage)message.get();
 
          ProxyAssertSupport.assertEquals("one", rm.getText());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
 
    @Test
-   public void test_ClientAcknowledge() throws Exception
+   public void testClientAcknowledge() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = JMSTestCase.cf.createConnection();
+      conn = createConnection();
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer p = session.createProducer(HornetQServerTestCase.queue1);
+      MessageProducer p = session.createProducer(queue1);
          p.send(session.createTextMessage("CLACK"));
 
-         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1);
+      MessageConsumer cons = session.createConsumer(queue1);
 
          conn.start();
 
@@ -455,22 +362,5 @@ public class JMSTest extends JMSTestCase
          m.acknowledge();
 
          assertRemainingMessages(0);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

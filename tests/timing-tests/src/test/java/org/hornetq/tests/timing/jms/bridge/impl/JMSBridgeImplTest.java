@@ -59,7 +59,7 @@ import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.UnitTestLogger;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -548,7 +548,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       config.setFileDeploymentEnabled(false);
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      InVMContext context = new InVMContext();
+      InVMNamingContext context = new InVMNamingContext();
       jmsServer = new JMSServerManagerImpl(HornetQServers.newHornetQServer(config, false));
       jmsServer.setContext(context);
       jmsServer.start();
