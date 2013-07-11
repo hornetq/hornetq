@@ -18,10 +18,6 @@
          <artifactId>hornetq-jms-examples-common</artifactId>
          <version>${project.version}</version>
       </dependency>
-      <dependency>
-         <groupId>org.jboss.spec.javax.jms</groupId>
-         <artifactId>jboss-jms-api_1.1_spec</artifactId>
-      </dependency>
    </dependencies>
 
       <build>
