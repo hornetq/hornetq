@@ -407,6 +407,7 @@ public class ProtonRemotingConnection implements RemotingConnection
             {
                byte[] data = new byte[sasl.pending()];
                sasl.recv(data, 0, data.length);
+               setUserPass(data);
                sasl.done(Sasl.SaslOutcome.PN_SASL_OK);
                sasl = null;
             }
@@ -534,6 +535,29 @@ public class ProtonRemotingConnection implements RemotingConnection
       }
 
       write();
+   }
+
+   private void setUserPass(byte[] data)
+   {
+      String bytes = new String(data);
+      String[] credentials = bytes.split(Character.toString((char)0));
+      int offSet = 0;
+      if (credentials.length > 0)
+      {
+         if(credentials[0].length() == 0)
+         {
+            offSet = 1;
+         }
+
+         if(credentials.length >= offSet)
+         {
+            username = credentials[offSet];
+         }
+         if(credentials.length >= (offSet + 1))
+         {
+            passcode = credentials[offSet + 1];
+         }
+      }
    }
 
    private ProtonSession getSession(Session realSession) throws HornetQAMQPException
