@@ -44,7 +44,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          return consumer.getMessageSelector();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -56,7 +56,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          return consumer.getMessageListener();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -68,7 +68,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          consumer.setMessageListener(listener);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -80,7 +80,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          return consumer.receive();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -92,7 +92,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          return consumer.receive(timeout);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -104,7 +104,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          return consumer.receiveNoWait();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -116,7 +116,7 @@ public class HornetQJMSConsumer implements JMSConsumer
          consumer.close();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -130,7 +130,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -144,7 +144,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -158,7 +158,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 }
