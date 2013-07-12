@@ -1085,12 +1085,12 @@ public class HornetQMessage implements javax.jms.Message
 
       if (name == null)
       {
-         throw new JMSRuntimeException("The name of a property must not be null.");
+         throw new IllegalArgumentException("The name of a property must not be null.");
       }
 
       if (name.equals(""))
       {
-         throw new JMSRuntimeException("The name of a property must not be an empty String.");
+         throw new IllegalArgumentException("The name of a property must not be an empty String.");
       }
 
       if (!isValidJavaIdentifier(name))

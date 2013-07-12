@@ -25,7 +25,7 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
          }
          catch (JMSException e)
          {
-            throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+            throw JmsExceptionUtils.convertToRuntimeException(e);
          }
       }
    };

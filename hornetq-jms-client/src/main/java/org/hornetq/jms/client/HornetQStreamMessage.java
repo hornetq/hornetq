@@ -114,7 +114,7 @@ public final class HornetQStreamMessage extends HornetQMessage implements Stream
                String s = getBuffer().readNullableString();
                return Boolean.valueOf(s);
             default:
-               throw new MessageFormatException("Invalid conversion");
+               throw new MessageFormatException("Invalid conversion, type byte was " + type);
          }
       }
       catch (IndexOutOfBoundsException e)

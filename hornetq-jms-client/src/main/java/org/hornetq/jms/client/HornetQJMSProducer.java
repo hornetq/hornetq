@@ -107,7 +107,7 @@ public final class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
       return this;
    }
@@ -236,7 +236,7 @@ public final class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
       return this;
    }
@@ -250,7 +250,7 @@ public final class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -263,7 +263,7 @@ public final class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
       return this;
    }
@@ -277,7 +277,7 @@ public final class HornetQJMSProducer implements JMSProducer
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 

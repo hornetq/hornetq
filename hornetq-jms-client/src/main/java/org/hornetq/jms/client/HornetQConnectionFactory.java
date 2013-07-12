@@ -148,7 +148,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
