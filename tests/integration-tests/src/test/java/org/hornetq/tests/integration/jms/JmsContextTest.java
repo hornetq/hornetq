@@ -5,6 +5,9 @@ package org.hornetq.tests.integration.jms;
 
 import java.util.Random;
 
+import javax.jms.Destination;
+import javax.jms.IllegalStateRuntimeException;
+import javax.jms.InvalidDestinationRuntimeException;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -54,6 +57,39 @@ public class JmsContextTest extends JMSTestBase
       catch (MessageFormatRuntimeException expected)
       {
          // no-op
+      }
+   }
+
+   @Test
+   public void testInvalidDestination()
+   {
+      JMSProducer producer = context.createProducer();
+      Message msg = context.createMessage();
+      try
+      {
+         producer.send((Destination)null, msg);
+         Assert.fail("null Destination");
+      }
+      catch (InvalidDestinationRuntimeException expected)
+      {
+         // no-op
+      }
+   }
+
+   @Test
+   public void testSetClientIdLate()
+   {
+      JMSProducer producer = context.createProducer();
+      Message msg = context.createMessage();
+      producer.send(queue1, msg);
+      try
+      {
+         context.setClientID("id");
+         Assert.fail("expected exception");
+      }
+      catch (IllegalStateRuntimeException e)
+      {
+         // no op
       }
    }
 

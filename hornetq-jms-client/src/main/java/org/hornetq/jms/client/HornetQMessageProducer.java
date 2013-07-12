@@ -326,6 +326,10 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       {
          throw new UnsupportedOperationException("Cannot specify destination if producer has a default destination");
       }
+      if (destination == null)
+      {
+         throw new InvalidDestinationException("Destination is null");
+      }
    }
 
    private void checkCompletionListener(CompletionListener completionListener)

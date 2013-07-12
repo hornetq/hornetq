@@ -76,7 +76,7 @@ public class HornetQJMSContext implements JMSContext
          return new HornetQJMSProducer(this, session.createProducer(null));
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -99,7 +99,7 @@ public class HornetQJMSContext implements JMSContext
                }
                catch (JMSException e)
                {
-                  throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+                  throw JmsExceptionUtils.convertToRuntimeException(e);
                }
             }
          }
@@ -114,7 +114,7 @@ public class HornetQJMSContext implements JMSContext
          return connection.getClientID();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -124,9 +124,10 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          connection.setClientID(clientID);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -138,7 +139,7 @@ public class HornetQJMSContext implements JMSContext
          return connection.getMetaData();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -150,7 +151,7 @@ public class HornetQJMSContext implements JMSContext
          return connection.getExceptionListener();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -162,7 +163,7 @@ public class HornetQJMSContext implements JMSContext
          connection.setExceptionListener(listener);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -174,7 +175,7 @@ public class HornetQJMSContext implements JMSContext
          connection.start();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -186,7 +187,7 @@ public class HornetQJMSContext implements JMSContext
          connection.stop();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -217,7 +218,7 @@ public class HornetQJMSContext implements JMSContext
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -230,7 +231,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createBytesMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -243,7 +244,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createMapMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -256,7 +257,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -269,7 +270,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createObjectMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -282,7 +283,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createObjectMessage(object);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -295,7 +296,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createStreamMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -308,7 +309,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createTextMessage();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -321,7 +322,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createTextMessage(text);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -334,7 +335,7 @@ public class HornetQJMSContext implements JMSContext
          return session.getTransacted();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -353,7 +354,7 @@ public class HornetQJMSContext implements JMSContext
          session.commit();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -366,7 +367,7 @@ public class HornetQJMSContext implements JMSContext
          session.rollback();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -379,7 +380,7 @@ public class HornetQJMSContext implements JMSContext
          session.recover();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -394,7 +395,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -409,7 +410,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -424,7 +425,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -437,7 +438,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createQueue(queueName);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -450,7 +451,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createTopic(topicName);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -465,7 +466,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -480,7 +481,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -495,7 +496,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -510,7 +511,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -525,7 +526,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -540,7 +541,7 @@ public class HornetQJMSContext implements JMSContext
          return consumer;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -555,7 +556,7 @@ public class HornetQJMSContext implements JMSContext
          return browser;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -570,7 +571,7 @@ public class HornetQJMSContext implements JMSContext
          return browser;
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -583,7 +584,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createTemporaryQueue();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -596,7 +597,7 @@ public class HornetQJMSContext implements JMSContext
          return session.createTemporaryTopic();
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -609,7 +610,7 @@ public class HornetQJMSContext implements JMSContext
          session.unsubscribe(name);
       } catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
@@ -627,7 +628,7 @@ public class HornetQJMSContext implements JMSContext
       }
       catch (JMSException e)
       {
-         throw new JMSRuntimeException(e.getMessage(), e.getErrorCode(), e);
+         throw JmsExceptionUtils.convertToRuntimeException(e);
       }
    }
 
