@@ -21,6 +21,7 @@
 */
 package org.hornetq.core.protocol.proton;
 
+import org.apache.qpid.proton.amqp.transport.AmqpError;
 import org.apache.qpid.proton.engine.EndpointError;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sasl;
@@ -296,16 +297,25 @@ public class ProtonRemotingConnection implements RemotingConnection
       if (initialised)
       {
          protonProtocolManager.handleBuffer(this, buffer);
-      } else
+      }
+      else
       {
-         //todo version check
          byte[] prot = new byte[4];
          buffer.readBytes(prot);
          String headerProt = new String(prot);
+         checkProtocol(headerProt);
          int protocolId = buffer.readByte();
          int major = buffer.readByte();
          int minor = buffer.readByte();
          int revision = buffer.readByte();
+         if(!(checkVersion(major, minor, revision) && checkProtocol(headerProt)))
+         {
+            protonTransport.close();
+            protonConnection.close();
+            write();
+            destroy();
+            return;
+         }
          if (protocolId == 3)
          {
             sasl = protonTransport.sasl();
@@ -346,6 +356,28 @@ public class ProtonRemotingConnection implements RemotingConnection
             write();
          }
       }
+   }
+
+   private boolean checkProtocol(String headerProt)
+   {
+      boolean ok = "AMQP".equals(headerProt);
+      if(!ok)
+      {
+         protonConnection.setLocalError(new EndpointError(HornetQAMQPException.AmqpError.ILLEGAL_STATE.getError(),
+               "Unknown Protocol " + headerProt));
+      }
+      return ok;
+   }
+
+   private boolean checkVersion(int major, int minor, int revision)
+   {
+      if(major < 1)
+      {
+         protonConnection.setLocalError(new EndpointError(HornetQAMQPException.AmqpError.ILLEGAL_STATE.getError(),
+               "Version not supported " + major + "." + minor + "." + revision));
+         return false;
+      }
+      return true;
    }
 
    void write()
