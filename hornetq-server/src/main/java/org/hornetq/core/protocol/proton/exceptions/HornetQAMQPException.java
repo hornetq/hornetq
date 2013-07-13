@@ -37,7 +37,7 @@ public class HornetQAMQPException extends HornetQException
       return amqpError.getError();
    }
 
-   enum AmqpError
+   public enum AmqpError
    {
       INTERNAL_ERROR("internal-error"),
       NOT_FOUND("not-found"),

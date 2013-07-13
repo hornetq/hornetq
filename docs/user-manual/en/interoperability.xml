@@ -244,6 +244,45 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
     </section>
     <section>
         <title>AMQP</title>
-        <para>AMQP support coming soon!</para>
+        <para>HornetQ supports the <ulink url="https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=amqp">AMQP 1.0</ulink>
+        specification. To enable AMQP you must configure a Netty Acceptor to receive AMQP clients, like so:</para>
+        <programlisting>
+&lt;acceptor name="stomp-acceptor">
+&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+&lt;param key="protocol"  value="AMQP"/>
+&lt;param key="port"  value="5672"/>
+&lt;/acceptor>
+        </programlisting>
+        <para>HornetQ will then accept AMQP 1.0 clients on port 5672 which is the default AMQP port.</para>
+        <para>There are 2 Stomp examples available see proton-j and proton-ruby which use the qpid Java and Ruby clients
+        respectively</para>
+        <section>
+            <title>AMQP and security</title>
+        <para>The HornetQ Server accepts AMQP SASL Authentication and will use this to map onto the underlying session created
+            for the connection so you can use the normal HornetQ security configuration.</para>
+        </section>
+        <section>
+            <title>AMQP Links</title>
+        <para>An AMQP Link is a uni directional transport for messages between a source and a target, i.e. a client and the
+        HornetQ Broker. A link will have an endpoint of which there are 2 kinds, a Sender and A Receiver. At the Broker a
+            Sender will have its messages converted into a HornetQ Message and forwarded to its destination or target. A
+        Receiver will map onto a HornetQ Server Consumer and convert HornetQ messages back into AMQP messages before being delivered.</para>
+        </section>
+        <section>
+            <title>AMQP and destinations</title>
+            <para>If an AMQP Link is dynamic then a temporary queue will be created and either the remote source or remote
+                target address will be set to the name of the temporary queue. If the Link is not dynamic then the the address
+                of the remote target or source will used for the queue. If this does not exist then an exception will be sent</para>
+            <note><para>For the next version we will add a flag to aut create durable queue but for now you will have to add them via
+                the configuration</para></note>
+        </section>
+        <section>
+            <title>AMQP and Coordinations - Handling Transactions</title>
+            <para>An AMQP links target can also be a Coordinator, the Coordinator is used to handle transactions. If a
+            coordinator is used the the underlying HormetQ Server session will be transacted and will be either rolled back
+                or commited via the coordinator.</para>
+            <note><para>AMQP allows the use of multiple transactions per session, <literal>amqp:multi-txns-per-ssn</literal>,
+                however in this version HornetQ will only support single transactions per session</para></note>
+        </section>
     </section>
 </chapter>

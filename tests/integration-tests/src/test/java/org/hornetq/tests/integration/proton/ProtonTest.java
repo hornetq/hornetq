@@ -337,7 +337,7 @@ public class ProtonTest extends ServiceTestBase
 
    private javax.jms.Connection createConnection() throws JMSException
    {
-      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, null, null);
+      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, "guest", "guest");
       final javax.jms.Connection connection = factory.createConnection();
       connection.setExceptionListener(new ExceptionListener()
       {
