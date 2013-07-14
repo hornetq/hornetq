@@ -76,6 +76,8 @@ public class ProtonSession implements SessionCallback
 
    private Map<Long, ProtonConsumer> consumers = new HashMap<Long, ProtonConsumer>();
 
+   private boolean closed = false;
+
    public ProtonSession(String name, ProtonRemotingConnection connection, ProtonProtocolManager protonProtocolManager, OperationContext operationContext, HornetQServer server, TransportImpl protonTransport)
    {
       this.name = name;
@@ -255,6 +257,11 @@ public class ProtonSession implements SessionCallback
 
    public void close()
    {
+      if(closed)
+      {
+         return;
+      }
+
       for (ProtonProducer protonProducer : producers.values())
       {
          try
@@ -288,6 +295,7 @@ public class ProtonSession implements SessionCallback
       {
          HornetQServerLogger.LOGGER.errorClosingSession(e);
       }
+      closed = true;
    }
 
    public void removeConsumer(long consumerID) throws HornetQAMQPException

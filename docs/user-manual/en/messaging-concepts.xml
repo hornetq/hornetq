@@ -219,8 +219,9 @@
                 interoperable messaging. It also defines a wire format, so any AMQP client can work
                 with any messaging system that supports AMQP. AMQP clients are available in many
                 different programming languages.</para>
-            <para>HornetQ will shortly be implementing AMQP.</para>
-        </section>
+            <para>HornetQ implements the <ulink url="https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=amqp">AMQP 1.0</ulink>
+            specification. Any client that supports the 1.0 specification will be able to interact with HornetQ.</para>
+         </section>
     </section>
     <section>
         <title>High Availability</title>
