@@ -176,14 +176,6 @@ Finally, it would have been interesting to study the Availability Perspective, w
 
 ## Contributions
 
-Our contribution to the HornetQ project can be seen as three-fold.  
-
-In the first place, we have applied the Views and Perspectives from the book and created architectural documentation that cover a large part of the HornetQ project.  
-
-Secondly, we have successfully contributed with code and tests for the new functionality, contribution which was appreciated by Clebert Suconic, the project lead.  After the merge, we have contacted Clebert saying that we would like to learn from him about the architecture of HornetQ.  He proposed a Google Hangout session.  We had a very insightful conversation with him from which we learned a lot.
-
-During the conversation with Clebert, we have also proposed a quality assessment of HornetQ with the focus on maintainability. The motivation for this analysis from our point of view is that there is a chance that projects which are focused on performance can pay the price in terms of maintainability.  He liked the idea and was interested in the results.
-
 Our contribution deliverables can be summarized as: 
 
 * [code](https://github.com/hornetq/hornetq/pull/1093) - merged to the HornetQ master by Clebert Suconic
