@@ -16,6 +16,7 @@ package org.hornetq.jms.client;
 import java.io.Serializable;
 
 import javax.jms.BytesMessage;
+import javax.jms.CompletionListener;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -24,7 +25,6 @@ import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
-import javax.jms.JMSRuntimeException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
@@ -46,7 +46,7 @@ import javax.transaction.xa.XAResource;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc
  */
-public class HornetQJMSContext implements JMSContext
+public class HornetQJMSContext implements JMSContext, ThreadAwareContext
 {
    private static final boolean DEFAULT_AUTO_START = true;
    private final int ackMode;
@@ -56,7 +56,13 @@ public class HornetQJMSContext implements JMSContext
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
    private boolean xa;
    private boolean closed;
-
+   /**
+    * Necessary in order to assert some methods ({@link JMSContext#stop()}
+    * {@link JMSContext#close()} etc) are not getting called from within a
+    * {@link CompletionListener}.
+    * @see HornetQJMSContext#assertNotMessageListenerThread()
+    */
+   private Thread completionListenerThread;
 
    public HornetQJMSContext(HornetQConnectionForContext connection, int ackMode)
    {
@@ -215,6 +221,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public void stop()
    {
+      assertNotMessageListenerThread();
       try
       {
          connection.stop();
@@ -239,6 +246,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public void close()
    {
+      assertNotMessageListenerThread();
       try
       {
          synchronized (this)
@@ -381,6 +389,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public void commit()
    {
+      assertNotMessageListenerThread();
       checkSession();
       try
       {
@@ -394,6 +403,7 @@ public class HornetQJMSContext implements JMSContext
    @Override
    public void rollback()
    {
+      assertNotMessageListenerThread();
       checkSession();
       try
       {
@@ -673,5 +683,30 @@ public class HornetQJMSContext implements JMSContext
       {
          connection.start();
       }
+   }
+
+   /**
+    * Asserts a {@link CompletionListener} is not calling its own {@link JMSContext}.
+    * <p>
+    * Note that the code must work without any need for further synchronization, as there is the
+    * requirement that only one CompletionListener be called at a time. In other words,
+    * CompletionListener calling is single-threaded.
+    * @see JMSContext#close()
+    * @see JMSContext#stop()
+    * @see JMSContext#commit()
+    * @see JMSContext#rollback()
+    */
+   private void assertNotMessageListenerThread()
+   {
+      if (completionListenerThread == Thread.currentThread())
+      {
+         throw new IllegalStateRuntimeException("Calling own context from CompletionListener");
+      }
+   }
+
+   @Override
+   public void setCurrentThread(Thread thread)
+   {
+      completionListenerThread = thread;
    }
 }
