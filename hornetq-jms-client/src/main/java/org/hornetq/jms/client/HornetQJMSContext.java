@@ -37,7 +37,6 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
-import javax.jms.XAJMSContext;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
@@ -49,7 +48,7 @@ import javax.transaction.xa.XAResource;
 public class HornetQJMSContext implements JMSContext, ThreadAwareContext
 {
    private static final boolean DEFAULT_AUTO_START = true;
-   private final int ackMode;
+   private final int sessionMode;
 
    private final HornetQConnectionForContext connection;
    private Session session;
@@ -67,14 +66,14 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    public HornetQJMSContext(HornetQConnectionForContext connection, int ackMode)
    {
       this.connection = connection;
-      this.ackMode = ackMode;
+      this.sessionMode = ackMode;
       this.xa = false;
    }
 
    public HornetQJMSContext(HornetQConnectionForContext connection)
    {
       this.connection = connection;
-      this.ackMode = SESSION_TRANSACTED;
+      this.sessionMode = SESSION_TRANSACTED;
       this.xa = true;
    }
 
@@ -133,7 +132,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
                   }
                   else
                   {
-                     session = connection.createSession(ackMode);
+                     session = connection.createSession(sessionMode);
                   }
                }
                catch (JMSException e)
@@ -383,7 +382,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    @Override
    public int getSessionMode()
    {
-      return ackMode;
+      return sessionMode;
    }
 
    @Override
@@ -665,7 +664,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
          throw new IllegalStateRuntimeException("Context is closed");
       try
       {
-         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+         if (sessionMode == Session.AUTO_ACKNOWLEDGE || sessionMode == Session.DUPS_OK_ACKNOWLEDGE)
             return;
          session.commit();
       }

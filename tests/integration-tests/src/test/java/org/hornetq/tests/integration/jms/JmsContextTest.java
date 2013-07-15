@@ -49,6 +49,37 @@ public class JmsContextTest extends JMSTestBase
    }
 
    @Test
+   public void testRollbackTest()
+   {
+      JMSContext ctx =  addContext(cf.createContext(JMSContext.SESSION_TRANSACTED));
+
+      JMSProducer producer = ctx.createProducer();
+      JMSConsumer cons = ctx.createConsumer(queue1);
+
+      producer.send(queue1, context.createTextMessage("hello"));
+
+      ctx.rollback();
+
+      assertNull(cons.receiveNoWait());
+
+      producer.send(queue1, context.createTextMessage("hello"));
+
+      ctx.commit();
+
+      assertNotNull(cons.receiveNoWait());
+
+      ctx.commit();
+
+      ctx.rollback();
+
+      assertNull(cons.receiveNoWait());
+
+      cons.close();
+
+
+   }
+
+   @Test
    public void testInvalidMessage()
    {
       JMSProducer producer = context.createProducer();
