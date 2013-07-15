@@ -164,6 +164,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
       public int completion;
       public int error;
       public CountDownLatch completionLatch;
+      public Message lastMessage;
 
       public CountingCompletionListener(int n)
       {
@@ -175,6 +176,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
       {
          completion++;
          completionLatch.countDown();
+         lastMessage = message;
       }
 
       @Override

@@ -37,21 +37,10 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
- * @version $Revision: 3412 $
- *
  */
 public final class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
-   // Constants -----------------------------------------------------
-
    public static final byte TYPE = Message.STREAM_TYPE;
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    protected HornetQStreamMessage(final ClientSession session)
    {
