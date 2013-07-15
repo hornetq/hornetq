@@ -7,6 +7,7 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Session;
+import javax.jms.XAJMSContext;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.utils.ReferenceCounter;
@@ -49,6 +50,13 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
       refCounter.increment();
 
       return new HornetQJMSContext(this, sessionMode);
+   }
+
+   public XAJMSContext createXAContext()
+   {
+      refCounter.increment();
+
+      return new HornetQXAJMSContext(this);
    }
 
    @Override
