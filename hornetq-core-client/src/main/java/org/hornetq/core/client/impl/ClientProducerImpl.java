@@ -151,7 +151,10 @@ public class ClientProducerImpl implements ClientProducerInternal
       else
       {
          doSend(address1, message, null, true);
-         session.scheduleConfirmation(handler, message);
+         if (handler != null)
+         {
+            session.scheduleConfirmation(handler, message);
+         }
       }
    }
 

@@ -523,6 +523,17 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       @Override
       public void sendAcknowledged(org.hornetq.api.core.Message clientMessage)
       {
+         if (jmsMessage instanceof StreamMessage)
+         {
+            try
+            {
+               ((StreamMessage)jmsMessage).reset();
+            }
+            catch (JMSException e)
+            {
+               // HORNETQ-1209 XXX ignore?
+            }
+         }
          completionListener.onCompletion(jmsMessage);
       }
 
