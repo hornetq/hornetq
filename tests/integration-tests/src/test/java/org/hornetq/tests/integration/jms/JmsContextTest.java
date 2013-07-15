@@ -80,6 +80,26 @@ public class JmsContextTest extends JMSTestBase
    }
 
    @Test
+   public void testDupsOK()
+   {
+      JMSContext ctx =  addContext(cf.createContext(JMSContext.DUPS_OK_ACKNOWLEDGE));
+      assertEquals(JMSContext.DUPS_OK_ACKNOWLEDGE, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.SESSION_TRANSACTED));
+      assertEquals(JMSContext.SESSION_TRANSACTED, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE));
+      assertEquals(JMSContext.CLIENT_ACKNOWLEDGE, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.AUTO_ACKNOWLEDGE));
+      assertEquals(JMSContext.AUTO_ACKNOWLEDGE, ctx.getSessionMode());
+
+   }
+
+   @Test
    public void testInvalidMessage()
    {
       JMSProducer producer = context.createProducer();

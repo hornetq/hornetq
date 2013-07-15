@@ -16,6 +16,9 @@ package org.hornetq.ra;
 import javax.jms.Connection;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
+import javax.jms.JMSSecurityException;
+import javax.jms.JMSSecurityRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
@@ -172,6 +175,8 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       s.setUserName(userName);
       s.setPassword(password);
 
+      validateUser(s);
+
       if (HornetQRAConnectionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("Created queue connection: " + s);
@@ -223,6 +228,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
                                                                       HornetQRAConnectionFactory.TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
+      validateUser(s);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -271,6 +277,8 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
+
+      validateUser(s);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -323,6 +331,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
                                                                       HornetQRAConnectionFactory.XA_QUEUE_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
+      validateUser(s);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -375,6 +384,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
                                                                       HornetQRAConnectionFactory.XA_TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
+      validateUser(s);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -423,6 +433,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.XA_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
+      validateUser(s);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -451,6 +462,22 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
       conn.setUserName(userName);
       conn.setPassword(password);
+      try
+      {
+         validateUser(conn);
+      }
+      catch (JMSSecurityException e)
+      {
+         JMSSecurityRuntimeException e2 = new JMSSecurityRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
       return conn.createContext(sessionMode);
    }
 
@@ -471,4 +498,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    {
       throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
    }
+
+   private void validateUser(HornetQRASessionFactoryImpl s) throws JMSException
+   {
+      Session session = s.createSession();
+      session.close();
+   }
+
 }

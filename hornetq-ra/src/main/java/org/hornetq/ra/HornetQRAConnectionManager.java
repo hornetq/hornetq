@@ -19,6 +19,8 @@ import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 
+import org.hornetq.utils.ConcurrentHashSet;
+
 
 /**
  * The connection manager used in non-managed environments.
@@ -44,6 +46,8 @@ public class HornetQRAConnectionManager implements ConnectionManager
       }
    }
 
+   ConcurrentHashSet<ManagedConnection> connections = new ConcurrentHashSet<>();
+
    /**
     * Allocates a connection
     * @param mcf The managed connection factory
@@ -66,6 +70,22 @@ public class HornetQRAConnectionManager implements ConnectionManager
          HornetQRALogger.LOGGER.trace("Allocated connection: " + c + ", with managed connection: " + mc);
       }
 
+      connections.add(mc);
       return c;
+   }
+
+   public void stop()
+   {
+      for (ManagedConnection conn : connections)
+      {
+         try
+         {
+            conn.destroy();
+         }
+         catch (Throwable e)
+         {
+
+         }
+      }
    }
 }

@@ -19,8 +19,11 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jms.Connection;
 import javax.jms.IllegalStateException;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSSecurityException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -29,6 +32,8 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
 import javax.resource.spi.ManagedConnection;
@@ -61,6 +66,8 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       return true;
    }
 
+   HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -85,6 +92,8 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          resourceAdapter.stop();
       }
+
+      qraConnectionManager.stop();
       super.tearDown();
    }
 
@@ -98,7 +107,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -113,10 +121,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       TextMessage textMessage = (TextMessage) consumer.receive(1000);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
-
-      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
-      s.close();
-      mc.destroy();
    }
 
    @Test
@@ -126,7 +130,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -151,10 +154,71 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resource.commit(xid, true);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
+   }
 
-      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
-      s.close();
-      mc.destroy();
+   @Test
+   public void testInexistentUserOnCreateConnection() throws Exception
+   {
+      resourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+      Connection conn  = null;
+      try
+      {
+         conn = qraConnectionFactory.createConnection("IDont", "Exist");
+         fail("Exception was expected");
+      }
+      catch (JMSSecurityException expected)
+      {
+      }
+
+      conn = qraConnectionFactory.createConnection("testuser", "testpassword");
+      conn.close();
+
+
+      try
+      {
+         XAConnection xaconn = qraConnectionFactory.createXAConnection("IDont", "Exist");
+         fail("Exception was expected");
+      }
+      catch (JMSSecurityException expected)
+      {
+      }
+
+      XAConnection xaconn = qraConnectionFactory.createXAConnection("testuser", "testpassword");
+      xaconn.close();
+
+      try
+      {
+         TopicConnection topicconn = qraConnectionFactory.createTopicConnection("IDont", "Exist");
+         fail("Exception was expected");
+      }
+      catch (JMSSecurityException expected)
+      {
+      }
+
+      TopicConnection topicconn = qraConnectionFactory.createTopicConnection("testuser", "testpassword");
+      topicconn.close();
+
+      try
+      {
+         QueueConnection queueconn = qraConnectionFactory.createQueueConnection("IDont", "Exist");
+         fail("Exception was expected");
+      }
+      catch (JMSSecurityException expected)
+      {
+      }
+
+      QueueConnection queueconn = qraConnectionFactory.createQueueConnection("testuser", "testpassword");
+      queueconn.close();
+
+      mcf.stop();
+
+
    }
 
    @Test
@@ -165,7 +229,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter.setUseLocalTx(true);
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -186,10 +249,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
       s.commit();
-
-      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
-      s.close();
-      mc.destroy();
    }
 
    @Test
@@ -198,7 +257,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -213,10 +271,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          assertTrue(e.getLinkedException() instanceof IllegalStateException);
       }
-
-      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
-      s.close();
-      mc.destroy();
    }
 
    @Test
@@ -225,23 +279,14 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
       QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
-      queueConnection.close();
-      mc.destroy();
-
       queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testpassword");
       session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      mc = ((HornetQRASession)session).getManagedConnection();
-      queueConnection.close();
-      mc.destroy();
 
    }
 
@@ -251,7 +296,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -262,9 +306,9 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       queueConnection.close();
       mc.destroy();
 
-      queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
       try
       {
+         queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
          queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
          fail("should throw esxception");
       }
@@ -280,13 +324,12 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
-      QueueConnection queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
       try
       {
+         QueueConnection queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
          queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
          fail("should throw esxception");
       }
@@ -303,7 +346,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
-      HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
@@ -311,9 +353,20 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
       assertNotNull(mcf.getResourceRecovery());
+   }
 
-      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
-      queueConnection.close();
-      mc.destroy();
+   @Test
+   public void testJMSContext() throws Exception
+   {
+      resourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+      JMSContext jmsctx = qraConnectionFactory.createContext(JMSContext.DUPS_OK_ACKNOWLEDGE);
+      assertEquals(JMSContext.DUPS_OK_ACKNOWLEDGE, jmsctx.getSessionMode());
+
    }
 }
