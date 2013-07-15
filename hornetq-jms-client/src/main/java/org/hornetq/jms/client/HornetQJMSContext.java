@@ -36,6 +36,10 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAJMSContext;
+import javax.jms.XASession;
+import javax.transaction.xa.XAResource;
 
 /**
  * HornetQ implementation of a JMSContext.
@@ -50,6 +54,7 @@ public class HornetQJMSContext implements JMSContext
    private final HornetQConnectionForContext connection;
    private Session session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
+   private boolean xa;
    private boolean closed;
 
 
@@ -57,6 +62,27 @@ public class HornetQJMSContext implements JMSContext
    {
       this.connection = connection;
       this.ackMode = ackMode;
+      this.xa = false;
+   }
+
+   public HornetQJMSContext(HornetQConnectionForContext connection)
+   {
+      this.connection = connection;
+      this.ackMode = SESSION_TRANSACTED;
+      this.xa = true;
+   }
+
+   // XAJMSContext implementation -------------------------------------
+
+   public JMSContext getContext()
+   {
+      return this;
+   }
+
+   public XAResource getXAResource()
+   {
+      checkSession();
+      return ((XASession) session).getXAResource();
    }
 
    // JMSContext implementation -------------------------------------
@@ -95,7 +121,14 @@ public class HornetQJMSContext implements JMSContext
             {
                try
                {
-                  session = connection.createSession(ackMode);
+                  if(xa)
+                  {
+                     session = ((XAConnection)connection).createXASession();
+                  }
+                  else
+                  {
+                     session = connection.createSession(ackMode);
+                  }
                }
                catch (JMSException e)
                {
