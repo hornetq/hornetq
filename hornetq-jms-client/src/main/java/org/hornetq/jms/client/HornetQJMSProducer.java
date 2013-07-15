@@ -98,7 +98,8 @@ public final class HornetQJMSProducer implements JMSProducer
          setProperties(message);
          if (completionListener != null)
          {
-            producer.send(destination, message, deliveryMode, priority, timeToLive, completionListener);
+            CompletionListener wrapped = new CompletionListenerWrapper(completionListener, context);
+            producer.send(destination, message, deliveryMode, priority, timeToLive, wrapped);
          }
          else
          {
@@ -180,9 +181,10 @@ public final class HornetQJMSProducer implements JMSProducer
                else if (v instanceof Byte)
                {
                   message.setByte(name, (Byte)v);
-               }else if (v instanceof byte[])
+               }
+               else if (v instanceof byte[])
                {
-                byte[] array=  (byte[])v;
+                  byte[] array = (byte[])v;
                   message.setBytes(name, array, 0, array.length);
                }
                else
@@ -637,5 +639,46 @@ public final class HornetQJMSProducer implements JMSProducer
    public Destination getJMSReplyTo()
    {
       return jmsHeaderReplyTo;
+   }
+
+   final static class CompletionListenerWrapper implements CompletionListener
+   {
+
+      private final CompletionListener wrapped;
+      private final ThreadAwareContext taContext;
+
+      public CompletionListenerWrapper(CompletionListener wrapped, ThreadAwareContext taContext)
+      {
+         this.wrapped = wrapped;
+         this.taContext = taContext;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         taContext.setCurrentThread(Thread.currentThread());
+         try
+         {
+            wrapped.onCompletion(message);
+         }
+         finally
+         {
+            taContext.setCurrentThread(null);
+         }
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+         taContext.setCurrentThread(Thread.currentThread());
+         try
+         {
+            wrapped.onException(message, exception);
+         }
+         finally
+         {
+            taContext.setCurrentThread(null);
+         }
+      }
    }
 }

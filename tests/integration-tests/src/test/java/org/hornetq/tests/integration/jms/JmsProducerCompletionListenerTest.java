@@ -3,11 +3,14 @@
  */
 package org.hornetq.tests.integration.jms;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.CompletionListener;
+import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
@@ -76,6 +79,83 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
 
       context.close();
       assertTrue("completion listener should be called", cl.completionLatch.await(3, TimeUnit.SECONDS));
+   }
+
+   @Test
+   public void testInvalidCallFromListener() throws InterruptedException
+   {
+      JMSConsumer consumer = context.createConsumer(queue);
+      List<InvalidCompletionListener> listeners = new ArrayList<InvalidCompletionListener>();
+      for (int i = 0; i < 4; i++)
+      {
+         InvalidCompletionListener cl = new InvalidCompletionListener(context, i);
+         listeners.add(cl);
+         producer.setAsync(cl);
+         sendMessages(context, producer, queue, 1);
+      }
+      receiveMessages(consumer, 0, 1, true);
+      context.close();
+      for (InvalidCompletionListener cl : listeners)
+      {
+         Assert.assertTrue(cl.latch.await(1, TimeUnit.SECONDS));
+         Assert.assertNotNull(cl.error);
+         Assert.assertTrue(cl.error instanceof IllegalStateRuntimeException);
+      }
+   }
+
+   public static final class InvalidCompletionListener implements CompletionListener
+   {
+
+      private final JMSContext context;
+      public final CountDownLatch latch = new CountDownLatch(1);
+      private Exception error;
+      private final int call;
+
+      /**
+       * @param context
+       * @param call
+       */
+      public InvalidCompletionListener(JMSContext context, int call)
+      {
+         this.call = call;
+         this.context = context;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         latch.countDown();
+         try
+         {
+            switch (call) {
+               case 0:
+                  context.rollback();
+                  break;
+               case 1:
+                  context.commit();
+                  break;
+               case 2:
+                  context.close();
+                  break;
+               case 3:
+                  context.stop();
+                  break;
+               default:
+                  throw new IllegalArgumentException("call code " + call);
+            }
+         }
+         catch (Exception error1)
+         {
+            this.error = error1;
+         }
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+         // TODO Auto-generated method stub
+      }
+
    }
 
    public static final class CountingCompletionListener implements CompletionListener

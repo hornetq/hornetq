@@ -74,8 +74,6 @@ import org.hornetq.core.filter.impl.ParseException;
  */
 public class HornetQSession implements QueueSession, TopicSession
 {
-   // Constants -----------------------------------------------------
-
    public static final int TYPE_GENERIC_SESSION = 0;
 
    public static final int TYPE_QUEUE_SESSION = 1;
@@ -83,10 +81,6 @@ public class HornetQSession implements QueueSession, TopicSession
    public static final int TYPE_TOPIC_SESSION = 2;
 
    private static SimpleString REJECTING_FILTER = new SimpleString("_HQX=-1");
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private final HornetQConnection connection;
 

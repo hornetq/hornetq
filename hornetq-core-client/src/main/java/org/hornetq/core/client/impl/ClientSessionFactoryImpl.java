@@ -897,7 +897,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      response.getServerVersion(),
                                                                      sessionChannel,
                                                                      orderedExecutorFactory.getExecutor(),
-                                              orderedExecutorFactory.getExecutor(),
                                               orderedExecutorFactory.getExecutor());
 
                synchronized (sessions)

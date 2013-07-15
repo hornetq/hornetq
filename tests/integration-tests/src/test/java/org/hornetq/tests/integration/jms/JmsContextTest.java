@@ -190,4 +190,31 @@ public class JmsContextTest extends JMSTestBase
       context.setClientID(id);
       Assert.assertEquals("id's must match because the connection is shared", id, context2.getClientID());
    }
+
+   @Test
+   public void testCreateConsumerWithSelector() throws JMSException
+   {
+      final String filterName = "magicIndexMessage";
+      final int total = 5;
+      JMSProducer producer = context.createProducer();
+      JMSConsumer consumerNoSelect = context.createConsumer(queue1);
+      JMSConsumer consumer = context.createConsumer(queue1, filterName + "=TRUE");
+      for (int i = 0; i < total; i++)
+      {
+         Message msg = context.createTextMessage("message " + i);
+         msg.setBooleanProperty(filterName, i == 3);
+         producer.send(queue1, msg);
+      }
+      Message msg0 = consumer.receive(500);
+      Assert.assertNotNull(msg0);
+      msg0.acknowledge();
+      Assert.assertNull("no more messages", consumer.receiveNoWait());
+      for (int i = 0; i < total - 1; i++)
+      {
+         Message msg = consumerNoSelect.receive(100);
+         Assert.assertNotNull(msg);
+         msg.acknowledge();
+      }
+      Assert.assertNull("no more messages", consumerNoSelect.receiveNoWait());
+   }
 }

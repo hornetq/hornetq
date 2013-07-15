@@ -12,17 +12,14 @@
  */
 
 package org.hornetq.tests.unit.jms.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import javax.jms.MessageFormatException;
-
-import org.junit.Assert;
 
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -789,12 +786,6 @@ public class HornetQMapMessageTest extends UnitTestCase
       doTestSetObject(RandomUtil.randomBytes());
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
    private void doTestSetObject(final Object value) throws Exception
    {
       HornetQMapMessage message = new HornetQMapMessage();
@@ -802,6 +793,4 @@ public class HornetQMapMessageTest extends UnitTestCase
 
       Assert.assertEquals(value, message.getObject(itemName));
    }
-
-   // Inner classes -------------------------------------------------
 }
