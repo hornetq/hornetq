@@ -23,6 +23,7 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.JMSSecurityException;
 import javax.jms.JMSSecurityRuntimeException;
 import javax.jms.QueueConnection;
+import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
@@ -210,13 +211,26 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    @Override
    public XAJMSContext createXAContext()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+      return createXAContext(null, null);
    }
 
    @Override
    public XAJMSContext createXAContext(String userName, String password)
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+      try
+      {
+         HornetQConnection connection =
+               createConnectionInternal(userName, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+         return connection.createXAContext();
+      }
+      catch (JMSSecurityException e)
+      {
+         throw new JMSSecurityRuntimeException(e.getMessage(), e.getErrorCode(), e);
+      }
+      catch (JMSException e)
+      {
+         throw JmsExceptionUtils.convertToRuntimeException(e);
+      }
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------
