@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.hornetq.tests.integration.jms;
+package org.hornetq.tests.integration.jms.jms2client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
