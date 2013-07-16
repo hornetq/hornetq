@@ -126,7 +126,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receive();
-         return message.getBody(c);
+         return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
       {
@@ -140,7 +140,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receive(timeout);
-         return message.getBody(c);
+         return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
       {
@@ -154,7 +154,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receiveNoWait();
-         return message.getBody(c);
+         return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
       {
