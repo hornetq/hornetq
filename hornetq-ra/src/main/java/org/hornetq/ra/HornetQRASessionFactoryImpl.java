@@ -824,12 +824,23 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       }
       catch (Exception e)
       {
-         HornetQRALogger.LOGGER.errorCreatingSession(e);
+         Throwable current = e;
+         while (current != null && !(current instanceof JMSException))
+         {
+            current = current.getCause();
+         }
 
-         JMSException je = new JMSException("Could not create a session: " + e.getMessage());
-         je.setLinkedException(e);
-         je.initCause(e);
-         throw je;
+         if (current != null && current instanceof JMSException)
+         {
+            throw (JMSException)current;
+         }
+         else
+         {
+            JMSException je = new JMSException("Could not create a session: " + e.getMessage());
+            je.setLinkedException(e);
+            je.initCause(e);
+            throw je;
+         }
       }
    }
 

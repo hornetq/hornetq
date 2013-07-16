@@ -379,7 +379,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       checkClosed();
 
       checkTempQueues(destination);
-      // XXX "JMS 2.0" HORNETQ-1209 is this valid?
+
+      // We offer a RA, so no need to implement this for MDBs
       return null;
    }
 
@@ -407,7 +408,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          throw new javax.jms.IllegalStateException(msg);
       }
       checkTempQueues(topic);
-      // TODO
+      // We offer RA, so no need for this
       return null;
    }
 
@@ -415,7 +416,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    public Session createSession(int sessionMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(false, false, sessionMode, HornetQSession.TYPE_GENERIC_SESSION);
+      return createSessionInternal(false, sessionMode == Session.SESSION_TRANSACTED, sessionMode, HornetQSession.TYPE_GENERIC_SESSION);
 
    }
 

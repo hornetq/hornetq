@@ -139,6 +139,18 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       {
          setup();
       }
+      catch (ResourceException e)
+      {
+         try
+         {
+            destroy();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         throw e;
+      }
       catch (Throwable t)
       {
          try
@@ -784,7 +796,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
       try
       {
-         connectionFactory = ra.createHornetQConnectionFactory(mcf.getProperties());
+
+         createCF();
+
          boolean transacted = cri.isTransacted();
          int acknowledgeMode =  Session.AUTO_ACKNOWLEDGE;
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
@@ -842,6 +856,14 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       catch (JMSException je)
       {
          throw new ResourceException(je.getMessage(), je);
+      }
+   }
+
+   private void createCF()
+   {
+      if (connectionFactory == null)
+      {
+         connectionFactory = ra.createHornetQConnectionFactory(mcf.getProperties());
       }
    }
 
