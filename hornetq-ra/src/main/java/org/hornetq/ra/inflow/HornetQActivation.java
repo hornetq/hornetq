@@ -28,6 +28,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
+import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -278,6 +279,23 @@ public class HornetQActivation
    }
 
    /**
+    *
+    * @return the list of XAResources for this activation endpoint
+    */
+   public List<XAResource> getXAResources()
+   {
+      List<XAResource> xaresources = new ArrayList<XAResource>();
+      for (HornetQMessageHandler handler : handlers)
+      {
+         XAResource xares = handler.getXAResource();
+         if (xares != null) {
+            xaresources.add(xares);
+         }
+      }
+      return xaresources;
+   }
+
+    /**
     * Stop the activation
     */
    public void stop()
