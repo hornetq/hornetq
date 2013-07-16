@@ -49,6 +49,57 @@ public class JmsContextTest extends JMSTestBase
    }
 
    @Test
+   public void testRollbackTest()
+   {
+      JMSContext ctx =  addContext(cf.createContext(JMSContext.SESSION_TRANSACTED));
+
+      JMSProducer producer = ctx.createProducer();
+      JMSConsumer cons = ctx.createConsumer(queue1);
+
+      producer.send(queue1, context.createTextMessage("hello"));
+
+      ctx.rollback();
+
+      assertNull(cons.receiveNoWait());
+
+      producer.send(queue1, context.createTextMessage("hello"));
+
+      ctx.commit();
+
+      assertNotNull(cons.receiveNoWait());
+
+      ctx.commit();
+
+      ctx.rollback();
+
+      assertNull(cons.receiveNoWait());
+
+      cons.close();
+
+
+   }
+
+   @Test
+   public void testDupsOK()
+   {
+      JMSContext ctx =  addContext(cf.createContext(JMSContext.DUPS_OK_ACKNOWLEDGE));
+      assertEquals(JMSContext.DUPS_OK_ACKNOWLEDGE, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.SESSION_TRANSACTED));
+      assertEquals(JMSContext.SESSION_TRANSACTED, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE));
+      assertEquals(JMSContext.CLIENT_ACKNOWLEDGE, ctx.getSessionMode());
+
+      ctx.close();
+      ctx =  addContext(cf.createContext(JMSContext.AUTO_ACKNOWLEDGE));
+      assertEquals(JMSContext.AUTO_ACKNOWLEDGE, ctx.getSessionMode());
+
+   }
+
+   @Test
    public void testInvalidMessage()
    {
       JMSProducer producer = context.createProducer();
