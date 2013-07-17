@@ -444,9 +444,6 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
    Class c)
    {
-      if (bodyLength == 0)
-         return true;
-      // XXX FIXME HORNETQ-1209 What to do on Serializable?
       return c.isAssignableFrom(byte[].class);
    }
 

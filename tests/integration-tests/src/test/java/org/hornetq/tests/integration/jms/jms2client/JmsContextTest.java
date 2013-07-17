@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.hornetq.tests.integration.jms;
+package org.hornetq.tests.integration.jms.jms2client;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +20,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 
-import org.hornetq.tests.integration.jms.JmsProducerCompletionListenerTest.CountingCompletionListener;
 import org.hornetq.tests.util.JMSTestBase;
 import org.junit.Assert;
 import org.junit.Before;
@@ -133,7 +132,7 @@ public class JmsContextTest extends JMSTestBase
    @Test
    public void testSendStreamMessage() throws JMSException, InterruptedException
    {
-      CountingCompletionListener cl = new CountingCompletionListener(1);
+      JmsProducerCompletionListenerTest.CountingCompletionListener cl = new JmsProducerCompletionListenerTest.CountingCompletionListener(1);
       JMSProducer producer = context.createProducer();
       producer.setAsync(cl);
       StreamMessage msg = context.createStreamMessage();
