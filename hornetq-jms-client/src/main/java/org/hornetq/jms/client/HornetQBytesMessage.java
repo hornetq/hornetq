@@ -23,6 +23,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * HornetQ implementation of a JMS {@link BytesMessage}.
@@ -453,7 +454,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       if (bodyLength == 0)
          return null;
       byte[] dst = new byte[bodyLength];
-      message.getBodyBuffer().getBytes(0, dst);
+      message.getBodyBuffer().getBytes(MessageImpl.BODY_OFFSET, dst);
       return (T)dst;
    }
 }

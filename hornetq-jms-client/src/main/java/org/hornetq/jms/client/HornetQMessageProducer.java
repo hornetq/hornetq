@@ -15,6 +15,7 @@ package org.hornetq.jms.client;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
@@ -113,6 +114,10 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    public void setDeliveryMode(final int deliveryMode) throws JMSException
    {
       checkClosed();
+      if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
+      {
+         throw new JMSException("Illegal deliveryMode value: " + deliveryMode);
+      }
 
       defaultDeliveryMode = deliveryMode;
    }
@@ -127,6 +132,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    public void setPriority(final int defaultPriority) throws JMSException
    {
       checkClosed();
+
+      if (defaultPriority < 0 || defaultPriority > 9)
+      {
+         throw new JMSException("Illegal priority value: " + defaultPriority);
+      }
 
       this.defaultPriority = defaultPriority;
    }
@@ -471,7 +481,10 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw je;
       }
 
-      hqJmsMessage.setJMSDeliveryTime(System.currentTimeMillis());
+      if (defaultDeliveryDelay > 0)
+      {
+         hqJmsMessage.setJMSDeliveryTime(System.currentTimeMillis() + defaultDeliveryDelay);
+      }
 
       ClientMessage coreMessage = hqJmsMessage.getCoreMessage();
       coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
