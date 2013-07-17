@@ -199,7 +199,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    private final AtomicInteger concurrentCall = new AtomicInteger(0);
 
    private final ConfirmationWindowWarning confirmationWindowWarning;
-   private final ExecutorService confirmationExecutor;
 
    ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
@@ -228,7 +227,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                             final int version,
                             final Channel channel,
                             final Executor executor,
- final Executor flowControlExecutor) throws HornetQException
+                            final Executor flowControlExecutor) throws HornetQException
    {
       this.sessionFactory = sessionFactory;
 
@@ -289,9 +288,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          this.channel.setCommandConfirmationHandler(this);
       }
-      /** Single-thread executor for confirmations. */
-      this.confirmationExecutor =
-               new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());;
+
       confirmationWindowWarning = sessionFactory.getConfirmationWindowWarning();
    }
 
@@ -993,8 +990,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          }
          inClose = true;
          channel.sendBlocking(new SessionCloseMessage(), PacketImpl.NULL_RESPONSE);
-         confirmationExecutor.shutdown();
-         confirmationExecutor.awaitTermination(10L, TimeUnit.SECONDS);
       }
       catch (Throwable e)
       {
@@ -1002,10 +997,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          // Note - we only log at trace
          HornetQClientLogger.LOGGER.trace("Failed to close session", e);
-      }
-      finally
-      {
-         confirmationExecutor.shutdownNow();
       }
 
       doCleanup(false);
@@ -2078,7 +2069,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
 
       sessionFactory.removeSession(this, failingOver);
-      confirmationExecutor.shutdownNow();
    }
 
    private void cleanUpChildren() throws HornetQException
@@ -2314,7 +2304,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    @Override
    public void scheduleConfirmation(final SendAcknowledgementHandler handler, final Message message)
    {
-      confirmationExecutor.execute(new Runnable()
+      executor.execute(new Runnable()
       {
          @Override
             public void run()
