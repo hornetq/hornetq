@@ -50,10 +50,6 @@ public final class HornetQJMSProducer implements JMSProducer
    private final MessageProducer producer;
    private final TypedProperties properties = new TypedProperties();
 
-   private int deliveryMode = Message.DEFAULT_DELIVERY_MODE;
-   private int priority = Message.DEFAULT_PRIORITY;
-   private long timeToLive = Message.DEFAULT_TIME_TO_LIVE;
-   private long deliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
    private volatile CompletionListener completionListener;
 
    private Destination jmsHeaderReplyTo;
@@ -99,11 +95,11 @@ public final class HornetQJMSProducer implements JMSProducer
          if (completionListener != null)
          {
             CompletionListener wrapped = new CompletionListenerWrapper(completionListener, context);
-            producer.send(destination, message, deliveryMode, priority, timeToLive, wrapped);
+            producer.send(destination, message, wrapped);
          }
          else
          {
-            producer.send(destination, message, deliveryMode, priority, timeToLive);
+            producer.send(destination, message);
          }
       }
       catch (JMSException e)
@@ -286,60 +282,125 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setDeliveryMode(int deliveryMode)
    {
-      if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
+      try
       {
-         throw new JMSRuntimeException("Illegal deliveryMode value: " + deliveryMode);
+         producer.setDeliveryMode(deliveryMode);
       }
-      this.deliveryMode = deliveryMode;
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
       return this;
    }
 
    @Override
    public int getDeliveryMode()
    {
-      return deliveryMode;
+      try
+      {
+         return producer.getDeliveryMode();
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    @Override
    public JMSProducer setPriority(int priority)
    {
-      if (priority < 0 || priority > 9)
+      try
       {
-         throw new JMSRuntimeException("Illegal priority value: " + priority);
+         producer.setPriority(priority);
       }
-      this.priority = priority;
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
       return this;
    }
 
    @Override
    public int getPriority()
    {
-      return priority;
+      try
+      {
+         return producer.getPriority();
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    @Override
    public JMSProducer setTimeToLive(long timeToLive)
    {
-      this.timeToLive = timeToLive;
-      return this;
+      try
+      {
+         producer.setTimeToLive(timeToLive );
+         return this;
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    @Override
    public long getTimeToLive()
    {
-      return timeToLive;
+      long timeToLive = 0;
+      try
+      {
+         timeToLive = producer.getTimeToLive();
+         return timeToLive;
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    @Override
    public JMSProducer setDeliveryDelay(long deliveryDelay)
    {
-      this.deliveryDelay = deliveryDelay;
-      return this;
+      try
+      {
+         producer.setDeliveryDelay(deliveryDelay );
+         return this;
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    @Override
    public long getDeliveryDelay()
    {
+      long deliveryDelay = 0;
+      try
+      {
+         deliveryDelay = producer.getDeliveryDelay();
+      }
+      catch (Exception ignored)
+      {
+      }
       return deliveryDelay;
    }
 

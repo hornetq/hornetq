@@ -4,6 +4,7 @@
 package org.hornetq.tests.integration.jms.jms2client;
 
 import javax.jms.BytesMessage;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.IllegalStateRuntimeException;
 import javax.jms.InvalidDestinationRuntimeException;
@@ -117,7 +118,7 @@ public class JmsContextTest extends JMSTestBase
 
       byte[] bytesArray = msgReceived.getBody(byte[].class);
 
-      assertEquals((byte)1, msgReceived.readByte());
+      assertEquals((byte) 1, msgReceived.readByte());
       assertEquals(2l, msgReceived.readLong());
 
       DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytesArray));
@@ -145,6 +146,97 @@ public class JmsContextTest extends JMSTestBase
       TextMessage receiveMsg = (TextMessage)consumer.receiveNoWait();
 
       assertEquals(randomStr, receiveMsg.getText());
+
+   }
+
+   @Test
+   public void testDelay() throws Exception
+   {
+      JMSProducer producer = context.createProducer();
+
+      JMSConsumer consumer = context.createConsumer(queue1);
+
+      producer.setDeliveryDelay(500);
+
+      long timeStart = System.currentTimeMillis();
+
+      String strRandom = newXID().toString();
+
+      producer.send(queue1, context.createTextMessage(strRandom));
+
+      TextMessage msg = (TextMessage)consumer.receive(2500);
+
+      assertNotNull(msg);
+
+      long actualDelay = System.currentTimeMillis() - timeStart;
+      assertTrue("delay is not working, actualDelay=" + actualDelay, actualDelay >= 500 && actualDelay < 2000);
+
+      assertEquals(strRandom, msg.getText());
+   }
+
+   @Test
+   public void testExpire() throws Exception
+   {
+      JMSProducer producer = context.createProducer();
+
+      producer.setTimeToLive(500);
+
+      String strRandom = newXID().toString();
+
+      producer.send(queue1, context.createTextMessage(strRandom));
+
+      Thread.sleep(700);
+
+      // Create consumer after message is expired, making it to expire at the server's
+      JMSConsumer consumer = context.createConsumer(queue1);
+
+      TextMessage msg = (TextMessage)consumer.receiveNoWait();
+
+      // Time to live kicked in, so it's supposed to return null
+      assertNull(msg);
+
+      strRandom = newXID().toString();
+
+      producer.send(queue1, context.createTextMessage(strRandom));
+
+      Thread.sleep(700);
+
+      // Receive second message, expiring on client
+      msg = (TextMessage)consumer.receiveNoWait();
+
+      assertNull(msg);
+
+      strRandom = newXID().toString();
+
+      producer.send(queue1, context.createTextMessage(strRandom));
+
+      // will receive a message that's not expired now
+      msg = (TextMessage)consumer.receiveNoWait();
+
+      assertNotNull(msg);
+
+      assertEquals(strRandom, msg.getText());
+
+   }
+
+   @Test
+   public void testDeliveryMode() throws Exception
+   {
+      JMSProducer producer = context.createProducer();
+
+      JMSConsumer consumer = context.createConsumer(queue1);
+
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      String strRandom = newXID().toString();
+
+      producer.send(queue1, context.createTextMessage(strRandom));
+
+      TextMessage msg = (TextMessage)consumer.receiveNoWait();
+
+      assertNotNull(msg);
+
+      assertEquals(DeliveryMode.NON_PERSISTENT, msg.getJMSDeliveryMode());
 
    }
 
