@@ -901,8 +901,7 @@ public class HornetQMessage implements javax.jms.Message
 
 
    @Override
-   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c)
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes") Class c)
    {
       /**
        * From the specs:
