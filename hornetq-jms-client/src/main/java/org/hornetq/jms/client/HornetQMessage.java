@@ -864,13 +864,30 @@ public class HornetQMessage implements javax.jms.Message
    @Override
    public long getJMSDeliveryTime() throws JMSException
    {
-      return jmsDeliveryTime;
+      Long value;
+      try
+      {
+         value = message.getLongProperty(ClientMessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      }
+      catch (Exception e)
+      {
+         return 0;
+      }
+
+      if (value == null)
+      {
+         return 0;
+      }
+      else
+      {
+         return value.longValue();
+      }
    }
 
    @Override
    public void setJMSDeliveryTime(long deliveryTime) throws JMSException
    {
-      this.jmsDeliveryTime = deliveryTime;
+      message.putLongProperty(ClientMessageImpl.HDR_SCHEDULED_DELIVERY_TIME, deliveryTime);
    }
 
    @Override
