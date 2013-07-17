@@ -285,7 +285,7 @@ public interface HornetQMessageBundle
    @Message(id = 119070, value = "match can not be null", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nullMatch();
 
-   @Message(id = 119071, value = "* can only be at end of match", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119071, value = "# can only be at end of match", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException invalidMatch();
 
    @Message(id = 119072, value = "User cannot be null", format = Message.Format.MESSAGE_FORMAT)
