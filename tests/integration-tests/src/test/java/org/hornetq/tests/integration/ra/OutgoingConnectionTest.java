@@ -11,18 +11,12 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSProducer;
 import javax.jms.JMSSecurityException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -39,7 +33,13 @@ import javax.jms.XASession;
 import javax.resource.spi.ManagedConnection;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
@@ -51,6 +51,9 @@ import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQRASession;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -124,6 +127,77 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    }
 
    @Test
+   public void testSimpleSendNoXAJMSContext() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass("");
+      resourceAdapter.setTransactionManagerLocatorMethod("");
+
+      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+      Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
+
+      try(ClientSessionFactory sf = locator.createSessionFactory();
+          ClientSession session = sf.createSession();
+          ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
+          JMSContext jmsctx = qraConnectionFactory.createContext();
+      )
+      {
+         session.start();
+         // These next 4 lines could be written in a single line however it makes difficult for debugging
+         JMSProducer producer = jmsctx.createProducer();
+         producer.setProperty("strvalue", "hello");
+         TextMessage msgsend = jmsctx.createTextMessage("hello");
+         producer.send(q, msgsend);
+
+         ClientMessage msg = consVerify.receive(1000);
+         assertNotNull(msg);
+         assertEquals("hello", msg.getStringProperty("strvalue"));
+      }
+   }
+
+   @Test
+   public void testSimpleSendNoXAJMS1() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass("");
+      resourceAdapter.setTransactionManagerLocatorMethod("");
+
+      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+      Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
+
+      try(ClientSessionFactory sf = locator.createSessionFactory();
+          ClientSession session = sf.createSession();
+          ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
+          Connection conn = qraConnectionFactory.createConnection();
+      )
+      {
+         Session jmsSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         session.start();
+         MessageProducer producer = jmsSess.createProducer(q);
+         // These next 4 lines could be written in a single line however it makes difficult for debugging
+         TextMessage msgsend = jmsSess.createTextMessage("hello");
+         msgsend.setStringProperty("strvalue", "hello");
+         producer.send(msgsend);
+
+         ClientMessage msg = consVerify.receive(1000);
+         assertNotNull(msg);
+         assertEquals("hello", msg.getStringProperty("strvalue"));
+      }
+   }
+
+   @Test
    public void testSimpleMessageSendAndReceiveXA() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -154,6 +228,11 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resource.commit(xid, true);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
+
+      // When I wrote this call, this method was doing an infinite loop.
+      // this is just to avoid such thing again
+      textMessage.getJMSDeliveryTime();
+
    }
 
    @Test
@@ -269,7 +348,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
       catch (JMSException e)
       {
-         assertTrue(e.getLinkedException() instanceof IllegalStateException);
       }
    }
 

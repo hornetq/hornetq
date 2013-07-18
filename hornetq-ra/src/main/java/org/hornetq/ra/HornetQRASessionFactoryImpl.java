@@ -716,13 +716,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
    @Override
    public Session createSession(int sessionMode) throws JMSException
    {
-      return allocateConnection(sessionMode);
+      return createSession(sessionMode == Session.SESSION_TRANSACTED, sessionMode);
    }
 
    @Override
    public Session createSession() throws JMSException
    {
-      return allocateConnection(Session.AUTO_ACKNOWLEDGE);
+      return createSession(Session.AUTO_ACKNOWLEDGE);
    }
 
    @Override
@@ -757,91 +757,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
     */
    protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
    {
-      if (HornetQRASessionFactoryImpl.trace)
-      {
-         HornetQRALogger.LOGGER.trace("allocateConnection(" + sessionType + ")");
-      }
-
-      try
-      {
-         synchronized (sessions)
-         {
-            if (sessions.isEmpty() == false)
-            {
-               throw new IllegalStateException("Only allowed one session per connection. See the J2EE spec, e.g. J2EE1.4 Section 6.6");
-            }
-
-            HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(sessionType);
-            info.setUserName(userName);
-            info.setPassword(password);
-            info.setClientID(clientID);
-            info.setDefaults(((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties());
-
-            if (HornetQRASessionFactoryImpl.trace)
-            {
-               HornetQRALogger.LOGGER.trace("Allocating session for " + this + " with request info=" + info);
-            }
-
-            HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
-
-            try
-            {
-               if (HornetQRASessionFactoryImpl.trace)
-               {
-                  HornetQRALogger.LOGGER.trace("Allocated  " + this + " session=" + session);
-               }
-
-               session.setHornetQSessionFactory(this);
-
-               if (started)
-               {
-                  session.start();
-               }
-
-               sessions.add(session);
-
-               return session;
-            }
-            catch (Throwable t)
-            {
-               try
-               {
-                  session.close();
-               }
-               catch (Throwable ignored)
-               {
-               }
-               if (t instanceof Exception)
-               {
-                  throw (Exception)t;
-               }
-               else
-               {
-                  throw new RuntimeException("Unexpected error: ", t);
-               }
-            }
-         }
-      }
-      catch (Exception e)
-      {
-         Throwable current = e;
-         while (current != null && !(current instanceof JMSException))
-         {
-            current = current.getCause();
-         }
-
-         if (current != null && current instanceof JMSException)
-         {
-            throw (JMSException)current;
-         }
-         else
-         {
-            JMSException je = new JMSException("Could not create a session: " + e.getMessage());
-            je.setLinkedException(e);
-            je.initCause(e);
-            throw je;
-         }
-      }
+      return allocateConnection(false, Session.AUTO_ACKNOWLEDGE, sessionType);
    }
 
    /**
@@ -933,12 +849,23 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       }
       catch (Exception e)
       {
-         HornetQRALogger.LOGGER.errorCreatingSession(e);
+         Throwable current = e;
+         while (current != null && !(current instanceof JMSException))
+         {
+            current = current.getCause();
+         }
 
-         JMSException je = new JMSException("Could not create a session: " + e.getMessage());
-         je.setLinkedException(e);
-         je.initCause(e);
-         throw je;
+         if (current != null && current instanceof JMSException)
+         {
+            throw (JMSException)current;
+         }
+         else
+         {
+            JMSException je = new JMSException("Could not create a session: " + e.getMessage());
+            je.setLinkedException(e);
+            je.initCause(e);
+            throw je;
+         }
       }
    }
 
