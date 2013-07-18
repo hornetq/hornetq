@@ -69,22 +69,6 @@ public class HornetQRAConnectionRequestInfo implements ConnectionRequestInfo
 
    /**
     * Constructor
-    * @param type The connection type
-    */
-   public HornetQRAConnectionRequestInfo(final int type)
-   {
-      if (HornetQRAConnectionRequestInfo.trace)
-      {
-         HornetQRALogger.LOGGER.trace("constructor(" + type + ")");
-      }
-
-      this.type = type;
-      transacted = true;
-      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-   }
-
-   /**
-    * Constructor
     * @param transacted Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @param type The connection type

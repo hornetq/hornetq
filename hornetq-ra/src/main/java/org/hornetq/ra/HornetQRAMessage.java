@@ -753,7 +753,7 @@ public class HornetQRAMessage implements Message
       {
          HornetQRALogger.LOGGER.trace("getJMSDeliveryTime()");
       }
-      return getJMSDeliveryTime();
+      return message.getJMSDeliveryTime();
    }
 
    @Override
