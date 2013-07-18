@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
+import javax.transaction.xa.Xid;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -962,16 +963,42 @@ public class HornetQServerImpl implements HornetQServer
          securityStore.authenticate(username, password);
       }
       final OperationContext context = storageManager.newContext(getExecutorFactory().getExecutor());
-      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context);
+      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context, null);
 
       sessions.put(name, session);
 
       return session;
    }
 
-   protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
+   public ServerSession createSession(final String name,
+                                      final String username,
+                                      final String password,
+                                      final int minLargeMessageSize,
+                                      final RemotingConnection connection,
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final boolean preAcknowledge,
+                                      final boolean xa,
+                                      final String defaultAddress,
+                                      final Xid curXid,
+                                      final SessionCallback callback) throws Exception
    {
-      return new ServerSessionImpl(name,
+      if (securityStore != null)
+      {
+         securityStore.authenticate(username, password);
+      }
+      final OperationContext context = storageManager.newContext(getExecutorFactory().getExecutor());
+
+      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context, curXid);
+
+      sessions.put(name, session);
+
+      return session;
+   }
+
+   protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context, Xid curXid) throws Exception
+   {
+      ServerSessionImpl session = new ServerSessionImpl(name,
             username,
             password,
             minLargeMessageSize,
@@ -992,6 +1019,13 @@ public class HornetQServerImpl implements HornetQServer
                : new SimpleString(defaultAddress),
             callback,
             context);
+      
+      if (xa && (curXid != null))
+      {
+         session.xaStart(curXid);
+         session.setFailoverTx(curXid);
+      }
+      return session;
    }
 
    protected SecurityStore getSecurityStore()

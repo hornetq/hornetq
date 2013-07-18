@@ -165,6 +165,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    // concurrently.
    private volatile boolean closed = false;
 
+   private Xid failoverXid;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final String name,
@@ -747,7 +749,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
-
       if (tx != null && tx.getXid().equals(xid))
       {
          final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
@@ -942,7 +943,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaRollback(final Xid xid) throws Exception
    {
-      if (tx != null && tx.getXid().equals(xid))
+      if (tx != null && tx.getXid().equals(xid) && (this.failoverXid == null))
       {
          final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
 
@@ -1011,6 +1012,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             else
             {
                doRollback(false, false, theTx);
+               if (failoverXid != null)
+               {
+                  failoverXid = null;
+                  tx = null;
+               }
             }
          }
       }
@@ -1046,7 +1052,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaSuspend() throws Exception
    {
-
       if (isTrace)
       {
          HornetQServerLogger.LOGGER.trace("xasuspend on " + this.tx);
@@ -1622,5 +1627,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       routingContext.clear();
+   }
+
+   public void setFailoverTx(Xid curXid)
+   {
+      this.failoverXid = curXid;
    }
 }

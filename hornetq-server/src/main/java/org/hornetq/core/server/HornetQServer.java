@@ -19,6 +19,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.xa.Xid;
+
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -112,6 +114,19 @@ public interface HornetQServer extends HornetQComponent
                                boolean preAcknowledge,
                                boolean xa,
                                String defaultAddress,
+                               SessionCallback callback) throws Exception;
+
+   ServerSession createSession(String name,
+                               String username,
+                               String password,
+                               int minLargeMessageSize,
+                               RemotingConnection remotingConnection,
+                               boolean autoCommitSends,
+                               boolean autoCommitAcks,
+                               boolean preAcknowledge,
+                               boolean xa,
+                               String defaultAddress,
+                               Xid curXid,
                                SessionCallback callback) throws Exception;
 
    void removeSession(String name) throws Exception;

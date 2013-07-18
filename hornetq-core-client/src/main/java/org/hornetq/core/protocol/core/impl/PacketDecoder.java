@@ -16,6 +16,7 @@ package org.hornetq.core.protocol.core.impl;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_V2;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
@@ -79,6 +80,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessa
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
@@ -165,6 +167,11 @@ public abstract class PacketDecoder implements Serializable
          case CREATESESSION:
          {
             packet = new CreateSessionMessage();
+            break;
+         }
+         case CREATESESSION_V2:
+         {
+            packet = new CreateSessionMessageV2();
             break;
          }
          case CREATESESSION_RESP:
