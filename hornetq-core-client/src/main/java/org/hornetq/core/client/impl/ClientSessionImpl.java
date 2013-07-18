@@ -49,6 +49,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
@@ -191,6 +192,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    private boolean xaRetry = false;
 
    private final AtomicInteger concurrentCall = new AtomicInteger(0);
+   
+   private volatile Xid currentXid = null;
 
    // Constructors ----------------------------------------------------------------------------
 
@@ -1031,7 +1034,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             }
             else
             {
-
                if (HornetQClientLogger.LOGGER.isDebugEnabled())
                {
                   HornetQClientLogger.LOGGER.debug("ClientSession couldn't be reattached, creating a new session");
@@ -1050,7 +1052,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                // to recreate the session, we just want to unblock the blocking call
                if (!inClose && mayAttemptToFailover)
                {
-                  Packet createRequest = new CreateSessionMessage(name,
+                  Packet createRequest = null;
+                  if (currentXid != null)
+                  {
+                     createRequest = new CreateSessionMessageV2(name,
                                                                   channel.getID(),
                                                                   version,
                                                                   username,
@@ -1062,7 +1067,25 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                   preAcknowledge,
                                                                   confirmationWindowSize,
                                                                   defaultAddress == null ? null
-                                                                                        : defaultAddress.toString());
+                                                                                        : defaultAddress.toString(),
+                                                                  currentXid);
+                  }
+                  else
+                  {
+                     createRequest = new CreateSessionMessage(name,
+                           channel.getID(),
+                           version,
+                           username,
+                           password,
+                           minLargeMessageSize,
+                           xa,
+                           autoCommitSends,
+                           autoCommitAcks,
+                           preAcknowledge,
+                           confirmationWindowSize,
+                           defaultAddress == null ? null
+                                                 : defaultAddress.toString());
+                  }
                   boolean retry = false;
                   do
                   {
@@ -1368,6 +1391,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          workDone = false;
 
+         currentXid = null;
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -1539,6 +1563,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
 
+         currentXid = null;
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -1564,6 +1589,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                   throw new XAException(response.getResponseCode());
                }
 
+               currentXid = null;
                xaRetry = false;
                return response.getResponseCode();
             }
@@ -1661,9 +1687,17 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          workDone = false;
 
+         currentXid = null;
          if (response.isError())
          {
-            throw new XAException(response.getResponseCode());
+            if (!rollbackOnly)
+            {
+               throw new XAException(response.getResponseCode());
+            }
+            else
+            {
+               rollbackOnly = false;
+            }
          }
       }
       catch (HornetQException e)
@@ -1729,6 +1763,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
 
+         currentXid = xid;
+         rollbackOnly = false;
          if (response.isError())
          {
             HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
@@ -1749,6 +1785,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                   HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
                   throw new XAException(response.getResponseCode());
                }
+               currentXid = xid;
+               rollbackOnly = false;
             }
             catch (HornetQException e1)
             {

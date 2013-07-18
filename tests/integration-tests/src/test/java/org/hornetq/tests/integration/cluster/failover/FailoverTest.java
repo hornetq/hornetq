@@ -1261,7 +1261,7 @@ public class FailoverTest extends FailoverTestBase
       }
       catch (XAException e)
       {
-         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
+         Assert.assertEquals(XAException.XAER_PROTO, e.errorCode);
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -1433,7 +1433,7 @@ public class FailoverTest extends FailoverTestBase
       catch (XAException e)
       {
          // it should be rolled back
-         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
+         Assert.assertEquals(XAException.XAER_PROTO, e.errorCode);
       }
 
       session1.close();

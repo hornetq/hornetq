@@ -23,6 +23,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
@@ -79,6 +80,14 @@ public class HornetQPacketHandler implements ChannelHandler
 
             break;
          }
+         case PacketImpl.CREATESESSION_V2:
+         {
+            CreateSessionMessageV2 request = (CreateSessionMessageV2)packet;
+
+            handleCreateSession(request);
+
+            break;
+         }
          case PacketImpl.REATTACH_SESSION:
          {
             ReattachSessionMessage request = (ReattachSessionMessage)packet;
@@ -101,6 +110,105 @@ public class HornetQPacketHandler implements ChannelHandler
          {
             HornetQServerLogger.LOGGER.invalidPacket(packet);
          }
+      }
+   }
+
+   private void handleCreateSession(CreateSessionMessageV2 request)
+   {
+      boolean incompatibleVersion = false;
+      Packet response;
+      try
+      {
+         Version version = server.getVersion();
+         if (!version.isCompatible(request.getVersion()))
+         {
+            HornetQServerLogger.LOGGER.incompatibleVersion(request.getVersion(), connection.getRemoteAddress(), version.getFullVersion());
+            throw HornetQMessageBundle.BUNDLE.incompatibleClientServer();
+         }
+
+         if (!server.isStarted())
+         {
+            throw HornetQMessageBundle.BUNDLE.serverNotStarted();
+         }
+
+         // XXX HORNETQ-720 Taylor commented out this test. Should be verified.
+         /*if (!server.checkActivate())
+         {
+            throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED,
+                                       "Server will not accept create session requests");
+         }*/
+
+
+         if (connection.getClientVersion() == 0)
+         {
+            connection.setClientVersion(request.getVersion());
+         }
+         else if (connection.getClientVersion() != request.getVersion())
+         {
+            HornetQServerLogger.LOGGER.incompatibleVersionAfterConnect(request.getVersion(), connection.getClientVersion());
+         }
+
+         Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
+
+         HornetQPrincipal hornetQPrincipal = null;
+
+         if(request.getUsername() == null)
+         {
+            hornetQPrincipal = connection.getDefaultHornetQPrincipal();
+         }
+
+         ServerSession session = server.createSession(request.getName(),
+                                                      hornetQPrincipal == null?request.getUsername(): hornetQPrincipal.getUserName(),
+                                                      hornetQPrincipal == null?request.getPassword(): hornetQPrincipal.getPassword(),
+                                                      request.getMinLargeMessageSize(),
+                                                      connection,
+                                                      request.isAutoCommitSends(),
+                                                      request.isAutoCommitAcks(),
+                                                      request.isPreAcknowledge(),
+                                                      request.isXA(),
+                                                      request.getDefaultAddress(),
+                                                      request.getCurXid(),
+                                                      new CoreSessionCallback(request.getName(),
+                                                                              protocolManager,
+                                                                              channel));
+
+         ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
+                                                                             server.getStorageManager(),
+                                                                             channel);
+         channel.setHandler(handler);
+
+         // TODO - where is this removed?
+         protocolManager.addSessionHandler(request.getName(), handler);
+
+         response = new CreateSessionResponseMessage(server.getVersion().getIncrementingVersion());
+      }
+      catch (HornetQException e)
+      {
+         HornetQServerLogger.LOGGER.failedToCreateSession(e);
+         response = new HornetQExceptionMessage(e);
+
+         if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
+         {
+            incompatibleVersion = true;
+         }
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.failedToCreateSession(e);
+
+         response = new HornetQExceptionMessage(new HornetQInternalErrorException());
+      }
+
+      // send the exception to the client and destroy
+      // the connection if the client and server versions
+      // are not compatible
+      if (incompatibleVersion)
+      {
+         channel1.sendAndFlush(response);
+      }
+      else
+      {
+         channel1.send(response);
       }
    }
 
