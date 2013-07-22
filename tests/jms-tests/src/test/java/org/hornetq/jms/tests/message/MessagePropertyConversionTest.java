@@ -12,13 +12,7 @@
  */
 
 package org.hornetq.jms.tests.message;
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import javax.jms.*;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -73,6 +67,652 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       consumerConnection.close();
    }
 
+   @Test
+   public void msgPropertyConversionTests() throws Exception
+   {
+      JMSContext ctx = addContext(getConnectionFactory().createContext());
+
+      JMSProducer producer = ctx.createProducer();
+
+      boolean bool = true;
+      byte bValue = 1;
+      short nShort = 2;
+      int nInt = 3;
+      long nLong = 4;
+      float nFloat = 5;
+      double nDouble = 6;
+
+      producer.setProperty("aboolean", bool);
+      producer.setProperty("abyte", bValue);
+      producer.setProperty("ashort", nShort);
+      producer.setProperty("anint", nInt);
+      producer.setProperty("afloat", nFloat);
+      producer.setProperty("adouble", nDouble);
+      producer.setProperty("astring", "test");
+      producer.setProperty("along", nLong);
+      producer.setProperty("true", "true");
+      producer.setProperty("false", "false");
+      producer.setProperty("anotherString", "1");
+      String myBool = producer.getStringProperty("aboolean");
+
+      if (Boolean.valueOf(myBool).booleanValue() != bool)
+      {
+         ProxyAssertSupport.fail("conversion from boolean to string failed");
+      }
+
+      try
+      {
+         producer.getByteProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("did not catch expected Exception -- boolean to byte");
+      }
+
+      try
+      {
+         producer.getShortProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      } catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getIntProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getLongProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getFloatProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      // invalid - boolean to double
+      try
+      {
+         producer.getDoubleProperty("aboolean");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      String myByte = producer.getStringProperty("abyte");
+
+      if (Byte.valueOf(myByte).byteValue() != bValue)
+      {
+         ProxyAssertSupport.fail("conversion from byte to string failed");
+      }
+
+      if (producer.getShortProperty("abyte") != bValue)
+      {
+         ProxyAssertSupport.fail("conversion from byte to short failed");
+      }
+
+      if (producer.getIntProperty("abyte") != bValue)
+      {
+         ProxyAssertSupport.fail("conversion from byte to int failed");
+      }
+
+      if (producer.getLongProperty("abyte") != bValue)
+      {
+         ProxyAssertSupport.fail("conversion from byte to long failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("abyte");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getFloatProperty("abyte");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+
+      }
+
+      try
+      {
+         producer.getDoubleProperty("abyte");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      String myshort = producer.getStringProperty("ashort");
+
+      if (Short.valueOf(myshort).shortValue() != nShort)
+      {
+         ProxyAssertSupport.fail("conversion from short to string failed");
+      }
+
+      if (producer.getIntProperty("ashort") != nShort)
+      {
+         ProxyAssertSupport.fail("conversion from short to int failed");
+      }
+
+      if (producer.getLongProperty("ashort") != nShort)
+      {
+         ProxyAssertSupport.fail("conversion from short to long failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("ashort");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+
+      }
+
+      try
+      {
+         producer.getByteProperty("ashort");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+
+      }
+
+      try
+      {
+         producer.getFloatProperty("ashort");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getDoubleProperty("ashort");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+
+      }
+
+      if (Integer.valueOf(producer.getStringProperty("anint")).intValue() != nInt)
+      {
+         ProxyAssertSupport.fail("conversion from int to string failed");
+      }
+
+      if (producer.getLongProperty("anint") != nInt)
+      {
+         ProxyAssertSupport.fail("conversion from int to long failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("anint");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getByteProperty("anint");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getShortProperty("anint");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getFloatProperty("anint");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getDoubleProperty("anint");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      if (Long.valueOf(producer.getStringProperty("along")).longValue() != nLong)
+      {
+         ProxyAssertSupport.fail("conversion from long to string failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getByteProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getShortProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getIntProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getFloatProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getDoubleProperty("along");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      if (Float.valueOf(producer.getStringProperty("afloat")).floatValue() != nFloat)
+      {
+         ProxyAssertSupport.fail("conversion from float to string failed");
+      }
+
+      if (producer.getDoubleProperty("afloat") != nFloat)
+      {
+         ProxyAssertSupport.fail("conversion from long to double failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("afloat");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getByteProperty("afloat");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getShortProperty("afloat");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getIntProperty("afloat");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getLongProperty("afloat");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      if (Double.valueOf(producer.getStringProperty("adouble")).doubleValue() != nDouble)
+      {
+         ProxyAssertSupport.fail("conversion from double to string failed");
+      }
+
+      try
+      {
+         producer.getBooleanProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getByteProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getShortProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getIntProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      try
+      {
+         producer.getLongProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      // invalid - double to float
+      try
+      {
+         producer.getFloatProperty("adouble");
+         ProxyAssertSupport.fail("MessageFormatRuntimeException expected");
+      }
+      catch (MessageFormatRuntimeException me)
+      {
+         //pass
+      }
+      catch (Exception ee)
+      {
+         ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
+      }
+
+      if ((producer.getBooleanProperty("true")) != true)
+      {
+         ProxyAssertSupport.fail("conversion from string to boolean - expect true  - failed");
+      }
+      if ((producer.getBooleanProperty("false")) != false)
+      {
+         ProxyAssertSupport.fail("conversion from string to boolean expect false - failed");
+      }
+
+      if (producer.getByteProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to byte failed");
+      }
+
+      if (producer.getShortProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to short failed");
+      }
+
+      if (producer.getIntProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to int failed");
+      }
+
+      if (producer.getLongProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to long failed");
+      }
+
+      if (producer.getFloatProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to float failed");
+      }
+
+      if (producer.getDoubleProperty("anotherString") != 1)
+      {
+         ProxyAssertSupport.fail("conversion from string to double failed");
+      }
+   }
    @Test
    public void testResetToNull() throws JMSException
    {

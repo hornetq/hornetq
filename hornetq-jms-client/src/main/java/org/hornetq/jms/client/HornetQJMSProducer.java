@@ -34,6 +34,7 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -514,6 +515,10 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getBooleanProperty(new SimpleString(name));
       }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
@@ -526,6 +531,10 @@ public final class HornetQJMSProducer implements JMSProducer
       try
       {
          return properties.getByteProperty(new SimpleString(name));
+      }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
       }
       catch (RuntimeException e)
       {
@@ -540,6 +549,10 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getShortProperty(new SimpleString(name));
       }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
@@ -552,6 +565,10 @@ public final class HornetQJMSProducer implements JMSProducer
       try
       {
          return properties.getIntProperty(new SimpleString(name));
+      }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
       }
       catch (RuntimeException e)
       {
@@ -566,6 +583,10 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getLongProperty(new SimpleString(name));
       }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
@@ -579,6 +600,10 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getFloatProperty(new SimpleString(name));
       }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
@@ -591,6 +616,10 @@ public final class HornetQJMSProducer implements JMSProducer
       try
       {
          return properties.getDoubleProperty(new SimpleString(name));
+      }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
       }
       catch (RuntimeException e)
       {
@@ -608,6 +637,10 @@ public final class HornetQJMSProducer implements JMSProducer
             return null;
          return prop.toString();
       }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
@@ -620,6 +653,10 @@ public final class HornetQJMSProducer implements JMSProducer
       try
       {
          return properties.getProperty(new SimpleString(name));
+      }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
       }
       catch (RuntimeException e)
       {
@@ -639,6 +676,10 @@ public final class HornetQJMSProducer implements JMSProducer
             propNames.add(str.toString());
          }
          return propNames;
+      }
+      catch(HornetQPropertyConversionException ce)
+      {
+         throw new MessageFormatRuntimeException(ce.getMessage());
       }
       catch (RuntimeException e)
       {
