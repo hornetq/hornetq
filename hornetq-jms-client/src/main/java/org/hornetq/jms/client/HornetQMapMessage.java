@@ -418,14 +418,13 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    {
       checkWrite();
 
-      if (name == null)
+      if(name == null)
       {
-         throw new IllegalArgumentException("Name must not be null.");
+         throw HornetQJMSClientBundle.BUNDLE.nameCannotBeNull();
       }
-
-      if (name.equals(""))
+      if(name.equals(""))
       {
-         throw new IllegalArgumentException("Name must not be an empty String.");
+         throw HornetQJMSClientBundle.BUNDLE.nameCannotBeEmpty();
       }
    }
 
