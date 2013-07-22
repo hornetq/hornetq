@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
@@ -422,6 +421,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, boolean value)
    {
+      checkName(name);
       properties.putBooleanProperty(new SimpleString(name), value);
       return this;
    }
@@ -429,6 +429,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, byte value)
    {
+      checkName(name);
       properties.putByteProperty(new SimpleString(name), value);
       return this;
    }
@@ -436,6 +437,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, short value)
    {
+      checkName(name);
       properties.putShortProperty(new SimpleString(name), value);
       return this;
    }
@@ -443,6 +445,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, int value)
    {
+      checkName(name);
       properties.putIntProperty(new SimpleString(name), value);
       return this;
    }
@@ -450,6 +453,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, long value)
    {
+      checkName(name);
       properties.putLongProperty(new SimpleString(name), value);
       return this;
    }
@@ -457,6 +461,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, float value)
    {
+      checkName(name);
       properties.putFloatProperty(new SimpleString(name), value);
       return this;
    }
@@ -464,6 +469,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, double value)
    {
+      checkName(name);
       properties.putDoubleProperty(new SimpleString(name), value);
       return this;
    }
@@ -471,6 +477,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, String value)
    {
+      checkName(name);
       SimpleString key = new SimpleString(name);
       properties.putSimpleStringProperty(key, new SimpleString(value));
       stringPropertyNames.add(key);
@@ -480,6 +487,7 @@ public final class HornetQJMSProducer implements JMSProducer
    @Override
    public JMSProducer setProperty(String name, Object value)
    {
+      checkName(name);
       try
       {
          TypedProperties.setObjectProperty(new SimpleString(name), value, properties);
@@ -751,6 +759,18 @@ public final class HornetQJMSProducer implements JMSProducer
    public Destination getJMSReplyTo()
    {
       return jmsHeaderReplyTo;
+   }
+
+   private void checkName(String name)
+   {
+      if(name == null)
+      {
+         throw HornetQJMSClientBundle.BUNDLE.nameCannotBeNull();
+      }
+      if(name.equals(""))
+      {
+         throw HornetQJMSClientBundle.BUNDLE.nameCannotBeEmpty();
+      }
    }
 
    final static class CompletionListenerWrapper implements CompletionListener

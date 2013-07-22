@@ -14,6 +14,7 @@
 package org.hornetq.jms.tests.message;
 import javax.jms.*;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
@@ -81,6 +82,96 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       ProxyAssertSupport.assertNotNull(prop);
 
       ProxyAssertSupport.assertTrue(prop instanceof String);
+   }
+
+   @Test
+   public void msgNullPropertyConversionTests() throws Exception
+   {
+      JMSContext ctx = addContext(getConnectionFactory().createContext());
+
+      JMSProducer producer = ctx.createProducer();
+
+      try
+      {
+         producer.setProperty(null, true);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, "string");
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, 1);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, 1.0);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, 1l);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, 1.10f);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, (byte) 1);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, (short) 1);
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+      try
+      {
+         producer.setProperty(null, new SimpleString("foo"));
+         ProxyAssertSupport.fail("expected IllegalArgumentException");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
    }
 
    @Test
