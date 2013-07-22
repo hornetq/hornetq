@@ -68,6 +68,22 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
    }
 
    @Test
+   public void testObjectString() throws Exception
+   {
+      JMSContext ctx = addContext(getConnectionFactory().createContext());
+
+      JMSProducer producer = ctx.createProducer();
+
+      producer.setProperty("astring", "test");
+
+      Object prop = producer.getObjectProperty("astring");
+
+      ProxyAssertSupport.assertNotNull(prop);
+
+      ProxyAssertSupport.assertTrue(prop instanceof String);
+   }
+
+   @Test
    public void msgPropertyConversionTests() throws Exception
    {
       JMSContext ctx = addContext(getConnectionFactory().createContext());
