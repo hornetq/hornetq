@@ -33,4 +33,10 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129002, value =  "Destination {0} does not exist", format = Message.Format.MESSAGE_FORMAT)
    HornetQNonExistentQueueException destinationDoesNotExist(SimpleString destination);
+
+   @Message(id = 129003, value =  "name cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nameCannotBeNull();
+
+   @Message(id = 129004, value =  "name cannot be empty", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nameCannotBeEmpty();
 }
