@@ -117,7 +117,7 @@ public interface Message
     *
     * @param address address to send the message to
     */
-   void setAddress(SimpleString address);
+   Message setAddress(SimpleString address);
 
    /**
     * Returns this message type.
@@ -216,12 +216,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putBooleanProperty(SimpleString key, boolean value);
+   Message putBooleanProperty(SimpleString key, boolean value);
 
    /**
     * @see #putBooleanProperty(SimpleString, boolean)
     */
-   void putBooleanProperty(String key, boolean value);
+   Message putBooleanProperty(String key, boolean value);
 
    /**
     * Puts a byte property in this message.
@@ -229,12 +229,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putByteProperty(SimpleString key, byte value);
+   Message putByteProperty(SimpleString key, byte value);
 
    /**
     * @see #putByteProperty(SimpleString, byte)
     */
-   void putByteProperty(String key, byte value);
+   Message putByteProperty(String key, byte value);
 
    /**
     * Puts a byte[] property in this message.
@@ -242,12 +242,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putBytesProperty(SimpleString key, byte[] value);
+   Message putBytesProperty(SimpleString key, byte[] value);
 
    /**
     * @see #putBytesProperty(SimpleString, byte[])
     */
-   void putBytesProperty(String key, byte[] value);
+   Message putBytesProperty(String key, byte[] value);
 
    /**
     * Puts a short property in this message.
@@ -255,24 +255,24 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putShortProperty(SimpleString key, short value);
+   Message putShortProperty(SimpleString key, short value);
 
    /**
     * @see #putShortProperty(SimpleString, short)
     */
-   void putShortProperty(String key, short value);
+   Message putShortProperty(String key, short value);
 
    /**
     * Puts a char property in this message.
     * @param key property name
     * @param value property value
     */
-   void putCharProperty(SimpleString key, char value);
+   Message putCharProperty(SimpleString key, char value);
 
    /**
     * @see #putCharProperty(SimpleString, char)
     */
-   void putCharProperty(String key, char value);
+   Message putCharProperty(String key, char value);
 
    /**
     * Puts a int property in this message.
@@ -280,12 +280,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putIntProperty(SimpleString key, int value);
+   Message putIntProperty(SimpleString key, int value);
 
    /**
     * @see #putIntProperty(SimpleString, int)
     */
-   void putIntProperty(String key, int value);
+   Message putIntProperty(String key, int value);
 
    /**
     * Puts a long property in this message.
@@ -293,12 +293,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putLongProperty(SimpleString key, long value);
+   Message putLongProperty(SimpleString key, long value);
 
    /**
     * @see #putLongProperty(SimpleString, long)
     */
-   void putLongProperty(String key, long value);
+   Message putLongProperty(String key, long value);
 
    /**
     * Puts a float property in this message.
@@ -306,12 +306,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putFloatProperty(SimpleString key, float value);
+   Message putFloatProperty(SimpleString key, float value);
 
    /**
     * @see #putFloatProperty(SimpleString, float)
     */
-   void putFloatProperty(String key, float value);
+   Message putFloatProperty(String key, float value);
 
    /**
     * Puts a double property in this message.
@@ -319,12 +319,12 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putDoubleProperty(SimpleString key, double value);
+   Message putDoubleProperty(SimpleString key, double value);
 
    /**
     * @see #putDoubleProperty(SimpleString, double)
     */
-   void putDoubleProperty(String key, double value);
+   Message putDoubleProperty(String key, double value);
 
    /**
     * Puts a SimpleString property in this message.
@@ -332,7 +332,7 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putStringProperty(SimpleString key, SimpleString value);
+   Message putStringProperty(SimpleString key, SimpleString value);
 
    /**
     * Puts a String property in this message.
@@ -340,7 +340,7 @@ public interface Message
     * @param key property name
     * @param value property value
     */
-   void putStringProperty(String key, String value);
+   Message putStringProperty(String key, String value);
 
    /**
     * Puts an Object property in this message. <br>
@@ -363,12 +363,12 @@ public interface Message
     * @throws HornetQPropertyConversionException if the value is not one of the accepted property
     *            types.
     */
-   void putObjectProperty(SimpleString key, Object value) throws HornetQPropertyConversionException;
+   Message putObjectProperty(SimpleString key, Object value) throws HornetQPropertyConversionException;
 
    /**
     * @see #putObjectProperty(SimpleString, Object)
     */
-   void putObjectProperty(String key, Object value) throws HornetQPropertyConversionException;
+   Message putObjectProperty(String key, Object value) throws HornetQPropertyConversionException;
 
    /**
     * Removes the property corresponding to the specified key.
