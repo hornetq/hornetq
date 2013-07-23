@@ -21,6 +21,7 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -204,6 +205,11 @@ public class HornetQMessageHandler implements MessageHandler
          useXA = false;
       }
       consumer.setMessageHandler(this);
+   }
+
+   XAResource getXAResource()
+   {
+      return useXA ? session : null;
    }
 
    public void interruptConsumer()
