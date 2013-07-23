@@ -254,6 +254,86 @@ public class MessageRedistributionTest extends ClusterTestBase
    }
 
    @Test
+   public void testRedistributionWhenConsumerIsClosedDifferentQueues() throws Exception
+   {
+      setupCluster(false);
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue1", null, true);
+      createQueue(2, "queues.testaddress", "queue2", null, true);
+
+
+      ClientSession sess0 = sfs[0].createSession();
+      ClientConsumer consumer0 = sess0.createConsumer("queue0");
+
+      ClientSession sess1 = sfs[1].createSession();
+      ClientConsumer consumer1 = sess1.createConsumer("queue1");
+
+      ClientSession sess2 = sfs[2].createSession();
+      ClientConsumer consumer2 = sess2.createConsumer("queue2");
+
+      ClientProducer producer0 = sess0.createProducer("queues.testaddress");
+
+      final int NUMBER_OF_MESSAGES = 1000;
+
+      for (int i = 0 ; i < 1000; i++)
+      {
+         producer0.send(sess0.createMessage(true).putIntProperty("count", i));
+      }
+
+      sess0.start();
+      sess1.start();
+      sess2.start();
+
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = consumer0.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertEquals(i, msg.getIntProperty("count").intValue());
+      }
+
+      assertNull(consumer0.receiveImmediate());
+
+      // closing consumer1... it shouldn't redistribute anything as the other nodes don't have such queues
+      consumer1.close();
+      Thread.sleep(500); // wait some time giving time to redistribution break something
+                         // (it shouldn't redistribute anything here since there are no queues on the other nodes)
+
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = consumer2.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertEquals(i, msg.getIntProperty("count").intValue());
+      }
+
+      assertNull(consumer2.receiveImmediate());
+      assertNull(consumer0.receiveImmediate());
+
+      consumer1 = sess1.createConsumer("queue1");
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = consumer1.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertEquals(i, msg.getIntProperty("count").intValue());
+      }
+
+      assertNull(consumer0.receiveImmediate());
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+
+      MessageRedistributionTest.log.info("Test done");
+   }
+
+   @Test
    public void testRedistributionWhenConsumerIsClosedNotConsumersOnAllNodes() throws Exception
    {
       setupCluster(false);
