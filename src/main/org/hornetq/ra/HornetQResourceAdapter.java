@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -202,10 +203,25 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       if (HornetQResourceAdapter.trace)
       {
-         HornetQResourceAdapter.log.trace("getXAResources(" + specs + ")");
+         log.trace("getXAResources(" + Arrays.toString(specs) + ")");
       }
 
-      throw new ResourceException("Unsupported");
+      if (useAutoRecovery)
+      {
+         // let the TM handle the recovery
+         return null;
+      }
+      else
+      {
+         List<XAResource> xaresources = new ArrayList<XAResource>();
+         for (ActivationSpec spec : specs) {
+            HornetQActivation activation = activations.get(spec);
+            if (activation != null) {
+               xaresources.addAll(activation.getXAResources());
+            }
+         }
+         return xaresources.toArray(new XAResource[xaresources.size()]);
+      }
    }
 
    /**
