@@ -22,6 +22,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQPropertyConversionException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.message.BodyEncoder;
@@ -309,7 +310,7 @@ public abstract class MessageImpl implements MessageInternal
     * This synchronization can probably be removed since setAddress is always called from a single thread.
     * However I will keep it as it's harmless and it's been well tested
     */
-   public void setAddress(final SimpleString address)
+   public Message setAddress(final SimpleString address)
    {
      // This is protecting the buffer
      synchronized (this)
@@ -321,6 +322,8 @@ public abstract class MessageImpl implements MessageInternal
             bufferValid = false;
          }
      }
+
+      return this;
    }
 
    public byte getType()
@@ -531,161 +534,207 @@ public abstract class MessageImpl implements MessageInternal
    // Properties
    // ---------------------------------------------------------------------------------------
 
-   public void putBooleanProperty(final SimpleString key, final boolean value)
+   public Message putBooleanProperty(final SimpleString key, final boolean value)
    {
       properties.putBooleanProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putByteProperty(final SimpleString key, final byte value)
+   public Message putByteProperty(final SimpleString key, final byte value)
    {
       properties.putByteProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putBytesProperty(final SimpleString key, final byte[] value)
+   public Message putBytesProperty(final SimpleString key, final byte[] value)
    {
       properties.putBytesProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
    @Override
-   public void putCharProperty(SimpleString key, char value)
+   public Message putCharProperty(SimpleString key, char value)
    {
       properties.putCharProperty(key, value);
       bufferValid = false;
+
+      return this;
    }
 
    @Override
-   public void putCharProperty(String key, char value)
+   public Message putCharProperty(String key, char value)
    {
       properties.putCharProperty(new SimpleString(key), value);
       bufferValid = false;
+
+      return this;
    }
 
-   public void putShortProperty(final SimpleString key, final short value)
+   public Message putShortProperty(final SimpleString key, final short value)
    {
       properties.putShortProperty(key, value);
       bufferValid = false;
+
+      return this;
    }
 
-   public void putIntProperty(final SimpleString key, final int value)
+   public Message putIntProperty(final SimpleString key, final int value)
    {
       properties.putIntProperty(key, value);
       bufferValid = false;
+
+      return this;
    }
 
-   public void putLongProperty(final SimpleString key, final long value)
+   public Message putLongProperty(final SimpleString key, final long value)
    {
       properties.putLongProperty(key, value);
       bufferValid = false;
+
+      return this;
    }
 
-   public void putFloatProperty(final SimpleString key, final float value)
+   public Message putFloatProperty(final SimpleString key, final float value)
    {
       properties.putFloatProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putDoubleProperty(final SimpleString key, final double value)
+   public Message putDoubleProperty(final SimpleString key, final double value)
    {
       properties.putDoubleProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putStringProperty(final SimpleString key, final SimpleString value)
+   public Message putStringProperty(final SimpleString key, final SimpleString value)
    {
       properties.putSimpleStringProperty(key, value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putObjectProperty(final SimpleString key, final Object value) throws HornetQPropertyConversionException
+   public Message putObjectProperty(final SimpleString key, final Object value) throws HornetQPropertyConversionException
    {
       TypedProperties.setObjectProperty(key, value, properties);
       bufferValid = false;
+
+      return this;
    }
 
-   public void putObjectProperty(final String key, final Object value) throws HornetQPropertyConversionException
+   public Message putObjectProperty(final String key, final Object value) throws HornetQPropertyConversionException
    {
       putObjectProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putBooleanProperty(final String key, final boolean value)
+   public Message putBooleanProperty(final String key, final boolean value)
    {
       properties.putBooleanProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putByteProperty(final String key, final byte value)
+   public Message putByteProperty(final String key, final byte value)
    {
       properties.putByteProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putBytesProperty(final String key, final byte[] value)
+   public Message putBytesProperty(final String key, final byte[] value)
    {
       properties.putBytesProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putShortProperty(final String key, final short value)
+   public Message putShortProperty(final String key, final short value)
    {
       properties.putShortProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putIntProperty(final String key, final int value)
+   public Message putIntProperty(final String key, final int value)
    {
       properties.putIntProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putLongProperty(final String key, final long value)
+   public Message putLongProperty(final String key, final long value)
    {
       properties.putLongProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putFloatProperty(final String key, final float value)
+   public Message putFloatProperty(final String key, final float value)
    {
       properties.putFloatProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putDoubleProperty(final String key, final double value)
+   public Message putDoubleProperty(final String key, final double value)
    {
       properties.putDoubleProperty(new SimpleString(key), value);
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putStringProperty(final String key, final String value)
+   public Message putStringProperty(final String key, final String value)
    {
       properties.putSimpleStringProperty(new SimpleString(key), SimpleString.toSimpleString(value));
 
       bufferValid = false;
+
+      return this;
    }
 
-   public void putTypedProperties(final TypedProperties otherProps)
+   public Message putTypedProperties(final TypedProperties otherProps)
    {
       properties.putTypedProperties(otherProps);
 
       bufferValid = false;
+
+      return this;
    }
 
    public Object getObjectProperty(final SimpleString key)
