@@ -50,9 +50,11 @@ public abstract class HornetQRATestBase  extends JMSTestBase
    protected ServerLocator locator;
 
    protected static final String MDBQUEUE = "mdbQueue";
+   protected static final String MDBTOPIC = "mdbTopic";
    protected static final String DLQ = "dlqQueue";
    protected static final String MDBQUEUEPREFIXED = "jms.queue.mdbQueue";
    protected static final SimpleString MDBQUEUEPREFIXEDSIMPLE = new SimpleString("jms.queue.mdbQueue");
+   protected static final String MDBTOPIC_PREFIXED = "jms.topic.mdbTopic";
 
    @Override
    @Before
@@ -62,6 +64,7 @@ public abstract class HornetQRATestBase  extends JMSTestBase
       locator = createInVMNonHALocator();
       createQueue(MDBQUEUE);
       createQueue(DLQ);
+      createTopic(MDBTOPIC);
       setupDLQ(1);
    }
 

@@ -26,7 +26,9 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
@@ -85,6 +87,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
       server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
+      server.getSecurityRepository().addMatch(MDBTOPIC_PREFIXED, roles);
    }
 
    @Override
@@ -195,6 +198,85 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          assertNotNull(msg);
          assertEquals("hello", msg.getStringProperty("strvalue"));
       }
+   }
+
+   /**
+    * This was written to validate a TCK test failing (com/sun/ts/tests/jms/core/topictests/TopicTests.java#consumerTests_from_ejb)
+    * @throws Exception
+    */
+   @Test
+   public void testConsumeWithBrowserAndFilter() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass("");
+      resourceAdapter.setTransactionManagerLocatorMethod("");
+
+      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+      Topic topic = HornetQJMSClient.createTopic(MDBTOPIC);
+
+      TopicConnection conn = qraConnectionFactory.createTopicConnection("testuser", "testpassword");
+      TopicSession sess = (TopicSession) conn.createSession();
+      MessageConsumer cons = sess.createConsumer(topic, "filter='filt1'");
+      conn.start();
+      MessageProducer prod = sess.createProducer(topic);
+
+      TextMessage message = sess.createTextMessage("hello");
+      message.setStringProperty("filter", "filt1");
+      prod.send(message);
+
+      message = sess.createTextMessage("hello");
+      message.setStringProperty("filter", "filt2");
+      prod.send(message);
+
+      message = (TextMessage)cons.receive(5000);
+
+      assertNotNull(message);
+
+      assertNull(cons.receiveNoWait());
+
+      assertEquals("filt1", message.getStringProperty("filter"));
+
+   }
+
+   @Test
+   public void testConsumeWithBrowserAndFilterNoRa() throws Exception
+   {
+      Topic topic = HornetQJMSClient.createTopic(MDBTOPIC);
+
+      try
+      (
+         Connection conn = cf.createConnection();
+      )
+      {
+         TopicSession sess = (TopicSession) conn.createSession();
+         conn.start();
+         MessageConsumer cons = sess.createConsumer(topic, "filter='filt1'");
+
+         MessageProducer prod = sess.createProducer(topic);
+
+         TextMessage message = sess.createTextMessage("hello");
+         message.setStringProperty("filter", "filt1");
+         prod.send(message);
+
+         message = sess.createTextMessage("hello");
+         message.setStringProperty("filter", "filt2");
+         prod.send(message);
+
+         message = (TextMessage)cons.receive(5000);
+
+         assertNotNull(message);
+
+         assertNull(cons.receiveNoWait());
+
+         assertEquals("filt1", message.getStringProperty("filter"));
+      }
+
    }
 
    @Test
