@@ -133,4 +133,8 @@ public interface HornetQRALogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 154004, value = "Failed to deliver message", format = Message.Format.MESSAGE_FORMAT)
    void errorDeliveringMessage(@Cause Throwable t);
+
+   @LogMessage(level = Logger.Level.DEBUG)
+   @Message(id = 153001, value = "using different HornetQRAConnectionFactory", format = Message.Format.MESSAGE_FORMAT)
+   void warnDifferentConnectionfactory();
 }

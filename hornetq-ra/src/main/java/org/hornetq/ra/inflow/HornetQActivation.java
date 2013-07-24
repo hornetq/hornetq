@@ -42,10 +42,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
-import org.hornetq.ra.HornetQRABundle;
-import org.hornetq.ra.HornetQRALogger;
-import org.hornetq.ra.HornetQRaUtils;
-import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.*;
 import org.hornetq.utils.SensitiveDataCodec;
 
 /**
@@ -439,7 +436,20 @@ public class HornetQActivation
          {
             ctx = new InitialContext(spec.getParsedJndiParams());
          }
-         factory = (HornetQConnectionFactory) ctx.lookup(spec.getConnectionFactoryLookup());
+         Object fac = ctx.lookup(spec.getConnectionFactoryLookup());
+         if(fac instanceof HornetQConnectionFactory)
+         {
+            factory = (HornetQConnectionFactory) fac;
+         }
+         else
+         {
+            HornetQRAConnectionFactory raFact = (HornetQRAConnectionFactory) fac;
+            factory = raFact.getDefaultFactory();
+            if(factory != ra.getDefaultHornetQConnectionFactory())
+            {
+               HornetQRALogger.LOGGER.warnDifferentConnectionfactory();
+            }
+         }
       }
       else if (spec.isHasBeenUpdated())
       {

@@ -28,8 +28,10 @@ import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 
@@ -505,4 +507,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       session.close();
    }
 
+   @Override
+   public HornetQConnectionFactory getDefaultFactory() throws ResourceException
+   {
+      return ((HornetQResourceAdapter)mcf.getResourceAdapter()).getDefaultHornetQConnectionFactory();
+   }
 }
