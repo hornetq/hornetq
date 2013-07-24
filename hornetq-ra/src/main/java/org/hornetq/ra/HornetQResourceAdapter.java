@@ -201,7 +201,22 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          HornetQRALogger.LOGGER.trace("getXAResources(" + Arrays.toString(specs) + ")");
       }
 
-      throw new ResourceException("Unsupported");
+      if (useAutoRecovery)
+      {
+         // let the TM handle the recovery
+         return null;
+      }
+      else
+      {
+         List<XAResource> xaresources = new ArrayList<XAResource>();
+         for (ActivationSpec spec : specs) {
+            HornetQActivation activation = activations.get(spec);
+            if (activation != null) {
+               xaresources.addAll(activation.getXAResources());
+            }
+         }
+         return xaresources.toArray(new XAResource[xaresources.size()]);
+      }
    }
 
    /**
