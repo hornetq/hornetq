@@ -13,11 +13,14 @@
 
 package org.hornetq.ra;
 
+import org.hornetq.jms.client.HornetQConnectionFactory;
+
 import java.io.Serializable;
 
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
 import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
  * An aggregate interface for the JMS connection factories
@@ -45,4 +48,6 @@ public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory,
 
    /** Connection factory capable of handling XA topics */
    public static final int XA_TOPIC_CONNECTION = 5;
+
+   HornetQConnectionFactory getDefaultFactory() throws ResourceException;
 }
