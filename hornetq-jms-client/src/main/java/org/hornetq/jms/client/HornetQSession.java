@@ -675,9 +675,18 @@ public class HornetQSession implements QueueSession, TopicSession
             String filter;
             if (connection.getClientID() != null)
             {
-               filter =
+               if (connection.isPreconfiguredClientID())
+               {
+                  filter =
+                        HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getClientID() + connection.getUID() +
+                                 "'";
+               }
+               else
+               {
+                  filter =
                         HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getClientID() +
                                  "'";
+               }
             }
             else
             {
