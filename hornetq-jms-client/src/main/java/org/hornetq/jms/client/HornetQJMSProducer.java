@@ -548,10 +548,6 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
-      }
    }
 
    @Override
@@ -564,10 +560,6 @@ public final class HornetQJMSProducer implements JMSProducer
       catch(HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
-      }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
       }
    }
 
@@ -582,10 +574,6 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
-      }
    }
 
    @Override
@@ -598,10 +586,6 @@ public final class HornetQJMSProducer implements JMSProducer
       catch(HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
-      }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
       }
    }
 
@@ -616,10 +600,6 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
-      }
    }
 
    @Override
@@ -632,10 +612,6 @@ public final class HornetQJMSProducer implements JMSProducer
       catch(HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
-      }
-      catch (RuntimeException e)
-      {
-         throw new JMSRuntimeException(e.getMessage());
       }
    }
 
