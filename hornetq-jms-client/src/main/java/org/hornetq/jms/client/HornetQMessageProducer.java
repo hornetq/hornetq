@@ -72,7 +72,22 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       this.jbossConn = jbossConn;
 
-      connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
+      String clientID = jbossConn.getClientID();
+      if (clientID != null)
+      {
+         if (jbossConn.isPreconfiguredClientID())
+         {
+            connID = new SimpleString(clientID + jbossConn.getUID());
+         }
+         else
+         {
+            connID = new SimpleString(clientID);
+         }
+      }
+      else
+      {
+         connID = jbossConn.getUID();
+      }
 
       this.clientProducer = producer;
 

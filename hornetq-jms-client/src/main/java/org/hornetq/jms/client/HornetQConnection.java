@@ -98,6 +98,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    private String clientID;
 
+   private boolean preconfiguredClientID;
+
    private final ClientSessionFactory sessionFactory;
 
    private final SimpleString uid;
@@ -135,6 +137,11 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       this.connectionType = connectionType;
 
       this.clientID = clientID;
+
+      if (this.clientID != null)
+      {
+         this.preconfiguredClientID = true;
+      }
 
       this.sessionFactory = sessionFactory;
 
@@ -810,5 +817,10 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          }
 
       }
+   }
+
+   public boolean isPreconfiguredClientID()
+   {
+      return this.preconfiguredClientID;
    }
 }

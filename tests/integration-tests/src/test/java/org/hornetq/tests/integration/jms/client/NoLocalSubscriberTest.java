@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 import javax.jms.Connection;
@@ -25,6 +28,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
@@ -114,6 +119,108 @@ public class NoLocalSubscriberTest extends JMSTestBase
          received = noLocalConsumer.receive(5000);
          assertNotNull("nolocal consumer did not get message", received);
          assertEquals(text, ((TextMessage)received).getText());
+      }
+      finally
+      {
+         if (defaultConn != null)
+         {
+            defaultConn.close();
+         }
+         if (newConn != null)
+         {
+            newConn.close();
+         }
+      }
+   }
+
+   /**
+    * Create a ConnectionFactory with a preset client ID
+    * and test the functionality of noLocal consumer with it.
+    */
+   @Test
+   public void testNoLocalWithClientIDPreset() throws Exception
+   {
+      if (log.isTraceEnabled())
+      {
+         log.trace("testNoLocal");
+      }
+
+      ConnectionFactory clientIDCF = createCFwithClientID("myClientID");
+
+      final String testName = "testNoLocalWithClientIDPreset()";
+      Connection defaultConn = null;
+      Connection newConn = null;
+      Session newSess = null;
+      MessageConsumer noLocalConsumer = null;
+      MessageConsumer selectConsumer = null;
+      MessageConsumer defaultConsumer = null;
+      MessageProducer newPub = null;
+      TextMessage messageSent = null;
+      TextMessage messageReceived = null;
+      long timeout = 5000;
+
+      try
+      {
+         Topic topic1 = createTopic("topic1");
+         newConn = clientIDCF.createConnection();
+
+         newSess = newConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         noLocalConsumer = newSess.createConsumer(topic1, null, true);
+         selectConsumer  = newSess.createConsumer(topic1,"TEST = 'test'", false);
+         defaultConsumer = newSess.createConsumer(topic1);
+         newPub = newSess.createProducer(topic1);
+
+         defaultConn = clientIDCF.createConnection();
+
+         Session defaultSess = defaultConn.createSession();
+         MessageProducer defaultProd = defaultSess.createProducer(topic1);
+
+         defaultConn.start();
+         newConn.start();
+
+         //Create and send two messages from new connection
+         messageSent = defaultSess.createTextMessage();
+         messageSent.setText("Just a test");
+         messageSent.setStringProperty("COM_SUN_JMS_TESTNAME", testName);
+
+         messageSent.setBooleanProperty("lastMessage", false);
+         newPub.send(messageSent);
+
+         messageSent.setStringProperty("TEST", "test");
+         messageSent.setBooleanProperty("lastMessage", true);
+         newPub.send(messageSent);
+
+         //Verify that noLocalConsumer cannot receive any message
+         messageReceived = (TextMessage)noLocalConsumer.receive(timeout);
+         assertTrue(messageReceived == null);
+
+         //Verify that defaultConsumer received correct messages
+         for (int i = 0; i < 2; i++)
+         {
+             messageReceived = (TextMessage)defaultConsumer.receive(timeout);
+             assertNotNull(messageReceived);
+             assertTrue(messageReceived.getText().equals(messageSent.getText()));
+         }
+
+         // Verify that selectConsumer only receive the last message
+         messageReceived = (TextMessage)selectConsumer.receive(timeout);
+         assertNotNull(messageReceived);
+         assertTrue(messageReceived.getText().equals(messageSent.getText()));
+
+         // send message from default connection
+         messageSent.setBooleanProperty("newConnection", true);
+         defaultProd.send(messageSent);
+
+         //Verify that noLocalConsumer now can receive message from second connection
+         messageReceived = (TextMessage)noLocalConsumer.receive(timeout);
+         assertNotNull(messageReceived);
+         assertTrue(messageReceived.getText().equals(messageSent.getText()));
+
+         noLocalConsumer.close();
+         defaultConsumer.close();
+         selectConsumer.close();
+         
+         newConn.close();
       }
       finally
       {
@@ -265,6 +372,20 @@ public class NoLocalSubscriberTest extends JMSTestBase
 
          originalConnection.close();
       }
+   }
+
+   private ConnectionFactory createCFwithClientID(String clientID) throws Exception
+   {
+
+      List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
+      connectorConfigs.add(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      createCF(connectorConfigs, "/cfWithClientID");
+
+      HornetQConnectionFactory factory = (HornetQConnectionFactory)namingContext.lookup("/cfWithClientID");
+      factory.setClientID(clientID);
+      
+      return factory;
    }
 
 }
