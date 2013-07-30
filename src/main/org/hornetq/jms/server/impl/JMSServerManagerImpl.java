@@ -238,7 +238,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             run.run();
          }
 
-         cachedCommands.clear();
+         // Do not clear cached commands - HORNETQ-1047 
 
          recoverJndiBindings();
       }
@@ -349,7 +349,20 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   // HornetQComponent implementation -----------------------------------
+   public void failback()
+   {
+      try
+      {
+         unbindJNDI();
+         cleanupAdminObjects();
+      }
+      catch (Exception e)
+      {
+         JMSServerManagerImpl.log.error("Failed to clean up jms resources", e);
+      }
+   }
+
+      // HornetQComponent implementation -----------------------------------
 
    public synchronized void start() throws Exception
    {
@@ -406,25 +419,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             storage.stop();
          }
 
-         unbindJNDI(queueJNDI);
+         unbindJNDI();
 
-         unbindJNDI(topicJNDI);
-
-         unbindJNDI(connectionFactoryJNDI);
-
-         for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
-         {
-            shutdownConnectionFactory(connectionFactory);
-         }
-
-         connectionFactories.clear();
-         connectionFactoryJNDI.clear();
-
-         queueJNDI.clear();
-         queues.clear();
-
-         topicJNDI.clear();
-         topics.clear();
+         cleanupAdminObjects();
 
          if (registry != null)
          {
@@ -443,6 +440,32 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
 
       server.stop();
+   }
+
+   private void unbindJNDI()
+   {
+      unbindJNDI(queueJNDI);
+
+      unbindJNDI(topicJNDI);
+
+      unbindJNDI(connectionFactoryJNDI);
+   }
+
+   private void cleanupAdminObjects() throws Exception
+   {
+      for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
+      {
+         shutdownConnectionFactory(connectionFactory);
+      }
+
+      connectionFactories.clear();
+      connectionFactoryJNDI.clear();
+
+      queueJNDI.clear();
+      queues.clear();
+
+      topicJNDI.clear();
+      topics.clear();
    }
 
    public boolean isStarted()

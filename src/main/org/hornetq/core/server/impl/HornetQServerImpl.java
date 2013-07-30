@@ -1365,6 +1365,14 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   private void callFailbackCallbacks()
+   {
+      for (ActivateCallback callback : activateCallbacks)
+      {
+         callback.failback();
+      }
+   }
+
    private void initialiseLogging()
    {
       LogDelegateFactory logDelegateFactory = (LogDelegateFactory)instantiateInstance(configuration.getLogDelegateFactoryClassName());
@@ -1995,6 +2003,7 @@ public class HornetQServerImpl implements HornetQServer
                      {
                         log.debug(HornetQServerImpl.this + "::Stopping live node in favor of failback");
                         stop(true);
+                        callFailbackCallbacks();
                         // We need to wait some time before we start the backup again
                         // otherwise we may eventually start before the live had a chance to get it
                         Thread.sleep(configuration.getFailbackDelay());
