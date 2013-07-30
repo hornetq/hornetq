@@ -86,7 +86,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
    {
       JMSConsumer consumer = context.createConsumer(queue);
       List<InvalidCompletionListener> listeners = new ArrayList<InvalidCompletionListener>();
-      for (int i = 0; i < 4; i++)
+      for (int i = 0; i < 3; i++)
       {
          InvalidCompletionListener cl = new InvalidCompletionListener(context, i);
          listeners.add(cl);
@@ -136,9 +136,6 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
                   break;
                case 2:
                   context.close();
-                  break;
-               case 3:
-                  context.stop();
                   break;
                default:
                   throw new IllegalArgumentException("call code " + call);

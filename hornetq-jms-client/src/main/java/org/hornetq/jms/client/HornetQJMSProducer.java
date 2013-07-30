@@ -95,7 +95,7 @@ public final class HornetQJMSProducer implements JMSProducer
          setProperties(message);
          if (completionListener != null)
          {
-            CompletionListener wrapped = new CompletionListenerWrapper(completionListener, context);
+            CompletionListener wrapped = new CompletionListenerWrapper(completionListener);
             producer.send(destination, message, wrapped);
          }
          else
@@ -749,43 +749,41 @@ public final class HornetQJMSProducer implements JMSProducer
       }
    }
 
-   final static class CompletionListenerWrapper implements CompletionListener
+   final class CompletionListenerWrapper implements CompletionListener
    {
 
       private final CompletionListener wrapped;
-      private final ThreadAwareContext taContext;
 
-      public CompletionListenerWrapper(CompletionListener wrapped, ThreadAwareContext taContext)
+      public CompletionListenerWrapper(CompletionListener wrapped)
       {
          this.wrapped = wrapped;
-         this.taContext = taContext;
       }
 
       @Override
       public void onCompletion(Message message)
       {
-         taContext.setCurrentThread(Thread.currentThread());
+         context.setCurrentThread(true);
          try
          {
             wrapped.onCompletion(message);
          }
          finally
          {
-            taContext.setCurrentThread(null);
+            context.clearCurrentThread(true);
          }
       }
 
       @Override
       public void onException(Message message, Exception exception)
       {
-         taContext.setCurrentThread(Thread.currentThread());
+         context.setCurrentThread(true);
          try
          {
             wrapped.onException(message, exception);
          }
          finally
          {
-            taContext.setCurrentThread(null);
+            context.clearCurrentThread(true);
          }
       }
    }
