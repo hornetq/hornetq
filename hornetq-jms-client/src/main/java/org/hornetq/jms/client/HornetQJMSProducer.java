@@ -492,6 +492,10 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          TypedProperties.setObjectProperty(new SimpleString(name), value, properties);
       }
+      catch (HornetQPropertyConversionException hqe)
+      {
+         throw new MessageFormatRuntimeException(hqe.getMessage());
+      }
       catch (RuntimeException e)
       {
          throw new JMSRuntimeException(e.getMessage());
