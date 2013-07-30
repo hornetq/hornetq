@@ -15,6 +15,7 @@ import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatRuntimeException;
+import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
@@ -22,6 +23,7 @@ import javax.jms.TextMessage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.tests.util.JMSTestBase;
@@ -437,5 +439,117 @@ public class JmsContextTest extends JMSTestBase
          msg.acknowledge();
       }
       Assert.assertNull("no more messages", consumerNoSelect.receiveNoWait());
+   }
+
+   @Test
+   public void testContextStopAndCloseFromMessageListeners() throws Exception
+   {
+      final JMSContext context1 = context.createContext(Session.AUTO_ACKNOWLEDGE);
+      JMSConsumer consumer1 = context1.createConsumer(queue1);
+
+      final CountDownLatch latch1 = new CountDownLatch(1);
+
+      InvalidMessageListener listener1 = new InvalidMessageListener(context1, latch1, 1);
+
+      consumer1.setMessageListener(listener1);
+
+      JMSProducer producer = context1.createProducer();
+      Message msg = context1.createTextMessage("first message");
+      producer.send(queue1, msg);
+
+      latch1.await();
+
+      Throwable error1 = listener1.getError();
+
+      assertNotNull(error1);
+
+      assertTrue(error1 instanceof IllegalStateRuntimeException);
+
+      context1.close();
+
+      final JMSContext context2 = context.createContext(Session.AUTO_ACKNOWLEDGE);
+      JMSConsumer consumer2 = context2.createConsumer(queue1);
+
+      final CountDownLatch latch2 = new CountDownLatch(1);
+
+      InvalidMessageListener listener2 = new InvalidMessageListener(context2, latch2, 2);
+
+      consumer2.setMessageListener(listener2);
+
+      JMSProducer producer2 = context2.createProducer();
+      Message msg2 = context2.createTextMessage("second message");
+      producer2.send(queue1, msg2);
+      
+      latch2.await();
+
+      Throwable error2 = listener2.getError();
+      
+      assertNotNull(error2);
+      
+      assertTrue(error2 instanceof IllegalStateRuntimeException);
+      
+      context2.close();
+   }
+
+   private static class InvalidMessageListener implements MessageListener
+   {
+      private int id;
+      private CountDownLatch latch;
+      private JMSContext context;
+      private volatile Throwable error;
+
+      public InvalidMessageListener(JMSContext context, CountDownLatch latch, int id)
+      {
+         this.id = id;
+         this.latch = latch;
+         this.context = context;
+      }
+
+      public Throwable getError()
+      {
+         return error;
+      }
+
+      @Override
+      public void onMessage(Message arg0)
+      {
+         switch (id)
+         {
+         case 1:
+            stopContext();
+            break;
+         case 2:
+            closeContext();
+            break;
+         default:
+            break;
+         }
+         latch.countDown();
+      }
+
+      private void stopContext()
+      {
+         try
+         {
+            context.stop();
+         }
+         catch (Throwable t)
+         {
+            error = t;
+         }
+      }
+
+      private void closeContext()
+      {
+         try
+         {
+            context.close();
+         }
+         catch (Throwable t)
+         {
+            error = t;
+         }
+      }
+      
    }
 }
