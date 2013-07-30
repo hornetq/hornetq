@@ -14,6 +14,7 @@
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
@@ -40,6 +41,8 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.utils.ConcurrentHashSet;
+
 /**
  * HornetQ implementation of a JMSContext.
  *
@@ -62,6 +65,11 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
     * @see HornetQJMSContext#assertNotMessageListenerThread()
     */
    private Thread completionListenerThread;
+   /**
+    * Use a set because JMSContext can create more than one JMSConsumer
+    * to receive asynchronously from different destinations. 
+    */
+   private Set<Long> messageListenerThreads = new ConcurrentHashSet<Long>();
 
    public HornetQJMSContext(HornetQConnectionForContext connection, int ackMode)
    {
@@ -245,6 +253,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    @Override
    public void close()
    {
+      assertNotCompletionListenerThread();
       assertNotMessageListenerThread();
       try
       {
@@ -388,7 +397,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    @Override
    public void commit()
    {
-      assertNotMessageListenerThread();
+      assertNotCompletionListenerThread();
       checkSession();
       try
       {
@@ -402,7 +411,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    @Override
    public void rollback()
    {
-      assertNotMessageListenerThread();
+      assertNotCompletionListenerThread();
       checkSession();
       try
       {
@@ -695,7 +704,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
     * @see JMSContext#commit()
     * @see JMSContext#rollback()
     */
-   private void assertNotMessageListenerThread()
+   private void assertNotCompletionListenerThread()
    {
       if (completionListenerThread == Thread.currentThread())
       {
@@ -703,9 +712,37 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
       }
    }
 
-   @Override
-   public void setCurrentThread(Thread thread)
+   private void assertNotMessageListenerThread()
    {
-      completionListenerThread = thread;
+      if (messageListenerThreads.contains(Thread.currentThread().getId()))
+      {
+         throw new IllegalStateRuntimeException("Calling own context from MessageListener");
+      }
+   }
+
+   @Override
+   public void setCurrentThread(boolean isCompletionListener)
+   {
+      if (isCompletionListener)
+      {
+         completionListenerThread = Thread.currentThread();
+      }
+      else
+      {
+         messageListenerThreads.add(Thread.currentThread().getId());
+      }
+   }
+
+   @Override
+   public void clearCurrentThread(boolean isCompletionListener)
+   {
+      if (isCompletionListener)
+      {
+         completionListenerThread = null;
+      }
+      else
+      {
+         messageListenerThreads.remove(Thread.currentThread().getId());
+      }
    }
 }

@@ -14,7 +14,6 @@
 package org.hornetq.jms.client;
 
 import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
@@ -27,10 +26,10 @@ import javax.jms.MessageListener;
 public class HornetQJMSConsumer implements JMSConsumer
 {
 
-   private final JMSContext context;
+   private final HornetQJMSContext context;
    private final MessageConsumer consumer;
 
-   HornetQJMSConsumer(JMSContext context, MessageConsumer consumer)
+   HornetQJMSConsumer(HornetQJMSContext context, MessageConsumer consumer)
    {
       this.context = context;
       this.consumer = consumer;
@@ -65,7 +64,7 @@ public class HornetQJMSConsumer implements JMSConsumer
    {
       try
       {
-         consumer.setMessageListener(listener);
+         consumer.setMessageListener(new MessageListenerWrapper(listener));
       } catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
@@ -159,6 +158,30 @@ public class HornetQJMSConsumer implements JMSConsumer
       catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
+      }
+   }
+
+   final class MessageListenerWrapper implements MessageListener
+   {
+      private final MessageListener wrapped;
+
+      public MessageListenerWrapper(MessageListener wrapped)
+      {
+         this.wrapped = wrapped;
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         context.setCurrentThread(false);
+         try
+         {
+            wrapped.onMessage(message);
+         }
+         finally
+         {
+            context.clearCurrentThread(false);
+         }
       }
    }
 }

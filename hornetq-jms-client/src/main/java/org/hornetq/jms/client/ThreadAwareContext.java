@@ -7,11 +7,21 @@ interface ThreadAwareContext
 {
 
    /**
-    * Sets a thread.
+    * Sets current thread to the context
     * <p>
     * Meant to inform an JMSContext which is the thread that CANNOT call some of its methods.
-    * @param thread
+    * </p>
+    * @param isCompletionListener : indicating whether current thread is from CompletionListener
+    * or from MessageListener.
     */
-   public void setCurrentThread(Thread thread);
+   void setCurrentThread(boolean isCompletionListener);
+
+   /**
+    * Clear current thread from the context
+    * 
+    * @param isCompletionListener : indicating whether current thread is from CompletionListener
+    * or from MessageListener.
+    */
+   void clearCurrentThread(boolean isCompletionListener);
 
 }
