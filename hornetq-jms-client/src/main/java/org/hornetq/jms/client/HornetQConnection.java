@@ -195,7 +195,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    {
       checkClosed();
 
-      return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return createSessionInternal(false, transacted, checkAck(transacted, acknowledgeMode), HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -429,10 +429,23 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
     // QueueConnection implementation ---------------------------------------------------------------
 
-   public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   public QueueSession createQueueSession(final boolean transacted, int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(false, transacted, acknowledgeMode, HornetQSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(false, transacted, checkAck(transacted, acknowledgeMode), HornetQSession.TYPE_QUEUE_SESSION);
+   }
+
+   /**
+    * I'm keeping this as static as the same check will be done within RA.
+    * This is to conform with TCK Tests where we must return ackMode exactly as they want if transacted=false */
+   public static int checkAck(boolean transacted, int acknowledgeMode)
+   {
+      if (!transacted && acknowledgeMode == Session.SESSION_TRANSACTED)
+      {
+         return Session.AUTO_ACKNOWLEDGE;
+      }
+
+      return acknowledgeMode;
    }
 
    public ConnectionConsumer
@@ -449,7 +462,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(false, transacted, acknowledgeMode, HornetQSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(false, transacted, checkAck(transacted, acknowledgeMode), HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer
@@ -464,13 +477,13 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    @Override
    public ConnectionConsumer createSharedConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+      return null; // we offer RA
    }
 
    @Override
    public ConnectionConsumer createSharedDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+      return null; // we offer RA
    }
 
     // Public ---------------------------------------------------------------------------------------

@@ -38,6 +38,7 @@ import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
 
+import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionForContext;
 import org.hornetq.jms.client.HornetQConnectionForContextImpl;
 
@@ -234,7 +235,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          throw new IllegalStateException("Can not get a queue session from a topic connection");
       }
 
-      return allocateConnection(transacted, acknowledgeMode, type);
+      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
    }
 
    /**
@@ -310,7 +311,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
 
-      return allocateConnection(transacted, acknowledgeMode, type);
+      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
    }
 
    /**
@@ -470,7 +471,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       }
 
       checkClosed();
-      return allocateConnection(transacted, acknowledgeMode, type);
+      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
    }
 
    /**
