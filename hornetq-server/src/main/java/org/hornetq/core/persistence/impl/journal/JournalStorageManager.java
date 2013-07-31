@@ -2299,7 +2299,18 @@ public class JournalStorageManager implements StorageManager
 
       if (replicator != null)
       {
-         replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
+         final OperationContext token = replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
+         if (token != null)
+         {
+            try
+            {
+               token.waitCompletion(5000);
+            }
+            catch (Exception e)
+            {
+               // ignore it
+            }
+         }
          replicator.stop();
       }
       bindingsJournal.stop();

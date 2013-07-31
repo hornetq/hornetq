@@ -16,14 +16,22 @@ public final class ReplicationLiveIsStoppingMessage extends PacketImpl
 
    public enum LiveStopping
    {
-      STOP_CALLED(0), FAIL_OVER(1);
+      /**
+       * Notifies the backup that its live is going to stop. The backup will then NOT fail-over if
+       * it gets signals from the cluster that its live sent a disconnect.
+       */
+      STOP_CALLED(0),
+      /**
+       * Orders the backup to fail-over immediately. Meant as a follow-up message to
+       * {@link #STOP_CALLED}.
+       */
+      FAIL_OVER(1);
       private final int code;
 
       private LiveStopping(int code)
       {
          this.code = code;
       }
-
    }
 
    private int finalMessage;
