@@ -447,4 +447,51 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       assertEquals(JMSContext.DUPS_OK_ACKNOWLEDGE, jmsctx.getSessionMode());
 
    }
+
+   @Test
+   public void testQueuSessionAckMode() throws Exception
+   {
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass("");
+      resourceAdapter.setTransactionManagerLocatorMethod("");
+
+      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+      QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
+
+      Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      assertEquals(Session.AUTO_ACKNOWLEDGE, s.getAcknowledgeMode());
+      s.close();
+
+      s = queueConnection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      assertEquals(Session.DUPS_OK_ACKNOWLEDGE, s.getAcknowledgeMode());
+      s.close();
+
+      //exception should be thrown if ack mode is SESSION_TRANSACTED or
+      //CLIENT_ACKNOWLEDGE
+      try
+      {
+         s = queueConnection.createSession(false, Session.SESSION_TRANSACTED);
+         fail("didn't get expected exception creating session with SESSION_TRANSACTED mode");
+      }
+      catch (JMSException e)
+      {
+         //expected.
+      }
+      
+      try
+      {
+         s = queueConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         fail("didn't get expected exception creating session with CLIENT_ACKNOWLEDGE mode");
+      }
+      catch (JMSException e)
+      {
+         //expected.
+      }
+      
+   }
 }
