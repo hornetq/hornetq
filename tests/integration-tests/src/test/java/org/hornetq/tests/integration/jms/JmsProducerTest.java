@@ -3,11 +3,13 @@
  */
 package org.hornetq.tests.integration.jms;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
+import javax.jms.MessageFormatRuntimeException;
 
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
@@ -54,6 +56,17 @@ public class JmsProducerTest extends JMSTestBase
       String id = "ID: jms2-tests-correlation-id" + random.nextLong();
       producer.setJMSCorrelationID(id);
       Assert.assertEquals(id, producer.getJMSCorrelationID());
+
+      //set a property of an invalid type (ArrayList)
+      try
+      {
+         producer.setProperty("name1", new ArrayList<String>(2));
+         fail("didn't get expected MessageFormatRuntimeException");
+      }
+      catch (MessageFormatRuntimeException e)
+      {
+         //expected.
+      }
    }
 
    @Test
