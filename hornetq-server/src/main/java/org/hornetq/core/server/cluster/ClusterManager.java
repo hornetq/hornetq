@@ -574,6 +574,7 @@ public final class ClusterManager implements HornetQComponent
       serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
+      serverLocator.setConnectionTTL(config.getConnectionTTL());
       serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setMinLargeMessageSize(config.getMinLargeMessageSize());
