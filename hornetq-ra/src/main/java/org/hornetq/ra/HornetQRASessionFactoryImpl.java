@@ -793,6 +793,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
             {
                acknowledgeMode = Session.SESSION_TRANSACTED;
             }
+            else
+            {
+               if (acknowledgeMode == Session.SESSION_TRANSACTED || acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
+               {
+                  throw new JMSException("Trying to create a non-transactioned session with a transacted ack mode.");
+               }
+            }
 
             HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(transacted,
                                                                                      acknowledgeMode,
