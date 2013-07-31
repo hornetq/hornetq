@@ -356,15 +356,15 @@ public final class ReplicationManager implements HornetQComponent
 
    }
 
-   private void sendReplicatePacket(final Packet packet)
+   private OperationContext sendReplicatePacket(final Packet packet)
    {
-      sendReplicatePacket(packet, true);
+      return sendReplicatePacket(packet, true);
    }
 
-   private void sendReplicatePacket(final Packet packet, boolean lineUp)
+   private OperationContext sendReplicatePacket(final Packet packet, boolean lineUp)
    {
       if (!enabled)
-         return;
+         return null;
       boolean runItNow = false;
 
       OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
@@ -393,6 +393,8 @@ public final class ReplicationManager implements HornetQComponent
       {
          repliToken.replicationDone();
       }
+
+      return repliToken;
    }
 
    /**
@@ -648,11 +650,17 @@ public final class ReplicationManager implements HornetQComponent
     * <p>
     * This notification allows the backup to skip quorum voting (or any other measure to avoid
     * 'split-brain') and do a faster fail-over.
+    * @return
     */
-   public void sendLiveIsStopping(final LiveStopping finalMessage)
+   public OperationContext sendLiveIsStopping(final LiveStopping finalMessage)
    {
+      HornetQServerLogger.LOGGER.warn("LIVE IS STOPPING?!? message=" + finalMessage + " enabled=" + enabled);
       if (enabled)
-         sendReplicatePacket(new ReplicationLiveIsStoppingMessage(finalMessage));
+      {
+         HornetQServerLogger.LOGGER.warn("LIVE IS STOPPING?!? message=" + finalMessage + " " + enabled);
+         return sendReplicatePacket(new ReplicationLiveIsStoppingMessage(finalMessage));
+      }
+      return null;
    }
 
    /**
