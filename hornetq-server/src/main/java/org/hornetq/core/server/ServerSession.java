@@ -77,6 +77,8 @@ public interface ServerSession
 
    void xaStart(Xid xid) throws Exception;
 
+   void xaFailed(Xid xid) throws Exception;
+
    void xaSuspend() throws Exception;
 
    List<Xid> xaGetInDoubtXids();
