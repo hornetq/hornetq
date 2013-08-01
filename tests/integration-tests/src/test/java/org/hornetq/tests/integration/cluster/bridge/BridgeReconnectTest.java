@@ -264,7 +264,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                      HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                      HornetQClient.DEFAULT_CONNECTION_TTL, retryInterval,
                                      HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, retryIntervalMultiplier,
-                                     reconnectAttempts, true, confirmationWindowSize, staticConnectors, false,
+                                     reconnectAttempts, 0, true, confirmationWindowSize, staticConnectors, false,
                                      HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD);
    }
 
@@ -439,7 +439,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long clientFailureCheckPeriod = 1000;
 
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
- queueName,
+                                                                        queueName,
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
@@ -450,12 +450,13 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
+                                                                        0,
                                                                         true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
                                                                         HornetQDefaultConfiguration.getDefaultClusterUser(),
- CLUSTER_PASSWORD);
+                                                                        CLUSTER_PASSWORD);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
@@ -470,60 +471,60 @@ public class BridgeReconnectTest extends BridgeTestBase
       List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-         startServers();
+      startServers();
 
-         waitForServerStart(server0);
-         waitForServerStart(server1);
+      waitForServerStart(server0);
+      waitForServerStart(server1);
 
-         locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
-         ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
+      locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
+      ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
       session0 = csf0.createSession(false, true, true);
 
-         ClientProducer prod0 = session0.createProducer(testAddress);
+      ClientProducer prod0 = session0.createProducer(testAddress);
 
-         BridgeReconnectTest.log.info("stopping server1");
-         server1.stop();
+      BridgeReconnectTest.log.info("stopping server1");
+      server1.stop();
 
-         if (sleep)
-         {
-            Thread.sleep(2 * clientFailureCheckPeriod);
-         }
+      if (sleep)
+      {
+         Thread.sleep(2 * clientFailureCheckPeriod);
+      }
 
-         BridgeReconnectTest.log.info("restarting server1");
-         server1.start();
-         BridgeReconnectTest.log.info("server 1 restarted");
+      BridgeReconnectTest.log.info("restarting server1");
+      server1.start();
+      BridgeReconnectTest.log.info("server 1 restarted");
 
-         ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
+      ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
       session1 = csf1.createSession(false, true, true);
 
       ClientConsumer cons1 = session1.createConsumer(queueName);
 
-         session1.start();
+      session1.start();
 
-         final int numMessages = NUM_MESSAGES;
+      final int numMessages = NUM_MESSAGES;
 
-         SimpleString propKey = new SimpleString("propkey");
+      SimpleString propKey = new SimpleString("propkey");
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = session0.createMessage(false);
-            message.putIntProperty(propKey, i);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createMessage(false);
+         message.putIntProperty(propKey, i);
 
-            prod0.send(message);
-         }
+         prod0.send(message);
+      }
 
-         BridgeReconnectTest.log.info("sent messages");
+      BridgeReconnectTest.log.info("sent messages");
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage r1 = cons1.receive(30000);
-            Assert.assertNotNull("received expected msg", r1);
-            Assert.assertEquals("property value matches", i, r1.getObjectProperty(propKey));
-            BridgeReconnectTest.log.info("got message " + r1.getObjectProperty(propKey));
-         }
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(30000);
+         Assert.assertNotNull("received expected msg", r1);
+         Assert.assertEquals("property value matches", i, r1.getObjectProperty(propKey));
+         BridgeReconnectTest.log.info("got message " + r1.getObjectProperty(propKey));
+      }
 
-         BridgeReconnectTest.log.info("got messages");
-         closeServers();
+      BridgeReconnectTest.log.info("got messages");
+      closeServers();
       assertNoMoreConnections();
    }
 

@@ -421,6 +421,11 @@ public final class HornetQDefaultConfiguration
       return PROP_PASSWORD_CODEC;
    }
 
+   public static int getDefaultBridgeConnectSameNode()
+   {
+       return DEFAULT_BRIDGE_CONNECT_SAME_NODE;
+   }
+
    //shared by client and core/server
    private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
 
@@ -506,6 +511,7 @@ public final class HornetQDefaultConfiguration
    private static boolean DEFAULT_DIVERT_EXCLUSIVE = false;
    private static boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
    private static int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
+   private static int DEFAULT_BRIDGE_CONNECT_SAME_NODE = 10;
    private static long DEFAULT_SERVER_DUMP_INTERVAL = -1;
    private static boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
    private static int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;

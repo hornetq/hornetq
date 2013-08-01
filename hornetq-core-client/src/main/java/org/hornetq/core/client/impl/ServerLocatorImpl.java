@@ -534,6 +534,17 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       this(topology, useHA, null, transportConfigs);
    }
 
+   public void resetToInitialConnectors()
+   {
+      synchronized (topologyArrayGuard)
+      {
+         receivedTopology = false;
+         topologyArray = null;
+         topology.clear();
+      }
+   }
+
+
    private synchronized TransportConfiguration selectConnector()
    {
       Pair<TransportConfiguration, TransportConfiguration>[] usedTopology;

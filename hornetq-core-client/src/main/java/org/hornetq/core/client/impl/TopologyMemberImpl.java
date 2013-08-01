@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -94,6 +95,29 @@ public final class TopologyMemberImpl implements TopologyMember
    {
       return connector;
    }
+
+
+   public boolean isMember(RemotingConnection connection)
+   {
+      TransportConfiguration connectorConfig = connection.getTransportConnection() != null ? connection.getTransportConnection().getConnectorConfig(): null;
+
+      return isMember(connectorConfig);
+
+   }
+
+   public boolean isMember(TransportConfiguration configuration)
+   {
+      if (getConnector().getA() != null && getConnector().getA().equals(configuration) ||
+          getConnector().getB() != null && getConnector().getB().equals(configuration))
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
 
    @Override
    public String toString()

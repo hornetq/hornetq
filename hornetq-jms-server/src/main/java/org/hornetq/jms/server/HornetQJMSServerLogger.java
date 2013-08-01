@@ -152,7 +152,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverAutoConnectionError(@Cause Throwable e, XARecoveryConfig csf);
 
-   @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.DEBUG)
    @Message(id = 122016, value = "Error in XA Recovery" , format = Message.Format.MESSAGE_FORMAT)
    void xaRecoveryError(@Cause Exception e);
 

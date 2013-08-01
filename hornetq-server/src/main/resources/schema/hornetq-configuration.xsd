@@ -1010,6 +1010,13 @@
         </xsd:annotation>
       </xsd:element>
 
+      <xsd:element name="reconnect-attempts-same-node" type="xsd:int" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(int, 10)"  hq:field_name="DEFAULT_BRIDGE_CONNECT_SAME_NODE">
+          <xsd:documentation>Upon reconnection this configures the number of time the same node on the topology will
+                              be retried before reseting the server locator and using the initial connectors</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
       <xsd:choice>
         <xsd:element name="static-connectors" maxOccurs="1" minOccurs="1">
           <xsd:complexType>

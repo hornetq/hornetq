@@ -68,8 +68,6 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    private final SimpleString idsHeaderName;
 
-   private final String targetNodeID;
-
    private final long targetNodeEventUID;
 
    private final ServerLocatorInternal discoveryLocator;
@@ -103,6 +101,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    {
       super(targetLocator,
             reconnectAttempts,
+            0, // reconnectAttemptsOnSameNode means nothing on the clustering bridge since we always try the same
             retryInterval,
             retryMultiplier,
             maxRetryInterval,
@@ -337,5 +336,10 @@ public class ClusterConnectionBridge extends BridgeImpl
          discoveryLocator.notifyNodeDown(System.currentTimeMillis(), targetNodeID);
       }
 
+   }
+
+   protected boolean isPlainCoreBridge()
+   {
+      return false;
    }
 }

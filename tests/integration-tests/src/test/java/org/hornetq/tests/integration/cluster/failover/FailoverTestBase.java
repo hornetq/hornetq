@@ -105,7 +105,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       if (backupServer != null)
       {
-         backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServer");
+         backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
          if (startBackupServer)
          {
           backupServer.start();
