@@ -257,7 +257,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             run.run();
          }
 
-         cachedCommands.clear();
+         // do not clear the cachedCommands - HORNETQ-1047
 
          recoverJndiBindings();
       }
