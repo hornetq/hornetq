@@ -150,6 +150,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                              HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                              RandomUtil.randomDouble(),
                                              RandomUtil.randomPositiveInt(),
+                                             RandomUtil.randomPositiveInt(),
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
                                              connectors,

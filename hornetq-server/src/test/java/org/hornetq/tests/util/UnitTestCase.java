@@ -1848,6 +1848,52 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
    }
 
+   public static void crashAndWaitForFailure(HornetQServer server, ClientSession ...sessions) throws Exception
+    {
+       CountDownLatch latch = new CountDownLatch(sessions.length);
+       for (ClientSession session : sessions)
+       {
+          CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
+          session.addFailureListener(listener);
+       }
+
+       ClusterManager clusterManager = server.getClusterManager();
+       clusterManager.flushExecutor();
+       clusterManager.clear();
+       Assert.assertTrue("server should be running!", server.isStarted());
+       server.stop(true);
+
+       if (sessions.length > 0)
+       {
+          // Wait to be informed of failure
+          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
+          Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
+                   sessions.length, ok);
+       }
+    }
+
+   public static void crashAndWaitForFailure(HornetQServer server, ServerLocator locator) throws Exception
+    {
+       ClientSessionFactory sf = locator.createSessionFactory();
+       ClientSession session = sf.createSession();
+       try
+       {
+          crashAndWaitForFailure(server, session);
+       }
+       finally
+       {
+          try
+          {
+             session.close();
+             sf.close();
+          }
+          catch (Exception ignored)
+          {
+          }
+       }
+    }
+
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

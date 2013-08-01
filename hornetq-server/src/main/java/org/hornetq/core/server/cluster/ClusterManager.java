@@ -466,14 +466,14 @@ public final class ClusterManager implements HornetQComponent
 
       if (config.getQueueName() == null)
       {
-         HornetQServerLogger.LOGGER.bridgeNoQueue();
+         HornetQServerLogger.LOGGER.bridgeNoQueue(config.getName());
 
          return;
       }
 
       if (config.getForwardingAddress() == null)
       {
-         HornetQServerLogger.LOGGER.bridgeNoForwardAddress();
+         HornetQServerLogger.LOGGER.bridgeNoForwardAddress(config.getName());
       }
 
       if (bridges.containsKey(config.getName()))
@@ -489,7 +489,7 @@ public final class ClusterManager implements HornetQComponent
 
       if (binding == null)
       {
-         HornetQServerLogger.LOGGER.bridgeNoQueue(config.getQueueName());
+         HornetQServerLogger.LOGGER.bridgeQueueNotFound(config.getQueueName(), config.getName());
 
          return;
       }
@@ -525,6 +525,7 @@ public final class ClusterManager implements HornetQComponent
 
          if (tcConfigs == null)
          {
+            HornetQServerLogger.LOGGER.bridgeCantFindConnectors(config.getName());
             return;
          }
 
@@ -562,11 +563,13 @@ public final class ClusterManager implements HornetQComponent
             }
          }
       }
+
+      serverLocator.setIdentity("Bridge " + config.getName());
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
 
       // We are going to manually retry on the bridge in case of failure
       serverLocator.setReconnectAttempts(0);
-      serverLocator.setInitialConnectAttempts(-1);
+      serverLocator.setInitialConnectAttempts(0);
       serverLocator.setRetryInterval(config.getRetryInterval());
       serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
@@ -592,6 +595,7 @@ public final class ClusterManager implements HornetQComponent
 
       Bridge bridge = new BridgeImpl(serverLocator,
                                      config.getReconnectAttempts(),
+                                     config.getReconnectAttemptsOnSameNode(),
                                      config.getRetryInterval(),
                                      config.getRetryIntervalMultiplier(),
                                      config.getMaxRetryInterval(),
