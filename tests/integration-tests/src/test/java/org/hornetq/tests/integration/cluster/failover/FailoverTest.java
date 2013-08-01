@@ -1186,6 +1186,47 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
    }
 
+   //start a tx but sending messages after crash
+   public void testXAMessagesSentSoRollbackOnEnd2() throws Exception
+   {
+      createSessionFactory();
+
+      ClientSession session = createSession(sf, true, false, false);
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      crash(session);
+
+      // sendMessagesSomeDurable(session, producer);
+
+      producer.send(createMessage(session, 1, true));
+
+      try
+      {
+         session.end(xid, XAResource.TMSUCCESS);
+
+         Assert.fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+//         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
+      }
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+
+      session.start();
+
+      ClientMessage message = consumer.receiveImmediate();
+
+      Assert.assertNull(message);
+   }
+
    public void testXAMessagesSentSoRollbackOnPrepare() throws Exception
    {
       createSessionFactory();
@@ -1352,6 +1393,50 @@ public class FailoverTest extends FailoverTestBase
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
+   }
+
+   public void testXAMessagesConsumedSoRollbackOnEnd2() throws Exception
+   {
+      createSessionFactory();
+
+      ClientSession session1 = createSessionAndQueue();
+
+      ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         // some are durable, some are not!
+         producer.send(createMessage(session1, i, true));
+      }
+
+      session1.commit();
+
+      ClientSession session2 = createSession(sf, true, false, false);
+
+      ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
+
+      session2.start();
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session2.start(xid, XAResource.TMNOFLAGS);
+
+      crash(session2);
+
+      receiveMessages(consumer);
+
+      try
+      {
+         session2.end(xid, XAResource.TMSUCCESS);
+
+         Assert.fail("Should throw exception");
+      }
+      catch (XAException e)
+      {
+      }
+
+      // Since the end was not accepted, the messages should be redelivered
+      receiveMessages(consumer);
    }
 
    public void testXAMessagesConsumedSoRollbackOnPrepare() throws Exception
