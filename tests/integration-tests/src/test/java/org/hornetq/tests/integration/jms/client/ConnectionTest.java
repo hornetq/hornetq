@@ -15,7 +15,11 @@ package org.hornetq.tests.integration.jms.client;
 
 import javax.jms.Connection;
 import javax.jms.InvalidClientIDException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
 import javax.jms.Session;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
@@ -60,6 +64,31 @@ public class ConnectionTest extends JMSTestBase
       conn.getClientID();
 
       conn.setClientID("somethingElse");
+   }
+
+   @Test
+   public void testTXTypeInvalid() throws Exception
+   {
+      conn = cf.createConnection();
+
+      Session sess = conn.createSession(false, Session.SESSION_TRANSACTED);
+
+      assertEquals(Session.AUTO_ACKNOWLEDGE, sess.getAcknowledgeMode());
+
+      sess.close();
+
+      TopicSession tpSess = ((TopicConnection)conn).createTopicSession(false, Session.SESSION_TRANSACTED);
+
+      assertEquals(Session.AUTO_ACKNOWLEDGE, tpSess.getAcknowledgeMode());
+
+      tpSess.close();
+
+      QueueSession qSess = ((QueueConnection)conn).createQueueSession(false, Session.SESSION_TRANSACTED);
+
+      assertEquals(Session.AUTO_ACKNOWLEDGE, qSess.getAcknowledgeMode());
+
+      qSess.close();
+
    }
 
    @Test
