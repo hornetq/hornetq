@@ -38,5 +38,10 @@ public interface OperationContext extends IOCompletion
 
    void waitCompletion() throws Exception;
 
+   /**
+    * @param timeout in milliseconds
+    * @return
+    * @throws Exception
+    */
    boolean waitCompletion(long timeout) throws Exception;
 }

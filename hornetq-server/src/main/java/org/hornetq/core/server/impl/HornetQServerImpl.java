@@ -2941,6 +2941,8 @@ public class HornetQServerImpl implements HornetQServer
     */
    public void remoteFailOver(ReplicationLiveIsStoppingMessage.LiveStopping finalMessage) throws HornetQException
    {
+      HornetQServerLogger.LOGGER.trace("Remote fail-over, got message=" + finalMessage + ", backupUpToDate=" +
+               backupUpToDate);
       if (!configuration.isBackup() || configuration.isSharedStore())
       {
          throw new HornetQInternalErrorException();
