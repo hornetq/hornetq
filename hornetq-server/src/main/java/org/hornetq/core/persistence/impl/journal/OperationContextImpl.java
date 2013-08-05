@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.impl.SimpleWaitIOCallback;
@@ -312,7 +313,7 @@ public class OperationContextImpl implements OperationContext
    }
 
    @Override
-   public boolean waitCompletion(final long timeout) throws Exception
+   public boolean waitCompletion(final long timeout) throws InterruptedException, HornetQException
    {
       SimpleWaitIOCallback waitCallback = new SimpleWaitIOCallback();
       executeOnCompletion(waitCallback);
