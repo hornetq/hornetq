@@ -496,9 +496,9 @@ public class JmsContextTest extends JMSTestBase
    public void recoverAckTest() throws Exception
    {
       // Create JMSContext with CLIENT_ACKNOWLEDGE
-      context = cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
 
-      try
+
+      try (JMSContext context = cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE))
       {
          int numMessages = 10;
 
@@ -533,19 +533,20 @@ public class JmsContextTest extends JMSTestBase
          for (int i = 0; i < numMessages; i++)
          {
             textMessage = (TextMessage) consumer.receive(5000);
-
             assertNotNull(textMessage);
          }
 
          // Acknowledge all messages
          context.acknowledge();
+      }
 
-         textMessage = (TextMessage) consumer.receiveNoWait();
-
-         assertNull(textMessage);
-      } finally
+      // doing this check with another context / consumer to make sure it was acked.
+      try (JMSContext context = cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE))
       {
-         context.close();
+         // Create JMSConsumer from JMSContext
+         JMSConsumer consumer = context.createConsumer(queue1);
+
+         assertNull(consumer.receiveNoWait());
       }
    }
 
