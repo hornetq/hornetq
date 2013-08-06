@@ -15,6 +15,7 @@ package org.hornetq.jms.client;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
@@ -41,7 +42,6 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.utils.ConcurrentHashSet;
 
 /**
@@ -53,6 +53,11 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
 {
    private static final boolean DEFAULT_AUTO_START = true;
    private final int sessionMode;
+
+   /**
+    * Client ACK needs to hold last acked messages, so context.ack calls will be respected.
+    */
+   private volatile Message lastMessagesWaitingAck;
 
    private final HornetQConnectionForContext connection;
    private HornetQSession session;
@@ -66,24 +71,28 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
     * @see HornetQJMSContext#assertNotMessageListenerThread()
     */
    private Thread completionListenerThread;
+
    /**
     * Use a set because JMSContext can create more than one JMSConsumer
     * to receive asynchronously from different destinations. 
     */
    private Set<Long> messageListenerThreads = new ConcurrentHashSet<Long>();
 
-   public HornetQJMSContext(HornetQConnectionForContext connection, int ackMode)
+   private HornetQJMSContext(final HornetQConnectionForContext connection, final int ackMode, final boolean xa)
    {
       this.connection = connection;
       this.sessionMode = ackMode;
-      this.xa = false;
+      this.xa = xa;
+   }
+
+   public HornetQJMSContext(HornetQConnectionForContext connection, int ackMode)
+   {
+      this(connection, ackMode, false);
    }
 
    public HornetQJMSContext(HornetQConnectionForContext connection)
    {
-      this.connection = connection;
-      this.sessionMode = SESSION_TRANSACTED;
-      this.xa = true;
+      this(connection, SESSION_TRANSACTED, true);
    }
 
    // XAJMSContext implementation -------------------------------------
@@ -674,9 +683,10 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
          throw new IllegalStateRuntimeException("Context is closed");
       try
       {
-         if (sessionMode == Session.AUTO_ACKNOWLEDGE || sessionMode == Session.DUPS_OK_ACKNOWLEDGE)
-            return;
-         session.ackAllConsumers();
+         if (lastMessagesWaitingAck != null)
+         {
+            lastMessagesWaitingAck.acknowledge();
+         }
       }
       catch (JMSException e)
       {
@@ -746,4 +756,15 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
          messageListenerThreads.remove(Thread.currentThread().getId());
       }
    }
+
+   /** this is to ensure Context.acknowledge would work on ClientACK */
+   Message setLastMessage(final JMSConsumer consumer, final Message lastMessageReceived)
+   {
+      if (sessionMode == CLIENT_ACKNOWLEDGE)
+      {
+         lastMessagesWaitingAck = lastMessageReceived;
+      }
+      return lastMessageReceived;
+   }
+
 }
