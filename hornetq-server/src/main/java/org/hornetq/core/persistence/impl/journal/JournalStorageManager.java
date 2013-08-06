@@ -2297,7 +2297,12 @@ public class JournalStorageManager implements StorageManager
 
       latch.await(30, TimeUnit.SECONDS);
 
-      if (replicator != null)
+
+      // We cache the variable as the replicator could be changed between here and the time we call stop
+      // since sendLiveIsStoping my issue a close back from the channel
+      // and we want to ensure a stop here just in case
+      ReplicationManager replicatorInUse = replicator;
+      if (replicatorInUse != null)
       {
          final OperationContext token = replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
          if (token != null)
@@ -2311,7 +2316,7 @@ public class JournalStorageManager implements StorageManager
                // ignore it
             }
          }
-         replicator.stop();
+         replicatorInUse.stop();
       }
       bindingsJournal.stop();
 
