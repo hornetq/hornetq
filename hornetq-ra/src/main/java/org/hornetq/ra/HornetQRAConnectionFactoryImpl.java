@@ -498,7 +498,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public XAJMSContext createXAContext(String userName, String password)
    {
-      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
+      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.XA_CONNECTION);
       conn.setUserName(userName);
       conn.setPassword(password);
       try
