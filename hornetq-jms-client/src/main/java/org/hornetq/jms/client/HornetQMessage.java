@@ -1119,25 +1119,9 @@ public class HornetQMessage implements javax.jms.Message
          throw new JMSRuntimeException("The property name '" + name + "' is reserved due to selector syntax.");
       }
 
-      if (name.startsWith("JMS"))
+      if (name.startsWith("JMS_HORNETQ"))
       {
-         if (name.length() > 3)
-         {
-            char c = name.charAt(3);
-            if (c != 'X' && c != '_')
-            {
-               // See http://java.sun.com/javaee/5/docs/api/
-               // (java.jms.Message javadoc)
-               // "Property names must obey the rules for a message selector identifier"
-               // "Any name that does not begin with 'JMS' is an application-specific property name"
-               throw new JMSRuntimeException("The property name '" + name +
-                                                  "' is illegal since it starts with JMS");
-            }
-         }
-         else
-         {
-            throw new JMSRuntimeException("The property name '" + name + "' is illegal since it starts with JMS");
-         }
+         throw new JMSRuntimeException("The property name '" + name + "' is illegal since it starts with JMS_HORNETQ");
       }
    }
 

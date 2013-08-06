@@ -829,6 +829,14 @@ public class HornetQSession implements QueueSession, TopicSession
    public void ackAllConsumers() throws JMSException
    {
       checkClosed();
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         throw JMSExceptionHelper.convertFromHornetQException(e);
+      }
    }
 
    public QueueBrowser createBrowser(final Queue queue) throws JMSException
