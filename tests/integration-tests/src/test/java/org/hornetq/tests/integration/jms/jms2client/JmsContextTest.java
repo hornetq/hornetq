@@ -491,6 +491,63 @@ public class JmsContextTest extends JMSTestBase
       context2.close();
    }
 
+   @Test
+   public void recoverAckTest() throws Exception
+   {
+      // Create JMSContext with CLIENT_ACKNOWLEDGE
+      context = cf.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
+
+      try
+      {
+         int numMessages = 10;
+
+         TextMessage textMessage = null;
+
+
+         // Create JMSConsumer from JMSContext
+         JMSConsumer consumer = context.createConsumer(queue1);
+
+         // Create JMSProducer from JMSContext
+         JMSProducer producer = context.createProducer();
+
+         // send messages
+         for (int i = 0; i < numMessages; i++)
+         {
+            String message = "text message " + i;
+            textMessage = context.createTextMessage(message);
+            textMessage.setStringProperty("COM_SUN_JMS_TESTNAME", "recoverAckTest" + i);
+            producer.send(queue1, textMessage);
+         }
+
+         // receive messages but do not acknowledge
+         for (int i = 0; i < numMessages; i++)
+         {
+            textMessage = (TextMessage) consumer.receive(5000);
+            assertNotNull(textMessage);
+         }
+
+         context.recover();
+
+         // receive messages a second time followed by acknowledge
+         for (int i = 0; i < numMessages; i++)
+         {
+            textMessage = (TextMessage) consumer.receive(5000);
+
+            assertNotNull(textMessage);
+         }
+
+         // Acknowledge all messages
+         context.acknowledge();
+
+         textMessage = (TextMessage) consumer.receiveNoWait();
+
+         assertNull(textMessage);
+      } finally
+      {
+         context.close();
+      }
+   }
+
    private static class InvalidMessageListener implements MessageListener
    {
       private int id;

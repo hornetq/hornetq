@@ -41,6 +41,7 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.utils.ConcurrentHashSet;
 
 /**
@@ -54,7 +55,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    private final int sessionMode;
 
    private final HornetQConnectionForContext connection;
-   private Session session;
+   private HornetQSession session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
    private boolean xa;
    private boolean closed;
@@ -136,11 +137,11 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
                {
                   if(xa)
                   {
-                     session = ((XAConnection)connection).createXASession();
+                     session = (HornetQSession) ((XAConnection)connection).createXASession();
                   }
                   else
                   {
-                     session = connection.createSession(sessionMode);
+                     session = (HornetQSession) connection.createSession(sessionMode);
                   }
                }
                catch (JMSException e)
@@ -675,7 +676,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
       {
          if (sessionMode == Session.AUTO_ACKNOWLEDGE || sessionMode == Session.DUPS_OK_ACKNOWLEDGE)
             return;
-         session.commit();
+         session.ackAllConsumers();
       }
       catch (JMSException e)
       {
