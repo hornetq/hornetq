@@ -492,13 +492,32 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public XAJMSContext createXAContext()
    {
-      throw new UnsupportedOperationException("JMS 2.0 / not implemented / optional");
+      return createXAContext(null, null);
    }
 
    @Override
    public XAJMSContext createXAContext(String userName, String password)
    {
-      throw new  UnsupportedOperationException("JMS 2.0 / not implemented");
+      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
+      conn.setUserName(userName);
+      conn.setPassword(password);
+      try
+      {
+         validateUser(conn);
+      }
+      catch (JMSSecurityException e)
+      {
+         JMSSecurityRuntimeException e2 = new JMSSecurityRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
+      catch (JMSException e)
+      {
+         JMSRuntimeException e2 = new JMSRuntimeException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
+      return conn.createXAContext();
    }
 
    private void validateUser(HornetQRASessionFactoryImpl s) throws JMSException
