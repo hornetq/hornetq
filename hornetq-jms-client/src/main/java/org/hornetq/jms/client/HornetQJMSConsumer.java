@@ -76,7 +76,7 @@ public class HornetQJMSConsumer implements JMSConsumer
    {
       try
       {
-         return consumer.receive();
+         return context.setLastMessage(this, consumer.receive());
       } catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
@@ -88,7 +88,7 @@ public class HornetQJMSConsumer implements JMSConsumer
    {
       try
       {
-         return consumer.receive(timeout);
+         return context.setLastMessage(this, consumer.receive(timeout));
       } catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
@@ -100,7 +100,7 @@ public class HornetQJMSConsumer implements JMSConsumer
    {
       try
       {
-         return consumer.receiveNoWait();
+         return context.setLastMessage(this, consumer.receiveNoWait());
       } catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
@@ -125,6 +125,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receive();
+         context.setLastMessage(HornetQJMSConsumer.this, message);
          return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
@@ -139,6 +140,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receive(timeout);
+         context.setLastMessage(HornetQJMSConsumer.this, message);
          return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
@@ -153,6 +155,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          Message message = consumer.receiveNoWait();
+         context.setLastMessage(HornetQJMSConsumer.this, message);
          return message == null?null:message.getBody(c);
       }
       catch (JMSException e)
@@ -173,6 +176,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       @Override
       public void onMessage(Message message)
       {
+         context.setLastMessage(HornetQJMSConsumer.this, message);
+
          context.setCurrentThread(false);
          try
          {
