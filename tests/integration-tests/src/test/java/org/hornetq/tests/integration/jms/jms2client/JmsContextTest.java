@@ -4,6 +4,7 @@
 package org.hornetq.tests.integration.jms.jms2client;
 
 import javax.jms.BytesMessage;
+import javax.jms.CompletionListener;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.IllegalStateRuntimeException;
@@ -112,7 +113,7 @@ public class JmsContextTest extends JMSTestBase
       JMSConsumer consumer = context.createConsumer(queue1);
 
       BytesMessage bytesSend = context.createBytesMessage();
-      bytesSend.writeByte((byte)1);
+      bytesSend.writeByte((byte) 1);
       bytesSend.writeLong(2l);
       producer.send(queue1, bytesSend);
 
@@ -545,6 +546,55 @@ public class JmsContextTest extends JMSTestBase
       } finally
       {
          context.close();
+      }
+   }
+
+   @Test
+   public void bytesMessage() throws Exception
+   {
+      context = cf.createContext();
+      try
+      {
+         JMSProducer producer = context.createProducer();
+         BytesMessage bMsg = context.createBytesMessage();
+         bMsg.setStringProperty("COM_SUN_JMS_TESTNAME", "sendAndRecvMsgOfEachTypeCLTest");
+         bMsg.writeByte((byte) 1);
+         bMsg.writeInt((int) 22);
+         CountDownLatch latch = new CountDownLatch(1);
+         SimpleCompletionListener listener = new SimpleCompletionListener(latch);
+         producer.setAsync(listener);
+         producer.send(queue1, bMsg);
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         assertEquals(listener.message.readByte(), (byte) 1);
+         assertEquals(listener.message.readInt(), (int) 22);
+      }
+      finally
+      {
+         context.close();
+      }
+   }
+
+   private static class SimpleCompletionListener implements CompletionListener
+   {
+      private CountDownLatch latch;
+      private BytesMessage message;
+
+      public SimpleCompletionListener(CountDownLatch latch)
+      {
+         this.latch = latch;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         this.message = (BytesMessage) message;
+         latch.countDown();
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
       }
    }
 

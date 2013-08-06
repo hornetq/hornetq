@@ -547,6 +547,16 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
                // HORNETQ-1209 XXX ignore?
             }
          }
+         if(jmsMessage instanceof BytesMessage)
+         {
+            try
+            {
+               ((BytesMessage)jmsMessage).reset();
+            } catch (JMSException e)
+            {
+               // HORNETQ-1209 XXX ignore?
+            }
+         }
          completionListener.onCompletion(jmsMessage);
       }
 
