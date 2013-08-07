@@ -43,6 +43,8 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    private MessageHandler coreListener;
 
+   private final HornetQConnection connection;
+
    private final HornetQSession session;
 
    private final int ackMode;
@@ -59,13 +61,16 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageConsumer(final HornetQSession session,
-                                 final ClientConsumer consumer,
-                                 final boolean noLocal,
-                                 final HornetQDestination destination,
-                                 final String selector,
-                                 final SimpleString autoDeleteQueueName) throws JMSException
+   protected HornetQMessageConsumer(final HornetQConnection connection,
+                                    final HornetQSession session,
+                                    final ClientConsumer consumer,
+                                    final boolean noLocal,
+                                    final HornetQDestination destination,
+                                    final String selector,
+                                    final SimpleString autoDeleteQueueName) throws JMSException
    {
+      this.connection = connection;
+
       this.session = session;
 
       this.consumer = consumer;
@@ -101,7 +106,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
    {
       this.listener = listener;
 
-      coreListener = listener == null ? null : new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
+      coreListener = listener == null ? null : new JMSMessageListenerWrapper(connection, session, consumer, listener, ackMode);
 
       try
       {
