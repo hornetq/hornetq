@@ -42,13 +42,18 @@ import javax.jms.XASession;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
+import org.hornetq.api.core.client.FailoverEventListener;
+import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.jms.HornetQJMSConstants;
+import org.hornetq.jms.client.HornetQConnection;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.HornetQJMSServerBundle;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
@@ -57,6 +62,8 @@ import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.server.recovery.HornetQRegistryBase;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
@@ -74,9 +81,13 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public final class JMSBridgeImpl implements JMSBridge
 {
+   private static final String[] RESOURCE_RECOVERY_CLASS_NAMES = new String[]{"org.jboss.as.messaging.jms.AS7RecoveryRegistry"};
+
    private static boolean trace = HornetQJMSServerLogger.LOGGER.isTraceEnabled();
 
    private static final int TEN_YEARS = 60 * 60 * 24 * 365 * 10; // in ms
+
+   private static final long DEFAULT_FAILOVER_TIMEOUT = 60 * 1000;
 
    private final Object lock = new Object();
 
@@ -165,11 +176,15 @@ public final class JMSBridgeImpl implements JMSBridge
 
    private String passwordCodec;
 
+   private long failoverTimeout;
+
    private static final int FORWARD_MODE_XA = 0;
 
    private static final int FORWARD_MODE_LOCALTX = 1;
 
    private static final int FORWARD_MODE_NONTX = 2;
+
+   private HornetQRegistryBase registry;
 
    /*
     * Constructor for MBean
@@ -240,6 +255,49 @@ public final class JMSBridgeImpl implements JMSBridge
                         final MBeanServer mbeanServer,
                         final String objectName)
    {
+      this(sourceCff,
+            targetCff,
+            sourceDestinationFactory,
+            targetDestinationFactory,
+            sourceUsername,
+            sourcePassword,
+            targetUsername,
+            targetPassword,
+            selector,
+            failureRetryInterval,
+            maxRetries,
+            qosMode,
+            maxBatchSize,
+            maxBatchTime,
+            subName,
+            clientID,
+            addMessageIDInHeader,
+            mbeanServer,
+            objectName,
+            DEFAULT_FAILOVER_TIMEOUT);
+   }
+
+   public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
+                        final ConnectionFactoryFactory targetCff,
+                        final DestinationFactory sourceDestinationFactory,
+                        final DestinationFactory targetDestinationFactory,
+                        final String sourceUsername,
+                        final String sourcePassword,
+                        final String targetUsername,
+                        final String targetPassword,
+                        final String selector,
+                        final long failureRetryInterval,
+                        final int maxRetries,
+                        final QualityOfServiceMode qosMode,
+                        final int maxBatchSize,
+                        final long maxBatchTime,
+                        final String subName,
+                        final String clientID,
+                        final boolean addMessageIDInHeader,
+                        final MBeanServer mbeanServer,
+                        final String objectName,
+                        final long failoverTimeout)
+   {
       this();
 
       this.sourceCff = sourceCff;
@@ -275,6 +333,8 @@ public final class JMSBridgeImpl implements JMSBridge
       this.clientID = clientID;
 
       this.addMessageIDInHeader = addMessageIDInHeader;
+
+      this.failoverTimeout = failoverTimeout;
 
       checkParams();
 
@@ -317,6 +377,8 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          stopping = false;
       }
+
+      locateRecoveryRegistry();
 
       if (started)
       {
@@ -1021,6 +1083,11 @@ public final class JMSBridgeImpl implements JMSBridge
 
       Object cf = cff.createConnectionFactory();
 
+      if (cf instanceof HornetQConnectionFactory && registry != null)
+      {
+         registry.register(XARecoveryConfig.newConfig((HornetQConnectionFactory)cf, username, password));
+      }
+
       if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE && !(cf instanceof XAConnectionFactory))
       {
          throw new IllegalArgumentException("Connection factory must be XAConnectionFactory");
@@ -1070,10 +1137,23 @@ public final class JMSBridgeImpl implements JMSBridge
          conn.setClientID(clientID);
       }
 
+      boolean ha = false;
+      BridgeFailoverListener failoverListener = null;
 
-      conn.setExceptionListener(new BridgeExceptionListener());
+      if (conn instanceof HornetQConnection)
+      {
+         HornetQConnectionFactory hornetQCF = (HornetQConnectionFactory)cf;
+         ha = hornetQCF.isHA();
 
+         if (ha)
+         {
+            HornetQConnection hornetQConn = (HornetQConnection)conn;
+            failoverListener = new BridgeFailoverListener();
+            hornetQConn.setFailoverListener(failoverListener);
+         }
+      }
 
+      conn.setExceptionListener(new BridgeExceptionListener(ha, failoverListener));
 
       return conn;
    }
@@ -1129,7 +1209,6 @@ public final class JMSBridgeImpl implements JMSBridge
             if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
             {
                // Use XA
-
                forwardMode = JMSBridgeImpl.FORWARD_MODE_XA;
             }
             else
@@ -1143,6 +1222,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          targetDestination = targetDestinationFactory.createDestination();
 
+         // bridging on the same server
          if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
          {
             // We simply use a single local transacted session for consuming and sending
@@ -1150,8 +1230,9 @@ public final class JMSBridgeImpl implements JMSBridge
             sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
             sourceSession = sourceConn.createSession(true, Session.SESSION_TRANSACTED);
          }
-         else
+         else // bridging across different servers
          {
+            // QoS = ONCE_AND_ONLY_ONCE
             if (forwardMode == JMSBridgeImpl.FORWARD_MODE_XA)
             {
                // Create an XASession for consuming from the source
@@ -1163,19 +1244,22 @@ public final class JMSBridgeImpl implements JMSBridge
                sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true);
                sourceSession = ((XAConnection)sourceConn).createXASession();
             }
-            else
+            else // QoS = DUPLICATES_OK || AT_MOST_ONCE
             {
                if (JMSBridgeImpl.trace)
                {
                   HornetQJMSServerLogger.LOGGER.trace("Creating non XA source session");
                }
 
-               // Create a standard session for consuming from the source
-
-               // We use ack mode client ack
-
                sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
-               sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+               if (qualityOfServiceMode == QualityOfServiceMode.AT_MOST_ONCE && maxBatchSize == 1)
+               {
+                  sourceSession = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+               }
+               else
+               {
+                  sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+               }
             }
          }
 
@@ -1505,7 +1589,6 @@ public final class JMSBridgeImpl implements JMSBridge
          sendMessages();
 
          // Commit the JTA transaction and start another
-
          delistResources(tx);
 
          if (JMSBridgeImpl.trace)
@@ -1519,19 +1602,43 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             HornetQJMSServerLogger.LOGGER.trace("Committed JTA transaction");
          }
-
-         tx = startTx();
-
-         enlistResources(tx);
-
-         // Clear the messages
-         messages.clear();
       }
       catch (Exception e)
       {
+         try
+         {
+            // we call this just in case there is a failure other than failover
+            tx.rollback();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
          HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
-         handleFailureOnSend();
+         //we don't do handle failure here because the tx
+         //may be rolledback due to failover. All failure handling
+         //will be done through exception listener.
+         //handleFailureOnSend();
+      }
+      finally
+      {
+         try
+         {
+            tx = startTx();
+
+            enlistResources(tx);
+
+            // Clear the messages
+            messages.clear();
+
+         }
+         catch (Exception e)
+         {
+            HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+
+            handleFailureOnSend();
+         }
       }
    }
 
@@ -2017,6 +2124,15 @@ public final class JMSBridgeImpl implements JMSBridge
 
    private class BridgeExceptionListener implements ExceptionListener
    {
+      boolean ha;
+      BridgeFailoverListener failoverListener;
+
+      public BridgeExceptionListener(boolean ha, BridgeFailoverListener failoverListener)
+      {
+         this.ha = ha;
+         this.failoverListener = failoverListener;
+      }
+
       public void onException(final JMSException e)
       {
          HornetQJMSServerLogger.LOGGER.bridgeFailure();
@@ -2033,12 +2149,49 @@ public final class JMSBridgeImpl implements JMSBridge
             }
             else
             {
-               handleFailure(new FailureHandler());
+               boolean shouldHandleFailure = true;
+               if (ha)
+               {
+                  //make sure failover happened
+                  shouldHandleFailure = !failoverListener.waitForFailover();
+               }
+
+               if (shouldHandleFailure)
+               {
+                  handleFailure(new FailureHandler());
+               }
             }
          }
       }
    }
 
+
+   private void locateRecoveryRegistry()
+   {
+      if (registry == null)
+      {
+         for (String locatorClasse : RESOURCE_RECOVERY_CLASS_NAMES)
+         {
+            try
+            {
+               registry = (HornetQRegistryBase) safeInitNewInstance(locatorClasse);
+            }
+            catch (Throwable e)
+            {
+               HornetQJMSServerLogger.LOGGER.debug("unable to load  recovery registry " + locatorClasse, e);
+            }
+            if (registry != null)
+            {
+               break;
+            }
+         }
+
+         if (registry != null)
+         {
+            HornetQJMSServerLogger.LOGGER.debug("Recovery Registry located = " + registry);
+         }
+      }
+   }
 
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
@@ -2074,5 +2227,81 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       this.passwordCodec = passwordCodec;
    }
+
+   private class BridgeFailoverListener implements FailoverEventListener
+   {
+      volatile FailoverEventType lastEvent;
+
+      @Override
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         synchronized (this)
+         {
+            lastEvent = eventType;
+            this.notify();
+         }
+      }
+
+      //return true if failover completed successfully
+      public boolean waitForFailover()
+      {
+         long toWait = failoverTimeout;
+         long start = 0;
+         long waited = 0;
+         boolean timedOut = false;
+         FailoverEventType result = null;
+         synchronized (this)
+         {
+            while ((lastEvent == null || lastEvent == FailoverEventType.FAILURE_DETECTED))
+            {
+               try
+               {
+                  if (toWait <= 0)
+                  {
+                     timedOut = true;
+                     break;
+                  }
+                  start = System.currentTimeMillis();
+                  this.wait(toWait);
+               }
+               catch (InterruptedException e)
+               {
+               }
+               finally
+               {
+                  waited = System.currentTimeMillis() - start;
+                  toWait = failoverTimeout - waited;
+               }
+            }
+            result = lastEvent;
+            lastEvent = null;
+         }
+         
+         if (timedOut)
+         {
+            //timeout, presumably failover failed.
+            HornetQJMSServerLogger.LOGGER.debug("Timed out waiting for failover completion " + this);
+            return false;
+         }
+         
+         if (result == FailoverEventType.FAILOVER_COMPLETED)
+         {
+            return true;
+         }
+         //failover failed, need retry.
+         return false;
+      }
+   }
+
+   public long getFailoverTimeout()
+   {
+      return failoverTimeout;
+   }
+
+   public void setFailoverTimeout(long failoverTimeout)
+   {
+      this.failoverTimeout = failoverTimeout;
+   }
+
 
 }

@@ -43,6 +43,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESUME;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 
 import java.util.List;
@@ -80,6 +81,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMes
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionXAAfterFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -294,7 +296,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                case SESS_ROLLBACK:
                {
                   requiresResponse = true;
-                  session.rollback(((RollbackMessage)packet).isConsiderLastMessageAsDelivered());
+                  session.rollback(((RollbackMessage) packet).isConsiderLastMessageAsDelivered());
                   response = new NullResponseMessage();
                   break;
                }
@@ -351,6 +353,14 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   requiresResponse = true;
                   SessionXAStartMessage message = (SessionXAStartMessage)packet;
                   session.xaStart(message.getXid());
+                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+                  break;
+               }
+               case SESS_XA_FAILED:
+               {
+                  requiresResponse = true;
+                  SessionXAAfterFailedMessage message = (SessionXAAfterFailedMessage)packet;
+                  session.xaFailed(message.getXid());
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                   break;
                }
