@@ -121,6 +121,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    private final Exception creationStack;
 
    private HornetQConnectionFactory factoryReference;
+   private Thread callingThread;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -307,6 +308,12 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    public synchronized void stop() throws JMSException
    {
+
+      if(callingThread != null && callingThread == Thread.currentThread())
+      {
+         throw HornetQJMSClientBundle.BUNDLE.callingStopFromListener();
+      }
+
       checkClosed();
 
       for (HornetQSession session : sessions)
@@ -320,6 +327,11 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    public synchronized final void close() throws JMSException
    {
+      if(callingThread != null && callingThread == Thread.currentThread())
+      {
+         throw HornetQJMSClientBundle.BUNDLE.callingCloseFromListener();
+      }
+
       if (closed)
       {
          return;
@@ -720,6 +732,16 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    public boolean isStarted()
    {
       return started;
+   }
+
+   public void setCallingThread(Thread callingThread)
+   {
+      this.callingThread = callingThread;
+   }
+
+   public Thread getCallingThread()
+   {
+      return callingThread;
    }
 
    // Inner classes --------------------------------------------------------------------------------

@@ -254,6 +254,10 @@ public class HornetQSession implements QueueSession, TopicSession
    {
       synchronized (connection)
       {
+         if(connection.getCallingThread() != null && connection.getCallingThread() == Thread.currentThread())
+         {
+            throw HornetQJMSClientBundle.BUNDLE.callingSessionCloseFromListener();
+         }
          try
          {
             for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))
@@ -640,7 +644,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
          consumer = session.createConsumer(queueName, null, false);
 
-         HornetQMessageConsumer jbc = new HornetQMessageConsumer(this,
+         HornetQMessageConsumer jbc = new HornetQMessageConsumer(connection, this,
                                                                  consumer,
                                                                  false,
                                                                  dest,
@@ -809,7 +813,8 @@ public class HornetQSession implements QueueSession, TopicSession
             }
          }
 
-         HornetQMessageConsumer jbc = new HornetQMessageConsumer(this,
+         HornetQMessageConsumer jbc = new HornetQMessageConsumer(connection,
+                                                                 this,
                                                                  consumer,
                                                                  noLocal,
                                                                  dest,
