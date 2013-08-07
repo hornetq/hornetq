@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.3-SNAPSHOT</version>
+   <version>2.3.3.Final</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -30,8 +30,17 @@
     </prerequisites>
 
    <properties>
+      <!-- don't forget to update netty.version.string manually after updating this. look at the explanation on netty.version.string -->
       <netty.version>3.6.6.Final</netty.version>
-      <netty.version.string>${netty.version}-90e1eb2</netty.version.string>
+
+       <!-- please keep netty.version.string literal,
+          RedHat production team will patch our builds on netty.version..
+          Our verification for the right Netty version only needs a Netty.getVersion().contains("our-string");
+          if we make this a variable we will have to rebuild hornetq for any minor rebuild from the production team
+          and other issues along it.
+         -->
+      <netty.version.string>3.6.6.Final</netty.version.string>
+
       <hornetq.version.versionName>Killer Bee</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
