@@ -509,7 +509,10 @@ public class NettyConnector extends AbstractConnector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      // QE will eventually rebuild Netty and the hash main change.
+      // to avoid further confusion we just verify if our version is contained within the final Netty
+      // No reason to require the exact same build. As long as we have the same build we are ok
+      if (!Version.ID.contains(VersionLoader.getVersion().getNettyVersion()))
       {
          HornetQClientLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
       }
