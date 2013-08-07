@@ -51,4 +51,7 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129007, value =  "It is illegal to close the session from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException callingSessionCloseFromListener();
+
+   @Message(id = 129008, value =  "It is illegal to close the producer from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingCloseFromCompletionListener();
 }
