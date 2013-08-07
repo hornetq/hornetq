@@ -45,7 +45,7 @@ public class NettyConnectorTest extends UnitTestCase
       assertTrue("pom.xml 'netty.version.string' property set to expect\n'" +
                           VersionLoader.getVersion().getNettyVersion() + "'\nGetting\n'" +
                           org.jboss.netty.util.Version.ID + "'",
-                 org.jboss.netty.util.Version.ID.equals(VersionLoader.getVersion().getNettyVersion()));
+                 org.jboss.netty.util.Version.ID.contains(VersionLoader.getVersion().getNettyVersion()));
    }
 
    @Test
