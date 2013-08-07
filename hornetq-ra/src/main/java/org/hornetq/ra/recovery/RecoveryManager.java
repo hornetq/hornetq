@@ -61,7 +61,7 @@ public final class RecoveryManager
    {
       HornetQRALogger.LOGGER.debug("registering recovery for factory : " + factory);
 
-      XARecoveryConfig config = newResourceConfig(factory, userName, password);
+      XARecoveryConfig config = XARecoveryConfig.newConfig(factory, userName, password);
       resources.add(config);
       if (registry != null)
       {
@@ -70,25 +70,6 @@ public final class RecoveryManager
       return config;
    }
 
-   /**
-    * @param factory
-    * @param userName
-    * @param password
-    * @return
-    */
-   private XARecoveryConfig newResourceConfig(HornetQConnectionFactory factory,
-                                                       String userName,
-                                                       String password)
-   {
-      if (factory.getServerLocator().getDiscoveryGroupConfiguration() != null)
-      {
-        return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getDiscoveryGroupConfiguration(), userName, password);
-      }
-      else
-      {
-         return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getStaticTransportConfigurations(), userName, password);
-      }
-   }
 
    public void unRegister(XARecoveryConfig resourceRecovery)
    {

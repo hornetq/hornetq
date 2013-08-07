@@ -66,6 +66,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
@@ -111,6 +112,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuation
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionXAAfterFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -245,6 +247,11 @@ public abstract class PacketDecoder implements Serializable
          case SESS_XA_START:
          {
             packet = new SessionXAStartMessage();
+            break;
+         }
+         case SESS_XA_FAILED:
+         {
+            packet = new SessionXAAfterFailedMessage();
             break;
          }
          case SESS_XA_END:

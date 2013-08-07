@@ -82,10 +82,11 @@ public class SameProcessHornetQServer implements TestableServer
    public void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
       CountDownLatch latch = new CountDownLatch(sessions.length);
-      for (ClientSession session : sessions)
+      CountDownSessionFailureListener listeners[] = new CountDownSessionFailureListener[sessions.length];
+      for (int i = 0; i < sessions.length; i++)
       {
-         CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
-         session.addFailureListener(listener);
+         listeners[i] = new CountDownSessionFailureListener(latch);
+         sessions[i].addFailureListener(listeners[i]);
       }
 
       ClusterManager clusterManager = server.getClusterManager();
@@ -100,6 +101,10 @@ public class SameProcessHornetQServer implements TestableServer
          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
          Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
                   sessions.length, ok);
+      }
+      for (int i = 0; i < sessions.length; i++)
+      {
+         sessions[i].removeFailureListener(listeners[i]);
       }
    }
 

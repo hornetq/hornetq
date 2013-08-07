@@ -19,6 +19,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  *
@@ -39,6 +40,21 @@ public class XARecoveryConfig
    private final DiscoveryGroupConfiguration discoveryConfiguration;
    private final String username;
    private final String password;
+
+   public static XARecoveryConfig newConfig(HornetQConnectionFactory factory,
+                                            String userName,
+                                            String password)
+   {
+      if (factory.getServerLocator().getDiscoveryGroupConfiguration() != null)
+      {
+         return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getDiscoveryGroupConfiguration(), userName, password);
+      }
+      else
+      {
+         return new XARecoveryConfig(factory.getServerLocator().isHA(), factory.getServerLocator().getStaticTransportConfigurations(), userName, password);
+      }
+
+   }
 
    public XARecoveryConfig(final boolean ha, final TransportConfiguration[] transportConfiguration, final String username, final String password)
    {
