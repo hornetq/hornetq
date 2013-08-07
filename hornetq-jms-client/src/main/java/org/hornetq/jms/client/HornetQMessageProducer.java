@@ -65,6 +65,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    private long defaultDeliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
 
    private final HornetQDestination defaultDestination;
+
+
+   private Thread callingThread;
    // Constructors --------------------------------------------------
 
    protected HornetQMessageProducer(final HornetQConnection jbossConn, final ClientProducer producer,
@@ -171,6 +174,10 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void close() throws JMSException
    {
+      if(callingThread != null && callingThread == Thread.currentThread())
+      {
+         throw HornetQJMSClientBundle.BUNDLE.callingCloseFromCompletionListener();
+      }
       try
       {
          clientProducer.close();
@@ -497,7 +504,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
           */
          if (completionListener != null)
          {
-            clientProducer.send(address, coreMessage, new CompletionListenerWrapper(completionListener, jmsMessage));
+            clientProducer.send(address, coreMessage, new CompletionListenerWrapper(completionListener, jmsMessage, this));
          }
          else
          {
@@ -518,19 +525,27 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       }
    }
 
+   public void setCallingThread(Thread callingThread)
+   {
+      this.callingThread = callingThread;
+   }
+
    private static final class CompletionListenerWrapper implements SendAcknowledgementHandler
    {
       private final CompletionListener completionListener;
       private final Message jmsMessage;
+      private HornetQMessageProducer producer;
 
       /**
        * @param jmsMessage
+       * @param producer
        *
        */
-      public CompletionListenerWrapper(CompletionListener listener, Message jmsMessage)
+      public CompletionListenerWrapper(CompletionListener listener, Message jmsMessage, HornetQMessageProducer producer)
       {
          this.completionListener = listener;
          this.jmsMessage = jmsMessage;
+         this.producer = producer;
       }
 
       @Override
@@ -540,24 +555,34 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          {
             try
             {
-               ((StreamMessage)jmsMessage).reset();
+               ((StreamMessage) jmsMessage).reset();
             }
             catch (JMSException e)
             {
                // HORNETQ-1209 XXX ignore?
             }
          }
-         if(jmsMessage instanceof BytesMessage)
+         if (jmsMessage instanceof BytesMessage)
          {
             try
             {
-               ((BytesMessage)jmsMessage).reset();
-            } catch (JMSException e)
+               ((BytesMessage) jmsMessage).reset();
+            }
+            catch (JMSException e)
             {
                // HORNETQ-1209 XXX ignore?
             }
          }
-         completionListener.onCompletion(jmsMessage);
+
+         try
+         {
+            producer.setCallingThread(Thread.currentThread());
+            completionListener.onCompletion(jmsMessage);
+         }
+         finally
+         {
+            producer.setCallingThread(null);
+         }
       }
 
       @Override

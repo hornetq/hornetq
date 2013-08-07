@@ -31,6 +31,8 @@ import org.hornetq.api.jms.HornetQJMSConstants;
  */
 public class JMSMessageListenerWrapper implements MessageHandler
 {
+   private final HornetQConnection connection;
+
    private final HornetQSession session;
 
    private final MessageListener listener;
@@ -41,11 +43,14 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
    private final boolean individualACK;
 
-   protected JMSMessageListenerWrapper(final HornetQSession session,
+   protected JMSMessageListenerWrapper(final HornetQConnection connection,
+                                       final HornetQSession session,
                                        final ClientConsumer consumer,
                                        final MessageListener listener,
                                        final int ackMode)
    {
+      this.connection = connection;
+
       this.session = session;
 
       this.consumer = consumer;
@@ -95,6 +100,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
       try
       {
+         connection.setCallingThread(Thread.currentThread());
          listener.onMessage(msg);
       }
       catch (RuntimeException e)
@@ -122,7 +128,10 @@ public class JMSMessageListenerWrapper implements MessageHandler
             }
          }
       }
-
+      finally
+      {
+         connection.setCallingThread(null);
+      }
       if (!session.isRecoverCalled() && !individualACK)
       {
          try

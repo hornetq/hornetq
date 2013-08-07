@@ -1,6 +1,8 @@
 package org.hornetq.jms.client;
 
 
+import javax.jms.IllegalStateException;
+
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -39,4 +41,16 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129004, value =  "name cannot be empty", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nameCannotBeEmpty();
+
+   @Message(id = 129005, value =  "It is illegal to close the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingCloseFromListener();
+
+   @Message(id = 129006, value =  "It is illegal to stop the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingStopFromListener();
+
+   @Message(id = 129007, value =  "It is illegal to close the session from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingSessionCloseFromListener();
+
+   @Message(id = 129008, value =  "It is illegal to close the producer from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingCloseFromCompletionListener();
 }

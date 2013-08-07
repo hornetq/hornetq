@@ -14,11 +14,15 @@
 package org.hornetq.jms.tests;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import javax.jms.CompletionListener;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -754,6 +758,28 @@ public class MessageProducerTest extends JMSTestCase
          }
    }
 
+   @Test
+   public void testProducerCloseInCompletionListener() throws Exception
+   {
+      Connection pconn = createConnection();
+
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
+
+      CountDownLatch latch = new CountDownLatch(1);
+      CloseCompletionListener listener = new CloseCompletionListener(p, latch);
+
+
+      p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
+            Message.DEFAULT_PRIORITY, 0L, listener);
+
+      ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ProxyAssertSupport.assertNotNull(listener.exception);
+
+      ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -761,5 +787,35 @@ public class MessageProducerTest extends JMSTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   private static class CloseCompletionListener implements CompletionListener
+   {
+      private MessageProducer p;
+      private CountDownLatch latch;
+      private JMSException exception;
 
+      public CloseCompletionListener(MessageProducer p, CountDownLatch latch)
+      {
+         this.p = p;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         try
+         {
+            p.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+      }
+   }
 }

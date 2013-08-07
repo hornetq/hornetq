@@ -21,26 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
-import javax.jms.Session;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
+import javax.jms.*;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
@@ -4093,6 +4074,144 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
+   public void testExceptionMessageListenerCloseConnection() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = createConnection();
+
+         conn.start();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         MessageConsumer cons = sess.createConsumer(queue1);
+
+         CountDownLatch latch = new CountDownLatch(1);
+         ConnectionCloseMessageListener listener = new ConnectionCloseMessageListener(conn, latch);
+
+         cons.setMessageListener(listener);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue1);
+         TextMessage m1 = sess.createTextMessage("a");
+
+         prod.send(m1);
+
+         ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+         ProxyAssertSupport.assertNotNull(listener.exception);
+
+         ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         removeAllMessages(queue1.getQueueName(), true);
+      }
+   }
+
+   @Test
+   public void testExceptionMessageListenerStopConnection() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = createConnection();
+
+         conn.start();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         MessageConsumer cons = sess.createConsumer(queue1);
+
+         CountDownLatch latch = new CountDownLatch(1);
+         ConnectionStopMessageListener listener = new ConnectionStopMessageListener(conn, latch);
+
+         cons.setMessageListener(listener);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue1);
+         TextMessage m1 = sess.createTextMessage("a");
+
+         prod.send(m1);
+
+         ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+         ProxyAssertSupport.assertNotNull(listener.exception);
+
+         ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         removeAllMessages(queue1.getQueueName(), true);
+      }
+   }
+
+   @Test
+   public void testExceptionMessageListenerStopSession() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = createConnection();
+
+         conn.start();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         MessageConsumer cons = sess.createConsumer(queue1);
+
+         CountDownLatch latch = new CountDownLatch(1);
+         SessionCloseMessageListener listener = new SessionCloseMessageListener(sess, latch);
+
+         cons.setMessageListener(listener);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue1);
+         TextMessage m1 = sess.createTextMessage("a");
+
+         prod.send(m1);
+
+         ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+         ProxyAssertSupport.assertNotNull(listener.exception);
+
+         ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         removeAllMessages(queue1.getQueueName(), true);
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -4100,6 +4219,87 @@ public class MessageConsumerTest extends JMSTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   private class ConnectionCloseMessageListener implements MessageListener
+   {
+      private Connection conn;
+      private CountDownLatch latch;
+      private JMSException exception;
+
+      public ConnectionCloseMessageListener(Connection conn, CountDownLatch latch)
+      {
+         this.conn = conn;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         try
+         {
+            conn.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+   }
+
+   private class ConnectionStopMessageListener implements MessageListener
+   {
+      private Connection conn;
+      private CountDownLatch latch;
+      private JMSException exception;
+
+      public ConnectionStopMessageListener(Connection conn, CountDownLatch latch)
+      {
+         this.conn = conn;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         try
+         {
+            conn.stop();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+   }
+
+   private class SessionCloseMessageListener implements MessageListener
+   {
+      private Session session;
+      private CountDownLatch latch;
+      private JMSException exception;
+
+      public SessionCloseMessageListener(Session session, CountDownLatch latch)
+      {
+         this.session = session;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         try
+         {
+            session.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+   }
+
 
    private class ExceptionRedelMessageListenerImpl implements MessageListener
    {
