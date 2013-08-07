@@ -15,7 +15,6 @@ package org.hornetq.jms.client;
 
 import java.io.Serializable;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
@@ -60,7 +59,7 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
    private volatile Message lastMessagesWaitingAck;
 
    private final HornetQConnectionForContext connection;
-   private HornetQSession session;
+   private Session session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
    private boolean xa;
    private boolean closed;
@@ -146,11 +145,11 @@ public class HornetQJMSContext implements JMSContext, ThreadAwareContext
                {
                   if(xa)
                   {
-                     session = (HornetQSession) ((XAConnection)connection).createXASession();
+                     session = ((XAConnection)connection).createXASession();
                   }
                   else
                   {
-                     session = (HornetQSession) connection.createSession(sessionMode);
+                     session = connection.createSession(sessionMode);
                   }
                }
                catch (JMSException e)
