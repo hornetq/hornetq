@@ -4166,6 +4166,52 @@ public class MessageConsumerTest extends JMSTestCase
       }
    }
 
+   @Test
+   public void testExceptionMessageListenerStopSession() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = createConnection();
+
+         conn.start();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+         MessageConsumer cons = sess.createConsumer(queue1);
+
+         CountDownLatch latch = new CountDownLatch(1);
+         SessionCloseMessageListener listener = new SessionCloseMessageListener(sess, latch);
+
+         cons.setMessageListener(listener);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue1);
+         TextMessage m1 = sess.createTextMessage("a");
+
+         prod.send(m1);
+
+         ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+         ProxyAssertSupport.assertNotNull(listener.exception);
+
+         ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         removeAllMessages(queue1.getQueueName(), true);
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -4226,6 +4272,34 @@ public class MessageConsumerTest extends JMSTestCase
          latch.countDown();
       }
    }
+
+   private class SessionCloseMessageListener implements MessageListener
+   {
+      private Session session;
+      private CountDownLatch latch;
+      private JMSException exception;
+
+      public SessionCloseMessageListener(Session session, CountDownLatch latch)
+      {
+         this.session = session;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         try
+         {
+            session.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+   }
+
 
    private class ExceptionRedelMessageListenerImpl implements MessageListener
    {

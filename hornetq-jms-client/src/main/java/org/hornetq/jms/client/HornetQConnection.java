@@ -739,6 +739,11 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       this.callingThread = callingThread;
    }
 
+   public Thread getCallingThread()
+   {
+      return callingThread;
+   }
+
    // Inner classes --------------------------------------------------------------------------------
 
    private static class JMSFailureListener implements SessionFailureListener

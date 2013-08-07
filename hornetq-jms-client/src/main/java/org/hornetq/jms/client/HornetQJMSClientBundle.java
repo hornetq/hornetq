@@ -48,4 +48,7 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129006, value =  "It is illegal to stop the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException callingStopFromListener();
+
+   @Message(id = 129007, value =  "It is illegal to close the session from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingSessionCloseFromListener();
 }

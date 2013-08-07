@@ -254,6 +254,10 @@ public class HornetQSession implements QueueSession, TopicSession
    {
       synchronized (connection)
       {
+         if(connection.getCallingThread() != null && connection.getCallingThread() == Thread.currentThread())
+         {
+            throw HornetQJMSClientBundle.BUNDLE.callingSessionCloseFromListener();
+         }
          try
          {
             for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))
