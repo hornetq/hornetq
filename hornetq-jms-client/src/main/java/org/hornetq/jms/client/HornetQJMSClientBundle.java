@@ -10,6 +10,9 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         3/12/12
@@ -39,4 +42,10 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129004, value =  "name cannot be empty", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nameCannotBeEmpty();
+
+   @Message(id = 129005, value =  "It is illegal to close the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingCloseFromListener();
+
+   @Message(id = 129006, value =  "It is illegal to stop the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingStopFromListener();
 }
