@@ -41,13 +41,13 @@
          -->
       <netty.version.string>3.6.6.Final</netty.version.string>
 
-      <hornetq.version.versionName>Killer Bee</hornetq.version.versionName>
+      <hornetq.version.versionName>Monster Bee</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>3</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>123</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>Snapshot</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>Snapshot</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>Final</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>Final</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
