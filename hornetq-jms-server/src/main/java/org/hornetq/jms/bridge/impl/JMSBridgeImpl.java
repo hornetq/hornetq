@@ -1128,7 +1128,6 @@ public final class JMSBridgeImpl implements JMSBridge
             if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
             {
                // Use XA
-
                forwardMode = JMSBridgeImpl.FORWARD_MODE_XA;
             }
             else
@@ -1142,6 +1141,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          targetDestination = targetDestinationFactory.createDestination();
 
+         // bridging on the same server
          if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
          {
             // We simply use a single local transacted session for consuming and sending
@@ -1149,8 +1149,9 @@ public final class JMSBridgeImpl implements JMSBridge
             sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
             sourceSession = sourceConn.createSession(true, Session.SESSION_TRANSACTED);
          }
-         else
+         else // bridging across different servers
          {
+            // QoS = ONCE_AND_ONLY_ONCE
             if (forwardMode == JMSBridgeImpl.FORWARD_MODE_XA)
             {
                // Create an XASession for consuming from the source
@@ -1162,19 +1163,22 @@ public final class JMSBridgeImpl implements JMSBridge
                sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true);
                sourceSession = ((XAConnection)sourceConn).createXASession();
             }
-            else
+            else // QoS = DUPLICATES_OK || AT_MOST_ONCE
             {
                if (JMSBridgeImpl.trace)
                {
                   HornetQJMSServerLogger.LOGGER.trace("Creating non XA source session");
                }
 
-               // Create a standard session for consuming from the source
-
-               // We use ack mode client ack
-
                sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
-               sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+               if (qualityOfServiceMode == QualityOfServiceMode.AT_MOST_ONCE && maxBatchSize == 1)
+               {
+                  sourceSession = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+               }
+               else
+               {
+                  sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+               }
             }
          }
 
