@@ -10,7 +10,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
-import javax.jms.*;
 import javax.jms.IllegalStateException;
 
 /**
