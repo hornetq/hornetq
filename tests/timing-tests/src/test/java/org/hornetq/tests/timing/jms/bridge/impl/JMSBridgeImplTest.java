@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.timing.jms.bridge.impl;
+import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.junit.Before;
 import org.junit.After;
 
 import org.junit.Test;
 
+import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -33,6 +36,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.management.MBeanServerInvocationHandler;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.InvalidTransactionException;
@@ -421,6 +425,60 @@ public class JMSBridgeImplTest extends UnitTestCase
    }
 
    @Test
+   public void testAutoAckOnSource() throws Exception
+   {
+      final int numMessages = 10;
+
+      ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+      DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+      DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
+      TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
+
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
+      Assert.assertNotNull(bridge);
+
+      bridge.setSourceConnectionFactoryFactory(sourceCFF);
+      bridge.setSourceDestinationFactory(sourceDF);
+      bridge.setTargetConnectionFactoryFactory(targetCFF);
+      bridge.setTargetDestinationFactory(targetDF);
+      bridge.setFailureRetryInterval(10);
+      bridge.setMaxRetries(1);
+      bridge.setMaxBatchSize(1);
+      bridge.setMaxBatchTime(-1);
+      bridge.setTransactionManager(tm);
+      bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+
+      Assert.assertFalse(bridge.isStarted());
+      bridge.start();
+      Assert.assertTrue(bridge.isStarted());
+
+      Connection sourceConn = JMSBridgeImplTest.createConnectionFactory().createConnection();
+      Session sourceSess = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer producer = sourceSess.createProducer(sourceDF.createDestination());
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         TextMessage msg = sourceSess.createTextMessage();
+         producer.send(msg);
+         JMSBridgeImplTest.log.info("sent message " + i);
+      }
+
+      sourceConn.close();
+
+      JMSQueueControl jmsQueueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(
+            ManagementFactory.getPlatformMBeanServer(),
+            ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
+            JMSQueueControl.class,
+            false);
+      assertNotEquals(jmsQueueControl.getDeliveringCount(), numMessages);
+
+      bridge.stop();
+      Assert.assertFalse(bridge.isStarted());
+   }
+
+   @Test
    public void testExceptionOnSourceAndRetrySucceeds() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
@@ -545,6 +603,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       super.setUp();
 
       Configuration config = createBasicConfig();
+      config.setJMXManagementEnabled(true);
       config.setFileDeploymentEnabled(false);
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
