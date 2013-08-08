@@ -1068,6 +1068,36 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
+   public synchronized void xaFailed(final Xid xid) throws Exception
+   {
+      if (tx != null)
+      {
+         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
+
+         throw new HornetQXAException(XAException.XAER_PROTO, msg);
+      }
+      else
+      {
+
+         tx = newTransaction(xid);
+         tx.markAsRollbackOnly(new HornetQException("Can't commit as a Failover happened during the operation"));
+
+         if (isTrace)
+         {
+            HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
+         }
+
+         boolean added = resourceManager.putTransaction(xid, tx);
+
+         if (!added)
+         {
+            final String msg = "Cannot start, there is already a xid " + tx.getXid();
+
+            throw new HornetQXAException(XAException.XAER_DUPID, msg);
+         }
+      }
+   }
+
    public synchronized void xaSuspend() throws Exception
    {
 

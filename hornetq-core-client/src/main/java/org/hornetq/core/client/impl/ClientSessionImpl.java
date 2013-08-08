@@ -77,6 +77,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCred
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionXAAfterFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -195,6 +196,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    private volatile SimpleString defaultAddress;
 
    private boolean xaRetry = false;
+
+   /**
+    * Current XID. this will be used in case of failover
+    */
+   private Xid currentXID;
+
 
    private final AtomicInteger concurrentCall = new AtomicInteger(0);
 
@@ -1182,8 +1189,14 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
                   if ((!autoCommitAcks || !autoCommitSends) && workDone)
                   {
-                     // Session is transacted - set for rollback only
-                     // FIXME - there is a race condition here - a commit could sneak in before this is set
+                     // this is protected by a lock, so we can guarantee nothing will sneak here
+                     // while we do our work here
+                     rollbackOnly = true;
+                  }
+
+                  if (currentXID != null)
+                  {
+                     sendPacketWithoutLock(new SessionXAAfterFailedMessage(currentXID));
                      rollbackOnly = true;
                   }
 
@@ -1454,8 +1467,18 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       checkXA();
 
+      currentXID = null;
+
       if (rollbackOnly)
       {
+         try
+         {
+            rollback();
+         }
+         catch (Exception ignored)
+         {
+            HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
+         }
          throw new XAException(XAException.XA_RBOTHER);
       }
 
@@ -1779,6 +1802,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          }
 
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
+
+         this.currentXID = xid;
 
          if (response.isError())
          {
