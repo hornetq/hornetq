@@ -69,6 +69,9 @@ public class PacketImpl implements Packet
    public static final byte CREATE_TRANSIENT_QUEUE = 36;
 
    // Session
+
+   public static final byte SESS_XA_FAILED = 39;
+
    public static final byte SESS_CREATECONSUMER = 40;
 
    public static final byte SESS_ACKNOWLEDGE = 41;
