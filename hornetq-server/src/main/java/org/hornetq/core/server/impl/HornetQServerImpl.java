@@ -49,6 +49,7 @@ import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -1102,21 +1103,25 @@ public class HornetQServerImpl implements HornetQServer
       return createQueue(address, queueName, filterString, durable, temporary, false, false);
    }
 
+
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers.
     * The queue will be deleted as soon as all the consumers are removed.
     *
     * Notice: the queue won't be deleted until the first consumer arrives.
+    *
     * @param address
     * @param name
     * @param filterString
+    * @param durable
     * @throws Exception
     */
-   public void createTransientQueue(final SimpleString address,
-                             final SimpleString name,
-                             final SimpleString filterString) throws Exception
+   public void createSharedQueue(final SimpleString address,
+                                  final SimpleString name,
+                                  final SimpleString filterString,
+                                  boolean durable) throws Exception
    {
-      Queue queue = createQueue(address, name, filterString, false, true, true, true);
+      Queue queue = createQueue(address, name, filterString, durable, !durable, true, !durable);
 
       if (!queue.getAddress().equals(address))
       {

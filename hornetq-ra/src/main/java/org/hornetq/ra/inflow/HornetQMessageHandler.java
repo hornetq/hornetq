@@ -105,13 +105,6 @@ public class HornetQMessageHandler implements MessageHandler
          String subscriptionName = spec.getSubscriptionName();
          String clientID = spec.getClientID();
 
-         // Durable sub
-         if (clientID == null)
-         {
-            throw new InvalidClientIDException("Cannot create durable subscription for " + subscriptionName +
-                                               " - client ID has not been set");
-         }
-
          SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
                                                                                                             subscriptionName));
 

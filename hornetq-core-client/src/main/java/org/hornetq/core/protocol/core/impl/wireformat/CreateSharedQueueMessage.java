@@ -21,7 +21,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 
  */
-public class CreateTransientQueueMessage extends PacketImpl
+public class CreateSharedQueueMessage extends PacketImpl
 {
 
    private SimpleString address;
@@ -30,24 +30,28 @@ public class CreateTransientQueueMessage extends PacketImpl
 
    private SimpleString filterString;
 
+   private boolean durable;
+
    private boolean requiresResponse;
 
-   public CreateTransientQueueMessage(final SimpleString address,
-                                      final SimpleString queueName,
-                                      final SimpleString filterString,
-                                      final boolean requiresResponse)
+   public CreateSharedQueueMessage(final SimpleString address,
+                                   final SimpleString queueName,
+                                   final SimpleString filterString,
+                                   final boolean durable,
+                                   final boolean requiresResponse)
    {
       this();
 
       this.address = address;
       this.queueName = queueName;
       this.filterString = filterString;
+      this.durable = durable;
       this.requiresResponse = requiresResponse;
    }
 
-   public CreateTransientQueueMessage()
+   public CreateSharedQueueMessage()
    {
-      super(CREATE_TRANSIENT_QUEUE);
+      super(CREATE_SHARED_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -59,6 +63,7 @@ public class CreateTransientQueueMessage extends PacketImpl
       buff.append(", address=" + address);
       buff.append(", queueName=" + queueName);
       buff.append(", filterString=" + filterString);
+      buff.append(", durable=" + filterString);
       buff.append("]");
       return buff.toString();
    }
@@ -98,12 +103,18 @@ public class CreateTransientQueueMessage extends PacketImpl
       this.filterString = filterString;
    }
 
+   public boolean isDurable()
+   {
+      return durable;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(address);
       buffer.writeSimpleString(queueName);
       buffer.writeNullableSimpleString(filterString);
+      buffer.writeBoolean(durable);
       buffer.writeBoolean(requiresResponse);
    }
 
@@ -113,6 +124,7 @@ public class CreateTransientQueueMessage extends PacketImpl
       address = buffer.readSimpleString();
       queueName = buffer.readSimpleString();
       filterString = buffer.readNullableSimpleString();
+      durable = buffer.readBoolean();
       requiresResponse = buffer.readBoolean();
    }
 
@@ -124,6 +136,7 @@ public class CreateTransientQueueMessage extends PacketImpl
       result = prime * result + ((address == null) ? 0 : address.hashCode());
       result = prime * result + ((filterString == null) ? 0 : filterString.hashCode());
       result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      result = prime * result + (durable ? 1231 : 1237);
       result = prime * result + (requiresResponse ? 1231 : 1237);
       return result;
    }
@@ -135,9 +148,9 @@ public class CreateTransientQueueMessage extends PacketImpl
          return true;
       if (!super.equals(obj))
          return false;
-      if (!(obj instanceof CreateTransientQueueMessage))
+      if (!(obj instanceof CreateSharedQueueMessage))
          return false;
-      CreateTransientQueueMessage other = (CreateTransientQueueMessage)obj;
+      CreateSharedQueueMessage other = (CreateSharedQueueMessage)obj;
       if (address == null)
       {
          if (other.address != null)
@@ -158,6 +171,8 @@ public class CreateTransientQueueMessage extends PacketImpl
             return false;
       }
       else if (!queueName.equals(other.queueName))
+         return false;
+      if (durable != other.durable)
          return false;
       if (requiresResponse != other.requiresResponse)
          return false;
