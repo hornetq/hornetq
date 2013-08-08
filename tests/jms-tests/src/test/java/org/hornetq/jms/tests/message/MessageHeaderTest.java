@@ -1017,12 +1017,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       @Override
-      public void createTransientQueue(SimpleString address, SimpleString queueName) throws HornetQException
+      public void createSharedQueue( SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
       {
       }
 
       @Override
-      public void createTransientQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
+      public void createSharedQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable) throws HornetQException
       {
       }
 

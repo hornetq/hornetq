@@ -172,11 +172,13 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
     *
     * Notice: you will get an exception if the address or the filter doesn't match to an already existent queue
+    *
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
+    * @param durable if the queue is durable
     * @throws HornetQException in an exception occurs while creating the queue
     */
-   void createTransientQueue(SimpleString address, SimpleString queueName) throws HornetQException;
+   void createSharedQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException;
 
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
@@ -185,9 +187,10 @@ public interface ClientSession extends XAResource, AutoCloseable
     * @param address the queue will be bound to this address
     * @param queueName the name of the queue
     * @param filter whether the queue is durable or not
+    * @param durable if the queue is durable
     * @throws HornetQException in an exception occurs while creating the queue
     */
-   void createTransientQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException;
+   void createSharedQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable) throws HornetQException;
 
    /**
     * Creates a <em>non-temporary</em> queue.
