@@ -18,7 +18,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_TRANSIENT_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_SHARED_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
@@ -82,7 +82,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessa
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateTransientQueueMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSharedQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -231,9 +231,9 @@ public abstract class PacketDecoder implements Serializable
             packet = new CreateQueueMessage();
             break;
          }
-         case CREATE_TRANSIENT_QUEUE:
+         case CREATE_SHARED_QUEUE:
          {
-            packet = new CreateTransientQueueMessage();
+            packet = new CreateSharedQueueMessage();
             break;
          }
          case DELETE_QUEUE:

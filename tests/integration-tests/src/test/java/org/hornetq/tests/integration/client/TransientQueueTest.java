@@ -39,7 +39,7 @@ public class TransientQueueTest extends SingleServerTestBase
       SimpleString queue = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
 
-      session.createTransientQueue(address, queue);
+      session.createSharedQueue(address, queue, false);
       Assert.assertEquals(1, server.getConnectionCount());
 
       // we create a second session. the temp queue must be present
@@ -61,7 +61,7 @@ public class TransientQueueTest extends SingleServerTestBase
       SimpleString queue = SimpleString.toSimpleString("queue");
       SimpleString address = SimpleString.toSimpleString("address");
 
-      session.createTransientQueue(address, queue);
+      session.createSharedQueue(address, queue, false);
       Assert.assertEquals(1, server.getConnectionCount());
 
       assertNotNull(server.locateQueue(queue));
@@ -73,7 +73,7 @@ public class TransientQueueTest extends SingleServerTestBase
       // At this point this has no effect, other than making sure the queue exists...
       // the JMS implementation will certainly create the queue again when dealing with
       // non durable shared subscriptions
-      session2.createTransientQueue(address, queue);
+      session2.createSharedQueue(address, queue, false);
 
       ClientConsumer consumer1 = session.createConsumer(queue);
       ClientConsumer consumer2 = session2.createConsumer(queue);
@@ -127,7 +127,7 @@ public class TransientQueueTest extends SingleServerTestBase
 
       consumer2.close();
 
-      session.createTransientQueue(address, queue);
+      session.createSharedQueue(address, queue, false);
 
       consumer1 = session.createConsumer(queue);
 
@@ -153,7 +153,7 @@ public class TransientQueueTest extends SingleServerTestBase
       server.locateQueue(queue);
       SimpleString address2 = RandomUtil.randomSimpleString();
 
-      session.createTransientQueue(address, queue);
+      session.createSharedQueue(address, queue, false);
       Assert.assertEquals(1, server.getConnectionCount());
 
 
@@ -168,7 +168,7 @@ public class TransientQueueTest extends SingleServerTestBase
       try
       {
          // There's already a queue with that name, we are supposed to throw an exception
-         session2.createTransientQueue(address2, queue);
+         session2.createSharedQueue(address2, queue, false);
       }
       catch (HornetQInvalidTransientQueueUseException e)
       {
@@ -183,7 +183,7 @@ public class TransientQueueTest extends SingleServerTestBase
       try
       {
          // There's already a queue with that name, we are supposed to throw an exception
-         session2.createTransientQueue(address, queue, SimpleString.toSimpleString("a=1"));
+         session2.createSharedQueue(address, queue, SimpleString.toSimpleString("a=1"), false);
       }
       catch (HornetQInvalidTransientQueueUseException e)
       {
@@ -198,14 +198,14 @@ public class TransientQueueTest extends SingleServerTestBase
       assertNull(server.locateQueue(queue));
 
 
-      session.createTransientQueue(address, queue, SimpleString.toSimpleString("q=1"));
+      session.createSharedQueue(address, queue, SimpleString.toSimpleString("q=1"), false);
 
       exHappened = false;
 
       try
       {
          // There's already a queue with that name, we are supposed to throw an exception
-         session2.createTransientQueue(address, queue, SimpleString.toSimpleString("q=2"));
+         session2.createSharedQueue(address, queue, SimpleString.toSimpleString("q=2"), false);
       }
       catch (HornetQInvalidTransientQueueUseException e)
       {
@@ -219,7 +219,7 @@ public class TransientQueueTest extends SingleServerTestBase
       try
       {
          // There's already a queue with that name, we are supposed to throw an exception
-         session2.createTransientQueue(address, queue);
+         session2.createSharedQueue(address, queue, false);
       }
       catch (HornetQInvalidTransientQueueUseException e)
       {

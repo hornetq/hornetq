@@ -151,7 +151,8 @@ public interface ServerSession
 
    Transaction getCurrentTransaction();
    
-   void createTransientQueue(SimpleString address,
-                             SimpleString name,
-                             SimpleString filterString) throws Exception;
+   void createSharedQueue(SimpleString address,
+                          SimpleString name,
+                          boolean durable,
+                          SimpleString filterString) throws Exception;
 }

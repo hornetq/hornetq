@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAException;
@@ -53,7 +49,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateTransientQueueMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSharedQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
@@ -322,21 +318,23 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       createQueue(SimpleString.toSimpleString(address), SimpleString.toSimpleString(queueName), durable);
    }
 
-   public void createTransientQueue(SimpleString address,
-                                    SimpleString queueName) throws HornetQException
+   public void createSharedQueue(SimpleString address,
+                                    SimpleString queueName,
+                                    boolean durable) throws HornetQException
    {
-      createTransientQueue(address, queueName, null);
+      createSharedQueue(address, queueName, null, durable);
    }
 
-   public void createTransientQueue(SimpleString address,
+   public void createSharedQueue(SimpleString address,
                                     SimpleString queueName,
-                                    SimpleString filterString) throws HornetQException
+                                    SimpleString filterString,
+                                    boolean durable) throws HornetQException
    {
 
       checkClosed();
 
 
-      CreateTransientQueueMessage request = new CreateTransientQueueMessage(address, queueName, filterString, true);
+      CreateSharedQueueMessage request = new CreateSharedQueueMessage(address, queueName, filterString, durable, true);
 
       startCall();
       try

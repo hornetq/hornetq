@@ -462,16 +462,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    @Override
-   public void createTransientQueue(final SimpleString address,
-                                    final SimpleString name,
-                                    final SimpleString filterString) throws Exception
+   public void createSharedQueue(final SimpleString address,
+                                 final SimpleString name,
+                                 boolean durable,
+                                 final SimpleString filterString) throws Exception
    {
       securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
 
-      server.createTransientQueue(address, name, filterString);
+      server.createSharedQueue(address, name, filterString, durable);
    }
-
-
 
    public RemotingConnection getRemotingConnection()
    {

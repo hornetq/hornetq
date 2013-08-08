@@ -515,7 +515,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          localTopic = new HornetQTopic(topic.getTopicName());
       }
-      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.NON_DURABLE);
+      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.NON_DURABLE, true);
    }
 
    @Override
@@ -562,7 +562,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          localTopic = new HornetQTopic(topic.getTopicName());
       }
-      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.DURABLE);
+      return internalCreateSharedConsumer(localTopic, name, messageSelector, ConsumerDurability.DURABLE, true);
    }
 
    enum ConsumerDurability
@@ -575,9 +575,10 @@ public class HornetQSession implements QueueSession, TopicSession
     * This is an internal method for shared consumers
     */
    private HornetQMessageConsumer internalCreateSharedConsumer(final HornetQDestination dest,
-                                                 final String subscriptionName,
-                                                 String selectorString,
-                                                 ConsumerDurability durability) throws JMSException
+                                                               final String subscriptionName,
+                                                               String selectorString,
+                                                               ConsumerDurability durability,
+                                                               final boolean shared) throws JMSException
    {
       try
       {
@@ -628,7 +629,7 @@ public class HornetQSession implements QueueSession, TopicSession
          {
             try
             {
-               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true);
+               session.createSharedQueue(dest.getSimpleAddress(), queueName, coreFilterString, true);
             }
             catch (HornetQQueueExistsException ignored)
             {
@@ -639,7 +640,7 @@ public class HornetQSession implements QueueSession, TopicSession
          }
          else
          {
-            session.createTransientQueue(dest.getSimpleAddress(), queueName, coreFilterString);
+            session.createSharedQueue(dest.getSimpleAddress(), queueName, coreFilterString, false);
          }
 
          consumer = session.createConsumer(queueName, null, false);
