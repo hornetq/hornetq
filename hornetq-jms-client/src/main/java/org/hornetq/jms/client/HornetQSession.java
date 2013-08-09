@@ -22,7 +22,6 @@ import java.util.UUID;
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
-import javax.jms.InvalidClientIDException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -502,6 +501,10 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
+      {
+         throw new IllegalStateException("Cannot create a shared consumer on a QueueSession");
+      }
       if (topic == null)
       {
          throw new IllegalStateException("topic should not be null");
@@ -527,6 +530,10 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
    {
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
+      {
+         throw new IllegalStateException("Cannot create a durable consumer on a QueueSession");
+      }
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
       {
@@ -548,6 +555,11 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
+      if (sessionType == HornetQSession.TYPE_QUEUE_SESSION)
+      {
+         throw new IllegalStateException("Cannot create a shared durable consumer on a QueueSession");
+      }
+
       HornetQTopic localTopic;
 
       if (topic == null)
@@ -753,7 +765,7 @@ public class HornetQSession implements QueueSession, TopicSession
                   throw new RuntimeException();
                if (connection.getClientID() == null)
                {
-                  throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
+                  throw new IllegalStateException("Cannot create durable subscription - client ID has not been set");
                }
 
                if (dest.isTemporary())
