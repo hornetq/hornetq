@@ -426,7 +426,8 @@ public class HornetQActivation
 
    protected void setupCF() throws Exception
    {
-      if (spec.getConnectionFactoryLookup() != null) {
+      if (spec.getConnectionFactoryLookup() != null)
+      {
          Context ctx;
          if(spec.getParsedJndiParams() == null)
          {
@@ -444,10 +445,17 @@ public class HornetQActivation
          else
          {
             HornetQRAConnectionFactory raFact = (HornetQRAConnectionFactory) fac;
-            factory = raFact.getDefaultFactory();
-            if(factory != ra.getDefaultHornetQConnectionFactory())
+            if(spec.isHasBeenUpdated())
             {
-               HornetQRALogger.LOGGER.warnDifferentConnectionfactory();
+               factory = raFact.getResourceAdapter().createHornetQConnectionFactory(spec);;
+            }
+            else
+            {
+               factory = raFact.getDefaultFactory();
+               if(factory != ra.getDefaultHornetQConnectionFactory())
+               {
+                  HornetQRALogger.LOGGER.warnDifferentConnectionfactory();
+               }
             }
          }
       }
