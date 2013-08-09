@@ -31,7 +31,7 @@ public class ReplicatedLargeMessageWithDelayFailoverTest extends ReplicatedLarge
    protected void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
       syncDelay.deliverUpToDateMsg();
-      waitForBackup(null, 5);
+      waitForBackup(null, 30);
       super.crash(waitFailure, sessions);
    }
 

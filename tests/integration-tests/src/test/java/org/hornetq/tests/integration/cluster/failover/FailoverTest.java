@@ -685,7 +685,7 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      assertTrue(backupServer.getServer().waitForBackupSync(10, TimeUnit.SECONDS));
+      assertTrue(backupServer.getServer().waitForBackupSync(30, TimeUnit.SECONDS));
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
@@ -739,7 +739,7 @@ public class FailoverTest extends FailoverTestBase
          adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
          beforeRestart(liveServer);
          liveServer.start();
-         assertTrue("live initialized...", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
+         assertTrue("live initialized...", liveServer.getServer().waitForActivation(40, TimeUnit.SECONDS));
          int i = 0;
          while (backupServer.isStarted() && i++ < 100)
          {
