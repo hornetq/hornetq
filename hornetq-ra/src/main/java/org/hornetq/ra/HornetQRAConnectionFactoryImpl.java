@@ -531,4 +531,10 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    {
       return ((HornetQResourceAdapter)mcf.getResourceAdapter()).getDefaultHornetQConnectionFactory();
    }
+
+   @Override
+   public HornetQResourceAdapter getResourceAdapter()
+   {
+      return (HornetQResourceAdapter) mcf.getResourceAdapter();
+   }
 }

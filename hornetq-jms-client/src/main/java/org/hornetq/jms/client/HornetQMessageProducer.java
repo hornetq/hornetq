@@ -48,7 +48,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class HornetQMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
-   private final HornetQConnection jbossConn;
+   private final HornetQConnection connection;
 
    private final SimpleString connID;
 
@@ -65,17 +65,14 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    private long defaultDeliveryDelay = Message.DEFAULT_DELIVERY_DELAY;
 
    private final HornetQDestination defaultDestination;
-
-
-   private Thread callingThread;
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageProducer(final HornetQConnection jbossConn, final ClientProducer producer,
+   protected HornetQMessageProducer(final HornetQConnection connection, final ClientProducer producer,
                                     final HornetQDestination defaultDestination, final ClientSession clientSession) throws JMSException
    {
-      this.jbossConn = jbossConn;
+      this.connection = connection;
 
-      connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
+      connID = connection.getClientID() != null ? new SimpleString(connection.getClientID()) : connection.getUID();
 
       this.clientProducer = producer;
 
@@ -174,7 +171,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void close() throws JMSException
    {
-      if(callingThread != null && callingThread == Thread.currentThread())
+      if(connection.getCallingThread() != null && connection.getCallingThread() == Thread.currentThread())
       {
          throw HornetQJMSClientBundle.BUNDLE.callingCloseFromCompletionListener();
       }
@@ -525,11 +522,6 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       }
    }
 
-   public void setCallingThread(Thread callingThread)
-   {
-      this.callingThread = callingThread;
-   }
-
    private static final class CompletionListenerWrapper implements SendAcknowledgementHandler
    {
       private final CompletionListener completionListener;
@@ -576,12 +568,12 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          try
          {
-            producer.setCallingThread(Thread.currentThread());
+            producer.connection.setCallingThread(Thread.currentThread());
             completionListener.onCompletion(jmsMessage);
          }
          finally
          {
-            producer.setCallingThread(null);
+            producer.connection.setCallingThread(null);
          }
       }
 

@@ -50,4 +50,6 @@ public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory,
    public static final int XA_TOPIC_CONNECTION = 5;
 
    HornetQConnectionFactory getDefaultFactory() throws ResourceException;
+
+   HornetQResourceAdapter getResourceAdapter();
 }
