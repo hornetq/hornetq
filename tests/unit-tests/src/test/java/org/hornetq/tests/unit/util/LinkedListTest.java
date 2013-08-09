@@ -180,6 +180,10 @@ public class LinkedListTest extends UnitTestCase
 
       assertCount(999, count);
 
+      // it's needed to add this line here because IBM JDK calls finalize on all objects in list
+      // before previous assert is called and fails the test, this will prevent it
+      objs.clear();
+
    }
 
    /**
