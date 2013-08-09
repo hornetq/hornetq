@@ -780,6 +780,49 @@ public class MessageProducerTest extends JMSTestCase
       ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
    }
 
+   @Test
+   public void testConnectionCloseInCompletionListener() throws Exception
+   {
+      Connection pconn = createConnection();
+
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
+
+      CountDownLatch latch = new CountDownLatch(1);
+      ConnectionCloseCompletionListener listener = new ConnectionCloseCompletionListener(pconn, latch);
+
+
+      p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
+            Message.DEFAULT_PRIORITY, 0L, listener);
+
+      ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ProxyAssertSupport.assertNotNull(listener.exception);
+
+      ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+   }
+
+   @Test
+   public void testSessionCloseInCompletionListener() throws Exception
+   {
+      Connection pconn = createConnection();
+
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
+
+      CountDownLatch latch = new CountDownLatch(1);
+      SessionCloseCompletionListener listener = new SessionCloseCompletionListener(ps, latch);
+
+
+      p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
+            Message.DEFAULT_PRIORITY, 0L, listener);
+
+      ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ProxyAssertSupport.assertNotNull(listener.exception);
+
+      ProxyAssertSupport.assertTrue(listener.exception instanceof javax.jms.IllegalStateException);
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -805,6 +848,70 @@ public class MessageProducerTest extends JMSTestCase
          try
          {
             p.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+      }
+   }
+
+   private static class ConnectionCloseCompletionListener implements CompletionListener
+   {
+      private CountDownLatch latch;
+      private JMSException exception;
+      private Connection conn;
+
+      public ConnectionCloseCompletionListener(Connection conn, CountDownLatch latch)
+      {
+         this.conn = conn;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         try
+         {
+            conn.close();
+         }
+         catch (JMSException e)
+         {
+            this.exception = e;
+         }
+         latch.countDown();
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+      }
+   }
+
+   private static class SessionCloseCompletionListener implements CompletionListener
+   {
+      private CountDownLatch latch;
+      private JMSException exception;
+      private Session session;
+
+      public SessionCloseCompletionListener(Session session, CountDownLatch latch)
+      {
+         this.session = session;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         try
+         {
+            session.close();
          }
          catch (JMSException e)
          {
