@@ -7,6 +7,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
+import javax.jms.JMSRuntimeException;
 import javax.resource.NotSupportedException;
 
 /**
@@ -22,6 +23,9 @@ import javax.resource.NotSupportedException;
 @MessageBundle(projectCode = "HQ")
 public interface HornetQRABundle
 {
+   /** Error message for strict behaviour */
+   String ISE = "This method is not applicable inside the application server. See the JEE spec, e.g. JEE 7 Section 6.7";
+
    HornetQRABundle BUNDLE = Messages.getBundle(HornetQRABundle.class);
 
    @Message(id = 159000, value = "Error decoding password using codec instance", format = Message.Format.MESSAGE_FORMAT)
@@ -32,4 +36,7 @@ public interface HornetQRABundle
 
    @Message(id = 159002, value = "Please provide a destination for the MDB", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException noDestinationName();
+
+   @Message(id = 159003, value = ISE, format = Message.Format.MESSAGE_FORMAT)
+   JMSRuntimeException illegalJEEMethod();
 }

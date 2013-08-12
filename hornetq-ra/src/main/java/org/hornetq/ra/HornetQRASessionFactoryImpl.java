@@ -22,7 +22,9 @@ import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.QueueSession;
 import javax.jms.ServerSessionPool;
@@ -31,6 +33,7 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
+import javax.jms.XAJMSContext;
 import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
@@ -38,9 +41,12 @@ import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
 
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionForContext;
 import org.hornetq.jms.client.HornetQConnectionForContextImpl;
+import org.hornetq.jms.client.HornetQJMSContext;
+import org.hornetq.jms.client.HornetQXAJMSContext;
 
 /**
  * Implements the JMS Connection API and produces {@link HornetQRASession} objects.
@@ -117,6 +123,32 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       {
          HornetQRALogger.LOGGER.trace("constructor(" + mcf + ", " + cm + ", " + type);
       }
+   }
+
+   public JMSContext createContext(int sessionMode)
+   {
+      switch (sessionMode)
+      {
+         case Session.AUTO_ACKNOWLEDGE:
+         case Session.CLIENT_ACKNOWLEDGE:
+         case Session.DUPS_OK_ACKNOWLEDGE:
+         case Session.SESSION_TRANSACTED:
+         case HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE:
+         case HornetQJMSConstants.PRE_ACKNOWLEDGE:
+            break;
+         default:
+            throw new JMSRuntimeException("Invalid ackmode: " + sessionMode);
+      }
+      incrementRefCounter();
+
+      return new HornetQRAJMSContext(this, sessionMode);
+   }
+
+   public XAJMSContext createXAContext()
+   {
+      incrementRefCounter();
+
+      return new HornetQRAXAJMSContext(this);
    }
 
    /**
