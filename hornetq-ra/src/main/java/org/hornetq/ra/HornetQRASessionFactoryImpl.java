@@ -22,7 +22,9 @@ import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.QueueSession;
 import javax.jms.ServerSessionPool;
@@ -31,16 +33,23 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
+import javax.jms.XAJMSContext;
 import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
+import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionForContext;
 import org.hornetq.jms.client.HornetQConnectionForContextImpl;
+import org.hornetq.jms.client.HornetQJMSContext;
+import org.hornetq.jms.client.HornetQXAJMSContext;
 
 /**
  * Implements the JMS Connection API and produces {@link HornetQRASession} objects.
@@ -77,6 +86,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /** The managed connection factory */
    private final HornetQRAManagedConnectionFactory mcf;
+   private TransactionManager tm;
 
    /** The connection manager */
    private ConnectionManager cm;
@@ -98,9 +108,12 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
     */
    public HornetQRASessionFactoryImpl(final HornetQRAManagedConnectionFactory mcf,
                                       final ConnectionManager cm,
+                                      final TransactionManager tm,
                                       final int type)
    {
       this.mcf = mcf;
+
+      this.tm = tm;
 
       if (cm == null)
       {
@@ -117,6 +130,61 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       {
          HornetQRALogger.LOGGER.trace("constructor(" + mcf + ", " + cm + ", " + type);
       }
+   }
+
+   public JMSContext createContext(int sessionMode)
+   {
+      boolean inJtaTx = false;
+      if(tm != null)
+      {
+         Transaction tx = null;
+         try
+         {
+            tx = tm.getTransaction();
+         }
+         catch (SystemException e)
+         {
+            //assume false
+         }
+         inJtaTx = tx != null;
+      }
+      int sessionModeToUse;
+      switch (sessionMode)
+      {
+         case Session.AUTO_ACKNOWLEDGE:
+         case Session.DUPS_OK_ACKNOWLEDGE:
+         case HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE:
+         case HornetQJMSConstants.PRE_ACKNOWLEDGE:
+            sessionModeToUse = sessionMode;
+            break;
+         //these are prohibited in JEE unless not in a JTA tx where they should be ignored and auto_ack used
+         case Session.CLIENT_ACKNOWLEDGE:
+            if(!inJtaTx)
+            {
+               throw HornetQRABundle.BUNDLE.invalidSessionTransactedMode();
+            }
+            sessionModeToUse = Session.AUTO_ACKNOWLEDGE;
+            break;
+         case Session.SESSION_TRANSACTED:
+            if (!inJtaTx)
+            {
+               throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeMode();
+            }
+            sessionModeToUse = Session.AUTO_ACKNOWLEDGE;
+            break;
+         default:
+            throw HornetQRABundle.BUNDLE.invalidAcknowledgeMode(sessionMode);
+      }
+      incrementRefCounter();
+
+      return new HornetQRAJMSContext(this, sessionModeToUse);
+   }
+
+   public XAJMSContext createXAContext()
+   {
+      incrementRefCounter();
+
+      return new HornetQRAXAJMSContext(this);
    }
 
    /**
