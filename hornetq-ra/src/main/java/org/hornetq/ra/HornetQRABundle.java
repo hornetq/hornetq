@@ -39,4 +39,13 @@ public interface HornetQRABundle
 
    @Message(id = 159003, value = ISE, format = Message.Format.MESSAGE_FORMAT)
    JMSRuntimeException illegalJEEMethod();
+
+   @Message(id = 159004, value = "Invalid Session Mode SESSION_TRANSACTED", format = Message.Format.MESSAGE_FORMAT)
+   JMSRuntimeException invalidSessionTransactedMode();
+
+   @Message(id = 159005, value = "Invalid Session Mode CLIENT_ACKNOWLEDGE", format = Message.Format.MESSAGE_FORMAT)
+   JMSRuntimeException invalidClientAcknowledgeMode();
+
+   @Message(id = 159006, value = "Invalid Session Mode {0}", format = Message.Format.MESSAGE_FORMAT)
+   JMSRuntimeException invalidAcknowledgeMode(int sessionMode);
 }

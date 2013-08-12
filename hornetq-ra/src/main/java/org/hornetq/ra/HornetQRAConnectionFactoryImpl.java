@@ -30,6 +30,9 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
@@ -147,6 +150,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.QUEUE_CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
@@ -173,6 +177,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.QUEUE_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
@@ -201,6 +206,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.TOPIC_CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
@@ -227,6 +233,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
@@ -252,7 +259,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
          HornetQRALogger.LOGGER.trace("createConnection()");
       }
 
-      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -276,7 +283,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
          HornetQRALogger.LOGGER.trace("createConnection(" + userName + ", ****)");
       }
 
-      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
 
@@ -304,6 +311,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.XA_QUEUE_CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
@@ -330,6 +338,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.XA_QUEUE_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
@@ -357,6 +366,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.XA_TOPIC_CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
@@ -383,6 +393,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
       HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf,
                                                                       cm,
+                                                                      getResourceAdapter().getTM(),
                                                                       HornetQRAConnectionFactory.XA_TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
@@ -408,7 +419,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
          HornetQRALogger.LOGGER.trace("createXAConnection()");
       }
 
-      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.XA_CONNECTION);
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.XA_CONNECTION);
 
       if (HornetQRAConnectionFactoryImpl.trace)
       {
@@ -432,7 +443,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
          HornetQRALogger.LOGGER.trace("createXAConnection(" + userName + ", ****)");
       }
 
-      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.XA_CONNECTION);
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.XA_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
       validateUser(s);
@@ -461,7 +472,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    public JMSContext createContext(String userName, String password, int sessionMode)
    {
       @SuppressWarnings("resource")
-      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.CONNECTION);
+      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.CONNECTION);
       conn.setUserName(userName);
       conn.setPassword(password);
       try
@@ -498,7 +509,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public XAJMSContext createXAContext(String userName, String password)
    {
-      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, HornetQRAConnectionFactory.XA_CONNECTION);
+      HornetQRASessionFactoryImpl conn = new HornetQRASessionFactoryImpl(mcf, cm, getResourceAdapter().getTM(), HornetQRAConnectionFactory.XA_CONNECTION);
       conn.setUserName(userName);
       conn.setPassword(password);
       try
