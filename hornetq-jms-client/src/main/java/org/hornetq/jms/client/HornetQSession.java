@@ -504,7 +504,7 @@ public class HornetQSession implements QueueSession, TopicSession
    {
       if (topic == null)
       {
-         throw new IllegalStateException("topic should not be null");
+         throw HornetQJMSClientBundle.BUNDLE.invalidNullTopic();
       }
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
@@ -527,6 +527,10 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
    {
+      if(topic == null)
+      {
+         throw HornetQJMSClientBundle.BUNDLE.invalidNullTopic();
+      }
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
       {
@@ -548,6 +552,10 @@ public class HornetQSession implements QueueSession, TopicSession
    @Override
    public MessageConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) throws JMSException
    {
+      if(topic == null)
+      {
+         throw HornetQJMSClientBundle.BUNDLE.invalidNullTopic();
+      }
       HornetQTopic localTopic;
 
       if (topic == null)

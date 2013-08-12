@@ -17,12 +17,16 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatRuntimeException;
 import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +56,214 @@ public class JmsContextTest extends JMSTestBase
    public void testCreateContext()
    {
       Assert.assertNotNull(context);
+   }
+
+   @Test
+   public void invalidDestinationRuntimeExceptionTests() throws Exception
+   {
+      Destination invalidDestination = null;
+      Topic invalidTopic = null;
+      String message = "a string";
+      byte[] bytesMsgSend = message.getBytes();
+      Map<String, Object> mapMsgSend = new HashMap();
+      mapMsgSend.put("string", "wow boy!");
+      mapMsgSend.put("boolean", true);
+      mapMsgSend.put("int",1);
+      TextMessage expTextMessage = context.createTextMessage(message);
+      JMSProducer producer = context.createProducer();
+      try
+      {
+         producer.send(invalidDestination, expTextMessage);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+         //pass
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         producer.send(invalidDestination, message);
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      ObjectMessage om = context.createObjectMessage();
+      StringBuffer sb = new StringBuffer(message);
+      om.setObject(sb);
+      try
+      {
+         producer.send(invalidDestination, om);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         producer.send(invalidDestination, bytesMsgSend);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         producer.send(invalidDestination, mapMsgSend);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createConsumer(invalidDestination);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+      try
+      {
+         context.createConsumer(invalidDestination, "boolProp = TRUE");
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createConsumer(invalidDestination, "boolProp = TRUE", false);
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createDurableConsumer(invalidTopic, "InvalidDestinationRuntimeException");
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createDurableConsumer(invalidTopic, "InvalidDestinationRuntimeException", "boolProp = TRUE", false);
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createSharedDurableConsumer(invalidTopic, "InvalidDestinationRuntimeException");
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createSharedDurableConsumer(invalidTopic, "InvalidDestinationRuntimeException", "boolProp = TRUE");
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.unsubscribe("InvalidSubscriptionName");
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createSharedConsumer(invalidTopic, "InvalidDestinationRuntimeException");
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      try
+      {
+         context.createSharedConsumer(invalidTopic, "InvalidDestinationRuntimeException", "boolProp = TRUE");
+         fail();
+      }
+      catch (InvalidDestinationRuntimeException e)
+      {
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
    }
 
    @Test

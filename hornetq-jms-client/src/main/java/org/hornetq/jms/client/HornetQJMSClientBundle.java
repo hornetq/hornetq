@@ -2,6 +2,8 @@ package org.hornetq.jms.client;
 
 
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -53,4 +55,7 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129008, value =  "It is illegal to close the producer from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException callingCloseFromCompletionListener();
+
+   @Message(id = 129009, value =  "Invalid Null Topic", format = Message.Format.MESSAGE_FORMAT)
+   InvalidDestinationException invalidNullTopic();
 }
