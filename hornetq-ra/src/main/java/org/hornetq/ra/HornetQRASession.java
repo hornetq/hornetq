@@ -1453,7 +1453,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
                      name);
          }
 
-         MessageConsumer result = session.createDurableConsumer(topic, name);
+         MessageConsumer result = session.createSharedDurableConsumer(topic, name);
          result = new HornetQRAMessageConsumer(result, this);
 
          if (HornetQRASession.trace)
