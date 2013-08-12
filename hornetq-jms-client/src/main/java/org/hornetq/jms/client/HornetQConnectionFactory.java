@@ -785,6 +785,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       return "HornetQConnectionFactory [serverLocator=" + serverLocator +
              ", clientID=" +
              clientID +
+             ", consumerWindowSize = " +
+             getConsumerWindowSize() +
              ", dupsOKBatchSize=" +
              dupsOKBatchSize +
              ", transactionBatchSize=" +
