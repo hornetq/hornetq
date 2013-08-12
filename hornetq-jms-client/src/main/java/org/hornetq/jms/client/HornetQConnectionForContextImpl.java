@@ -64,4 +64,9 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
    {
       refCounter.decrement();
    }
+
+   protected void incrementRefCounter()
+   {
+      refCounter.increment();
+   }
 }
