@@ -53,4 +53,8 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129008, value =  "It is illegal to close the producer from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException callingCloseFromCompletionListener();
+   
+   @Message(id = 129009, value = "Null {0} is not allowed", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException nullArgumentNotAllowed(String type);
+   
 }

@@ -236,6 +236,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    public void send(Message message, int deliveryMode, int priority, long timeToLive,
                     CompletionListener completionListener) throws JMSException
    {
+      checkCompletionListener(completionListener);
       checkDefaultDestination();
       doSendx(defaultDestination, message, deliveryMode, priority, timeToLive, completionListener);
    }
@@ -350,6 +351,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       if (completionListener == null)
       {
+         HornetQJMSClientBundle.BUNDLE.nullArgumentNotAllowed("CompletionListener");
          throw new IllegalArgumentException("Invalid completionListener used");
       }
    }
