@@ -7,6 +7,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
+import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.resource.NotSupportedException;
 
@@ -41,11 +42,17 @@ public interface HornetQRABundle
    JMSRuntimeException illegalJEEMethod();
 
    @Message(id = 159004, value = "Invalid Session Mode SESSION_TRANSACTED", format = Message.Format.MESSAGE_FORMAT)
-   JMSRuntimeException invalidSessionTransactedMode();
+   JMSRuntimeException invalidSessionTransactedModeRuntime();
 
    @Message(id = 159005, value = "Invalid Session Mode CLIENT_ACKNOWLEDGE", format = Message.Format.MESSAGE_FORMAT)
-   JMSRuntimeException invalidClientAcknowledgeMode();
+   JMSRuntimeException invalidClientAcknowledgeModeRuntime();
 
    @Message(id = 159006, value = "Invalid Session Mode {0}", format = Message.Format.MESSAGE_FORMAT)
    JMSRuntimeException invalidAcknowledgeMode(int sessionMode);
+
+   @Message(id = 159007, value = "Invalid Session Mode SESSION_TRANSACTED", format = Message.Format.MESSAGE_FORMAT)
+   JMSException invalidSessionTransactedMode();
+
+   @Message(id = 159008, value = "Invalid Session Mode CLIENT_ACKNOWLEDGE", format = Message.Format.MESSAGE_FORMAT)
+   JMSException invalidClientAcknowledgeMode();
 }
