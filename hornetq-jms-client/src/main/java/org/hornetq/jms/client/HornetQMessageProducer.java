@@ -348,8 +348,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       if (completionListener == null)
       {
-         HornetQJMSClientBundle.BUNDLE.nullArgumentNotAllowed("CompletionListener");
-         throw new IllegalArgumentException("Invalid completionListener used");
+         throw HornetQJMSClientBundle.BUNDLE.nullArgumentNotAllowed("CompletionListener");
       }
    }
 
