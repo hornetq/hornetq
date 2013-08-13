@@ -251,12 +251,10 @@ public class HornetQSession implements QueueSession, TopicSession
 
    public void close() throws JMSException
    {
+      connection.getThreadAwareContext().assertNotCompletionListenerThread();
+      connection.getThreadAwareContext().assertNotMessageListenerThread();
       synchronized (connection)
       {
-         if(connection.getCallingThread() != null && connection.getCallingThread() == Thread.currentThread())
-         {
-            throw HornetQJMSClientBundle.BUNDLE.callingSessionCloseFromListener();
-         }
          try
          {
             for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))

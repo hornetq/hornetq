@@ -766,28 +766,28 @@ public final class HornetQJMSProducer implements JMSProducer
       @Override
       public void onCompletion(Message message)
       {
-         context.setCurrentThread(true);
+         context.getThreadAwareContext().setCurrentThread(true);
          try
          {
             wrapped.onCompletion(message);
          }
          finally
          {
-            context.clearCurrentThread(true);
+            context.getThreadAwareContext().clearCurrentThread(true);
          }
       }
 
       @Override
       public void onException(Message message, Exception exception)
       {
-         context.setCurrentThread(true);
+         context.getThreadAwareContext().setCurrentThread(true);
          try
          {
             wrapped.onException(message, exception);
          }
          finally
          {
-            context.clearCurrentThread(true);
+            context.getThreadAwareContext().clearCurrentThread(true);
          }
       }
    }

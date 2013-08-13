@@ -16,8 +16,8 @@ import javax.jms.XAJMSContext;
 
 public class HornetQXAJMSContext extends HornetQJMSContext implements XAJMSContext
 {
-   public HornetQXAJMSContext(HornetQConnectionForContext connection)
+   public HornetQXAJMSContext(HornetQConnectionForContext connection, ThreadAwareContext threadAwareContext)
    {
-      super(connection);
+      super(connection, threadAwareContext);
    }
 }

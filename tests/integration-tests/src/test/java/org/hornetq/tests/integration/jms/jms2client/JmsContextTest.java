@@ -575,6 +575,21 @@ public class JmsContextTest extends JMSTestBase
       }
    }
 
+   @Test
+   public void illegalStateRuntimeExceptionTests() throws Exception
+   {
+      JMSProducer producer = context.createProducer();
+      JMSConsumer consumer = context.createConsumer(queue1);
+      System.out.println("Creating TextMessage");
+      TextMessage expTextMessage = context.createTextMessage("Call commit");
+      CountDownLatch latch = new CountDownLatch(1);
+      JMSCOntextStopCompletionListener listener = new JMSCOntextStopCompletionListener(context, latch);
+      producer.setAsync(listener);
+      producer.send(queue1, expTextMessage);
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertNull(listener.ex);
+   }
+
    private static class SimpleCompletionListener implements CompletionListener
    {
       private CountDownLatch latch;
@@ -659,5 +674,36 @@ public class JmsContextTest extends JMSTestBase
          }
       }
       
+   }
+
+   private class JMSCOntextStopCompletionListener implements CompletionListener
+   {
+      private JMSContext context;
+      private CountDownLatch latch;
+      private Exception ex;
+
+      public JMSCOntextStopCompletionListener(JMSContext context, CountDownLatch latch)
+      {
+         this.context = context;
+         this.latch = latch;
+      }
+
+      @Override
+      public void onCompletion(Message message)
+      {
+         try
+         {
+            context.stop();
+         } catch (Exception e)
+         {
+            this.ex = e;
+         }
+         latch.countDown();
+      }
+
+      @Override
+      public void onException(Message message, Exception exception)
+      {
+      }
    }
 }

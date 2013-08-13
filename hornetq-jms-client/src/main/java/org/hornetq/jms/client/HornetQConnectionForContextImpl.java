@@ -33,6 +33,8 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
 
    final ReferenceCounter refCounter = new ReferenceCounterUtil(closeRunnable);
 
+   protected final ThreadAwareContext threadAwareContext = new ThreadAwareContext();
+
    public JMSContext createContext(int sessionMode)
    {
       switch (sessionMode)
@@ -49,14 +51,14 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
       }
       refCounter.increment();
 
-      return new HornetQJMSContext(this, sessionMode);
+      return new HornetQJMSContext(this, sessionMode, threadAwareContext);
    }
 
    public XAJMSContext createXAContext()
    {
       refCounter.increment();
 
-      return new HornetQXAJMSContext(this);
+      return new HornetQXAJMSContext(this, threadAwareContext);
    }
 
    @Override
@@ -68,5 +70,10 @@ public abstract class HornetQConnectionForContextImpl implements HornetQConnecti
    protected void incrementRefCounter()
    {
       refCounter.increment();
+   }
+
+   public ThreadAwareContext getThreadAwareContext()
+   {
+      return threadAwareContext;
    }
 }
