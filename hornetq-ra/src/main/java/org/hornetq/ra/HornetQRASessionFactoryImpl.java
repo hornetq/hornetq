@@ -177,14 +177,14 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       }
       incrementRefCounter();
 
-      return new HornetQRAJMSContext(this, sessionModeToUse);
+      return new HornetQRAJMSContext(this, sessionModeToUse, threadAwareContext);
    }
 
    public XAJMSContext createXAContext()
    {
       incrementRefCounter();
 
-      return new HornetQRAXAJMSContext(this);
+      return new HornetQRAXAJMSContext(this, threadAwareContext);
    }
 
    /**

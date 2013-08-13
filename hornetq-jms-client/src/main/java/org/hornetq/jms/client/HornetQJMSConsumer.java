@@ -178,14 +178,14 @@ public class HornetQJMSConsumer implements JMSConsumer
       {
          context.setLastMessage(HornetQJMSConsumer.this, message);
 
-         context.setCurrentThread(false);
+         context.getThreadAwareContext().setCurrentThread(false);
          try
          {
             wrapped.onMessage(message);
          }
          finally
          {
-            context.clearCurrentThread(false);
+            context.getThreadAwareContext().clearCurrentThread(false);
          }
       }
    }

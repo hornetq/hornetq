@@ -14,20 +14,21 @@ package org.hornetq.ra;
 
 import org.hornetq.jms.client.HornetQConnectionForContext;
 import org.hornetq.jms.client.HornetQJMSContext;
+import org.hornetq.jms.client.ThreadAwareContext;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSContext;
 
 public class HornetQRAJMSContext extends HornetQJMSContext
 {
-   public HornetQRAJMSContext(HornetQConnectionForContext connection, int ackMode)
+   public HornetQRAJMSContext(HornetQConnectionForContext connection, int ackMode, ThreadAwareContext threadAwareContext)
    {
-      super(connection, ackMode);
+      super(connection, ackMode, threadAwareContext);
    }
 
-   public HornetQRAJMSContext(HornetQConnectionForContext connection)
+   public HornetQRAJMSContext(HornetQConnectionForContext connection, ThreadAwareContext threadAwareContext)
    {
-      super(connection);
+      super(connection, threadAwareContext);
    }
 
    @Override

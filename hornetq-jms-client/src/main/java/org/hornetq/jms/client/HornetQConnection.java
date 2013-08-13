@@ -22,6 +22,7 @@ import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
+import javax.jms.IllegalStateRuntimeException;
 import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
@@ -121,7 +122,6 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    private final Exception creationStack;
 
    private HornetQConnectionFactory factoryReference;
-   private Thread callingThread;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -308,11 +308,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    public synchronized void stop() throws JMSException
    {
-
-      if(callingThread != null && callingThread == Thread.currentThread())
-      {
-         throw HornetQJMSClientBundle.BUNDLE.callingStopFromListener();
-      }
+      threadAwareContext.assertNotMessageListenerThread();
 
       checkClosed();
 
@@ -327,10 +323,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    public synchronized final void close() throws JMSException
    {
-      if(callingThread != null && callingThread == Thread.currentThread())
-      {
-         throw HornetQJMSClientBundle.BUNDLE.callingCloseFromListener();
-      }
+      threadAwareContext.assertNotCompletionListenerThread();
+      threadAwareContext.assertNotMessageListenerThread();
 
       if (closed)
       {
@@ -734,15 +728,6 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return started;
    }
 
-   public void setCallingThread(Thread callingThread)
-   {
-      this.callingThread = callingThread;
-   }
-
-   public Thread getCallingThread()
-   {
-      return callingThread;
-   }
 
    // Inner classes --------------------------------------------------------------------------------
 

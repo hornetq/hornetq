@@ -100,7 +100,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
       try
       {
-         connection.setCallingThread(Thread.currentThread());
+         connection.getThreadAwareContext().setCurrentThread(false);
          listener.onMessage(msg);
       }
       catch (RuntimeException e)
@@ -130,7 +130,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       }
       finally
       {
-         connection.setCallingThread(null);
+         connection.getThreadAwareContext().clearCurrentThread(false);
       }
       if (!session.isRecoverCalled() && !individualACK)
       {

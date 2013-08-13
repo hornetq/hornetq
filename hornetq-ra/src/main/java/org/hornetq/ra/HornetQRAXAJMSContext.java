@@ -13,13 +13,14 @@
 package org.hornetq.ra;
 
 import org.hornetq.jms.client.HornetQConnectionForContext;
+import org.hornetq.jms.client.ThreadAwareContext;
 
 import javax.jms.XAJMSContext;
 
 public class HornetQRAXAJMSContext extends HornetQRAJMSContext implements XAJMSContext
 {
-   public HornetQRAXAJMSContext(HornetQConnectionForContext connection)
+   public HornetQRAXAJMSContext(HornetQConnectionForContext connection, ThreadAwareContext threadAwareContext)
    {
-      super(connection);
+      super(connection, threadAwareContext);
    }
 }

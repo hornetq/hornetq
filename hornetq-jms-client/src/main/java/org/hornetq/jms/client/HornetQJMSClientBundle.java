@@ -2,6 +2,7 @@ package org.hornetq.jms.client;
 
 
 import javax.jms.IllegalStateException;
+import javax.jms.IllegalStateRuntimeException;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -42,19 +43,18 @@ public interface HornetQJMSClientBundle
    @Message(id = 129004, value =  "name cannot be empty", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nameCannotBeEmpty();
 
-   @Message(id = 129005, value =  "It is illegal to close the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
-   IllegalStateException callingCloseFromListener();
+   @Message(id = 129005, value =  "It is illegal to call this method from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateRuntimeException callingMethodFromListenerRuntime();
 
-   @Message(id = 129006, value =  "It is illegal to stop the connection from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
-   IllegalStateException callingStopFromListener();
+   @Message(id = 129006, value =  "It is illegal to call this method from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingMethodFromListener();
 
-   @Message(id = 129007, value =  "It is illegal to close the session from within a Message Listener", format = Message.Format.MESSAGE_FORMAT)
-   IllegalStateException callingSessionCloseFromListener();
+   @Message(id = 129007, value =  "It is illegal to call this method from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateRuntimeException callingMethodFromCompletionListenerRuntime();
 
-   @Message(id = 129008, value =  "It is illegal to close the producer from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
-   IllegalStateException callingCloseFromCompletionListener();
-   
+   @Message(id = 129008, value =  "It is illegal to call this method from within a Completion Listener", format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException callingMethodFromCompletionListener();
+
    @Message(id = 129009, value = "Null {0} is not allowed", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nullArgumentNotAllowed(String type);
-   
 }
