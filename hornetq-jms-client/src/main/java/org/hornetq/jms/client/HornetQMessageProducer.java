@@ -171,10 +171,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void close() throws JMSException
    {
-      if(connection.getCallingThread() != null && connection.getCallingThread() == Thread.currentThread())
-      {
-         throw HornetQJMSClientBundle.BUNDLE.callingCloseFromCompletionListener();
-      }
+      connection.getThreadAwareContext().assertNotCompletionListenerThread();
       try
       {
          clientProducer.close();
@@ -570,12 +567,12 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          try
          {
-            producer.connection.setCallingThread(Thread.currentThread());
+            producer.connection.getThreadAwareContext().setCurrentThread(true);
             completionListener.onCompletion(jmsMessage);
          }
          finally
          {
-            producer.connection.setCallingThread(null);
+            producer.connection.getThreadAwareContext().clearCurrentThread(true);
          }
       }
 
