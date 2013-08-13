@@ -62,6 +62,8 @@ import org.junit.Test;
 public class OutgoingConnectionTest extends HornetQRATestBase
 {
    private HornetQResourceAdapter resourceAdapter;
+   private HornetQRAConnectionFactory qraConnectionFactory;
+   private HornetQRAManagedConnectionFactory mcf;
 
    @Override
    public boolean useSecurity()
@@ -85,12 +87,24 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
       server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
+
+      resourceAdapter = new HornetQResourceAdapter();
+      resourceAdapter.setTransactionManagerLocatorClass(JMSContextTest.class.getName());
+      resourceAdapter.setTransactionManagerLocatorMethod("getTm");
+
+      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      resourceAdapter.start(ctx);
+      mcf = new HornetQRAManagedConnectionFactory();
+      mcf.setResourceAdapter(resourceAdapter);
+      qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
    }
 
    @Override
    @After
    public void tearDown() throws Exception
    {
+      DummyTransactionManager.tm.tx = null;
       if (resourceAdapter != null)
       {
          resourceAdapter.stop();
@@ -103,16 +117,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    @Test
    public void testSimpleMessageSendAndReceive() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setTransactionManagerLocatorClass("");
-      resourceAdapter.setTransactionManagerLocatorMethod("");
-
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      resourceAdapter.start(ctx);
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      mcf.setResourceAdapter(resourceAdapter);
-      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
       Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
@@ -129,17 +133,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    @Test
    public void testSimpleSendNoXAJMSContext() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setTransactionManagerLocatorClass("");
-      resourceAdapter.setTransactionManagerLocatorMethod("");
-
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      resourceAdapter.start(ctx);
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      mcf.setResourceAdapter(resourceAdapter);
-      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
-
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
 
       try(ClientSessionFactory sf = locator.createSessionFactory();
@@ -164,19 +157,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    @Test
    public void testSimpleSendNoXAJMS1() throws Exception
    {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setTransactionManagerLocatorClass("");
-      resourceAdapter.setTransactionManagerLocatorMethod("");
-
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      resourceAdapter.start(ctx);
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      mcf.setResourceAdapter(resourceAdapter);
-      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
-
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
-
       try(ClientSessionFactory sf = locator.createSessionFactory();
           ClientSession session = sf.createSession();
           ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
@@ -201,12 +182,6 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleMessageSendAndReceiveXA() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-      resourceAdapter = newResourceAdapter();
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      resourceAdapter.start(ctx);
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      mcf.setResourceAdapter(resourceAdapter);
-      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       XAQueueConnection queueConnection = qraConnectionFactory.createXAQueueConnection();
       XASession s = queueConnection.createXASession();
 
@@ -448,19 +423,25 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    }
 
-   @Test
-   public void testQueuSessionAckMode() throws Exception
-   {
-      resourceAdapter = new HornetQResourceAdapter();
-      resourceAdapter.setTransactionManagerLocatorClass("");
-      resourceAdapter.setTransactionManagerLocatorMethod("");
 
-      resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      resourceAdapter.start(ctx);
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      mcf.setResourceAdapter(resourceAdapter);
-      HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+   @Test
+   public void testQueueSessionAckModeJTA() throws Exception
+   {
+      testQueuSessionAckMode(true);
+   }
+
+   @Test
+   public void testQueueSessionAckModeNoJTA() throws Exception
+   {
+      testQueuSessionAckMode(false);
+   }
+
+   public void testQueuSessionAckMode(boolean inTx) throws Exception
+   {
+      if(inTx)
+      {
+         DummyTransactionManager.tm.tx = new DummyTransaction();
+      }
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
 
       Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -472,25 +453,46 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       s.close();
 
       //exception should be thrown if ack mode is SESSION_TRANSACTED or
-      //CLIENT_ACKNOWLEDGE
+      //CLIENT_ACKNOWLEDGE when in a JTA else ackmode should bee ignored
       try
       {
          s = queueConnection.createSession(false, Session.SESSION_TRANSACTED);
-         fail("didn't get expected exception creating session with SESSION_TRANSACTED mode");
+         if(inTx)
+         {
+            assertEquals(s.getAcknowledgeMode(), Session.AUTO_ACKNOWLEDGE);
+         }
+         else
+         {
+            fail("didn't get expected exception creating session with SESSION_TRANSACTED mode ");
+         }
+         s.close();
       }
       catch (JMSException e)
       {
-         //expected.
+         if(inTx)
+         {
+            fail("shouldnt throw exception " + e);
+         }
       }
       
       try
       {
          s = queueConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         fail("didn't get expected exception creating session with CLIENT_ACKNOWLEDGE mode");
+         if(inTx)
+         {
+            assertEquals(s.getAcknowledgeMode(), Session.AUTO_ACKNOWLEDGE);
+         }
+         else
+         {
+            fail("didn't get expected exception creating session with CLIENT_ACKNOWLEDGE mode");
+         }
       }
       catch (JMSException e)
       {
-         //expected.
+         if(inTx)
+         {
+            fail("shouldnt throw exception " + e);
+         }
       }
       
    }

@@ -161,14 +161,14 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          case Session.CLIENT_ACKNOWLEDGE:
             if(!inJtaTx)
             {
-               throw HornetQRABundle.BUNDLE.invalidSessionTransactedMode();
+               throw HornetQRABundle.BUNDLE.invalidSessionTransactedModeRuntime();
             }
             sessionModeToUse = Session.AUTO_ACKNOWLEDGE;
             break;
          case Session.SESSION_TRANSACTED:
             if (!inJtaTx)
             {
-               throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeMode();
+               throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeModeRuntime();
             }
             sessionModeToUse = Session.AUTO_ACKNOWLEDGE;
             break;
@@ -303,7 +303,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          throw new IllegalStateException("Can not get a queue session from a topic connection");
       }
 
-      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
+      return allocateConnection(transacted, checkCreateSessionAck(acknowledgeMode), type);
    }
 
    /**
@@ -379,7 +379,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
 
-      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
+      return allocateConnection(transacted, checkCreateSessionAck(acknowledgeMode) , type);
    }
 
    /**
@@ -539,7 +539,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       }
 
       checkClosed();
-      return allocateConnection(transacted, HornetQConnection.checkAck(transacted,acknowledgeMode), type);
+      return allocateConnection(transacted, checkCreateSessionAck(acknowledgeMode), type);
    }
 
    /**
@@ -960,5 +960,51 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       {
          throw new IllegalStateException("The connection is closed");
       }
+   }
+
+   private int checkCreateSessionAck(int acknowledgeMode) throws JMSException
+   {
+      int ackModeToUse;
+      boolean inJtaTx = false;
+      if(tm != null)
+      {
+         Transaction tx = null;
+         try
+         {
+            tx = tm.getTransaction();
+         }
+         catch (SystemException e)
+         {
+            //assume false
+         }
+         inJtaTx = tx != null;
+      }
+      switch (acknowledgeMode)
+      {
+         case Session.AUTO_ACKNOWLEDGE:
+         case Session.DUPS_OK_ACKNOWLEDGE:
+         case HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE:
+         case HornetQJMSConstants.PRE_ACKNOWLEDGE:
+            ackModeToUse = acknowledgeMode;
+            break;
+         //these are prohibited in JEE unless not in a JTA tx where they should be ignored and auto_ack used
+         case Session.CLIENT_ACKNOWLEDGE:
+            if(!inJtaTx)
+            {
+               throw HornetQRABundle.BUNDLE.invalidSessionTransactedMode();
+            }
+            ackModeToUse = Session.AUTO_ACKNOWLEDGE;
+            break;
+         case Session.SESSION_TRANSACTED:
+            if (!inJtaTx)
+            {
+               throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeMode();
+            }
+            ackModeToUse = Session.AUTO_ACKNOWLEDGE;
+            break;
+         default:
+            throw HornetQRABundle.BUNDLE.invalidAcknowledgeMode(acknowledgeMode);
+      }
+      return ackModeToUse;
    }
 }

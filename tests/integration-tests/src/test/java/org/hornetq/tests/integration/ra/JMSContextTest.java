@@ -19,23 +19,13 @@ import org.hornetq.ra.HornetQRAConnectionFactoryImpl;
 import org.hornetq.ra.HornetQRAConnectionManager;
 import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
-import org.jboss.security.plugins.TransactionManagerLocator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.jms.JMSContext;
 import javax.jms.JMSRuntimeException;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,11 +36,9 @@ public class JMSContextTest extends HornetQRATestBase
    HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
    private HornetQRAConnectionFactory qraConnectionFactory;
 
-   private static DummyTransactionManager tm = new DummyTransactionManager();;
-
    public TransactionManager getTm()
    {
-      return tm;
+      return DummyTransactionManager.tm;
    }
 
    @Override
@@ -83,7 +71,7 @@ public class JMSContextTest extends HornetQRATestBase
    @After
    public void tearDown() throws Exception
    {
-      tm.tx = null;
+      DummyTransactionManager.tm.tx = null;
       if (resourceAdapter != null)
       {
          resourceAdapter.stop();
@@ -148,7 +136,7 @@ public class JMSContextTest extends HornetQRATestBase
    @Test
    public void sessionTransactedTestNoActiveJTATx() throws Exception
    {
-      tm.tx = new DummyTransaction();
+      DummyTransactionManager.tm.tx = new DummyTransaction();
       JMSContext context = qraConnectionFactory.createContext(JMSContext.SESSION_TRANSACTED);
       assertEquals(context.getSessionMode(), JMSContext.AUTO_ACKNOWLEDGE);
    }
@@ -169,101 +157,9 @@ public class JMSContextTest extends HornetQRATestBase
    @Test
    public void clientAckTestNoActiveJTATx() throws Exception
    {
-      tm.tx = new DummyTransaction();
+      DummyTransactionManager.tm.tx = new DummyTransaction();
       JMSContext context = qraConnectionFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
       assertEquals(context.getSessionMode(), JMSContext.AUTO_ACKNOWLEDGE);
    }
 
-   private static class DummyTransaction implements Transaction
-   {
-      @Override
-      public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, SystemException
-      {
-      }
-
-      @Override
-      public void rollback() throws IllegalStateException, SystemException
-      {
-      }
-
-      @Override
-      public void setRollbackOnly() throws IllegalStateException, SystemException
-      {
-      }
-
-      @Override
-      public int getStatus() throws SystemException
-      {
-         return 0;
-      }
-
-      @Override
-      public boolean enlistResource(XAResource xaResource) throws RollbackException, IllegalStateException, SystemException
-      {
-         return false;
-      }
-
-      @Override
-      public boolean delistResource(XAResource xaResource, int i) throws IllegalStateException, SystemException
-      {
-         return false;
-      }
-
-      @Override
-      public void registerSynchronization(Synchronization synchronization) throws RollbackException, IllegalStateException, SystemException
-      {
-      }
-   }
-   private static class DummyTransactionManager implements TransactionManager
-   {
-      public Transaction tx;
-
-      @Override
-      public void begin() throws NotSupportedException, SystemException
-      {
-      }
-
-      @Override
-      public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException
-      {
-      }
-
-      @Override
-      public void rollback() throws IllegalStateException, SecurityException, SystemException
-      {
-      }
-
-      @Override
-      public void setRollbackOnly() throws IllegalStateException, SystemException
-      {
-      }
-
-      @Override
-      public int getStatus() throws SystemException
-      {
-         return 0;
-      }
-
-      @Override
-      public Transaction getTransaction() throws SystemException
-      {
-         return tx;
-      }
-
-      @Override
-      public void setTransactionTimeout(int i) throws SystemException
-      {
-      }
-
-      @Override
-      public Transaction suspend() throws SystemException
-      {
-         return null;
-      }
-
-      @Override
-      public void resume(Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException
-      {
-      }
-   }
 }
