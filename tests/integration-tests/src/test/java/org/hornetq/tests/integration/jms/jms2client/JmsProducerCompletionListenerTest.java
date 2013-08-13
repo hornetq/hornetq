@@ -10,12 +10,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.CompletionListener;
+import javax.jms.Connection;
 import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.Session;
 
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
@@ -79,6 +82,31 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
 
       context.close();
       assertTrue("completion listener should be called", cl.completionLatch.await(3, TimeUnit.SECONDS));
+   }
+
+   @Test
+   public void testNullCompletionListener() throws Exception
+   {
+      Connection connection = null;
+      try
+      {
+         connection = cf.createConnection();
+         Session session = connection.createSession();
+         MessageProducer prod = session.createProducer(queue);
+         prod.send(session.createMessage(), null);
+         fail("Didn't get expected exception!");
+      }
+      catch(IllegalArgumentException expected)
+      {
+         //ok
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
    }
 
    @Test
