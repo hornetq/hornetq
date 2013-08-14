@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+     Sample configuration of multiple sites, to be used in RELAY2
+
+     ****
+     **** Note that the schema is still work-in-progress and might change between 3.2 and 3.3, as
+     **** we're trying to simplify it
+     ****
+ -->
+<RelayConfiguration xmlns="urn:jgroups:relay:1.0">
+
+    <sites>
+        <site name="lon" id="0">
+            <bridges>
+                <bridge config="lon-nyc.xml" name="lon-nyc"/>
+                <bridge config="lon-sfo.xml" name="lon-sfo"/>
+            </bridges>
+            <forwards>
+                <forward to="lax" gateway="sfo"/>
+            </forwards>
+        </site>
+
+        <site name="nyc" id="1">
+            <bridges>
+                <bridge name="lon-nyc" config="lon-nyc.xml"/>
+                <bridge name="nyc-sfo" config="nyc-sfo.xml"/>
+            </bridges>
+        </site>
+        <site name="sfo" id="2">
+            <bridges>
+                <bridge name="lon-sfo" config="lon-sfo.xml"/>
+            </bridges>
+        </site>
+    </sites>
+
+</RelayConfiguration>
+

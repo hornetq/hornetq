@@ -1,0 +1,24 @@
+
+<!--
+  Default flush stack using IP multicasting.
+-->
+
+<config xmlns="urn:org:jgroups"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.3.xsd">
+    <UDP/>
+    <PING/>
+    <MERGE2/>
+    <FD_SOCK/>
+    <FD_ALL/>
+    <VERIFY_SUSPECT/>
+    <pbcast.NAKACK2/>
+    <UNICAST3/>
+    <pbcast.STABLE/>
+    <pbcast.GMS/>
+    <UFC/>
+    <MFC/>
+    <FRAG2/>
+    <pbcast.STATE_TRANSFER />
+    <pbcast.FLUSH timeout="0"/>
+</config>
