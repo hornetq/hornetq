@@ -4,12 +4,16 @@ import org.hornetq.tests.util.JMSTestBase;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidDestinationRuntimeException;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import java.util.HashMap;
@@ -240,6 +244,129 @@ public class InvalidDestinationTest extends JMSTestBase
       catch (Exception e)
       {
          fail("Expected InvalidDestinationRuntimeException, received " + e);
+      }
+   }
+
+   @Test
+   public void invalidDestinationExceptionTests() throws Exception
+   {
+      Destination invalidDestination = null;
+      Topic invalidTopic = null;
+
+      Connection conn = cf.createConnection();
+
+      try
+      {
+         Session session = conn.createSession();
+
+         try
+         {
+            session.createDurableSubscriber(invalidTopic, "InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createDurableSubscriber(invalidTopic, "InvalidDestinationException", "lastMessage = TRUE", false);
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         System.out.println("Testing Session.createDurableConsumer(Topic, String) for InvalidDestinationException");
+         try
+         {
+            session.createDurableConsumer(invalidTopic, "InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createDurableConsumer(invalidTopic, "InvalidDestinationException", "lastMessage = TRUE", false);
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createSharedConsumer(invalidTopic, "InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createSharedConsumer(invalidTopic, "InvalidDestinationException", "lastMessage = TRUE");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createSharedDurableConsumer(invalidTopic, "InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+
+         try
+         {
+            session.createSharedDurableConsumer(invalidTopic, "InvalidDestinationException", "lastMessage = TRUE");
+         }
+         catch (InvalidDestinationException e)
+         {
+            //pass
+         }
+         catch (Exception e)
+         {
+            fail("Expected InvalidDestinationException, received " + e);
+         }
+      }
+      finally
+      {
+         conn.close();
       }
    }
    
