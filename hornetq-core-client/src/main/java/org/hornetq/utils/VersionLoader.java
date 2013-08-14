@@ -121,7 +121,6 @@ public final class VersionLoader
             int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
             int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
-            String nettyVersion = versionProps.getProperty("hornetq.netty.version");
             int[] compatibleVersionArray = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.compatibleVersionList"));
 
             return new VersionImpl(versionName,
@@ -130,7 +129,6 @@ public final class VersionLoader
                                    microVersion,
                                    incrementingVersion,
                                    versionSuffix,
-                                   nettyVersion,
                                    compatibleVersionArray);
          }
          catch (IOException e)

@@ -479,11 +479,6 @@ public class NettyAcceptor implements Acceptor
 
       paused = false;
 
-      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
-      {
-         HornetQServerLogger.LOGGER.unexpectedNettyVersion(VersionLoader.getVersion().getNettyVersion(), Version.ID);
-      }
-
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();

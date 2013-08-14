@@ -453,10 +453,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          throw new IllegalStateException("Cannot create a durable subscriber on a QueueSession");
       }
-      if (topic == null)
-      {
-         throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
-      }
+      checkTopic(topic);
       if (!(topic instanceof HornetQDestination))
       {
          throw new InvalidDestinationException("Not a HornetQTopic:" + topic);
@@ -474,6 +471,14 @@ public class HornetQSession implements QueueSession, TopicSession
       }
 
       return createConsumer(jbdest, name, messageSelector, noLocal, ConsumerDurability.DURABLE);
+   }
+
+   private void checkTopic(Topic topic) throws InvalidDestinationException
+   {
+      if (topic == null)
+      {
+         throw HornetQJMSClientBundle.BUNDLE.nullTopic();
+      }
    }
 
    @Override
@@ -503,10 +508,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          throw new IllegalStateException("Cannot create a shared consumer on a QueueSession");
       }
-      if (topic == null)
-      {
-         throw new IllegalStateException("topic should not be null");
-      }
+      checkTopic(topic);
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
       {
@@ -532,6 +534,7 @@ public class HornetQSession implements QueueSession, TopicSession
       {
          throw new IllegalStateException("Cannot create a durable consumer on a QueueSession");
       }
+      checkTopic(topic);
       HornetQTopic localTopic;
       if (topic instanceof HornetQTopic)
       {
@@ -558,12 +561,10 @@ public class HornetQSession implements QueueSession, TopicSession
          throw new IllegalStateException("Cannot create a shared durable consumer on a QueueSession");
       }
 
+      checkTopic(topic);
+
       HornetQTopic localTopic;
 
-      if (topic == null)
-      {
-         throw new IllegalStateException("topic should not be null");
-      }
       if (topic instanceof HornetQTopic)
       {
          localTopic = (HornetQTopic)topic;

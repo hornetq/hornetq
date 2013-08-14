@@ -23,7 +23,6 @@ unzip -o ../hornetq-core-client/target/hornetq-core-client-$VERSION.jar -x \*MET
 unzip -o ../hornetq-commons/target/hornetq-commons-$VERSION.jar -x \*META-INF\*
 zip -r jboss-client.jar *
 cp jboss-client.jar $JBOSS_HOME/bin/client/jboss-client.jar
-
 cd ..
-
+rm -rf tmp
 

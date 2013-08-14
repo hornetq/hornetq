@@ -30,16 +30,7 @@
     </prerequisites>
 
    <properties>
-      <!-- don't forget to update netty.version.string manually after updating this. look at the explanation on netty.version.string -->
       <netty.version>3.6.6.Final</netty.version>
-
-       <!-- please keep netty.version.string literal,
-          RedHat production team will patch our builds on netty.version..
-          Our verification for the right Netty version only needs a Netty.getVersion().contains("our-string");
-          if we make this a variable we will have to rebuild hornetq for any minor rebuild from the production team
-          and other issues along it.
-         -->
-      <netty.version.string>3.6.6.Final</netty.version.string>
 
       <hornetq.version.versionName>Andromedian Fly</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
