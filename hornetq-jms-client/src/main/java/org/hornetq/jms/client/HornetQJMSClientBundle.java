@@ -2,6 +2,7 @@ package org.hornetq.jms.client;
 
 
 import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
 import javax.jms.IllegalStateRuntimeException;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -57,4 +58,7 @@ public interface HornetQJMSClientBundle
 
    @Message(id = 129009, value = "Null {0} is not allowed", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nullArgumentNotAllowed(String type);
+
+   @Message(id = 129010, value =  "Topic cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   InvalidDestinationException nullTopic();
 }

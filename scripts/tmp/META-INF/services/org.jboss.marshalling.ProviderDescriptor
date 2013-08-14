@@ -1,0 +1,4 @@
+#
+# River protocol provider
+#
+org.jboss.marshalling.river.RiverProviderDescriptor

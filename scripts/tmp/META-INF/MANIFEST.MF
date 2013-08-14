@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Build-Timestamp: Mon, 12 Aug 2013 15:44:40 +0100
+Implementation-Title: WildFly: EJB and JMS client combined jar
+Implementation-Version: 8.0.0.Alpha4-SNAPSHOT
+Os-Version: 3.9.9-201.fc18.x86_64
+Built-By: andy
+Specification-Vendor: JBoss by Red Hat
+Created-By: Apache Maven 3.0.5
+Os-Name: Linux
+Implementation-URL: http://www.jboss.org/wildfly-parent/client/wildfly
+ -client-all
+Java-Vendor: Oracle Corporation
+Implementation-Vendor: JBoss by Red Hat
+Scm-Revision: d11839a61c0d5605dd39a5d51d8a98ca791ad219
+JBossAS-Release-Version: 8.0.0.Alpha4-SNAPSHOT
+Implementation-Vendor-Id: org.wildfly
+Scm-Url: https://github.com/jbossas/jboss-as
+Build-Jdk: 1.7.0_25
+Java-Version: 1.7.0_25
+Scm-Connection: scm:git:git@github.com:jbossas/jboss-as.git/client/wil
+ dfly-client-all
+Os-Arch: amd64
+Specification-Title: WildFly: EJB and JMS client combined jar
+Specification-Version: 8.0.0.Alpha4-SNAPSHOT
+JBossAS-Release-Codename: WildFly
+Archiver-Version: Plexus Archiver
+
