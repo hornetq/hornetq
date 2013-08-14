@@ -245,10 +245,6 @@ public interface HornetQClientLogger extends BasicLogger
    void errorCallingInterceptor(@Cause Throwable e, Interceptor interceptor);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212039, value = "Unexpected Netty Version was expecting {0} using {1} Version.ID", format = Message.Format.MESSAGE_FORMAT)
-   void unexpectedNettyVersion(String nettyVersion, String id);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212040, value = "Timed out waiting for netty ssl close future to complete", format = Message.Format.MESSAGE_FORMAT)
    void timeoutClosingSSL();
 
