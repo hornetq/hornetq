@@ -40,15 +40,6 @@ public class NettyConnectorTest extends UnitTestCase
 {
 
    @Test
-   public void testVersionPropertiesAreCorrect()
-   {
-      assertTrue("pom.xml 'netty.version.string' property set to expect\n'" +
-                          VersionLoader.getVersion().getNettyVersion() + "'\nGetting\n'" +
-                          org.jboss.netty.util.Version.ID + "'",
-                 org.jboss.netty.util.Version.ID.contains(VersionLoader.getVersion().getNettyVersion()));
-   }
-
-   @Test
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new BufferHandler()
