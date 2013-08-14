@@ -39,8 +39,6 @@ public class VersionImpl implements Version, Serializable
 
    private final String versionSuffix;
 
-   private final String nettyVersion;
-
    private final int[] compatibleVersionList;
 
    // Constructors --------------------------------------------------
@@ -51,7 +49,6 @@ public class VersionImpl implements Version, Serializable
                       final int microVersion,
                       final int incrementingVersion,
                       final String versionSuffix,
-                      final String nettyVersion,
                       final int[] compatibleVersionList)
    {
       this.versionName = versionName;
@@ -65,8 +62,6 @@ public class VersionImpl implements Version, Serializable
       this.incrementingVersion = incrementingVersion;
 
       this.versionSuffix = versionSuffix;
-
-      this.nettyVersion = nettyVersion;
 
       this.compatibleVersionList = Arrays.copyOf(compatibleVersionList, compatibleVersionList.length);
    }
@@ -118,11 +113,6 @@ public class VersionImpl implements Version, Serializable
       return incrementingVersion;
    }
 
-   public String getNettyVersion()
-   {
-      return nettyVersion;
-   }
-
    public boolean isCompatible(int version)
    {
       for (int element : compatibleVersionList)
@@ -145,7 +135,6 @@ public class VersionImpl implements Version, Serializable
       result = prime * result + majorVersion;
       result = prime * result + microVersion;
       result = prime * result + minorVersion;
-      result = prime * result + ((nettyVersion == null) ? 0 : nettyVersion.hashCode());
       result = prime * result + ((versionName == null) ? 0 : versionName.hashCode());
       result = prime * result + ((versionSuffix == null) ? 0 : versionSuffix.hashCode());
       return result;
@@ -184,17 +173,6 @@ public class VersionImpl implements Version, Serializable
          return false;
       }
       if (minorVersion != other.minorVersion)
-      {
-         return false;
-      }
-      if (nettyVersion == null)
-      {
-         if (other.nettyVersion != null)
-         {
-            return false;
-         }
-      }
-      else if (!nettyVersion.equals(other.nettyVersion))
       {
          return false;
       }

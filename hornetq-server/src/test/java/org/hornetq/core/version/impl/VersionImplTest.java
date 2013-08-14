@@ -47,7 +47,6 @@ public class VersionImplTest extends TestCase
       int microVersion = 1;
       int incrementingVersion = 10;
       String versionSuffix = "suffix";
-      String nettyVersion = "netty";
       int[] compatibleVersionList = {7,8,9,10};
       VersionImpl version = new VersionImpl(versionName,
                                             majorVersion,
@@ -55,7 +54,6 @@ public class VersionImplTest extends TestCase
                                             microVersion,
                                             incrementingVersion,
                                             versionSuffix,
-                                            nettyVersion,
                                             compatibleVersionList);
 
       Assert.assertEquals(versionName, version.getVersionName());
@@ -68,10 +66,9 @@ public class VersionImplTest extends TestCase
 
    public void testEquals() throws Exception
    {
-      String nettyVersion = "netty";
-      VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion, new int[]{7,8,9,10});
-      VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion, new int[]{7,8,9,10});
-      VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", nettyVersion, new int[]{7,8,9,10,11});
+      VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", new int[]{7,8,9,10});
+      VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", new int[]{7,8,9,10});
+      VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", new int[]{7,8,9,10,11});
 
       Assert.assertFalse(version.equals(new Object()));
 
@@ -82,8 +79,7 @@ public class VersionImplTest extends TestCase
 
    public void testSerialize() throws Exception
    {
-      String nettyVersion = "netty";
-      VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh", nettyVersion, new int[]{9,10,11,12});
+      VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh", new int[]{9,10,11,12});
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(version);
