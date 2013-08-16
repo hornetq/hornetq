@@ -280,7 +280,9 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    {
       setupDLQ(10);
       resourceAdapter = newResourceAdapter();
-      resourceAdapter.setUseLocalTx(true);
+      resourceAdapter.setTransactionManagerLocatorClass(JMSContextTest.class.getName());
+      resourceAdapter.setTransactionManagerLocatorMethod("getTm");
+      DummyTransactionManager.tm.tx = new DummyTransaction();
       MyBootstrapContext ctx = new MyBootstrapContext();
       resourceAdapter.start(ctx);
       HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
@@ -445,11 +447,25 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
 
       Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      assertEquals(Session.AUTO_ACKNOWLEDGE, s.getAcknowledgeMode());
+      if(inTx)
+      {
+         assertEquals(Session.SESSION_TRANSACTED, s.getAcknowledgeMode());
+      }
+      else
+      {
+         assertEquals(Session.AUTO_ACKNOWLEDGE, s.getAcknowledgeMode());
+      }
       s.close();
 
       s = queueConnection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      assertEquals(Session.DUPS_OK_ACKNOWLEDGE, s.getAcknowledgeMode());
+      if(inTx)
+      {
+         assertEquals(Session.SESSION_TRANSACTED, s.getAcknowledgeMode());
+      }
+      else
+      {
+         assertEquals(Session.DUPS_OK_ACKNOWLEDGE, s.getAcknowledgeMode());
+      }
       s.close();
 
       //exception should be thrown if ack mode is SESSION_TRANSACTED or
@@ -459,7 +475,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          s = queueConnection.createSession(false, Session.SESSION_TRANSACTED);
          if(inTx)
          {
-            assertEquals(s.getAcknowledgeMode(), Session.AUTO_ACKNOWLEDGE);
+            assertEquals(s.getAcknowledgeMode(), Session.SESSION_TRANSACTED);
          }
          else
          {
@@ -480,7 +496,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          s = queueConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          if(inTx)
          {
-            assertEquals(s.getAcknowledgeMode(), Session.AUTO_ACKNOWLEDGE);
+            assertEquals(s.getAcknowledgeMode(), Session.SESSION_TRANSACTED);
          }
          else
          {
