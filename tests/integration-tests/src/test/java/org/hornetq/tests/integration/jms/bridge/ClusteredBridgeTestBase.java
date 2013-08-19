@@ -258,7 +258,7 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
          session.close();
       }
 
-      public void receiveMessages(String queueName, int num) throws HornetQException
+      public void receiveMessages(String queueName, int num, boolean checkDup) throws HornetQException
       {
          ClientSession session = sessionFactory.createSession();
          session.start();
@@ -270,8 +270,21 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
             assertNotNull(m.getStringProperty("bridge-message"));
             m.acknowledge();
          }
+
          ClientMessage m = consumer.receive(500);
-         assertNull(m);
+         if (checkDup)
+         {
+            assertNull(m);
+         }
+         else
+         {
+            //drain messages
+            while (m != null)
+            {
+               m = consumer.receive(200);
+            }
+         }
+
          session.close();
       }
 
