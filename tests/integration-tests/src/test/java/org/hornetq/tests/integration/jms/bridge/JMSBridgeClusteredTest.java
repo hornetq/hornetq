@@ -63,6 +63,11 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
       performSourceAndTargetCrashAndFailover(QualityOfServiceMode.DUPLICATES_OK);
    }
 
+   public void testBridgeOnFailoverAtMostOnce() throws Exception
+   {
+      performSourceAndTargetCrashAndFailover(QualityOfServiceMode.AT_MOST_ONCE);
+   }
+
    public void testCrashAndFailoverWithMessagesXA() throws Exception
    {
       performSourceAndTargetCrashAndFailoverWithMessages(QualityOfServiceMode.ONCE_AND_ONLY_ONCE);
@@ -212,7 +217,7 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
 
          //verify bridge still work
          sendMessages(sourceServer, sourceQueueName, NUM_MESSAGES);
-         receiveMessages(targetServer, targetQueueName, NUM_MESSAGES);
+         receiveMessages(targetServer, targetQueueName, NUM_MESSAGES, mode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE);
       }
       finally
       {
@@ -228,11 +233,24 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
       server.sendMessages(queueName, num);
    }
 
+   private void receiveMessages(ServerGroup server, String queueName, int num, boolean checkDup) throws HornetQException
+   {
+      try
+      {
+         server.receiveMessages(queueName, num, checkDup);
+      }
+      catch (HornetQException e)
+      {
+         e.printStackTrace();
+         throw e;
+      }
+   }
+
    private void receiveMessages(ServerGroup server, String queueName, int num) throws HornetQException
    {
       try
       {
-         server.receiveMessages(queueName, num);         
+         server.receiveMessages(queueName, num, false);
       }
       catch (HornetQException e)
       {
