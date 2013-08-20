@@ -24,7 +24,7 @@
       <jboss.home>${env.JBOSS_HOME}</jboss.home>
 
       <!-- Note this must be consistent with the version in AS7 -->
-      <hornetq.client.version>2.2.13.Final</hornetq.client.version>
+      <hornetq.client.version>2.4.0-SNAPSHOT</hornetq.client.version>
 
    </properties>
 
@@ -44,6 +44,7 @@
       <module>mdb-cmt-tx-local</module>
       <module>mdb-cmt-tx-not-supported</module>
       <module>mdb-cmt-tx-required</module>
+      <module>jms-context-injection</module>
       <module>mdb-message-selector</module>
       <module>mdb-tx-send</module>
       <module>servlet-ssl</module>
@@ -54,13 +55,17 @@
          <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-bom</artifactId>
-            <version>1.0.0.Final</version>
+            <version>1.0.3.Final</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
       </dependencies>
    </dependencyManagement>
    <dependencies>
+      <dependency>
+         <groupId>org.jboss.spec.javax.jms</groupId>
+         <artifactId>jboss-jms-api_2.0_spec</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.jboss.spec</groupId>
          <artifactId>jboss-javaee-6.0</artifactId>
@@ -77,13 +82,13 @@
       <dependency>
          <groupId>org.jboss.arquillian.junit</groupId>
          <artifactId>arquillian-junit-container</artifactId>
-         <version>1.0.0.Final</version>
+         <version>1.0.3.Final</version>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.jboss.as</groupId>
-         <artifactId>jboss-as-arquillian-container-managed</artifactId>
-         <version>7.1.0.Final</version>
+         <groupId>org.wildfly</groupId>
+         <artifactId>wildfly-arquillian-container-managed</artifactId>
+         <version>8.0.0.Alpha3-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
       <dependency>
