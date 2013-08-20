@@ -42,12 +42,13 @@ import javax.jms.XASession;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
-import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionRolledbackException;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
@@ -1531,7 +1532,22 @@ public final class JMSBridgeImpl implements JMSBridge
             }
          }
 
-         sendMessages();
+         boolean exHappened;
+
+         do
+         {
+            exHappened = false;
+            try
+            {
+               sendMessages();
+            }
+            catch (TransactionRolledbackException e)
+            {
+               HornetQJMSServerLogger.LOGGER.warn(e.getMessage() + ", retrying TX", e);
+               exHappened = true;
+            }
+         }
+         while (exHappened);
 
          if (maxBatchSize > 1)
          {
@@ -1569,15 +1585,28 @@ public final class JMSBridgeImpl implements JMSBridge
                HornetQJMSServerLogger.LOGGER.trace("Client acked source session");
             }
          }
-
-         // Clear the messages
-         messages.clear();
       }
       catch (Exception e)
       {
          HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
-         handleFailureOnSend();
+         // We don't call failure otherwise failover would be broken with HornetQ
+         // We let the ExceptionListener to deal with failures
+
+         try
+         {
+            sourceSession.recover();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+      }
+      finally
+      {
+         // Clear the messages
+         messages.clear();
+
       }
    }
 
@@ -1659,14 +1688,31 @@ public final class JMSBridgeImpl implements JMSBridge
             HornetQJMSServerLogger.LOGGER.trace("Committed source session");
          }
 
-         // Clear the messages
-         messages.clear();
       }
       catch (Exception e)
       {
          HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
 
-         handleFailureOnSend();
+         try
+         {
+            sourceSession.rollback();
+         }
+         catch (Throwable ignored)
+         {
+         }
+         try
+         {
+            targetSession.rollback();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         // We don't call failure here, we let the exception listener to deal with it
+      }
+      finally
+      {
+         messages.clear();
       }
    }
 

@@ -1,6 +1,12 @@
+
 #this script is useful to replace libraries on a wildfly master
 # it assumes JBOSS_HOME pre defined
+# run this from the project home
 
+export JBOSS_HOME=$1
+
+
+# fis the VERSION before running it
 export VERSION="2.4.0-SNAPSHOT"
 #replace jars
 echo cp ./hornetq-core-client/target/hornetq-core-client-$VERSION.jar $JBOSS_HOME/modules/system/layers/base/org/hornetq/main/hornetq-core-client*.jar
