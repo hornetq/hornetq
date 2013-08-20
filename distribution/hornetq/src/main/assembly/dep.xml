@@ -344,6 +344,30 @@
          <unpack>false</unpack>
          <outputFileNameMapping>netty.jar</outputFileNameMapping>
       </dependencySet>
+       <dependencySet>
+           <includes>
+               <include>org.apache.qpid:proton-api</include>
+           </includes>
+           <outputDirectory>lib</outputDirectory>
+           <unpack>false</unpack>
+           <outputFileNameMapping>proton-api.jar</outputFileNameMapping>
+       </dependencySet>
+       <dependencySet>
+           <includes>
+               <include>org.apache.qpid:proton-jms</include>
+           </includes>
+           <outputDirectory>lib</outputDirectory>
+           <unpack>false</unpack>
+           <outputFileNameMapping>proton-jms.jar</outputFileNameMapping>
+       </dependencySet>
+       <dependencySet>
+           <includes>
+               <include>org.apache.qpid:proton-j-impl</include>
+           </includes>
+           <outputDirectory>lib</outputDirectory>
+           <unpack>false</unpack>
+           <outputFileNameMapping>proton-j-impl.jar</outputFileNameMapping>
+       </dependencySet>
    </dependencySets>
   <fileSets>
     <fileSet>

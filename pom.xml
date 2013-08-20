@@ -307,7 +307,7 @@
          </dependency>
          <dependency>
              <groupId>org.apache.qpid</groupId>
-             <artifactId>proton-j</artifactId>
+             <artifactId>proton-j-impl</artifactId>
              <version>0.4</version>
          </dependency>
          <dependency>
