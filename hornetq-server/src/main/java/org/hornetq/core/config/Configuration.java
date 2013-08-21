@@ -871,15 +871,23 @@ public interface Configuration extends Serializable
    void setFailbackDelay(long delay);
 
    /**
-    * should we check the cluster to see if a live node with our node is exists
-    *
+    * Whether to check if the cluster already has a (live) node with our node-ID.
+    * <p>
+    * If the cluster does contain a server using this server's node-ID, then this server will assume
+    * that fail-over has occurred and will try to trigger a fail-back.
+    * <p>
+    * Enabling this check will slow down a server start-up slightly.
     * @return true if we want to make the check
     */
    boolean isCheckForLiveServer();
 
    /**
-    * set if we want to check the cluster for a server using our node id
-    *
+    * Sets whether to check if the cluster already has a (live) node with our node-ID.
+    * <p>
+    * If the cluster does contain a server using this server's node-ID, then this server will assume
+    * that fail-over has occurred and will try to trigger a fail-back.
+    * <p>
+    * Enabling this check will slow down a server start-up slightly.
     * @param checkForLiveServer true if we want to make the check
     */
    public void setCheckForLiveServer(boolean checkForLiveServer);
