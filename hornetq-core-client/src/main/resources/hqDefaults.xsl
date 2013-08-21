@@ -17,10 +17,38 @@
   <xsl:output method="text" indent="yes"/>
   <!-- 16.2 Reading Text Files -->
   <xsl:template match="/">
+    <xsl:text>/*
+    * THIS IS A GENERATED FILE! DO NOT EDIT IT DIRECTLY!
+
+      To see how this file is generated, please refer to
+      hornetq-core-client/src/main/resources/hqDefaults.xsl
+
+      To add new entries either document them in the hornetq-configuration.xsd by adding:
+
+      1. a default value to the schema element (using the standard way of adding a default)
+      2. adding a hq:field_name attribute to a xsd:annotation element of the element in question.
+
+      It is probably easier to just go to the hornetq-configuration.xsd and see how this is done for
+      other values, and then copy it.
+
+      The advantage of adding the default to the schema is that:
+
+      a. the schema will inform users of it (for users that check such things through the schema,
+      think of XML editors as users...);
+
+      b. the manual gets an entry for it automatically;
+
+      c. the Java code gets the same value;
+
+      d. all 3 sources of defaults will match since they take the value from the same place
+      (i.e. the schema).
+
+    */
+</xsl:text>
     <xsl:value-of select="unparsed-text('./HornetQDefaultConfiguration.txt', 'iso-8859-1')" disable-output-escaping="yes"/>
 
 <xsl:text>&#xa;    // -------------------------------------------------------------------
-    // Following fields are generated from hornetq-schema.xsd annotations
+    // Following fields are generated from the hornetq-schema.xsd annotations
     // -------------------------------------------------------------------&#xa;</xsl:text>
 
         <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element[ xsd:annotation/@hq:field_name ]">

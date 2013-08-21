@@ -27,8 +27,10 @@
                      minOccurs="0">
           <xsd:annotation hq:linkend="hq.check-for-live-server" hq:field_name="DEFAULT_CHECK_FOR_LIVE_SERVER">
             <xsd:documentation>
-              Whether to check the cluster for a live server (using our own server ID) when starting
-              up. This option is necessary for performing 'fail-back' on replicating servers. This setting only applies to replicated servers.
+              Whether to check the cluster for a (live) server using our own server ID when starting
+              up. This option is only necessary for performing 'fail-back' on replicating
+              servers. Strictly speaking this setting only applies to live servers and not to
+              backups.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>

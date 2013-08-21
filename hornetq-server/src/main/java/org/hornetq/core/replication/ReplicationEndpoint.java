@@ -651,12 +651,13 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       else
       {
          message = largeMessages.get(messageId);
+         if (message == null)
+         {
+            // No warnings if it's a delete, as duplicate deletes may be sent repeatedly.
+            HornetQServerLogger.LOGGER.largeMessageNotAvailable(messageId);
+         }
       }
 
-      if (message == null)
-      {
-         HornetQServerLogger.LOGGER.largeMessageNotAvailable(messageId);
-      }
 
       return message;
 
