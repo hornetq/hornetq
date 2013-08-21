@@ -12,14 +12,8 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -37,11 +31,12 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: Dec 21, 2010
- *         Time: 12:04:16 PM
  */
 public class FailBackAutoTest extends FailoverTestBase
 {
