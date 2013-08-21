@@ -116,7 +116,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       checkClosed();
       if (deliveryMode != DeliveryMode.NON_PERSISTENT && deliveryMode != DeliveryMode.PERSISTENT)
       {
-         throw new JMSException("Illegal deliveryMode value: " + deliveryMode);
+         throw HornetQJMSClientBundle.BUNDLE.illegalDeliveryMode(deliveryMode);
       }
 
       defaultDeliveryMode = deliveryMode;
@@ -340,7 +340,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       }
       if (destination == null)
       {
-         throw new InvalidDestinationException("Destination is null");
+         throw HornetQJMSClientBundle.BUNDLE.nullTopic();
       }
    }
 
@@ -524,7 +524,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    {
       private final CompletionListener completionListener;
       private final Message jmsMessage;
-      private HornetQMessageProducer producer;
+      private final HornetQMessageProducer producer;
 
       /**
        * @param jmsMessage

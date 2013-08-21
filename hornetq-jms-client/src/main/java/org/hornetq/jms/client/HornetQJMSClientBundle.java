@@ -2,8 +2,12 @@ package org.hornetq.jms.client;
 
 
 import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
 import javax.jms.IllegalStateRuntimeException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
+import javax.jms.MessageNotReadableException;
+import javax.jms.MessageNotWriteableException;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -59,6 +63,23 @@ public interface HornetQJMSClientBundle
    @Message(id = 129009, value = "Null {0} is not allowed", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nullArgumentNotAllowed(String type);
 
-   @Message(id = 129010, value =  "Topic cannot be null", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 129010, value = "Topic (Destination) cannot be null", format = Message.Format.MESSAGE_FORMAT)
    InvalidDestinationException nullTopic();
+
+   @Message(id = 129011, value = "LargeMessage streaming is only possible on ByteMessage or StreamMessage",
+            format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException onlyValidForByteOrStreamMessages();
+
+   @Message(id = 129012, value = "The property name \'{0}\' is not a valid java identifier.",
+            format = Message.Format.MESSAGE_FORMAT)
+   JMSRuntimeException invalidJavaIdentifier(String propertyName);
+
+   @Message(id = 129013, value = "Message is read-only", format = Message.Format.MESSAGE_FORMAT)
+   MessageNotWriteableException messageNotWritable();
+
+   @Message(id = 129014, value = "Message is write-only", format = Message.Format.MESSAGE_FORMAT)
+   MessageNotReadableException messageNotReadable();
+
+   @Message(id = 129015, value = "Illegal deliveryMode value: {0}", format = Message.Format.MESSAGE_FORMAT)
+   JMSException illegalDeliveryMode(int deliveryMode);
 }
