@@ -37,8 +37,6 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: Dec 21, 2010
- *         Time: 12:04:16 PM
  */
 public class FailBackAutoTest extends FailoverTestBase
 {
