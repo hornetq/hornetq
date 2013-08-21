@@ -131,6 +131,12 @@
        <testResource>
          <directory>src/test/resources</directory>
          <filtering>true</filtering>
+         <excludes>
+           <exclude>**/binary/**</exclude>
+         </excludes>
+       </testResource>
+       <testResource>
+         <directory>src/test/resources/binary</directory>
        </testResource>
      </testResources>
      <plugins>

@@ -1304,6 +1304,12 @@ final class PageSubscriptionImpl implements PageSubscription
 
                if (message == null)
                {
+                  final PageCursorInfo pageInfo = getPageInfo(tmpPosition.getPageNr(), true);
+                  if (pageInfo != null && pageInfo.isDone())
+                  {
+                      position = moveNextPage(tmpPosition);
+                      return moveNext();
+                  }
                   break;
                }
 
