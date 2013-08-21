@@ -32,7 +32,6 @@ import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -490,7 +489,7 @@ public class HornetQMessage implements javax.jms.Message
       }
       else
       {
-         throw new JMSException("DeliveryImpl mode must be either DeliveryMode.PERSISTENT " + "or DeliveryMode.NON_PERSISTENT");
+         throw HornetQJMSClientBundle.BUNDLE.illegalDeliveryMode(deliveryMode);
       }
    }
 
@@ -867,7 +866,7 @@ public class HornetQMessage implements javax.jms.Message
       Long value;
       try
       {
-         value = message.getLongProperty(ClientMessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+         value = message.getLongProperty(org.hornetq.api.core.Message.HDR_SCHEDULED_DELIVERY_TIME);
       }
       catch (Exception e)
       {
@@ -887,7 +886,7 @@ public class HornetQMessage implements javax.jms.Message
    @Override
    public void setJMSDeliveryTime(long deliveryTime) throws JMSException
    {
-      message.putLongProperty(ClientMessageImpl.HDR_SCHEDULED_DELIVERY_TIME, deliveryTime);
+      message.putLongProperty(org.hornetq.api.core.Message.HDR_SCHEDULED_DELIVERY_TIME, deliveryTime);
    }
 
    @Override
@@ -987,7 +986,7 @@ public class HornetQMessage implements javax.jms.Message
       checkStream();
       if (readOnly)
       {
-         throw new MessageNotWriteableException("Message is read-only");
+         throw HornetQJMSClientBundle.BUNDLE.messageNotWritable();
       }
 
       message.setBodyInputStream(input);
@@ -1060,7 +1059,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (readOnly)
       {
-         throw new MessageNotWriteableException("Message is read-only");
+         throw HornetQJMSClientBundle.BUNDLE.messageNotWritable();
       }
    }
 
@@ -1068,7 +1067,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (!readOnly)
       {
-         throw new MessageNotReadableException("Message is write-only");
+         throw HornetQJMSClientBundle.BUNDLE.messageNotReadable();
       }
    }
 
@@ -1078,7 +1077,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (!(message.getType() == HornetQBytesMessage.TYPE || message.getType() == HornetQStreamMessage.TYPE))
       {
-         throw new IllegalStateException("LargeMessage streaming is only possible on ByteMessage or StreamMessage");
+         throw HornetQJMSClientBundle.BUNDLE.onlyValidForByteOrStreamMessages();
       }
    }
 
@@ -1095,13 +1094,13 @@ public class HornetQMessage implements javax.jms.Message
          }
          else
          {
-            throw new MessageNotWriteableException("Message is read-only");
+            throw HornetQJMSClientBundle.BUNDLE.messageNotWritable();
          }
       }
 
       if (name == null)
       {
-         throw new IllegalArgumentException("The name of a property must not be null.");
+         throw HornetQJMSClientBundle.BUNDLE.nullArgumentNotAllowed("property");
       }
 
       if (name.equals(""))
@@ -1111,7 +1110,7 @@ public class HornetQMessage implements javax.jms.Message
 
       if (!isValidJavaIdentifier(name))
       {
-         throw new JMSRuntimeException("The property name '" + name + "' is not a valid java identifier.");
+         throw HornetQJMSClientBundle.BUNDLE.invalidJavaIdentifier(name);
       }
 
       if (HornetQMessage.reservedIdentifiers.contains(name))
