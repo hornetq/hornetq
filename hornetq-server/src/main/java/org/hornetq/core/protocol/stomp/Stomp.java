@@ -155,6 +155,8 @@ public interface Stomp
          String DESTINATION = "destination";
 
          String ID = "id";
+         
+         String DURABLE_SUBSCRIBER_NAME = "durable-subscriber-name";
       }
 
       public interface Connect

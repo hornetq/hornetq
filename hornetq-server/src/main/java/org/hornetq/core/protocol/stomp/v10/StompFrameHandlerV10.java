@@ -96,6 +96,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       StompFrame response = null;
       String destination = request.getHeader(Stomp.Headers.Unsubscribe.DESTINATION);
       String id = request.getHeader(Stomp.Headers.Unsubscribe.ID);
+      String durableSubscriberName = request.getHeader(Stomp.Headers.Unsubscribe.DURABLE_SUBSCRIBER_NAME);
 
       String subscriptionID = null;
       if (id != null)
@@ -115,7 +116,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
 
       try
       {
-         connection.unsubscribe(subscriptionID);
+         connection.unsubscribe(subscriptionID, durableSubscriberName);
       }
       catch (HornetQStompException e)
       {
