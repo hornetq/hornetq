@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
 
 import java.io.File;
 

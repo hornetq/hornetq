@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.jms;
+import org.junit.Before;
+import org.junit.After;
 import java.io.IOException;
 import java.util.Properties;
 

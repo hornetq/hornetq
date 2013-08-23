@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.byteman.tests;
+import org.junit.Before;
 
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
@@ -49,6 +50,7 @@ public class GroupingTest extends JMSTestBase
    static boolean pause = false;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();

@@ -1,4 +1,5 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 import org.hornetq.rest.queue.QueueDeployment;

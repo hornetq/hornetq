@@ -1,4 +1,6 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
+import org.junit.After;
 import java.lang.reflect.Field;
 
 import org.hornetq.rest.MessageServiceManager;
