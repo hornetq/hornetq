@@ -128,7 +128,7 @@ public class PrintPages // NO_UCD (unused code)
                for (PagedMessage msg : msgs)
                {
                   msg.initMessage(sm);
-                  System.out.print("pg=" + pgid + ", msg=" + msgID + ",pgTX=" + msg.getTransactionID() + ", msg=" + msg.getMessage());
+                  System.out.print("pg=" + pgid + ", msg=" + msgID + ",pgTX=" + msg.getTransactionID() + ",userMessageID=" + (msg.getMessage().getUserID() != null? msg.getMessage().getUserID(): "") + ", msg=" + msg.getMessage());
                   System.out.print(",Queues = ");
                   long q[] = msg.getQueueIDs();
                   for (int i = 0; i < q.length; i++)
