@@ -721,6 +721,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertTrue(endpoint.released);
    }
 
+   @Test
    public void testRecoveryDiscoveryAsKey() throws Exception
    {
       Set<RecoveryDiscovery> discoverySet = new HashSet<RecoveryDiscovery>();

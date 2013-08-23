@@ -11,11 +11,6 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +41,9 @@ import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQRASession;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -274,6 +272,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
    }
 
+   @Test
    public void testConnectionCredentialsFailRecovery() throws Exception
    {
       resourceAdapter = newResourceAdapter();
@@ -296,6 +295,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
    }
 
+   @Test
    public void testConnectionCredentialsOKRecovery() throws Exception
    {
       resourceAdapter = newResourceAdapter();
