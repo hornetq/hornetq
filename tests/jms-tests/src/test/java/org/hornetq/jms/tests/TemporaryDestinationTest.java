@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -43,6 +45,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testTemp() throws Exception
    {
       Connection conn = null;
@@ -98,6 +101,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryQueueBasic() throws Exception
    {
       Connection conn = null;
@@ -142,6 +146,7 @@ public class TemporaryDestinationTest extends JMSTestCase
    /**
     * http://jira.jboss.com/jira/browse/JBMESSAGING-93
     */
+   @Test
    public void testTemporaryQueueOnClosedSession() throws Exception
    {
       Connection producerConnection = null;
@@ -173,6 +178,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryQueueDeleteWithConsumer() throws Exception
    {
       Connection conn = null;
@@ -211,6 +217,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryTopicDeleteWithConsumer() throws Exception
    {
       Connection conn = null;
@@ -249,6 +256,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryQueueDeleted() throws Exception
    {
       Connection conn = null;
@@ -306,6 +314,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryTopicBasic() throws Exception
    {
       Connection conn = null;
@@ -368,6 +377,7 @@ public class TemporaryDestinationTest extends JMSTestCase
    /**
     * http://jira.jboss.com/jira/browse/JBMESSAGING-93
     */
+   @Test
    public void testTemporaryTopicOnClosedSession() throws Exception
    {
       Connection producerConnection = null;
@@ -399,6 +409,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryTopicShouldNotBeInJNDI() throws Exception
    {
       Connection producerConnection = null;
@@ -431,6 +442,7 @@ public class TemporaryDestinationTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTemporaryQueueShouldNotBeInJNDI() throws Exception
    {
       Connection producerConnection = null;
@@ -466,6 +478,7 @@ public class TemporaryDestinationTest extends JMSTestCase
    /**
     * https://jira.jboss.org/jira/browse/JBMESSAGING-1566
     */
+   @Test
    public void testCanNotCreateConsumerFromAnotherConnectionForTemporaryQueue() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -494,6 +507,7 @@ public class TemporaryDestinationTest extends JMSTestCase
    /**
     * https://jira.jboss.org/jira/browse/JBMESSAGING-1566
     */
+   @Test
    public void testCanNotCreateConsumerFromAnotherCnnectionForTemporaryTopic() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();

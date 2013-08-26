@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -118,7 +118,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                              final int producerWindow,
                              final int minSize) throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       HornetQServer server = createServer(realFiles);
       server.start();

@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -46,12 +49,14 @@ public class FailBackAutoTest extends FailoverTestBase
    private ClientSessionFactoryInternal sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
    }
 
+   @Test
    public void testAutoFailback() throws Exception
    {
       createSessionFactory();
@@ -134,6 +139,7 @@ public class FailBackAutoTest extends FailoverTestBase
       backupLocator.close();
    }
 
+   @Test
    public void testAutoFailbackThenFailover() throws Exception
    {
       createSessionFactory();
@@ -191,6 +197,7 @@ public class FailBackAutoTest extends FailoverTestBase
     * Basic fail-back test.
     * @throws Exception
     */
+   @Test
    public void testFailBack() throws Exception
    {
       createSessionFactory();

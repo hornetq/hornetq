@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.largemessage;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,7 +32,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -62,19 +66,22 @@ public class JMSLargeMessageTest extends JMSTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       queue1 = createQueue("queue1");
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queue1 = null;
       super.tearDown();
    }
 
+   @Test
    public void testSimpleLargeMessage() throws Exception
    {
 
@@ -119,6 +126,7 @@ public class JMSLargeMessageTest extends JMSTestBase
       Assert.assertNotNull(rm);
    }
 
+   @Test
    public void testSimpleLargeMessage2() throws Exception
    {
       conn = cf.createConnection();
@@ -159,6 +167,7 @@ public class JMSLargeMessageTest extends JMSTestBase
       Assert.assertNotNull(rm);
    }
 
+   @Test
    public void testExceptionsOnSettingNonStreaming() throws Exception
    {
       conn = cf.createConnection();
@@ -217,6 +226,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
    }
 
+   @Test
    public void testWaitOnOutputStream() throws Exception
    {
       int msgSize = 1024 * 1024;
@@ -286,6 +296,7 @@ public class JMSLargeMessageTest extends JMSTestBase
    }
 
 
+   @Test
    public void testHugeString() throws Exception
    {
       int msgSize = 1024 * 1024;

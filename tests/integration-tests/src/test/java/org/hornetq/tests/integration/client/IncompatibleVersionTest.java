@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.io.FileOutputStream;
@@ -42,6 +41,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.VersionLoader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A IncompatibleVersionTest
@@ -69,7 +71,8 @@ public class IncompatibleVersionTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       server = createServer(false, false);
       server.getConfiguration().setConnectionTTLOverride(500);
@@ -82,51 +85,59 @@ public class IncompatibleVersionTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown()
    {
       connection.destroy();
 
-      locator.close();
-
-      server.stop();
+      closeServerLocator(locator);
+      stopComponent(server);
       // You CANNOT CALL super.tearDown();
    }
 
+   @Test
    public void testCompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(true);
    }
 
+   @Test
    public void testIncompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(false);
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 1));
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 5));
    }
 
+   @Test
    public void testCompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 10));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 0));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 4));
    }
 
+   @Test
    public void testIncompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 100));
@@ -201,11 +212,11 @@ public class IncompatibleVersionTest extends ServiceTestBase
       prop.setProperty("hornetq.version.incrementingVersion", Integer.toString(ver));
       prop.store(new FileOutputStream("target/test-classes/" + propFileName), null);
 
-      Process server = null;
+      Process serverProcess = null;
       boolean result = false;
       try
       {
-         server = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+         serverProcess = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
                                            new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                            "server",
                                            serverStartedString);
@@ -222,11 +233,11 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
       finally
       {
-         if(server != null)
+         if (serverProcess != null)
          {
             try
             {
-               server.destroy();
+               serverProcess.destroy();
             }
             catch(Throwable t) {/* ignore */}
          }
@@ -287,13 +298,4 @@ public class IncompatibleVersionTest extends ServiceTestBase
          throw new Exception("args[0] must be \"server\" or \"client\"");
       }
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

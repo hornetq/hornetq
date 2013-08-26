@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.stress.paging;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -47,6 +50,7 @@ public class PageStressTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   @Test
    public void testStopDuringDepage() throws Exception
    {
       Configuration config = createDefaultConfig();
@@ -159,6 +163,7 @@ public class PageStressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testPageOnMultipleDestinations() throws Exception
    {
       Configuration config = createDefaultConfig();
@@ -280,7 +285,8 @@ public class PageStressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();

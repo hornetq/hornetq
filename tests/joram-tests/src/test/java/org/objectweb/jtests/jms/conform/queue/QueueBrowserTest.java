@@ -12,7 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.conform.queue;
-
 import java.util.Enumeration;
 
 import javax.jms.JMSException;
@@ -20,11 +19,11 @@ import javax.jms.Message;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -50,6 +49,7 @@ public class QueueBrowserTest extends PTPTestCase
    /**
     * Test the <code>QueueBrowser</code> of the sender.
     */
+   @Test
    public void testSenderBrowser()
    {
       try
@@ -113,6 +113,7 @@ public class QueueBrowserTest extends PTPTestCase
     * Test that a <code>QueueBrowser</cdeo> created with a message selector
     * browses only the messages matching this selector.
     */
+   @Test
    public void testBrowserWithMessageSelector()
    {
       try
@@ -149,6 +150,7 @@ public class QueueBrowserTest extends PTPTestCase
    }
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       try
@@ -164,6 +166,7 @@ public class QueueBrowserTest extends PTPTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       try
@@ -180,18 +183,5 @@ public class QueueBrowserTest extends PTPTestCase
          receiverBrowser = null;
          senderBrowser = null;
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(QueueBrowserTest.class);
-   }
-
-   public QueueBrowserTest(final String name)
-   {
-      super(name);
    }
 }

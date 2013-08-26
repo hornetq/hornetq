@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 
@@ -43,7 +46,8 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       setupCluster();
@@ -84,6 +88,7 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
       setupDiscoveryClusterConnection("cluster" + server, server, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
    }
 
+   @Test
    public void testRedistributeWithPreparedAndRestart() throws Exception
    {
       startServers(0);

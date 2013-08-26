@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
@@ -36,6 +38,7 @@ public class JMSMessageCounterTest extends JMSTestBase
       return true;
    }
 
+   @Test
    public void testMessageCounter() throws Exception
    {
          Connection conn = cf.createConnection();

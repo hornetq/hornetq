@@ -12,13 +12,16 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
@@ -40,13 +43,15 @@ public class ReclaimerTest extends UnitTestCase
    private Reclaimer reclaimer;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
       reclaimer = new Reclaimer();
    }
 
+   @Test
    public void testOneFilePosNegAll() throws Exception
    {
       setup(1);
@@ -58,6 +63,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(0);
    }
 
+   @Test
    public void testOneFilePosNegNotAll() throws Exception
    {
       setup(1);
@@ -69,6 +75,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(0);
    }
 
+   @Test
    public void testOneFilePosOnly() throws Exception
    {
       setup(1);
@@ -80,6 +87,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(0);
    }
 
+   @Test
    public void testOneFileNegOnly() throws Exception
    {
       setup(1);
@@ -91,6 +99,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(0);
    }
 
+   @Test
    public void testTwoFilesPosNegAllDifferentFiles() throws Exception
    {
       setup(2);
@@ -105,6 +114,7 @@ public class ReclaimerTest extends UnitTestCase
 
    }
 
+   @Test
    public void testTwoFilesPosNegAllSameFiles() throws Exception
    {
       setup(2);
@@ -119,6 +129,7 @@ public class ReclaimerTest extends UnitTestCase
 
    }
 
+   @Test
    public void testTwoFilesPosNegMixedFiles() throws Exception
    {
       setup(2);
@@ -132,6 +143,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(1);
    }
 
+   @Test
    public void testTwoFilesPosNegAllFirstFile() throws Exception
    {
       setup(2);
@@ -145,6 +157,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(1);
    }
 
+   @Test
    public void testTwoFilesPosNegAllSecondFile() throws Exception
    {
       setup(2);
@@ -158,6 +171,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(1);
    }
 
+   @Test
    public void testTwoFilesPosOnly() throws Exception
    {
       setup(2);
@@ -171,6 +185,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(1);
    }
 
+   @Test
    public void testTwoFilesxyz() throws Exception
    {
       setup(2);
@@ -186,6 +201,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Can-can-can
 
+   @Test
    public void testThreeFiles1() throws Exception
    {
       setup(3);
@@ -201,6 +217,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles2() throws Exception
    {
       setup(3);
@@ -216,6 +233,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles3() throws Exception
    {
       setup(3);
@@ -231,6 +249,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles3_1() throws Exception
    {
       setup(3);
@@ -246,6 +265,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles3_2() throws Exception
    {
       setup(3);
@@ -263,6 +283,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Cant-can-can
 
+   @Test
    public void testThreeFiles4() throws Exception
    {
       setup(3);
@@ -278,6 +299,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles5() throws Exception
    {
       setup(3);
@@ -293,6 +315,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles6() throws Exception
    {
       setup(3);
@@ -308,6 +331,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(2);
    }
 
+   @Test
    public void testThreeFiles7() throws Exception
    {
       setup(3);
@@ -325,6 +349,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Cant can cant
 
+   @Test
    public void testThreeFiles8() throws Exception
    {
       setup(3);
@@ -340,6 +365,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles9() throws Exception
    {
       setup(3);
@@ -355,6 +381,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles10() throws Exception
    {
       setup(3);
@@ -370,6 +397,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles11() throws Exception
    {
       setup(3);
@@ -385,6 +413,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles12() throws Exception
    {
       setup(3);
@@ -402,6 +431,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Cant-cant-cant
 
+   @Test
    public void testThreeFiles13() throws Exception
    {
       setup(3);
@@ -417,6 +447,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles14() throws Exception
    {
       setup(3);
@@ -432,6 +463,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles15() throws Exception
    {
       setup(3);
@@ -447,6 +479,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles16() throws Exception
    {
       setup(3);
@@ -462,6 +495,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles17() throws Exception
    {
       setup(3);
@@ -477,6 +511,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles18() throws Exception
    {
       setup(3);
@@ -492,6 +527,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles19() throws Exception
    {
       setup(3);
@@ -507,6 +543,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles20() throws Exception
    {
       setup(3);
@@ -522,6 +559,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles21() throws Exception
    {
       setup(3);
@@ -539,6 +577,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Can-can-cant
 
+   @Test
    public void testThreeFiles22() throws Exception
    {
       setup(3);
@@ -554,6 +593,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles23() throws Exception
    {
       setup(3);
@@ -569,6 +609,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles24() throws Exception
    {
       setup(3);
@@ -584,6 +625,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles25() throws Exception
    {
       setup(3);
@@ -599,6 +641,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles26() throws Exception
    {
       setup(3);
@@ -616,6 +659,7 @@ public class ReclaimerTest extends UnitTestCase
 
    // Can-cant-cant
 
+   @Test
    public void testThreeFiles27() throws Exception
    {
       setup(3);
@@ -631,6 +675,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles28() throws Exception
    {
       setup(3);
@@ -646,6 +691,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles29() throws Exception
    {
       setup(3);
@@ -661,6 +707,7 @@ public class ReclaimerTest extends UnitTestCase
       assertCantDelete(2);
    }
 
+   @Test
    public void testThreeFiles30() throws Exception
    {
       setup(3);

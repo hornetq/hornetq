@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -98,6 +100,7 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
    // Public --------------------------------------------------------
 
    @Override
+   @Test
    public void testStartStop() throws Exception
    {
       // this test does not make sense when using core messages:

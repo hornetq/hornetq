@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.stress.chunk;
 
+import org.junit.Test;
+
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 
 /**
@@ -37,6 +39,7 @@ public class LargeMessageStressTest extends LargeMessageTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
    {
       testChunks(false,

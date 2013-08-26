@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -23,7 +26,8 @@ import org.hornetq.core.message.impl.MessageImpl;
 public class ClusterHeadersRemovedTest extends ClusterTestBase
 {
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -36,6 +40,7 @@ public class ClusterHeadersRemovedTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testHeadersRemoved() throws Exception
    {
       setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty(), false);

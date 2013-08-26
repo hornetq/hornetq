@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
@@ -33,11 +35,13 @@ public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testDefaultDeliveryMode() throws Exception
    {
       ProxyAssertSupport.assertEquals(DeliveryMode.PERSISTENT, queueProducer.getDeliveryMode());
    }
 
+   @Test
    public void testNonPersistentDeliveryMode() throws Exception
    {
       queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -49,6 +53,7 @@ public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertEquals(DeliveryMode.NON_PERSISTENT, queueConsumer.receive().getJMSDeliveryMode());
    }
 
+   @Test
    public void testPersistentDeliveryMode() throws Exception
    {
       queueProducer.setDeliveryMode(DeliveryMode.PERSISTENT);

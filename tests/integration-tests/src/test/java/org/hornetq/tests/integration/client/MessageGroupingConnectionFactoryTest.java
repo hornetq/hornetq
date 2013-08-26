@@ -11,12 +11,15 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -47,11 +50,13 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
 
    private final SimpleString qName = new SimpleString("MessageGroupingTestQueue");
 
+   @Test
    public void testBasicGroupingUsingConnection() throws Exception
    {
       doTestBasicGroupingUsingConnectionFactory();
    }
 
+   @Test
    public void testBasicGroupingMultipleProducers() throws Exception
    {
       doTestBasicGroupingMultipleProducers();
@@ -112,7 +117,8 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

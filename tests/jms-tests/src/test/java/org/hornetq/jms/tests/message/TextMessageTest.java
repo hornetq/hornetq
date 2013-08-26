@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.jms.tests.message;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -38,6 +42,7 @@ public class TextMessageTest extends MessageTestBase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -45,12 +50,14 @@ public class TextMessageTest extends MessageTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       message = null;
       super.tearDown();
    }
 
+   @Test
    public void testClearProperties() throws Exception
    {
       ((TextMessage)message).setText("something");

@@ -13,7 +13,9 @@
 
 package org.hornetq.util;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.tests.util.SilentTestCase;
 import org.hornetq.utils.XMLUtil;
@@ -30,6 +32,7 @@ public class XMLUtilTest extends SilentTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetTextContext_1() throws Exception
    {
       String document = "<blah>foo</blah>";
@@ -39,6 +42,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
    }
 
+   @Test
    public void testGetTextContext_2() throws Exception
    {
       String document = "<blah someattribute=\"somevalue\">foo</blah>";
@@ -48,6 +52,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertEquals("foo", org.hornetq.utils.XMLUtil.getTextContent(e));
    }
 
+   @Test
    public void testGetTextContext_3() throws Exception
    {
       String document = "<blah someattribute=\"somevalue\"><a/></blah>";
@@ -61,6 +66,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertEquals("a", subelement.getNodeName());
    }
 
+   @Test
    public void testGetTextContext_4() throws Exception
    {
       String document = "<blah someattribute=\"somevalue\"><a></a></blah>";
@@ -74,6 +80,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertEquals("a", subelement.getNodeName());
    }
 
+   @Test
    public void testGetTextContext_5() throws Exception
    {
       String document = "<blah someattribute=\"somevalue\"><a><b/></a></blah>";
@@ -100,6 +107,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertTrue(found);
    }
 
+   @Test
    public void testEquivalent_1() throws Exception
    {
       String s = "<a/>";
@@ -108,6 +116,7 @@ public class XMLUtilTest extends SilentTestCase
       XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testEquivalent_2() throws Exception
    {
       String s = "<a></a>";
@@ -116,6 +125,7 @@ public class XMLUtilTest extends SilentTestCase
       XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testEquivalent_3() throws Exception
    {
       String s = "<a attr1=\"val1\" attr2=\"val2\"/>";
@@ -133,6 +143,7 @@ public class XMLUtilTest extends SilentTestCase
       }
    }
 
+   @Test
    public void testEquivalent_4() throws Exception
    {
       String s = "<a attr1=\"val1\" attr2=\"val2\"/>";
@@ -142,6 +153,7 @@ public class XMLUtilTest extends SilentTestCase
                                                  org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testEquivalent_5() throws Exception
    {
       String s = "<a><b/></a>";
@@ -151,6 +163,7 @@ public class XMLUtilTest extends SilentTestCase
                                                  org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testEquivalent_6() throws Exception
    {
       String s = "<enclosing><a attr1=\"val1\" attr2=\"val2\"/></enclosing>";
@@ -160,6 +173,7 @@ public class XMLUtilTest extends SilentTestCase
                                                  org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testEquivalent_7() throws Exception
    {
       String s = "<a><b/><c/></a>";
@@ -178,6 +192,7 @@ public class XMLUtilTest extends SilentTestCase
       }
    }
 
+   @Test
    public void testEquivalent_8() throws Exception
    {
       String s = "<a><!-- some comment --><b/><!--some other comment --><c/><!-- blah --></a>";
@@ -187,6 +202,7 @@ public class XMLUtilTest extends SilentTestCase
                                                  org.hornetq.utils.XMLUtil.stringToElement(s2));
    }
 
+   @Test
    public void testElementToString_1() throws Exception
    {
       String s = "<a b=\"something\">somethingelse</a>";
@@ -196,6 +212,7 @@ public class XMLUtilTest extends SilentTestCase
       org.hornetq.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   @Test
    public void testElementToString_2() throws Exception
    {
       String s = "<a b=\"something\"></a>";
@@ -205,6 +222,7 @@ public class XMLUtilTest extends SilentTestCase
       XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   @Test
    public void testElementToString_3() throws Exception
    {
       String s = "<a b=\"something\"/>";
@@ -214,6 +232,7 @@ public class XMLUtilTest extends SilentTestCase
       org.hornetq.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   @Test
    public void testElementToString_4() throws Exception
    {
       String s = "<a><![CDATA[somedata]]></a>";
@@ -223,6 +242,7 @@ public class XMLUtilTest extends SilentTestCase
       org.hornetq.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
+   @Test
    public void testReplaceSystemProperties()
    {
       String before = "<configuration>\n" + "   <test name=\"${sysprop1}\">content1</test>\n"
@@ -245,6 +265,7 @@ public class XMLUtilTest extends SilentTestCase
       Assert.assertEquals(after, replaced);
    }
 
+   @Test
    public void testStripCDATA() throws Exception
    {
       String xml = "<![CDATA[somedata]]>";

@@ -13,12 +13,14 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.*;
@@ -55,6 +57,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       return false;
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
@@ -47,7 +51,8 @@ public class NettyAcceptorTest extends UnitTestCase
    private ScheduledExecutorService pool2;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -55,7 +60,8 @@ public class NettyAcceptorTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -71,6 +77,7 @@ public class NettyAcceptorTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new BufferHandler()

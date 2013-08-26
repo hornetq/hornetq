@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.jms.tests;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Enumeration;
 
@@ -44,7 +47,8 @@ public class MiscellaneousTest extends JMSTestCase
    // Constructors --------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       removeAllMessages(HornetQServerTestCase.queue1.getQueueName(), true);
 
@@ -54,6 +58,7 @@ public class MiscellaneousTest extends JMSTestCase
    // Public --------------------------------------------------------
 
 
+   @Test
    public void testBrowser() throws Exception
    {
       Connection conn = null;
@@ -95,6 +100,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingConsumerFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
@@ -155,6 +161,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingSessionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
@@ -211,6 +218,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingConnectionFromMessageListenerAutoAck() throws Exception
    {
       Connection c = null;
@@ -270,6 +278,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingConsumerFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
@@ -328,6 +337,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingSessionFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
@@ -384,6 +394,7 @@ public class MiscellaneousTest extends JMSTestCase
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
     */
+   @Test
    public void testClosingConnectionFromMessageListenerTransacted() throws Exception
    {
       Connection c = null;
@@ -441,6 +452,7 @@ public class MiscellaneousTest extends JMSTestCase
    }
 
    // Test case for http://jira.jboss.com/jira/browse/JBMESSAGING-788
+   @Test
    public void testGetDeliveriesForSession() throws Exception
    {
       Connection conn = null;

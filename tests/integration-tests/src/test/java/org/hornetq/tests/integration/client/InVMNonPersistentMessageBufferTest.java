@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -49,6 +53,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
     * Should not be able to read past end of body into encoded message
     */
 
+   @Test
    public void testSimpleSendReceive() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -64,6 +69,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       Assert.assertEquals(body, received.getBodyBuffer().readString());
    }
 
+   @Test
    public void testSimpleSendReceiveWithEmptyBody() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -75,6 +81,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       Assert.assertEquals(0, received.getBodySize());
    }
 
+   @Test
    public void testSendSameMessageMultipleTimes() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -99,6 +106,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSendMessageResetSendAgainDifferentBody() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -134,6 +142,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCannotReadPastEndOfMessageBody() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -160,6 +169,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCanReReadBodyAfterReaderReset() throws Exception
    {
       ClientMessage message = session.createMessage(false);
@@ -224,7 +234,8 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -248,7 +259,8 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (session != null)
       {

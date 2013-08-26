@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
@@ -26,6 +28,7 @@ import org.hornetq.tests.util.RandomUtil;
 public class DuplicateCacheTest extends StorageManagerTestBase
 {
 
+   @Test
    public void testDuplicate() throws Exception
    {
       createStorage();
@@ -71,6 +74,7 @@ public class DuplicateCacheTest extends StorageManagerTestBase
    }
 
 
+   @Test
    public void testDuplicateNonPersistent() throws Exception
    {
       createStorage();

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.unit.core.server.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 
@@ -31,7 +34,8 @@ public class FileLockTest extends UnitTestCase
 {
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       File file = new File(getTestDir());
@@ -39,12 +43,14 @@ public class FileLockTest extends UnitTestCase
    }
 
 
+   @Test
    public void testNIOLock() throws Exception
    {
       doTestLock(new FileLockNodeManager(getTestDir(), false), new FileLockNodeManager(getTestDir(), false));
 
    }
 
+   @Test
    public void testAIOLock() throws Exception
    {
       if (AsynchronousFileImpl.isLoaded())

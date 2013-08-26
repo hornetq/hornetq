@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -22,7 +24,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.postoffice.impl.WildcardAddressManager;
@@ -63,6 +65,7 @@ public class MessageTest extends JMSTestBase
    /**
     * @see https://jira.jboss.org/jira/browse/HORNETQ-242
     */
+   @Test
    public void testStreamMessageReadsNull() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -209,6 +212,7 @@ public class MessageTest extends JMSTestBase
       }
    }
 
+   @Test
    public void testNullProperties() throws Exception
    {
       conn = cf.createConnection();
@@ -317,6 +321,7 @@ public class MessageTest extends JMSTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-988
+   @Test
    public void testShouldNotThrowException() throws Exception {
       Connection conn = null;
 

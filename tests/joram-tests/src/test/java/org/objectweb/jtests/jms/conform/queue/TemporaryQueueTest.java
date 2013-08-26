@@ -19,10 +19,8 @@ import javax.jms.QueueReceiver;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -42,6 +40,7 @@ public class TemporaryQueueTest extends PTPTestCase
    /**
     * Test a TemporaryQueue
     */
+   @Test
    public void testTemporaryQueue()
    {
       try
@@ -72,18 +71,5 @@ public class TemporaryQueueTest extends PTPTestCase
       {
          fail(e);
       }
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(TemporaryQueueTest.class);
-   }
-
-   public TemporaryQueueTest(final String name)
-   {
-      super(name);
    }
 }

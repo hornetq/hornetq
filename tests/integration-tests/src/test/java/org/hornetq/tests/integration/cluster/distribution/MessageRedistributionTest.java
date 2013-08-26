@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -49,7 +52,8 @@ public class MessageRedistributionTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -68,6 +72,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       return false;
    }
    //https://issues.jboss.org/browse/HORNETQ-1061
+   @Test
    public void testRedistributionWithMessageGroups() throws Exception
    {
       setupCluster(false);
@@ -168,6 +173,7 @@ public class MessageRedistributionTest extends ClusterTestBase
    }
 
    //https://issues.jboss.org/browse/HORNETQ-1057
+   @Test
    public void testRedistributionStopsWhenConsumerAdded() throws Exception
    {
       setupCluster(false);
@@ -205,6 +211,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       MessageRedistributionTest.log.info("Test done");
    }
 
+   @Test
    public void testRedistributionWhenConsumerIsClosed() throws Exception
    {
       setupCluster(false);
@@ -246,6 +253,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       MessageRedistributionTest.log.info("Test done");
    }
 
+   @Test
    public void testRedistributionWhenConsumerIsClosedNotConsumersOnAllNodes() throws Exception
    {
       setupCluster(false);
@@ -281,6 +289,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids1, 2);
    }
 
+   @Test
    public void testNoRedistributionWhenConsumerIsClosedForwardWhenNoConsumersTrue() throws Exception
    {
       // x
@@ -333,6 +342,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(20, 0, 1, 2);
    }
 
+   @Test
    public void testNoRedistributionWhenConsumerIsClosedNoConsumersOnOtherNodes() throws Exception
    {
       setupCluster(false);
@@ -382,6 +392,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveAll(20, 1);
    }
 
+   @Test
    public void testRedistributeWithScheduling() throws Exception
    {
       setupCluster(false);
@@ -492,6 +503,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testRedistributionWhenConsumerIsClosedQueuesWithFilters() throws Exception
    {
       setupCluster(false);
@@ -532,6 +544,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids0, 2);
    }
 
+   @Test
    public void testRedistributionWhenConsumerIsClosedConsumersWithFilters() throws Exception
    {
       setupCluster(false);
@@ -572,6 +585,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids0, 2);
    }
 
+   @Test
    public void testRedistributionWhenRemoteConsumerIsAdded() throws Exception
    {
       setupCluster(false);
@@ -606,6 +620,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyNotReceive(1);
    }
 
+   @Test
    public void testBackAndForth() throws Exception
    {
       for (int i = 0; i < 10; i++)
@@ -698,11 +713,13 @@ public class MessageRedistributionTest extends ClusterTestBase
    }
 
    // https://issues.jboss.org/browse/HORNETQ-1072
+   @Test
    public void testBackAndForth2WithDuplicDetection() throws Exception
    {
       internalTestBackAndForth2(true);
    }
 
+   @Test
    public void testBackAndForth2() throws Exception
    {
       internalTestBackAndForth2(false);
@@ -780,6 +797,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testRedistributionToQueuesWhereNotAllMessagesMatch() throws Exception
    {
       setupCluster(false);
@@ -818,6 +836,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveAllInRange(10, 20, 2);
    }
 
+   @Test
    public void testDelayedRedistribution() throws Exception
    {
       final long delay = 1000;
@@ -857,6 +876,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveAllNotBefore(minReceiveTime, 20, 1);
    }
 
+   @Test
    public void testDelayedRedistributionCancelled() throws Exception
    {
       final long delay = 1000;
@@ -899,6 +919,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveAll(20, 0);
    }
 
+   @Test
    public void testRedistributionNumberOfMessagesGreaterThanBatchSize() throws Exception
    {
       setupCluster(false);
@@ -936,6 +957,7 @@ public class MessageRedistributionTest extends ClusterTestBase
     * Start another node add a consumer and verify all messages are redistribute
     * https://jira.jboss.org/jira/browse/HORNETQ-359
     */
+   @Test
    public void testRedistributionWhenNewNodeIsAddedWithConsumer() throws Exception
    {
       setupCluster(false);
@@ -967,6 +989,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyNotReceive(0);
    }
 
+   @Test
    public void testRedistributionWithPagingOnTarget() throws Exception
    {
       setupCluster(false);

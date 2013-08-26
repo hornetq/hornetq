@@ -12,12 +12,15 @@
  */
 
 package org.hornetq.tests.integration.security;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -37,18 +40,21 @@ public class NettySecurityClientTest extends ServiceTestBase
 
    private HornetQServer messagingService;
 
+   @Test
    public void testProducerConsumerClientWithoutSecurityManager() throws Exception
    {
       doTestProducerConsumerClient(false);
    }
 
+   @Test
    public void testProducerConsumerClientWithSecurityManager() throws Exception
    {
       doTestProducerConsumerClient(true);
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

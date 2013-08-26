@@ -21,15 +21,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
-
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -43,10 +46,10 @@ import org.hornetq.utils.HornetQThreadFactory;
  *   */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
-
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    AtomicInteger position = new AtomicInteger(0);
@@ -67,7 +70,8 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
@@ -76,18 +80,21 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       executor.shutdown();
       pollerExecutor.shutdown();
       super.tearDown();
    }
 
+   @Test
    public void testMultipleASynchronousWrites() throws Throwable
    {
       executeTest(false);
    }
 
+   @Test
    public void testMultipleSynchronousWrites() throws Throwable
    {
       executeTest(true);
@@ -97,7 +104,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    {
       MultiThreadAsynchronousFileTest.debug(sync ? "Sync test:" : "Async test");
       AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl(executor, pollerExecutor);
-      jlibAIO.open(FILE_NAME, 21000);
+      jlibAIO.open(fileName, 21000);
       try
       {
          MultiThreadAsynchronousFileTest.debug("Preallocating file");

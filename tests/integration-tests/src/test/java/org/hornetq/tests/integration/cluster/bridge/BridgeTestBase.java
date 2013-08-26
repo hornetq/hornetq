@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.bridge;
+import org.junit.After;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 {
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       InVMConnector.failOnCreateConnection = false;

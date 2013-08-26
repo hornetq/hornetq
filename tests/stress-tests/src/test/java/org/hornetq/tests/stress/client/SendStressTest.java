@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.stress.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
@@ -40,11 +42,13 @@ public class SendStressTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    // Remove this method to re-enable those tests
+   @Test
    public void testStressSendNetty() throws Exception
    {
       doTestStressSend(true);
    }
 
+   @Test
    public void testStressSendInVM() throws Exception
    {
       doTestStressSend(false);

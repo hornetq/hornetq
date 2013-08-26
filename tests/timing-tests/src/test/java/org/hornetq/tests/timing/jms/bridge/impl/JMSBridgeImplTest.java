@@ -12,8 +12,6 @@
  */
 
 package org.hornetq.tests.timing.jms.bridge.impl;
-import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.jms.management.JMSQueueControl;
 
 import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
@@ -42,11 +40,11 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -62,6 +60,10 @@ import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -173,6 +175,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testStartWithRepeatedFailure() throws Exception
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
@@ -218,6 +221,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    }
 
+   @Test
    public void testStartWithFailureThenSuccess() throws Exception
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
@@ -279,6 +283,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    * we receive only 1 message. The message is sent when the maxBatchTime
    * expires even if the maxBatchSize is not reached
    */
+   @Test
    public void testSendMessagesWhenMaxBatchTimeExpires() throws Exception
    {
       int maxBatchSize = 2;
@@ -340,6 +345,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       targetConn.close();
    }
 
+   @Test
    public void testSendMessagesWithMaxBatchSize() throws Exception
    {
       final int numMessages = 10;
@@ -416,6 +422,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       targetConn.close();
    }
 
+   @Test
    public void testAutoAckOnSource() throws Exception
    {
       final int numMessages = 10;
@@ -458,7 +465,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       sourceConn.close();
 
-      JMSQueueControl jmsQueueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(
+      JMSQueueControl jmsQueueControl = MBeanServerInvocationHandler.newProxyInstance(
             ManagementFactory.getPlatformMBeanServer(),
             ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
             JMSQueueControl.class,
@@ -469,6 +476,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       Assert.assertFalse(bridge.isStarted());
    }
 
+   @Test
    public void testExceptionOnSourceAndRetrySucceeds() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
@@ -521,6 +529,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       Assert.assertFalse(bridge.isStarted());
    }
 
+   @Test
    public void testExceptionOnSourceAndRetryFails() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
@@ -586,7 +595,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -606,7 +616,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       jmsServer.stop();
 

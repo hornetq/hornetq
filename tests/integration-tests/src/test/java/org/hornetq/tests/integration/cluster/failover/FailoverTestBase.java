@@ -12,15 +12,12 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -45,6 +42,9 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
  * A FailoverTestBase
@@ -93,10 +93,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       createConfigs();
 
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
@@ -228,7 +228,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       logAndSystemOut("#test tearDown");
 

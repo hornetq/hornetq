@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -58,12 +61,14 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
    private ClientSessionFactory sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       setupServer(JournalType.NIO);
    }
 
+   @Test
    public void testProduceAndConsume() throws Throwable
    {
       int numberOfConsumers = 5;

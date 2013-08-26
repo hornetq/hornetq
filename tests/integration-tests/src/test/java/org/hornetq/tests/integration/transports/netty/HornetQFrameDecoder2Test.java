@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.integration.transports.netty;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.tests.util.UnitTestCase;
@@ -42,6 +44,7 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
 
    private static final Random rand = new Random();
 
+   @Test
    public void testOrdinaryFragmentation() throws Exception
    {
       final DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
@@ -87,6 +90,7 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
       Assert.assertEquals(HornetQFrameDecoder2Test.MSG_CNT, cnt);
    }
 
+   @Test
    public void testExtremeFragmentation() throws Exception
    {
       final DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());

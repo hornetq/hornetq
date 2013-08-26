@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests.stress;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Topic;
@@ -20,11 +19,12 @@ import javax.jms.XASession;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
 
 /**
- * 
+ *
  * Base class for stress tests
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  *
 */
@@ -58,14 +58,13 @@ public class JMSStressTestBase extends HornetQServerTestCase
 
    protected Topic topic4;
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       if (checkNoMessageData())
       {
          ProxyAssertSupport.fail("Message data still exists");
       }
-      super.tearDown();
    }
 
    protected void runRunners(final Runner[] runners) throws Exception

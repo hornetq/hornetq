@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.jms.connection;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +27,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -47,7 +50,8 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
 
    // Constructors --------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       try
       {
@@ -80,6 +84,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testNullLocalBindAddress() throws Exception
    {
       cf = (HornetQConnectionFactory) context.lookup("/MyConnectionFactory");

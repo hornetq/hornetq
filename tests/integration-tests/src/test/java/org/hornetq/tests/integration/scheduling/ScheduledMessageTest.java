@@ -11,14 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.scheduling;
-
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -37,6 +34,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -57,10 +57,10 @@ public class ScheduledMessageTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       startServer();
    }
 
@@ -77,56 +77,67 @@ public class ScheduledMessageTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testRecoveredMessageDeliveredCorrectly() throws Exception
    {
       testMessageDeliveredCorrectly(true);
    }
 
+   @Test
    public void testMessageDeliveredCorrectly() throws Exception
    {
       testMessageDeliveredCorrectly(false);
    }
 
+   @Test
    public void testScheduledMessagesDeliveredCorrectly() throws Exception
    {
       testScheduledMessagesDeliveredCorrectly(false);
    }
 
+   @Test
    public void testRecoveredScheduledMessagesDeliveredCorrectly() throws Exception
    {
       testScheduledMessagesDeliveredCorrectly(true);
    }
 
+   @Test
    public void testScheduledMessagesDeliveredCorrectlyDifferentOrder() throws Exception
    {
       testScheduledMessagesDeliveredCorrectlyDifferentOrder(false);
    }
 
+   @Test
    public void testRecoveredScheduledMessagesDeliveredCorrectlyDifferentOrder() throws Exception
    {
       testScheduledMessagesDeliveredCorrectlyDifferentOrder(true);
    }
 
+   @Test
    public void testScheduledAndNormalMessagesDeliveredCorrectly() throws Exception
    {
       testScheduledAndNormalMessagesDeliveredCorrectly(false);
    }
 
+   @Test
    public void testRecoveredScheduledAndNormalMessagesDeliveredCorrectly() throws Exception
    {
       testScheduledAndNormalMessagesDeliveredCorrectly(true);
    }
 
+   @Test
    public void testTxMessageDeliveredCorrectly() throws Exception
    {
       testTxMessageDeliveredCorrectly(false);
    }
 
+   @Test
    public void testRecoveredTxMessageDeliveredCorrectly() throws Exception
    {
       testTxMessageDeliveredCorrectly(true);
    }
 
+   @Test
    public void testPagedMessageDeliveredCorrectly() throws Exception
    {
       // then we create a client as normal
@@ -160,6 +171,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testPagedMessageDeliveredMultipleConsumersCorrectly() throws Exception
    {
       AddressSettings qs = new AddressSettings();
@@ -208,6 +220,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testPagedMessageDeliveredMultipleConsumersAfterRecoverCorrectly() throws Exception
    {
 
@@ -482,6 +495,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testManyMessagesSameTime() throws Exception
    {
 
@@ -647,6 +661,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testPendingACKOnPrepared() throws Exception
    {
 
@@ -715,16 +730,19 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testScheduledDeliveryTX() throws Exception
    {
       scheduledDelivery(true);
    }
 
+   @Test
    public void testScheduledDeliveryNoTX() throws Exception
    {
       scheduledDelivery(false);
    }
 
+   @Test
    public void testRedeliveryAfterPrepare() throws Exception
    {
       AddressSettings qs = new AddressSettings();

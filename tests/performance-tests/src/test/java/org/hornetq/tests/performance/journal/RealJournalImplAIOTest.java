@@ -12,15 +12,13 @@
  */
 
 package org.hornetq.tests.performance.journal;
-
 import java.io.File;
-
-import junit.framework.TestSuite;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.tests.unit.UnitTestLogger;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -34,13 +32,15 @@ public class RealJournalImplAIOTest extends JournalImplTestUnit
 {
    private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(RealJournalImplAIOTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
    }

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -95,6 +99,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -175,6 +180,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       try
@@ -192,6 +198,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       threadPool.shutdown();
    }
 
+   @Test
    public void testAppend() throws Exception
    {
 

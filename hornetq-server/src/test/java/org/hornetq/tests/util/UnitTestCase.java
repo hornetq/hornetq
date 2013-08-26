@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.util;
-
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -49,9 +48,6 @@ import javax.naming.Context;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -74,7 +70,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
@@ -105,6 +100,12 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 /**
  * Helper base class for our unit tests.
@@ -117,6 +118,13 @@ import org.hornetq.utils.UUIDGenerator;
 public abstract class UnitTestCase extends CoreUnitTestCase
 {
    // Constants -----------------------------------------------------
+
+   @Rule
+   public TestName name = new TestName();
+
+   @Rule
+   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+   private String testDir;
 
    private static final HornetQServerLogger log = HornetQServerLogger.LOGGER;
 
@@ -140,9 +148,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" +
-            System.currentTimeMillis();
-
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
@@ -159,6 +164,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected void disableCheckThread()
    {
       checkThread = false;
+   }
+
+   protected String getName()
+   {
+      return name.getMethodName();
    }
 
    protected boolean isWindows()
@@ -457,25 +467,6 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       System.out.println(this.getClass().getName() + "::" + message);
    }
 
-   protected static TestSuite createAIOTestSuite(final Class<?> clazz)
-   {
-      TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
-
-      if (AIOSequentialFileFactory.isSupported())
-      {
-         suite.addTestSuite(clazz);
-      }
-      else
-      {
-         // System.out goes towards JUnit report
-         System.out.println("Test " + clazz.getName() + " ignored as AIO is not available." +
-            "Add this to your java arguments if you are on a Linux system:" +
-            "\n-Djava.library.path=<project_home>/distribution/hornetq/src/main/resources/bin");
-      }
-
-      return suite;
-   }
-
    public static String dumpBytes(final byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
@@ -616,11 +607,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       ArrayList<String> connectors = new ArrayList<String>();
       for (TransportConfiguration tnsp : connectorConfigs)
       {
-         String name = RandomUtil.randomString();
+         String name1 = RandomUtil.randomString();
 
-         server.getConfiguration().getConnectorConfigurations().put(name, tnsp);
+         server.getConfiguration().getConnectorConfigurations().put(name1, tnsp);
 
-         connectors.add(name);
+         connectors.add(name1);
       }
       return connectors;
    }
@@ -667,9 +658,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       this.testDir = testDir;
    }
 
-   protected final void clearData()
+   protected final void clearDataRecreateServerDirs()
    {
-      clearData(getTestDir());
+      clearDataRecreateServerDirs(getTestDir());
    }
 
    private final void deleteTmpDir()
@@ -678,7 +669,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       deleteDirectory(file);
    }
 
-   protected void clearData(final String testDir1)
+   protected void clearDataRecreateServerDirs(final String testDir1)
    {
       // Need to delete the root
 
@@ -960,14 +951,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    Map<Thread, StackTraceElement[]> previousThreads;
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
-      //      testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test" + System.currentTimeMillis();
+      testDir = temporaryFolder.getRoot().getAbsolutePath();
+      clearDataRecreateServerDirs();
       OperationContextImpl.clearContext();
-
-      deleteDirectory(new File(getTestDir()));
 
       InVMRegistry.instance.clear();
 
@@ -978,8 +967,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       logAndSystemOut("#test " + getName());
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
@@ -1108,12 +1097,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          checkThread = true;
       }
 
-      checkFilesUsage();
-         // System.out.println("SLEEP!");
-         // Thread.sleep(60000);
-         deleteTmpDir();
-      super.tearDown();
-   }
+         checkFilesUsage();
+      }
    }
 
    private ArrayList<Exception> checkCsfStopped()
@@ -1221,24 +1206,24 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     */
    private boolean isExpectedThread(Thread thread)
    {
-      final String name = thread.getName();
+      final String threadName = thread.getName();
       final ThreadGroup group = thread.getThreadGroup();
       final boolean isSystemThread = group != null && "system".equals(group.getName());
       final String javaVendor = System.getProperty("java.vendor");
 
-      if (name.contains("SunPKCS11"))
+      if (threadName.contains("SunPKCS11"))
       {
          return true;
       }
-      else if (name.contains("Attach Listener"))
+      else if (threadName.contains("Attach Listener"))
       {
          return true;
       }
-      else if (isSystemThread && name.equals("process reaper"))
+      else if (isSystemThread && threadName.equals("process reaper"))
       {
          return true;
       }
-      else if (javaVendor.contains("IBM") && name.equals("MemoryPoolMXBean notification dispatcher"))
+      else if (javaVendor.contains("IBM") && threadName.equals("MemoryPoolMXBean notification dispatcher"))
       {
          return true;
       }
@@ -1405,9 +1390,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
             attempts++;
          }
 
-         for (int j = 0; j < files.length; j++)
+         for (String file : files)
          {
-            File f = new File(directory, files[j]);
+            File f = new File(directory, file);
             if (!deleteDirectory(f))
             {
                log.warn("Failed to clean up file: " + f.getAbsolutePath());

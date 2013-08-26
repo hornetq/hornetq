@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -30,7 +33,7 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -91,66 +94,79 @@ public class JMSServerControl2Test extends ManagementTestBase
       serverManager.activated();
    }
 
+   @Test
    public void testListClientConnectionsForInVM() throws Exception
    {
       doListClientConnections(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListClientConnectionsForNetty() throws Exception
    {
       doListClientConnections(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testCloseConnectionsForAddressForInVM() throws Exception
    {
       doCloseConnectionsForAddress(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testCloseConnectionsForAddressForNetty() throws Exception
    {
       doCloseConnectionsForAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testCloseConnectionsForUnknownAddressForInVM() throws Exception
    {
       doCloseConnectionsForUnknownAddress(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testCloseConnectionsForUnknownAddressForNetty() throws Exception
    {
       doCloseConnectionsForUnknownAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListSessionsForInVM() throws Exception
    {
       doListSessions(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListSessionsForNetty() throws Exception
    {
       doListSessions(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListConnectionIDsForInVM() throws Exception
    {
       doListConnectionIDs(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListConnectionIDsForNetty() throws Exception
    {
       doListConnectionIDs(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListConnectionsAsJSONForNetty() throws Exception
    {
       doListConnectionsAsJSON(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListConnectionsAsJSONForInVM() throws Exception
    {
       doListConnectionsAsJSON(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
    }
 
+   @Test
    public void testListConsumersAsJSON() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -270,6 +286,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    /**
     * test for durable subscriber
     */
+   @Test
    public void testListConsumersAsJSON2() throws Exception
    {
       String topicName = RandomUtil.randomString();
@@ -341,6 +358,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    }
 
    //https://jira.jboss.org/browse/HORNETQ-416
+   @Test
    public void testProducerInfo() throws Exception
    {
       String queueName = RandomUtil.randomString();
@@ -456,6 +474,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    }
 
 
+   @Test
    public void testStartActivationListConnections() throws Exception
    {
       HornetQActivation activation = null;
@@ -542,6 +561,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
+   @Test
    public void testStartActivationOverrideListConnections() throws Exception
    {
       HornetQActivation activation = null;
@@ -639,7 +659,8 @@ public class JMSServerControl2Test extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       serverManager = null;
 

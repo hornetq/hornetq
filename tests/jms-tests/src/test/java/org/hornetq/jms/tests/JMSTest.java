@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -49,6 +51,7 @@ public class JMSTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void test_NonPersistent_NonTransactional() throws Exception
    {
       Connection conn = null;
@@ -91,6 +94,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_CreateTextMessageNull() throws Exception
    {
       Connection conn = null;
@@ -133,6 +137,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_Persistent_NonTransactional() throws Exception
    {
       Connection conn = null;
@@ -173,6 +178,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_NonPersistent_Transactional_Send() throws Exception
    {
       Connection conn = null;
@@ -217,6 +223,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_Persistent_Transactional_Send() throws Exception
    {
       Connection conn = null;
@@ -261,6 +268,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
    {
       Connection conn = null;
@@ -300,6 +308,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_Asynchronous_to_Client() throws Exception
    {
       Connection conn = null;
@@ -370,6 +379,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_MessageListener() throws Exception
    {
       Connection conn = null;
@@ -418,6 +428,7 @@ public class JMSTest extends JMSTestCase
       }
    }
 
+   @Test
    public void test_ClientAcknowledge() throws Exception
    {
       Connection conn = null;

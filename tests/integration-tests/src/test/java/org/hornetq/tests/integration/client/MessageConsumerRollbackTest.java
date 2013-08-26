@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
@@ -53,7 +57,8 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
    private static final String outQueue = "outQueue";
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -78,7 +83,8 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       session.close();
    }
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -102,6 +108,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testRollbackMultipleConsumers() throws Exception
    {
 

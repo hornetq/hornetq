@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
@@ -90,21 +92,25 @@ public class BridgeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSimpleBridge() throws Exception
    {
       internaltestSimpleBridge(false, false);
    }
 
+   @Test
    public void testSimpleBridgeFiles() throws Exception
    {
       internaltestSimpleBridge(false, true);
    }
 
+   @Test
    public void testSimpleBridgeLargeMessageNullPersistence() throws Exception
    {
       internaltestSimpleBridge(true, false);
    }
 
+   @Test
    public void testSimpleBridgeLargeMessageFiles() throws Exception
    {
       internaltestSimpleBridge(true, true);
@@ -244,11 +250,13 @@ public class BridgeTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testLostMessageSimpleMessage() throws Exception
    {
       internalTestMessageLoss(false);
    }
 
+   @Test
    public void testLostMessageLargeMessage() throws Exception
    {
       internalTestMessageLoss(true);
@@ -451,21 +459,25 @@ public class BridgeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testWithFilter() throws Exception
    {
       internalTestWithFilter(false, false);
    }
 
+   @Test
    public void testWithFilterFiles() throws Exception
    {
       internalTestWithFilter(false, true);
    }
 
+   @Test
    public void testWithFilterLargeMessages() throws Exception
    {
       internalTestWithFilter(true, false);
    }
 
+   @Test
    public void testWithFilterLargeMessagesFiles() throws Exception
    {
       internalTestWithFilter(true, true);
@@ -636,6 +648,7 @@ public class BridgeTest extends ServiceTestBase
    }
 
    // Created to verify JBPAPP-6057
+   @Test
    public void testStartLater() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -767,6 +780,7 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testWithDuplicates() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -934,11 +948,13 @@ public class BridgeTest extends ServiceTestBase
       server1.stop();
    }
 
+   @Test
    public void testWithTransformer() throws Exception
    {
       internaltestWithTransformer(false);
    }
 
+   @Test
    public void testWithTransformerFiles() throws Exception
    {
       internaltestWithTransformer(true);
@@ -1068,6 +1084,7 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSawtoothLoad() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -1308,6 +1325,7 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testBridgeWithPaging() throws Exception
    {
       HornetQServer server0 = null;
@@ -1461,6 +1479,7 @@ public class BridgeTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testBridgeWithLargeMessage() throws Exception
    {
       HornetQServer server0 = null;
@@ -1623,6 +1642,7 @@ public class BridgeTest extends ServiceTestBase
       assertEquals(0, loadQueues(server0).size());
    }
 
+   @Test
    public void testNullForwardingAddress() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.concurrent.server.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,14 +47,16 @@ public class QueueTest extends UnitTestCase
    private FakeQueueFactory queueFactory = new FakeQueueFactory();
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       queueFactory = new FakeQueueFactory();
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queueFactory.stop();
       super.tearDown();
@@ -59,6 +65,7 @@ public class QueueTest extends UnitTestCase
    /*
     * Concurrent set consumer not busy, busy then, call deliver while messages are being added and consumed
     */
+   @Test
    public void testConcurrentAddsDeliver() throws Exception
    {
       QueueImpl queue = (QueueImpl)queueFactory.createQueue(1,

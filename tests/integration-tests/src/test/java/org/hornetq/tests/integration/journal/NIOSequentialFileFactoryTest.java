@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
 
 import java.io.File;
 
@@ -30,7 +31,8 @@ public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

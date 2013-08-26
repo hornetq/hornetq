@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
@@ -35,16 +37,19 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    // Once and only once
 
+   @Test
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, false);
    }
 
+   @Test
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P_LargeMessage() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, true);
    }
 
+   @Test
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, false);
@@ -52,11 +57,13 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    // dups ok
 
+   @Test
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true, false);
    }
 
+   @Test
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false, false);
@@ -64,11 +71,13 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    // At most once
 
+   @Test
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true, false);
    }
 
+   @Test
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
       performCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false, false);
@@ -76,11 +85,13 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    // Crash tests specific to XA transactions
 
+   @Test
    public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
       performCrashAndReconnectDestCrashBeforePrepare(true);
    }
 
+   @Test
    public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
       performCrashAndReconnectDestCrashBeforePrepare(false);
@@ -88,6 +99,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    // Crash before bridge is started
 
+   @Test
    public void testRetryConnectionOnStartup() throws Exception
    {
       jmsServer1.stop();
@@ -130,6 +142,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    /**
     * https://jira.jboss.org/jira/browse/HORNETQ-287
     */
+   @Test
    public void testStopBridgeWithFailureWhenStarted() throws Exception
    {
       jmsServer1.stop();

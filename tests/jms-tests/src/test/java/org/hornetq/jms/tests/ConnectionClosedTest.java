@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -48,12 +50,14 @@ public class ConnectionClosedTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCloseOnce() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
       conn.close();
    }
 
+   @Test
    public void testCloseTwice() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -62,6 +66,7 @@ public class ConnectionClosedTest extends JMSTestCase
    }
 
    /** See TCK test: topicconntests.connNotStartedTopicTest */
+   @Test
    public void testCannotReceiveMessageOnStoppedConnection() throws Exception
    {
       TopicConnection conn1 = ((TopicConnectionFactory)JMSTestCase.topicCf).createTopicConnection();
@@ -124,6 +129,7 @@ public class ConnectionClosedTest extends JMSTestCase
     * receives may return with a message or null depending on whether or not there was a message
     * available at the time of the close.
     */
+   @Test
    public void testCloseWhileReceiving() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -182,6 +188,7 @@ public class ConnectionClosedTest extends JMSTestCase
 
    }
 
+   @Test
    public void testGetMetadataOnClosedConnection() throws Exception
    {
       Connection connection = JMSTestCase.cf.createConnection();
@@ -199,6 +206,7 @@ public class ConnectionClosedTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testCreateSessionOnClosedConnection() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -218,6 +226,7 @@ public class ConnectionClosedTest extends JMSTestCase
    /**
     * Test that close() hierarchically closes all child objects
     */
+   @Test
    public void testCloseHierarchy() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();

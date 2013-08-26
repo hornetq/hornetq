@@ -2,6 +2,10 @@
  *
  */
 package org.hornetq.tests.integration.paging;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +59,7 @@ public class MultipleProducersPagingTest extends UnitTestCase
    private Queue queue;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       HornetQServerTestCase.tearDownAllServers();
@@ -97,6 +102,7 @@ public class MultipleProducersPagingTest extends UnitTestCase
    }
 
 
+   @Test
    public void testQueue() throws InterruptedException
    {
       executor.execute(new ConsumerRun());
@@ -177,6 +183,7 @@ public class MultipleProducersPagingTest extends UnitTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       executor.shutdown();

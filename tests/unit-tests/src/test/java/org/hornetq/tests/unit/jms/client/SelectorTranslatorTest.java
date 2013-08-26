@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.jms.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.tests.util.UnitTestCase;
@@ -27,11 +29,13 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class SelectorTranslatorTest extends UnitTestCase
 {
+   @Test
    public void testParseNull()
    {
       Assert.assertNull(SelectorTranslator.convertToHornetQFilterString(null));
    }
 
+   @Test
    public void testParseSimple()
    {
       final String selector = "color = 'red'";
@@ -39,6 +43,7 @@ public class SelectorTranslatorTest extends UnitTestCase
       Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
    }
 
+   @Test
    public void testParseMoreComplex()
    {
       final String selector = "color = 'red' OR cheese = 'stilton' OR (age = 3 AND shoesize = 12)";
@@ -46,6 +51,7 @@ public class SelectorTranslatorTest extends UnitTestCase
       Assert.assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
    }
 
+   @Test
    public void testParseJMSDeliveryMode()
    {
       String selector = "JMSDeliveryMode='NON_PERSISTENT'";
@@ -69,6 +75,7 @@ public class SelectorTranslatorTest extends UnitTestCase
       checkNoSubstitute("JMSDeliveryMode");
    }
 
+   @Test
    public void testParseJMSPriority()
    {
       String selector = "JMSPriority=5";
@@ -93,6 +100,7 @@ public class SelectorTranslatorTest extends UnitTestCase
 
    }
 
+   @Test
    public void testParseJMSMessageID()
    {
       String selector = "JMSMessageID='ID:HQ-12435678";
@@ -118,6 +126,7 @@ public class SelectorTranslatorTest extends UnitTestCase
       checkNoSubstitute("JMSMessageID");
    }
 
+   @Test
    public void testParseJMSTimestamp()
    {
       String selector = "JMSTimestamp=12345678";
@@ -142,6 +151,7 @@ public class SelectorTranslatorTest extends UnitTestCase
 
    }
 
+   @Test
    public void testParseJMSExpiration()
    {
       String selector = "JMSExpiration=12345678";
@@ -166,6 +176,7 @@ public class SelectorTranslatorTest extends UnitTestCase
 
    }
 
+   @Test
    public void testParseJMSCorrelationID()
    {
       String selector = "JMSCorrelationID='ID:HQ-12435678";
@@ -191,6 +202,7 @@ public class SelectorTranslatorTest extends UnitTestCase
       checkNoSubstitute("JMSCorrelationID");
    }
 
+   @Test
    public void testParseJMSType()
    {
       String selector = "JMSType='aardvark'";

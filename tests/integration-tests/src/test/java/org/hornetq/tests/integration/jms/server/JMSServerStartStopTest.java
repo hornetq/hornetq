@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.jms.server;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +26,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -56,6 +59,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    private HornetQConnectionFactory jbcf;
    private final Set<HornetQConnectionFactory> connectionFactories = new HashSet<HornetQConnectionFactory>();
 
+   @Test
    public void testStopStart1() throws Exception
    {
       final int numMessages = 5;
@@ -128,6 +132,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-315
+   @Test
    public void testCloseConnectionAfterServerIsShutdown() throws Exception
    {
       start();
@@ -158,7 +163,8 @@ public class JMSServerStartStopTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (conn != null)
          conn.close();

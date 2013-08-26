@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +26,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -51,16 +55,19 @@ public class PreACKJMSTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testPreACKAuto() throws Exception
    {
       internalTestPreACK(Session.AUTO_ACKNOWLEDGE);
    }
 
+   @Test
    public void testPreACKClientACK() throws Exception
    {
       internalTestPreACK(Session.CLIENT_ACKNOWLEDGE);
    }
 
+   @Test
    public void testPreACKDupsOK() throws Exception
    {
       internalTestPreACK(Session.DUPS_OK_ACKNOWLEDGE);
@@ -147,14 +154,16 @@ public class PreACKJMSTest extends JMSTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       queue = createQueue("queue1");
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queue = null;
       super.tearDown();

@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static org.hornetq.api.core.management.NotificationType.BINDING_ADDED;
 import static org.hornetq.api.core.management.NotificationType.BINDING_REMOVED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -62,6 +66,7 @@ public class NotificationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testBINDING_ADDED() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -83,6 +88,7 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testBINDING_ADDEDWithMatchingFilter() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -109,6 +115,7 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testBINDING_ADDEDWithNonMatchingFilter() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -129,6 +136,7 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testBINDING_REMOVED() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -150,6 +158,7 @@ public class NotificationTest extends UnitTestCase
                                                               .toString());
    }
 
+   @Test
    public void testCONSUMER_CREATED() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -190,6 +199,7 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testCONSUMER_CLOSED() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -235,7 +245,8 @@ public class NotificationTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -260,7 +271,8 @@ public class NotificationTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       notifConsumer.close();
 

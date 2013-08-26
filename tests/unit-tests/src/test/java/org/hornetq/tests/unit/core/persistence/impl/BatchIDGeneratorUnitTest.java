@@ -12,11 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.persistence.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -41,6 +44,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class BatchIDGeneratorUnitTest extends UnitTestCase
 {
 
+   @Test
    public void testSequence() throws Exception
    {
       NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getTestDir());
@@ -146,7 +150,8 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       File file = new File(getTestDir());

@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -19,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -54,41 +57,49 @@ public class MessageGroupingTest extends UnitTestCase
    private final SimpleString qName = new SimpleString("MessageGroupingTestQueue");
    private ServerLocator locator;
 
+   @Test
    public void testBasicGrouping() throws Exception
    {
       doTestBasicGrouping();
    }
 
+   @Test
    public void testMultipleGrouping() throws Exception
    {
       doTestMultipleGrouping();
    }
 
+   @Test
    public void testMultipleGroupingSingleConsumerWithDirectDelivery() throws Exception
    {
       doTestMultipleGroupingSingleConsumer(true);
    }
 
+   @Test
    public void testMultipleGroupingSingleConsumerWithoutDirectDelivery() throws Exception
    {
       doTestMultipleGroupingSingleConsumer(false);
    }
 
+   @Test
    public void testMultipleGroupingTXCommit() throws Exception
    {
       doTestMultipleGroupingTXCommit();
    }
 
+   @Test
    public void testMultipleGroupingTXRollback() throws Exception
    {
       doTestMultipleGroupingTXRollback();
    }
 
+   @Test
    public void testMultipleGroupingXACommit() throws Exception
    {
       dotestMultipleGroupingXACommit();
    }
 
+   @Test
    public void testMultipleGroupingXARollback() throws Exception
    {
       doTestMultipleGroupingXARollback();
@@ -122,6 +133,7 @@ public class MessageGroupingTest extends UnitTestCase
       consumer2.close();
    }
 
+   @Test
    public void testMultipleGroupingConsumeHalf() throws Exception
    {
       ClientProducer clientProducer = clientSession.createProducer(qName);
@@ -536,7 +548,8 @@ public class MessageGroupingTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,7 +26,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -75,6 +77,7 @@ public class JmsNettyNioStressTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    // Remove this method to re-enable those tests
+   @Test
    public void testStressSendNetty() throws Exception
    {
       doTestStressSend(true);

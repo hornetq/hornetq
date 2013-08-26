@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.divert;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -44,6 +46,7 @@ import org.hornetq.tests.util.JMSTestBase;
 public class DivertAndACKClientTest extends JMSTestBase
 {
 
+   @Test
    public void testAutoACK() throws Exception
    {
       Queue queueSource = createQueue("Source");
@@ -67,6 +70,7 @@ public class DivertAndACKClientTest extends JMSTestBase
       connection.close();
    }
 
+   @Test
    public void testClientACK() throws Exception
    {
       Queue queueSource = createQueue("Source");

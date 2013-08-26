@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.replication;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -165,12 +169,14 @@ public final class ReplicationTest extends ServiceTestBase
       waitForComponent(component, 3);
    }
 
+   @Test
    public void testBasicConnection() throws Exception
    {
       setupServer(true);
       waitForComponent(liveServer.getReplicationManager());
    }
 
+   @Test
    public void testConnectIntoNonBackup() throws Exception
    {
       setupServer(false);
@@ -192,6 +198,7 @@ public final class ReplicationTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSendPackets() throws Exception
    {
       setupServer(true);
@@ -273,6 +280,7 @@ public final class ReplicationTest extends ServiceTestBase
       Assert.assertEquals(0, store.getNumberOfPages());
    }
 
+   @Test
    public void testSendPacketsWithFailure() throws Exception
    {
       final int nMsg = 100;
@@ -322,6 +330,7 @@ public final class ReplicationTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testExceptionSettingActionBefore() throws Exception
    {
       OperationContext ctx = OperationContextImpl.getContext(factory);
@@ -434,6 +443,7 @@ public final class ReplicationTest extends ServiceTestBase
       Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
 
+   @Test
    public void testNoActions() throws Exception
    {
 
@@ -465,6 +475,7 @@ public final class ReplicationTest extends ServiceTestBase
       Assert.assertEquals("should be empty " + manager.getActiveTokens(), 0, manager.getActiveTokens().size());
    }
 
+   @Test
    public void testOrderOnNonPersistency() throws Exception
    {
 
@@ -536,7 +547,8 @@ public final class ReplicationTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -554,7 +566,8 @@ public final class ReplicationTest extends ServiceTestBase
     * for leaking threads). Due to that, we need to close/stop all components here.
     */
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopComponent(manager);
       manager = null;

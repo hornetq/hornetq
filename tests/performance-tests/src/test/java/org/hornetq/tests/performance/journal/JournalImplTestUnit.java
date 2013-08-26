@@ -12,10 +12,13 @@
  */
 
 package org.hornetq.tests.performance.journal;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.Journal;
@@ -39,13 +42,15 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    private static final UnitTestLogger log = UnitTestLogger.LOGGER;
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
 
       Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
    }
 
+   @Test
    public void testAddUpdateDeleteManyLargeFileSize() throws Exception
    {
       final int numberAdds = 1000;
@@ -89,6 +94,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    }
 
+   @Test
    public void testAddUpdateDeleteManySmallFileSize() throws Exception
    {
       final int numberAdds = 1000;
@@ -134,6 +140,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    }
 
+   @Test
    public void testReclaimAndReload() throws Exception
    {
       setup(2, 10 * 1024 * 1024, false);
@@ -180,6 +187,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       stopJournal();
    }
 
+   @Test
    public void testSpeedNonTransactional() throws Exception
    {
       for (int i = 0; i < 1; i++)
@@ -192,6 +200,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       }
    }
 
+   @Test
    public void testSpeedTransactional() throws Exception
    {
       Journal journal = new JournalImpl(10 * 1024 * 1024, 10, 0, 0, getFileFactory(), "hornetq-data", "hq", 5000);

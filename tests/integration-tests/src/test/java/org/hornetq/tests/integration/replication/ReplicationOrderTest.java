@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.replication;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,11 +41,13 @@ public class ReplicationOrderTest extends FailoverTestBase
 
    public static final int NUM = 300;
 
+   @Test
    public void testMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
    {
       doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(false);
    }
 
+   @Test
    public void testTxMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
    {
       doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(true);

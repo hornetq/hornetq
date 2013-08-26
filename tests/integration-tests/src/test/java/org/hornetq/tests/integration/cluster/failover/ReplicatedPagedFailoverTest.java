@@ -1,5 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 
 import org.hornetq.core.config.Configuration;
@@ -18,6 +20,7 @@ public class ReplicatedPagedFailoverTest extends ReplicatedFailoverTest
    }
 
    @Override
+   @Test
    public void testFailWithBrowser() throws Exception
    {
       // paged messages are not available for browsing

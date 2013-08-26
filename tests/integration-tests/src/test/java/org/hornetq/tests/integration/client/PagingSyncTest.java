@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -50,6 +52,7 @@ public class PagingSyncTest extends ServiceTestBase
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
+   @Test
    public void testOrder1() throws Throwable
    {
       boolean persistentMessages = true;

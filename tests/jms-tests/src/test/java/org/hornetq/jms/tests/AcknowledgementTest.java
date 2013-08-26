@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -40,6 +42,7 @@ public class AcknowledgementTest extends JMSTestCase
 {
 
    /** Topics shouldn't hold on to messages if there are no subscribers */
+   @Test
    public void testPersistentMessagesForTopicDropped() throws Exception
    {
       TopicConnection conn = null;
@@ -69,6 +72,7 @@ public class AcknowledgementTest extends JMSTestCase
    }
 
    /* Topics shouldn't hold on to messages when the non-durable subscribers close */
+   @Test
    public void testPersistentMessagesForTopicDropped2() throws Exception
    {
       TopicConnection conn = null;
@@ -107,6 +111,7 @@ public class AcknowledgementTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRollbackRecover() throws Exception
    {
       TopicConnection conn = null;
@@ -178,6 +183,7 @@ public class AcknowledgementTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTransactionalAcknowledgement() throws Exception
    {
       Connection conn = null;
@@ -265,6 +271,7 @@ public class AcknowledgementTest extends JMSTestCase
    /**
     * Send some messages, don't acknowledge them and verify that they are re-sent on recovery.
     */
+   @Test
    public void testClientAcknowledgeNoAcknowledgement() throws Exception
    {
       Connection conn = null;
@@ -354,6 +361,7 @@ public class AcknowledgementTest extends JMSTestCase
    /**
     * Send some messages, acknowledge them individually and verify they are not resent after recovery.
     */
+   @Test
    public void testIndividualClientAcknowledge() throws Exception
    {
       Connection conn = null;
@@ -412,6 +420,7 @@ public class AcknowledgementTest extends JMSTestCase
    /**
     * Send some messages, acknowledge them once after all have been received verify they are not resent after recovery
     */
+   @Test
    public void testBulkClientAcknowledge() throws Exception
    {
       Connection conn = null;
@@ -486,6 +495,7 @@ public class AcknowledgementTest extends JMSTestCase
    /**
     * Send some messages, acknowledge some of them, and verify that the others are resent after delivery
     */
+   @Test
    public void testPartialClientAcknowledge() throws Exception
    {
       Connection conn = null;
@@ -571,6 +581,7 @@ public class AcknowledgementTest extends JMSTestCase
    /*
     * Send some messages, consume them and verify the messages are not sent upon recovery
     */
+   @Test
    public void testAutoAcknowledge() throws Exception
    {
       Connection conn = null;
@@ -647,6 +658,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    }
 
+   @Test
    public void testDupsOKAcknowledgeQueue() throws Exception
    {
       Connection conn = null;
@@ -721,6 +733,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    }
 
+   @Test
    public void testDupsOKAcknowledgeTopic() throws Exception
    {
       final int BATCH_SIZE = 10;
@@ -777,6 +790,7 @@ public class AcknowledgementTest extends JMSTestCase
    /*
     * Send some messages, consume them and verify the messages are not sent upon recovery
     */
+   @Test
    public void testLazyAcknowledge() throws Exception
    {
       Connection conn = null;
@@ -850,6 +864,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    }
 
+   @Test
    public void testMessageListenerAutoAck() throws Exception
    {
       Connection conn = null;
@@ -915,6 +930,7 @@ public class AcknowledgementTest extends JMSTestCase
     * the second message - The queue should be empty after that Note: testMessageListenerAutoAck will test a similar
     * case using MessageListeners
     */
+   @Test
    public void testRecoverAutoACK() throws Exception
    {
       Connection conn = null;
@@ -973,6 +989,7 @@ public class AcknowledgementTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMessageListenerDupsOK() throws Exception
    {
       Connection conn = null;
@@ -1034,6 +1051,7 @@ public class AcknowledgementTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMessageListenerClientAck() throws Exception
    {
       Connection conn = null;
@@ -1079,6 +1097,7 @@ public class AcknowledgementTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testMessageListenerTransactionalAck() throws Exception
    {
       Connection conn = null;
@@ -1512,6 +1531,7 @@ public class AcknowledgementTest extends JMSTestCase
 
    }
 
+   @Test
    public void testTransactionalIgnoreACK() throws Exception
    {
       Connection conn = null;

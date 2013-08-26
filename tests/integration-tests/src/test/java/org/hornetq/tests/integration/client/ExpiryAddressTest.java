@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -45,6 +48,7 @@ public class ExpiryAddressTest extends ServiceTestBase
    private ClientSession clientSession;
    private ServerLocator locator;
 
+   @Test
    public void testBasicSend() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -75,6 +79,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       m.acknowledge();
    }
 
+   @Test
    public void testBasicSendWithRetroActiveAddressSettings() throws Exception
    {
       // apply "original" address settings
@@ -127,6 +132,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       m.acknowledge();
    }
 
+   @Test
    public void testBasicSendToMultipleQueues() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -182,6 +188,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.commit();
    }
 
+   @Test
    public void testBasicSendToNoQueue() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -202,6 +209,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientConsumer.close();
    }
 
+   @Test
    public void testHeadersSet() throws Exception
    {
       final int NUM_MESSAGES = 5;
@@ -258,6 +266,7 @@ public class ExpiryAddressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testExpireWithDefaultAddressSettings() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -287,6 +296,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       m.acknowledge();
    }
 
+   @Test
    public void testExpireWithWildcardAddressSettings() throws Exception
    {
       SimpleString ea = new SimpleString("EA");
@@ -316,6 +326,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       m.acknowledge();
    }
 
+   @Test
    public void testExpireWithOverridenSublevelAddressSettings() throws Exception
    {
       SimpleString address = new SimpleString("prefix.address");
@@ -360,7 +371,8 @@ public class ExpiryAddressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.util.List;
 
 import org.hornetq.jms.persistence.config.PersistedDestination;
@@ -28,6 +30,7 @@ import org.hornetq.jms.persistence.config.PersistedType;
 public class JMSStorageManagerTest extends StorageManagerTestBase
 {
    //https://issues.jboss.org/browse/HORNETQ-812
+   @Test
    public void testJNDIPersistence() throws Exception
    {
       createJMSStorage();

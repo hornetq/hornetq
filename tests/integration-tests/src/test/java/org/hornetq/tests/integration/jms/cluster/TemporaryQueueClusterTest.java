@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -42,18 +46,21 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
 
    // Public --------------------------------------------------------
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
    }
 
 
 
+   @Test
    public void testClusteredQueue() throws Exception
    {
       System.out.println("Server1 = " + server1.getNodeID());
@@ -101,6 +108,7 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
    }
 
 
+   @Test
    public void testTemporaryQueue() throws Exception
    {
       jmsServer1.createQueue(false, "target", null, false, "/queue/target");

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.tests.util.UnitTestCase;
@@ -28,6 +30,7 @@ import org.hornetq.utils.HornetQBufferInputStream;
 public class HornetQBufferInputStreamTest extends UnitTestCase
 {
 
+   @Test
    public void testReadBytes() throws Exception
    {
       byte bytes[] = new byte[10*1024];

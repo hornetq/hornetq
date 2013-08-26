@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.bridge;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import javax.transaction.TransactionManager;
 
@@ -39,7 +42,8 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
    private String targetQueueName = "TargetQueue";
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -53,21 +57,25 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
       targetServer.createQueue(targetQueueName);
    }
 
+   @Test
    public void testBridgeOnFailoverXA() throws Exception
    {
       performSourceAndTargetCrashAndFailover(QualityOfServiceMode.ONCE_AND_ONLY_ONCE);
    }
 
+   @Test
    public void testBridgeOnFailoverDupsOk() throws Exception
    {
       performSourceAndTargetCrashAndFailover(QualityOfServiceMode.DUPLICATES_OK);
    }
 
+   @Test
    public void testBridgeOnFailoverAtMostOnce() throws Exception
    {
       performSourceAndTargetCrashAndFailover(QualityOfServiceMode.AT_MOST_ONCE);
    }
 
+   @Test
    public void testCrashAndFailoverWithMessagesXA() throws Exception
    {
       performSourceAndTargetCrashAndFailoverWithMessages(QualityOfServiceMode.ONCE_AND_ONLY_ONCE);

@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.management;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
@@ -39,6 +41,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class ManagementServiceImplTest extends UnitTestCase
 {
+   @Test
    public void testHandleManagementMessageWithOperation() throws Exception
    {
       String queue = RandomUtil.randomString();
@@ -61,6 +64,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
+   @Test
    public void testHandleManagementMessageWithOperationWhichFails() throws Exception
    {
       Configuration conf = createBasicConfig();
@@ -80,6 +84,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
+   @Test
    public void testHandleManagementMessageWithUnknowResource() throws Exception
    {
       Configuration conf = createBasicConfig();
@@ -99,6 +104,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
+   @Test
    public void testHandleManagementMessageWithUnknownAttribute() throws Exception
    {
       Configuration conf = createBasicConfig();
@@ -119,6 +125,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
+   @Test
    public void testHandleManagementMessageWithKnownAttribute() throws Exception
    {
       Configuration conf = createBasicConfig();
@@ -139,6 +146,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       server.stop();
    }
 
+   @Test
    public void testGetResources() throws Exception
    {
       Configuration conf = createBasicConfig();

@@ -1,4 +1,5 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
 
 import org.hornetq.rest.util.Constants;
 import org.jboss.resteasy.client.ClientRequest;

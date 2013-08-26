@@ -11,7 +11,6 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +41,9 @@ import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQRASession;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,7 +60,8 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       server.getSecurityManager().addUser("testuser", "testpassword");
@@ -73,7 +76,8 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (resourceAdapter != null)
       {
@@ -82,6 +86,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       super.tearDown();
    }
 
+   @Test
    public void testSimpleMessageSendAndReceive() throws Exception
    {
       resourceAdapter = new HornetQResourceAdapter();
@@ -112,6 +117,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mc.destroy();
    }
 
+   @Test
    public void testSimpleMessageSendAndReceiveXA() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
@@ -149,6 +155,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mc.destroy();
    }
 
+   @Test
    public void testSimpleMessageSendAndReceiveTransacted() throws Exception
    {
       setupDLQ(10);
@@ -183,6 +190,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mc.destroy();
    }
 
+   @Test
    public void testMultipleSessionsThrowsException() throws Exception
    {
       resourceAdapter = newResourceAdapter();
@@ -209,6 +217,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mc.destroy();
    }
 
+   @Test
    public void testConnectionCredentials() throws Exception
    {
       resourceAdapter = newResourceAdapter();
@@ -234,6 +243,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    }
 
+   @Test
    public void testConnectionCredentialsFail() throws Exception
    {
       resourceAdapter = newResourceAdapter();
@@ -262,6 +272,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
    }
 
+   @Test
    public void testConnectionCredentialsFailRecovery() throws Exception
    {
       resourceAdapter = newResourceAdapter();
@@ -284,6 +295,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
    }
 
+   @Test
    public void testConnectionCredentialsOKRecovery() throws Exception
    {
       resourceAdapter = newResourceAdapter();

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -32,7 +36,8 @@ public class SymmetricClusterTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -40,7 +45,8 @@ public class SymmetricClusterTest extends ClusterTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       log.info("#test tearDown");
       stopServers();
@@ -53,6 +59,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testStopAllStartAll() throws Throwable
    {
       try
@@ -156,6 +163,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testBasicRoundRobin() throws Exception
    {
       setupCluster();
@@ -200,6 +208,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    }
 
 
+   @Test
    public void testBasicRoundRobinManyMessages() throws Exception
    {
       setupCluster();
@@ -243,6 +252,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4);
    }
 
+   @Test
    public void testRoundRobinMultipleQueues() throws Exception
    {
       SymmetricClusterTest.log.info("starting");
@@ -333,6 +343,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       SymmetricClusterTest.log.info("verified 3");
    }
 
+   @Test
    public void testMultipleNonLoadBalancedQueues() throws Exception
    {
       setupCluster();
@@ -398,6 +409,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveAll(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueues() throws Exception
    {
       setupCluster();
@@ -505,6 +517,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesRemoveSomeQueuesAndConsumers() throws Exception
    {
       setupCluster();
@@ -646,6 +659,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesAndConsumersBeforeAllServersAreStarted() throws Exception
    {
       setupCluster();
@@ -761,6 +775,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesWithFilters() throws Exception
    {
       setupCluster();
@@ -889,6 +904,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesWithConsumersWithFilters() throws Exception
    {
       setupCluster();
@@ -1017,6 +1033,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueLoadBalancedQueues() throws Exception
    {
       setupCluster(true);
@@ -1070,6 +1087,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseNoLocalConsumerLoadBalancedQueues() throws Exception
    {
       setupCluster(false);
@@ -1130,6 +1148,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseLocalConsumerLoadBalancedQueues() throws Exception
    {
       setupCluster(false);
@@ -1184,6 +1203,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveAll(10, 0);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseNonLoadBalancedQueues() throws Exception
    {
       setupCluster(false);
@@ -1237,6 +1257,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveAll(10, 0, 1, 2, 3, 4);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueNonLoadBalancedQueues() throws Exception
    {
       setupCluster(true);
@@ -1290,6 +1311,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveAll(10, 0, 1, 2, 3, 4);
    }
 
+   @Test
    public void testNoLocalQueueNonLoadBalancedQueues() throws Exception
    {
       setupCluster(true);
@@ -1328,6 +1350,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveAll(10, 1, 2, 3, 4);
    }
 
+   @Test
    public void testNoLocalQueueLoadBalancedQueues() throws Exception
    {
       setupCluster(true);
@@ -1564,6 +1587,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
    }
 
+   @Test
    public void testStopSuccessiveServers() throws Exception
    {
       setupCluster();

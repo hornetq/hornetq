@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -44,17 +48,20 @@ public class TopicClusterTest extends JMSClusteredTestBase
    // Public --------------------------------------------------------
 
 
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
    }
 
+   @Test
    public void testDeleteTopicAfterClusteredSend() throws Exception
    {
       Connection conn1 = cf1.createConnection();

@@ -12,7 +12,9 @@
  */
 package org.hornetq.tests.integration.client;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -36,6 +38,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
 
    public final SimpleString queueA = new SimpleString("queueA");
 
+   @Test
    public void testConsumersRoundRobinCorrectly() throws Exception
    {
       HornetQServer server = createServer(false);

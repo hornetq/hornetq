@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests.stress;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -24,6 +23,9 @@ import javax.naming.InitialContext;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
@@ -50,6 +52,7 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testMultipleSenders() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -91,7 +94,8 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -102,12 +106,11 @@ public class CorruptMessageStressTest extends HornetQServerTestCase
       CorruptMessageStressTest.log.debug("setup done");
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       destroyQueue("StressTestQueue");
       ic.close();
-      super.tearDown();
    }
 
    // Private -------------------------------------------------------
