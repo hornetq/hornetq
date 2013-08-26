@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -47,6 +49,7 @@ public class MessageProducerTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSendForeignWithForeignDestinationSet() throws Exception
    {
       Connection conn = null;
@@ -91,11 +94,13 @@ public class MessageProducerTest extends JMSTestCase
       private static final long serialVersionUID = -2553676986492799801L;
    }
 
+   @Test
    public void testSendToQueuePersistent() throws Exception
    {
       sendToQueue(true);
    }
 
+   @Test
    public void testSendToQueueNonPersistent() throws Exception
    {
       sendToQueue(false);
@@ -139,11 +144,13 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testTransactedSendPersistent() throws Exception
    {
       transactedSend(true);
    }
 
+   @Test
    public void testTransactedSendNonPersistent() throws Exception
    {
       transactedSend(false);
@@ -217,11 +224,13 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testPersistentSendToTopic() throws Exception
    {
       sendToTopic(true);
    }
 
+   @Test
    public void testNonPersistentSendToTopic() throws Exception
    {
       sendToTopic(false);
@@ -276,6 +285,7 @@ public class MessageProducerTest extends JMSTestCase
    /**
     *  Test sending via anonymous producer
     * */
+   @Test
    public void testSendDestination() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -319,6 +329,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSendForeignMessage() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -350,6 +361,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetDestination() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -367,6 +379,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetDestinationOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -393,6 +406,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testCreateProducerOnInexistentDestination() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -419,6 +433,7 @@ public class MessageProducerTest extends JMSTestCase
    // disabled MessageID tests
    //
 
+   @Test
    public void testGetDisableMessageID() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -436,6 +451,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetDisableMessageIDOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -467,6 +483,7 @@ public class MessageProducerTest extends JMSTestCase
    // disabled timestamp tests
    //
 
+   @Test
    public void testDefaultTimestampDisabled() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -485,6 +502,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetTimestampDisabled() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -530,6 +548,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetTimestampDisabledOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -561,6 +580,7 @@ public class MessageProducerTest extends JMSTestCase
    // DeliverMode tests
    //
 
+   @Test
    public void testDefaultDeliveryMode() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -580,6 +600,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetDeliveryMode() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -601,6 +622,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetDeliveryModeOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -632,6 +654,7 @@ public class MessageProducerTest extends JMSTestCase
    // Priority tests
    //
 
+   @Test
    public void testDefaultPriority() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -651,6 +674,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetPriority() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -672,6 +696,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetPriorityOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -703,6 +728,7 @@ public class MessageProducerTest extends JMSTestCase
    // TimeToLive test
    //
 
+   @Test
    public void testDefaultTimeToLive() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -722,6 +748,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testSetTimeToLive() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();
@@ -743,6 +770,7 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testGetTimeToLiveOnClosedProducer() throws Exception
    {
       Connection pconn = JMSTestCase.cf.createConnection();

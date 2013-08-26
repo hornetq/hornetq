@@ -12,10 +12,12 @@
  */
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -47,6 +49,7 @@ public class AcknowledgeTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
+   @Test
    public void testReceiveAckLastMessageOnly() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -80,6 +83,7 @@ public class AcknowledgeTest extends ServiceTestBase
          sendSession.close();
    }
 
+   @Test
    public void testAsyncConsumerNoAck() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -119,6 +123,7 @@ public class AcknowledgeTest extends ServiceTestBase
          session.close();
          }
 
+   @Test
    public void testAsyncConsumerAck() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -174,6 +179,7 @@ public class AcknowledgeTest extends ServiceTestBase
     * receive the message yet.
     * on that case the system should rollback any acks done and redeliver any messages
     */
+   @Test
    public void testInvalidACK() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -259,6 +265,7 @@ public class AcknowledgeTest extends ServiceTestBase
 
 
 
+   @Test
    public void testAsyncConsumerAckLastMessageOnly() throws Exception
    {
       HornetQServer server = createServer(false);

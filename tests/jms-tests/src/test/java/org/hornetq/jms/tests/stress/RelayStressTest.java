@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.stress;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -27,11 +26,14 @@ import javax.naming.InitialContext;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.JmsTestLogger;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Send messages to a topic with selector1, consumer them with multiple consumers and relay them
  * back to the topic with a different selector, then consume that with more consumers.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
@@ -53,7 +55,8 @@ public class RelayStressTest extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -64,14 +67,14 @@ public class RelayStressTest extends HornetQServerTestCase
       RelayStressTest.log.debug("setup done");
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       destroyTopic("StressTestTopic");
       ic.close();
-      super.tearDown();
    }
 
+   @Test
    public void testRelay() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

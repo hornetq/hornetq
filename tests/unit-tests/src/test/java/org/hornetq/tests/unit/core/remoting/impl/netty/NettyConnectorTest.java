@@ -17,8 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
@@ -29,7 +27,8 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.VersionLoader;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,6 +36,7 @@ import org.hornetq.utils.VersionLoader;
 public class NettyConnectorTest extends UnitTestCase
 {
 
+   @Test
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new BufferHandler()
@@ -77,6 +77,7 @@ public class NettyConnectorTest extends UnitTestCase
       Assert.assertFalse(connector.isStarted());
    }
 
+   @Test
    public void testNullParams() throws Exception
    {
       BufferHandler handler = new BufferHandler()
@@ -137,6 +138,7 @@ public class NettyConnectorTest extends UnitTestCase
          // Ok
       }
    }
+   @Test
    public void testSystemPropertyOverrides() throws Exception
    {
       BufferHandler handler = new BufferHandler()

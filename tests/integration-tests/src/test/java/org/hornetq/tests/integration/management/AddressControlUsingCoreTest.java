@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -59,6 +63,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGetAddress() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -73,6 +78,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testGetQueueNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -99,6 +105,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.deleteQueue(anotherQueue);
    }
 
+   @Test
    public void testGetBindingNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -124,6 +131,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       assertEquals(divertName.toString(), bindingNames[0]);
    }
 
+   @Test
    public void testGetRoles() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -171,7 +179,8 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -198,7 +207,8 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       session.close();
       session = null;

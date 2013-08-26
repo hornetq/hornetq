@@ -11,13 +11,17 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.connection;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -44,7 +48,8 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    private HornetQSession session2;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -56,7 +61,8 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (session1 != null)
          session1.close();
@@ -71,6 +77,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
       super.tearDown();
    }
 
+   @Test
    public void testClosingTemporaryTopicDeletesQueue() throws JMSException, HornetQException
    {
       conn = cf.createConnection();
@@ -100,6 +107,7 @@ public class CloseDestroyedConnectionTest extends JMSTestBase
    /*
     * Closing a connection that is destroyed should cleanly close everything without throwing exceptions
     */
+   @Test
    public void testCloseDestroyedConnection() throws Exception
    {
       long connectionTTL = 500;

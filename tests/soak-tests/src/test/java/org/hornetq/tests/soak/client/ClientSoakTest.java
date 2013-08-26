@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.soak.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,9 +68,10 @@ public class ClientSoakTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      clearData();
+      clearDataRecreateServerDirs();
 
       Configuration config = createDefaultConfig(ClientSoakTest.IS_NETTY);
 
@@ -119,12 +124,14 @@ public class ClientSoakTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       server.stop();
       server = null;
    }
 
+   @Test
    public void testSoakClient() throws Exception
    {
       final ServerLocator locator = createFactory(IS_NETTY);

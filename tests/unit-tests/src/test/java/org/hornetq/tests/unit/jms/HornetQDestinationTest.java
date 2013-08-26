@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.unit.jms;
 
+import org.junit.Test;
+
 import javax.jms.Queue;
 import javax.jms.Topic;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.util.RandomUtil;
@@ -39,6 +41,7 @@ public class HornetQDestinationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testEquals() throws Exception
    {
       String destinationName = RandomUtil.randomString();
@@ -53,6 +56,7 @@ public class HornetQDestinationTest extends UnitTestCase
       Assert.assertFalse(destination.equals(differentDestination));
    }
 
+   @Test
    public void testFromAddressWithQueueAddressPrefix() throws Exception
    {
       String destinationName = RandomUtil.randomString();
@@ -62,6 +66,7 @@ public class HornetQDestinationTest extends UnitTestCase
       Assert.assertEquals(destinationName, ((Queue)destination).getQueueName());
    }
 
+   @Test
    public void testFromAddressWithTopicAddressPrefix() throws Exception
    {
       String destinationName = RandomUtil.randomString();
@@ -71,6 +76,7 @@ public class HornetQDestinationTest extends UnitTestCase
       Assert.assertEquals(destinationName, ((Topic)destination).getTopicName());
    }
 
+   @Test
    public void testFromAddressWithInvalidPrefix() throws Exception
    {
       String invalidPrefix = "junk";

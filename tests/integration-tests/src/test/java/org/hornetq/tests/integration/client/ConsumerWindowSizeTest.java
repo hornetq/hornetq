@@ -11,6 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -65,7 +68,8 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -87,6 +91,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-385
+   @Test
    public void testReceiveImmediateWithZeroWindow() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
@@ -142,6 +147,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-385
+   @Test
    public void testReceiveImmediateWithZeroWindow2() throws Exception
    {
       HornetQServer server = createServer(true);
@@ -194,6 +200,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-385
+   @Test
    public void testReceiveImmediateWithZeroWindow3() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
@@ -248,6 +255,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       senderSession.close();
    }
 
+   @Test
    public void testReceiveImmediateWithZeroWindow4() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
@@ -302,6 +310,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       senderSession.close();
    }
 
+   @Test
    public void testMultipleImmediate() throws Exception
    {
 
@@ -392,6 +401,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       assertEquals(NUMBER_OF_MESSAGES, received.get());
    }
 
+   @Test
    public void testSingleImmediate() throws Exception
    {
 
@@ -457,6 +467,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    * know if consumer 1 has received n messages then consumer 2 must have also have received n messages or at least up
    * to its window size
    * */
+   @Test
    public void testSendWindowSize() throws Exception
    {
       HornetQServer messagingService = createServer(false, isNetty());
@@ -502,6 +513,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       Assert.assertEquals(0, getMessageCount(messagingService, queueA.toString()));
    }
 
+   @Test
    public void testSlowConsumerBufferingOne() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
@@ -580,6 +592,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSlowConsumerNoBuffer() throws Exception
    {
       internalTestSlowConsumerNoBuffer(false);
@@ -707,11 +720,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSlowConsumerNoBuffer2() throws Exception
    {
       internalTestSlowConsumerNoBuffer2(false);
    }
 
+   @Test
    public void testSlowConsumerNoBuffer2LargeMessages() throws Exception
    {
       internalTestSlowConsumerNoBuffer2(true);
@@ -898,6 +913,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSaveBuffersOnLargeMessage() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
@@ -985,21 +1001,25 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSlowConsumerOnMessageHandlerNoBuffers() throws Exception
    {
       internalTestSlowConsumerOnMessageHandlerNoBuffers(false);
    }
 
+   @Test
    public void testSlowConsumerOnMessageHandlerNoBuffersLargeMessage() throws Exception
    {
       internalTestSlowConsumerOnMessageHandlerNoBuffers(true);
    }
 
+   @Test
    public void testFlowControl() throws Exception
    {
       internalTestFlowControlOnRollback(false);
    }
 
+   @Test
    public void testFlowControlLargeMessage() throws Exception
    {
       internalTestFlowControlOnRollback(true);
@@ -1261,6 +1281,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testSlowConsumerOnMessageHandlerBufferOne() throws Exception
    {
       internalTestSlowConsumerOnMessageHandlerBufferOne(false);
@@ -1428,6 +1449,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testNoWindowRoundRobin() throws Exception
    {
       testNoWindowRoundRobin(false);

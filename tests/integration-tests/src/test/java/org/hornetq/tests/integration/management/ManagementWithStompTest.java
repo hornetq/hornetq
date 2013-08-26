@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,7 +25,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -69,6 +73,7 @@ public class ManagementWithStompTest extends ManagementTestBase
    // Public --------------------------------------------------------
 
 
+   @Test
    public void testGetManagementAttributeFromStomp() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -111,6 +116,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   @Test
    public void testInvokeOperationFromStomp() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -161,7 +167,8 @@ public class ManagementWithStompTest extends ManagementTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -190,7 +197,8 @@ public class ManagementWithStompTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       session.close();
 

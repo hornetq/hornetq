@@ -2,6 +2,9 @@
  *
  */
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +22,7 @@ public class BackupAuthenticationTest extends FailoverTestBase
 {
    private static CountDownLatch latch;
    @Override
+   @Before
    public void setUp() throws Exception
    {
       startBackupServer = false;
@@ -26,6 +30,7 @@ public class BackupAuthenticationTest extends FailoverTestBase
       super.setUp();
    }
 
+   @Test
    public void testPasswordSetting() throws Exception
    {
       waitForServer(liveServer.getServer());

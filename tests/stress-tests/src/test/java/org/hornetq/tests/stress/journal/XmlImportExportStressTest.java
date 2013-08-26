@@ -1,12 +1,15 @@
 package org.hornetq.tests.stress.journal;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
 import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,17 +18,19 @@ public class XmlImportExportStressTest extends ServiceTestBase
 {
    public static final int CONSUMER_TIMEOUT = 5000;
 
+   @Test
    public void testHighVolume() throws Exception
    {
-      final String FILE_NAME = "temp";
+      final String FILE_NAME = getTestDir() + "/export.out";
+
       final String QUEUE_NAME = "A1";
       HornetQServer server = createServer(true);
       server.start();
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory factory = locator.createSessionFactory();
-      ClientSession session = factory.createSession(false, true, true);
+      ClientSession session = factory.createSession(false, false, false);
 
-      session.createQueue(QUEUE_NAME, QUEUE_NAME);
+      session.createQueue(QUEUE_NAME, QUEUE_NAME, true);
 
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
@@ -44,8 +49,11 @@ public class XmlImportExportStressTest extends ServiceTestBase
       for (int i = 0; i < COUNT; i++)
       {
          producer.send(msg);
+         if (i % 500 == 0) session.commit();
          System.out.println("Sent " + i);
       }
+
+      session.commit();
 
       session.close();
       locator.close();
@@ -53,12 +61,16 @@ public class XmlImportExportStressTest extends ServiceTestBase
 
       System.out.println("Writing XML...");
       FileOutputStream xmlOutputStream = new FileOutputStream(FILE_NAME);
-      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      BufferedOutputStream bufferOut = new BufferedOutputStream(xmlOutputStream);
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(bufferOut, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
       xmlDataExporter.writeXMLData();
-      xmlOutputStream.close();
+      bufferOut.close();
       System.out.println("Done writing XML.");
 
-      clearData();
+      deleteDirectory(new File(getJournalDir()));
+      deleteDirectory(new File(getBindingsDir()));
+      deleteDirectory(new File(getPageDir()));
+      deleteDirectory(new File(getLargeMessagesDir()));
       server.start();
       locator = createInVMNonHALocator();
       factory = locator.createSessionFactory();

@@ -12,9 +12,11 @@
  */
 package org.hornetq.tests.unit.microcontainer;
 
+import org.junit.Test;
+
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.tests.util.UnitTestCase;
@@ -34,6 +36,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
                                + "</deployment>";
 /*
  * TODO: This test is leaking a thread:
+   @Test
    public void testMain() throws Exception
    {
       HornetQBootstrapServer.main(new String[] { HornetQBootstrapServerTest.beans1 });
@@ -41,6 +44,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
    }
   */
 
+   @Test
    public void testRun() throws Exception
    {
       HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(HornetQBootstrapServerTest.beans1);
@@ -50,6 +54,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
       Assert.assertFalse(DummyBean.started);
    }
 
+   @Test
    public void testRunWithConfig() throws Exception
    {
       Properties properties = new Properties();
@@ -62,6 +67,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
       Assert.assertFalse(DummyBean.started);
    }
 
+   @Test
    public void testDeploy() throws Throwable
    {
       HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[] {});
@@ -74,6 +80,7 @@ public class HornetQBootstrapServerTest extends UnitTestCase
       bootstrap.shutDown();
    }
 
+   @Test
    public void testDeployXml() throws Throwable
    {
       HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(new String[] {});

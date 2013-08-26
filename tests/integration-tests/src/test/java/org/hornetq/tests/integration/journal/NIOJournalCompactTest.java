@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -27,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
@@ -69,6 +73,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    // General tests
    // =============
 
+   @Test
    public void testControlFile() throws Exception
    {
       ArrayList<JournalFile> dataFiles = new ArrayList<JournalFile>();
@@ -143,46 +148,55 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 //      }
 //   }
 
+   @Test
    public void testCrashRenamingFiles() throws Exception
    {
       internalCompactTest(false, false, true, false, false, false, false, false, false, false, true, false, false);
    }
 
+   @Test
    public void testCrashDuringCompacting() throws Exception
    {
       internalCompactTest(false, false, true, false, false, false, false, false, false, false, false, false, false);
    }
 
+   @Test
    public void testCompactwithPendingXACommit() throws Exception
    {
       internalCompactTest(true, false, false, false, false, false, false, true, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithPendingXAPrepareAndCommit() throws Exception
    {
       internalCompactTest(false, true, false, false, false, false, false, true, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithPendingXAPrepareAndDelayedCommit() throws Exception
    {
       internalCompactTest(false, true, false, false, false, false, false, true, false, true, true, true, true);
    }
 
+   @Test
    public void testCompactwithPendingCommit() throws Exception
    {
       internalCompactTest(true, false, false, false, false, false, false, true, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithDelayedCommit() throws Exception
    {
       internalCompactTest(false, true, false, false, false, false, false, true, false, true, true, true, true);
    }
 
+   @Test
    public void testCompactwithPendingCommitFollowedByDelete() throws Exception
    {
       internalCompactTest(false, false, false, false, false, false, false, true, true, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithConcurrentUpdateAndDeletes() throws Exception
    {
       internalCompactTest(false, false, true, false, true, true, false, false, false, false, true, true, true);
@@ -191,6 +205,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       internalCompactTest(false, false, true, false, true, false, true, false, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithConcurrentDeletes() throws Exception
    {
       internalCompactTest(false, false, true, false, false, true, false, false, false, false, true, true, true);
@@ -199,16 +214,19 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       internalCompactTest(false, false, true, false, false, false, true, false, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactwithConcurrentUpdates() throws Exception
    {
       internalCompactTest(false, false, true, false, true, false, false, false, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactWithConcurrentAppend() throws Exception
    {
       internalCompactTest(false, false, true, true, false, false, false, false, false, false, true, true, true);
    }
 
+   @Test
    public void testCompactFirstFileReclaimed() throws Exception
    {
 
@@ -256,6 +274,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactPrepareRestart() throws Exception
    {
       setup(2, 60 * 1024, false);
@@ -299,6 +318,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactPrepareRestart2() throws Exception
    {
       setup(2, 60 * 1024, false);
@@ -338,6 +358,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactPrepareRestart3() throws Exception
    {
       setup(2, 60 * 1024, false);
@@ -369,6 +390,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testOnRollback() throws Exception
    {
 
@@ -400,6 +422,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactSecondFileReclaimed() throws Exception
    {
 
@@ -435,6 +458,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testIncompleteTXDuringcompact() throws Exception
    {
 
@@ -803,6 +827,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete() throws Exception
    {
 
@@ -857,6 +882,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete2() throws Exception
    {
 
@@ -907,6 +933,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete3() throws Exception
    {
 
@@ -948,6 +975,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete4() throws Exception
    {
 
@@ -1001,6 +1029,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete6() throws Exception
    {
 
@@ -1058,6 +1087,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testDeleteWhileCleanup() throws Exception
    {
 
@@ -1107,6 +1137,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactAddAndUpdateFollowedByADelete5() throws Exception
    {
 
@@ -1150,6 +1181,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testSimpleCompacting() throws Exception
    {
       setup(2, 60 * 1024, false);
@@ -1238,6 +1270,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testLiveSize() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1312,6 +1345,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1362,6 +1396,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits3() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1410,6 +1445,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits2() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1458,6 +1494,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits4() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1518,6 +1555,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits5() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1578,6 +1616,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits6() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1610,6 +1649,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testCompactFirstFileWithPendingCommits7() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1645,6 +1685,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
    }
 
+   @Test
    public void testLiveSizeTransactional() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1730,6 +1771,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   @Test
    public void testStressDeletesNoSync() throws Exception
    {
       Configuration config = createBasicConfig();
@@ -1884,7 +1926,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -1896,7 +1939,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
 
       File testDir = new File(getTestDir());

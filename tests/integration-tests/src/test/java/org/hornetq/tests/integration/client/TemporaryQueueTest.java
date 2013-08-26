@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQException;
@@ -86,6 +90,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testConsumeFromTemporaryQueue() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -111,6 +116,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testMemoryLeakOnAddressSettingForTemporaryQueue() throws Exception
    {
       for (int i = 0 ; i < 1000; i++)
@@ -133,6 +139,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       assertTrue(server.getAddressSettingsRepository().getCacheSize() < 10);
    }
 
+   @Test
    public void testPaginStoreIsRemovedWhenQueueIsDeleted() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -163,6 +170,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testConsumeFromTemporaryQueueCreatedByOtherSession() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -185,12 +193,14 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       Thread.sleep(5000l);
       super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
    }
 
+   @Test
    public void testDeleteTemporaryQueueAfterConnectionIsClosed() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -238,6 +248,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testQueueWithWildcard() throws Exception
    {
       session.createQueue("a.b", "queue1");
@@ -278,6 +289,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testQueueWithWildcard2() throws Exception
    {
       session.createQueue("a.b", "queue1");
@@ -317,6 +329,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testQueueWithWildcard3() throws Exception
    {
       session.createQueue("a.b", "queue1");
@@ -326,6 +339,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.deleteQueue("queue2");
    }
 
+   @Test
    public void testDeleteTemporaryQueueAfterConnectionIsClosed_2() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -350,6 +364,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session2.close();
    }
 
+   @Test
    public void testRecreateConsumerOverServerFailure() throws Exception
    {
       ServerLocator serverWithReattach = createLocator();
@@ -384,6 +399,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testTemporaryQueuesWithFilter() throws Exception
    {
 
@@ -498,6 +514,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testDeleteTemporaryQueueWhenClientCrash() throws Exception
    {
       session.close();
@@ -576,6 +593,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       locator2.close();
    }
 
+   @Test
    public void testBlockingWithTemporaryQueue() throws Exception
    {
 
@@ -681,7 +699,8 @@ public class TemporaryQueueTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

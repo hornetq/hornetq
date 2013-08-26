@@ -12,11 +12,15 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -47,6 +51,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    private ClientConsumer consThree;
    private ClientProducer producer;
 
+   @Test
    public void testRedistribution() throws Exception
    {
       commonTestCode();
@@ -113,6 +118,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          Assert.assertNull(consOne.receiveImmediate());
    }
 
+   @Test
    public void testSimpleRedistribution() throws Exception
    {
       commonTestCode();
@@ -185,7 +191,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -223,7 +230,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

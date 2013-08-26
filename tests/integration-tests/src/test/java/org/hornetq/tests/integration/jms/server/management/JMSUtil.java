@@ -27,7 +27,7 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;

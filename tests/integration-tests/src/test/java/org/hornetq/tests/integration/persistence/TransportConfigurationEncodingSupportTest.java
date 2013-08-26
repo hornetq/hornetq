@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +29,7 @@ import org.hornetq.jms.server.config.impl.TransportConfigurationEncodingSupport;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.api.core.Pair;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  * A TransportConfigurationEncodingSupportTest
@@ -36,7 +38,7 @@ import junit.framework.TestCase;
  *
  *
  */
-public class TransportConfigurationEncodingSupportTest extends TestCase
+public class TransportConfigurationEncodingSupportTest extends Assert
 {
 
    // Constants -----------------------------------------------------
@@ -49,6 +51,7 @@ public class TransportConfigurationEncodingSupportTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testTransportConfiguration() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();
@@ -74,6 +77,7 @@ public class TransportConfigurationEncodingSupportTest extends TestCase
       }
    }
 
+   @Test
    public void testTransportConfigurations() throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();

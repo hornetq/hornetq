@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +37,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -88,7 +90,8 @@ public abstract class StompTestBase extends UnitTestCase
    // Implementation methods
    // -------------------------------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -161,7 +164,8 @@ public abstract class StompTestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (autoCreateServer)
       {

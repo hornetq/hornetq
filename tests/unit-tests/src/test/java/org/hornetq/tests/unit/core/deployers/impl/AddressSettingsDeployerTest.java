@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -52,7 +55,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    private HierarchicalRepository<AddressSettings> repository;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -61,6 +65,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, repository);
    }
 
+   @Test
    public void testDeploy() throws Exception
    {
       addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
@@ -76,12 +81,13 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());
       Assert.assertEquals(38383, as.getRedistributionDelay());
-      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertTrue(as.isSendToDLAOnNoRoute());
 
    }
 
+   @Test
    public void testDeployFromConfigurationFile() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'> " + "<address-settings>" +
@@ -100,7 +106,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
       Assert.assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
       Assert.assertEquals(100, as.getRedeliveryDelay());
-      Assert.assertEquals(2.0, as.getRedeliveryMultiplier());
+      Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
       Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
@@ -112,6 +118,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertTrue(as.isSendToDLAOnNoRoute());
    }
 
+   @Test
    public void testUndeploy() throws Exception
    {
       addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));

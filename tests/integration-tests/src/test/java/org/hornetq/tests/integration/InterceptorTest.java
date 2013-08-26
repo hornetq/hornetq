@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -58,7 +61,8 @@ public class InterceptorTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -412,6 +416,7 @@ public class InterceptorTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testServerInterceptorChangeProperty() throws Exception
    {
       MyInterceptor1 interceptor = new MyInterceptor1();
@@ -476,6 +481,7 @@ public class InterceptorTest extends ServiceTestBase
    }
 
    // This is testing if it's possible to intercept usernames and do some real stuff as users want
+   @Test
    public void testInterceptUsernameOnQueues() throws Exception
    {
 
@@ -532,6 +538,7 @@ public class InterceptorTest extends ServiceTestBase
    }
 
    // This is testing if it's possible to intercept usernames and do some real stuff as users want
+   @Test
    public void testInterceptUsernameOnConsumer() throws Exception
    {
 
@@ -584,6 +591,7 @@ public class InterceptorTest extends ServiceTestBase
       sessionAnotherUser.close();
    }
 
+   @Test
    public void testServerInterceptorRejectPacket() throws Exception
    {
       MyInterceptor2 interceptor = new MyInterceptor2();
@@ -621,6 +629,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientInterceptorChangeProperty() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -678,6 +687,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientOutgoingInterceptorChangeProperty() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -735,6 +745,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientInterceptorRejectPacket() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -769,6 +780,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientOutgoingInterceptorRejectPacketOnNonBlockingSend() throws Exception
    {
       locator.setBlockOnNonDurableSend(false);
@@ -804,6 +816,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientOutgoingInterceptorRejectPacketOnBlockingSend() throws Exception
    {
       // must make the call block to exercise the right logic
@@ -834,6 +847,7 @@ public class InterceptorTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testServerMultipleInterceptors() throws Exception
    {
       MyInterceptor5 interceptor1 = new MyInterceptor5("a", 1);
@@ -923,6 +937,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testClientMultipleInterceptors() throws Exception
    {
       MyInterceptor6 interceptor1 = new MyInterceptor6("a", 1);
@@ -1012,6 +1027,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testServerOutgoingInterceptorChangeProperty() throws Exception
    {
       MyOutgoingInterceptor1 interceptor = new MyOutgoingInterceptor1();
@@ -1075,6 +1091,7 @@ public class InterceptorTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testServerOutgoingInterceptorRejectMessage() throws Exception
    {
       MyOutgoingInterceptor2 interceptor = new MyOutgoingInterceptor2();

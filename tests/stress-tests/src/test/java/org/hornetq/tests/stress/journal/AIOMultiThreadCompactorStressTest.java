@@ -12,11 +12,11 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
 
-import junit.framework.TestSuite;
-
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.BeforeClass;
 
 /**
  * A AIOMultiThreadCompactorStressTest
@@ -28,9 +28,10 @@ import org.hornetq.tests.util.UnitTestCase;
 public class AIOMultiThreadCompactorStressTest extends NIOMultiThreadCompactorStressTest
 {
 
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      return UnitTestCase.createAIOTestSuite(AIOMultiThreadCompactorStressTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
    /**

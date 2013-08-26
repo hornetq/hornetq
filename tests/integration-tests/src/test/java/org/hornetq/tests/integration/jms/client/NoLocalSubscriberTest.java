@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
@@ -50,6 +52,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
     * Test that a message created from the same connection than a nolocal consumer
     * can be sent by *another* connection and will be received by the nolocal consumer
     */
+   @Test
    public void testNoLocal() throws Exception
    {
       if (log.isTraceEnabled())
@@ -125,6 +128,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
       }
    }
 
+   @Test
    public void testNoLocalReconnect() throws Exception
    {
       ConnectionFactory connectionFactory = cf;
@@ -194,6 +198,7 @@ public class NoLocalSubscriberTest extends JMSTestBase
       }
    }
 
+   @Test
    public void testNoLocalReconnect2() throws Exception
    {
 

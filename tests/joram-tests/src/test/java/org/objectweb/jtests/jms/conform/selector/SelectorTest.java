@@ -16,10 +16,8 @@ package org.objectweb.jtests.jms.conform.selector;
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
 
@@ -36,6 +34,7 @@ public class SelectorTest extends PTPTestCase
     * Test that an empty string as a message selector indicates that there
     * is no message selector for the message consumer.
     */
+   @Test
    public void testEmptyStringAsSelector() throws Exception
    {
       if (receiver != null)
@@ -61,6 +60,7 @@ public class SelectorTest extends PTPTestCase
     * </ul>
     */
 
+   @Test
    public void testStringLiterals() throws Exception
    {
       if (receiver != null)
@@ -88,6 +88,7 @@ public class SelectorTest extends PTPTestCase
     * Test that the JMS property <code>JMSDeliveryMode</code> is treated as having the values <code>'PERSISTENT'</code>
     * or <code>'NON_PERSISTENT'</code> when used in a message selector (chapter 3.8.1.3).
     */
+   @Test
    public void testJMSDeliveryModeInSelector() throws Exception
    {
       if (receiver != null)
@@ -118,6 +119,7 @@ public class SelectorTest extends PTPTestCase
     * apply when a property is used in a message selector expression.
     * Based on the example of chapter 3.8.1.1 about identifiers.
     */
+   @Test
    public void testIdentifierConversion() throws Exception
    {
       if (receiver != null)
@@ -147,6 +149,7 @@ public class SelectorTest extends PTPTestCase
     *   <li><code>"JMSType = 'car' AND color = 'blue' AND weight > 2500"</code></li>
     * </ul>
     */
+   @Test
    public void testSelectorExampleFromSpecs() throws Exception
    {
       if (receiver != null)
@@ -180,6 +183,7 @@ public class SelectorTest extends PTPTestCase
     *   <li><code>"weight > 2500"</code> is <code>true</code> for 3000 and <code>false</code> for 1000</li>
     * </ul>
     */
+   @Test
    public void testGreaterThan() throws Exception
    {
       if (receiver != null)
@@ -209,6 +213,7 @@ public class SelectorTest extends PTPTestCase
     *   <li><code>"weight = 2500"</code>  is <code>true</code> for 2500 and <code>false</code> for 1000</li>
     * </ul>
     */
+   @Test
    public void testEquals() throws Exception
    {
       if (receiver != null)
@@ -238,6 +243,7 @@ public class SelectorTest extends PTPTestCase
     *   <li><code>"weight <> 2500"</code>  is <code>true</code> for 1000 and <code>false</code> for 2500</li>
     * </ul>
     */
+   @Test
    public void testNotEquals() throws Exception
    {
       if (receiver != null)
@@ -267,6 +273,7 @@ public class SelectorTest extends PTPTestCase
     *   <li>"age BETWEEN 15 and 19" is <code>true</code> for 17 and <code>false</code> for 20</li>
     * </ul>
     */
+   @Test
    public void testBetween() throws Exception
    {
       if (receiver != null)
@@ -298,6 +305,7 @@ public class SelectorTest extends PTPTestCase
     *   <li>"Country IN ('UK', 'US', 'France')" is <code>true</code> for 'UK' and <code>false</code> for 'Peru'</li>
     * </ul>
     */
+   @Test
    public void testIn() throws Exception
    {
       if (receiver != null)
@@ -329,6 +337,7 @@ public class SelectorTest extends PTPTestCase
     *   <li>"underscored LIKE '\_%' ESCAPE '\'" is <code>true</code> for '_foo' and <code>false</code> for 'bar'</li>
     * </ul>
     */
+   @Test
    public void testLikeEscape() throws Exception
    {
       if (receiver != null)
@@ -360,6 +369,7 @@ public class SelectorTest extends PTPTestCase
     *   <li>"word LIKE 'l_se'" is <code>true</code> for 'lose' and <code>false</code> for 'loose'</li>
     * </ul>
     */
+   @Test
    public void testLike_2() throws Exception
    {
       if (receiver != null)
@@ -391,6 +401,7 @@ public class SelectorTest extends PTPTestCase
     *   <li>"phone LIKE '12%3'" is <code>true</code> for '12993' and <code>false</code> for '1234'</li>
     * </ul>
     */
+   @Test
    public void testLike_1() throws Exception
    {
       if (receiver != null)
@@ -422,6 +433,7 @@ public class SelectorTest extends PTPTestCase
     *   <li><code>"prop IS NULL"</code></li>
     * </ul>
     */
+   @Test
    public void testNull() throws Exception
    {
       if (receiver != null)
@@ -442,18 +454,5 @@ public class SelectorTest extends PTPTestCase
       TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
       Assert.assertTrue(msg != null);
       Assert.assertEquals("testNull:2", msg.getText());
-   }
-
-   /**
-    * Method to use this class in a Test suite
-    */
-   public static Test suite()
-   {
-      return new TestSuite(SelectorTest.class);
-   }
-
-   public SelectorTest(final String name)
-   {
-      super(name);
    }
 }

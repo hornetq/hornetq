@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.remoting;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +54,8 @@ public class DirectDeliverTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -71,6 +75,7 @@ public class DirectDeliverTest extends ServiceTestBase
       addServerLocator(locator);
    }
 
+   @Test
    public void testDirectDeliver() throws Exception
    {
       final String foo = "foo";

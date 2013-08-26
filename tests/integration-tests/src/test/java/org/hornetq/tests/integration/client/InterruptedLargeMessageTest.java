@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -54,6 +53,8 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.utils.ExecutorFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A LargeMessageTest
@@ -72,21 +73,16 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
    private final int LARGE_MESSAGE_SIZE = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3;
 
-   // Attributes ----------------------------------------------------
-
-   static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-
-   // Static --------------------------------------------------------
    private final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       LargeMessageTestInterceptorIgnoreLastPacket.clearInterrupt();
-      clearData();
       locator = createFactory(isNetty());
    }
 
@@ -95,6 +91,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       return false;
    }
 
+   @Test
    public void testInterruptLargeMessageSend() throws Exception
    {
 
@@ -116,9 +113,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
@@ -144,6 +141,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testCloseConsumerDuringTransmission() throws Exception
    {
       HornetQServer server = createServer(true, isNetty());
@@ -160,9 +158,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
 
@@ -180,6 +178,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -219,6 +218,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       server.stop();
    }
 
+   @Test
    public void testSendNonPersistentQueue() throws Exception
    {
 
@@ -237,9 +237,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, false);
+      session.createQueue(ADDRESS, ADDRESS, false);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0; i < 10; i++)
       {
@@ -253,7 +253,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false);
 
-      ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(ADDRESS);
 
       session.start();
 
@@ -280,6 +280,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testSendPaging() throws Exception
    {
 
@@ -303,11 +304,11 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
       server.getPagingManager().getPageStore(ADDRESS).startPaging();
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0; i < 10; i++)
       {
@@ -333,7 +334,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
          session = sf.createSession(false, false);
 
-         ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientConsumer cons = session.createConsumer(ADDRESS);
 
          session.start();
 
@@ -367,6 +368,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
    }
 
+   @Test
    public void testSendPreparedXA() throws Exception
    {
 
@@ -394,9 +396,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       Xid xid1 = newXID();
       Xid xid2 = newXID();
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       session.start(xid1, XAResource.TMNOFLAGS);
 
@@ -489,6 +491,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testRestartBeforeDelete() throws Exception
    {
 
@@ -522,6 +525,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
                executor);
          }
 
+         @Override
          protected void postAcknowledge(final MessageReference ref)
          {
             System.out.println("Ignoring postACK on message " + ref);
@@ -609,9 +613,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0; i < 10; i++)
       {
@@ -625,7 +629,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false);
 
-      ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(ADDRESS);
 
       session.start();
 
@@ -653,6 +657,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       validateNoFilesOnLargeDir();
    }
 
+   @Test
    public void testConsumeAfterRestart() throws Exception
    {
       ClientSession session = null;
@@ -671,9 +676,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
       for (int i = 0; i < 10; i++)
       {
@@ -693,7 +698,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       session = sf.createSession(false, false);
 
-      ClientConsumer cons = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(ADDRESS);
 
       session.start();
 

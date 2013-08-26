@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.topology;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -40,11 +42,13 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class NonHATopologyTest extends ServiceTestBase
 {
 
+   @Test
    public void testNetty() throws Exception
    {
       internalTest(true);
    }
 
+   @Test
    public void testInVM() throws Exception
    {
       internalTest(false);

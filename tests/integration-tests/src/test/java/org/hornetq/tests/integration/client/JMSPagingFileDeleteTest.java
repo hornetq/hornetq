@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -26,6 +25,9 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -68,9 +70,9 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      clearData();
       super.setUp();
 
       topic1 = createTopic("topic1");
@@ -83,7 +85,8 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       log.info("#tearDown");
       topic1 = null;
@@ -94,6 +97,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
     * Test replicating issue JBPAPP-9603
     * @throws Exception
     */
+   @Test
    public void testTopicsWithNonDurableSubscription() throws Exception
    {
       connection = null;
@@ -156,6 +160,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    }
 
 
+   @Test
    public void testTopics() throws Exception
    {
       connection = null;

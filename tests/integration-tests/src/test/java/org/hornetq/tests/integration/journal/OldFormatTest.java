@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -45,6 +48,7 @@ public class OldFormatTest extends JournalImplTestBase
    // Public --------------------------------------------------------
 
    // This will generate records using the Version 1 format, and reading at the current version
+   @Test
    public void testFormatOne() throws Exception
    {
       setup(2, 100 * 1024, true);
@@ -154,7 +158,8 @@ public class OldFormatTest extends JournalImplTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

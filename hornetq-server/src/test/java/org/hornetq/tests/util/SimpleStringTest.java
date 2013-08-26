@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.util;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.DataConstants;
@@ -28,7 +30,7 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SimpleStringTest extends TestCase
+public class SimpleStringTest extends Assert
 {
    /**
     * Converting back and forth between char and byte requires care as char is unsigned.
@@ -37,6 +39,7 @@ public class SimpleStringTest extends TestCase
     * @see SimpleString#split(char)
     * @see SimpleString#concat(char)
     */
+   @Test
    public void testGetChar()
    {
       SimpleString p1 = new SimpleString("foo");
@@ -78,6 +81,7 @@ public class SimpleStringTest extends TestCase
       }
    }
 
+   @Test
    public void testString() throws Exception
    {
       final String str = "hello123ABC__524`16254`6125!%^$!%$!%$!%$!%!$%!$$!\uA324";
@@ -95,6 +99,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(str, s2.toString());
    }
 
+   @Test
    public void testStartsWith() throws Exception
    {
       SimpleString s1 = new SimpleString("abcdefghi");
@@ -112,6 +117,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertFalse(s1.startsWith(new SimpleString("z")));
    }
 
+   @Test
    public void testCharSequence() throws Exception
    {
       String s = "abcdefghijkl";
@@ -229,6 +235,7 @@ public class SimpleStringTest extends TestCase
       }
    }
 
+   @Test
    public void testEquals() throws Exception
    {
       Assert.assertFalse(new SimpleString("abcdef").equals(new Object()));
@@ -239,6 +246,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertFalse(new SimpleString("abcdef").equals(new SimpleString("ghijkl")));
    }
 
+   @Test
    public void testHashcode() throws Exception
    {
       SimpleString str = new SimpleString("abcdef");
@@ -249,6 +257,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertFalse(str.hashCode() == differentStr.hashCode());
    }
 
+   @Test
    public void testUnicode() throws Exception
    {
       String myString = "abcdef&^*&!^ghijkl\uB5E2\uCAC7\uB2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
@@ -260,6 +269,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(myString, s.toString());
    }
 
+   @Test
    public void testUnicodeWithSurrogates() throws Exception
    {
       String myString = "abcdef&^*&!^ghijkl\uD900\uDD00";
@@ -271,6 +281,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(myString, s.toString());
    }
 
+   @Test
    public void testSizeofString() throws Exception
    {
       Assert.assertEquals(DataConstants.SIZE_INT, SimpleString.sizeofString(new SimpleString("")));
@@ -279,6 +290,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofString(str));
    }
 
+   @Test
    public void testSizeofNullableString() throws Exception
    {
       Assert.assertEquals(1, SimpleString.sizeofNullableString(null));
@@ -289,6 +301,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(1 + DataConstants.SIZE_INT + str.getData().length, SimpleString.sizeofNullableString(str));
    }
 
+   @Test
    public void testSplitNoDelimeter() throws Exception
    {
       SimpleString s = new SimpleString("abcdefghi");
@@ -298,6 +311,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(strings[0], s);
    }
 
+   @Test
    public void testSplit1Delimeter() throws Exception
    {
       SimpleString s = new SimpleString("abcd.efghi");
@@ -308,6 +322,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(strings[1], new SimpleString("efghi"));
    }
 
+   @Test
    public void testSplitmanyDelimeters() throws Exception
    {
       SimpleString s = new SimpleString("abcd.efghi.jklmn.opqrs.tuvw.xyz");
@@ -322,6 +337,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertEquals(strings[5], new SimpleString("xyz"));
    }
 
+   @Test
    public void testContains()
    {
       SimpleString simpleString = new SimpleString("abcdefghijklmnopqrst");
@@ -351,6 +367,7 @@ public class SimpleStringTest extends TestCase
       Assert.assertTrue(simpleString.contains('t'));
    }
 
+   @Test
    public void testConcat()
    {
       SimpleString start = new SimpleString("abcdefg");
@@ -366,6 +383,7 @@ public class SimpleStringTest extends TestCase
       }
    }
 
+   @Test
    public void testMultithreadHashCode() throws Exception
    {
       for (int repeat = 0; repeat < 10; repeat++)

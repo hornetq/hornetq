@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import javax.jms.InvalidSelectorException;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
@@ -44,6 +46,7 @@ public class NonDurableSubscriberTest extends JMSTestCase
    /**
     * Test introduced as a result of a TCK failure.
     */
+   @Test
    public void testNonDurableSubscriberOnNullTopic() throws Exception
    {
       TopicConnection conn = null;
@@ -76,6 +79,7 @@ public class NonDurableSubscriberTest extends JMSTestCase
    /**
     * Test introduced as a result of a TCK failure.
     */
+   @Test
    public void testNonDurableSubscriberInvalidUnsubscribe() throws Exception
    {
       TopicConnection conn = null;
@@ -106,6 +110,7 @@ public class NonDurableSubscriberTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testInvalidSelectorOnSubscription() throws Exception
    {
       TopicConnection c = null;

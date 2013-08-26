@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -29,7 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
@@ -112,6 +116,7 @@ public class JMSFailoverTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCreateQueue() throws Exception
    {
       liveJMSService.createQueue(true, "queue1", null, true, "/queue/queue1");
@@ -144,6 +149,7 @@ public class JMSFailoverTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCreateTopic() throws Exception
    {
       liveJMSService.createTopic(true, "topic", "/topic/t1");
@@ -176,6 +182,7 @@ public class JMSFailoverTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testAutomaticFailover() throws Exception
    {
       HornetQConnectionFactory jbcf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, livetc);
@@ -253,6 +260,7 @@ public class JMSFailoverTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive =
@@ -333,6 +341,7 @@ public class JMSFailoverTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testSendReceiveLargeMessages() throws Exception
    {
       SimpleString QUEUE = new SimpleString("jms.queue.somequeue");
@@ -489,7 +498,8 @@ public class JMSFailoverTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       startServers();
@@ -570,7 +580,8 @@ public class JMSFailoverTest extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       backupJMSService.stop();
 

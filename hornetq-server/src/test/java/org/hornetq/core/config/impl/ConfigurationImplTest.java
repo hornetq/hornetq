@@ -12,13 +12,16 @@
  */
 
 package org.hornetq.core.config.impl;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -39,6 +42,7 @@ public class ConfigurationImplTest extends UnitTestCase
 {
    protected Configuration conf;
 
+   @Test
    public void testDefaults()
    {
       Assert.assertEquals(HornetQDefaultConfiguration.isDefaultSharedStore(), conf.isSharedStore());
@@ -101,6 +105,7 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertEquals(HornetQDefaultConfiguration.getDefaultMemoryMeasureInterval(), conf.getMemoryMeasureInterval());
    }
 
+   @Test
    public void testSetGetAttributes() throws Exception
    {
       for (int j = 0; j < 100; j++)
@@ -304,6 +309,7 @@ public class ConfigurationImplTest extends UnitTestCase
       }
    }
 
+   @Test
    public void testGetSetInterceptors()
    {
       final String name1 = "uqwyuqywuy";
@@ -317,6 +323,7 @@ public class ConfigurationImplTest extends UnitTestCase
       Assert.assertFalse(conf.getIncomingInterceptorClassNames().contains("iijij"));
    }
 
+   @Test
    public void testSerialize() throws Exception
    {
       boolean b = RandomUtil.randomBoolean();
@@ -529,7 +536,8 @@ public class ConfigurationImplTest extends UnitTestCase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-
 import java.util.ArrayList;
 
 import javax.naming.InitialContext;
@@ -22,6 +21,8 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 import org.hornetq.jms.client.HornetQTopicConnectionFactory;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -52,7 +53,8 @@ public class JMSTestCase extends HornetQServerTestCase
    protected static String conf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -177,11 +179,9 @@ public class JMSTestCase extends HornetQServerTestCase
       assertRemainingMessages(0);
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
-      super.tearDown();
-
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
       if (cf != null)
          cf.close();

@@ -11,6 +11,8 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
+import org.junit.Before;
+import org.junit.After;
 
 import java.lang.reflect.Method;
 import java.util.Timer;
@@ -53,7 +55,8 @@ public abstract class HornetQRATestBase  extends JMSTestBase
    protected static final SimpleString MDBQUEUEPREFIXEDSIMPLE = new SimpleString("jms.queue.mdbQueue");
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();
@@ -71,7 +74,8 @@ public abstract class HornetQRATestBase  extends JMSTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       locator.close();
 

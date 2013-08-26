@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.timing.core.server.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.Consumer;
@@ -44,6 +48,7 @@ public class QueueImplTest extends UnitTestCase
    // private ExecutorService executor;
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -52,6 +57,7 @@ public class QueueImplTest extends UnitTestCase
    }
 
    @Override
+   @After
    public void tearDown() throws Exception
    {
       scheduledExecutor.shutdownNow();
@@ -61,6 +67,7 @@ public class QueueImplTest extends UnitTestCase
 
    // The tests ----------------------------------------------------------------
 
+   @Test
    public void testScheduledNoConsumer() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -137,6 +144,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
+   @Test
    public void testScheduled() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
@@ -236,6 +244,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertTrue(consumer.getReferences().isEmpty());
    }
 
+   @Test
    public void testDeliveryScheduled() throws Exception
    {
       final CountDownLatch countDownLatch = new CountDownLatch(1);

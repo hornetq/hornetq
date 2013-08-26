@@ -13,9 +13,11 @@
 
 package org.hornetq.tests.integration.management;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -49,6 +51,7 @@ public class AcceptorControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAttributes() throws Exception
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
@@ -68,6 +71,7 @@ public class AcceptorControlTest extends ManagementTestBase
       Assert.assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
@@ -128,6 +132,7 @@ public class AcceptorControlTest extends ManagementTestBase
 
    }
 
+   @Test
    public void testNotifications() throws Exception
    {
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),

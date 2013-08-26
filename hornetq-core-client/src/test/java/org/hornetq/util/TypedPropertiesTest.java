@@ -12,10 +12,14 @@
  */
 
 package org.hornetq.util;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 import java.util.Iterator;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -27,7 +31,7 @@ import org.hornetq.utils.TypedProperties;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class TypedPropertiesTest extends TestCase
+public class TypedPropertiesTest extends Assert
 {
 
    private static void assertEqualsTypeProperties(final TypedProperties expected, final TypedProperties actual)
@@ -63,6 +67,7 @@ public class TypedPropertiesTest extends TestCase
 
    private SimpleString key;
 
+   @Test
    public void testCopyContructor() throws Exception
    {
       props.putSimpleStringProperty(key, RandomUtil.randomSimpleString());
@@ -76,6 +81,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals(props.getProperty(key), copy.getProperty(key));
    }
 
+   @Test
    public void testRemove() throws Exception
    {
       props.putSimpleStringProperty(key, RandomUtil.randomSimpleString());
@@ -89,6 +95,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertNull(props.getProperty(key));
    }
 
+   @Test
    public void testClear() throws Exception
    {
       props.putSimpleStringProperty(key, RandomUtil.randomSimpleString());
@@ -102,6 +109,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertNull(props.getProperty(key));
    }
 
+   @Test
    public void testKey() throws Exception
    {
       props.putBooleanProperty(key, true);
@@ -113,18 +121,21 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals('a', c);
    }
 
+   @Test
    public void testGetPropertyOnEmptyProperties() throws Exception
    {
       Assert.assertFalse(props.containsProperty(key));
       Assert.assertNull(props.getProperty(key));
    }
 
+   @Test
    public void testRemovePropertyOnEmptyProperties() throws Exception
    {
       Assert.assertFalse(props.containsProperty(key));
       Assert.assertNull(props.removeProperty(key));
    }
 
+   @Test
    public void testNullProperty() throws Exception
    {
       props.putSimpleStringProperty(key, null);
@@ -132,6 +143,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertNull(props.getProperty(key));
    }
 
+   @Test
    public void testBytesPropertyWithNull() throws Exception
    {
       props.putBytesProperty(key, null);
@@ -141,6 +153,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertNull(bb);
    }
 
+   @Test
    public void testTypedProperties() throws Exception
    {
       SimpleString longKey = RandomUtil.randomSimpleString();
@@ -159,6 +172,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals(simpleStringValue, ss);
    }
 
+   @Test
    public void testEmptyTypedProperties() throws Exception
    {
       Assert.assertEquals(0, props.getPropertyNames().size());
@@ -168,6 +182,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals(0, props.getPropertyNames().size());
    }
 
+   @Test
    public void testNullTypedProperties() throws Exception
    {
       Assert.assertEquals(0, props.getPropertyNames().size());
@@ -177,6 +192,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals(0, props.getPropertyNames().size());
    }
 
+   @Test
    public void testEncodeDecode() throws Exception
    {
       props.putByteProperty(RandomUtil.randomSimpleString(), RandomUtil.randomByte());
@@ -213,6 +229,7 @@ public class TypedPropertiesTest extends TestCase
       Assert.assertEquals(props.getEncodeSize(), buffer.writerIndex());
    }
 
+   @Test
    public void testEncodeDecodeEmpty() throws Exception
    {
       TypedProperties emptyProps = new TypedProperties();
@@ -228,21 +245,21 @@ public class TypedPropertiesTest extends TestCase
       TypedPropertiesTest.assertEqualsTypeProperties(emptyProps, decodedProps);
    }
 
-   @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
-      super.setUp();
+
 
       props = new TypedProperties();
       key = RandomUtil.randomSimpleString();
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       key = null;
       props = null;
 
-      super.tearDown();
+
    }
 }

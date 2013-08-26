@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.soak.client;
-
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +25,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A ClientSoakTest
@@ -58,11 +59,10 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
-
-      clearData();
 
       Configuration config = createDefaultConfig(ClientNonDivertedSoakTest.IS_NETTY);
 
@@ -88,6 +88,7 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSoakClient() throws Exception
    {
       ServerLocator locator = createFactory(ClientNonDivertedSoakTest.IS_NETTY);

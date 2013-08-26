@@ -12,31 +12,25 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
 
 import java.io.File;
 
-import junit.framework.TestSuite;
-
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.BeforeClass;
 
 /**
  * A AIOImportExportTest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class AIOImportExportTest extends NIOImportExportTest
 {
-   public static TestSuite suite()
+   @BeforeClass
+   public static void hasAIO()
    {
-      // Ignore tests if AIO is not installed
-      return UnitTestCase.createAIOTestSuite(AIOImportExportTest.class);
+      org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
-
-
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
@@ -49,5 +43,4 @@ public class AIOImportExportTest extends NIOImportExportTest
 
       return new AIOSequentialFileFactory(getTestDir());
    }
-
 }

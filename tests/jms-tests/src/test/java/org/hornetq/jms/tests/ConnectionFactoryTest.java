@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 
 import javax.jms.Connection;
@@ -49,6 +51,7 @@ public class ConnectionFactoryTest extends JMSTestCase
     * Test that ConnectionFactory can be cast to QueueConnectionFactory and QueueConnection can be
     * created.
     */
+   @Test
    public void testQueueConnectionFactory() throws Exception
    {
       QueueConnectionFactory qcf = (QueueConnectionFactory)JMSTestCase.ic.lookup("/CF_QUEUE_XA_FALSE");
@@ -60,6 +63,7 @@ public class ConnectionFactoryTest extends JMSTestCase
     * Test that ConnectionFactory can be cast to TopicConnectionFactory and TopicConnection can be
     * created.
     */
+   @Test
    public void testTopicConnectionFactory() throws Exception
    {
       TopicConnectionFactory qcf = (TopicConnectionFactory)JMSTestCase.ic.lookup("/CF_TOPIC_XA_FALSE");
@@ -67,6 +71,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       tc.close();
    }
 
+   @Test
    public void testAdministrativelyConfiguredClientID() throws Exception
    {
       // deploy a connection factory that has an administatively configured clientID
@@ -91,6 +96,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       HornetQServerTestCase.undeployConnectionFactory("TestConnectionFactory");
    }
 
+   @Test
    public void testNoClientIDConfigured_1() throws Exception
    {
       // the ConnectionFactories that ship with HornetQ do not have their clientID
@@ -104,6 +110,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       c.close();
    }
 
+   @Test
    public void testNoClientIDConfigured_2() throws Exception
    {
       // the ConnectionFactories that ship with HornetQ do not have their clientID
@@ -121,6 +128,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    }
 
    // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
+   @Test
    public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
    {
       HornetQServerTestCase.deployConnectionFactory("TestConnectionFactory1", "cfTest", "/TestDurableCF");
@@ -171,6 +179,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
+   @Test
    public void testSlowConsumers() throws Exception
    {
       ArrayList<String> bindings = new ArrayList<String>();
@@ -310,6 +319,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
+   @Test
    public void testFactoryTypes() throws Exception
    {
       HornetQConnectionFactory factory = null;
@@ -375,6 +385,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       assertEquals(2, getTypes(factory));
    }
 
+   @Test
    public void testConnectionTypes() throws Exception
    {
       Connection genericConnection = null;

@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.unit.util;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -27,8 +29,9 @@ import org.hornetq.utils.MemorySize;
  *
  *
  */
-public class MemorySizeTest extends TestCase
+public class MemorySizeTest extends Assert
 {
+   @Test
    public void testObjectSizes() throws Exception
    {
       UnitTestLogger.LOGGER.info("Server message size is " + MemorySize.calculateSize(new MemorySize.ObjectFactory()

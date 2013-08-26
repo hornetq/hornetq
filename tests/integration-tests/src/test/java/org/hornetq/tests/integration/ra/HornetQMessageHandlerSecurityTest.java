@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -35,6 +37,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       return true;
    }
 
+   @Test
    public void testSimpleMessageReceivedOnQueueWithSecurityFails() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -59,6 +62,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
    public void testSimpleMessageReceivedOnQueueWithSecuritySucceeds() throws Exception
    {
       server.getSecurityManager().addUser("testuser", "testpassword");

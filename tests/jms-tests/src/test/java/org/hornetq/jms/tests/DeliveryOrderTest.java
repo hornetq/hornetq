@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +39,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 public class DeliveryOrderTest extends JMSTestCase
 {
 
+   @Test
    public void testOutOfOrder() throws Exception
    {
       Connection conn = null;

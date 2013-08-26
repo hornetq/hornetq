@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -57,6 +60,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCanNotUseAClosedConsumer() throws Exception
    {
       final ClientConsumer consumer = session.createConsumer(queue);
@@ -96,6 +100,7 @@ public class ConsumerCloseTest extends ServiceTestBase
    }
 
    // https://jira.jboss.org/jira/browse/JBMESSAGING-1526
+   @Test
    public void testCloseWithManyMessagesInBufferAndSlowConsumer() throws Exception
    {
       ClientConsumer consumer = session.createConsumer(queue);
@@ -145,7 +150,8 @@ public class ConsumerCloseTest extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

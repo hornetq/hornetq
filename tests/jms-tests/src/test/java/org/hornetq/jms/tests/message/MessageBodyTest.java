@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -33,6 +32,9 @@ import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -63,6 +65,7 @@ public class MessageBodyTest extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -79,15 +82,14 @@ public class MessageBodyTest extends HornetQServerTestCase
       consumerConnection.start();
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       producerConnection.close();
       consumerConnection.close();
-
-      super.tearDown();
    }
 
+   @Test
    public void testSMBodyReadable() throws Exception
    {
       byte bValue = 123;
@@ -100,6 +102,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       received.readByte();
    }
 
+   @Test
    public void testBytesMessage() throws Exception
    {
       BytesMessage m = queueProducerSession.createBytesMessage();
@@ -575,6 +578,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testMapMessage() throws Exception
    {
       MapMessage m1 = queueProducerSession.createMapMessage();
@@ -1170,6 +1174,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       String str;
    }
 
+   @Test
    public void testObjectMessage() throws Exception
    {
       TestSerializable obj = new TestSerializable();
@@ -1223,6 +1228,7 @@ public class MessageBodyTest extends HornetQServerTestCase
 
    }
 
+   @Test
    public void testStreamMessage() throws Exception
    {
       StreamMessage m = queueProducerSession.createStreamMessage();
@@ -1602,6 +1608,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       ProxyAssertSupport.assertFalse(m == m2);
    }
 
+   @Test
    public void testTextMessage() throws Exception
    {
       TextMessage m = queueProducerSession.createTextMessage();

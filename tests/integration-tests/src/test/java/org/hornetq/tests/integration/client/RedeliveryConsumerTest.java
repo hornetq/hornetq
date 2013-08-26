@@ -13,10 +13,12 @@
 
 package org.hornetq.tests.integration.client;
 
+import org.junit.Test;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -69,21 +71,25 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testRedeliveryMessageStrict() throws Exception
    {
       testDedeliveryMessageOnPersistent(true);
    }
 
+   @Test
    public void testRedeliveryMessageSimpleCancel() throws Exception
    {
       testDedeliveryMessageOnPersistent(false);
    }
 
+   @Test
    public void testDeliveryNonPersistent() throws Exception
    {
       testDelivery(false);
    }
 
+   @Test
    public void testDeliveryPersistent() throws Exception
    {
       testDelivery(true);
@@ -238,6 +244,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testInfiniteDedeliveryMessageOnPersistent() throws Exception
    {
       internaltestInfiniteDedeliveryMessageOnPersistent(false);

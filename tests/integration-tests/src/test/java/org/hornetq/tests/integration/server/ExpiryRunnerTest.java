@@ -11,27 +11,33 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -52,6 +58,7 @@ public class ExpiryRunnerTest extends UnitTestCase
    private SimpleString expiryAddress;
    private ServerLocator locator;
 
+   @Test
    public void testBasicExpire() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -68,6 +75,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireFromMultipleQueues() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -92,6 +100,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireHalf() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -112,6 +121,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireConsumeHalf() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -138,6 +148,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
    }
 
+   @Test
    public void testExpireToExpiryQueue() throws Exception
    {
       AddressSettings addressSettings = new AddressSettings();
@@ -176,6 +187,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       consumer.close();
    }
 
+   @Test
    public void testExpireWhilstConsumingMessagesStillInOrder() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
@@ -226,25 +238,27 @@ public class ExpiryRunnerTest extends UnitTestCase
       thr.join();
    }
 
-   public static void main(final String[] args) throws Exception
-   {
-      for (int i = 0; i < 1000; i++)
-      {
-         TestSuite suite = new TestSuite();
-         ExpiryRunnerTest expiryRunnerTest = new ExpiryRunnerTest();
-         expiryRunnerTest.setName("testExpireWhilstConsuming");
-         suite.addTest(expiryRunnerTest);
-
-         TestResult result = TestRunner.run(suite);
-         if (result.errorCount() > 0 || result.failureCount() > 0)
-         {
-            System.exit(1);
-         }
-      }
-   }
+//
+//   public static void main(final String[] args) throws Exception
+//   {
+//      for (int i = 0; i < 1000; i++)
+//      {
+//         TestSuite suite = new TestSuite();
+//         ExpiryRunnerTest expiryRunnerTest = new ExpiryRunnerTest();
+//         expiryRunnerTest.setName("testExpireWhilstConsuming");
+//         suite.addTest(expiryRunnerTest);
+//
+//         TestResult result = TestRunner.run(suite);
+//         if (result.errorCount() > 0 || result.failureCount() > 0)
+//         {
+//            System.exit(1);
+//         }
+//      }
+//   }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -257,7 +271,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       // start the server
       server.start();
       // then we create a client as normal
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnAcknowledge(true);
       ClientSessionFactory sessionFactory = createSessionFactory(locator);
 
@@ -273,7 +287,8 @@ public class ExpiryRunnerTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (clientSession != null)
       {

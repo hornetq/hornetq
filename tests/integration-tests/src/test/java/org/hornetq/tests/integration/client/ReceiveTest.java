@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -42,7 +45,8 @@ public class ReceiveTest extends ServiceTestBase
    private HornetQServer server;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -51,6 +55,7 @@ public class ReceiveTest extends ServiceTestBase
       server.start();
    }
 
+   @Test
    public void testBasicReceive() throws Exception
    {
       ClientSessionFactory cf = createSessionFactory(locator);
@@ -66,6 +71,7 @@ public class ReceiveTest extends ServiceTestBase
          sendSession.close();
    }
 
+   @Test
    public void testReceiveTimesoutCorrectly() throws Exception
    {
 
@@ -80,6 +86,7 @@ public class ReceiveTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testReceiveOnClosedException() throws Exception
    {
 
@@ -105,6 +112,7 @@ public class ReceiveTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testReceiveThrowsExceptionWhenHandlerSet() throws Exception
    {
 
@@ -135,6 +143,7 @@ public class ReceiveTest extends ServiceTestBase
          session.close();
    }
 
+   @Test
    public void testReceiveImmediate() throws Exception
    {
 

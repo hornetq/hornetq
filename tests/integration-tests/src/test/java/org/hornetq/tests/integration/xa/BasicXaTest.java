@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -20,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -39,6 +36,9 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -63,11 +63,11 @@ public class BasicXaTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
-      clearData();
       addressSettings.clear();
       configuration = createDefaultConfig(true);
       configuration.setSecurityEnabled(false);
@@ -87,6 +87,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.createQueue(atestq, atestq, null, true);
    }
 
+   @Test
    public void testSendWithoutXID() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
@@ -110,6 +111,7 @@ public class BasicXaTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testACKWithoutXID() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
@@ -155,6 +157,7 @@ public class BasicXaTest extends ServiceTestBase
 
 
 
+   @Test
    public void testIsSameRM() throws Exception
    {
       ServerLocator locator = createNettyNonHALocator();
@@ -185,6 +188,7 @@ public class BasicXaTest extends ServiceTestBase
 
 
 
+   @Test
    public void testXAInterleaveResourceSuspendWorkCommit() throws Exception
    {
       Xid xid = newXID();
@@ -212,6 +216,7 @@ public class BasicXaTest extends ServiceTestBase
       assertNotNull(message);
    }
 
+   @Test
    public void testXAInterleaveResourceRollbackAfterPrepare() throws Exception
    {
       Xid xid = newXID();
@@ -241,6 +246,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.commit(xid3, false);
    }
 
+   @Test
    public void testSendPrepareDoesntRollbackOnClose() throws Exception
    {
       Xid xid = newXID();
@@ -281,6 +287,7 @@ public class BasicXaTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
+   @Test
    public void testReceivePrepareDoesntRollbackOnClose() throws Exception
    {
       Xid xid = newXID();
@@ -332,6 +339,7 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testReceiveRollback() throws Exception
    {
       int numSessions = 100;
@@ -373,44 +381,52 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testSendMultipleQueues() throws Exception
    {
       multipleQueuesInternalTest(true, false, false, false, false);
    }
 
+   @Test
    public void testSendMultipleQueuesOnePhase() throws Exception
    {
       multipleQueuesInternalTest(true, false, false, false, true);
       multipleQueuesInternalTest(false, false, true, false, true);
    }
 
+   @Test
    public void testSendMultipleQueuesOnePhaseJoin() throws Exception
    {
       multipleQueuesInternalTest(true, false, false, true, true);
       multipleQueuesInternalTest(false, false, true, true, true);
    }
 
+   @Test
    public void testSendMultipleQueuesTwoPhaseJoin() throws Exception
    {
       multipleQueuesInternalTest(true, false, false, true, false);
       multipleQueuesInternalTest(false, false, true, true, false);
    }
 
+   @Test
    public void testSendMultipleQueuesRecreate() throws Exception
    {
       multipleQueuesInternalTest(true, false, true, false, false);
    }
 
+   @Test
    public void testSendMultipleSuspend() throws Exception
    {
       multipleQueuesInternalTest(true, true, false, false, false);
    }
 
+   @Test
    public void testSendMultipleSuspendRecreate() throws Exception
    {
       multipleQueuesInternalTest(true, true, true, false, false);
    }
 
+   @Test
    public void testSendMultipleSuspendErrorCheck() throws Exception
    {
       ClientSession session = null;
@@ -434,6 +450,7 @@ public class BasicXaTest extends ServiceTestBase
       session.close();
    }
 
+   @Test
    public void testEmptyXID() throws Exception
    {
       Xid xid = newXID();
@@ -504,6 +521,7 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testFailXID() throws Exception
    {
       Xid xid = newXID();
@@ -516,6 +534,7 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testForgetUnknownXID() throws Exception
    {
       try
@@ -529,6 +548,7 @@ public class BasicXaTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testForgetHeuristicallyCommittedXID() throws Exception
    {
       Xid xid = newXID();
@@ -548,6 +568,7 @@ public class BasicXaTest extends ServiceTestBase
       Assert.assertEquals(0, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
    }
 
+   @Test
    public void testForgetHeuristicallyRolledBackXID() throws Exception
    {
       Xid xid = newXID();
@@ -568,26 +589,31 @@ public class BasicXaTest extends ServiceTestBase
       Assert.assertEquals(0, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
    }
 
+   @Test
    public void testCommitHeuristicallyCommittedXID() throws Exception
    {
       doCompleteHeuristicallyCompletedXID(true, true);
    }
 
+   @Test
    public void testCommitHeuristicallyRolledBackXID() throws Exception
    {
       doCompleteHeuristicallyCompletedXID(true, false);
    }
 
+   @Test
    public void testRollbacktHeuristicallyCommittedXID() throws Exception
    {
       doCompleteHeuristicallyCompletedXID(false, true);
    }
 
+   @Test
    public void testRollbackHeuristicallyRolledBackXID() throws Exception
    {
       doCompleteHeuristicallyCompletedXID(false, false);
    }
 
+   @Test
    public void testSimpleJoin() throws Exception
    {
       SimpleString ADDRESS1 = new SimpleString("Address-1");

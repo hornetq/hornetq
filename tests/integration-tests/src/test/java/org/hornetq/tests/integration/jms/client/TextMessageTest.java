@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.List;
 
@@ -21,7 +25,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -52,6 +56,7 @@ public class TextMessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testSendReceiveNullBody() throws Exception
    {
       conn = cf.createConnection();
@@ -84,41 +89,49 @@ public class TextMessageTest extends JMSTestBase
          Assert.assertNull(received3.getText());
    }
 
+   @Test
    public void testSendReceiveWithBody0() throws Exception
    {
       testSendReceiveWithBody(0);
    }
 
+   @Test
    public void testSendReceiveWithBody1() throws Exception
    {
       testSendReceiveWithBody(1);
    }
 
+   @Test
    public void testSendReceiveWithBody9() throws Exception
    {
       testSendReceiveWithBody(9);
    }
 
+   @Test
    public void testSendReceiveWithBody20() throws Exception
    {
       testSendReceiveWithBody(20);
    }
 
+   @Test
    public void testSendReceiveWithBody10000() throws Exception
    {
       testSendReceiveWithBody(10000);
    }
 
+   @Test
    public void testSendReceiveWithBody0xffff() throws Exception
    {
       testSendReceiveWithBody(0xffff);
    }
 
+   @Test
    public void testSendReceiveWithBody0xffffplus1() throws Exception
    {
       testSendReceiveWithBody(0xffff + 1);
    }
 
+   @Test
    public void testSendReceiveWithBody0xfffftimes2() throws Exception
    {
       testSendReceiveWithBody(2 * 0xffff);
@@ -179,14 +192,16 @@ public class TextMessageTest extends JMSTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       queue = createQueue("queue1");
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       queue = null;
       super.tearDown();

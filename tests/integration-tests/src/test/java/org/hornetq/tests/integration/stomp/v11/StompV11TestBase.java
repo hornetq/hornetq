@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp.v11;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +51,7 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
-public abstract class StompTestBase2 extends UnitTestCase
+public abstract class StompV11TestBase extends UnitTestCase
 {
    protected String hostname = "127.0.0.1";
 
@@ -76,7 +78,8 @@ public abstract class StompTestBase2 extends UnitTestCase
    // Implementation methods
    // -------------------------------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -120,7 +123,8 @@ public abstract class StompTestBase2 extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

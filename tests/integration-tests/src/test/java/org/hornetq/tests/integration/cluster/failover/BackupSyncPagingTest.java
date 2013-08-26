@@ -1,4 +1,7 @@
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +17,8 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
 {
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       setNumberOfMessages(100);
@@ -33,6 +37,7 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
       return createInVMFailoverServer(realFiles, configuration, PAGE_SIZE, PAGE_MAX, conf, nodeManager, id);
    }
 
+   @Test
    public void testReplicationWithPageFileComplete() throws Exception
    {
       // we could get a first page complete easier with this number

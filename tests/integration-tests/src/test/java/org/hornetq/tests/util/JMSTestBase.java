@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.util;
+import org.junit.Before;
+import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -116,7 +118,8 @@ public class JMSTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -162,7 +165,8 @@ public class JMSTestBase extends ServiceTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {

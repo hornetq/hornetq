@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -24,17 +28,20 @@ import javax.jms.Topic;
 
 public class TopicControlClusterTest extends JMSClusteredTestBase
 {
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       super.tearDown();
    }
 
 
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
    }
 
+   @Test
    public void testClusteredSubscriptionCount() throws Exception
    {
       Connection conn1 = cf1.createConnection();

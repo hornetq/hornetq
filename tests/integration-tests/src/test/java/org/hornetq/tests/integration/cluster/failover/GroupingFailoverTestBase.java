@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.junit.Test;
+
 import java.util.Collection;
 
 import org.hornetq.api.core.Message;
@@ -30,6 +32,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public abstract class GroupingFailoverTestBase extends ClusterTestBase
 {
 
+   @Test
    public void testGroupingLocalHandlerFails() throws Exception
    {
       setupBackupServer(2, 0, isFileStorage(), isSharedStore(), isNetty());
@@ -126,6 +129,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       throw new IllegalStateException("Timed out waiting for backup announce");
    }
 
+   @Test
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
       setupBackupServer(2, 0, isFileStorage(), isSharedStore(), isNetty());

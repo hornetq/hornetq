@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 
 /**
@@ -27,7 +30,8 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
 {
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -39,6 +43,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testRequestResponse() throws Exception
    {
       setupCluster();

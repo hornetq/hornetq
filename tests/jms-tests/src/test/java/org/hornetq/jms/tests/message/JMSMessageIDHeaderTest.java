@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
@@ -33,6 +35,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testJMSMessageIDPrefix() throws Exception
    {
       Message m = queueProducerSession.createMessage();
@@ -43,6 +46,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       ProxyAssertSupport.assertTrue(messageID.startsWith("ID:"));
    }
 
+   @Test
    public void testJMSMessageIDChangedAfterSendingMessage() throws Exception
    {
       try
@@ -60,6 +64,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       }
    }
 
+   @Test
    public void testJMSMessageID() throws Exception
    {
       try

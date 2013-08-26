@@ -12,13 +12,17 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -37,7 +41,8 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 {
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -47,7 +52,8 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       Assert.assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
 
@@ -64,6 +70,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    protected SequentialFileFactory factory;
 
+   @Test
    public void testCreateAndListFiles() throws Exception
    {
       List<String> expectedFiles = new ArrayList<String>();
@@ -119,6 +126,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       sf2.close();
    }
 
+   @Test
    public void testFill() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("fill.hq", 1);
@@ -144,6 +152,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       }
    }
 
+   @Test
    public void testDelete() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("delete-me.hq", 1);
@@ -174,6 +183,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    }
 
+   @Test
    public void testRename() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("test1.hq", 1);
@@ -206,6 +216,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    }
 
+   @Test
    public void testWriteandRead() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("write.hq", 1);
@@ -274,6 +285,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    }
 
+   @Test
    public void testPosition() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("position.hq", 1);
@@ -358,6 +370,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       }
    }
 
+   @Test
    public void testOpenClose() throws Exception
    {
       SequentialFile sf = factory.createSequentialFile("openclose.hq", 1);

@@ -11,10 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -49,6 +53,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
    private ClientSession session2;
    private ServerLocator locator;
 
+   @Test
    public void testListMessagesAsJSON() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -93,6 +98,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       assertEquals(0, array.length());
    }
 
+   @Test
    public void testListMessagesAsJSONWithFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -150,6 +156,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
    //paging/depaging is going on. It makes sure that the implementation
    //of the api doesn't cause any exceptions during internal queue
    //message iteration.
+   @Test
    public void testListMessagesAsJSONWhilePagingOnGoing() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -196,7 +203,8 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -229,7 +237,8 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       session1.close();
       session1 = null;

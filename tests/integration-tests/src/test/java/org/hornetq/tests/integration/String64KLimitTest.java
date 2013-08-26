@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -69,6 +72,7 @@ public class String64KLimitTest extends UnitTestCase
       return new String(chars);
    }
 
+   @Test
    public void test64KLimitWithWriteString() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -133,6 +137,7 @@ public class String64KLimitTest extends UnitTestCase
       Assert.assertNotNull(rm4);
    }
 
+   @Test
    public void test64KLimitWithWriteUTF() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -199,7 +204,8 @@ public class String64KLimitTest extends UnitTestCase
    private ClientSessionFactory sf;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

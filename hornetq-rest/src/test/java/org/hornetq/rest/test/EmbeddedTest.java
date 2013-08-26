@@ -1,4 +1,6 @@
 package org.hornetq.rest.test;
+import org.junit.Before;
+import org.junit.After;
 
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 

@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.topology;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -100,7 +104,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    abstract protected boolean isNetty() throws Exception;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -110,7 +115,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopServers(0, 1, 2, 3, 4);
 
@@ -226,6 +232,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    }
 
 
+   @Test
    public void testReceiveNotificationsWhenOtherNodesAreStartedAndStopped() throws Throwable
    {
       startServers(0);
@@ -267,6 +274,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
    }
 
+   @Test
    public void testReceiveNotifications() throws Throwable
    {
       startServers(0, 1, 2, 3, 4);
@@ -318,6 +326,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    }
 
 
+   @Test
    public void testStopNodes() throws Throwable
    {
       startServers(0, 1, 2, 3, 4);
@@ -376,6 +385,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
    }
 
+   @Test
    public void testMultipleClientSessionFactories() throws Throwable
    {
       startServers(0, 1, 2, 3, 4);

@@ -12,13 +12,16 @@
  */
 
 package org.hornetq.tests.integration.journal;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.LoaderCallback;
@@ -44,61 +47,73 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    private static final int OK = 10;
 
+   @Test
    public void testAIO() throws Exception
    {
       internalTest("aio", getTestDir(), 10000, 100, true, true, 1);
    }
 
+   @Test
    public void testAIOHugeTransaction() throws Exception
    {
       internalTest("aio", getTestDir(), 10000, 10000, true, true, 1);
    }
 
+   @Test
    public void testAIOMultiThread() throws Exception
    {
       internalTest("aio", getTestDir(), 1000, 100, true, true, 10);
    }
 
+   @Test
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
       internalTest("aio", getTestDir(), 1000, 0, true, false, 10);
    }
 
+   @Test
    public void testNIO() throws Exception
    {
       internalTest("nio", getTestDir(), 10000, 100, true, true, 1);
    }
 
+   @Test
    public void testNIOHugeTransaction() throws Exception
    {
       internalTest("nio", getTestDir(), 10000, 10000, true, true, 1);
    }
 
+   @Test
    public void testNIOMultiThread() throws Exception
    {
       internalTest("nio", getTestDir(), 1000, 100, true, true, 10);
    }
 
+   @Test
    public void testNIONonTransactional() throws Exception
    {
       internalTest("nio", getTestDir(), 10000, 0, true, true, 1);
    }
 
+   @Test
    public void testNIO2() throws Exception
    {
       internalTest("nio2", getTestDir(), 10000, 100, true, true, 1);
    }
 
+   @Test
    public void testNIO2HugeTransaction() throws Exception
    {
       internalTest("nio2", getTestDir(), 10000, 10000, true, true, 1);
    }
 
+   @Test
    public void testNIO2MultiThread() throws Exception
    {
       internalTest("nio2", getTestDir(), 1000, 100, true, true, 10);
    }
 
+   @Test
    public void testNIO2NonTransactional() throws Exception
    {
       internalTest("nio2", getTestDir(), 10000, 0, true, true, 1);
@@ -109,7 +124,8 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

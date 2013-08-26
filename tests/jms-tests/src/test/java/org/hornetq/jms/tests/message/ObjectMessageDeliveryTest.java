@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests.message;
 
+import org.junit.Test;
+
 import java.io.Serializable;
 
 import javax.jms.ObjectMessage;
@@ -55,6 +57,7 @@ public class ObjectMessageDeliveryTest extends HornetQServerTestCase
    /**
     *
     */
+   @Test
    public void testTopic() throws Exception
    {
       TopicConnection conn = getTopicConnectionFactory().createTopicConnection();

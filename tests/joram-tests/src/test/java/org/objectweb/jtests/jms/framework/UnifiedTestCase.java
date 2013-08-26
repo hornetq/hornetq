@@ -12,7 +12,6 @@
  */
 
 package org.objectweb.jtests.jms.framework;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -26,6 +25,8 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Creates convenient Unified JMS 1.1 objects which can be needed for tests.
@@ -146,7 +147,8 @@ public abstract class UnifiedTestCase extends JMSTestCase
     * Start connections.
     */
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -200,7 +202,8 @@ public abstract class UnifiedTestCase extends JMSTestCase
     *  Close connections and delete administrated objects
     */
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       try
       {
@@ -239,10 +242,5 @@ public abstract class UnifiedTestCase extends JMSTestCase
       }
 
       super.tearDown();
-   }
-
-   public UnifiedTestCase(final String name)
-   {
-      super(name);
    }
 }

@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.performance.paging;
-
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -28,6 +27,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * A MeasurePagingMultiThreadTest
@@ -41,23 +41,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class MeasurePagingMultiThreadTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      clearData();
-   }
-
+   @Test
    public void testPagingMultipleSenders() throws Throwable
    {
 

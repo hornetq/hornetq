@@ -12,11 +12,15 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -59,6 +63,7 @@ public class SessionCloseTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCanNotUseAClosedSession() throws Exception
    {
 
@@ -152,6 +157,7 @@ public class SessionCloseTest extends UnitTestCase
 
    }
 
+   @Test
    public void testCanNotUseXAWithClosedSession() throws Exception
    {
 
@@ -220,6 +226,7 @@ public class SessionCloseTest extends UnitTestCase
 
    }
 
+   @Test
    public void testCloseHierarchy() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
@@ -245,7 +252,8 @@ public class SessionCloseTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -262,7 +270,8 @@ public class SessionCloseTest extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       if (sf != null)
       {

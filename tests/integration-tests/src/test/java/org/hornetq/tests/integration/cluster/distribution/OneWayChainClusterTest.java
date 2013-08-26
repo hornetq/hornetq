@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
@@ -35,7 +38,8 @@ public class OneWayChainClusterTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -51,6 +55,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       return false;
    }
 
+   @Test
    public void testBasicRoundRobin() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -81,6 +86,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testBasicNonLoadBalanced() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -114,6 +120,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3);
    }
 
+   @Test
    public void testRoundRobinForwardWhenNoConsumersTrue() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", true, 4, isNetty(), true);
@@ -145,6 +152,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testRoundRobinForwardWhenNoConsumersFalseNoLocalQueue() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -171,6 +179,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(1);
    }
 
+   @Test
    public void testRoundRobinForwardWhenNoConsumersFalse() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -204,6 +213,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testRoundRobinForwardWhenNoConsumersFalseLocalConsumer() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -237,6 +247,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testHopsTooLow() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 3, isNetty(), true);
@@ -265,6 +276,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(1);
    }
 
+   @Test
    public void testStartStopMiddleOfChain() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);
@@ -332,6 +344,7 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testChainClusterConnections() throws Exception
    {
       setupClusterConnection("cluster0-1", 0, 1, "queues", false, 4, isNetty(), true);

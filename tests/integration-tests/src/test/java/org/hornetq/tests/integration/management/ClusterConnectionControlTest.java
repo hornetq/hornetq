@@ -12,6 +12,10 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +25,7 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -72,6 +76,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testAttributes1() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
@@ -105,6 +110,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Assert.assertTrue(clusterConnectionControl.isStarted());
    }
 
+   @Test
    public void testAttributes2() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig2.getName()));
@@ -132,6 +138,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                           clusterConnectionControl.getDiscoveryGroupName());
    }
 
+   @Test
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
@@ -147,6 +154,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Assert.assertTrue(clusterConnectionControl.isStarted());
    }
 
+   @Test
    public void testNotifications() throws Exception
    {
       SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
@@ -181,7 +189,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -245,7 +254,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       server_0.stop();
       server_1.stop();

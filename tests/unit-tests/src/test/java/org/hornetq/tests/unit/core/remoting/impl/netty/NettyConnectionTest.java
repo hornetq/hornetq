@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import org.junit.Test;
+
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -19,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -48,6 +50,7 @@ public class NettyConnectionTest extends UnitTestCase
 {
    private static final Map<String,Object> emptyMap = Collections.emptyMap();
 
+   @Test
    public void testGetID() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());
@@ -56,6 +59,7 @@ public class NettyConnectionTest extends UnitTestCase
       Assert.assertEquals(channel.getId().intValue(), conn.getID());
    }
 
+   @Test
    public void testWrite() throws Exception
    {
       HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
@@ -69,6 +73,7 @@ public class NettyConnectionTest extends UnitTestCase
       Assert.assertEquals(1, channel.getWritten().size());
    }
 
+   @Test
    public void testCreateBuffer() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());

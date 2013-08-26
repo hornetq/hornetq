@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -25,6 +24,8 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A ExpireTestOnRestartTest
@@ -39,10 +40,11 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
    HornetQServer server;
 
 
+   @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       server = createServer(true);
       AddressSettings setting = new AddressSettings();
       setting.setExpiryAddress(SimpleString.toSimpleString("exp"));
@@ -56,13 +58,8 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
       server.start();
    }
 
-   public void tearDown() throws Exception
-   {
-      server.stop();
-      super.tearDown();
-   }
-
    // The biggest problem on this test was the exceptions that happened. I couldn't find any wrong state beyond the exceptions
+   @Test
    public void testRestartWithExpire() throws Exception
    {
       int NUMBER_OF_EXPIRED_MESSAGES = 1000;

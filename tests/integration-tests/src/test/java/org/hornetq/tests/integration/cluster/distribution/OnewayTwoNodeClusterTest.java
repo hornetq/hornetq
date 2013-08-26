@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 
@@ -32,7 +35,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -53,6 +57,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    /*
     * make sure source can shutdown if target is never started
     */
+   @Test
    public void testNeverStartTargetStartSourceThenStopSource() throws Exception
    {
       startServers(0);
@@ -63,6 +68,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       stopServers(0);
    }
 
+   @Test
    public void testStartTargetServerBeforeSourceServer() throws Exception
    {
       startServers(1, 0);
@@ -85,6 +91,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0);
    }
 
+   @Test
    public void testStartSourceServerBeforeTargetServer() throws Exception
    {
       startServers(0, 1);
@@ -111,6 +118,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0);
    }
 
+   @Test
    public void testStopAndStartTarget() throws Exception
    {
       startServers(0, 1);
@@ -182,6 +190,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0);
    }
 
+   @Test
    public void testBasicLocalReceive() throws Exception
    {
       startServers(1, 0);
@@ -202,6 +211,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(1);
    }
 
+   @Test
    public void testBasicRoundRobin() throws Exception
    {
       startServers(1, 0);
@@ -228,6 +238,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
    }
 
+   @Test
    public void testRoundRobinMultipleQueues() throws Exception
    {
       startServers(1, 0);
@@ -267,6 +278,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testMultipleNonLoadBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -308,6 +320,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -371,6 +384,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesRemoveSomeQueuesAndConsumers() throws Exception
    {
       startServers(1, 0);
@@ -451,6 +465,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesOnTargetBeforeStartSource() throws Exception
    {
       startServers(1);
@@ -514,6 +529,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
    }
 
+   @Test
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesOnSourceBeforeStartTarget() throws Exception
    {
       startServers(0);
@@ -577,6 +593,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
    }
 
+   @Test
    public void testNotRouteToNonMatchingAddress() throws Exception
    {
       startServers(1, 0);
@@ -612,6 +629,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(2, 3, 4, 5);
    }
 
+   @Test
    public void testNonLoadBalancedQueuesWithFilters() throws Exception
    {
       startServers(1, 0);
@@ -673,6 +691,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
    }
 
+   @Test
    public void testRoundRobinMultipleQueuesWithFilters() throws Exception
    {
       startServers(1, 0);
@@ -737,6 +756,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseNonBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -770,6 +790,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueNonBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -803,6 +824,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseLoadBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -842,6 +864,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseLoadBalancedQueuesLocalConsumer() throws Exception
    {
       startServers(1, 0);
@@ -877,6 +900,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersFalseLoadBalancedQueuesNoLocalQueue() throws Exception
    {
       startServers(1, 0);
@@ -907,6 +931,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueLoadBalancedQueues() throws Exception
    {
       startServers(1, 0);
@@ -942,6 +967,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueLoadBalancedQueuesLocalConsumer() throws Exception
    {
       servers[0].getConfiguration().getClusterConfigurations().clear();
@@ -981,6 +1007,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5);
    }
 
+   @Test
    public void testRouteWhenNoConsumersTrueLoadBalancedQueuesNoLocalQueue() throws Exception
    {
       servers[0].getConfiguration().getClusterConfigurations().clear();
@@ -1015,6 +1042,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3);
    }
 
+   @Test
    public void testNonLoadBalancedQueuesWithConsumersWithFilters() throws Exception
    {
       startServers(1, 0);
@@ -1072,6 +1100,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
    }
 
+   @Test
    public void testRoundRobinMultipleQueuesWithConsumersWithFilters() throws Exception
    {
       startServers(1, 0);
@@ -1137,6 +1166,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    }
 
+   @Test
    public void testMultipleClusterConnections() throws Exception
    {
       setupClusterConnection("cluster2", 0, 1, "q2", false, 1,  isNetty(), true);

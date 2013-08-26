@@ -12,10 +12,14 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -61,35 +65,41 @@ public class PagingFailoverTest extends FailoverTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       locator = getServerLocator();
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       addClientSession(session);
       super.tearDown();
    }
 
+   @Test
    public void testPageFailBeforeConsume() throws Exception
    {
       internalTestPage(false, true);
    }
 
 
+   @Test
    public void testPage() throws Exception
    {
       internalTestPage(false, false);
    }
 
+   @Test
    public void testPageTransactioned() throws Exception
    {
       internalTestPage(true, false);
    }
 
+   @Test
    public void testPageTransactionedFailBeforeConsume() throws Exception
    {
       internalTestPage(true, true);
@@ -182,6 +192,7 @@ public class PagingFailoverTest extends FailoverTestBase
          }
    }
 
+   @Test
    public void testExpireMessage() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);

@@ -12,11 +12,15 @@
  */
 
 package org.hornetq.tests.stress.journal;
+import org.junit.Before;
+import org.junit.After;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
@@ -32,7 +36,7 @@ import org.hornetq.utils.SimpleIDGenerator;
  *
  *
  */
-public abstract class MixupCompactorBase extends JournalImplTestBase
+public abstract class MixupCompactorTestBase extends JournalImplTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -61,7 +65,8 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
 
    // Public --------------------------------------------------------
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -82,7 +87,8 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
 
       File testDir = new File(getTestDir());
@@ -128,6 +134,7 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
       journal.setAutoReclaim(false);
    }
 
+   @Test
    public void testMixOperations() throws Exception
    {
 

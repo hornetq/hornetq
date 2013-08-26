@@ -13,8 +13,10 @@
 
 package org.hornetq.core.config.impl;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import org.junit.Assert;
+
 
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.RandomUtil;
@@ -22,7 +24,7 @@ import org.hornetq.tests.util.RandomUtil;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ValidatorsTest extends TestCase
+public class ValidatorsTest extends Assert
 {
 
    private static void success(final Validators.Validator validator, final Object value)
@@ -47,6 +49,7 @@ public class ValidatorsTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testGE_ZERO() throws Exception
    {
       ValidatorsTest.failure(Validators.GE_ZERO, -1);
@@ -55,6 +58,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.GE_ZERO, 1);
    }
 
+   @Test
    public void testGT_ZERO() throws Exception
    {
       ValidatorsTest.failure(Validators.GT_ZERO, -1);
@@ -63,6 +67,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.GT_ZERO, 1);
    }
 
+   @Test
    public void testMINUS_ONE_OR_GE_ZERO() throws Exception
    {
       ValidatorsTest.failure(Validators.MINUS_ONE_OR_GE_ZERO, -2);
@@ -72,6 +77,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.MINUS_ONE_OR_GE_ZERO, 1);
    }
 
+   @Test
    public void testMINUS_ONE_OR_GT_ZERO() throws Exception
    {
       ValidatorsTest.failure(Validators.MINUS_ONE_OR_GT_ZERO, -2);
@@ -81,6 +87,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.MINUS_ONE_OR_GT_ZERO, 1);
    }
 
+   @Test
    public void testNO_CHECK() throws Exception
    {
       ValidatorsTest.success(Validators.NO_CHECK, -1);
@@ -90,6 +97,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.NO_CHECK, false);
    }
 
+   @Test
    public void testNOT_NULL_OR_EMPTY() throws Exception
    {
       ValidatorsTest.failure(Validators.NOT_NULL_OR_EMPTY, null);
@@ -97,6 +105,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.success(Validators.NOT_NULL_OR_EMPTY, RandomUtil.randomString());
    }
 
+   @Test
    public void testJOURNAL_TYPE() throws Exception
    {
       for (JournalType type : JournalType.values())
@@ -108,6 +117,7 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.failure(Validators.JOURNAL_TYPE, RandomUtil.randomString());
    }
 
+   @Test
    public void testPERCENTAGE()
    {
       ValidatorsTest.success(Validators.PERCENTAGE, 99);

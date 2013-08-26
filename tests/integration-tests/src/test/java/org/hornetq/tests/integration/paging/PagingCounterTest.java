@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.paging;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import javax.transaction.xa.Xid;
 
@@ -55,6 +58,7 @@ public class PagingCounterTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testCounter() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(sl);
@@ -87,6 +91,7 @@ public class PagingCounterTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testCleanupCounter() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(sl);
@@ -148,6 +153,7 @@ public class PagingCounterTest extends ServiceTestBase
    }
 
 
+   @Test
    public void testCleanupCounterNonPersistent() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(sl);
@@ -210,6 +216,7 @@ public class PagingCounterTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testRestartCounter() throws Exception
    {
       Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
@@ -264,6 +271,7 @@ public class PagingCounterTest extends ServiceTestBase
       return counter;
    }
 
+   @Test
    public void testPrepareCounter() throws Exception
    {
       Xid xid = newXID();
@@ -320,7 +328,8 @@ public class PagingCounterTest extends ServiceTestBase
 
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

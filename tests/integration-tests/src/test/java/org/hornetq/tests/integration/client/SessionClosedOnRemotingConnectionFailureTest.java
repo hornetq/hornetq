@@ -12,8 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -42,6 +45,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
 
    private ClientSessionFactory sf;
 
+   @Test
    public void testSessionClosedOnRemotingConnectionFailure() throws Exception
    {
       ClientSession session = addClientSession(sf.createSession());
@@ -106,7 +110,8 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
          }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

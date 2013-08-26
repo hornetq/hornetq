@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -37,7 +40,8 @@ public class MessageCounterTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -47,6 +51,7 @@ public class MessageCounterTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testMessageCounter() throws Exception
    {
 

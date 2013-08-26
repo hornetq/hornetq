@@ -11,13 +11,16 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -53,6 +56,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
    private ClientSession clientSession;
    private ServerLocator locator;
 
+   @Test
    public void testBasicSend() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -87,6 +91,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
    }
 
    // HORNETQ- 1084
+   @Test
    public void testBasicSendWithDLAButNoBinding() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -115,6 +120,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertEquals(0, q.getDeliveringCount());
    }
 
+   @Test
    public void testBasicSend2times() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -152,6 +158,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
+   @Test
    public void testReceiveWithListeners() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -207,6 +214,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       }
    }
 
+   @Test
    public void testBasicSendToMultipleQueues() throws Exception
    {
       SimpleString dla = new SimpleString("DLA");
@@ -247,6 +255,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientConsumer.close();
    }
 
+   @Test
    public void testBasicSendToNoQueue() throws Exception
    {
       SimpleString qName = new SimpleString("q1");
@@ -269,6 +278,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientConsumer.close();
    }
 
+   @Test
    public void testHeadersSet() throws Exception
    {
       final int MAX_DELIVERIES = 16;
@@ -354,6 +364,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
    }
 
+   @Test
    public void testDeadlLetterAddressWithDefaultAddressSettings() throws Exception
    {
       int deliveryAttempt = 3;
@@ -396,6 +407,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
+   @Test
    public void testDeadlLetterAddressWithWildcardAddressSettings() throws Exception
    {
       int deliveryAttempt = 3;
@@ -436,6 +448,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertEquals(m.getBodyBuffer().readString(), "heyho!");
    }
 
+   @Test
    public void testDeadLetterAddressWithOverridenSublevelAddressSettings() throws Exception
    {
       int defaultDeliveryAttempt = 3;
@@ -494,7 +507,8 @@ public class DeadLetterAddressTest extends ServiceTestBase
    }
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 

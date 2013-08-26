@@ -17,6 +17,8 @@
  */
 package org.hornetq.tests.integration.stomp;
 
+import org.junit.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -33,7 +35,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -42,6 +44,7 @@ public class StompTest extends StompTestBase
 {
    private static final transient IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
+   @Test
    public void testSendManyMessages() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -73,6 +76,7 @@ public class StompTest extends StompTestBase
       assertTrue(latch.await(60, TimeUnit.SECONDS));
    }
 
+   @Test
    public void testConnect() throws Exception
    {
 
@@ -88,6 +92,7 @@ public class StompTest extends StompTestBase
       Assert.assertTrue(f.indexOf("response-id:1") >= 0);
    }
 
+   @Test
    public void testDisconnectAndError() throws Exception
    {
 
@@ -124,6 +129,7 @@ public class StompTest extends StompTestBase
       }
    }
 
+   @Test
    public void testSendMessage() throws Exception
    {
 
@@ -157,6 +163,7 @@ public class StompTest extends StompTestBase
     * This means next frame read might have a \n a the beginning.
     * This is contrary to STOMP spec but we deal with it so we can work nicely with crappy STOMP clients
     */
+   @Test
    public void testSendMessageWithLeadingNewLine() throws Exception
    {
 
@@ -189,6 +196,7 @@ public class StompTest extends StompTestBase
       Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
    }
 
+   @Test
    public void testSendMessageWithReceipt() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -224,6 +232,7 @@ public class StompTest extends StompTestBase
       Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
    }
 
+   @Test
    public void testSendMessageWithContentLength() throws Exception
    {
 
@@ -260,6 +269,7 @@ public class StompTest extends StompTestBase
       assertEquals(data[3], message.readByte());
    }
 
+   @Test
    public void testJMSXGroupIdCanBeSet() throws Exception
    {
 
@@ -288,6 +298,7 @@ public class StompTest extends StompTestBase
       Assert.assertEquals("TEST", message.getStringProperty("JMSXGroupID"));
    }
 
+   @Test
    public void testSendMessageWithCustomHeadersAndSelector() throws Exception
    {
 
@@ -317,6 +328,7 @@ public class StompTest extends StompTestBase
       Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
    }
 
+   @Test
    public void testSendMessageWithStandardHeaders() throws Exception
    {
 
@@ -359,6 +371,7 @@ public class StompTest extends StompTestBase
       // Assert.assertEquals("GroupID", "abc", amqMessage.getGroupID());
    }
 
+   @Test
    public void testSendMessageWithLongHeaders() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -405,6 +418,7 @@ public class StompTest extends StompTestBase
       Assert.assertEquals("JMSXGroupID", "abc", message.getStringProperty("JMSXGroupID"));
    }
 
+   @Test
    public void testSubscribeWithAutoAck() throws Exception
    {
 
@@ -435,6 +449,7 @@ public class StompTest extends StompTestBase
 
    }
 
+   @Test
    public void testSubscribeWithAutoAckAndBytesMessage() throws Exception
    {
 
@@ -468,6 +483,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testSubscribeWithMessageSentWithProperties() throws Exception
    {
 
@@ -512,6 +528,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testSubscribeWithID() throws Exception
    {
 
@@ -542,6 +559,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testBodyWithUTF8() throws Exception
    {
 
@@ -568,6 +586,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testMessagesAreInOrder() throws Exception
    {
       int ctr = 10;
@@ -613,6 +632,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testSubscribeWithAutoAckAndSelector() throws Exception
    {
 
@@ -642,6 +662,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testSubscribeWithClientAck() throws Exception
    {
 
@@ -675,6 +696,7 @@ public class StompTest extends StompTestBase
       Assert.assertNull(message);
    }
 
+   @Test
    public void testRedeliveryWithClientAck() throws Exception
    {
 
@@ -702,11 +724,13 @@ public class StompTest extends StompTestBase
       Assert.assertTrue(message.getJMSRedelivered());
    }
 
+   @Test
    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithNoDisconnectFrame() throws Exception
    {
       assertSubscribeWithClientAckThenConsumeWithAutoAck(false);
    }
 
+   @Test
    public void testSubscribeWithClientAckThenConsumingAgainWithAutoAckWithExplicitDisconnect() throws Exception
    {
       assertSubscribeWithClientAckThenConsumeWithAutoAck(true);
@@ -791,6 +815,7 @@ public class StompTest extends StompTestBase
       Assert.assertTrue(frame.contains("shouldBeNextMessage"));
    }
 
+   @Test
    public void testUnsubscribe() throws Exception
    {
 
@@ -835,6 +860,7 @@ public class StompTest extends StompTestBase
       }
    }
 
+   @Test
    public void testUnsubscribeWithID() throws Exception
    {
 
@@ -879,6 +905,7 @@ public class StompTest extends StompTestBase
       }
    }
 
+   @Test
    public void testTransactionCommit() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -915,6 +942,7 @@ public class StompTest extends StompTestBase
       Assert.assertNotNull("Should have received a message", message);
    }
 
+   @Test
    public void testSuccessiveTransactionsWithSameID() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -966,6 +994,7 @@ public class StompTest extends StompTestBase
       Assert.assertNotNull("Should have received a message", message);
    }
 
+   @Test
    public void testBeginSameTransactionTwice() throws Exception
    {
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
@@ -986,6 +1015,7 @@ public class StompTest extends StompTestBase
 
    }
 
+   @Test
    public void testTransactionRollback() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1036,6 +1066,7 @@ public class StompTest extends StompTestBase
       Assert.assertEquals("second message", message.getText());
    }
 
+   @Test
    public void testSubscribeToTopic() throws Exception
    {
 
@@ -1093,6 +1124,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testDurableSubscriberWithReconnection() throws Exception
    {
 
@@ -1152,6 +1184,7 @@ public class StompTest extends StompTestBase
       sendFrame(disconnectFrame);
    }
 
+   @Test
    public void testDurableSubscriber() throws Exception
    {
 
@@ -1185,6 +1218,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testSubscribeToTopicWithNoLocal() throws Exception
    {
 
@@ -1232,6 +1266,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   @Test
    public void testClientAckNotPartOfTransaction() throws Exception
    {
 
@@ -1289,6 +1324,7 @@ public class StompTest extends StompTestBase
    }
 
    // HORNETQ-1007
+   @Test
    public void testMultiProtocolConsumers() throws Exception
    {
       final int TIME_OUT = 100;

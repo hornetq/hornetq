@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
+import org.junit.Before;
+import org.junit.After;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -74,7 +76,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
    private Thread compactThread;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -88,7 +91,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
    }
 
    @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       stopComponent(journal);
 

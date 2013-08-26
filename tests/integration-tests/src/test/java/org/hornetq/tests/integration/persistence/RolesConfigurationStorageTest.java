@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.persistence;
+import org.junit.Before;
+
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +36,8 @@ public class RolesConfigurationStorageTest extends StorageManagerTestBase
    private Map<SimpleString, PersistedRoles> mapExpectedSets;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
 
@@ -46,6 +50,7 @@ public class RolesConfigurationStorageTest extends StorageManagerTestBase
       journal.storeSecurityRoles(setting);
    }
 
+   @Test
    public void testStoreSecuritySettings() throws Exception
    {
       createStorage();

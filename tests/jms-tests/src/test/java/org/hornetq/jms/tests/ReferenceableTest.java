@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -57,6 +59,7 @@ public class ReferenceableTest extends JMSTestCase
    // Public --------------------------------------------------------
 
    @SuppressWarnings("cast")
+   @Test
    public void testSerializable() throws Exception
    {
       ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Serializable);
@@ -67,6 +70,7 @@ public class ReferenceableTest extends JMSTestCase
    }
 
    @SuppressWarnings("cast")
+   @Test
    public void testReferenceable() throws Exception
    {
       ProxyAssertSupport.assertTrue(JMSTestCase.cf instanceof Referenceable);
@@ -76,6 +80,7 @@ public class ReferenceableTest extends JMSTestCase
       ProxyAssertSupport.assertTrue(HornetQServerTestCase.topic1 instanceof Referenceable);
    }
 
+   @Test
    public void testReferenceCF() throws Exception
    {
       Reference cfRef = ((Referenceable)JMSTestCase.cf).getReference();
@@ -95,6 +100,7 @@ public class ReferenceableTest extends JMSTestCase
       simpleSendReceive(cf2, HornetQServerTestCase.queue1);
    }
 
+   @Test
    public void testReferenceQueue() throws Exception
    {
       Reference queueRef = ((Referenceable)HornetQServerTestCase.queue1).getReference();
@@ -117,6 +123,7 @@ public class ReferenceableTest extends JMSTestCase
 
    }
 
+   @Test
    public void testReferenceTopic() throws Exception
    {
       Reference topicRef = ((Referenceable)HornetQServerTestCase.topic1).getReference();

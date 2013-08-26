@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
-
-
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -27,8 +25,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -52,16 +48,21 @@ import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ExtraStompTest extends StompTestBase
 {
    @Override
+   @Before
    public void setUp() throws Exception
    {
       autoCreateServer = false;
       super.setUp();
    }
 
+   @Test
    public void testConnectionTTL() throws Exception
    {
       try
@@ -112,22 +113,26 @@ public class ExtraStompTest extends StompTestBase
       }
    }
 
+   @Test
    public void testEnableMessageID() throws Exception
    {
       enableMessageIDTest(true);
    }
 
+   @Test
    public void testDisableMessageID() throws Exception
    {
       enableMessageIDTest(false);
    }
 
+   @Test
    public void testDefaultEnableMessageID() throws Exception
    {
       enableMessageIDTest(null);
    }
 
    //stomp sender -> large -> stomp receiver
+   @Test
    public void testSendReceiveLargePersistentMessages() throws Exception
    {
       try
@@ -151,11 +156,11 @@ public class ExtraStompTest extends StompTestBase
             contents[i] = 'A';
          }
          String body = new String(contents);
-         
+
          frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n"
                + "persistent:true\n"
                + "\n\n" + body + Stomp.NULL;
-         
+
          for (int i = 0; i < count; i++)
          {
             sendFrame(frame);
@@ -202,6 +207,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large -> stomp receiver
+   @Test
    public void testReceiveLargePersistentMessagesFromCore() throws Exception
    {
       try
@@ -210,7 +216,7 @@ public class ExtraStompTest extends StompTestBase
          server.start();
 
          setUpAfterServer();
-         
+
          int msgSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
          char[] contents = new char[msgSize];
          for (int i = 0; i < msgSize; i++)
@@ -273,6 +279,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //stomp v12 sender -> large -> stomp v12 receiver
+   @Test
    public void testSendReceiveLargePersistentMessagesV12() throws Exception
    {
       try
@@ -293,17 +300,17 @@ public class ExtraStompTest extends StompTestBase
             contents[i] = 'A';
          }
          String body = new String(contents);
-         
+
          ClientStompFrame frame = connV12.createFrame("SEND");
          frame.addHeader("destination", getQueuePrefix() + getQueueName());
          frame.addHeader("persistent", "true");
          frame.setBody(body);
-         
+
          for (int i = 0; i < count; i++)
          {
             connV12.sendFrame(frame);
          }
-         
+
          ClientStompFrame subFrame = connV12.createFrame("SUBSCRIBE");
          subFrame.addHeader("id", "a-sub");
          subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
@@ -326,7 +333,7 @@ public class ExtraStompTest extends StompTestBase
          ClientStompFrame unsubFrame = connV12.createFrame("UNSUBSCRIBE");
          unsubFrame.addHeader("id", "a-sub");
          connV12.sendFrame(unsubFrame);
-         
+
          connV12.disconnect();
       }
       catch (Exception ex)
@@ -342,6 +349,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large -> stomp v12 receiver
+   @Test
    public void testReceiveLargePersistentMessagesFromCoreV12() throws Exception
    {
       try
@@ -350,7 +358,7 @@ public class ExtraStompTest extends StompTestBase
          server.start();
 
          setUpAfterServer();
-         
+
          int msgSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
          char[] contents = new char[msgSize];
          for (int i = 0; i < msgSize; i++)
@@ -367,7 +375,7 @@ public class ExtraStompTest extends StompTestBase
 
          StompClientConnection connV12 = StompClientConnectionFactory.createClientConnection("1.2", "localhost", port);
          connV12.connect(defUser, defPass);
-         
+
          ClientStompFrame subFrame = connV12.createFrame("SUBSCRIBE");
          subFrame.addHeader("id", "a-sub");
          subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
@@ -390,7 +398,7 @@ public class ExtraStompTest extends StompTestBase
          ClientStompFrame unsubFrame = connV12.createFrame("UNSUBSCRIBE");
          unsubFrame.addHeader("id", "a-sub");
          connV12.sendFrame(unsubFrame);
-         
+
          connV12.disconnect();
       }
       catch (Exception ex)
@@ -406,6 +414,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large (compressed regular) -> stomp v10 receiver
+   @Test
    public void testReceiveLargeCompressedToRegularPersistentMessagesFromCore() throws Exception
    {
       try
@@ -420,7 +429,7 @@ public class ExtraStompTest extends StompTestBase
 
          char[] contents = input.toArray();
          String msg = new String(contents);
-         
+
          String leadingPart = msg.substring(0, 100);
 
          int count = 10;
@@ -477,6 +486,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large (compressed regular) -> stomp v12 receiver
+   @Test
    public void testReceiveLargeCompressedToRegularPersistentMessagesFromCoreV12() throws Exception
    {
       try
@@ -500,7 +510,7 @@ public class ExtraStompTest extends StompTestBase
 
          StompClientConnection connV12 = StompClientConnectionFactory.createClientConnection("1.2", "localhost", port);
          connV12.connect(defUser, defPass);
-         
+
          ClientStompFrame subFrame = connV12.createFrame("SUBSCRIBE");
          subFrame.addHeader("id", "a-sub");
          subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
@@ -523,7 +533,7 @@ public class ExtraStompTest extends StompTestBase
          ClientStompFrame unsubFrame = connV12.createFrame("UNSUBSCRIBE");
          unsubFrame.addHeader("id", "a-sub");
          connV12.sendFrame(unsubFrame);
-         
+
          connV12.disconnect();
       }
       catch (Exception ex)
@@ -539,6 +549,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large (compressed large) -> stomp v12 receiver
+   @Test
    public void testReceiveLargeCompressedToLargePersistentMessagesFromCoreV12() throws Exception
    {
       try
@@ -563,7 +574,7 @@ public class ExtraStompTest extends StompTestBase
 
          StompClientConnection connV12 = StompClientConnectionFactory.createClientConnection("1.2", "localhost", port);
          connV12.connect(defUser, defPass);
-         
+
          ClientStompFrame subFrame = connV12.createFrame("SUBSCRIBE");
          subFrame.addHeader("id", "a-sub");
          subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
@@ -586,7 +597,7 @@ public class ExtraStompTest extends StompTestBase
          ClientStompFrame unsubFrame = connV12.createFrame("UNSUBSCRIBE");
          unsubFrame.addHeader("id", "a-sub");
          connV12.sendFrame(unsubFrame);
-         
+
          connV12.disconnect();
       }
       catch (Exception ex)
@@ -602,6 +613,7 @@ public class ExtraStompTest extends StompTestBase
    }
 
    //core sender -> large (compressed large) -> stomp v10 receiver
+   @Test
    public void testReceiveLargeCompressedToLargePersistentMessagesFromCore() throws Exception
    {
       try
@@ -617,7 +629,7 @@ public class ExtraStompTest extends StompTestBase
 
          char[] contents = input.toArray();
          String msg = new String(contents);
-         
+
          String leadingPart = msg.substring(0, 100);
 
          int count = 10;
@@ -678,7 +690,7 @@ public class ExtraStompTest extends StompTestBase
       Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
       config.setPersistenceEnabled(true);
-   
+
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
@@ -688,7 +700,7 @@ public class ExtraStompTest extends StompTestBase
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       HornetQServer hornetQServer = HornetQServers.newHornetQServer(config, defUser, defPass);
-   
+
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
                .add(new JMSQueueConfigurationImpl(getQueueName(), null, true, getQueueName()));

@@ -11,8 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.scheduling;
+import org.junit.Before;
 
-import junit.framework.Assert;
+import org.junit.Test;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -50,7 +53,8 @@ public class MultipliedDelayedMessageTest extends ServiceTestBase
    private ServerLocator locator;
 
    @Override
-   protected void setUp() throws Exception
+   @Before
+   public void setUp() throws Exception
    {
       super.setUp();
       initServer();
@@ -78,6 +82,7 @@ public class MultipliedDelayedMessageTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
+   @Test
    public void testMultipliedDelayedRedeliveryOnClose() throws Exception
    {
       ClientSessionFactory sessionFactory = createSessionFactory(locator);

@@ -13,9 +13,11 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.junit.Test;
+
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hornetq.core.version.Version;
 import org.hornetq.tests.util.UnitTestCase;
@@ -38,6 +40,7 @@ public class VersionLoaderTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Test
    public void testLoadVersion() throws Exception
    {
       Version version = VersionLoader.getVersion();

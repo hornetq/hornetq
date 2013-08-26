@@ -13,6 +13,8 @@
 
 package org.hornetq.jms.tests;
 
+import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +36,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  */
 public class TransactedSessionTest extends JMSTestCase
 {
+   @Test
    public void testSimpleRollback() throws Exception
    {
       // send a message
@@ -82,6 +85,7 @@ public class TransactedSessionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testRedeliveredFlagTopic() throws Exception
    {
       Connection conn = null;
@@ -127,6 +131,7 @@ public class TransactedSessionTest extends JMSTestCase
    /**
     * Test redelivery works ok for Topic
     */
+   @Test
    public void testRedeliveredTopic() throws Exception
    {
       Connection conn = null;
@@ -170,6 +175,7 @@ public class TransactedSessionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceivedRollbackTopic() throws Exception
    {
       Connection conn = null;
@@ -228,6 +234,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Send some messages in transacted session. Don't commit.
     * Verify message are not received by consumer.
     */
+   @Test
    public void testSendNoCommitTopic() throws Exception
    {
       Connection conn = null;
@@ -268,6 +275,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Send some messages in transacted session. Commit.
     * Verify message are received by consumer.
     */
+   @Test
    public void testSendCommitTopic() throws Exception
    {
       Connection conn = null;
@@ -323,6 +331,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Close the connection
     * Create a new connection, session and consumer - verify messages are not redelivered
     */
+   @Test
    public void testAckCommitTopic() throws Exception
    {
       Connection conn = null;
@@ -392,6 +401,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Verify messages aren't received by consumer.
     */
 
+   @Test
    public void testSendRollbackTopic() throws Exception
    {
       Connection conn = null;
@@ -434,6 +444,7 @@ public class TransactedSessionTest extends JMSTestCase
    /**
     * Make sure redelivered flag is set on redelivery via rollback
     */
+   @Test
    public void testRedeliveredQueue() throws Exception
    {
       Connection conn = null;
@@ -479,6 +490,7 @@ public class TransactedSessionTest extends JMSTestCase
     * rolled back session and we receive the message whose acknowledgment was cancelled on a new
     * session.
     */
+   @Test
    public void testRedeliveredQueue2() throws Exception
    {
       Connection conn = null;
@@ -534,6 +546,7 @@ public class TransactedSessionTest extends JMSTestCase
       }
    }
 
+   @Test
    public void testReceivedRollbackQueue() throws Exception
    {
       Connection conn = JMSTestCase.cf.createConnection();
@@ -588,6 +601,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Send some messages in transacted session. Don't commit.
     * Verify message are not received by consumer.
     */
+   @Test
    public void testSendNoCommitQueue() throws Exception
    {
       Connection conn = null;
@@ -627,6 +641,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Send some messages in transacted session. Commit.
     * Verify message are received by consumer.
     */
+   @Test
    public void testSendCommitQueue() throws Exception
    {
       Connection conn = null;
@@ -800,6 +815,7 @@ public class TransactedSessionTest extends JMSTestCase
    /**
     * Test IllegateStateException is thrown if commit is called on a non-transacted session
     */
+   @Test
    public void testCommitIllegalState() throws Exception
    {
       Connection conn = null;
@@ -838,6 +854,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Close the connection
     * Create a new connection, session and consumer - verify messages are redelivered
     */
+   @Test
    public void testAckNoCommitQueue() throws Exception
    {
       Connection conn = null;
@@ -918,6 +935,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Close the connection
     * Create a new connection, session and consumer - verify messages are not redelivered
     */
+   @Test
    public void testAckCommitQueue() throws Exception
    {
       Connection conn = null;
@@ -988,6 +1006,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Verify messages aren't received by consumer.
     */
 
+   @Test
    public void testSendRollbackQueue() throws Exception
    {
       Connection conn = null;
@@ -1033,6 +1052,7 @@ public class TransactedSessionTest extends JMSTestCase
     *
     */
 
+   @Test
    public void testRollbackIllegalState() throws Exception
    {
       Connection conn = null;
@@ -1073,6 +1093,7 @@ public class TransactedSessionTest extends JMSTestCase
     *
     */
 
+   @Test
    public void testAckRollbackQueue() throws Exception
    {
       Connection conn = null;
@@ -1152,6 +1173,7 @@ public class TransactedSessionTest extends JMSTestCase
     * Send multiple messages in multiple contiguous sessions
     */
 
+   @Test
    public void testSendMultipleQueue() throws Exception
    {
       Connection conn = null;

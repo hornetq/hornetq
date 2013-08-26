@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-
 import java.util.Arrays;
 import java.util.Enumeration;
 
@@ -39,6 +38,8 @@ import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
@@ -450,6 +451,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    // Public --------------------------------------------------------
 
    @Override
+   @Before
    public void setUp() throws Exception
    {
       super.setUp();
@@ -472,22 +474,10 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       consumerConnection.start();
    }
 
-   @Override
+   @After
    public void tearDown() throws Exception
    {
       producerConnection.close();
       consumerConnection.close();
-
-      super.tearDown();
-
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
