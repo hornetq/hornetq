@@ -4310,6 +4310,8 @@ public class PagingTest extends ServiceTestBase
 
       consumeThread.join();
 
+      assertEquals(0, errors.get());
+
       long timeout = System.currentTimeMillis() + 5000;
 
       while (System.currentTimeMillis() < timeout && (server.getPagingManager().getPageStore(ADDRESS).isPaging() || server.getPagingManager()
