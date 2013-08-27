@@ -149,6 +149,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private NotificationService notificationService;
 
+   private boolean keepConnecting = true;
 
    public BridgeImpl(final ServerLocatorInternal serverLocator,
                      final int reconnectAttempts,
@@ -622,6 +623,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       HornetQServerLogger.LOGGER.bridgeConnectionFailed(me, failedOver);
 
+      synchronized(connectionGuard)
+      {
+         keepConnecting = true;
+      }
+
       try
       {
          if (producer != null)
@@ -869,6 +875,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       synchronized (connectionGuard)
       {
+         if (!keepConnecting) return;
 
          HornetQServerLogger.LOGGER.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
 
@@ -947,6 +954,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                serverLocator.addClusterTopologyListener(new TopologyListener());
             }
 
+            keepConnecting = false;
             return;
          }
          catch (HornetQException e)
@@ -1041,9 +1049,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          HornetQServerLogger.LOGGER.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
       }
-
-      if (futureScheduledReconnection != null && !futureScheduledReconnection.isDone())
-         return;
 
       futureScheduledReconnection =
          scheduledExecutor.schedule(new FutureConnectRunnable(executor, this),
@@ -1149,6 +1154,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             if (csf != null)
             {
                csf.cleanup();
+            }
+
+            synchronized(connectionGuard)
+            {
+               keepConnecting = true;
             }
 
             if (isTrace)
