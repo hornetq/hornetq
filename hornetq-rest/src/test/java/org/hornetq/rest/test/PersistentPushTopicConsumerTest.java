@@ -121,7 +121,7 @@ public class PersistentPushTopicConsumerTest
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
-         Thread.sleep(1000);
+         Thread.sleep(5000);
 
          response = pushSubscription.request().get();
          PushTopicRegistration reg2 = response.getEntity(PushTopicRegistration.class);
