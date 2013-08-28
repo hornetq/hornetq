@@ -87,16 +87,16 @@ cd examples/jms/topic && mvn dependency:list
 
 ## Eclipse
 
-We recommend using Eclipse Indigo (3.7) or Eclipse Juno (4.2), due to the
-built-in support for Maven and Git. Note that there are still some Maven plugins
-used by sub-projects (e.g. documentation) which are not supported even in
-Eclipse Juno (4.2).
+We recommend using Eclipse Kepler (4.3), due to the built-in support
+for Maven and Git. Note that there are still some Maven plugins used
+by sub-projects (e.g. documentation) which are not supported even in
+Eclipse Kepler (4.3).
 
 Eclipse [m2e] is already included in "Eclipse IDE for Java Developers", or it
-can be installed from [Eclipse Juno release repository].
+can be installed from [Eclipse Kepler release repository].
 
 [m2e]: http://eclipse.org/m2e/
-[Eclipse Juno release repository]: http://download.eclipse.org/releases/juno
+[Eclipse Kepler release repository]: http://download.eclipse.org/releases/kepler
 
 ### Annotation Pre-Processing
 
@@ -113,13 +113,21 @@ this [JBoss blog post] for details.
 
 Eclipse Indigo (3.7) has out-of-the-box support for it.
 
-As of this writing, Eclipse Juno (4.2) still lacks support for Maven's javacc
-plugin. See [this post] on the [m2e connector for javacc-maven-plugin] for
-manual installation instructions (as of this writing you need to use the
-development update site).
+As of this writing, Eclipse Kepler (4.3) still lacks support for
+Maven's javacc plugin. The available [m2e connector for
+javacc-maven-plugin] requires a downgrade of Maven components to be
+installed. manual installation instructions (as of this writing you
+need to use the development update site). See [this post] for how to
+do this with Eclipse Juno (4.2).
 
-[this post]: http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
+The current recommended solution for Eclipse Kepler is to mark
+`javacc-maven-plugin` as ignored by Eclipse, run Maven from the
+command line and then modify the project `hornetq-core-client` adding
+the folder `target/generated-sources/javacc` to its build path.
+
 [m2e connector for javacc-maven-plugin]: https://github.com/objectledge/maven-extensions
+[this post]:
+http://dev.eclipse.org/mhonarc/lists/m2e-users/msg02725.html
 
 ### Use _Project Working Sets_
 
@@ -150,12 +158,14 @@ Do not use the [maven-eclipse-plugin] to copy the files as it conflicts with [m2
 
 ## Github procedures
 
-HornetQ accepts contributions through pull requests on GitHub. After review a pull
-request should either get merged or be rejected.
+The best way to submit changes to HornetQ is through pull-request's on
+GitHub. After review a pull request should either get merged or be
+rejected.
 
-When a pull request needs to be reworked, say you have missed something, the pull
-request is then closed, at the time you finished the required changes you should
-reopen your original Pull Request and it will then be re-evaluated. At that point if
-the request is aproved we will then merge it.
+When a pull request needs to be reworked, say you have missed
+something, the pull request is then closed. When you finished
+addressing the required changes you should reopen your original Pull
+Request and it will then be re-evaluated. At that point if the request
+is aproved we will then merge it.
 
 Make sure you always rebase your branch on master before submitting pull requests.
