@@ -182,7 +182,7 @@ public class PersistentPushQueueConsumerTest
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
-         Thread.sleep(1000);
+         Thread.sleep(5000);
 
          response = pushSubscription.request().get();
          PushRegistration reg2 = response.getEntity(PushRegistration.class);
