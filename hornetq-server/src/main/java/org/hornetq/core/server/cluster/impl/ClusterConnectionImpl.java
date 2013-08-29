@@ -952,8 +952,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, true, connector);
-
       String nodeId;
 
       synchronized (this)
@@ -970,6 +968,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          nodeId = serverLocator.getNodeID();
       }
+
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, true, connector);
 
       targetLocator.setReconnectAttempts(0);
 
