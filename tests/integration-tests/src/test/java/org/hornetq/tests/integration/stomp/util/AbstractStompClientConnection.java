@@ -278,9 +278,9 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       }
    }
 
-   public void connect() throws Exception
+   public ClientStompFrame connect() throws Exception
    {
-      connect(null, null);
+      return connect(null, null);
    }
 
    public void destroy()
@@ -298,7 +298,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       }
    }
 
-   public void connect(String username, String password) throws Exception
+   public ClientStompFrame connect(String username, String password) throws Exception
    {
       throw new RuntimeException("connect method not implemented!");
    }

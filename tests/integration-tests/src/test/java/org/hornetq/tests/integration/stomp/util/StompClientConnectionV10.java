@@ -28,7 +28,7 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       super("1.0", host, port);
    }
 
-   public void connect(String username, String passcode) throws IOException, InterruptedException
+   public ClientStompFrame connect(String username, String passcode) throws IOException, InterruptedException
    {
       ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
       frame.addHeader(LOGIN_HEADER, username);
@@ -45,6 +45,7 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
          System.out.println("Connection failed with: " + response);
          connected = false;
       }
+      return response;
    }
 
    public void connect(String username, String passcode, String clientID) throws IOException, InterruptedException

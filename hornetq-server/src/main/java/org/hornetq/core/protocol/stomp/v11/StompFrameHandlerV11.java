@@ -103,9 +103,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          {
             // not valid
             response = new StompFrame(Stomp.Responses.ERROR, true);
-            response.addHeader(Stomp.Headers.Error.VERSION, "1.0,1.1");
-
-            response.setBody("Supported protocol versions are 1.0 and 1.1");
+            response.addHeader(Stomp.Headers.Error.MESSAGE, "Failed to connect");
+            response.setBody("The login account is not valid.");
          }
       }
       catch (HornetQStompException e)
@@ -114,6 +113,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
       catch (UnsupportedEncodingException e)
       {
+         HornetQServerLogger.LOGGER.errorEncodingStompPacket(e);
          response = new HornetQStompException("Encoding error.", e).getFrame();
       }
 
