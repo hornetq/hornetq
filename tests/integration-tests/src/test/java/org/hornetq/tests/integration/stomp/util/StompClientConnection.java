@@ -28,11 +28,11 @@ public interface StompClientConnection
 
    ClientStompFrame receiveFrame(long timeout) throws InterruptedException;;
 
-   void connect() throws Exception;
+   ClientStompFrame connect() throws Exception;
 
    void disconnect() throws IOException, InterruptedException;
 
-   void connect(String defUser, String defPass) throws Exception;
+   ClientStompFrame connect(String defUser, String defPass) throws Exception;
 
    void connect(String defUser, String defPass, String clientId) throws Exception;
 
