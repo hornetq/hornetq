@@ -215,7 +215,15 @@ public enum HornetQExceptionType
          {
             return new HornetQLargeMessageInterruptedException(msg);
          }
-      };
+      },
+      CLUSTER_SECURITY_EXCEPTION(212){
+      @Override
+      public HornetQException createException(String msg)
+      {
+         return new HornetQClusterSecurityException(msg);
+      }
+
+   };
 
    private static final Map<Integer, HornetQExceptionType> TYPE_MAP;
    static
