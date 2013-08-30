@@ -116,6 +116,13 @@ public class StompV11Test extends StompV11TestBase
       assertTrue(conn.isConnected());
 
       conn.disconnect();
+      
+      //invalid user
+      conn = (StompClientConnectionV11) StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      ClientStompFrame frame = conn.connect("invaliduser", defPass);
+      assertFalse(conn.isConnected());
+      assertTrue("ERROR".equals(frame.getCommand()));
+      assertTrue(frame.getBody().contains("The login account is not valid."));
    }
 
    @Test
