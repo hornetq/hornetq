@@ -718,11 +718,11 @@ public final class StompConnection implements RemotingConnection
       }
    }
 
-   public void unsubscribe(String subscriptionID) throws HornetQStompException
+   public void unsubscribe(String subscriptionID, String durableSubscriberName) throws HornetQStompException
    {
       try
       {
-         manager.unsubscribe(this, subscriptionID);
+         manager.unsubscribe(this, subscriptionID, durableSubscriberName);
       }
       catch (HornetQStompException e)
       {
