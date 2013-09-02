@@ -258,17 +258,20 @@ public class StompSession implements SessionCallback
             QueueQueryResult query = session.executeQueueQuery(queue);
             if (!query.isExists())
             {
-               session.createQueue(SimpleString.toSimpleString(destination), queue, null, false, true);
+               session.createQueue(SimpleString.toSimpleString(destination), queue, SimpleString.toSimpleString(selector), false, true);
             }
          }
          else
          {
             queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
-            session.createQueue(SimpleString.toSimpleString(destination), queue, null, true, false);
+            session.createQueue(SimpleString.toSimpleString(destination), queue, SimpleString.toSimpleString(selector), true, false);
          }
+         ((ServerSessionImpl)session).createConsumer(consumerID, queue, null, false, false);
+      } 
+      else 
+      {
+          ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false); 
       }
-      
-      ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false);
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
@@ -285,7 +288,7 @@ public class StompSession implements SessionCallback
       session.start();
    }
 
-   public boolean unsubscribe(String id) throws Exception
+   public boolean unsubscribe(String id, String durableSubscriptionName) throws Exception
    {
       Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
       while (iterator.hasNext())
@@ -297,6 +300,16 @@ public class StompSession implements SessionCallback
          {
             iterator.remove();
             session.closeConsumer(consumerID);
+            SimpleString queueName;
+            if (durableSubscriptionName != null && durableSubscriptionName.trim().length() != 0) {
+                queueName = SimpleString.toSimpleString(id + "." + durableSubscriptionName);
+            } else {
+                queueName = SimpleString.toSimpleString(id);
+            }
+            QueueQueryResult query = session.executeQueueQuery(queueName);
+            if (query.isExists()) {
+               session.deleteQueue(queueName);
+            }
             return true;
          }
       }

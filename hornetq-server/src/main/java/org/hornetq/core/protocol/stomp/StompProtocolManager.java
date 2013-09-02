@@ -396,10 +396,10 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    }
 
    public void unsubscribe(StompConnection connection,
-         String subscriptionID) throws Exception
+         String subscriptionID, String durableSubscriberName) throws Exception
    {
       StompSession stompSession = getSession(connection);
-      boolean unsubscribed = stompSession.unsubscribe(subscriptionID);
+      boolean unsubscribed = stompSession.unsubscribe(subscriptionID, durableSubscriberName);
       if (!unsubscribed)
       {
          throw new HornetQStompException("Cannot unsubscribe as no subscription exists for id: " + subscriptionID);
