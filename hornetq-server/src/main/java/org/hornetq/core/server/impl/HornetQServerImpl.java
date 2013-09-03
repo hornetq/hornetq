@@ -149,6 +149,7 @@ import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.core.version.Version;
+import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
@@ -241,6 +242,8 @@ public class HornetQServerImpl implements HornetQServer
    private volatile StorageManager storageManager;
 
    private volatile RemotingService remotingService;
+
+   private final List<ProtocolManagerFactory> protocolManagerFactories = new ArrayList<>();
 
    private volatile ManagementService managementService;
 
@@ -1521,7 +1524,7 @@ public class HornetQServerImpl implements HornetQServer
 
       clusterManager.deploy();
 
-      remotingService = new RemotingServiceImpl(clusterManager, configuration, this, managementService, scheduledPool);
+      remotingService = new RemotingServiceImpl(clusterManager, configuration, this, managementService, scheduledPool, protocolManagerFactories);
 
       messagingServerControl = managementService.registerServer(postOffice,
          storageManager,
@@ -2910,6 +2913,16 @@ public class HornetQServerImpl implements HornetQServer
       clusterManager.announceBackup();
       backupUpToDate = true;
       backupSyncLatch.countDown();
+   }
+
+   public void addProtocolManagerFactory(ProtocolManagerFactory factory)
+   {
+      protocolManagerFactories.add(factory);
+   }
+
+   public void removeProtocolManagerFactory(ProtocolManagerFactory factory)
+   {
+      protocolManagerFactories.remove(factory);
    }
 
    private final class ReplicationFailureListener implements FailureListener, CloseListener

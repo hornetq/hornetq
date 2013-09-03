@@ -13,6 +13,16 @@
           </xsd:annotation>
         </xsd:element>
 
+        <xsd:element name="resolveProtocols" type="xsd:boolean" default="true" maxOccurs="1"
+                       minOccurs="0">
+           <xsd:annotation hq:linkend="resolveProtocols" hq:field_name="DEFAULT_RESOLVE_PROTOCOLS">
+               <xsd:documentation>If true then the HornetQ Server will make use of any Protocol Managers that are in available
+                   on the classpath. If false then only the core protocol will be available, unless in Embedded mode where
+                   users can inject their own Protocol Managers.
+               </xsd:documentation>
+           </xsd:annotation>
+        </xsd:element>
+
         <xsd:element name="clustered" type="xsd:boolean" default="false" maxOccurs="1"
                      minOccurs="0">
           <xsd:annotation hq:linkend="clusters">

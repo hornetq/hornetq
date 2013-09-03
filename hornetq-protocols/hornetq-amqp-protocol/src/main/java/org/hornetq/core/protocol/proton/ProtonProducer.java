@@ -122,7 +122,7 @@ public class ProtonProducer implements ProtonDeliveryHandler
          }
          catch (Exception e)
          {
-            throw HornetQMessageBundle.BUNDLE.errorCreatingTemporaryQueue(e.getMessage());
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCreatingTemporaryQueue(e.getMessage());
          }
          target.setAddress(queue.toString());
       }
@@ -133,19 +133,19 @@ public class ProtonProducer implements ProtonDeliveryHandler
          String address = target.getAddress();
          if (address == null)
          {
-            throw HornetQMessageBundle.BUNDLE.targetAddressNotSet();
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.targetAddressNotSet();
          }
          try
          {
             QueueQueryResult queryResult = protonSession.getServerSession().executeQueueQuery(new SimpleString(address));
             if (!queryResult.isExists())
             {
-               throw HornetQMessageBundle.BUNDLE.addressDoesntExist();
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.addressDoesntExist();
             }
          }
          catch (Exception e)
          {
-            throw HornetQMessageBundle.BUNDLE.errorFindingTemporaryQueue(e.getMessage());
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorFindingTemporaryQueue(e.getMessage());
          }
       }
    }

@@ -45,6 +45,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
+import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
@@ -243,4 +244,16 @@ public interface HornetQServer extends HornetQComponent
     */
    void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
                          Pair<TransportConfiguration, TransportConfiguration> pair, boolean failBackRequest) throws HornetQException;
+
+   /*
+   * add a ProtocolManagerFactory to be used. Note if @see Configuration#isResolveProtocols is tur then this factory will
+   * replace any factories with the same protocol
+   * */
+   void addProtocolManagerFactory(ProtocolManagerFactory factory);
+
+   /*
+   * add a ProtocolManagerFactory to be used.
+   * */
+   void removeProtocolManagerFactory(ProtocolManagerFactory factory);
+
 }

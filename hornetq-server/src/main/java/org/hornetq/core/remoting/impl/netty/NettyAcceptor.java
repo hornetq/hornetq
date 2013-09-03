@@ -45,6 +45,7 @@ import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
@@ -119,7 +120,9 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean useInvm;
 
-   private final ProtocolType protocol;
+   private final String protocol;
+
+   private final ProtocolManager protocolManager;
 
    private final String host;
 
@@ -177,9 +180,10 @@ public class NettyAcceptor implements Acceptor
                         final BufferDecoder decoder,
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
-                        final ScheduledExecutorService scheduledThreadPool)
+                        final ScheduledExecutorService scheduledThreadPool,
+                        final ProtocolManager protocolManager)
    {
-      this(null, configuration, handler, decoder, listener, threadPool, scheduledThreadPool);
+      this(null, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, protocolManager);
    }
 
 
@@ -189,7 +193,8 @@ public class NettyAcceptor implements Acceptor
                         final BufferDecoder decoder,
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
-                        final ScheduledExecutorService scheduledThreadPool)
+                        final ScheduledExecutorService scheduledThreadPool,
+                        final ProtocolManager protocolManager)
    {
 
       this.clusterConnection = clusterConnection;
@@ -244,10 +249,11 @@ public class NettyAcceptor implements Acceptor
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
                                                        TransportConstants.DEFAULT_USE_INVM,
                                                        configuration);
-      String protocolStr = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
+      protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
                                                                  TransportConstants.DEFAULT_PROTOCOL,
                                                                  configuration);
-      protocol = ProtocolType.valueOf(protocolStr.toUpperCase());
+
+      this.protocolManager = protocolManager;
 
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                    TransportConstants.DEFAULT_HOST,
@@ -404,28 +410,7 @@ public class NettyAcceptor implements Acceptor
                handlers.put("http-handler", httpHandler);
             }
 
-            if (protocol == ProtocolType.CORE)
-            {
-               // Core protocol uses its own optimised decoder
-
-               handlers.put("hornetq-decoder", new HornetQFrameDecoder2());
-            }
-            else if (protocol == ProtocolType.STOMP_WS)
-            {
-               handlers.put("http-decoder", new HttpRequestDecoder());
-               handlers.put("http-aggregator", new HttpChunkAggregator(65536));
-               handlers.put("http-encoder", new HttpResponseEncoder());
-               handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
-               handlers.put("websocket-handler", new WebSocketServerHandler());
-            }
-            else if (protocol == ProtocolType.STOMP || protocol == ProtocolType.AMQP)
-            {
-               //With STOMP & AMQP the decoding is handled in the StompFrame class
-            }
-            else
-            {
-               handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
-            }
+            protocolManager.addChannelHandlers(protocol, handlers, decoder);
 
             handlers.put("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
 
@@ -435,7 +420,7 @@ public class NettyAcceptor implements Acceptor
              * Other protocols can use a faster static channel pipeline directly.
              */
             ChannelPipeline pipeline;
-            if (protocol == ProtocolType.STOMP_WS)
+            if(protocolManager.isSupportsWebsockets(protocol))
             {
                pipeline = new DefaultChannelPipeline();
                for (Entry<String, ChannelHandler> handler : handlers.entrySet())
@@ -725,7 +710,7 @@ public class NettyAcceptor implements Acceptor
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
-         listener.connectionCreated(component, connection, NettyAcceptor.this.protocol);
+         listener.connectionCreated(component, connection, ProtocolType.valueOf(NettyAcceptor.this.protocol));
       }
 
       public void connectionDestroyed(final Object connectionID)

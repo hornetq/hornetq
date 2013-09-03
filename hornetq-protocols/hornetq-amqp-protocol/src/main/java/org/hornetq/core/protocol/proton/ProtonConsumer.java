@@ -35,7 +35,6 @@ import org.apache.qpid.proton.jms.EncodedMessage;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
@@ -86,7 +85,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
       }
       catch (Exception e)
       {
-         throw HornetQMessageBundle.BUNDLE.errorStartingConsumer(e.getMessage());
+         throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorStartingConsumer(e.getMessage());
       }
    }
 
@@ -123,7 +122,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
          }
          catch (Exception e)
          {
-            throw HornetQMessageBundle.BUNDLE.errorCreatingTemporaryQueue(e.getMessage());
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCreatingTemporaryQueue(e.getMessage());
          }
          source.setAddress(queue.toString());
       } else
@@ -133,7 +132,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
          String address = source.getAddress();
          if (address == null)
          {
-            throw HornetQMessageBundle.BUNDLE.sourceAddressNotSet();
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.sourceAddressNotSet();
          }
 
          queue = new SimpleString(source.getAddress());
@@ -144,11 +143,11 @@ public class ProtonConsumer implements ProtonDeliveryHandler
          }
          catch (Exception e)
          {
-            throw HornetQMessageBundle.BUNDLE.errorFindingTemporaryQueue(e.getMessage());
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorFindingTemporaryQueue(e.getMessage());
          }
          if (!queryResult.isExists())
          {
-            throw HornetQMessageBundle.BUNDLE.sourceAddressDoesntExist();
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.sourceAddressDoesntExist();
          }
       }
       boolean browseOnly = source.getDistributionMode() != null && source.getDistributionMode().equals(COPY);
@@ -158,7 +157,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
       }
       catch (Exception e)
       {
-         throw HornetQMessageBundle.BUNDLE.errorCreatingHornetQConsumer(e.getMessage());
+         throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCreatingHornetQConsumer(e.getMessage());
       }
    }
 
@@ -240,7 +239,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
             }
             catch (Exception e)
             {
-               throw HornetQMessageBundle.BUNDLE.errorAcknowledgingMessage(message.getMessageID(), e.getMessage());
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorAcknowledgingMessage(message.getMessageID(), e.getMessage());
             }
          }
          else if (remoteState instanceof Released)
@@ -251,7 +250,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
             }
             catch (Exception e)
             {
-               throw HornetQMessageBundle.BUNDLE.errorCancellingMessage(message.getMessageID(), e.getMessage());
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCancellingMessage(message.getMessageID(), e.getMessage());
             }
          }
          else if (remoteState instanceof Rejected || remoteState instanceof Modified)
@@ -262,7 +261,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
             }
             catch (Exception e)
             {
-               throw HornetQMessageBundle.BUNDLE.errorCancellingMessage(message.getMessageID(), e.getMessage());
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCancellingMessage(message.getMessageID(), e.getMessage());
             }
          }
 

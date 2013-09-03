@@ -17,6 +17,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
+import org.jboss.netty.channel.ChannelHandler;
+
+import java.util.Map;
 
 /**
  * A ProtocolManager
@@ -35,4 +38,7 @@ public interface ProtocolManager extends BufferDecoder
 
    void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
 
+   void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder);
+
+   boolean isSupportsWebsockets(String protocol);
 }
