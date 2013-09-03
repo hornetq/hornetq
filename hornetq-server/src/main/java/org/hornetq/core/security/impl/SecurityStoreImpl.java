@@ -25,8 +25,8 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -116,11 +116,13 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                HornetQServerLogger.LOGGER.trace("Authenticating cluster admin user");
             }
 
-            // The special user cluster user is used for creating sessions that replicate management operation between
-            // nodes
+            /*
+             * The special user cluster user is used for creating sessions that replicate management
+             * operation between nodes
+             */
             if (!managementClusterPassword.equals(password))
             {
-               throw HornetQMessageBundle.BUNDLE.unableToValidateUser(user);
+               throw HornetQMessageBundle.BUNDLE.unableToValidateClusterUser(user);
             }
             else
             {

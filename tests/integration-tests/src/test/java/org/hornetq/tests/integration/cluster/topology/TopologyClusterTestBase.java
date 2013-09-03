@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.topology;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.ArrayList;
@@ -28,18 +23,25 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.HornetQUnBlockedException;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TopologyClusterTestBase
@@ -92,8 +94,6 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
    }
 
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
-
-   private static final long WAIT_TIMEOUT = 5000;
 
    abstract protected ServerLocator createHAServerLocator();
 
@@ -383,6 +383,43 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          {
          assertEquals(HornetQExceptionType.NOT_CONNECTED, expected.getType());
          }
+   }
+
+   @Test
+   public void testWrongPasswordTriggersClusterConnectionStop() throws Exception
+   {
+      Configuration config = servers[4].getConfiguration();
+      for (HornetQServer s : servers)
+      {
+         if (s != null)
+         {
+            s.getConfiguration().setSecurityEnabled(true);
+         }
+      }
+      assertEquals(CLUSTER_PASSWORD, config.getClusterPassword());
+      config.setClusterPassword(config.getClusterPassword() + "-1-2-3-");
+      startServers(0, 1, 2, 4, 3);
+      int n = 0;
+      while (n++ < 10)
+      {
+         if (!servers[4].getClusterManager().isStarted())
+         {
+            break;
+         }
+         Thread.sleep(100);
+      }
+      Assert.assertFalse("cluster manager should stop", servers[4].getClusterManager().isStarted());
+      final String address = "foo1235";
+      ServerLocator locator = createHAServerLocator();
+      ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(config.getClusterUser(), CLUSTER_PASSWORD, false, true, true, false, 1);
+      session.createQueue(address, address, true);
+      ClientProducer producer = session.createProducer(address);
+      sendMessages(session, producer, 100);
+      ClientConsumer consumer = session.createConsumer(address);
+      session.start();
+      receiveMessages(consumer, 0, 100, true);
+
    }
 
    @Test
