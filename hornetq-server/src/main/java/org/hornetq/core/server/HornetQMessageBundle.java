@@ -22,6 +22,7 @@
 package org.hornetq.core.server;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQClusterSecurityException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQDuplicateMetaDataException;
@@ -315,4 +316,9 @@ public interface HornetQMessageBundle
 
    @Message(id = 119081, value =  "No Discovery Group configuration named {0} found", format = Message.Format.MESSAGE_FORMAT)
    HornetQException noDiscoveryGroupFound(DiscoveryGroupConfiguration dg);
+
+   @Message(id = 119099, value = "Unable to authenticate cluster user: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
+   HornetQClusterSecurityException unableToValidateClusterUser(String user);
+
 }
