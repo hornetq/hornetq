@@ -35,9 +35,10 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="file-deployment-enabled" type="xsd:boolean" default="true"
+        <xsd:element name="file-deployment-enabled" type="xsd:boolean" default="false"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="using-server.configuration">
+          <xsd:annotation hq:linkend="using-server.configuration"
+                          hq:field_name="DEFAULT_FILE_DEPLOYMENT_ENABLED">
             <xsd:documentation>true means that the server will load configuration from the
             configuration files
             </xsd:documentation>
@@ -46,7 +47,7 @@
 
         <xsd:element name="persistence-enabled" type="xsd:boolean" default="true"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="persistence.enabled">
+          <xsd:annotation hq:linkend="persistence.enabled" hq:field_name="DEFAULT_PERSISTENCE_ENABLED">
             <xsd:documentation>true means that the server will use the file based journal for
               persistence.
             </xsd:documentation>
@@ -55,16 +56,18 @@
 
         <xsd:element name="scheduled-thread-pool-max-size" type="xsd:int" default="5"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="server.scheduled.thread.pool">
+          <xsd:annotation hq:linkend="server.scheduled.thread.pool"
+                          hq:field_name="DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE">
             <xsd:documentation>
               Maximum number of threads to use for the scheduled thread pool
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="thread-pool-max-size" type="xsd:int" default="-1" maxOccurs="1"
+        <xsd:element name="thread-pool-max-size" type="xsd:int" default="30" maxOccurs="1"
                      minOccurs="0">
-          <xsd:annotation hq:linkend="server.scheduled.thread.pool">
+          <xsd:annotation hq:linkend="server.scheduled.thread.pool"
+                          hq:field_name="DEFAULT_THREAD_POOL_MAX_SIZE">
             <xsd:documentation>
               Maximum number of threads to use for the thread pool. -1 means 'no limits'.
             </xsd:documentation>
@@ -73,7 +76,7 @@
 
         <xsd:element name="security-enabled" type="xsd:boolean" default="true"
           maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="security">
+          <xsd:annotation hq:linkend="security" hq:field_name="DEFAULT_SECURITY_ENABLED" >
             <xsd:documentation>true means that security is enabled</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -95,16 +98,21 @@
 
         <xsd:element name="management-address" type="xsd:string" default="jms.queue.hornetq.management"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="management.core.configuration">
+          <xsd:annotation hq:linkend="management.core.configuration"
+                          hq:field_name="DEFAULT_MANAGEMENT_ADDRESS"
+                          hq:type="SimpleString">
             <xsd:documentation>
-              the name of the management address to send management messages to
+              the name of the management address to send management messages to. It is prefixed with
+              "jms.queue" so that JMS clients can send messages to it.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="management-notification-address" type="xsd:string" default="hornetq.notifications"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="management.notifications.core.configuration">
+          <xsd:annotation hq:linkend="management.notifications.core.configuration"
+                          hq:field_name="DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS"
+                          hq:type="SimpleString">
             <xsd:documentation>the name of the address that consumers bind to receive management
             notifications
             </xsd:documentation>
@@ -121,7 +129,7 @@
 
         <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string"
                      default="CHANGE ME!!">
-          <xsd:annotation hq:linkend="clusters">
+          <xsd:annotation hq:linkend="clusters" hq:field_name="DEFAULT_CLUSTER_PASSWORD">
             <xsd:documentation>Cluster password. It applies to all cluster configurations.
             </xsd:documentation>
           </xsd:annotation>
@@ -166,14 +174,15 @@
         </xsd:element>
 
         <xsd:element name="jmx-management-enabled" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="management.jmx.configuration">
+          <xsd:annotation hq:linkend="management.jmx.configuration"
+                           hq:field_name="DEFAULT_JMX_MANAGEMENT_ENABLED">
             <xsd:documentation>true means that the management API is available via JMX
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="jmx-domain" type="xsd:string" default="org.hornetq" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="management.jmx.configuration">
+          <xsd:annotation hq:linkend="management.jmx.configuration" hq:field_name="DEFAULT_JMX_DOMAIN">
             <xsd:documentation>the JMX domain used to registered HornetQ MBeans in the MBeanServer
             </xsd:documentation>
           </xsd:annotation>
@@ -201,7 +210,8 @@
 
         <xsd:element name="connection-ttl-override" type="xsd:long" default="-1"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="connection-ttl.override">
+          <xsd:annotation hq:linkend="connection-ttl.override"
+                          hq:field_name="DEFAULT_CONNECTION_TTL_OVERRIDE">
             <xsd:documentation>
               if set, this will override how long (in ms) to keep a connection alive without
               receiving a ping. -1 disables this setting.
@@ -211,7 +221,8 @@
 
         <xsd:element name="async-connection-execution-enabled" type="xsd:boolean"
                      default="true" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="connection-ttl.async-connection-execution">
+          <xsd:annotation hq:linkend="connection-ttl.async-connection-execution"
+                          hq:field_name="DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED">
             <xsd:documentation>Should incoming packets on the server be handed off to a thread from
             the thread pool for processing or should they be handled on the remoting thread?
             </xsd:documentation>
@@ -235,7 +246,8 @@
         </xsd:element>
 
         <xsd:element name="message-expiry-scan-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.expiry.reaper">
+          <xsd:annotation hq:linkend="configuring.expiry.reaper"
+                          hq:field_name="DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD">
             <xsd:documentation>how often (in ms) to scan for expired messages
             </xsd:documentation>
           </xsd:annotation>
@@ -243,22 +255,22 @@
 
         <xsd:element name="message-expiry-thread-priority" type="xsd:int" default="3"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.expiry.reaper">
+          <xsd:annotation hq:linkend="configuring.expiry.reaper" hq:field_name="DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY">
             <xsd:documentation>the priority of the thread expiring messages
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="id-cache-size" type="xsd:int" default="2000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="duplicate.id.cache">
-            <xsd:documentation>the size of the cache for pre-creating message id's
+        <xsd:element name="id-cache-size" type="xsd:int" default="20000" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="duplicate.id.cache" hq:field_name="DEFAULT_ID_CACHE_SIZE">
+            <xsd:documentation>the size of the cache for pre-creating message ID's
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="persist-id-cache" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="duplicate.id.cache">
-            <xsd:documentation>true means that id's are persisted to the journal
+          <xsd:annotation hq:linkend="duplicate.id.cache" hq:field_name="DEFAULT_PERSIST_ID_CACHE">
+            <xsd:documentation>true means that ID's are persisted to the journal
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -290,14 +302,14 @@
         </xsd:element>
 
         <xsd:element name="backup" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha">
-            <xsd:documentation>whether this server a backup server
+          <xsd:annotation hq:linkend="ha" hq:field_name="DEFAULT_BACKUP">
+            <xsd:documentation>whether this server is a backup server
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="allow-failback" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back">
+        <xsd:element name="allow-failback" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_ALLOW_AUTO_FAILBACK">
             <xsd:documentation>
               Whether a server will automatically stop when a another places a request to take over
               its place.  The use case is when a regular server stops and its backup takes over its
@@ -317,13 +329,14 @@
         </xsd:element>
 
         <xsd:element name="failback-delay" type="xsd:long" default="5000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)">
+          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)"
+                          hq:field_name="DEFAULT_FAILBACK_DELAY">
             <xsd:documentation>delay to wait before fail-back occurs on (live's) restart</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="failover-on-shutdown" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back">
+          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN">
             <xsd:documentation>
               Will this backup server come live on a normal server shutdown
             </xsd:documentation>
@@ -331,8 +344,8 @@
         </xsd:element>
 
         <xsd:element name="shared-store" type="xsd:boolean" default="true"  maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
-            <xsd:documentation hq:linkend="ha.mode.shared">
+          <xsd:annotation hq:linkend="ha.mode.shared" hq:field_name="DEFAULT_SHARED_STORE">
+            <xsd:documentation>
               'shared-store' applies to live and backup pairs, and it indicates if the live/backup
               pair share storage or if the data is replicated among them.
             </xsd:documentation>
@@ -340,7 +353,8 @@
         </xsd:element>
 
         <xsd:element name="persist-delivery-count-before-delivery" type="xsd:boolean" default="false"  maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.delivery.count.persistence">
+          <xsd:annotation hq:linkend="configuring.delivery.count.persistence"
+                          hq:field_name="DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY">
             <xsd:documentation>True means that the delivery count is persisted before delivery.
             False means that this only happens after a message has been cancelled.
             </xsd:documentation>
@@ -588,7 +602,7 @@
 
         <xsd:element name="journal-buffer-size" type="xsd:long" default="501760" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.journal.journal-buffer-size"
-          hq:default="(490 KiB)">
+                          hq:default="(490 KiB)">
             <xsd:documentation>The size of the internal buffer on the journal in KiB.
             </xsd:documentation>
           </xsd:annotation>
@@ -614,7 +628,7 @@
 
         <xsd:element name="log-journal-write-rate" type="xsd:boolean" default="false"
                      maxOccurs="1" minOccurs="0">
-          <xsd:annotation>
+          <xsd:annotation hq:field_name="DEFAULT_JOURNAL_LOG_WRITE_RATE">
             <xsd:documentation>Whether to log messages about the journal write rate</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -628,14 +642,16 @@
         </xsd:element>
 
         <xsd:element name="journal-min-files" type="xsd:int" default="2"  maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.journal.journal-min-files">
+          <xsd:annotation hq:linkend="configuring.message.journal.journal-min-files"
+                          hq:field_name="DEFAULT_JOURNAL_MIN_FILES">
             <xsd:documentation>how many journal files to pre-create
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="journal-compact-percentage" type="xsd:int" default="30" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-percentage">
+          <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-percentage"
+                          hq:field_name="DEFAULT_JOURNAL_COMPACT_PERCENTAGE">
             <xsd:documentation>The percentage of live data on which we consider compacting the
             journal
             </xsd:documentation>
@@ -643,7 +659,8 @@
         </xsd:element>
 
         <xsd:element name="journal-compact-min-files" type="xsd:int" default="10" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-min-files">
+          <xsd:annotation hq:linkend="configuring.message.journal.journal-compact-min-files"
+                          hq:field_name="DEFAULT_JOURNAL_COMPACT_MIN_FILES">
             <xsd:documentation>The minimal number of data files before we can start compacting
             </xsd:documentation>
           </xsd:annotation>
@@ -657,35 +674,37 @@
         </xsd:element>
 
         <xsd:element name="perf-blast-pages" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="XXX">
+          <xsd:annotation hq:linkend="XXX" hq:field_name="DEFAULT_JOURNAL_PERF_BLAST_PAGES">
             <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="run-sync-speed-test" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="XXX">
+          <xsd:annotation hq:linkend="XXX" hq:field_name="DEFAULT_RUN_SYNC_SPEED_TEST">
             <xsd:documentation>XXX Only meant to be used by project developers</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="server-dump-interval" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="XXX" hq:default="(ms)">
+          <xsd:annotation hq:linkend="XXX" hq:default="(ms)"
+                          hq:field_name="DEFAULT_SERVER_DUMP_INTERVAL">
             <xsd:documentation>Interval to log server specific information (e.g. memory usage
             etc)</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="memory-warning-threshold" type="xsd:int" default="25" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="perf-tuning.memory">
+          <xsd:annotation hq:linkend="perf-tuning.memory"
+                          hq:field_name="DEFAULT_MEMORY_WARNING_THRESHOLD">
             <xsd:documentation>Percentage of available memory which will trigger a warning log
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="memory-measure-interval" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="perf-tuning.memory" hq:default="(ms)">
-            <xsd:documentation>frequency to sample JVM memory in ms (or -1 to disable memory
-            sampling)</xsd:documentation>
+          <xsd:annotation hq:linkend="perf-tuning.memory" hq:default="(ms)"
+                          hq:field_name="DEFAULT_MEMORY_MEASURE_INTERVAL">
+            <xsd:documentation>frequency to sample JVM memory in ms (or -1 to disable memory sampling)</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -795,7 +814,7 @@
         </xsd:element>
 
         <xsd:element name="broadcast-period" type="xsd:long" default="2000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:default="(in milliseconds)">
+          <xsd:annotation hq:default="(in milliseconds)" hq:field_name="DEFAULT_BROADCAST_PERIOD">
             <xsd:documentation>period in milliseconds between consecutive broadcasts</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -910,7 +929,6 @@
     </xsd:attribute>
   </xsd:complexType>
 
-
   <!-- BRIDGE CONFIGURATION -->
   <xsd:complexType name="bridgeType">
     <xsd:sequence>
@@ -970,13 +988,13 @@
       </xsd:element>
 
       <xsd:element name="retry-interval-multiplier" type="xsd:double" default="1" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_RETRY_INTERVAL_MULTIPLIER">
           <xsd:documentation>multiplier to apply to successive retry intervals</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="max-retry-interval" type="xsd:long"         maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+      <xsd:element name="max-retry-interval" type="xsd:long" default="2000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:field_name="DEFAULT_MAX_RETRY_INTERVAL">
           <xsd:documentation>Limit to the retry-interval growth (due to retry-interval-multiplier)</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1020,10 +1038,13 @@
         </xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="reconnect-attempts-same-node" type="xsd:int" maxOccurs="1" minOccurs="0">
-        <xsd:annotation hq:default="(int, 10)"  hq:field_name="DEFAULT_BRIDGE_CONNECT_SAME_NODE">
-          <xsd:documentation>Upon reconnection this configures the number of time the same node on the topology will
-                              be retried before reseting the server locator and using the initial connectors</xsd:documentation>
+      <xsd:element name="reconnect-attempts-same-node" default="10" type="xsd:int"
+                   maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(int, 10)" hq:field_name="DEFAULT_BRIDGE_CONNECT_SAME_NODE">
+          <xsd:documentation>
+            Upon reconnection this configures the number of time the same node on the topology will
+            be retried before reseting the server locator and using the initial
+            connectors</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
@@ -1100,7 +1121,7 @@
       </xsd:element>
 
       <xsd:element name="retry-interval" type="xsd:long" default="500" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_RETRY_INTERVAL">
           <xsd:documentation>period (in ms) between successive retries</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1125,21 +1146,21 @@
       </xsd:element>
 
       <xsd:element name="use-duplicate-detection" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_DUPLICATE_DETECTION">
           <xsd:documentation>should duplicate detection headers be inserted in forwarded
           messages?</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
       <xsd:element name="forward-when-no-consumers" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS">
           <xsd:documentation>should messages be load balanced if there are no matching consumers on
           target?</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
       <xsd:element name="max-hops" type="xsd:int" default="1" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_MAX_HOPS">
           <xsd:documentation>maximum number of hops cluster topology is
           propagated</xsd:documentation>
         </xsd:annotation>
@@ -1160,14 +1181,14 @@
       </xsd:element>
 
       <xsd:element name="notification-interval" type="xsd:long" default="1000" maxOccurs="1" minOccurs="0">
-        <xsd:annotation hq:default="(ms)">
+        <xsd:annotation hq:default="(ms)" hq:field_name="DEFAULT_CLUSTER_NOTIFICATION_INTERVAL">
           <xsd:documentation>
             how often the cluster connection will notify the cluster of its existence right after joining the cluster
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="notification-attempts" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
-        <xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS">
           <xsd:documentation>
             how many times this cluster connection will notify the cluster of its existence right after joining the cluster
           </xsd:documentation>

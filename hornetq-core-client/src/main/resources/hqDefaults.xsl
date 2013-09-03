@@ -51,14 +51,14 @@
     // Following fields are generated from the hornetq-schema.xsd annotations
     // -------------------------------------------------------------------&#xa;</xsl:text>
 
-        <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element[ xsd:annotation/@hq:field_name ]">
+        <xsl:for-each select="xsd:schema//xsd:complexType//xsd:element[ xsd:annotation/@hq:field_name ]">
    // <xsl:value-of select="normalize-space(xsd:annotation/xsd:documentation)"/>
    private static <xsl:call-template name="determine-type"/><xsl:text> </xsl:text><xsl:value-of select="xsd:annotation/@hq:field_name"/> = <xsl:call-template name="quote-default-value"/>;
 </xsl:for-each>
 
 <xsl:text>&#xa;&#xa;</xsl:text>
 
-        <xsl:for-each select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element[ xsd:annotation/@hq:field_name ]">
+        <xsl:for-each select="xsd:schema//xsd:complexType//xsd:element[ xsd:annotation/@hq:field_name ]">
 
 <xsl:text>   /**&#xa;    * </xsl:text>
 <xsl:value-of select="normalize-space(xsd:annotation/xsd:documentation)"/>
@@ -76,6 +76,12 @@
     <xsl:text>;
    &#125;&#xa;</xsl:text>
         </xsl:for-each>
+<xsl:text>
+   private static long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = getDefaultClientFailureCheckPeriod();
+   private static long DEFAULT_CLUSTER_CONNECTION_TTL = getDefaultConnectionTtl();
+   private static double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = getDefaultRetryIntervalMultiplier();
+   private static long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = getDefaultMaxRetryInterval();
+</xsl:text>
     <xsl:text>
 &#125;&#xa;</xsl:text>
   </xsl:template>
@@ -92,6 +98,9 @@
 
 <xsl:template name="quote-default-value">
   <xsl:choose>
+    <xsl:when test="xsd:annotation/@hq:type='SimpleString'">
+      <xsl:value-of select="concat( 'new SimpleString(&#34;', @default, '&#34;)')"/>
+    </xsl:when>
     <xsl:when test="@type='xsd:string'">
       <xsl:value-of select="concat( '&#34;', @default, '&#34;')"/>
     </xsl:when>
