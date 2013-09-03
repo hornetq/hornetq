@@ -31,6 +31,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -43,7 +45,10 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
@@ -56,6 +61,7 @@ import org.hornetq.core.server.cluster.impl.ClusterConnectionBridge;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
@@ -585,6 +591,9 @@ public final class ClusterManager implements HornetQComponent
       // since the Bridge is supposed to be non-blocking and fast
       // We may expose this if we find a good use case
       serverLocator.setCallTimeout(config.getCallTimeout());
+
+      serverLocator.addIncomingInterceptor(new IncomingInterceptorLookingForExceptionMessage(this, executor));
+
       if (!config.isUseDuplicateDetection())
       {
          HornetQServerLogger.LOGGER.debug("Bridge " + config.getName() +
@@ -619,6 +628,52 @@ public final class ClusterManager implements HornetQComponent
 
       bridge.start();
 
+   }
+
+   public static class IncomingInterceptorLookingForExceptionMessage implements Interceptor
+   {
+      private final ClusterManager manager;
+      private final Executor executor;
+
+      /**
+       * @param manager
+       * @param executor
+       */
+      public IncomingInterceptorLookingForExceptionMessage(ClusterManager manager, Executor executor)
+      {
+         this.manager = manager;
+         this.executor = executor;
+      }
+
+      @Override
+      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.EXCEPTION)
+         {
+            HornetQExceptionMessage msg = (HornetQExceptionMessage)packet;
+            final HornetQException exception = msg.getException();
+            if (exception.getType() == HornetQExceptionType.CLUSTER_SECURITY_EXCEPTION)
+            {
+               executor.execute(new Runnable()
+               {
+                  @Override
+                  public void run()
+                  {
+                     try
+                     {
+                        manager.stop();
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+
+               });
+            }
+         }
+         return true;
+      }
    }
 
    public void destroyBridge(final String name) throws Exception

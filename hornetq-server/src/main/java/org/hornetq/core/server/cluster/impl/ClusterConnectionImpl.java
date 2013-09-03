@@ -60,6 +60,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.ClusterManager.IncomingInterceptorLookingForExceptionMessage;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
@@ -952,8 +953,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, true, connector);
-
       String nodeId;
 
       synchronized (this)
@@ -970,6 +969,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          nodeId = serverLocator.getNodeID();
       }
+
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, true, connector);
 
       targetLocator.setReconnectAttempts(0);
 
@@ -1002,7 +1003,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
 
       targetLocator.disableFinalizeCheck();
-
+      targetLocator.addIncomingInterceptor(new IncomingInterceptorLookingForExceptionMessage(
+                                                                                             manager,
+                                                                                             executorFactory.getExecutor()));
       MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetLocator,
                                                                eventUID,
                                                                targetNodeID,
