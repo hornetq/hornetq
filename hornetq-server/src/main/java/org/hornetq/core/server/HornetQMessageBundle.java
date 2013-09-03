@@ -22,6 +22,7 @@
 package org.hornetq.core.server;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQClusterSecurityException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQDuplicateMetaDataException;
@@ -39,7 +40,6 @@ import org.hornetq.api.core.HornetQSessionCreationException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
-import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInternalErrorException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInvalidFieldException;
@@ -365,11 +365,15 @@ public interface HornetQMessageBundle
 
    @Message(id = 119096, value =  "not implemented: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQAMQPNotImplementedException notImplemented(String message);
-   
+
    @Message(id = 119097, value =  "Queue {0} already exists on another subscription", format = Message.Format.MESSAGE_FORMAT)
    HornetQInvalidTransientQueueUseException queueSubscriptionBelongsToDifferentAddress(SimpleString queueName);
 
    @Message(id = 119098, value =  "Queue {0} has a different filter than requested", format = Message.Format.MESSAGE_FORMAT)
    HornetQInvalidTransientQueueUseException queueSubscriptionBelongsToDifferentFilter(SimpleString queueName);
-   
+
+   @Message(id = 119099, value = "Unable to authenticate cluster user: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
+   HornetQClusterSecurityException unableToValidateClusterUser(String user);
+
 }
