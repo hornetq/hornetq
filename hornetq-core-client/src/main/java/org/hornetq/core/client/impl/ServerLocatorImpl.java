@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.security.AccessController;
@@ -544,6 +545,51 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+   private ServerLocatorImpl(ServerLocatorImpl locator)
+   {
+      ha = locator.ha;
+      finalizeCheck = locator.finalizeCheck;
+      clusterConnection = locator.clusterConnection;
+      initialConnectors = locator.initialConnectors;
+      discoveryGroupConfiguration = locator.discoveryGroupConfiguration;
+      topology = locator.topology;
+      topologyArray = locator.topologyArray;
+      receivedTopology = locator.receivedTopology;
+      compressLargeMessage = locator.compressLargeMessage;
+      cacheLargeMessagesClient = locator.cacheLargeMessagesClient;
+      clientFailureCheckPeriod = locator.clientFailureCheckPeriod;
+      connectionTTL = locator.connectionTTL;
+      callTimeout = locator.callTimeout;
+      callFailoverTimeout = locator.callFailoverTimeout;
+      minLargeMessageSize = locator.minLargeMessageSize;
+      consumerWindowSize = locator.consumerWindowSize;
+      consumerMaxRate = locator.consumerMaxRate;
+      confirmationWindowSize = locator.confirmationWindowSize;
+      producerWindowSize = locator.producerWindowSize;
+      producerMaxRate = locator.producerMaxRate;
+      blockOnAcknowledge = locator.blockOnAcknowledge;
+      blockOnDurableSend = locator.blockOnDurableSend;
+      blockOnNonDurableSend = locator.blockOnNonDurableSend;
+      autoGroup = locator.autoGroup;
+      preAcknowledge = locator.preAcknowledge;
+      connectionLoadBalancingPolicyClassName = locator.connectionLoadBalancingPolicyClassName;
+      ackBatchSize = locator.ackBatchSize;
+      useGlobalPools = locator.useGlobalPools;
+      scheduledThreadPoolMaxSize = locator.scheduledThreadPoolMaxSize;
+      threadPoolMaxSize = locator.threadPoolMaxSize;
+      retryInterval = locator.retryInterval;
+      retryIntervalMultiplier = locator.retryIntervalMultiplier;
+      maxRetryInterval = locator.maxRetryInterval;
+      reconnectAttempts = locator.reconnectAttempts;
+      initialConnectAttempts = locator.initialConnectAttempts;
+      failoverOnInitialConnection = locator.failoverOnInitialConnection;
+      initialMessagePacketSize = locator.initialMessagePacketSize;
+      startExecutor = locator.startExecutor;
+      afterConnectListener = locator.afterConnectListener;
+      groupID = locator.groupID;
+      nodeID = locator.nodeID;
+      clusterTransportConfiguration = locator.clusterTransportConfiguration;
+   }
 
    private synchronized TransportConfiguration selectConnector()
    {
@@ -2001,5 +2047,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          return state != STATE.INITIALIZED;
       }
+   }
+
+   private Object writeReplace() throws ObjectStreamException
+   {
+      ServerLocatorImpl clone = new ServerLocatorImpl(this);
+      return clone;
    }
 }
