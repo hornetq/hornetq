@@ -19,6 +19,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
+import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
  * A CoreProtocolManagerFactory
@@ -29,8 +30,18 @@ import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
  */
 public class CoreProtocolManagerFactory implements ProtocolManagerFactory
 {
+   final static String CORE_PROTOCOL_NAME = "CORE";
+
+   private static String[] SUPPORTED_PROTOCOLS = {CORE_PROTOCOL_NAME};
+
    public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {
       return new CoreProtocolManager(server, incomingInterceptors, outgoingInterceptors);
+   }
+
+   @Override
+   public String[] getProtocols()
+   {
+      return SUPPORTED_PROTOCOLS;
    }
 }

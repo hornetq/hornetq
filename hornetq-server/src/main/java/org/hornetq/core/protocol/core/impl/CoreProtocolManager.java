@@ -44,6 +44,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -51,6 +52,7 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.api.core.Pair;
 
@@ -134,6 +136,18 @@ class CoreProtocolManager implements ProtocolManager
 
    public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
    {
+   }
+
+   @Override
+   public void addChannelHandlers(String protocol, Map<String, org.jboss.netty.channel.ChannelHandler> handlers, BufferDecoder decoder)
+   {
+      handlers.put("hornetq-decoder", new HornetQFrameDecoder2());
+   }
+
+   @Override
+   public boolean isSupportsWebsockets(String protocol)
+   {
+      return false;
    }
 
    // This is never called using the core protocol, since we override the HornetQFrameDecoder with our core

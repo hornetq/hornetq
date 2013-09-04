@@ -117,7 +117,7 @@ public class ProtonSession implements SessionCallback
          }
          catch (Exception e)
          {
-            throw HornetQMessageBundle.BUNDLE.errorCreatingHornetQSession(e.getMessage());
+            throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCreatingHornetQSession(e.getMessage());
          }
       }
    }
@@ -307,7 +307,7 @@ public class ProtonSession implements SessionCallback
       }
       catch (Exception e)
       {
-         throw HornetQMessageBundle.BUNDLE.errorClosingConsumer(consumerID, e.getMessage());
+         throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorClosingConsumer(consumerID, e.getMessage());
       }
    }
 

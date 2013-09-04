@@ -926,4 +926,17 @@ public interface Configuration extends Serializable
     * @return name of the cluster configuration to use
     */
    String getReplicationClustername();
+
+   /*
+   * Whether or not that HornetQ should use all protocols available on the classpath. If false only the core protocol will
+   * be set, any other protocols will need to be set directly on the HornetQServer
+   * */
+   void setResolveProtocols(boolean resolveProtocols);
+
+   /*
+   * @see #setResolveProtocols()
+   * @return whether HornetQ should resolve and use any Protocols available on the classpath
+   * Default value is {@value HornetQDefaultConfiguration#DEFAULT_RESOLVE_PROTOCOLS}.
+   * */
+   boolean isResolveProtocols();
 }

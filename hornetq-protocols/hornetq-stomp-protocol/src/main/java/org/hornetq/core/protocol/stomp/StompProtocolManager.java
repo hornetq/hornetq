@@ -30,6 +30,7 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
@@ -42,11 +43,16 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
+import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
+import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 
 /**
  * StompProtocolManager
@@ -167,6 +173,25 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       } while (conn.hasBytes());
    }
 
+   @Override
+   public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
+   {
+      if (StompProtocolManagerFactory.STOMP_WS_PROTOCOL_NAME.contentEquals(protocol))
+      {
+         handlers.put("http-decoder", new HttpRequestDecoder());
+         handlers.put("http-aggregator", new HttpChunkAggregator(65536));
+         handlers.put("http-encoder", new HttpResponseEncoder());
+         handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
+         handlers.put("websocket-handler", new WebSocketServerHandler());
+      }
+   }
+
+   @Override
+   public boolean isSupportsWebsockets(String protocol)
+   {
+      return StompProtocolManagerFactory.STOMP_WS_PROTOCOL_NAME.equals(protocol);
+   }
+
    // Public --------------------------------------------------------
 
    public boolean send(final StompConnection connection, final StompFrame frame)
@@ -179,7 +204,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       {
          if (connection.isDestroyed())
          {
-            HornetQServerLogger.LOGGER.connectionClosed(connection);
+            HornetQStompProtocolLogger.LOGGER.connectionClosed(connection);
             return false;
          }
 
@@ -189,7 +214,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          }
          catch (Exception e)
          {
-            HornetQServerLogger.LOGGER.errorSendingFrame(e, frame);
+            HornetQStompProtocolLogger.LOGGER.errorSendingFrame(e, frame);
             return false;
          }
          return true;

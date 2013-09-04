@@ -53,11 +53,14 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
+import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.UUIDGenerator;
+import org.jboss.netty.channel.ChannelHandler;
 
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * A proton protocol manager, basically reads the Proton Input and maps proton resources to HornetQ resources
@@ -113,6 +116,18 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
       buffer.readBytes(frame);
 
       protonRemotingConnection.handleFrame(frame);
+   }
+
+   @Override
+   public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
+   {
+      //we dont need any we do our own decoding
+   }
+
+   @Override
+   public boolean isSupportsWebsockets(String protocol)
+   {
+      return false;
    }
 
    @Override
@@ -298,7 +313,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
             }
             catch (Exception e)
             {
-               throw HornetQMessageBundle.BUNDLE.errorRollingbackCoordinator(e.getMessage());
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorRollingbackCoordinator(e.getMessage());
             }
          }
          else
@@ -309,7 +324,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
             }
             catch (Exception e)
             {
-               throw HornetQMessageBundle.BUNDLE.errorCommittingCoordinator(e.getMessage());
+               throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCommittingCoordinator(e.getMessage());
             }
          }
          delivery.settle();
