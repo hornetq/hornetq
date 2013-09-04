@@ -213,6 +213,8 @@ public class ConfigurationImpl implements Configuration
 
    private String replicationClusterName;
 
+   private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1035,6 +1037,18 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
+   public void setResolveProtocols(boolean resolveProtocols)
+   {
+      this.resolveProtocols = resolveProtocols;
+   }
+
+   @Override
+   public boolean isResolveProtocols()
+   {
+      return resolveProtocols;
+   }
+
+   @Override
    public int hashCode()
    {
       final int prime = 31;
@@ -1123,6 +1137,7 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (int)(transactionTimeout ^ (transactionTimeout >>> 32));
       result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
       result = prime * result + (wildcardRoutingEnabled ? 1231 : 1237);
+      result = prime * result + (resolveProtocols ? 1231 : 1237);
       return result;
    }
 
@@ -1417,6 +1432,8 @@ public class ConfigurationImpl implements Configuration
       if (transactionTimeoutScanPeriod != other.transactionTimeoutScanPeriod)
          return false;
       if (wildcardRoutingEnabled != other.wildcardRoutingEnabled)
+         return false;
+      if (resolveProtocols != other.resolveProtocols)
          return false;
       return true;
    }

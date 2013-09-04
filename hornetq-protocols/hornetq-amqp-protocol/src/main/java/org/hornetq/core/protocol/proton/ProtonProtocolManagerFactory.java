@@ -33,9 +33,19 @@ import java.util.List;
  */
 public class ProtonProtocolManagerFactory implements ProtocolManagerFactory
 {
+   private final static String AMQP_PROTOCOL_NAME = "AMQP";
+
+   private static String[] SUPPORTED_PROTOCOLS = {AMQP_PROTOCOL_NAME};
+
    @Override
    public ProtocolManager createProtocolManager(HornetQServer server, List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {
       return new ProtonProtocolManager(server);
+   }
+
+   @Override
+   public String[] getProtocols()
+   {
+      return SUPPORTED_PROTOCOLS;
    }
 }

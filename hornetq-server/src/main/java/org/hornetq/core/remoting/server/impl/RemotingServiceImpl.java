@@ -17,9 +17,11 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -38,8 +40,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
-import org.hornetq.core.protocol.proton.ProtonProtocolManagerFactory;
-import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -54,6 +54,7 @@ import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
+import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -104,7 +105,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final ClusterManager clusterManager;
 
-   private final Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
+   private final Map<String, ProtocolManager> protocolMap = new ConcurrentHashMap();
 
    private HornetQPrincipal defaultInvmSecurityPrincipal;
 
@@ -116,7 +117,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                               final Configuration config,
                               final HornetQServer server,
                               final ManagementService managementService,
-                              final ScheduledExecutorService scheduledThreadPool)
+                              final ScheduledExecutorService scheduledThreadPool, List<ProtocolManagerFactory> protocolManagerFactories)
    {
       acceptorsConfig = config.getAcceptorConfigurations();
 
@@ -151,15 +152,38 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.scheduledThreadPool = scheduledThreadPool;
 
-      this.protocolMap.put(ProtocolType.CORE,
-                           new CoreProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
-      // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
-      this.protocolMap.put(ProtocolType.STOMP,
-                           new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
-      this.protocolMap.put(ProtocolType.STOMP_WS,
-                           new StompProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
-      this.protocolMap.put(ProtocolType.AMQP,
-                           new ProtonProtocolManagerFactory().createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+      CoreProtocolManagerFactory coreProtocolManagerFactory = new CoreProtocolManagerFactory();
+      //i know there is only 1
+      this.protocolMap.put(coreProtocolManagerFactory.getProtocols()[0],
+            coreProtocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+
+      if (config.isResolveProtocols())
+      {
+         ServiceLoader<ProtocolManagerFactory> serviceLoader = ServiceLoader.load(ProtocolManagerFactory.class);
+         if (serviceLoader != null)
+         {
+            for (ProtocolManagerFactory next : serviceLoader)
+            {
+               String[] protocols = next.getProtocols();
+               for (String protocol : protocols)
+               {
+                  protocolMap.put(protocol, next.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+               }
+            }
+         }
+      }
+
+      if(protocolManagerFactories != null)
+      {
+         for (ProtocolManagerFactory protocolManagerFactory : protocolManagerFactories)
+         {
+            String[] protocols = protocolManagerFactory.getProtocols();
+            for (String protocol : protocols)
+            {
+               protocolMap.put(protocol, protocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+            }
+         }
+      }
    }
 
    // RemotingService implementation -------------------------------
@@ -216,11 +240,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                }
             }
 
-            String protocolString = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
+            String protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
                                                                           TransportConstants.DEFAULT_PROTOCOL,
                                                                           info.getParams());
-
-            ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
 
             ProtocolManager manager = protocolMap.get(protocol);
 
@@ -232,7 +254,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        manager,
                                                        this,
                                                        threadPool,
-                                                       scheduledThreadPool);
+                                                       scheduledThreadPool,
+                                                       manager);
 
             if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
             {
@@ -426,7 +449,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // ConnectionLifeCycleListener implementation -----------------------------------
 
-   private ProtocolManager getProtocolManager(ProtocolType protocol)
+   private ProtocolManager getProtocolManager(String protocol)
    {
       return protocolMap.get(protocol);
    }
@@ -438,7 +461,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
 
-      ProtocolManager pmgr = this.getProtocolManager(protocol);
+      ProtocolManager pmgr = this.getProtocolManager(protocol.toString());
 
       if (pmgr == null)
       {

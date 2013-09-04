@@ -12,6 +12,12 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
+import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.ProtocolManager;
+import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.BufferDecoder;
+import org.jboss.netty.channel.ChannelHandler;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -84,7 +90,42 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
                                                  null,
                                                  listener,
                                                  Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()));
+                                                 Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()),
+                                                 new ProtocolManager()
+                                                 {
+                                                    @Override
+                                                    public ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection)
+                                                    {
+                                                       return null;
+                                                    }
+
+                                                    @Override
+                                                    public void removeHandler(String name)
+                                                    {
+                                                    }
+
+                                                    @Override
+                                                    public int isReadyToHandle(HornetQBuffer buffer)
+                                                    {
+                                                       return 0;
+                                                    }
+
+                                                    @Override
+                                                    public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
+                                                    {
+                                                    }
+
+                                                    @Override
+                                                    public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
+                                                    {
+                                                    }
+
+                                                    @Override
+                                                    public boolean isSupportsWebsockets(String protocol)
+                                                    {
+                                                       return false;
+                                                    }
+                                                 });
 
       Assert.assertTrue(acceptor instanceof NettyAcceptor);
    }

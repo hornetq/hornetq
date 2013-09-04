@@ -61,8 +61,6 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
-import org.hornetq.core.protocol.stomp.StompConnection;
-import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
@@ -176,7 +174,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221020, value = "Started Netty Acceptor version {0} {1}:{2,number,#} for {3} protocol", format = Message.Format.MESSAGE_FORMAT)
-   void startedNettyAcceptor(String id, String host, Integer port, ProtocolType protocol);
+   void startedNettyAcceptor(String id, String host, Integer port, String protocol);
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221021, value = "failed to remove connection", format = Message.Format.MESSAGE_FORMAT)
@@ -550,10 +548,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222067, value = "Connection failure has been detected: {0} [code={1}]", format = Message.Format.MESSAGE_FORMAT)
    void connectionFailureDetected(String message, HornetQExceptionType type);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222068, value = "connection closed {0}", format = Message.Format.MESSAGE_FORMAT)
-   void connectionClosed(StompConnection connection);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222069, value = "error cleaning up stomp connection", format = Message.Format.MESSAGE_FORMAT)
@@ -1083,10 +1077,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224022, value = "Failed to execute failure listener", format = Message.Format.MESSAGE_FORMAT)
    void errorCallingFailureListener(@Cause Throwable e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224023, value = "Unable to send frame {0}", format = Message.Format.MESSAGE_FORMAT)
-   void errorSendingFrame(@Cause Exception e, StompFrame frame);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224024, value = "Stomp Error, tx already exist! {0}", format = Message.Format.MESSAGE_FORMAT)
