@@ -654,6 +654,7 @@ public final class ClusterManager implements HornetQComponent
             final HornetQException exception = msg.getException();
             if (exception.getType() == HornetQExceptionType.CLUSTER_SECURITY_EXCEPTION)
             {
+               HornetQServerLogger.LOGGER.clusterManagerAuthenticationError(exception.getMessage());
                executor.execute(new Runnable()
                {
                   @Override
