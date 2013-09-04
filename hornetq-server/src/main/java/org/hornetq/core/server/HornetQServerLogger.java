@@ -1276,12 +1276,15 @@ public interface HornetQServerLogger extends BasicLogger
    void timeoutFlushInTransit(String queueName, String addressName);
 
    @LogMessage(level = Logger.Level.WARN)
-    @Message(
-       id = 224065,
-       value = "Bridge {0} couldn't find configured connectors",
+   @Message(id = 224065, value = "Bridge {0} could not find configured connectors",
        format = Message.Format.MESSAGE_FORMAT)
     void bridgeCantFindConnectors(String bridgeName);
 
-
-
+   /**
+    *
+    */
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 22406, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
+   void clusterManagerAuthenticationError(String msg);
 }
