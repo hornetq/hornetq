@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.junit.Before;
 import org.junit.After;
 
@@ -42,7 +43,6 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -176,7 +176,7 @@ public class ManagementWithStompTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
+      params.put(TransportConstants.PROTOCOL_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       conf.getAcceptorConfigurations().add(stompTransport);

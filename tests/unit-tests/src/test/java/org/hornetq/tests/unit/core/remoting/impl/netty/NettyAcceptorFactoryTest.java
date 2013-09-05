@@ -12,7 +12,6 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
-import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -32,7 +31,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
@@ -73,7 +71,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(HornetQComponent component, final Connection connection, final String protocol)
          {
          }
 

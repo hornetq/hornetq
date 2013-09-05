@@ -102,6 +102,8 @@ public final class HornetQClient
 
    public static final boolean DEFAULT_HA = false;
 
+   public static final String DEFAULT_CORE_PROTOCOL = "CORE";
+
    /**
     * Create a ServerLocator which creates session factories using a static list of transportConfigurations, the ServerLocator is not updated automatically
     * as the cluster topology changes, and no HA backup information is propagated to the client

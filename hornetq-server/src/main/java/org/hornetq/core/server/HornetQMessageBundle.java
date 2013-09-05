@@ -41,7 +41,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -261,7 +260,7 @@ public interface HornetQMessageBundle
    IllegalArgumentException acceptorNotExists(Integer id);
 
    @Message(id = 119064, value = "Unknown protocol {0}", format = Message.Format.MESSAGE_FORMAT)
-   IllegalArgumentException unknownProtocol(ProtocolType protocol);
+   IllegalArgumentException unknownProtocol(String protocol);
 
    @Message(id = 119065, value = "node id is null", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nodeIdNull();

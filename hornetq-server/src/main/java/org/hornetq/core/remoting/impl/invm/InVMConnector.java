@@ -18,10 +18,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.AbstractConnector;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -175,7 +176,7 @@ public class InVMConnector extends AbstractConnector
    {
       // No acceptor on a client connection
       InVMConnection inVMConnection = new InVMConnection(id, handler, listener, serverExecutor);
-      listener.connectionCreated(null, inVMConnection, ProtocolType.CORE);
+      listener.connectionCreated(null, inVMConnection, HornetQClient.DEFAULT_CORE_PROTOCOL);
       return inVMConnection;
    }
 
@@ -189,7 +190,7 @@ public class InVMConnector extends AbstractConnector
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
