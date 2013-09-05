@@ -17,7 +17,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,7 +54,6 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
@@ -241,8 +239,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             }
 
             String protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
-                                                                          TransportConstants.DEFAULT_PROTOCOL,
-                                                                          info.getParams());
+                  TransportConstants.DEFAULT_PROTOCOL,
+                  info.getParams());
 
             ProtocolManager manager = protocolMap.get(protocol);
 
@@ -454,7 +452,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return protocolMap.get(protocol);
    }
 
-   public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+   public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
    {
       if (server == null)
       {

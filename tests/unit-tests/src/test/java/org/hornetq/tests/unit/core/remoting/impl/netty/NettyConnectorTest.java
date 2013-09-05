@@ -26,12 +26,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.VersionLoader;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -59,7 +57,7 @@ public class NettyConnectorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
          {
          }
          public void connectionReadyForWrites(Object connectionID, boolean ready)
@@ -100,7 +98,7 @@ public class NettyConnectorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
          {
          }
 
@@ -166,7 +164,7 @@ public class NettyConnectorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
          {
          }
          public void connectionReadyForWrites(Object connectionID, boolean ready)
@@ -217,7 +215,7 @@ public class NettyConnectorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
          {
          }
          public void connectionReadyForWrites(Object connectionID, boolean ready)

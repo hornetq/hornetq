@@ -32,11 +32,11 @@ import javax.net.ssl.SSLEngine;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
+import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
@@ -46,7 +46,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.ProtocolManager;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -54,7 +53,6 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.TypedProperties;
-import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -674,7 +672,7 @@ public class NettyAcceptor implements Acceptor
 
          NettyConnection nc = new NettyConnection(configuration, e.getChannel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
 
-         connectionListener.connectionCreated(NettyAcceptor.this, nc, ProtocolType.CORE);
+         connectionListener.connectionCreated(NettyAcceptor.this, nc, HornetQClient.DEFAULT_CORE_PROTOCOL);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -703,14 +701,14 @@ public class NettyAcceptor implements Acceptor
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
          if (connections.putIfAbsent(connection.getID(), (NettyConnection)connection) != null)
          {
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
-         listener.connectionCreated(component, connection, ProtocolType.valueOf(NettyAcceptor.this.protocol));
+         listener.connectionCreated(component, connection, NettyAcceptor.this.protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

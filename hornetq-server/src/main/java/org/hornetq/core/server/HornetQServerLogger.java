@@ -66,7 +66,6 @@ import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.utils.FutureLatch;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;

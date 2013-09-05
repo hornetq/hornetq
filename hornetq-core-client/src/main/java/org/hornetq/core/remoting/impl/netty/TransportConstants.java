@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.api.core.client.HornetQClient;
 
 /**
  * A TransportConstants
@@ -113,7 +113,7 @@ public class TransportConstants
 
    public static final boolean DEFAULT_USE_SERVLET = false;
 
-   public static final String DEFAULT_PROTOCOL = ProtocolType.CORE.toString();
+   public static final String DEFAULT_PROTOCOL = HornetQClient.DEFAULT_CORE_PROTOCOL;
 
    public static final String DEFAULT_HOST = "localhost";
 
