@@ -76,12 +76,6 @@
     <xsl:text>;
    &#125;&#xa;</xsl:text>
         </xsl:for-each>
-<xsl:text>
-   private static long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = getDefaultClientFailureCheckPeriod();
-   private static long DEFAULT_CLUSTER_CONNECTION_TTL = getDefaultConnectionTtl();
-   private static double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = getDefaultRetryIntervalMultiplier();
-   private static long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = getDefaultMaxRetryInterval();
-</xsl:text>
     <xsl:text>
 &#125;&#xa;</xsl:text>
   </xsl:template>

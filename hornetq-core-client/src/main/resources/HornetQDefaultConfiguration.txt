@@ -26,19 +26,9 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
    }
 
-   public static long getDefaultConnectionTtl()
-   {
-      return DEFAULT_CONNECTION_TTL;
-   }
-
    public static long getDefaultFileDeployerScanPeriod()
    {
       return DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
-   }
-
-   public static int getDefaultJournalFileSize()
-   {
-      return DEFAULT_JOURNAL_FILE_SIZE;
    }
 
    public static int getDefaultJournalMaxIoAio()
@@ -71,51 +61,6 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
    }
 
-   public static long getDefaultBroadcastRefreshTimeout()
-   {
-      return DEFAULT_BROADCAST_REFRESH_TIMEOUT;
-   }
-
-   public static int getDefaultClusterReconnectAttempts()
-   {
-      return DEFAULT_CLUSTER_RECONNECT_ATTEMPTS;
-   }
-
-   public static long getDefaultClusterFailureCheckPeriod()
-   {
-      return DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD;
-   }
-
-   public static long getDefaultClusterConnectionTtl()
-   {
-      return DEFAULT_CLUSTER_CONNECTION_TTL;
-   }
-
-   public static double getDefaultClusterRetryIntervalMultiplier()
-   {
-      return DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
-   }
-
-   public static long getDefaultClusterMaxRetryInterval()
-   {
-      return DEFAULT_CLUSTER_MAX_RETRY_INTERVAL;
-   }
-
-   public static boolean isDefaultDivertExclusive()
-   {
-      return DEFAULT_DIVERT_EXCLUSIVE;
-   }
-
-   public static boolean isDefaultBridgeDuplicateDetection()
-   {
-      return DEFAULT_BRIDGE_DUPLICATE_DETECTION;
-   }
-
-   public static int getDefaultBridgeReconnectAttempts()
-   {
-      return DEFAULT_BRIDGE_RECONNECT_ATTEMPTS;
-   }
-
    public static String getPropMaskPassword()
    {
       return PROP_MASK_PASSWORD;
@@ -127,26 +72,22 @@ public final class HornetQDefaultConfiguration
    }
 
    //shared by client and core/server
+   // XXX not on schema?
    private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
 
-   // 1 minute - this should be higher than ping period
-
-   private static long DEFAULT_CONNECTION_TTL = 1 * 60 * 1000;
-
+   // XXX not on schema?
    private static long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
-   private static int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
+
+   // These defaults are applied depending on whether the journal type
+   // is NIO or AIO.
    private static int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
    private static int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
    private static int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
    private static int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
    private static int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
    private static int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
-   private static long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
-   private static int DEFAULT_CLUSTER_RECONNECT_ATTEMPTS = -1;
-   private static boolean DEFAULT_DIVERT_EXCLUSIVE = false;
-   private static boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
-   private static int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
 
+   // XXX not on schema.
    //properties passed to acceptor/connectors.
    private static String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
    private static String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
