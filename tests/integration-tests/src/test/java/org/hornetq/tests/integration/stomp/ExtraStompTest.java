@@ -17,6 +17,7 @@
  */
 package org.hornetq.tests.integration.stomp;
 
+import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -48,7 +49,6 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase.TestLargeMessageInputStream;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
@@ -696,7 +696,7 @@ public class ExtraStompTest extends StompTestBase
       config.setPersistenceEnabled(true);
    
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
+      params.put(TransportConstants.PROTOCOL_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
       params.put(TransportConstants.STOMP_CONSUMERS_CREDIT, "-1");
       params.put(TransportConstants.STOMP_MIN_LARGE_MESSAGE_SIZE, sz);
@@ -791,7 +791,7 @@ public class ExtraStompTest extends StompTestBase
       config.setPersistenceEnabled(false);
 
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
+      params.put(TransportConstants.PROTOCOL_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
       if (ttl != null)
       {

@@ -19,14 +19,15 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
@@ -215,7 +216,7 @@ public final class InVMAcceptor implements Acceptor
 
       InVMConnection inVMConnection = new InVMConnection(id, connectionID, remoteHandler, connectionListener, clientExecutor, defaultHornetQPrincipal);
 
-      connectionListener.connectionCreated(this, inVMConnection, ProtocolType.CORE);
+      connectionListener.connectionCreated(this, inVMConnection, HornetQClient.DEFAULT_CORE_PROTOCOL);
    }
 
    public void disconnect(final String connectionID)
@@ -259,7 +260,7 @@ public final class InVMAcceptor implements Acceptor
          this.connector = connector;
       }
 
-      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {

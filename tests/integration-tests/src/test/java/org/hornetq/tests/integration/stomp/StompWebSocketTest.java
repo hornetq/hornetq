@@ -24,6 +24,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -36,7 +37,6 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.util.UnitTestCase;
 
 public class StompWebSocketTest extends UnitTestCase {
@@ -72,7 +72,7 @@ public class StompWebSocketTest extends UnitTestCase {
       config.setPersistenceEnabled(false);
 
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP_WS.toString());
+      params.put(TransportConstants.PROTOCOL_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT + 1);
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       config.getAcceptorConfigurations().add(stompTransport);

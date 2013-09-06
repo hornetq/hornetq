@@ -12,12 +12,7 @@
  */
 package org.hornetq.tests.integration.http;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
-import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
-import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.jboss.netty.channel.ChannelHandler;
 import org.junit.Before;
 import org.junit.After;
 
@@ -25,7 +20,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +35,6 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -569,7 +562,7 @@ public class NettyHttpTest extends UnitTestCase
          latch = connCreatedLatch;
       }
 
-      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
          this.connection = connection;
          if (latch != null)

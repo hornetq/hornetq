@@ -38,7 +38,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -106,7 +105,7 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
          {
          }
 

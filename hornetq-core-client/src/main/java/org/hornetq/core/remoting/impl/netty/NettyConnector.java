@@ -39,18 +39,17 @@ import javax.net.ssl.SSLException;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.AbstractConnector;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.FutureLatch;
-import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -684,7 +683,7 @@ public class NettyConnector extends AbstractConnector
          // No acceptor on a client connection
          Listener connectionListener = new Listener();
          NettyConnection conn = new NettyConnection(configuration, ch, connectionListener, !httpEnabled && batchDelay > 0, false);
-         connectionListener.connectionCreated(null, conn, ProtocolType.CORE);
+         connectionListener.connectionCreated(null, conn, HornetQClient.DEFAULT_CORE_PROTOCOL);
 
          return conn;
       }
@@ -880,7 +879,7 @@ public class NettyConnector extends AbstractConnector
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {

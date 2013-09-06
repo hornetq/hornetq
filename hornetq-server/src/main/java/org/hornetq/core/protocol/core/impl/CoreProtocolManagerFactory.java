@@ -16,10 +16,10 @@ package org.hornetq.core.protocol.core.impl;
 import java.util.List;
 
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
-import org.hornetq.spi.core.protocol.ProtocolType;
 
 /**
  * A CoreProtocolManagerFactory
@@ -30,9 +30,7 @@ import org.hornetq.spi.core.protocol.ProtocolType;
  */
 public class CoreProtocolManagerFactory implements ProtocolManagerFactory
 {
-   final static String CORE_PROTOCOL_NAME = "CORE";
-
-   private static String[] SUPPORTED_PROTOCOLS = {CORE_PROTOCOL_NAME};
+   private static String[] SUPPORTED_PROTOCOLS = {HornetQClient.DEFAULT_CORE_PROTOCOL};
 
    public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {

@@ -21,8 +21,6 @@
 */
 package org.hornetq.spi.core.remoting;
 
-import org.hornetq.spi.core.protocol.ProtocolType;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         10/11/12
@@ -36,5 +34,5 @@ public interface ServerConnectionLifeCycleListener extends ConnectionLifeCycleLi
     * @param The acceptor here will be always null on a client connection created event.
     * @param connection the connection that has been created
     */
-   void connectionCreated(Acceptor acceptor, Connection connection, ProtocolType protocol);
+   void connectionCreated(Acceptor acceptor, Connection connection, String protocol);
 }
