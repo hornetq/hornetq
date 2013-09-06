@@ -371,15 +371,15 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
-      SimpleString deadLetterAdress = RandomUtil.randomSimpleString();
+      SimpleString deadLetterAddress = RandomUtil.randomSimpleString();
       SimpleString deadLetterQueue = RandomUtil.randomSimpleString();
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
-      addressSettings.setDeadLetterAddress(deadLetterAdress);
+      addressSettings.setDeadLetterAddress(deadLetterAddress);
       server.getAddressSettingsRepository().setDefault(addressSettings);
 
       clientSession.createQueue(address, queue, false);
-      clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
+      clientSession.createQueue(deadLetterAddress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
@@ -414,15 +414,15 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
-      SimpleString deadLetterAdress = RandomUtil.randomSimpleString();
+      SimpleString deadLetterAddress = RandomUtil.randomSimpleString();
       SimpleString deadLetterQueue = RandomUtil.randomSimpleString();
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
-      addressSettings.setDeadLetterAddress(deadLetterAdress);
+      addressSettings.setDeadLetterAddress(deadLetterAddress);
       server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
       clientSession.createQueue(address, queue, false);
-      clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
+      clientSession.createQueue(deadLetterAddress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");

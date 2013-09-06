@@ -36,8 +36,8 @@ public class TopicStressTest extends JMSStressTestBase
    /*
     * Stress a topic with with many non transactional, transactional and 2pc receivers.
     * Non transactional receivers use ack modes of auto, dups and client ack.
-    * Client ack receivers go through a cycle of receving a batch, acking and recovering
-    * Transactional receivers go through a cycle of receiving commiting and rolling back.
+    * Client ack receivers go through a cycle of receiving a batch, acking and recovering
+    * Transactional receivers go through a cycle of receiving committing and rolling back.
     * Half the consumers are durable and half non durable.
     *
     */

@@ -737,7 +737,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Start the connection
-    * @exception JMSException Thrown if the connection cant be started
+    * @exception JMSException Thrown if the connection can't be started
     */
    void start() throws JMSException
    {
@@ -754,7 +754,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Stop the connection
-    * @exception JMSException Thrown if the connection cant be stopped
+    * @exception JMSException Thrown if the connection can't be stopped
     */
    void stop() throws JMSException
    {

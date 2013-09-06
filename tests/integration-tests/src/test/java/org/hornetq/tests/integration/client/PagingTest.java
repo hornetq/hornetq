@@ -3569,7 +3569,7 @@ public class PagingTest extends ServiceTestBase
       ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
 
       session.start();
-      // 347 = I just picked any odd number, not rounded, to make sure it's not at the beggining of any page
+      // 347 = I just picked any odd number, not rounded, to make sure it's not at the beginning of any page
       for (int i = 0; i < 347; i++)
       {
          ClientMessage msg = consumer.receive(5000);
@@ -5541,7 +5541,7 @@ public class PagingTest extends ServiceTestBase
             session.commit();
          }
 
-         // This will consume messages from the beggining of the queue only
+         // This will consume messages from the beginning of the queue only
          ClientConsumer consumerInitial = session.createConsumer("Q_initial");
          for (int i = 0; i < initialBurst; i++)
          {

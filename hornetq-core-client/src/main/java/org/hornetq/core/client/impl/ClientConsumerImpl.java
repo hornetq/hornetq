@@ -337,7 +337,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                      continue;
                   }
                }
-               // if we have already pre acked we cant expire
+               // if we have already pre acked we can't expire
                boolean expired = m.isExpired();
 
                flowControlBeforeConsumption(m);

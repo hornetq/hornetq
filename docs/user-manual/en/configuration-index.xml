@@ -445,7 +445,7 @@
            A user can then replace the real password in the configuration files with the new masked password.
            When HornetQ loads a masked password, it uses a suitable 'decoder' to decode it into real password.</para>
 
-           <para>Hornetq provides a default password encoder and decoder. Optionally users can use or implement their own encoder and decoder for
+           <para>HornetQ provides a default password encoder and decoder. Optionally users can use or implement their own encoder and decoder for
            masking the passwords.</para>
 
            <section> <title>Password Masking in Server Configuration File</title>

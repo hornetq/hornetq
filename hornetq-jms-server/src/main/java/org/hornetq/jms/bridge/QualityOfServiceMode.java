@@ -23,7 +23,7 @@ package org.hornetq.jms.bridge;
  * sending to the destination. Therefore there is a possibility that if failure
  * occurs between removing them from the source and them arriving at the
  * destination they could be lost. Hence delivery will occur at most once. This
- * mode is avilable for both persistent and non persistent messages.
+ * mode is available for both persistent and non persistent messages.
  *
  * <h4>QOS_DUPLICATES_OK</h4>
  *

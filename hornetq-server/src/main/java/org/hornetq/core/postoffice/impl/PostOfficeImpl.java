@@ -799,7 +799,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
-      // We send direct to the queue so we can send it to the same queue that is bound to the notifications adress -
+      // We send direct to the queue so we can send it to the same queue that is bound to the notifications address -
       // this is crucial for ensuring
       // that queue infos and notifications are received in a contiguous consistent stream
       Binding binding = addressManager.getBinding(queueName);

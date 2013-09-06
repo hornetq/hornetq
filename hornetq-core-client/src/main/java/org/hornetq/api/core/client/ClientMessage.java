@@ -90,7 +90,7 @@ public interface ClientMessage extends Message
 
    /**
     * Saves the content of the message to the OutputStream.
-    * It will block until the entire content is transfered to the OutputStream.
+    * It will block until the entire content is transferred to the OutputStream.
     * <br>
     *
     * @throws HornetQException

@@ -2345,7 +2345,7 @@ public class StompV11Test extends StompV11TestBase
 
       connV11.disconnect();
 
-      // now lets make sure we don't see the message again
+      // now let's make sure we don't see the message again
       connV11.destroy();
       connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
       connV11.connect(defUser, defPass);

@@ -293,7 +293,7 @@ public class MDBMessageSendTxExample implements MessageListener
    <section>
       <title>MDB and Consumer pool size</title>
       <para>Most application servers, including JBoss, allow you to configure how many MDB's there are in a pool. In
-         Jboss this is configured via the <literal>MaxPoolSize</literal> parameter in the ejb3-interceptors-aop.xml file. Configuring
+         JBoss this is configured via the <literal>MaxPoolSize</literal> parameter in the ejb3-interceptors-aop.xml file. Configuring
          this has no actual effect on how many sessions/consumers there actually are created. This is because the Resource
       Adaptor implementation knows nothing about the application servers MDB implementation. So even if you set the MDB
          pool size to 1, 15 sessions/consumers will be created (this is the default). If you want to limit how many
@@ -1021,7 +1021,7 @@ private ConnectionFactory connectionFactory;</programlisting>
         <para>This is a step by step guide on how to configure a JBoss application server that doesn't have HornetQ installed
             to use a remote instance of HornetQ</para>
         <section>
-            <title>Configuring Jboss 5</title>
+            <title>Configuring JBoss 5</title>
             <para>Firstly download and install JBoss AS 5 as per the JBoss installation guide and HornetQ as per the
                 HornetQ installation guide. After that the following steps are required</para>
             <itemizedlist>
@@ -1195,7 +1195,7 @@ Copyright 2009 Red Hat, Inc.
             <para>Now you should be able to send messages using the JCA JMS connection pooling within an XA transaction.</para>
         </section>
         <section>
-            <title>Configuring Jboss 5</title>
+            <title>Configuring JBoss 5</title>
             <para>The steps to do this are exactly the same as for JBoss 4, you will have to create a jboss.xml definition
                 file for your MDB with the following entry</para>
             <programlisting>

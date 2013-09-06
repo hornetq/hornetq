@@ -74,7 +74,7 @@ public class ReplicatedTransactionFailoverExample extends HornetQExample
          // Step 8. We send half of the messages, kill the live server and send the remaining messages
          sendMessages(session, producer, numMessages, true);
 
-         // Step 9. As failover occured during transaction, the session has been marked for rollback only
+         // Step 9. As failover occurred during transaction, the session has been marked for rollback only
          try
          {
             session.commit();
@@ -87,7 +87,7 @@ public class ReplicatedTransactionFailoverExample extends HornetQExample
          // Step 10. We resend all the messages
          sendMessages(session, producer, numMessages, false);
 
-         // Step 11. We commit the session succesfully: the messages will be all delivered to the activated backup
+         // Step 11. We commit the session successfully: the messages will be all delivered to the activated backup
          // server
          session.commit();
 

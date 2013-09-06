@@ -1128,7 +1128,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                if (HornetQClientLogger.LOGGER.isDebugEnabled())
                {
-                  HornetQClientLogger.LOGGER.debug("Reconnection successfull");
+                  HornetQClientLogger.LOGGER.debug("Reconnection successful");
                }
                return;
             }
@@ -1284,7 +1284,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      }
                      else
                      {
-                        /*looks like the backup is now live, lets use that*/
+                        /*looks like the backup is now live, let's use that*/
 
                         if (ClientSessionFactoryImpl.isDebug)
                         {

@@ -102,7 +102,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * Add a new match to the repository
     *
     * @param match The regex to use to match against
-    * @param value the value to hold agains the match
+    * @param value the value to hold against the match
     */
    public void addMatch(final String match, final T value, final boolean immutableMatch)
    {

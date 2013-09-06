@@ -261,7 +261,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
 
    protected void waitForDistribution(SimpleString address, HornetQServer server, int messageCount) throws Exception
    {
-      HornetQServerLogger.LOGGER.debug("waiting for distribution of messgaes on server " + server);
+      HornetQServerLogger.LOGGER.debug("waiting for distribution of messages on server " + server);
 
       long start = System.currentTimeMillis();
 

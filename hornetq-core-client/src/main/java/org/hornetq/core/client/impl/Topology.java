@@ -205,7 +205,7 @@ public final class Topology implements Serializable
          {
             if (HornetQClientLogger.LOGGER.isTraceEnabled())
             {
-               HornetQClientLogger.LOGGER.trace(this + "::NewMemeberAdd nodeId=" + nodeId + " member = " + memberInput,
+               HornetQClientLogger.LOGGER.trace(this + "::NewMemberAdd nodeId=" + nodeId + " member = " + memberInput,
                                           new Exception("trace"));
             }
             memberInput.setUniqueEventID(uniqueEventID);

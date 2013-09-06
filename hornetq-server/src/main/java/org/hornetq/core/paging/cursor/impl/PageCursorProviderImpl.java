@@ -56,7 +56,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    // Attributes ----------------------------------------------------
 
    /**
-    * As an optimization, avoid subsquent schedules as they are unecessary
+    * As an optimization, avoid subsequent schedules as they are unnecessary
     */
    private final AtomicInteger scheduledCleanup = new AtomicInteger(0);
 

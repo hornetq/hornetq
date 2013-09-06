@@ -72,7 +72,7 @@ public class ConnectionTest extends JMSTestCase
       String clientID = connection.getClientID();
 
       // We don't currently set client ids on the server, so this should be null.
-      // In the future we may provide conection factories that set a specific client id
+      // In the future we may provide connection factories that set a specific client id
       // so this may change
       ProxyAssertSupport.assertNull(clientID);
 

@@ -264,7 +264,7 @@
 &lt;/deployment></programlisting>
         </para>
         <para>We can see that, as well as the core HornetQ server, the stand-alone server
-            instantiates various different POJOs, lets look at them in turn:</para>
+            instantiates various different POJOs, let's look at them in turn:</para>
         <itemizedlist>
             <listitem>
                 <para>MBeanServer</para>
@@ -331,7 +331,7 @@
 
    &lt;mbean code="org.hornetq.service.HornetQStarterService" 
       name="org.hornetq:service=HornetQStarterService">
-      &lt;!--lets let the JMS Server start us-->
+      &lt;!--let's let the JMS Server start us-->
          &lt;attribute name="Start">false&lt;/attribute>
 
       &lt;depends optional-attribute-name="SecurityManagerService"

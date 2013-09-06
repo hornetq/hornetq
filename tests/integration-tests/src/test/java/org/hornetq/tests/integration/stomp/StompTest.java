@@ -786,7 +786,7 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
       waitForFrameToTakeEffect();
 
-      // now lets make sure we don't see the message again
+      // now let's make sure we don't see the message again
       reconnect();
 
       frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;

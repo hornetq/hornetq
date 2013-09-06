@@ -1547,7 +1547,7 @@ public class XATest extends HornetQServerTestCase
          tx.delistResource(res1, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
-         // rollback will cause an attemp to deliver messages locally to the original consumers.
+         // rollback will cause an attempt to deliver messages locally to the original consumers.
          // the original consumer has closed, so it will cancelled to the server
          // the server cancel is asynch, so we need to sleep for a bit to make sure it completes
          log.trace("Forcing failure");

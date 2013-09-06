@@ -2605,7 +2605,7 @@ public class StompV12Test extends StompV11TestBase
 
       connV12.disconnect();
 
-      // now lets make sure we don't see the message again
+      // now let's make sure we don't see the message again
       connV12.destroy();
       connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       connV12.connect(defUser, defPass);

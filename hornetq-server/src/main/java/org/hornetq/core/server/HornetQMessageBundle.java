@@ -196,7 +196,7 @@ public interface HornetQMessageBundle
    @Message(id = 119042, value = "{0}  must be equals to -1 or greater or equals to 0 (actual value: {1})", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException greaterThanZeroOrMinusOne(String name, Number val);
 
-   @Message(id = 119043, value = "{0} must be betwen {1} and {2} inclusive (actual value: {3})", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119043, value = "{0} must be between {1} and {2} inclusive (actual value: {3})", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException mustbeBetween(String name, Integer minPriority, Integer maxPriority, Object value);
 
    @Message(id = 119044, value = "Invalid journal type {0}", format = Message.Format.MESSAGE_FORMAT)

@@ -118,7 +118,7 @@ public class HornetQRACredential implements Serializable
     * @param subject The subject
     * @param info The connection request info
     * @return The credentials
-    * @exception SecurityException Thrown if the credentials cant be retrieved
+    * @exception SecurityException Thrown if the credentials can't be retrieved
     */
    public static HornetQRACredential getCredential(final ManagedConnectionFactory mcf,
                                                    final Subject subject,

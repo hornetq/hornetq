@@ -1303,7 +1303,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   HornetQJMSServerLogger.LOGGER.trace("Creating XA dest session");
                }
 
-               // Create an XA sesion for sending to the destination
+               // Create an XA session for sending to the destination
 
                targetConn = createConnection(targetUsername, targetPassword, targetCff, null, true);
 

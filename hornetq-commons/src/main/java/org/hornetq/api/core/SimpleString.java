@@ -155,7 +155,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns true if the SimpleString parameter starts with the same data as this one. false if not.
-    * @param other the SimpelString to look for
+    * @param other the SimpleString to look for
     * @return true if this SimpleString starts with the same data
     */
    public boolean startsWith(final SimpleString other)

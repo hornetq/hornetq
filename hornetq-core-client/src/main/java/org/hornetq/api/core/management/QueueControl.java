@@ -90,7 +90,7 @@ public interface QueueControl
    /**
     * Sets the expiry address associated to this queue to the specified expiryAddress.
     */
-   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") String expiryAddres) throws Exception;
+   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") String expiryAddress) throws Exception;
 
    /**
     * Returns the dead-letter address associated to this queue.
