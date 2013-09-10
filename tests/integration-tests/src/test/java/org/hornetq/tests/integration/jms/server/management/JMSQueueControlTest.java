@@ -347,13 +347,13 @@ public class JMSQueueControlTest extends ManagementTestBase
    @Test
    public void testChangeMessagePriorityWithUnknownMessageID() throws Exception
    {
-      String unkownMessageID = RandomUtil.randomString();
+      String unknownMessageID = RandomUtil.randomString();
 
       JMSQueueControl queueControl = createManagementControl();
 
       try
       {
-         queueControl.changeMessagePriority(unkownMessageID, 7);
+         queueControl.changeMessagePriority(unknownMessageID, 7);
          Assert.fail();
       }
       catch (Exception e)

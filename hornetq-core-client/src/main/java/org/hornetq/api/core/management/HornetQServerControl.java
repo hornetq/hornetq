@@ -567,7 +567,7 @@ public interface HornetQServerControl
    void createDivert(@Parameter(name="name", desc="Name of the divert") String name,
                      @Parameter(name="routingName", desc="Routing name of the divert") String routingName,
                      @Parameter(name="address", desc="Address to divert from") String address,
-                     @Parameter(name="forwardingAddress", desc="Adress to divert to") String forwardingAddress,
+                     @Parameter(name="forwardingAddress", desc="Address to divert to") String forwardingAddress,
                      @Parameter(name="exclusive", desc="Is the divert exclusive?") boolean exclusive,
                      @Parameter(name="filterString", desc="Filter of the divert") String filterString,
                      @Parameter(name="transformerClassName", desc="Class name of the divert's transformer") String transformerClassName) throws Exception;

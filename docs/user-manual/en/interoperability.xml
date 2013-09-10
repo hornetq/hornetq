@@ -280,7 +280,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
             <title>AMQP and Coordinations - Handling Transactions</title>
             <para>An AMQP links target can also be a Coordinator, the Coordinator is used to handle transactions. If a
             coordinator is used the the underlying HormetQ Server session will be transacted and will be either rolled back
-                or commited via the coordinator.</para>
+                or committed via the coordinator.</para>
             <note><para>AMQP allows the use of multiple transactions per session, <literal>amqp:multi-txns-per-ssn</literal>,
                 however in this version HornetQ will only support single transactions per session</para></note>
         </section>

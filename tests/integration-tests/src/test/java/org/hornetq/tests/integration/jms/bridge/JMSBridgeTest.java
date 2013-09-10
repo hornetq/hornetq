@@ -417,7 +417,7 @@ public class JMSBridgeTest extends BridgeTestBase
          createQueue("sourceQueue", 0);
          createQueue("localTargetQueue", 0);
          jmsServer0.createTopic(false, "sourceTopic", "/topic/sourceTopic");
-         // Send half the messges
+         // Send half the messages
 
          sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, false, false);
 
@@ -2106,7 +2106,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          bridge.start();
 
-         // Send half the messges
+         // Send half the messages
 
          sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
 

@@ -110,7 +110,7 @@ public class StompUtils
          command.addHeader(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType").toString());
       }
 
-      // now lets add all the message headers
+      // now let's add all the message headers
       Set<SimpleString> names = message.getPropertyNames();
       for (SimpleString name : names)
       {

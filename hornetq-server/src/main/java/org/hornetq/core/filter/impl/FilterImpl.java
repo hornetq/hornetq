@@ -40,7 +40,7 @@ import org.hornetq.core.server.ServerMessage;
 * HQExpiration - the expiration of the message
 * HQSize - the encoded size of the full message in bytes
 * HQUserID - the user specified ID string (if any)
-* Any other identifers that appear in a filter expression represent header values for the message
+* Any other identifiers that appear in a filter expression represent header values for the message
 *
 * String values must be set as <code>SimpleString</code>, not <code>java.lang.String</code> (see JBMESSAGING-1307).
 * Derived from JBoss MQ version by

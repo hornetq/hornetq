@@ -41,7 +41,7 @@ import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * This test covers the API for ClientSession altho XA tests are tested seperately.
+ * This test covers the API for ClientSession although XA tests are tested separately.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */

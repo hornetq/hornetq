@@ -29,7 +29,7 @@
     <section id="predefined.queues">
         <title>Predefined Queues</title>
         <para>Queues can be predefined via configuration at a core level or at a JMS level. Firstly
-            lets look at a JMS level.</para>
+            let's look at a JMS level.</para>
         <para>The following shows a queue predefined in the <literal>hornetq-jms.xml</literal>
             configuration file.</para>
         <programlisting>

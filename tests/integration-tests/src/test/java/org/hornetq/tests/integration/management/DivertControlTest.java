@@ -92,7 +92,7 @@ public class DivertControlTest extends ManagementTestBase
                                                               RandomUtil.randomString(),
                                                               null,
                                                               false);
-      CoreQueueConfiguration fowardQueueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
+      CoreQueueConfiguration forwardQueueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
                                                                     RandomUtil.randomString(),
                                                                     null,
                                                                     false);
@@ -100,7 +100,7 @@ public class DivertControlTest extends ManagementTestBase
       divertConfig = new DivertConfiguration(RandomUtil.randomString(),
                                              RandomUtil.randomString(),
                                              queueConfig.getAddress(),
-                                             fowardQueueConfig.getAddress(),
+                                             forwardQueueConfig.getAddress(),
                                              RandomUtil.randomBoolean(),
                                              null,
                                              null);
@@ -108,7 +108,7 @@ public class DivertControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getQueueConfigurations().add(queueConfig);
-      conf.getQueueConfigurations().add(fowardQueueConfig);
+      conf.getQueueConfigurations().add(forwardQueueConfig);
       conf.getDivertConfigurations().add(divertConfig);
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

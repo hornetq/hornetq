@@ -10,7 +10,7 @@
      
      <p>This example demonstrates two servers coupled as a live-backup pair for high availability (HA) using replication, and a client
      connection failing over from live to backup when the live server is crashed.</p>
-     <p>Failover behavior differs wether the JMS session is transacter or not.</p>
+     <p>Failover behavior differs whether the JMS session is transacter or not.</p>
      <p>When a <em>transacted</em> JMS session is used, once-and-only once delivery is guaranteed.</p>
      <ul>
         <li>if the failover occurs while there is an in-flight transaction, the transaction will be flagged as <em>rollback only</em>. In that case, the JMS client 
@@ -73,7 +73,7 @@
             fails over from server #1 to server #0 (in your real program you wouldn't need to sleep).
         </p>
         
-        <li>As failover occured during transaction, the session has been marked for <em>rollback only</em> and commit will fail</li>
+        <li>As failover occurred during transaction, the session has been marked for <em>rollback only</em> and commit will fail</li>
         <pre class="prettyprint">
            try
            {
@@ -89,7 +89,7 @@
            sendMessages(session, producer, numMessages, false);
         </pre>
 
-        <li>We commit the session succesfully: the messages will be all delivered to the activated backup server</li>
+        <li>We commit the session successfully: the messages will be all delivered to the activated backup server</li>
         <pre class="prettyprint">
            session.commit();
         </pre>

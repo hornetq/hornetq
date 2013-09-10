@@ -121,7 +121,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    @Override
    public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
    {
-      //we dont need any we do our own decoding
+      //we don't need any we do our own decoding
    }
 
    @Override
@@ -166,7 +166,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
          buffer.clear();
          EncodedMessage encodedMessage = new EncodedMessage(delivery.getMessageFormat(), bytes, 0, bytes.length);
          ServerMessage message = ProtonUtils.INBOUND.transform(connection, encodedMessage);
-         //use the address on the receiver if not null, if null lets hope it was set correctly on the message
+         //use the address on the receiver if not null, if null let's hope it was set correctly on the message
          if (address != null)
          {
             message.setAddress(new SimpleString(address));

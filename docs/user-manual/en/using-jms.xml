@@ -214,7 +214,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <title>The code</title>
         <para>Here's the code for the example:</para>
         <para>First we'll create a JNDI initial context from which to lookup our JMS objects:</para>
-        <programlisting>InitialContect ic = new InitialContext();</programlisting>
+        <programlisting>InitialContext ic = new InitialContext();</programlisting>
         <para>Now we'll look up the connection factory:</para>
         <programlisting>ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");</programlisting>
         <para>And look up the Queue:</para>

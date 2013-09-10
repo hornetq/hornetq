@@ -376,7 +376,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
        * This class maintain a global Map of JChannels wrapped in JChannelWrapper for
        * the purpose of reference counting.
        *
-       * Whereever a JChannel is needed it should only get it by calling the getChannel()
+       * Wherever a JChannel is needed it should only get it by calling the getChannel()
        * method of this class. The real disconnect of channels are also done here only.
        */
       private static class JChannelManager

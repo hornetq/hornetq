@@ -78,7 +78,7 @@
             <section>
                <title>Live Server Configuration</title>
                <para>
-                  First lets start with the configuration of the live server, we will use the EAP 'all' configuration as
+                  First let's start with the configuration of the live server, we will use the EAP 'all' configuration as
                   our starting point. Since this version only supports shared store for failover we need to configure
                   this in the
                   <literal>hornetq-configuration.xml</literal>
@@ -133,7 +133,7 @@
                </para>
                <para>We also need to configure the connection factories used by the client to be HA. This is done by
                   adding
-                  certain attributes to the connection factories in<literal>hornetq-jms.xml</literal>. Lets look at an
+                  certain attributes to the connection factories in<literal>hornetq-jms.xml</literal>. Let's look at an
                   example:
                </para>
                <programlisting>
@@ -196,7 +196,7 @@
             <section>
                <title>Backup Server Configuration</title>
                <para>
-                  Now lets look at how to create and configure a backup server on the same eap instance. This is running
+                  Now let's look at how to create and configure a backup server on the same eap instance. This is running
                   on the same eap instance as the live server from the previous chapter but is configured as the backup
                   for a live server running on a different eap instance.
                </para>
@@ -277,7 +277,7 @@
                   </para>
                </note>
                <para>
-                  Now lets add the server configuration in
+                  Now let's add the server configuration in
                   <literal>hornetq-configuration.xml</literal>
                   and add it to the same directory
                   <literal>deploy/hornetq-backup1</literal>

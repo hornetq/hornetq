@@ -28,7 +28,7 @@
                <skipTests>${skipUnitTests}</skipTests>
                <argLine>${hornetq-surefire-argline}</argLine>
                <excludes>
-                  <!--todo this test is dependant on the jar so needs to be run post package as an integration tests-->
+                  <!--todo this test is dependent on the jar so needs to be run post package as an integration test-->
                   <exclude>**/ManifestTest.java</exclude>
                </excludes>
             </configuration>

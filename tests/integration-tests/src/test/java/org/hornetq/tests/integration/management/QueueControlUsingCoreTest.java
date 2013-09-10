@@ -240,9 +240,9 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress);
          }
 
-         public void setExpiryAddress(final String expiryAddres) throws Exception
+         public void setExpiryAddress(final String expiryAddress) throws Exception
          {
-            proxy.invokeOperation("setExpiryAddress", expiryAddres);
+            proxy.invokeOperation("setExpiryAddress", expiryAddress);
          }
 
          public void pause() throws Exception

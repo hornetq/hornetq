@@ -25,7 +25,7 @@ import java.util.List;
  * We basically just need to replace the JMS header and property Identifier names
  * with the corresponding HornetQ field and header Identifier names.
  *
- * We must be careful not to substitute any literals, or identifers whose name contains the name
+ * We must be careful not to substitute any literals, or identifiers whose name contains the name
  * of one we want to substitute.
  *
  * This makes it less trivial than a simple search and replace.

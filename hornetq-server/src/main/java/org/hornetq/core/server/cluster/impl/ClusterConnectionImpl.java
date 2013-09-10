@@ -866,7 +866,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          return;
       }
-      /*we dont create bridges to backups*/
+      /*we don't create bridges to backups*/
       if (topologyMember.getLive() == null)
       {
          if (isTrace)

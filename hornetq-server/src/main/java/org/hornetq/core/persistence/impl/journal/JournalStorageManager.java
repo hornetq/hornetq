@@ -369,7 +369,7 @@ public class JournalStorageManager implements StorageManager
       }
 
 
-      // We first do a compact without any locks, to avoid copying unecessary data over the network.
+      // We first do a compact without any locks, to avoid copying unnecessary data over the network.
       // We do this without holding the storageManager lock, so the journal stays open while compact is being done
       originalMessageJournal.scheduleCompactAndBlock(-1);
       originalBindingsJournal.scheduleCompactAndBlock(-1);

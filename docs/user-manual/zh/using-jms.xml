@@ -185,7 +185,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
         <title>程序代码</title>
         <para>下面给出的例子中的代码：</para>
         <para>首先我们创建一个JNDI的Initial Context：</para>
-        <programlisting>InitialContect ic = new InitialContext();</programlisting>
+        <programlisting>InitialContext ic = new InitialContext();</programlisting>
         <para>下面我们查找 connection factory：</para>
         <programlisting>ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");</programlisting>
         <para>然后查找 Queue：</para>

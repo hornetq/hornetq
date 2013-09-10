@@ -875,7 +875,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
                   //The value {@code Session.CLIENT_ACKNOWLEDGE} may not be used.
                   case Session.CLIENT_ACKNOWLEDGE:
                      throw HornetQRABundle.BUNDLE.invalidSessionTransactedModeRuntime();
-                  //same with this altho the spec doesn't explicitly say
+                  //same with this although the spec doesn't explicitly say
                case Session.SESSION_TRANSACTED:
                      throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeModeRuntime();
                default:

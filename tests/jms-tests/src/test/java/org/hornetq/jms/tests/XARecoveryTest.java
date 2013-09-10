@@ -2511,13 +2511,13 @@ public class XARecoveryTest extends JMSTestCase
          TextMessage m1 = (TextMessage)cons.receive(1000);
          ProxyAssertSupport.assertNull(m1);
 
-         log.trace("comitting");
+         log.trace("committing");
 
          // Commit tx1
 
          res.commit(xid1, false);
 
-         log.trace("comitted");
+         log.trace("committed");
 
          // Should now be able to receive tm1 and tm2
 
