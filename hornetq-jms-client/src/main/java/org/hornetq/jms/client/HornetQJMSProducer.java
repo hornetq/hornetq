@@ -47,7 +47,7 @@ public final class HornetQJMSProducer implements JMSProducer
    private final MessageProducer producer;
    private final TypedProperties properties = new TypedProperties();
 
-   //we convert Strings to SimpelStrings so if getProperty is called the wrong object is returned, this list lets us return the
+   //we convert Strings to SimpleStrings so if getProperty is called the wrong object is returned, this list let's us return the
    //correct type
    private final List<SimpleString> stringPropertyNames = new ArrayList<>();
 

@@ -112,7 +112,7 @@ public class Match<T>
    /**
     * utility method to verify consistency of match
     * @param match the match to validate
-    * @throws IllegalArgumentException if a match isnt valid
+    * @throws IllegalArgumentException if a match isn't valid
     */
    public static void verify(final String match) throws IllegalArgumentException
    {

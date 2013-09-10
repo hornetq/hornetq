@@ -50,7 +50,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
 
       ClientConsumer[] consumers = new ClientConsumer[5];
       // start the session before we create the consumers, this is because start is non blocking and we have to
-      // gaurantee
+      // guarantee
       // all consumers have been started before sending messages
       session.start();
       consumers[0] = session.createConsumer(queueA);

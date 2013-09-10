@@ -451,7 +451,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
          checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
 
-         // we cant close all of the servers, we need to leave one up to notify us
+         // we can't close all of the servers, we need to leave one up to notify us
          stopServers(4, 2, 3, 1);
 
          boolean ok = downLatch.await(10, SECONDS);

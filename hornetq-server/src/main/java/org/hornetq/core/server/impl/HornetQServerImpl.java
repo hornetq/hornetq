@@ -2465,7 +2465,7 @@ public class HornetQServerImpl implements HornetQServer
                   startThread.start();
                   return;
                }
-               //ok, this live is no good, lets reset and try again
+               //ok, this live is no good, let's reset and try again
                //close this session factory, we're done with it
                liveServerSessionFactory.close();
                quorumManager.reset();

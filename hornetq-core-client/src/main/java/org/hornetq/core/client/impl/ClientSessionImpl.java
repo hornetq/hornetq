@@ -623,7 +623,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          }
       }
 
-      //oops, we have failed over during the commit and dont know what happened
+      //oops, we have failed over during the commit and don't know what happened
       if(rollbackOnly)
       {
          rollbackOnFailover(false);

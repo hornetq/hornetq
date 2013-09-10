@@ -155,7 +155,7 @@ public interface HornetQClientMessageBundle
    @Message(id = 119030, value =  "The transaction was rolled back on failover to a backup server", format = Message.Format.MESSAGE_FORMAT)
    HornetQTransactionRolledBackException txRolledBack();
 
-   @Message(id = 119031, value =  "The transaction was rolled back on failover however commit may have been succesful" +
+   @Message(id = 119031, value =  "The transaction was rolled back on failover however commit may have been successful" +
          "", format = Message.Format.MESSAGE_FORMAT)
    HornetQTransactionOutcomeUnknownException txOutcomeUnknown();
 

@@ -173,7 +173,7 @@ public class LargeMessageOverBridgeTest extends JMSClusteredTestBase
    }
 
    /**
-     * The message won't be large to the client while it will be considered large throught he bridge
+     * The message won't be large to the client while it will be considered large through the bridge
      * @throws Exception
      */
    @Test

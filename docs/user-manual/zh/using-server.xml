@@ -257,7 +257,7 @@
 
    &lt;mbean code="org.hornetq.service.HornetQStarterService" 
       name="org.hornetq:service=HornetQStarterService"&gt;
-      &lt;!--lets let the JMS Server start us--&gt;
+      &lt;!--let's let the JMS Server start us--&gt;
          &lt;attribute name="Start"&gt;false&lt;/attribute&gt;
 
       &lt;depends optional-attribute-name="SecurityManagerService"

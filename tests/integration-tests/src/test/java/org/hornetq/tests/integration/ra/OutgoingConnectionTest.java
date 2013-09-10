@@ -487,7 +487,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          if(inTx)
          {
-            fail("shouldnt throw exception " + e);
+            fail("shouldn't throw exception " + e);
          }
       }
       
@@ -507,7 +507,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          if(inTx)
          {
-            fail("shouldnt throw exception " + e);
+            fail("shouldn't throw exception " + e);
          }
       }
       

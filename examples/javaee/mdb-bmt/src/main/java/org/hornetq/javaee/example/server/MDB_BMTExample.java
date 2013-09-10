@@ -47,7 +47,7 @@ public class MDB_BMTExample implements MessageListener
 
          System.out.println("message " + text + " received");
 
-         // Step 11. lets look at the user transaction to make sure there isn't one.
+         // Step 11. let's look at the user transaction to make sure there isn't one.
          UserTransaction tx = ctx.getUserTransaction();
 
          if (tx != null)

@@ -203,7 +203,7 @@ public class JMSUtil
          }
          else if (System.currentTimeMillis() > timetowait)
          {
-            throw new IllegalStateException("server didnt start");
+            throw new IllegalStateException("server didn't start");
          }
       }
    }

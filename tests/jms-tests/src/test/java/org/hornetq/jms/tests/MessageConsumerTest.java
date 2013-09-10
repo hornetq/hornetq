@@ -4407,7 +4407,7 @@ public class MessageConsumerTest extends JMSTestCase
                }
                else
                {
-                  // Shouldn't get a 4th messge
+                  // Shouldn't get a 4th message
                   failed("Shouldn't get a 4th message");
                   latch.countDown();
                }

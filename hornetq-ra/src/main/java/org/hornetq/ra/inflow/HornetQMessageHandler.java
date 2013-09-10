@@ -178,7 +178,7 @@ public class HornetQMessageHandler implements MessageHandler
          consumer = (ClientConsumerInternal)session.createConsumer(queueName, selectorString);
       }
 
-      // Create the endpoint, if we are transacted pass the sesion so it is enlisted, unless using Local TX
+      // Create the endpoint, if we are transacted pass the session so it is enlisted, unless using Local TX
       MessageEndpointFactory endpointFactory = activation.getMessageEndpointFactory();
       useLocalTx = !activation.isDeliveryTransacted() && activation.getActivationSpec().isUseLocalTx();
       transacted = activation.isDeliveryTransacted();

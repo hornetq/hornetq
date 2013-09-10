@@ -32,7 +32,7 @@ public class MessageBodyTest extends PTPTestCase
 {
 
    /**
-    * Test that the <code>TextMessage.clearBody()</code> method does nto clear the
+    * Test that the <code>TextMessage.clearBody()</code> method does not clear the
     * message properties.
     */
    @Test

@@ -1078,7 +1078,7 @@ messageCounter.getMessageCountDelta());</programlisting>
          <para>
             <graphic fileref="images/console1.png" scalefit="1" width="500" align="center"/>
         </para>
-         <para>The name and JNDI name cant be changed, if you want to change these recreate the queue with the appropriate
+         <para>The name and JNDI name can't be changed, if you want to change these recreate the queue with the appropriate
          settings. The rest of the configuration options, apart from security roles, relate to address settings for a particular
          address. The default address settings are picked up from the servers configuration, if you change any of these
          settings or create a queue via the console a new Address Settings entry will be added. For a full explanation on

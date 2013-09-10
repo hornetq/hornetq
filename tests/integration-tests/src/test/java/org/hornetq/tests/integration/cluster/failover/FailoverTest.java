@@ -1734,7 +1734,7 @@ public class FailoverTest extends FailoverTestBase
             {
                // The test can only jump to the next message if the current iteration is meant for non-durable
                assertFalse("a message on counter=" + i + " was expected", isDurable(i));
-               // message belongs to the next iteration.. lets just ignore it
+               // message belongs to the next iteration.. let's just ignore it
                repeatMessage = message;
                continue;
             }

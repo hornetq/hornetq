@@ -153,9 +153,9 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.getExpiryAddress();
    }
 
-   public void setExpiryAddress(final String expiryAddres) throws Exception
+   public void setExpiryAddress(final String expiryAddress) throws Exception
    {
-      coreQueueControl.setExpiryAddress(expiryAddres);
+      coreQueueControl.setExpiryAddress(expiryAddress);
    }
 
    @Override

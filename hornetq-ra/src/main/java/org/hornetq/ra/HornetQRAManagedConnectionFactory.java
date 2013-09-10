@@ -31,7 +31,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 
 /**
- * HornetQ ManagedConectionFactory
+ * HornetQ ManagedConnectionFactory
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>.
@@ -92,7 +92,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     * Creates a Connection Factory instance
     *
     * @return javax.resource.cci.ConnectionFactory instance
-    * @throws ResourceException Thrown if a connection factory cant be created
+    * @throws ResourceException Thrown if a connection factory can't be created
     */
    public Object createConnectionFactory() throws ResourceException
    {
@@ -109,7 +109,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     *
     * @param cxManager The connection manager
     * @return javax.resource.cci.ConnectionFactory instance
-    * @throws ResourceException Thrown if a connection factory cant be created
+    * @throws ResourceException Thrown if a connection factory can't be created
     */
    public Object createConnectionFactory(final ConnectionManager cxManager) throws ResourceException
    {
@@ -137,7 +137,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
     * @return The managed connection
-    * @throws ResourceException Thrown if a managed connection cant be created
+    * @throws ResourceException Thrown if a managed connection can't be created
     */
    public ManagedConnection createManagedConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
@@ -253,7 +253,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     * Set the log writer -- NOT SUPPORTED
     *
     * @param out The writer
-    * @throws ResourceException Thrown if the writer cant be set
+    * @throws ResourceException Thrown if the writer can't be set
     */
    public void setLogWriter(final PrintWriter out) throws ResourceException
    {
@@ -267,7 +267,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
     * Get the log writer -- NOT SUPPORTED
     *
     * @return The writer
-    * @throws ResourceException Thrown if the writer cant be retrieved
+    * @throws ResourceException Thrown if the writer can't be retrieved
     */
    public PrintWriter getLogWriter() throws ResourceException
    {

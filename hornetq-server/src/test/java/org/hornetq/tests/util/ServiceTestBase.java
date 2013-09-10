@@ -339,7 +339,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (!server.isStarted())
       {
          log.info(threadDump("Server didn't start"));
-         fail("server didnt start: " + server);
+         fail("server didn't start: " + server);
       }
 
       if (!server.getConfiguration().isBackup())

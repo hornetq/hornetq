@@ -450,7 +450,7 @@ public final class BindingsImpl implements Bindings
 
          if (resp == null)
          {
-            // ok lets find the next binding to propose
+            // ok let's find the next binding to propose
             Binding theBinding = getNextBinding(message, routingName, bindings);
             if(theBinding == null)
             {
@@ -473,7 +473,7 @@ public final class BindingsImpl implements Bindings
                }
             }
 
-            // and lets route it
+            // and let's route it
             if (theBinding != null)
             {
                theBinding.route(message, context);

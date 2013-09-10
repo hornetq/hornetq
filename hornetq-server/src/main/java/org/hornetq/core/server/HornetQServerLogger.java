@@ -1006,7 +1006,7 @@ public interface HornetQServerLogger extends BasicLogger
    void keyAttributeMissing(Node node);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224005, value = "Unable to deply node {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 224005, value = "Unable to deploy node {0}", format = Message.Format.MESSAGE_FORMAT)
    void unableToDeployNode(@Cause Exception e, Node node);
 
    @LogMessage(level = Logger.Level.ERROR)

@@ -66,8 +66,8 @@ public class MDB_CMT_TxLocalExample implements MessageListener
             }
             else
             {
-               System.out.println("there is no global transaction, altho the messge delivery is using a local transaction");
-               System.out.println("lets throw an exception and see what happens");
+               System.out.println("there is no global transaction, although the message delivery is using a local transaction");
+               System.out.println("let's throw an exception and see what happens");
                throw new RuntimeException("DOH!");
             }
          }

@@ -443,7 +443,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                reader.markAsDataFile(file);
 
                wholeFileBuffer.position(pos + 1);
-               // II - Ignore this record, lets keep looking
+               // II - Ignore this record, let's keep looking
                continue;
             }
 
@@ -2893,7 +2893,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             SequentialFile fileTmp = fileFactory.createSequentialFile(rename.getA(), 1);
             SequentialFile fileTo = fileFactory.createSequentialFile(rename.getB(), 1);
             // We should do the rename only if the tmp file still exist, or else we could
-            // delete a valid file depending on where the crash occured during the control file delete
+            // delete a valid file depending on where the crash occurred during the control file delete
             if (fileTmp.exists())
             {
                fileTo.delete();

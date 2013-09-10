@@ -78,7 +78,7 @@
             </listitem>
         </itemizedlist>
         <para>
-            This information, lets call it the Cluster Topology, is actually sent around normal HornetQ
+            This information, let's call it the Cluster Topology, is actually sent around normal HornetQ
             connections to clients and to other servers over cluster connections. This being the case we need a
             way of establishing the initial first connection. This can be done using
             dynamic discovery techniques like <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink>
@@ -281,7 +281,7 @@
                     </listitem>
                 </itemizedlist>
                 <para>
-                    Although a discovery group will always accept broadcasts, its current list of avaliable live and
+                    Although a discovery group will always accept broadcasts, its current list of available live and
                     backup servers is only ever used when an initial connection is made, from then server discovery is
                     done over the normal HornetQ connections.
                 </para>

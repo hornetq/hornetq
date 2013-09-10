@@ -33,7 +33,7 @@ import java.util.Random;
  * advances).
  * <li>As an additional precaution, counter is initialized not to 0 but to a
  * random 8-bit number, and each time clock changes, lowest 8-bits of counter
- * are preserved. The purpose it to make likelyhood of multi-JVM multi-instance
+ * are preserved. The purpose it to make likelihood of multi-JVM multi-instance
  * generators to collide, without significantly reducing max. UUID generation
  * speed. Note though that using more than one generator (from separate JVMs) is
  * strongly discouraged, so hopefully this enhancement isn't needed. This 8-bit

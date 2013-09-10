@@ -332,7 +332,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
       long timeOut;
 
       // If timeWait = 0, we will use the readTimeout
-      // And we will check if no packets have arrived withing readTimeout milliseconds
+      // And we will check if no packets have arrived within readTimeout milliseconds
       if (timeWait != 0)
       {
          timeOut = System.currentTimeMillis() + timeWait;
