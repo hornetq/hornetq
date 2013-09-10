@@ -512,7 +512,7 @@ TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactor
 HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, server1, server2);</programlisting>
                 </section>
                 <section>
-                    <title>Configuring client discovery using JMS</title>
+                    <title>Configuring client discovery using Core</title>
                     <para>If you are using the core API then the same can be done as follows:</para>
                     <programlisting>
 HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
