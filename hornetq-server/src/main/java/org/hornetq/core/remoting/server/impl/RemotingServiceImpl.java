@@ -243,7 +243,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                   info.getParams());
 
             ProtocolManager manager = protocolMap.get(protocol);
-
+            if (manager == null)
+            {
+               throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(protocol);
+            }
             ClusterConnection clusterConnection = lookupClusterConnection(info);
 
             Acceptor acceptor = factory.createAcceptor(clusterConnection,
