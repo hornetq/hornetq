@@ -73,6 +73,11 @@
          <artifactId>hornetq-journal</artifactId>
          <version>${project.version}</version>
       </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-amqp-protocol</artifactId>
+         <version>${project.version}</version>
+      </dependency>
        <dependency>
            <groupId>org.hornetq</groupId>
            <artifactId>hornetq-stomp-protocol</artifactId>
