@@ -1280,11 +1280,8 @@ public interface HornetQServerLogger extends BasicLogger
        format = Message.Format.MESSAGE_FORMAT)
     void bridgeCantFindConnectors(String bridgeName);
 
-   /**
-    *
-    */
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 22406, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
+   @Message(id = 224066, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
             format = Message.Format.MESSAGE_FORMAT)
    void clusterManagerAuthenticationError(String msg);
 }
