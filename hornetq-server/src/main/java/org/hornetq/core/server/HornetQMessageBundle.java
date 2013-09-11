@@ -323,12 +323,14 @@ public interface HornetQMessageBundle
    @Message(id = 119083, value =  "Queue {0} has a different filter than requested", format = Message.Format.MESSAGE_FORMAT)
    HornetQInvalidTransientQueueUseException queueSubscriptionBelongsToDifferentFilter(SimpleString queueName);
 
-   @Message(id = 119084, value = "Unable to authenticate cluster user: {0}",
-            format = Message.Format.MESSAGE_FORMAT)
-   HornetQClusterSecurityException unableToValidateClusterUser(String user);
-
    @Message(id = 119085, value = "Classpath lacks a protocol-manager for protocol {0}",
             format = Message.Format.MESSAGE_FORMAT)
    HornetQException noProtocolManagerFound(String protocol);
+
+   // this code has to match with version 2.3.x as it's used on integration tests at Wildfly and JBoss EAP
+   @Message(id = 119099, value = "Unable to authenticate cluster user: {0}",
+            format = Message.Format.MESSAGE_FORMAT)
+   HornetQClusterSecurityException unableToValidateClusterUser(String user);
+
 
 }
