@@ -147,7 +147,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    @Override
    public String toString()
    {
-      return "ClientMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress() + ",properties=" + properties.toString() + "]";
+      return "ClientMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",userID=" + (getUserID() != null ? getUserID() : "null") + ",properties=" + properties.toString() + "]";
    }
 
    /* (non-Javadoc)
