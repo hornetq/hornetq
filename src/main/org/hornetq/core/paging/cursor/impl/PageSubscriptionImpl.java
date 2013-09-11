@@ -416,7 +416,8 @@ public class PageSubscriptionImpl implements PageSubscription
       }
 
       // it will scan for the next available page
-      while (cache == null && retPos.getPageNr() <= pageStore.getCurrentWritingPage())
+      while ((cache == null && retPos.getPageNr() <= pageStore.getCurrentWritingPage()) ||
+             (cache != null && retPos.getPageNr() <= pageStore.getCurrentWritingPage() && cache.getNumberOfMessages() ==0))
       {
          retPos = moveNextPage(retPos);
 
@@ -425,6 +426,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       if (cache == null)
       {
+         // it will be null in the case of the current writing page
          return null;
       }
       else
@@ -1335,7 +1337,7 @@ public class PageSubscriptionImpl implements PageSubscription
          {
             boolean match = false;
 
-            PagedReference message = null;
+            PagedReference message;
 
             PagePosition lastPosition = position;
             PagePosition tmpPosition = position;
