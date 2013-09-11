@@ -264,7 +264,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          ClientSession session = sf.createSession(true, true, 0);
 
-         listener = new CountDownSessionFailureListener();
+         listener = new CountDownSessionFailureListener(session);
 
          session.addFailureListener(listener);
 
@@ -401,7 +401,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             session = sf.createSession(false, false);
 
-            listener = new CountDownSessionFailureListener();
+            listener = new CountDownSessionFailureListener(session);
             session.addFailureListener(listener);
 
             do

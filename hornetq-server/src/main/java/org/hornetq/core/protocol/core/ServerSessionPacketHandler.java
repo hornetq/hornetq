@@ -361,7 +361,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   requiresResponse = true;
                   SessionXAAfterFailedMessage message = (SessionXAAfterFailedMessage)packet;
                   session.xaFailed(message.getXid());
-                  response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+                  // no response on this case
                   break;
                }
                case SESS_XA_SUSPEND:

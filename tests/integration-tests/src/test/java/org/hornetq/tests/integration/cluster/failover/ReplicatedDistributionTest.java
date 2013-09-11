@@ -176,7 +176,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      session.addFailureListener(new CountDownSessionFailureListener(latch));
+      session.addFailureListener(new CountDownSessionFailureListener(latch, session));
 
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
