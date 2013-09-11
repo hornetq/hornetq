@@ -71,7 +71,7 @@ public class SessionTest extends ServiceTestBase
 
       cf = createSessionFactory(locator);
       ClientSession clientSession = addClientSession(cf.createSession(false, true, true));
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(clientSession);
       clientSession.addFailureListener(listener);
          // Make sure failure listener is called if server is stopped without session being closed first
          server.stop();

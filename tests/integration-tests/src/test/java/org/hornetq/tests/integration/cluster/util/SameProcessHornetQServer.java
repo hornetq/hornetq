@@ -73,18 +73,18 @@ public class SameProcessHornetQServer implements TestableServer
       server.stop();
    }
 
-   public void crash(ClientSession... sessions) throws Exception
+   public CountDownLatch crash(ClientSession... sessions) throws Exception
    {
-      crash(true, sessions);
+      return crash(true, sessions);
    }
 
-   public void crash(boolean waitFailure, ClientSession... sessions) throws Exception
+   public CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
       CountDownLatch latch = new CountDownLatch(sessions.length);
       CountDownSessionFailureListener listeners[] = new CountDownSessionFailureListener[sessions.length];
       for (int i = 0; i < sessions.length; i++)
       {
-         listeners[i] = new CountDownSessionFailureListener(latch);
+         listeners[i] = new CountDownSessionFailureListener(latch, sessions[i]);
          sessions[i].addFailureListener(listeners[i]);
       }
 
@@ -101,10 +101,8 @@ public class SameProcessHornetQServer implements TestableServer
          Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
                   sessions.length, ok);
       }
-      for (int i = 0; i < sessions.length; i++)
-      {
-         sessions[i].removeFailureListener(listeners[i]);
-      }
+
+      return latch;
    }
 
    public HornetQServer getServer()
