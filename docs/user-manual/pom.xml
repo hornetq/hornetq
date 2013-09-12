@@ -272,6 +272,7 @@
               </execution>
             </executions>
             <configuration>
+              <transformerFactory>net.sf.saxon.TransformerFactoryImpl</transformerFactory>
               <transformationSets>
                 <transformationSet>
                   <dir>../../hornetq-server/src/main/resources/schema</dir>

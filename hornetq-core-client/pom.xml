@@ -122,6 +122,7 @@
               </execution>
             </executions>
             <configuration>
+              <transformerFactory>net.sf.saxon.TransformerFactoryImpl</transformerFactory>
               <transformationSets>
                 <transformationSet>
                   <!-- Generates target/generated-sources/xslt/.../HornetQDefaultConfiguration.java
