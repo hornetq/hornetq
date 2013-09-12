@@ -45,9 +45,107 @@
 
     */
 </xsl:text>
-    <xsl:value-of select="unparsed-text('./HornetQDefaultConfiguration.txt', 'iso-8859-1')" disable-output-escaping="yes"/>
+/*
+      XSLT Version = <xsl:copy-of select="system-property('xsl:version')"/>
+      XSLT Vendor = <xsl:copy-of select="system-property('xsl:vendor')"/>
+      XSLT Vendor URL = <xsl:copy-of select="system-property('xsl:vendor-url')"/>
+*/
+<xsl:text>
+package org.hornetq.api.config;
 
-<xsl:text>&#xa;    // -------------------------------------------------------------------
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.journal.impl.JournalConstants;
+
+/**
+ * Default values of HornetQ configuration parameters.
+ */
+public final class HornetQDefaultConfiguration
+{
+   /*
+    * In order to avoid compile time in-lining of constants, all access is done through methods
+    * and all fields are PRIVATE STATIC but not FINAL. This is done following the recommendation at
+    * &lt;a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.4.9">13.4.9.
+    * final Fields and Constants&lt;/a>
+    * @see http://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.4.9
+    */
+
+   private HornetQDefaultConfiguration()
+   {
+      // Utility class
+   }
+
+   public static long getDefaultClientFailureCheckPeriod()
+   {
+      return DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   }
+
+   public static long getDefaultFileDeployerScanPeriod()
+   {
+      return DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
+   }
+
+   public static int getDefaultJournalMaxIoAio()
+   {
+      return DEFAULT_JOURNAL_MAX_IO_AIO;
+   }
+
+   public static int getDefaultJournalBufferTimeoutAio()
+   {
+      return DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+   }
+
+   public static int getDefaultJournalBufferSizeAio()
+   {
+      return DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   }
+
+   public static int getDefaultJournalMaxIoNio()
+   {
+      return DEFAULT_JOURNAL_MAX_IO_NIO;
+   }
+
+   public static int getDefaultJournalBufferTimeoutNio()
+   {
+      return DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+   }
+
+   public static int getDefaultJournalBufferSizeNio()
+   {
+      return DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+   }
+
+   public static String getPropMaskPassword()
+   {
+      return PROP_MASK_PASSWORD;
+   }
+
+   public static String getPropPasswordCodec()
+   {
+      return PROP_PASSWORD_CODEC;
+   }
+
+   //shared by client and core/server
+   // XXX not on schema?
+   private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
+
+   // XXX not on schema?
+   private static long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
+
+   // These defaults are applied depending on whether the journal type
+   // is NIO or AIO.
+   private static int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
+   private static int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+   private static int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   private static int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
+   private static int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+   private static int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+
+   // XXX not on schema.
+   //properties passed to acceptor/connectors.
+   private static String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
+   private static String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
+
+&#xa;    // -------------------------------------------------------------------
     // Following fields are generated from the hornetq-schema.xsd annotations
     // -------------------------------------------------------------------&#xa;</xsl:text>
 
