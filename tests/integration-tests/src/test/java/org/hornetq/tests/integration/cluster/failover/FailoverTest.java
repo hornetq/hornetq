@@ -2184,8 +2184,8 @@ public class FailoverTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       createSessionFactory();
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
       ClientSession session = sendAndConsume(sf, true);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(session);
 
       session.addFailureListener(listener);
 
@@ -2218,7 +2218,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      session.addFailureListener(new CountDownSessionFailureListener(latch));
+      session.addFailureListener(new CountDownSessionFailureListener(latch, session));
 
       backupServer.stop();
 
@@ -2252,7 +2252,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      session.addFailureListener(new CountDownSessionFailureListener(latch));
+      session.addFailureListener(new CountDownSessionFailureListener(latch, session));
 
       backupServer.stop();
 
@@ -2300,9 +2300,10 @@ public class FailoverTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
 
       ClientSession session = sendAndConsume(sf, true);
+
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(session);
 
       session.addFailureListener(listener);
 

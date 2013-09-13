@@ -1838,7 +1838,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
        CountDownLatch latch = new CountDownLatch(sessions.length);
        for (ClientSession session : sessions)
        {
-          CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
+          CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch, session);
           session.addFailureListener(listener);
        }
 
