@@ -63,7 +63,7 @@ public class FailBackManualTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(1);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(1, session);
 
       session.addFailureListener(listener);
 

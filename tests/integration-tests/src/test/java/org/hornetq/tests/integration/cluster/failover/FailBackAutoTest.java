@@ -61,7 +61,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch, session);
 
       session.addFailureListener(listener);
 
@@ -87,7 +87,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       final CountDownLatch latch2 = new CountDownLatch(1);
 
-      listener = new CountDownSessionFailureListener(latch2);
+      listener = new CountDownSessionFailureListener(latch2, session);
 
       session.addFailureListener(listener);
 
@@ -142,7 +142,7 @@ public class FailBackAutoTest extends FailoverTestBase
       createSessionFactory();
       ClientSession session = sendAndConsume(sf, true);
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(session);
 
       session.addFailureListener(listener);
 
@@ -158,7 +158,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      listener = new CountDownSessionFailureListener();
+      listener = new CountDownSessionFailureListener(session);
 
       session.addFailureListener(listener);
 
@@ -175,7 +175,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      listener = new CountDownSessionFailureListener();
+      listener = new CountDownSessionFailureListener(session);
 
       session.addFailureListener(listener);
 
@@ -216,7 +216,7 @@ public class FailBackAutoTest extends FailoverTestBase
       assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
       adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
 
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(session);
       session.addFailureListener(listener);
 
       liveServer.start();
