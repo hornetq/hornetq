@@ -165,6 +165,11 @@ public class TransactionImpl implements Transaction
          {
             if (exception != null)
             {
+               // this TX will never be rolled back,
+               // so we reset it now
+               beforeRollback();
+               afterRollback();
+               operations.clear();
                throw exception;
             }
             else

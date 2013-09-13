@@ -1044,6 +1044,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                   HornetQClientLogger.LOGGER.debug("ClientSession couldn't be reattached, creating a new session");
                }
 
+               for (ClientConsumerInternal consumer : cloneConsumers())
+               {
+                  consumer.clearAtFailover();
+               }
+
+
                // The session wasn't found on the server - probably we're failing over onto a backup server where the
                // session won't exist or the target server has been restarted - in this case the session will need to be
                // recreated,
@@ -1152,7 +1158,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                      // while we do our work here
                      rollbackOnly = true;
                   }
-
                   if (currentXID != null)
                   {
                      sendPacketWithoutLock(new SessionXAAfterFailedMessage(currentXID));
@@ -1416,65 +1421,70 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       checkXA();
 
-      currentXID = null;
-
-      if (rollbackOnly)
-      {
-         try
-         {
-            rollback();
-         }
-         catch (Exception ignored)
-         {
-            HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
-         }
-         throw new XAException(XAException.XA_RBOTHER);
-      }
-
       try
       {
-         Packet packet;
-
-         if (flags == XAResource.TMSUSPEND)
+         if (rollbackOnly)
          {
-            packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
-         }
-         else if (flags == XAResource.TMSUCCESS)
-         {
-            packet = new SessionXAEndMessage(xid, false);
-         }
-         else if (flags == XAResource.TMFAIL)
-         {
-            packet = new SessionXAEndMessage(xid, true);
-         }
-         else
-         {
-            throw new XAException(XAException.XAER_INVAL);
+            try
+            {
+               rollback();
+            }
+            catch (Exception ignored)
+            {
+               HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
+            }
+            throw new XAException(XAException.XA_RBOTHER);
          }
 
-         flushAcks();
-
-         SessionXAResponseMessage response;
-         startCall();
          try
          {
-            response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
-         }
-         finally
-         {
-            endCall();
-         }
+            Packet packet;
 
-         if (response.isError())
+            if (flags == XAResource.TMSUSPEND)
+            {
+               packet = new PacketImpl(PacketImpl.SESS_XA_SUSPEND);
+            }
+            else if (flags == XAResource.TMSUCCESS)
+            {
+               packet = new SessionXAEndMessage(xid, false);
+            }
+            else if (flags == XAResource.TMFAIL)
+            {
+               packet = new SessionXAEndMessage(xid, true);
+            }
+            else
+            {
+               throw new XAException(XAException.XAER_INVAL);
+            }
+
+            flushAcks();
+
+            SessionXAResponseMessage response;
+            startCall();
+            try
+            {
+               response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
+            }
+            finally
+            {
+               endCall();
+            }
+
+            if (response.isError())
+            {
+               throw new XAException(response.getResponseCode());
+            }
+         }
+         catch (HornetQException e)
          {
-            throw new XAException(response.getResponseCode());
+            HornetQClientLogger.LOGGER.errorCallingEnd(e);
+            // This should never occur
+            throw new XAException(XAException.XAER_RMERR);
          }
       }
-      catch (HornetQException e)
+      finally
       {
-         HornetQClientLogger.LOGGER.errorCallingEnd(e);
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         currentXID = null;
       }
    }
 
