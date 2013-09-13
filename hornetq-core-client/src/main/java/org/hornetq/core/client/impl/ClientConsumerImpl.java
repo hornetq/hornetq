@@ -525,6 +525,9 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    {
       clearBuffer();
 
+      // failover will issue a start later
+      this.stopped = true;
+
       resetLargeMessageController();
 
       lastAckedMessage = null;

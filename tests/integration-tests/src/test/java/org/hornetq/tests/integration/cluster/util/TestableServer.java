@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.util;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.server.HornetQComponent;
@@ -30,9 +32,9 @@ public interface TestableServer extends HornetQComponent
 
    public void setIdentity(String identity);
 
-   public void crash(ClientSession... sessions) throws Exception;
+   public CountDownLatch crash(ClientSession... sessions) throws Exception;
 
-   public void crash(boolean waitFailure, ClientSession... sessions) throws Exception;
+   public CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception;
 
    public boolean isActive();
 
