@@ -46,7 +46,7 @@
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
       </HornetQ-Version>
-      <resteasy.version>2.3.4.Final</resteasy.version>
+      <resteasy.version>3.0.4.Final</resteasy.version>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
       <skipBytemanTests>true</skipBytemanTests>

@@ -40,7 +40,7 @@ public class DupQueueTest extends MessageTestBase
 
      ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       Assert.assertEquals(307, res.getStatus());
-      sender = res.getLocation();
+      sender = res.getLocationLink();
       res.releaseConnection();
       System.out.println("create-next: " + sender);
       Assert.assertNotNull(sender);

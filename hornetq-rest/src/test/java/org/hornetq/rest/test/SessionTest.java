@@ -45,7 +45,7 @@ public class SessionTest extends MessageTestBase
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
       response = Util.setAutoAck(consumers, true);
-      Link session = response.getLocation();
+      Link session = response.getLocationLink();
       response = session.request().head();
       response.releaseConnection();
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -101,7 +101,7 @@ public class SessionTest extends MessageTestBase
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-subscriptions");
       System.out.println("pull: " + consumers);
       response = Util.setAutoAck(consumers, true);
-      Link session = response.getLocation();
+      Link session = response.getLocationLink();
       response = session.request().head();
       response.releaseConnection();
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -159,7 +159,7 @@ public class SessionTest extends MessageTestBase
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
       response = Util.setAutoAck(consumers, false);
-      Link session = response.getLocation();
+      Link session = response.getLocationLink();
       response = session.request().head();
       response.releaseConnection();
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "acknowledge-next");
@@ -236,7 +236,7 @@ public class SessionTest extends MessageTestBase
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-subscriptions");
       System.out.println("pull: " + consumers);
       response = Util.setAutoAck(consumers, false);
-      Link session = response.getLocation();
+      Link session = response.getLocationLink();
       response = session.request().head();
       response.releaseConnection();
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "acknowledge-next");

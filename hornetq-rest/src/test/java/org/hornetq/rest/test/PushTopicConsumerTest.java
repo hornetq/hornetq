@@ -82,7 +82,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       response = pushSubscriptions.request().body("application/xml", reg).post();
       response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+      Link pushSubscription = response.getLocationLink();
 
       response = sender.request().body("text/plain", Integer.toString(1)).post();
       response.releaseConnection();
@@ -141,7 +141,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       reg.setTarget(target);
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+      Link pushSubscription = response.getLocationLink();
       response.releaseConnection();
 
       response = sender.request().body("text/plain", Integer.toString(1)).post();
@@ -202,7 +202,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       reg.setTarget(target);
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+      Link pushSubscription = response.getLocationLink();
       response.releaseConnection();
 
       response = sender.request().body("text/plain", Integer.toString(1)).post();
@@ -292,7 +292,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       reg.setTarget(target);
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+      Link pushSubscription = response.getLocationLink();
       response.releaseConnection();
 
       response = sender.request().body("text/plain", Integer.toString(1)).post();
@@ -338,7 +338,7 @@ public class PushTopicConsumerTest extends MessageTestBase
       reg.setSessionCount(CONCURRENT);
       response = pushSubscriptions.request().body("application/xml", reg).post();
       Assert.assertEquals(201, response.getStatus());
-      Link pushSubscription = response.getLocation();
+      Link pushSubscription = response.getLocationLink();
       response.releaseConnection();
 
       for (int i = 0; i < CONCURRENT; i++)
