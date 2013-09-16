@@ -152,12 +152,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       CoreProtocolManagerFactory coreProtocolManagerFactory = new CoreProtocolManagerFactory();
       //i know there is only 1
+      HornetQServerLogger.LOGGER.addingProtocolSupport(coreProtocolManagerFactory.getProtocols()[0]);
       this.protocolMap.put(coreProtocolManagerFactory.getProtocols()[0],
             coreProtocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
 
       if (config.isResolveProtocols())
       {
-         ServiceLoader<ProtocolManagerFactory> serviceLoader = ServiceLoader.load(ProtocolManagerFactory.class);
+         ServiceLoader<ProtocolManagerFactory> serviceLoader = ServiceLoader.load(ProtocolManagerFactory.class, this.getClass().getClassLoader());
          if (serviceLoader != null)
          {
             for (ProtocolManagerFactory next : serviceLoader)
@@ -165,6 +166,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                String[] protocols = next.getProtocols();
                for (String protocol : protocols)
                {
+                  HornetQServerLogger.LOGGER.addingProtocolSupport(protocol);
                   protocolMap.put(protocol, next.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
                }
             }
@@ -178,6 +180,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             String[] protocols = protocolManagerFactory.getProtocols();
             for (String protocol : protocols)
             {
+               HornetQServerLogger.LOGGER.addingProtocolSupport(protocol);
                protocolMap.put(protocol, protocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
             }
          }
