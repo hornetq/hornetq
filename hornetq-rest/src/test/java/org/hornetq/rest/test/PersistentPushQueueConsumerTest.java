@@ -175,7 +175,7 @@ public class PersistentPushQueueConsumerTest
          reg.setRetryWaitMillis(10);
          response = pushSubscriptions.request().body("application/xml", reg).post();
          Assert.assertEquals(201, response.getStatus());
-         Link pushSubscription = response.getLocation();
+         Link pushSubscription = response.getLocationLink();
          response.releaseConnection();
 
         ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
