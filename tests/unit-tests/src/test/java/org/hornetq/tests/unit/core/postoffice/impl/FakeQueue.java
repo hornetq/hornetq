@@ -339,6 +339,18 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public void incrementMesssagesAdded()
+   {
+
+   }
+
+   @Override
+   public List<MessageReference> cancelScheduledMessages()
+   {
+      return null;
+   }
+
+   @Override
    public long getMessagesAdded(long timeout)
    {
       return 0;
@@ -490,6 +502,12 @@ public class FakeQueue implements Queue
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // no-op
+
+   }
+
+   @Override
+   public void routeWithAck(ServerMessage message, RoutingContext context)
+   {
 
    }
 

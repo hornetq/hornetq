@@ -16,6 +16,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -526,6 +527,12 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          protected void postAcknowledge(final MessageReference ref)
          {
             System.out.println("Ignoring postACK on message " + ref);
+         }
+
+         @Override
+         public List<MessageReference> cancelScheduledMessages()
+         {
+            return null;
          }
       }
 

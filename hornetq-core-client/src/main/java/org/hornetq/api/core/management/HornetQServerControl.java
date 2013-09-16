@@ -608,5 +608,7 @@ public interface HornetQServerControl
 
    @Operation(desc = "force the server to stop and notify clients to failover", impact = MBeanOperationInfo.UNKNOWN)
    void forceFailover() throws Exception;
+
+   void updateDuplicateIdCache(String address, Object[] ids) throws Exception;
 }
 

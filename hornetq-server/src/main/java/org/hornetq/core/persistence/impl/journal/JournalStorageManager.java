@@ -1920,7 +1920,7 @@ public class JournalStorageManager implements StorageManager
             messageJournal.perfBlast(perfBlastPages);
          }
 
-         journalLoader.postLoad(messageJournal);
+         journalLoader.postLoad(messageJournal, resourceManager, duplicateIDMap);
          journalLoaded = true;
          return info;
       }

@@ -52,6 +52,7 @@ import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.CheckType;
@@ -1832,6 +1833,24 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          server.stop(true);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   @Override
+   public void updateDuplicateIdCache(String address, Object[] ids) throws Exception
+   {
+      clearIO();
+      try
+      {
+         DuplicateIDCache duplicateIDCache = server.getPostOffice().getDuplicateIDCache(new SimpleString(address));
+         for (Object id : ids)
+         {
+            duplicateIDCache.addToCache(((String)id).getBytes(), null);
+         }
       }
       finally
       {

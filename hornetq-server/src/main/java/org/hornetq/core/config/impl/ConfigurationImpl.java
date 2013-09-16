@@ -29,6 +29,7 @@ import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -227,6 +228,8 @@ public class ConfigurationImpl implements Configuration
    private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
 
    private Set<Configuration> backupServerConfigurations = new HashSet<>();
+
+   private BackupStrategy backupStrategy;
 
    // Public -------------------------------------------------------------------------
 
@@ -1524,5 +1527,16 @@ public class ConfigurationImpl implements Configuration
    public Set<Configuration> getBackupServerConfigurations()
    {
       return backupServerConfigurations;
+   }
+
+   @Override
+   public void setBackupStrategy(BackupStrategy backupStrategy)
+   {
+      this.backupStrategy = backupStrategy;
+   }
+
+   public BackupStrategy getBackupStrategy()
+   {
+      return backupStrategy;
    }
 }

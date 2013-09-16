@@ -197,6 +197,18 @@ public class LastValueQueue extends QueueImpl
          map.remove(prop);
       }
 
+      @Override
+      public void setAlreadyAcked()
+      {
+         ref.setAlreadyAcked();
+      }
+
+      @Override
+      public boolean isAlreadyAcked()
+      {
+         return ref.isAlreadyAcked();
+      }
+
       void setReference(final MessageReference ref)
       {
          this.ref = ref;

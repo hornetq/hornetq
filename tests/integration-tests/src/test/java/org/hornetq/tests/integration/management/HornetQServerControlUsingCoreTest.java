@@ -101,6 +101,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    {
       return new HornetQServerControl()
       {
+         @Override
+         public void updateDuplicateIdCache(String address, Object[] ids)
+         {
+
+         }
+
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_SERVER);
 
          public boolean isSharedStore()

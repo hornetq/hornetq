@@ -40,7 +40,7 @@ public interface JournalLoader
 
    void handleDuplicateIds(Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
-   void postLoad(Journal messageJournal) throws Exception;
+   void postLoad(Journal messageJournal, ResourceManager resourceManager, Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    void handlePreparedSendMessage(ServerMessage message, Transaction tx, long queueID) throws Exception;
 

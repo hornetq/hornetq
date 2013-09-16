@@ -181,6 +181,12 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
       {
          return "FakeBiding Address=" + this.address;
       }
+
+      @Override
+      public void routeWithAck(ServerMessage message, RoutingContext context)
+      {
+
+      }
    }
 
 

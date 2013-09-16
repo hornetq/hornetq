@@ -252,4 +252,8 @@ public interface Queue extends Bindable
    void setInternalQueue(boolean internalQueue);
 
    void resetMessagesAdded();
+
+   void incrementMesssagesAdded();
+
+   List<MessageReference> cancelScheduledMessages();
 }

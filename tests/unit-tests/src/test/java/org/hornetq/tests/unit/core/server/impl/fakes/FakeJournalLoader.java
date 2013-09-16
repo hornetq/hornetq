@@ -57,7 +57,7 @@ public class FakeJournalLoader implements JournalLoader
    }
 
    @Override
-   public void postLoad(Journal messageJournal)
+   public void postLoad(Journal messageJournal, ResourceManager resourceManager, Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap)
    {
    }
 

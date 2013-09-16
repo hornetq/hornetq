@@ -112,6 +112,11 @@ public class LocalQueueBinding implements QueueBinding
       queue.route(message, context);
    }
 
+   public void routeWithAck(ServerMessage message, RoutingContext context) throws Exception
+   {
+      queue.routeWithAck(message, context);
+   }
+
    public boolean isQueueBinding()
    {
       return true;
