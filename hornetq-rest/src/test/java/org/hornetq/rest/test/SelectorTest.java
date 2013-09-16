@@ -193,7 +193,7 @@ public class SelectorTest extends MessageTestBase
       oneReg.setSelector("MyTag = '1'");
       response = consumers.request().body("application/xml", oneReg).post();
       response.releaseConnection();
-      Link oneSubscription = response.getLocation();
+      Link oneSubscription = response.getLocationLink();
 
       PushTopicRegistration twoReg = new PushTopicRegistration();
       twoReg.setDurable(false);
@@ -205,7 +205,7 @@ public class SelectorTest extends MessageTestBase
       twoReg.setSelector("MyTag = '2'");
       response = consumers.request().body("application/xml", twoReg).post();
       response.releaseConnection();
-      Link twoSubscription = response.getLocation();
+      Link twoSubscription = response.getLocationLink();
 
       Order order = new Order();
       order.setName("1");

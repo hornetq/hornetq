@@ -61,7 +61,7 @@ public class FindDestinationTest extends MessageTestBase
 
      ClientResponse<?> res = subscriptions.request().post();
       Assert.assertEquals(201, res.getStatus());
-      Link sub1 = res.getLocation();
+      Link sub1 = res.getLocationLink();
       res.releaseConnection();
       Assert.assertNotNull(sub1);
       Link consumeNext1 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
@@ -70,7 +70,7 @@ public class FindDestinationTest extends MessageTestBase
 
       res = subscriptions.request().post();
       Assert.assertEquals(201, res.getStatus());
-      Link sub2 = res.getLocation();
+      Link sub2 = res.getLocationLink();
       res.releaseConnection();
       Assert.assertNotNull(sub2);
       Link consumeNext2 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");

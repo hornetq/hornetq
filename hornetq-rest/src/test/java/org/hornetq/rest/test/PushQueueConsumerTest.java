@@ -357,7 +357,7 @@ public class PushQueueConsumerTest extends MessageTestBase
       ClientResponse pushRegistrationResponse = pushSubscriptions.request().body("application/xml", reg).post();
       pushRegistrationResponse.releaseConnection();
       Assert.assertEquals(201, pushRegistrationResponse.getStatus());
-      Link pushSubscription = pushRegistrationResponse.getLocation();
+      Link pushSubscription = pushRegistrationResponse.getLocationLink();
       return pushSubscription;
    }
 }

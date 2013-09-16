@@ -4,7 +4,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.queue.push.xml.XmlHttpHeader;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.specimpl.UriBuilderImpl;
+import org.jboss.resteasy.specimpl.ResteasyUriBuilder;
 import org.jboss.resteasy.spi.Link;
 
 /**
@@ -52,7 +52,7 @@ public class HornetQPushStrategy extends UriTemplateStrategy
          }
          url = link.getHref();
       }
-      targetUri = UriBuilderImpl.fromTemplate(url);
+      targetUri = ResteasyUriBuilder.fromTemplate(url);
    }
 
    @Override

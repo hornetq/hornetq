@@ -61,8 +61,6 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    private boolean started;
 
-   private boolean isAs5 = true;
-
    private boolean allowClientLogin = false;
 
    private boolean authoriseOnClientLogin = false;
@@ -181,26 +179,13 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    private void popSecurityContext()
    {
-      if (isAs5)
-      {
-         SecurityActions.popSubjectContext();
-      }
-      else
-      {
-         AS4SecurityActions.popSubjectContext();
-      }
+      SecurityActions.popSubjectContext();
+
    }
 
    private void pushSecurityContext(final SimplePrincipal principal, final char[] passwordChars, final Subject subject)
    {
-      if (isAs5)
-      {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
-      }
-      else
-      {
-         AS4SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-      }
+      SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
    }
 
    public void addRole(final String user, final String role)
@@ -291,7 +276,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
 
    public void setAs5(final boolean as5)
    {
-      isAs5 = as5;
+
    }
 
    public void setAllowClientLogin(final boolean allowClientLogin)
