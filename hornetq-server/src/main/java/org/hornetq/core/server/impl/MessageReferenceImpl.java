@@ -38,6 +38,9 @@ public class MessageReferenceImpl implements MessageReference
 
    private Long consumerID;
 
+   private boolean alreadyAcked;
+
+
    // Static --------------------------------------------------------
 
    private static final int memoryOffset;
@@ -158,6 +161,18 @@ public class MessageReferenceImpl implements MessageReference
    public void handled()
    {
       queue.referenceHandled();
+   }
+
+   @Override
+   public void setAlreadyAcked()
+   {
+      alreadyAcked = true;
+   }
+
+   @Override
+   public boolean isAlreadyAcked()
+   {
+      return alreadyAcked;
    }
 
    public boolean isPaged()

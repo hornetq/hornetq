@@ -68,4 +68,8 @@ public interface MessageReference
    Long getConsumerId();
 
    void handled();
+
+   void setAlreadyAcked();
+
+   boolean isAlreadyAcked();
 }

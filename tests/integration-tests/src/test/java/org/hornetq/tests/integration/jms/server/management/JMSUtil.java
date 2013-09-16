@@ -12,6 +12,9 @@
  */
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -24,8 +27,8 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -46,7 +49,6 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.RandomUtil;
-import org.junit.Assert;
 
 /**
  * A JMSUtil

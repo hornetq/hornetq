@@ -921,7 +921,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          // We use properties to establish routing context on clustering.
          // However if the client resends the message after receiving, it needs to be removed
-         if (name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS))
+         if ((name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS)) ||
+               name.equals(MessageImpl.HDR_ROUTE_TO_ACK_IDS))
          {
             if (valuesToRemove == null)
             {
@@ -1034,6 +1035,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             Queue queue = iter.next();
 
             MessageReference reference = message.createReference(queue);
+
+            if (context.isAlreadyAcked(message.getAddress(), queue))
+            {
+               reference.setAlreadyAcked();
+               if (tx != null)
+               {
+                  queue.acknowledge(tx, reference);
+               }
+            }
 
             refs.add(reference);
 
@@ -1383,7 +1393,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   private static final class AddOperation implements TransactionOperation
+   public static final class AddOperation implements TransactionOperation
    {
       private final List<MessageReference> refs;
 
@@ -1396,12 +1406,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          for (MessageReference ref : refs)
          {
-            ref.getQueue().addTail(ref, false);
+            if (!ref.isAlreadyAcked())
+            {
+               ref.getQueue().addTail(ref, false);
+            }
          }
       }
 
       public void afterPrepare(final Transaction tx)
       {
+         for (MessageReference ref : refs)
+         {
+            if (ref.isAlreadyAcked())
+            {
+               ref.getQueue().referenceHandled();
+               ref.getQueue().incrementMesssagesAdded();
+            }
+         }
       }
 
       public void afterRollback(final Transaction tx)
@@ -1432,7 +1453,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             message.decrementRefCount();
          }
       }
-
       public List<MessageReference> getRelatedMessageReferences()
       {
          return refs;

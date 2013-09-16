@@ -55,6 +55,7 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -787,8 +788,21 @@ public class HornetQServerImpl implements HornetQServer
 
    public long scaleDown() throws Exception
    {
-      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice);
+      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager);
       return scaleDownHandler.scaleDown(scaleDownClientSessionFactory);
+   }
+
+   public ServerLocatorInternal getScaleDownConnector(ClusterConnectionConfiguration ccc) throws HornetQException
+   {
+      if (ccc.getScaleDownConnector() != null)
+      {
+         TransportConfiguration transportConfiguration = configuration.getConnectorConfigurations().get(ccc.getScaleDownConnector());
+         return (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(transportConfiguration);
+      }
+      else
+      {
+         return getLocator(ccc);
+      }
    }
 
    public void connectToScaleDownTarget()
@@ -798,7 +812,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            scaleDownServerLocator = getLocator(config);
+            scaleDownServerLocator = getScaleDownConnector(config);
             //use a Node Locator to connect to the cluster
             LiveNodeLocator nodeLocator = configuration.getScaleDownGroupName() == null ?
                new AnyLiveNodeLocatorForScaleDown(HornetQServerImpl.this) :
@@ -1711,16 +1725,20 @@ public class HornetQServerImpl implements HornetQServer
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
-      if (configuration.isFileDeploymentEnabled())
+      if (!configuration.isBackup() || (configuration.isBackup() && configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN))
       {
-         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
+         if (configuration.isFileDeploymentEnabled())
+         {
+            addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
 
-         addressSettingsDeployer.start();
+            addressSettingsDeployer.start();
+         }
+
+         deployAddressSettingsFromConfiguration();
       }
 
-      deployAddressSettingsFromConfiguration();
-
       storageManager.start();
+
 
       if (securityManager != null)
       {
@@ -1753,6 +1771,7 @@ public class HornetQServerImpl implements HornetQServer
       deploySecurityFromConfiguration();
 
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
+
       return true;
    }
 
@@ -1771,6 +1790,7 @@ public class HornetQServerImpl implements HornetQServer
       pagingManager.reloadStores();
 
       JournalLoadInformation[] journalInfo = loadJournals();
+
 
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
 
@@ -1801,53 +1821,56 @@ public class HornetQServerImpl implements HornetQServer
          deployQueuesFromConfiguration();
       }
 
+
       // We need to call this here, this gives any dependent server a chance to deploy its own addresses
       // this needs to be done before clustering is fully activated
       callActivateCallbacks();
 
-      // Deploy any pre-defined diverts
-      deployDiverts();
-
-      if (deploymentManager != null)
+      if (configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN)
       {
-         deploymentManager.start();
-      }
+         // Deploy any pre-defined diverts
+         deployDiverts();
 
-      if (groupingHandler != null)
-      {
-         groupingHandler.start();
-      }
+         if (groupingHandler != null)
+         {
+            groupingHandler.start();
+         }
 
       // We do this at the end - we don't want things like MDBs or other connections connecting to a backup server until
       // it is activated
 
-      if (groupingHandler != null && groupingHandler instanceof LocalGroupingHandler)
-      {
-         clusterManager.start();
+         if (groupingHandler != null && groupingHandler instanceof LocalGroupingHandler)
+         {
+            clusterManager.start();
 
-         groupingHandler.awaitBindings();
+            groupingHandler.awaitBindings();
 
-         remotingService.start();
+            remotingService.start();
+         }
+         else
+         {
+            remotingService.start();
+
+            clusterManager.start();
+         }
+
+         if (nodeManager.getNodeId() == null)
+         {
+            throw HornetQMessageBundle.BUNDLE.nodeIdNull();
+         }
+         activationLatch.countDown();
+
+         // We can only do this after everything is started otherwise we may get nasty races with expired messages
+         postOffice.startExpiryScanner();
+
+
+         //now start any backup servers
+         startBackupServers(configuration, backupServers);
       }
       else
       {
-         remotingService.start();
-
-         clusterManager.start();
+         activationLatch.countDown();
       }
-
-      if (nodeManager.getNodeId() == null)
-      {
-         throw HornetQMessageBundle.BUNDLE.nodeIdNull();
-      }
-      activationLatch.countDown();
-
-      // We can only do this after everything is started otherwise we may get nasty races with expired messages
-      postOffice.startExpiryScanner();
-
-
-      //now start any backup servers
-      startBackupServers(configuration, backupServers);
    }
 
    protected void startBackupServers(Configuration configuration, Map<String, HornetQServer> backupServers)
@@ -1902,15 +1925,33 @@ public class HornetQServerImpl implements HornetQServer
 
    private JournalLoadInformation[] loadJournals() throws Exception
    {
-      JournalLoader journalLoader = new PostOfficeJournalLoader(postOffice,
-                                                                pagingManager,
-                                                                storageManager,
-                                                                queueFactory,
-                                                                nodeManager,
-                                                                managementService,
-                                                                groupingHandler,
-                                                                configuration);
+      JournalLoader journalLoader;
 
+      if (configuration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
+      {
+         ClusterConnectionConfiguration config = ConfigurationUtils.getScaleDownClusterConfiguration(configuration);
+         journalLoader = new BackupRecoveryJournalLoader(postOffice,
+                                                         pagingManager,
+                                                         storageManager,
+                                                         queueFactory,
+                                                         nodeManager,
+                                                         managementService,
+                                                         groupingHandler,
+                                                         configuration,
+                                                         parentServer,
+                                                         getScaleDownConnector(config));
+      }
+      else
+      {
+         journalLoader = new PostOfficeJournalLoader(postOffice,
+               pagingManager,
+               storageManager,
+               queueFactory,
+               nodeManager,
+               managementService,
+               groupingHandler,
+               configuration);
+      }
       JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
 
       List<QueueBindingInfo> queueBindingInfos = new ArrayList();
@@ -2348,9 +2389,35 @@ public class HornetQServerImpl implements HornetQServer
 
             initialisePart2();
 
-            HornetQServerLogger.LOGGER.backupServerIsLive();
+            if (configuration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
+            {
+               HornetQServerLogger.LOGGER.backupServerScaledDown();
+               Thread t = new Thread(new Runnable()
+               {
+                  @Override
+                  public void run()
+                  {
+                     try
+                     {
+                        stop();
+                        moveServerData();
+                        //start();
+                     }
+                     catch (Exception e)
+                     {
+                        HornetQServerLogger.LOGGER.serverRestartWarning();
+                     }
+                  }
+               });
+               t.start();
+               return;
+            }
+            else
+            {
+               HornetQServerLogger.LOGGER.backupServerIsLive();
 
-            nodeManager.releaseBackup();
+               nodeManager.releaseBackup();
+            }
             if (configuration.isAllowAutoFailBack())
             {
                startFailbackChecker();

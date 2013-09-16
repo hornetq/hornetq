@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.hornetq.core.server.MessageReference;
 import org.junit.Before;
 import org.junit.After;
 
@@ -18,6 +19,7 @@ import org.junit.Test;
 
 import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -266,6 +268,12 @@ public class HangConsumerTest extends ServiceTestBase
             blocked.acquire();
             blocked.release();
             return super.deleteMatchingReferences(flushLimit, filter);
+         }
+
+         @Override
+         public List<MessageReference> cancelScheduledMessages()
+         {
+            return null;
          }
       }
 

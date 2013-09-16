@@ -144,6 +144,12 @@ public class DivertBinding implements Binding
       return this.getClass().getSimpleName() + " [id=" + id + "]";
    }
 
+   @Override
+   public void routeWithAck(ServerMessage message, RoutingContext context)
+   {
+     //noop
+   }
+
    public void close() throws Exception
    {
    }

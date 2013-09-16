@@ -45,6 +45,8 @@ public abstract class MessageImpl implements MessageInternal
 {
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
 
+   public static final SimpleString HDR_ROUTE_TO_ACK_IDS = new SimpleString("_HQ_ROUTE_TO_ACK");
+
    // used by the bridges to set duplicates
    public static final SimpleString HDR_BRIDGE_DUPLICATE_ID = new SimpleString("_HQ_BRIDGE_DUP");
 

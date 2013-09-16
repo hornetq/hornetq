@@ -1265,6 +1265,13 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
+
+      <xsd:element name="scale-down-connector" type="xsd:string" maxOccurs="1" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>The connector to use for scaling down or when as backup in SCALE_DOWN mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
       <xsd:choice>
         <xsd:element name="static-connectors" maxOccurs="1" minOccurs="0">
           <xsd:complexType>
@@ -1559,6 +1566,22 @@
     <xsd:attribute name="inherit-configuration" type="xsd:boolean" use="optional" default="true">
       <xsd:annotation>
         <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="backup-strategy" use="optional" default="SCALE_DOWN">
+      <xsd:annotation>
+        <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+      </xsd:annotation>
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="FULL" />
+          <xsd:enumeration value="SCALE_DOWN"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="scale-down-connector" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>if the backup strategy is scale down then use this connector to connect to the parent server</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>

@@ -271,6 +271,10 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221045, value = "libaio is not available, switching the configuration into NIO", format = Message.Format.MESSAGE_FORMAT)
    void switchingNIO();
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221046, value = "Backup Server has scaled down to live server", format = Message.Format.MESSAGE_FORMAT)
+   void backupServerScaledDown();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
             format = Message.Format.MESSAGE_FORMAT)
@@ -1049,6 +1053,13 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222182, value = "Missing cluster-configuration for scale-down-clustername {0}", format = Message.Format.MESSAGE_FORMAT)
    void missingClusterConfigForScaleDown(String scaleDownCluster);
+
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222183,
+         value = "Unable to recover group bindings in SCALE_DOWN mode, only FULL backup server can do this",
+         format = Message.Format.MESSAGE_FORMAT)
+   void groupBindingsOnRecovery();
 
 
    @LogMessage(level = Logger.Level.ERROR)

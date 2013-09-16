@@ -105,6 +105,13 @@ public class DivertImpl implements Divert
       postOffice.route(copy, context.getTransaction(), false);
    }
 
+   @Override
+   public void routeWithAck(ServerMessage message, RoutingContext context) throws Exception
+   {
+      route(message, context);
+   }
+
+
    public SimpleString getRoutingName()
    {
       return routingName;

@@ -68,6 +68,21 @@ public final class RoutingContextImpl implements RoutingContext
       queueCount++;
    }
 
+   @Override
+   public void addQueueWithAck(SimpleString address, Queue queue)
+   {
+      addQueue(address, queue);
+      RouteContextList listing = getContextListing(address);
+      listing.addAckedQueue(queue);
+   }
+
+   @Override
+   public boolean isAlreadyAcked(SimpleString address, Queue queue)
+   {
+      RouteContextList listing = map.get(address);
+      return listing == null ? false : listing.isAlreadyAcked(queue);
+   }
+
    public RouteContextList getContextListing(SimpleString address)
    {
       RouteContextList listing = map.get(address);
@@ -116,6 +131,8 @@ public final class RoutingContextImpl implements RoutingContext
 
       private final List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
 
+      private final List<Queue> ackedQueues = new ArrayList<>();
+
       public int getNumberOfDurableQueues()
       {
          return durableQueue.size();
@@ -136,6 +153,18 @@ public final class RoutingContextImpl implements RoutingContext
       public List<Queue> getNonDurableQueues()
       {
          return nonDurableQueue;
+      }
+
+      @Override
+      public void addAckedQueue(Queue queue)
+      {
+         ackedQueues.add(queue);
+      }
+
+      @Override
+      public boolean isAlreadyAcked(Queue queue)
+      {
+         return ackedQueues.contains(queue);
       }
    }
 

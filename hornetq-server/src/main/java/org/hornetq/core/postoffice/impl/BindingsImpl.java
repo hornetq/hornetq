@@ -15,6 +15,7 @@ package org.hornetq.core.postoffice.impl;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -580,6 +581,20 @@ public final class BindingsImpl implements Bindings
    {
       byte[] ids = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
 
+      byte[] idsToAck = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_ACK_IDS);
+
+      List<Long> idsToAckList = new ArrayList<>();
+
+      if (idsToAck != null)
+      {
+         ByteBuffer buff = ByteBuffer.wrap(idsToAck);
+         while (buff.hasRemaining())
+         {
+            long bindingID = buff.getLong();
+            idsToAckList.add(bindingID);
+         }
+      }
+
       ByteBuffer buff = ByteBuffer.wrap(ids);
 
       while (buff.hasRemaining())
@@ -590,7 +605,14 @@ public final class BindingsImpl implements Bindings
 
          if (binding != null)
          {
-            binding.route(message, context);
+            if (idsToAckList.contains(bindingID))
+            {
+               binding.routeWithAck(message, context);
+            }
+            else
+            {
+               binding.route(message, context);
+            }
          }
          else
          {

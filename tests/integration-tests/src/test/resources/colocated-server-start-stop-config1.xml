@@ -48,7 +48,7 @@
 
 
    <backup-servers>
-      <backup-server name="myBackup" port-offset="100" inherit-configuration="true">
+      <backup-server name="myBackup" port-offset="100" inherit-configuration="true" backup-strategy="FULL">
           <configuration>
               <paging-directory>/tmp/hornetq-unit-test/live2/paging</paging-directory>
               <bindings-directory>/tmp/hornetq-unit-test/live2/binding</bindings-directory>
