@@ -1273,4 +1273,9 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 224066, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
             format = Message.Format.MESSAGE_FORMAT)
    void clusterManagerAuthenticationError(String msg);
+
+    @LogMessage(level = Logger.Level.INFO)
+    @Message(id = 224067, value = "Adding protocol support {0}",
+            format = Message.Format.MESSAGE_FORMAT)
+    void addingProtocolSupport(String protocolKey);
 }
