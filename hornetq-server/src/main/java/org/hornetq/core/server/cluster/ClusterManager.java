@@ -926,7 +926,7 @@ public final class ClusterManager implements HornetQComponent
 
              if (connector == null)
              {
-                logWarnNoConnector(config.getName(), connectorInfo);
+                logWarnNoConnector(connectorInfo, config.getName());
 
                 return null;
              }
