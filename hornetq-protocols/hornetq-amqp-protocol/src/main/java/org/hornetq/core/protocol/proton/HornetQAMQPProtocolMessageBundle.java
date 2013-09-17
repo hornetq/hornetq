@@ -4,8 +4,8 @@ import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateExcept
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInternalErrorException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInvalidFieldException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPNotImplementedException;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**

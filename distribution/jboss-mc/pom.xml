@@ -14,11 +14,7 @@
    <name>JBoss Microcontainer jar</name>
 
    <dependencies>
-      <!--<dependency>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging-spi</artifactId>
-      </dependency>-->
-      <dependency>
+       <dependency>
           <groupId>org.jboss.microcontainer</groupId>
           <artifactId>jboss-kernel</artifactId>
       </dependency>

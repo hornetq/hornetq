@@ -18,6 +18,10 @@
             <artifactId>hornetq-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

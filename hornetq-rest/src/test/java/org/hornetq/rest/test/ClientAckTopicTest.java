@@ -1,5 +1,4 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
 
 import org.hornetq.rest.topic.TopicDeployment;
 import org.hornetq.rest.util.Constants;
@@ -62,7 +61,7 @@ public class ClientAckTopicTest extends MessageTestBase
               .post();
       response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
-      Link sub1 = response.getLocation();
+      Link sub1 = response.getLocationLink();
       Assert.assertNotNull(sub1);
 
 
@@ -139,7 +138,7 @@ public class ClientAckTopicTest extends MessageTestBase
               .post();
       response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
-      Link sub1 = response.getLocation();
+      Link sub1 = response.getLocationLink();
       Assert.assertNotNull(sub1);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "acknowledge-next");
       System.out.println("poller: " + consumeNext);
@@ -203,7 +202,7 @@ public class ClientAckTopicTest extends MessageTestBase
               .post();
       response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
-      Link sub1 = response.getLocation();
+      Link sub1 = response.getLocationLink();
       Assert.assertNotNull(sub1);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "acknowledge-next");
       System.out.println("poller: " + consumeNext);
@@ -265,7 +264,7 @@ public class ClientAckTopicTest extends MessageTestBase
               .post();
       response.releaseConnection();
       Assert.assertEquals(201, response.getStatus());
-      Link sub1 = response.getLocation();
+      Link sub1 = response.getLocationLink();
       Assert.assertNotNull(sub1);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "acknowledge-next");
       System.out.println("poller: " + consumeNext);

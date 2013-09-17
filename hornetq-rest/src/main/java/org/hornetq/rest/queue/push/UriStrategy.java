@@ -16,7 +16,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
@@ -29,7 +29,7 @@ import org.hornetq.rest.util.HttpMessageHelper;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
-import org.jboss.resteasy.specimpl.UriBuilderImpl;
+import org.jboss.resteasy.specimpl.ResteasyUriBuilder;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ import java.io.IOException;
  */
 public class UriStrategy implements PushStrategy
 {
-   ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager();
+   PoolingClientConnectionManager connManager = new PoolingClientConnectionManager();
    protected HttpClient client = new DefaultHttpClient(connManager);
    protected BasicHttpContext localContext;
    protected ApacheHttpClient4Executor executor = new ApacheHttpClient4Executor(client);
@@ -65,7 +65,7 @@ public class UriStrategy implements PushStrategy
       method = registration.getTarget().getMethod();
       if (method == null) method = "POST";
       contentType = registration.getTarget().getType();
-      targetUri = UriBuilderImpl.fromTemplate(registration.getTarget().getHref());
+      targetUri = ResteasyUriBuilder.fromTemplate(registration.getTarget().getHref());
    }
 
    protected void initAuthentication()
@@ -124,7 +124,7 @@ public class UriStrategy implements PushStrategy
             HornetQRestLogger.LOGGER.debug("Status of push: " + status);
             if (status == 503)
             {
-               String retryAfter = res.getHeaders().getFirst("Retry-After");
+               String retryAfter = res.getHeaders().getFirst("Retry-After").toString();
                if (retryAfter != null)
                {
                   wait = Long.parseLong(retryAfter) * 1000;
@@ -132,7 +132,7 @@ public class UriStrategy implements PushStrategy
             }
             else if (status == 307)
             {
-               uri = res.getLocation().getHref();
+               uri = res.getLocationLink().getHref();
                wait = 0;
             }
             else if ((status >= 200 && status < 299) || status == 303 || status == 304)
