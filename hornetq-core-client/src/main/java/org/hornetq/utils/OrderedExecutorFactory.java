@@ -13,6 +13,7 @@
 
 package org.hornetq.utils;
 
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.client.HornetQClientLogger;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -104,6 +105,11 @@ public final class OrderedExecutorFactory implements ExecutorFactory
                   try
                   {
                      task.run();
+                  }
+                  catch (HornetQInterruptedException e)
+                  {
+                     // This could happen during shutdowns. Nothing to be concerned about here
+                     HornetQClientLogger.LOGGER.debug("Interrupted Thread", e);
                   }
                   catch (Throwable t)
                   {
