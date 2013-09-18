@@ -417,4 +417,8 @@ public class HornetQMessageHandler implements MessageHandler
 
    }
 
+   public void start() throws HornetQException
+   {
+      session.start();
+   }
 }
