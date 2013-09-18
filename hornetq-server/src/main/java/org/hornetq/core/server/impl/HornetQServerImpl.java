@@ -1379,7 +1379,16 @@ public class HornetQServerImpl implements HornetQServer
    {
       for (ActivateCallback callback : activateCallbacks)
       {
-         callback.deActivate();
+         try
+         {
+            callback.deActivate();
+         }
+         catch (Throwable e)
+         {
+            // https://bugzilla.redhat.com/show_bug.cgi?id=1009530:
+            // we won't interrupt the shutdown sequence because of a failed callback here
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         }
       }
    }
 
