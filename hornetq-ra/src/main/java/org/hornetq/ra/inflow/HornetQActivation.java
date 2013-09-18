@@ -321,6 +321,9 @@ public class HornetQActivation
       setupCF();
 
       setupDestination();
+
+      Exception firstException = null;
+
       for (int i = 0; i < spec.getMaxSession(); i++)
       {
          ClientSession session = null;
@@ -331,7 +334,6 @@ public class HornetQActivation
             session = setupSession(cf);
             HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, cf,  i);
             handler.setup();
-            session.start();
             handlers.add(handler);
          }
          catch (Exception e)
@@ -340,9 +342,27 @@ public class HornetQActivation
             {
                session.close();
             }
-
-            throw e;
+            if(firstException == null)
+            {
+               firstException = e;
+            }
          }
+      }
+      //if we have any exceptions close all the handlers and throw the first exception.
+      //we don't want partially configured activations, i.e. only 8 out of 15 sessions started so best to stop and log the error.
+      if(firstException != null)
+      {
+         for (HornetQMessageHandler handler : handlers)
+         {
+            handler.teardown();
+         }
+         throw firstException;
+      }
+
+      //now start them all together.
+      for (HornetQMessageHandler handler : handlers)
+      {
+         handler.start();
       }
 
       resourceRecovery = ra.getRecoveryManager().register(factory, spec.getUser(), spec.getPassword());
