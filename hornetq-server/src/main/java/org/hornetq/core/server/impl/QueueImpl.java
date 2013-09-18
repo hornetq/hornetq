@@ -97,6 +97,8 @@ public class QueueImpl implements Queue
 
    private static final int FLUSH_TIMEOUT = 10000;
 
+   public static final int DEFAULT_FLUSH_LIMIT = 500;
+
    private final long id;
 
    private final SimpleString name;
@@ -1126,14 +1128,26 @@ public class QueueImpl implements Queue
       }
     }
 
+
    public int deleteAllReferences() throws Exception
    {
-      return deleteMatchingReferences(null);
+      return deleteAllReferences(DEFAULT_FLUSH_LIMIT);
    }
 
-   public synchronized int deleteMatchingReferences(final Filter filter1) throws Exception
+   public int deleteAllReferences(final int flushLimit) throws Exception
    {
-      return iterQueue(filter1, new QueueIterateAction()
+      return deleteMatchingReferences(flushLimit, null);
+   }
+
+   public int deleteMatchingReferences(Filter filter) throws Exception
+   {
+      return deleteMatchingReferences(DEFAULT_FLUSH_LIMIT, filter);
+   }
+
+
+   public synchronized int deleteMatchingReferences(final int flushLimit, final Filter filter1) throws Exception
+   {
+      return iterQueue(flushLimit, filter1, new QueueIterateAction()
       {
          @Override
          public void actMessage(Transaction tx, MessageReference ref) throws Exception
@@ -1149,14 +1163,14 @@ public class QueueImpl implements Queue
    /**
     * This is a generic method for any method interacting on the Queue to move or delete messages
     * Instead of duplicate the feature we created an abstract class where you pass the logic for
-    * each message. Too bad there's not such thing as a function pointer in Java (as there is in
-    * scala).
+    * each message.
+    *
     * @param filter1
     * @param messageAction
     * @return
     * @throws Exception
     */
-   private synchronized int iterQueue(final Filter filter1, QueueIterateAction messageAction) throws Exception
+   private synchronized int iterQueue(final int flushLimit, final Filter filter1, QueueIterateAction messageAction) throws Exception
    {
       int count = 0;
       int txCount = 0;
@@ -1215,7 +1229,6 @@ public class QueueImpl implements Queue
 
          if (pageIterator != null && !queueDestroyed)
          {
-            // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
             while (pageIterator.hasNext())
             {
                PagedReference reference = pageIterator.next();
@@ -1232,7 +1245,7 @@ public class QueueImpl implements Queue
                   addTail(reference, false);
                }
 
-               if (txCount > 0 && txCount % 500 == 0)
+               if (txCount > 0 && txCount % flushLimit == 0)
                {
                   tx.commit();
                   tx = new TransactionImpl(storageManager);
@@ -1591,16 +1604,16 @@ public class QueueImpl implements Queue
 
    public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
-      return moveReferences(filter, toAddress, false);
+      return moveReferences(DEFAULT_FLUSH_LIMIT, filter, toAddress, false);
    }
 
-   public synchronized int moveReferences(final Filter filter,
+   public synchronized int moveReferences(final int flushLimit, final Filter filter,
                                           final SimpleString toAddress,
                                           final boolean rejectDuplicates) throws Exception
    {
       final DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
 
-      return iterQueue(filter, new QueueIterateAction()
+      return iterQueue(flushLimit, filter, new QueueIterateAction()
       {
          @Override
          public void actMessage(Transaction tx, MessageReference ref) throws Exception

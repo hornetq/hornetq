@@ -516,9 +516,20 @@ public class FakeQueue implements Queue
    }
 
    @Override
-   public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   public int deleteAllReferences(int flushLimit) throws Exception
    {
-      // no-op
+      return 0;
+   }
+
+   @Override
+   public int deleteMatchingReferences(int flushLImit, Filter filter) throws Exception
+   {
+      return 0;
+   }
+
+   @Override
+   public int moveReferences(int flushLimit, Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
       return 0;
    }
 

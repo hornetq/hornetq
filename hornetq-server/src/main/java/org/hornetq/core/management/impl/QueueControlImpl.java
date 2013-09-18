@@ -52,6 +52,7 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class QueueControlImpl extends AbstractControl implements QueueControl
 {
+   public static final int FLUSH_LIMIT = 500;
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -578,6 +579,11 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    public int removeMessages(final String filterStr) throws Exception
    {
+      return removeMessages(FLUSH_LIMIT, filterStr);
+   }
+
+   public int removeMessages(final int flushLimit, final String filterStr) throws Exception
+   {
       checkStarted();
 
       clearIO();
@@ -585,7 +591,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          Filter filter = FilterImpl.createFilter(filterStr);
 
-         return queue.deleteMatchingReferences(filter);
+         return queue.deleteMatchingReferences(flushLimit, filter);
       }
       finally
       {
@@ -661,7 +667,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       return moveMessages(filterStr, otherQueueName, false);
    }
 
-   public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   public int moveMessages(final int flushLimit, final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
    {
       checkStarted();
 
@@ -677,7 +683,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
             throw HornetQMessageBundle.BUNDLE.noQueueFound(otherQueueName);
          }
 
-         int retValue = queue.moveReferences(filter, binding.getAddress(), rejectDuplicates);
+         int retValue = queue.moveReferences(flushLimit, filter, binding.getAddress(), rejectDuplicates);
 
          return retValue;
       }
@@ -686,6 +692,11 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          blockOnIO();
       }
 
+   }
+
+   public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   {
+      return moveMessages(FLUSH_LIMIT, filterStr, otherQueueName, rejectDuplicates);
    }
 
    public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception

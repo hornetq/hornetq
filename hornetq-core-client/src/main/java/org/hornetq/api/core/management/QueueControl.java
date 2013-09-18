@@ -179,6 +179,17 @@ public interface QueueControl
    int removeMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    /**
+    * Removes all the message corresponding to the specified filter.
+    * <br>
+    * Using {@code null} or an empty filter will remove <em>all</em> messages from this queue.
+    *
+    * @return the number of removed messages
+    */
+   @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = MBeanOperationInfo.ACTION)
+   int removeMessages(@Parameter(name= "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
+                      @Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
+
+   /**
     * Expires all the message corresponding to the specified filter.
     * <br>
     * Using {@code null} or an empty filter will expire <em>all</em> messages from this queue.
@@ -237,6 +248,12 @@ public interface QueueControl
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
    int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
+                    @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName,
+                    @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
+
+   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
+   int moveMessages(@Parameter(name= "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
+                    @Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
                     @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName,
                     @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
 

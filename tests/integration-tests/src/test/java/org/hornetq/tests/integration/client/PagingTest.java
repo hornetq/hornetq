@@ -46,6 +46,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -6006,7 +6007,7 @@ public class PagingTest extends ServiceTestBase
 
          Queue queue = server.locateQueue(new SimpleString("Q1"));
 
-         queue.moveReferences(null, new SimpleString("Q2"));
+         queue.moveReferences(10, (Filter)null, new SimpleString("Q2"), false);
 
          waitForNotPaging(store);
 
