@@ -136,9 +136,13 @@ public interface Queue extends Bindable
 
    MessageReference getReference(long id);
 
+   int deleteAllReferences(final int flushLimit) throws Exception;
+
    boolean deleteReference(long messageID) throws Exception;
 
    int deleteMatchingReferences(Filter filter) throws Exception;
+
+   int deleteMatchingReferences(int flushLImit, Filter filter) throws Exception;
 
    boolean expireReference(long messageID) throws Exception;
 
@@ -165,7 +169,7 @@ public interface Queue extends Bindable
 
    int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
 
-   int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
+   int moveReferences(final int flushLimit, Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
 
    void addRedistributor(long delay);
 
