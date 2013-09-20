@@ -392,6 +392,7 @@ public class HornetQActivation
             {
                handler.teardown();
             }
+            handlers.clear();
          }
       };
 
