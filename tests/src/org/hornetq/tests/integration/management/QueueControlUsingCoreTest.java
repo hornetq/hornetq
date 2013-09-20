@@ -206,6 +206,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
+         public int moveMessages(int flushLimit, String filter, String otherQueueName, boolean rejectDuplicates) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("moveMessages", flushLimit, filter, otherQueueName, rejectDuplicates);
+         }
+
          public int moveMessages(final String filter, final String otherQueueName, final boolean rejectDuplicates) throws Exception
          {
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName, rejectDuplicates);
@@ -224,6 +229,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          public int removeMessages(final String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("removeMessages", filter);
+         }
+
+         public int removeMessages(final int limit, final String filter) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("removeMessages", limit, filter);
          }
 
          public boolean removeMessage(final long messageID) throws Exception
@@ -316,7 +326,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    @Override
    protected void setUp() throws Exception
    {

@@ -857,6 +857,50 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testRemoveMessagesWithLimit() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      long matchingValue = RandomUtil.randomLong();
+      long unmatchingValue = matchingValue + 1;
+
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      ClientProducer producer = session.createProducer(address);
+
+      // send on queue
+      ClientMessage matchingMessage = session.createMessage(false);
+      matchingMessage.putLongProperty(key, matchingValue);
+      producer.send(matchingMessage);
+      ClientMessage unmatchingMessage = session.createMessage(false);
+      unmatchingMessage.putLongProperty(key, unmatchingValue);
+      producer.send(unmatchingMessage);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(2, queueControl.getMessageCount());
+
+      // removed matching messages to otherQueue
+      int removedMatchedMessagesCount = queueControl.removeMessages(5, key + " =" + matchingValue);
+      Assert.assertEquals(1, removedMatchedMessagesCount);
+      Assert.assertEquals(1, queueControl.getMessageCount());
+
+      // consume the unmatched message from queue
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage m = consumer.receive(500);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(unmatchingValue, m.getObjectProperty(key));
+
+      m.acknowledge();
+
+      // check there is no other message to consume:
+      m = consumer.receiveImmediate();
+      Assert.assertNull(m);
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
    public void testRemoveMessagesWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
