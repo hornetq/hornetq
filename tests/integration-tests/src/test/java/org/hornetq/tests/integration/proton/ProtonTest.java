@@ -85,44 +85,70 @@ public class ProtonTest extends ServiceTestBase
       server.stop();
       super.tearDown();
    }
+
+
+   /*
+   // Uncomment testLoopBrowser to validate the hunging on the test
    @Test
-   public void testBrowser() throws Exception
+   public void testLoopBrowser() throws Throwable
    {
-      int numMessages = 50;
-      QueueImpl queue = new QueueImpl(address);
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer p = session.createProducer(queue);
-      for (int i = 0; i < numMessages; i++)
+      for (int i = 0 ; i < 1000; i++)
       {
-         TextMessage message = session.createTextMessage();
-         message.setText("msg:" + i);
-         p.send(message);
+         System.out.println("#test " + i);
+         testBrowser();
+         tearDown();
+         setUp();
       }
+   } */
 
-      connection.close();
-      Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-      assertEquals(q.getMessageCount(), numMessages);
 
-      //Thread.sleep(5000);
-
-      connection = createConnection();
-      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      QueueBrowser browser = session.createBrowser(queue);
-      Enumeration enumeration = browser.getEnumeration();
-      int count = 0;
-      while (enumeration.hasMoreElements())
+   @Test
+   public void testBrowser() throws Throwable
+   {
+      // As this test was hunging, we added a protection here to fail it instead.
+      // it seems something on the qpid client, so this failure belongs to them and we can ignore it on
+      // our side (HornetQ)
+      runWithTimeout( new RunnerWithEX()
       {
-         Message msg = (Message) enumeration.nextElement();
-         assertNotNull("" + count, msg);
-         assertTrue("" + msg, msg instanceof TextMessage);
-         String text = ((TextMessage) msg).getText();
-         assertEquals(text, "msg:" + count++);
-      }
-      assertEquals(count, numMessages);
-      connection.close();
-      assertEquals(q.getMessageCount(), numMessages);
+         @Override
+         public void run() throws Throwable
+         {
+            int numMessages = 50;
+            QueueImpl queue = new QueueImpl(address);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer p = session.createProducer(queue);
+            for (int i = 0; i < numMessages; i++)
+            {
+               TextMessage message = session.createTextMessage();
+               message.setText("msg:" + i);
+               p.send(message);
+            }
+
+            connection.close();
+            Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
+            assertEquals(q.getMessageCount(), numMessages);
+
+            connection = createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            QueueBrowser browser = session.createBrowser(queue);
+            Enumeration enumeration = browser.getEnumeration();
+            int count = 0;
+            while (enumeration.hasMoreElements())
+            {
+               Message msg = (Message) enumeration.nextElement();
+               assertNotNull("" + count, msg);
+               assertTrue("" + msg, msg instanceof TextMessage);
+               String text = ((TextMessage) msg).getText();
+               assertEquals(text, "msg:" + count++);
+            }
+            assertEquals(count, numMessages);
+            connection.close();
+            assertEquals(q.getMessageCount(), numMessages);
+         }
+      }, 5000);
    }
+
    @Test
    public void testMessagesSentTransactional() throws Exception
    {

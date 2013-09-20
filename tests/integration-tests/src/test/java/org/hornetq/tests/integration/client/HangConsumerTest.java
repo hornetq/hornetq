@@ -263,12 +263,12 @@ public class HangConsumerTest extends ServiceTestBase
          }
 
          @Override
-         public synchronized int deleteMatchingReferences(final Filter filter) throws Exception
+         public synchronized int deleteMatchingReferences(final int flushLimit, final Filter filter) throws Exception
          {
             latchDelete.countDown();
             blocked.acquire();
             blocked.release();
-            return super.deleteMatchingReferences(filter);
+            return super.deleteMatchingReferences(flushLimit, filter);
          }
       }
 
