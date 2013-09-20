@@ -373,12 +373,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.Queue#deleteAllReferences()
-       */
-      public int deleteAllReferences() throws Exception
-      {
-         // TODO Auto-generated method stub
+      public int deleteAllReferences(int flushLimit) throws Exception {
          return 0;
       }
 
@@ -396,6 +391,14 @@ public class RemoteQueueBindImplTest extends UnitTestCase
        */
       public int deleteMatchingReferences(Filter filter) throws Exception
       {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#deleteMatchingReferences(int, org.hornetq.core.filter.Filter)
+       */
+      public int deleteMatchingReferences(int flushLImit, Filter filter) throws Exception {
          // TODO Auto-generated method stub
          return 0;
       }
@@ -500,10 +503,9 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
+       * @see org.hornetq.core.server.Queue#moveReferences(int, org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
        */
-      public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
-      {
+      public int moveReferences(int flushLimit, Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception {
          // TODO Auto-generated method stub
          return 0;
       }
