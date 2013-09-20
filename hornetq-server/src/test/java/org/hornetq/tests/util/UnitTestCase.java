@@ -1889,6 +1889,66 @@ public abstract class UnitTestCase extends CoreUnitTestCase
        }
     }
 
+   public interface RunnerWithEX
+   {
+      public void run() throws Throwable;
+   }
+
+   // This can be used to interrupt a thread if it takes more than timeoutMilliseconds
+   public void runWithTimeout(final RunnerWithEX runner, final long timeoutMilliseconds) throws Throwable
+   {
+
+      class ThreadRunner extends Thread
+      {
+
+         Throwable t;
+
+         final RunnerWithEX run;
+
+         ThreadRunner(RunnerWithEX run)
+         {
+            this.run = run;
+         }
+
+         public void run()
+         {
+            try
+            {
+               runner.run();
+            }
+            catch (Throwable t)
+            {
+               this.t = t;
+            }
+         }
+      }
+
+      ThreadRunner runnerThread = new ThreadRunner(runner);
+
+      runnerThread.start();
+
+      boolean hadToInterrupt = false;
+      while (runnerThread.isAlive())
+      {
+         runnerThread.join(timeoutMilliseconds);
+         if (runnerThread.isAlive())
+         {
+            hadToInterrupt = true;
+            runnerThread.interrupt();
+         }
+      }
+
+      if (runnerThread.t != null)
+      {
+         throw runnerThread.t;
+      }
+
+      if (hadToInterrupt)
+      {
+         fail("Test would have hung. We had to issue an interrupt!");
+      }
+   }
+
 
    // Private -------------------------------------------------------
 
