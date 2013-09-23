@@ -24,18 +24,17 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
    @Override
    public void setUp() throws Exception
    {
+      super.setUp();
+
       primaryConnector = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
       HashMap<String, Object> params = new HashMap();
       params.put("server-id", "1");
       secondaryConnector = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
-      super.setUp();
       Configuration conf = createSecondaryDefaultConfig(true, true);
 
       secondaryServer = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
       addServer(secondaryServer);
       secondaryJmsServer = new JMSServerManagerImpl(secondaryServer);
-      //context = new InVMContext();
-      //secondaryJmsServer.setContext(context);
       secondaryJmsServer.start();
       waitForTopology(secondaryServer, 2);
    }
@@ -84,10 +83,10 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
          configuration.getConnectorConfigurations().put("invm2", secondaryConnector);
          configuration.getConnectorConfigurations().put("invm", primaryConnector);
          UnitTestCase.basicClusterConnectionConfig(configuration, "invm2", "invm");
-         configuration.setJournalDirectory("/tmp/hornetq-unit-test/");
-         configuration.setBindingsDirectory("/tmp/hornetq-unit-test/");
-         configuration.setLargeMessagesDirectory("/tmp/hornetq-unit-test/");
-         configuration.setPagingDirectory("/tmp/hornetq-unit-test/");
+         configuration.setJournalDirectory(getTestDir() + "/secondJournal/");
+         configuration.setBindingsDirectory(getTestDir() + "/secondBind/");
+         configuration.setLargeMessagesDirectory(getTestDir() + "/secondLarge/");
+         configuration.setPagingDirectory(getTestDir() + "/secondPage/");
       }
       else
       {
