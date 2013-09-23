@@ -102,6 +102,10 @@ public class ProtonTest extends ServiceTestBase
    } */
 
 
+   /**
+    * This test eventually fails because of: https://issues.apache.org/jira/browse/QPID-4901
+    * @throws Throwable
+    */
    @Test
    public void testBrowser() throws Throwable
    {
