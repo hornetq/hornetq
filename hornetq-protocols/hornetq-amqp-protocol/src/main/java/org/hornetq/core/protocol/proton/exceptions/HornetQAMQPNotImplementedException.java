@@ -21,6 +21,8 @@
 */
 package org.hornetq.core.protocol.proton.exceptions;
 
+import org.apache.qpid.proton.amqp.transport.AmqpError;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         6/19/13

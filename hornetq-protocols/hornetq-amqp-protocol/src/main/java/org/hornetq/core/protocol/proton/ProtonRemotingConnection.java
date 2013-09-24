@@ -22,7 +22,7 @@
 package org.hornetq.core.protocol.proton;
 
 import org.apache.qpid.proton.amqp.transport.AmqpError;
-import org.apache.qpid.proton.engine.EndpointError;
+import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Sasl;
 import org.apache.qpid.proton.engine.Session;
@@ -41,6 +41,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -363,8 +364,7 @@ public class ProtonRemotingConnection implements RemotingConnection
       boolean ok = "AMQP".equals(headerProt);
       if(!ok)
       {
-         protonConnection.setLocalError(new EndpointError(HornetQAMQPException.AmqpError.ILLEGAL_STATE.getError(),
-               "Unknown Protocol " + headerProt));
+         protonConnection.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE, "Unknown Protocol " + headerProt));
       }
       return ok;
    }
@@ -373,7 +373,7 @@ public class ProtonRemotingConnection implements RemotingConnection
    {
       if(major < 1)
       {
-         protonConnection.setLocalError(new EndpointError(HornetQAMQPException.AmqpError.ILLEGAL_STATE.getError(),
+         protonConnection.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE,
                "Version not supported " + major + "." + minor + "." + revision));
          return false;
       }
@@ -426,147 +426,162 @@ public class ProtonRemotingConnection implements RemotingConnection
 
    public void handleFrame(byte[] frame)
    {
-      synchronized (deliveryLock)
+      int read = 0;
+      while (read < frame.length)
       {
-         protonTransport.input(frame, 0, frame.length);
-      }
-
-      if (sasl != null)
-      {
-         if (sasl.getRemoteMechanisms().length > 0)
+         synchronized (deliveryLock)
          {
-            if ("PLAIN".equals(sasl.getRemoteMechanisms()[0]))
+            try
             {
-               byte[] data = new byte[sasl.pending()];
-               sasl.recv(data, 0, data.length);
-               setUserPass(data);
-               sasl.done(Sasl.SaslOutcome.PN_SASL_OK);
-               sasl = null;
+               int count = protonTransport.input(frame, read, frame.length - read);
+               read += count;
             }
-            else if ("ANONYMOUS".equals(sasl.getRemoteMechanisms()[0]))
+            catch (Exception e)
             {
-               sasl.done(Sasl.SaslOutcome.PN_SASL_OK);
-               sasl = null;
+               protonTransport.setCondition(new ErrorCondition(AmqpError.DECODE_ERROR, HornetQAMQPProtocolMessageBundle.BUNDLE.decodeError()));
+               write();
+               protonConnection.close();
+               return;
             }
          }
-      }
 
-      //handle opening of connection
-      if (protonConnection.getLocalState() == EndpointState.UNINITIALIZED && protonConnection.getRemoteState() != EndpointState.UNINITIALIZED)
-      {
-         clientId = protonConnection.getRemoteContainer();
-         protonConnection.open();
-         write();
-      }
-
-      //handle any new sessions
-      Session session = protonConnection.sessionHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
-      while (session != null)
-      {
-         try
+         if (sasl != null)
          {
-            ProtonSession protonSession = getSession(session);
-            session.setContext(protonSession);
-            session.open();
-
+            if (sasl.getRemoteMechanisms().length > 0)
+            {
+               if ("PLAIN".equals(sasl.getRemoteMechanisms()[0]))
+               {
+                  byte[] data = new byte[sasl.pending()];
+                  sasl.recv(data, 0, data.length);
+                  setUserPass(data);
+                  sasl.done(Sasl.SaslOutcome.PN_SASL_OK);
+                  sasl = null;
+               }
+               else if ("ANONYMOUS".equals(sasl.getRemoteMechanisms()[0]))
+               {
+                  sasl.done(Sasl.SaslOutcome.PN_SASL_OK);
+                  sasl = null;
+               }
+            }
          }
-         catch (HornetQAMQPException e)
-         {
-            protonConnection.setLocalError(new EndpointError(e.getClass().getName(), e.getMessage()));
-            session.close();
-         }
-         write();
-         session = protonConnection.sessionHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
-      }
 
-      //handle new link (producer or consumer
-      LinkImpl link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
-      while (link != null)
-      {
-         try
+         //handle opening of connection
+         if (protonConnection.getLocalState() == EndpointState.UNINITIALIZED && protonConnection.getRemoteState() != EndpointState.UNINITIALIZED)
          {
-            protonProtocolManager.handleNewLink(link, getSession(link.getSession()));
+            clientId = protonConnection.getRemoteContainer();
+            protonConnection.open();
+            write();
          }
-         catch (HornetQAMQPException e)
+
+         //handle any new sessions
+         Session session = protonConnection.sessionHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
+         while (session != null)
          {
-            link.setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
+            try
+            {
+               ProtonSession protonSession = getSession(session);
+               session.setContext(protonSession);
+               session.open();
+
+            }
+            catch (HornetQAMQPException e)
+            {
+               protonConnection.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+               session.close();
+            }
+            write();
+            session = protonConnection.sessionHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
+         }
+
+         //handle new link (producer or consumer
+         LinkImpl link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
+         while (link != null)
+         {
+            try
+            {
+               protonProtocolManager.handleNewLink(link, getSession(link.getSession()));
+            }
+            catch (HornetQAMQPException e)
+            {
+               link.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+               link.close();
+            }
+            link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
+         }
+
+         //handle any deliveries
+         DeliveryImpl delivery;
+
+         Iterator<DeliveryImpl> iterator = protonConnection.getWorkSequence();
+
+         while (iterator.hasNext())
+         {
+            delivery = iterator.next();
+            ProtonDeliveryHandler handler = (ProtonDeliveryHandler) delivery.getLink().getContext();
+            try
+            {
+               handler.onMessage(delivery);
+            }
+            catch (HornetQAMQPException e)
+            {
+               delivery.getLink().setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+            }
+         }
+
+         link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.ANY_ENDPOINT_STATE);
+         while (link != null)
+         {
+            try
+            {
+               protonProtocolManager.handleActiveLink(link);
+            }
+            catch (HornetQAMQPException e)
+            {
+               link.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+            }
+            link = (LinkImpl) link.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.ANY_ENDPOINT_STATE);
+         }
+
+         link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
+         while (link != null)
+         {
+            try
+            {
+               ((ProtonDeliveryHandler) link.getContext()).close();
+            }
+            catch (HornetQAMQPException e)
+            {
+               link.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+            }
             link.close();
+
+            link = (LinkImpl) link.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
          }
-         link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.UNINITIALIZED, ProtonProtocolManager.INITIALIZED);
-      }
 
-      //handle any deliveries
-      DeliveryImpl delivery;
-
-      Iterator<DeliveryImpl> iterator = protonConnection.getWorkSequence();
-
-      while (iterator.hasNext())
-      {
-         delivery = iterator.next();
-         ProtonDeliveryHandler handler = (ProtonDeliveryHandler) delivery.getLink().getContext();
-         try
+         session = protonConnection.sessionHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
+         while (session != null)
          {
-            handler.onMessage(delivery);
-         }
-         catch (HornetQAMQPException e)
-         {
-            delivery.getLink().setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
-         }
-      }
-
-      link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.ANY_ENDPOINT_STATE);
-      while (link != null)
-      {
-         try
-         {
-            protonProtocolManager.handleActiveLink(link);
-         }
-         catch (HornetQAMQPException e)
-         {
-            link.setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
-         }
-         link = (LinkImpl) link.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.ANY_ENDPOINT_STATE);
-      }
-
-      link = (LinkImpl) protonConnection.linkHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
-      while (link != null)
-      {
-         try
-         {
-            ((ProtonDeliveryHandler) link.getContext()).close();
-         }
-         catch (HornetQAMQPException e)
-         {
-            link.setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
-         }
-         link.close();
-
-         link = (LinkImpl) link.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
-      }
-
-      session = protonConnection.sessionHead(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
-      while (session != null)
-      {
-         ProtonSession protonSession = (ProtonSession) session.getContext();
-         protonSession.close();
-         sessions.remove(session);
-         session.close();
-         session = session.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
-      }
-
-      if (protonConnection.getLocalState() == EndpointState.ACTIVE && protonConnection.getRemoteState() == EndpointState.CLOSED)
-      {
-         for (ProtonSession protonSession : sessions.values())
-         {
+            ProtonSession protonSession = (ProtonSession) session.getContext();
             protonSession.close();
+            sessions.remove(session);
+            session.close();
+            session = session.next(ProtonProtocolManager.ACTIVE, ProtonProtocolManager.CLOSED);
          }
-         sessions.clear();
-         protonConnection.close();
-         write();
-         destroy();
-      }
 
-      write();
+         if (protonConnection.getLocalState() == EndpointState.ACTIVE && protonConnection.getRemoteState() == EndpointState.CLOSED)
+         {
+            for (ProtonSession protonSession : sessions.values())
+            {
+               protonSession.close();
+            }
+            sessions.clear();
+            protonConnection.close();
+            write();
+            destroy();
+         }
+
+         write();
+      }
    }
 
    private void setUserPass(byte[] data)

@@ -68,4 +68,7 @@ public interface HornetQAMQPProtocolMessageBundle
 
    @Message(id = 219014, value =  "not implemented: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQAMQPNotImplementedException notImplemented(String message);
+
+   @Message(id = 219015, value =  "error decoding AMQP frame", format = Message.Format.MESSAGE_FORMAT)
+   String decodeError();
 }

@@ -22,17 +22,15 @@
 package org.hornetq.core.protocol.proton;
 
 import org.apache.qpid.proton.amqp.transaction.Coordinator;
-import org.apache.qpid.proton.engine.EndpointError;
+import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Receiver;
 import org.apache.qpid.proton.engine.Sender;
-import org.apache.qpid.proton.engine.impl.LinkImpl;
 import org.apache.qpid.proton.engine.impl.TransportImpl;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInternalErrorException;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
@@ -192,7 +190,7 @@ public class ProtonSession implements SessionCallback
       {
          producers.remove(receiver);
          receiver.setTarget(null);
-         ((LinkImpl) receiver).setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
+         receiver.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
          receiver.close();
       }
    }
@@ -222,7 +220,7 @@ public class ProtonSession implements SessionCallback
       {
          consumers.remove(protonConsumer.getConsumerID());
          sender.setSource(null);
-         ((LinkImpl) sender).setLocalError(new EndpointError(e.getAmqpError(), e.getMessage()));
+         sender.setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
          sender.close();
       }
    }

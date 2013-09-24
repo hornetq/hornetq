@@ -21,6 +21,7 @@
 */
 package org.hornetq.core.protocol.proton.exceptions;
 
+import org.apache.qpid.proton.amqp.Symbol;
 import org.hornetq.api.core.HornetQException;
 
 /**
@@ -32,44 +33,14 @@ public class HornetQAMQPException extends HornetQException
 
    private final static String ERROR_PREFIX = "amqp:";
 
-   public String getAmqpError()
+   public Symbol getAmqpError()
    {
-      return amqpError.getError();
+      return amqpError;
    }
 
-   public enum AmqpError
-   {
-      INTERNAL_ERROR("internal-error"),
-      NOT_FOUND("not-found"),
-      UNAUTHORIZED_ACCESS("unuathorized-access"),
-      DECODE_ERROR("decode-error"),
-      RESOURCE_LIMIT_EXCEEDED("resource-limit-exceeded"),
-      NOT_ALLOWED("not-allowed"),
-      INVALID_FIELD("invalid-field"),
-      NOT_IMPLEMENTED("not-implemented"),
-      RESOURCE_LOCKED("resource-locked"),
-      PRECONDITIONS_FAILED("preconditions-failed"),
-      RESOURCE_DELETED("resource-deleted"),
-      ILLEGAL_STATE("illegal-state"),
-      FRAME_SIZE_TOO_SMALL("frame-size-too-small");
+   private final Symbol amqpError;
 
-      private final String error;
-
-      AmqpError(String error)
-      {
-         this.error = error;
-      }
-
-      public String getError()
-      {
-         return ERROR_PREFIX + error;
-      }
-
-   }
-
-   private final AmqpError amqpError;
-
-   public HornetQAMQPException(AmqpError amqpError, String message)
+   public HornetQAMQPException(Symbol amqpError, String message)
    {
       super(message);
       this.amqpError = amqpError;

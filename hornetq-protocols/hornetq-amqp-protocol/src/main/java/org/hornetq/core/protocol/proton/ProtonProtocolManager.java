@@ -27,8 +27,9 @@ import org.apache.qpid.proton.amqp.transaction.Coordinator;
 import org.apache.qpid.proton.amqp.transaction.Declare;
 import org.apache.qpid.proton.amqp.transaction.Declared;
 import org.apache.qpid.proton.amqp.transaction.Discharge;
+import org.apache.qpid.proton.amqp.transport.AmqpError;
+import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Delivery;
-import org.apache.qpid.proton.engine.EndpointError;
 import org.apache.qpid.proton.engine.EndpointState;
 import org.apache.qpid.proton.engine.Link;
 import org.apache.qpid.proton.engine.Receiver;
@@ -42,7 +43,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateException;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -188,7 +188,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
             @Override
             public void onError(int errorCode, String errorMessage)
             {
-               ((LinkImpl) receiver).setLocalError(new EndpointError("" + errorCode, errorMessage));
+               receiver.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE, errorCode + ":" + errorMessage));
             }
          });
       }
@@ -220,7 +220,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
             @Override
             public void onError(int errorCode, String errorMessage)
             {
-               ((LinkImpl) sender).setLocalError(new EndpointError("" + errorCode, errorMessage));
+               sender.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE, errorCode + ":" + errorMessage));
             }
          });
       }
