@@ -3,6 +3,7 @@
 require 'qpid_proton'
 
 messenger = Qpid::Proton::Messenger.new()
+messenger.incoming_window = 10
 
 begin
   messenger.start
@@ -31,6 +32,17 @@ msg = Qpid::Proton::Message.new
   while messenger.incoming.nonzero?
     begin
       messenger.get(msg)
+      # for 0.5:
+      messenger.accept()
+
+      # for 0.4:
+      #messenger.accept(messenger.incoming_tracker, 0)#1 would mean cumulative
+
+      # optional and the same in both versions (messenger will
+      # settle itself when tracker passes out the window)
+      messenger.settle(messenger.incoming_tracker, 0)
+
+
     rescue Qpid::Proton::Error => error
       puts "ERROR: #{error.message}"
       exit
