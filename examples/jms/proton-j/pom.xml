@@ -90,6 +90,11 @@
                   <artifactId>hornetq-jms-server</artifactId>
                   <version>${project.version}</version>
                </dependency>
+                <dependency>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-amqp-protocol</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
                <dependency>
                   <groupId>io.netty</groupId>
                   <artifactId>netty</artifactId>
