@@ -67,6 +67,7 @@ public class GracefulClient
 
          // this should silence any non-daemon thread and allow for graceful exit
          session.close();
+         System.exit(0);
       }
       catch (Throwable t)
       {

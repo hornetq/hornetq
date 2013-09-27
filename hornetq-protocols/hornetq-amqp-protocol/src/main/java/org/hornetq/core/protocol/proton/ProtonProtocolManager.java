@@ -21,6 +21,7 @@
 */
 package org.hornetq.core.protocol.proton;
 
+import io.netty.channel.ChannelHandler;
 import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.amqp.transaction.Coordinator;
@@ -56,7 +57,6 @@ import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.UUIDGenerator;
-import org.jboss.netty.channel.ChannelHandler;
 
 import java.nio.ByteBuffer;
 import java.util.EnumSet;

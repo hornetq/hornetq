@@ -12,12 +12,12 @@
  */
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
+import io.netty.channel.ChannelHandler;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.jboss.netty.channel.ChannelHandler;
 import org.junit.Before;
 import org.junit.After;
 

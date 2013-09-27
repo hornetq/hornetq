@@ -148,6 +148,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          if (count == 0)
          {
             pagingStore.addSize(-getMemoryEstimate() - MessageReferenceImpl.getMemoryEstimate());
+
+            if (buffer != null)
+            {
+               // release the buffer now
+               buffer.byteBuf().release();
+            }
          }
          else
          {

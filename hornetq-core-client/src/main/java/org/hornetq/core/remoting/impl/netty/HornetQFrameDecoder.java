@@ -13,13 +13,14 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+
+import java.util.List;
 
 /**
  * A Netty FrameDecoder used to decode messages.
@@ -27,10 +28,11 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tlee@redhat.com">Trustin Lee</a>
+ * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
  *
  * @version $Revision$, $Date$
  */
-public class HornetQFrameDecoder extends FrameDecoder
+public class HornetQFrameDecoder extends ByteToMessageDecoder
 {
    private final BufferDecoder decoder;
 
@@ -39,11 +41,11 @@ public class HornetQFrameDecoder extends FrameDecoder
       this.decoder = decoder;
    }
 
-   // FrameDecoder overrides
+   // ByteToMessageDecoder overrides
    // -------------------------------------------------------------------------------------
 
    @Override
-   protected Object decode(final ChannelHandlerContext ctx, final Channel channel, final ChannelBuffer in) throws Exception
+   protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, List<Object> out) throws Exception
    {
       int start = in.readerIndex();
 
@@ -53,12 +55,8 @@ public class HornetQFrameDecoder extends FrameDecoder
 
       if (length == -1)
       {
-         return null;
+         return;
       }
-
-      ChannelBuffer newBuffer = ChannelBuffers.dynamicBuffer(length);
-      newBuffer.writeBytes(in, length);
-
-      return newBuffer;
+      out.add(ByteBufUtil.readBytes(ctx.alloc(), in, length));
    }
 }

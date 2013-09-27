@@ -12,27 +12,27 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.group.ChannelGroup;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.group.ChannelGroup;
+
 
 /**
  * Common handler implementation for client and server side handler.
  *
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
+ * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @version $Rev$, $Date$
  */
-class HornetQChannelHandler extends SimpleChannelHandler
+class HornetQChannelHandler extends ChannelDuplexHandler
 {
    private final ChannelGroup group;
 
@@ -52,34 +52,35 @@ class HornetQChannelHandler extends SimpleChannelHandler
    }
 
    @Override
-   public void channelOpen(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+   public void channelActive(final ChannelHandlerContext ctx) throws Exception
    {
-      group.add(e.getChannel());
-      ctx.sendUpstream(e);
+      group.add(ctx.channel());
+      ctx.fireChannelActive();
    }
 
    @Override
-   public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+   public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception
    {
-      listener.connectionReadyForWrites(e.getChannel().getId(), e.getChannel().isWritable());
+      // TODO: Think about the id thingy
+      listener.connectionReadyForWrites(channelId(ctx.channel()), ctx.channel().isWritable());
    }
 
    @Override
-   public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+   public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
    {
-      ChannelBuffer buffer = (ChannelBuffer)e.getMessage();
+      ByteBuf buffer = (ByteBuf) msg;
 
-      handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
+      handler.bufferReceived(channelId(ctx.channel()), new ChannelBufferWrapper(buffer));
    }
 
    @Override
-   public void channelDisconnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+   public void channelInactive(final ChannelHandlerContext ctx) throws Exception
    {
       synchronized (this)
       {
          if (active)
          {
-            listener.connectionDestroyed(e.getChannel().getId());
+            listener.connectionDestroyed(channelId(ctx.channel()));
 
             active = false;
          }
@@ -87,31 +88,24 @@ class HornetQChannelHandler extends SimpleChannelHandler
    }
 
    @Override
-   public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
-   {
-      active = false;
-   }
-
-   @Override
-   public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception
+   public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception
    {
       if (!active)
       {
          return;
       }
-
       // We don't want to log this - since it is normal for this to happen during failover/reconnect
       // and we don't want to spew out stack traces in that event
       // The user has access to this exeception anyway via the HornetQException initial cause
 
       HornetQException me = HornetQClientMessageBundle.BUNDLE.nettyError();
-      me.initCause(e.getCause());
+      me.initCause(cause);
 
       synchronized (listener)
       {
          try
          {
-            listener.connectionException(e.getChannel().getId(), me);
+            listener.connectionException(channelId(ctx.channel()), me);
             active = false;
          }
          catch (Exception ex)
@@ -121,4 +115,8 @@ class HornetQChannelHandler extends SimpleChannelHandler
       }
    }
 
+   protected static int channelId(Channel channel)
+   {
+      return channel.hashCode();
+   }
 }

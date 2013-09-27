@@ -15,7 +15,7 @@ package org.hornetq.api.core;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.netty.buffer.ChannelBuffer;
+import io.netty.buffer.ByteBuf;
 
 /**
  * A HornetQBuffer wraps a Netty's ChannelBuffer and is used throughout HornetQ code base.
@@ -29,11 +29,11 @@ import org.jboss.netty.buffer.ChannelBuffer;
 public interface HornetQBuffer
 {
    /**
-    * Returns the underlying Netty's ChannelBuffer
+    * Returns the underlying Netty's ByteBuf
     *
-    * @return the underlying Netty's ChannelBuffer
+    * @return the underlying Netty's ByteBuf
     */
-   ChannelBuffer channelBuffer();
+   ByteBuf byteBuf();
 
    /**
     * Returns the number of bytes this buffer can contain.
