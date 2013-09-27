@@ -13,34 +13,32 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.hornetq.utils.DataConstants;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.buffer.DynamicChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 /**
  * A Netty decoder specially optimised to to decode messages on the core protocol only
  *
  * @author <a href="tlee@redhat.com">Trustin Lee</a>
+ * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
  *
  * @version $Revision: 7839 $, $Date: 2009-08-21 02:26:39 +0900 (2009-08-21, 금) $
  */
-public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
+public class HornetQFrameDecoder2 extends ChannelInboundHandlerAdapter
 {
-   private ChannelBuffer previousData = ChannelBuffers.EMPTY_BUFFER;
+   private ByteBuf previousData = Unpooled.EMPTY_BUFFER;
 
    // SimpleChannelUpstreamHandler overrides
    // -------------------------------------------------------------------------------------
 
    @Override
-   public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+   public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
    {
-      ChannelBuffer in = (ChannelBuffer)e.getMessage();
-      if (previousData.readable())
+      ByteBuf in = (ByteBuf) msg;
+      if (previousData.isReadable())
       {
          if (previousData.readableBytes() + in.readableBytes() < DataConstants.SIZE_INT)
          {
@@ -96,8 +94,8 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
                }
          }
 
-         final ChannelBuffer frame;
-         if (previousData instanceof DynamicChannelBuffer)
+         final ByteBuf frame;
+         /*if (previousData instanceof DynamicChannelBuffer)
          {
             // It's safe to reuse the current dynamic buffer
             // because previousData will be reassigned to
@@ -110,21 +108,27 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
             // XXX Tune this value: Increasing the initial capacity of the
             // dynamic buffer might reduce the chance of additional memory
             // copy.
-            frame = ChannelBuffers.dynamicBuffer(length + 4);
+            frame = ctx.alloc().buffer(length + 4);
             frame.writeBytes(previousData, previousData.readerIndex(), previousData.readableBytes());
             frame.writeBytes(in, length + 4 - frame.writerIndex());
-         }
-
+         }*/
+         // XXX Tune this value: Increasing the initial capacity of the
+         // dynamic buffer might reduce the chance of additional memory
+         // copy.
+         frame = ctx.alloc().buffer(length + 4);
+         frame.writeBytes(previousData, previousData.readerIndex(), previousData.readableBytes());
+         frame.writeBytes(in, length + 4 - frame.writerIndex());
          frame.skipBytes(4);
-         if (!in.readable())
+         if (!in.isReadable())
          {
-            previousData = ChannelBuffers.EMPTY_BUFFER;
-            Channels.fireMessageReceived(ctx, frame);
+            in.release();
+            previousData = Unpooled.EMPTY_BUFFER;
+            ctx.fireChannelRead(frame);
             return;
          }
          else
          {
-            Channels.fireMessageReceived(ctx, frame);
+             ctx.fireChannelRead(frame);
          }
       }
 
@@ -134,17 +138,17 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
       decode(ctx, in);
 
       // Handle the leftover.
-      if (in.readable())
+      if (in.isReadable())
       {
          previousData = in;
       }
       else
       {
-         previousData = ChannelBuffers.EMPTY_BUFFER;
+         previousData = Unpooled.EMPTY_BUFFER;
       }
    }
 
-   private void decode(final ChannelHandlerContext ctx, final ChannelBuffer in)
+   private void decode(final ChannelHandlerContext ctx, final ByteBuf in)
    {
       for (;;)
       {
@@ -163,29 +167,16 @@ public class HornetQFrameDecoder2 extends SimpleChannelUpstreamHandler
          // Convert to dynamic buffer (this requires copy)
          // XXX Tune this value: Increasing the initial capacity of the dynamic
          // buffer might reduce the chance of additional memory copy.
-         ChannelBuffer frame = ChannelBuffers.dynamicBuffer(length + DataConstants.SIZE_INT);
+         ByteBuf frame = ctx.alloc().buffer(length + DataConstants.SIZE_INT);
          frame.writeBytes(in, length + DataConstants.SIZE_INT);
          frame.skipBytes(DataConstants.SIZE_INT);
-         Channels.fireMessageReceived(ctx, frame);
+         ctx.fireChannelRead(frame);
       }
    }
 
-   private void append(final ChannelBuffer in, final int length)
+   private void append(final ByteBuf in, final int length)
    {
-      // Need more data to decode the first message. This can happen when
-      // a client is very slow. (e.g.sending each byte one by one)
-      if (previousData instanceof DynamicChannelBuffer)
-      {
-         previousData.discardReadBytes();
-         previousData.writeBytes(in);
-      }
-      else
-      {
-         ChannelBuffer newPreviousData = ChannelBuffers.dynamicBuffer(Math.max(previousData.readableBytes() + in.readableBytes(),
-                                                                               length + 4));
-         newPreviousData.writeBytes(previousData);
-         newPreviousData.writeBytes(in);
-         previousData = newPreviousData;
-      }
+       previousData.discardReadBytes();
+       previousData.writeBytes(in);
    }
 }

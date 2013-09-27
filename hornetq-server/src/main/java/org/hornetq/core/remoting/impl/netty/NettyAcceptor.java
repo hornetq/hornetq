@@ -30,6 +30,33 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import io.netty.bootstrap.ChannelFactory;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.ChannelGroupFuture;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.local.LocalAddress;
+import io.netty.channel.local.LocalEventLoopGroup;
+import io.netty.channel.local.LocalServerChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.oio.OioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.oio.OioServerSocketChannel;
+import io.netty.channel.socket.oio.OioSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -53,31 +80,6 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.TypedProperties;
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.DefaultChannelPipeline;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.ChannelGroupFuture;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
-import org.jboss.netty.channel.local.LocalAddress;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.util.Version;
-import org.jboss.netty.util.VirtualExecutorService;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -86,6 +88,7 @@ import org.jboss.netty.util.VirtualExecutorService;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="tlee@redhat.com">Trustin Lee</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
  * @version $Rev$, $Date$
  */
 public class NettyAcceptor implements Acceptor
@@ -93,6 +96,7 @@ public class NettyAcceptor implements Acceptor
    private final ClusterConnection clusterConnection;
 
    private ChannelFactory channelFactory;
+   private EventLoopGroup eventLoopGroup;
 
    private volatile ChannelGroup serverChannelGroup;
 
@@ -159,8 +163,6 @@ public class NettyAcceptor implements Acceptor
    private final ScheduledExecutorService scheduledThreadPool;
 
    private NotificationService notificationService;
-
-   private VirtualExecutorService bossExecutor;
 
    private boolean paused;
 
@@ -322,12 +324,21 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      bossExecutor = new VirtualExecutorService(threadPool);
-      VirtualExecutorService workerExecutor = new VirtualExecutorService(threadPool);
+       // TODO: Fix me
+      //bossExecutor = new VirtualExecutorService(threadPool);
+      //VirtualExecutorService workerExecutor = new VirtualExecutorService(threadPool);
 
       if (useInvm)
       {
-         channelFactory = new DefaultLocalServerChannelFactory();
+         channelFactory = new ChannelFactory()
+         {
+            @Override
+            public Channel newChannel()
+            {
+               return new LocalServerChannel();
+            }
+         };
+         eventLoopGroup = new LocalEventLoopGroup();
       }
       else if (useNio)
       {
@@ -343,16 +354,33 @@ public class NettyAcceptor implements Acceptor
          {
             threadsToUse = this.nioRemotingThreads;
          }
-
-         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
+         channelFactory = new ChannelFactory()
+         {
+            @Override
+            public Channel newChannel()
+            {
+               return new NioServerSocketChannel();
+            }
+         };
+         eventLoopGroup = new NioEventLoopGroup(threadsToUse);
+         //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
       else
       {
-         channelFactory = new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         channelFactory = new ChannelFactory()
+         {
+             @Override
+             public Channel newChannel()
+             {
+                 return new OioServerSocketChannel();
+             }
+         };
+         eventLoopGroup = new OioEventLoopGroup(); //new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
 
-      bootstrap = new ServerBootstrap(channelFactory);
-
+      bootstrap = new ServerBootstrap();
+      bootstrap.group(eventLoopGroup);
+      bootstrap.channelFactory(channelFactory);
       final SSLContext context;
       if (sslEnabled)
       {
@@ -376,9 +404,10 @@ public class NettyAcceptor implements Acceptor
          context = null; // Unused
       }
 
-      ChannelPipelineFactory factory = new ChannelPipelineFactory()
+      ChannelInitializer<Channel> factory = new ChannelInitializer<Channel>()
       {
-         public ChannelPipeline getPipeline() throws Exception
+         @Override
+         public void initChannel(Channel channel) throws Exception
          {
             Map<String, ChannelHandler> handlers = new LinkedHashMap<String, ChannelHandler>();
 
@@ -400,7 +429,7 @@ public class NettyAcceptor implements Acceptor
             {
                handlers.put("http-decoder", new HttpRequestDecoder());
 
-               handlers.put("http-aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
+               handlers.put("http-aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
 
                handlers.put("http-encoder", new HttpResponseEncoder());
 
@@ -417,10 +446,9 @@ public class NettyAcceptor implements Acceptor
              * by websocket codecs after handshake.
              * Other protocols can use a faster static channel pipeline directly.
              */
-            ChannelPipeline pipeline;
+            ChannelPipeline pipeline = channel.pipeline();
             if(protocolManager.isSupportsWebsockets(protocol))
             {
-               pipeline = new DefaultChannelPipeline();
                for (Entry<String, ChannelHandler> handler : handlers.entrySet())
                {
                   pipeline.addLast(handler.getKey(), handler.getValue());
@@ -428,35 +456,33 @@ public class NettyAcceptor implements Acceptor
             }
             else
             {
-               pipeline = Channels.pipeline(handlers.values().toArray(new ChannelHandler[handlers.size()]));
+               pipeline.addLast(handlers.values().toArray(new ChannelHandler[handlers.size()]));
             }
-
-            return pipeline;
          }
       };
-      bootstrap.setPipelineFactory(factory);
+      bootstrap.childHandler(factory);
 
       // Bind
-      bootstrap.setOption("child.tcpNoDelay", tcpNoDelay);
+      bootstrap.childOption(ChannelOption.TCP_NODELAY, tcpNoDelay);
       if (tcpReceiveBufferSize != -1)
       {
-         bootstrap.setOption("child.receiveBufferSize", tcpReceiveBufferSize);
+         bootstrap.childOption(ChannelOption.SO_RCVBUF, tcpReceiveBufferSize);
       }
       if (tcpSendBufferSize != -1)
       {
-         bootstrap.setOption("child.sendBufferSize", tcpSendBufferSize);
+         bootstrap.childOption(ChannelOption.SO_SNDBUF, tcpSendBufferSize);
       }
       if (backlog != -1)
       {
-         bootstrap.setOption("backlog", backlog);
+         bootstrap.option(ChannelOption.SO_BACKLOG, backlog);
       }
-      bootstrap.setOption("reuseAddress", true);
-      bootstrap.setOption("child.reuseAddress", true);
-      bootstrap.setOption("child.keepAlive", true);
+      bootstrap.option(ChannelOption.SO_REUSEADDR, true);
+      bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
+      bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
-      channelGroup = new DefaultChannelGroup("hornetq-accepted-channels");
+      channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", eventLoopGroup.next());
 
-      serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels");
+      serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", eventLoopGroup.next());
 
       startServerChannels();
 
@@ -483,7 +509,8 @@ public class NettyAcceptor implements Acceptor
                                                                          TimeUnit.MILLISECONDS);
       }
 
-      HornetQServerLogger.LOGGER.startedNettyAcceptor(Version.ID, host, port, protocol);
+      // TODO: Think about add Version back to netty
+      HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port, protocol);
    }
 
    private void startServerChannels()
@@ -500,7 +527,7 @@ public class NettyAcceptor implements Acceptor
          {
             address = new InetSocketAddress(h, port);
          }
-         Channel serverChannel = bootstrap.bind(address);
+         Channel serverChannel = bootstrap.bind(address).syncUninterruptibly().channel();
          serverChannelGroup.add(serverChannel);
       }
    }
@@ -539,22 +566,22 @@ public class NettyAcceptor implements Acceptor
       serverChannelGroup.close().awaitUninterruptibly();
       ChannelGroupFuture future = channelGroup.close().awaitUninterruptibly();
 
-      if (!future.isCompleteSuccess())
+      if (!future.isSuccess())
       {
          HornetQServerLogger.LOGGER.nettyChannelGroupError();
-         Iterator<Channel> iterator = future.getGroup().iterator();
+         Iterator<Channel> iterator = future.group().iterator();
          while (iterator.hasNext())
          {
             Channel channel = iterator.next();
-            if (channel.isBound())
+            if (channel.isActive())
             {
-               HornetQServerLogger.LOGGER.nettyChannelStillOpen(channel, channel.getRemoteAddress());
+               HornetQServerLogger.LOGGER.nettyChannelStillOpen(channel, channel.remoteAddress());
             }
          }
       }
 
-      channelFactory.releaseExternalResources();
-      channelFactory = null;
+      eventLoopGroup.shutdownGracefully();
+      eventLoopGroup = null;
 
       for (Connection connection : connections.values())
       {
@@ -608,17 +635,17 @@ public class NettyAcceptor implements Acceptor
       }
 
       // We *pause* the acceptor so no new connections are made
-      ChannelGroupFuture future = serverChannelGroup.unbind().awaitUninterruptibly();
-      if (!future.isCompleteSuccess())
+      ChannelGroupFuture future = serverChannelGroup.close().awaitUninterruptibly();
+      if (!future.isSuccess())
       {
          HornetQServerLogger.LOGGER.nettyChannelGroupBindError();
-         Iterator<Channel> iterator = future.getGroup().iterator();
+         Iterator<Channel> iterator = future.group().iterator();
          while (iterator.hasNext())
          {
             Channel channel = iterator.next();
-            if (channel.isBound())
+            if (channel.isActive())
             {
-               HornetQServerLogger.LOGGER.nettyChannelStillBound(channel, channel.getRemoteAddress());
+               HornetQServerLogger.LOGGER.nettyChannelStillBound(channel, channel.remoteAddress());
             }
          }
       }
@@ -666,20 +693,21 @@ public class NettyAcceptor implements Acceptor
       }
 
       @Override
-      public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+      public void channelActive(final ChannelHandlerContext ctx) throws Exception
       {
+         super.channelActive(ctx);
          Listener connectionListener = new Listener();
 
-         NettyConnection nc = new NettyConnection(configuration, e.getChannel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
+         NettyConnection nc = new NettyConnection(configuration, ctx.channel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
 
          connectionListener.connectionCreated(NettyAcceptor.this, nc, HornetQClient.DEFAULT_CORE_PROTOCOL);
 
-         SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
+         SslHandler sslHandler = ctx.pipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
-            sslHandler.handshake().addListener(new ChannelFutureListener()
+            sslHandler.handshakeFuture().addListener(new GenericFutureListener<io.netty.util.concurrent.Future<Channel>>()
             {
-               public void operationComplete(final ChannelFuture future) throws Exception
+               public void operationComplete(final io.netty.util.concurrent.Future<Channel> future) throws Exception
                {
                   if (future.isSuccess())
                   {
@@ -687,7 +715,7 @@ public class NettyAcceptor implements Acceptor
                   }
                   else
                   {
-                     future.getChannel().close();
+                     future.getNow().close();
                   }
                }
             });

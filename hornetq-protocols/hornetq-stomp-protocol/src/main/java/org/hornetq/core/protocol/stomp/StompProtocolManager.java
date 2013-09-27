@@ -21,6 +21,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import io.netty.channel.ChannelHandler;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
@@ -49,10 +53,6 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 
 /**
  * StompProtocolManager
@@ -179,7 +179,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       if (StompProtocolManagerFactory.STOMP_WS_PROTOCOL_NAME.contentEquals(protocol))
       {
          handlers.put("http-decoder", new HttpRequestDecoder());
-         handlers.put("http-aggregator", new HttpChunkAggregator(65536));
+         handlers.put("http-aggregator", new HttpObjectAggregator(65536));
          handlers.put("http-encoder", new HttpResponseEncoder());
          handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
          handlers.put("websocket-handler", new WebSocketServerHandler());

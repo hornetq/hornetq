@@ -26,6 +26,7 @@ import java.nio.channels.ScatteringByteChannel;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.buffer.ByteBuf;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -38,7 +39,6 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
-import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  * This class aggregates several {@link SessionReceiveContinuationMessage}s as it was being handled
@@ -1425,7 +1425,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    }
 
-   public ChannelBuffer channelBuffer()
+   public ByteBuf byteBuf()
    {
       return null;
    }

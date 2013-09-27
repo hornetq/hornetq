@@ -18,29 +18,27 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.UpstreamMessageEvent;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * Ensures that every request has a response and also that any uninitiated responses always wait for
  * a response.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-class HttpAcceptorHandler extends SimpleChannelHandler
+class HttpAcceptorHandler extends ChannelDuplexHandler
 {
    private final BlockingQueue<ResponseHolder> responses = new LinkedBlockingQueue<ResponseHolder>();
 
@@ -62,49 +60,49 @@ class HttpAcceptorHandler extends SimpleChannelHandler
    }
 
    @Override
-   public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+   public void channelActive(final ChannelHandlerContext ctx) throws Exception
    {
-      super.channelConnected(ctx, e);
-      channel = e.getChannel();
+      super.channelActive(ctx);
+      channel = ctx.channel();
       httpKeepAliveTask.registerKeepAliveHandler(this);
    }
 
    @Override
-   public void channelDisconnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+   public void channelInactive(final ChannelHandlerContext ctx) throws Exception
    {
-      super.channelDisconnected(ctx, e);
+      super.channelInactive(ctx);
       httpKeepAliveTask.unregisterKeepAliveHandler(this);
       channel = null;
    }
 
    @Override
-   public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+   public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
    {
-      HttpRequest request = (HttpRequest)e.getMessage();
+      FullHttpRequest request = (FullHttpRequest) msg;
       HttpMethod method = request.getMethod();
       // if we are a post then we send upstream, otherwise we are just being prompted for a response.
       if (method.equals(HttpMethod.POST))
       {
-         MessageEvent event = new UpstreamMessageEvent(e.getChannel(), request.getContent(), e.getRemoteAddress());
-         ctx.sendUpstream(event);
+         ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
+         // TODO: Not return here looks like a bug
       }
       // add a new response
       responses.put(new ResponseHolder(System.currentTimeMillis() + responseTime,
-                                       new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
+                                       new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
+      ReferenceCountUtil.release(msg);
    }
 
    @Override
-   public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+   public void write(final ChannelHandlerContext ctx, final Object msg, ChannelPromise promise) throws Exception
    {
       // we are either a channel buffer, which gets delayed until a response is available, or we are the actual response
-      if (e.getMessage() instanceof ChannelBuffer)
+      if (msg instanceof ByteBuf)
       {
-         ChannelBuffer buf = (ChannelBuffer)e.getMessage();
-         executor.execute(new ResponseRunner(buf));
+         executor.execute(new ResponseRunner((ByteBuf) msg, promise));
       }
       else
       {
-         Channels.write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
+         ctx.write(msg, promise);
       }
    }
 
@@ -134,20 +132,24 @@ class HttpAcceptorHandler extends SimpleChannelHandler
     */
    final class ResponseRunner implements Runnable
    {
-      private final ChannelBuffer buffer;
+      private final ByteBuf buffer;
 
       private final boolean bogusResponse;
 
-      public ResponseRunner(final ChannelBuffer buffer)
+      private final ChannelPromise promise;
+
+      public ResponseRunner(final ByteBuf buffer, ChannelPromise promise)
       {
          this.buffer = buffer;
          bogusResponse = false;
+         this.promise = promise;
       }
 
       public ResponseRunner()
       {
          bogusResponse = true;
-         buffer = ChannelBuffers.buffer(0);
+         buffer = Unpooled.buffer(0);
+         promise = channel.newPromise();
       }
 
       public void run()
@@ -169,27 +171,28 @@ class HttpAcceptorHandler extends SimpleChannelHandler
          while (responseHolder == null);
          if (!bogusResponse)
          {
-            ChannelBuffer piggyBackBuffer = piggyBackResponses();
-            responseHolder.response.setContent(piggyBackBuffer);
-            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH,
-                                              String.valueOf(piggyBackBuffer.writerIndex()));
-            channel.write(responseHolder.response);
+            piggyBackResponses(responseHolder.response.content());
+            responseHolder.response.headers().set(HttpHeaders.Names.CONTENT_LENGTH,
+                                              String.valueOf(responseHolder.response.content().readableBytes()));
+            channel.write(responseHolder.response, promise);
          }
          else
          {
-            responseHolder.response.setContent(buffer);
-            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buffer.writerIndex()));
-            channel.write(responseHolder.response);
+            responseHolder.response.content().writeBytes(buffer);
+            responseHolder.response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(responseHolder.response.content().readableBytes()));
+            channel.write(responseHolder.response, promise);
          }
+
+         buffer.release();
 
       }
 
-      private ChannelBuffer piggyBackResponses()
+      // TODO: This can be optimized a lot
+      private void piggyBackResponses(ByteBuf buf)
       {
          // if we are the last available response then we have to piggy back any remaining responses
          if (responses.isEmpty())
          {
-            ChannelBuffer buf = org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer();
             buf.writeBytes(buffer);
             do
             {
@@ -201,6 +204,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
                      break;
                   }
                   buf.writeBytes(responseRunner.buffer);
+                  responseRunner.buffer.release();
                }
                catch (InterruptedException e)
                {
@@ -208,9 +212,9 @@ class HttpAcceptorHandler extends SimpleChannelHandler
                }
             }
             while (responses.isEmpty());
-            return buf;
+            return;
          }
-         return buffer;
+         buf.writeBytes(buffer);
       }
 
    }
@@ -238,11 +242,11 @@ class HttpAcceptorHandler extends SimpleChannelHandler
     */
    private static final class ResponseHolder
    {
-      final HttpResponse response;
+      final FullHttpResponse response;
 
       final long timeReceived;
 
-      public ResponseHolder(final long timeReceived, final HttpResponse response)
+      public ResponseHolder(final long timeReceived, final FullHttpResponse response)
       {
          this.timeReceived = timeReceived;
          this.response = response;

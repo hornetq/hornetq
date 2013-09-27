@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+import io.netty.buffer.ByteBuf;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -29,7 +30,6 @@ import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.InflaterReader;
 import org.hornetq.utils.InflaterWriter;
 import org.hornetq.utils.UTF8Util;
-import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -726,7 +726,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    // Inner classes -------------------------------------------------
 
-   public ChannelBuffer channelBuffer()
+   public ByteBuf byteBuf()
    {
       return null;
    }

@@ -15,11 +15,11 @@ package org.hornetq.core.buffers.impl;
 
 import java.nio.ByteBuffer;
 
+import io.netty.buffer.ByteBuf;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
-import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  * A ChannelBufferWrapper
@@ -27,9 +27,9 @@ import org.jboss.netty.buffer.ChannelBuffer;
  */
 public class ChannelBufferWrapper implements HornetQBuffer
 {
-   protected ChannelBuffer buffer; // NO_UCD (use final)
+   protected ByteBuf buffer; // NO_UCD (use final)
 
-   public ChannelBufferWrapper(final ChannelBuffer buffer)
+   public ChannelBufferWrapper(final ByteBuf buffer)
    {
       this.buffer = buffer;
    }
@@ -189,7 +189,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
       return buffer.capacity();
    }
 
-   public ChannelBuffer channelBuffer()
+   public ByteBuf byteBuf()
    {
       return buffer;
    }
@@ -241,17 +241,17 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public void getBytes(final int index, final HornetQBuffer dst, final int dstIndex, final int length)
    {
-      buffer.getBytes(index, dst.channelBuffer(), dstIndex, length);
+      buffer.getBytes(index, dst.byteBuf(), dstIndex, length);
    }
 
    public void getBytes(final int index, final HornetQBuffer dst, final int length)
    {
-      buffer.getBytes(index, dst.channelBuffer(), length);
+      buffer.getBytes(index, dst.byteBuf(), length);
    }
 
    public void getBytes(final int index, final HornetQBuffer dst)
    {
-      buffer.getBytes(index, dst.channelBuffer());
+      buffer.getBytes(index, dst.byteBuf());
    }
 
    public char getChar(final int index)
@@ -311,7 +311,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public boolean readable()
    {
-      return buffer.readable();
+      return buffer.isReadable();
    }
 
    public int readableBytes()
@@ -341,17 +341,17 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public void readBytes(final HornetQBuffer dst, final int dstIndex, final int length)
    {
-      buffer.readBytes(dst.channelBuffer(), dstIndex, length);
+      buffer.readBytes(dst.byteBuf(), dstIndex, length);
    }
 
    public void readBytes(final HornetQBuffer dst, final int length)
    {
-      buffer.readBytes(dst.channelBuffer(), length);
+      buffer.readBytes(dst.byteBuf(), length);
    }
 
    public void readBytes(final HornetQBuffer dst)
    {
-      buffer.readBytes(dst.channelBuffer());
+      buffer.readBytes(dst.byteBuf());
    }
 
    public HornetQBuffer readBytes(final int length)
@@ -451,17 +451,17 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public void setBytes(final int index, final HornetQBuffer src, final int srcIndex, final int length)
    {
-      buffer.setBytes(index, src.channelBuffer(), srcIndex, length);
+      buffer.setBytes(index, src.byteBuf(), srcIndex, length);
    }
 
    public void setBytes(final int index, final HornetQBuffer src, final int length)
    {
-      buffer.setBytes(index, src.channelBuffer(), length);
+      buffer.setBytes(index, src.byteBuf(), length);
    }
 
    public void setBytes(final int index, final HornetQBuffer src)
    {
-      buffer.setBytes(index, src.channelBuffer());
+      buffer.setBytes(index, src.byteBuf());
    }
 
    public void setChar(final int index, final char value)
@@ -516,17 +516,17 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public ByteBuffer toByteBuffer()
    {
-      return buffer.toByteBuffer();
+      return buffer.nioBuffer();
    }
 
    public ByteBuffer toByteBuffer(final int index, final int length)
    {
-      return buffer.toByteBuffer(index, length);
+      return buffer.nioBuffer(index, length);
    }
 
    public boolean writable()
    {
-      return buffer.writable();
+      return buffer.isWritable();
    }
 
    public int writableBytes()
@@ -556,12 +556,12 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
-      buffer.writeBytes(src.channelBuffer(), srcIndex, length);
+      buffer.writeBytes(src.byteBuf(), srcIndex, length);
    }
 
    public void writeBytes(final HornetQBuffer src, final int length)
    {
-      buffer.writeBytes(src.channelBuffer(), length);
+      buffer.writeBytes(src.byteBuf(), length);
    }
 
    public void writeChar(final char chr)

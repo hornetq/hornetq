@@ -13,11 +13,11 @@
 
 package org.hornetq.spi.core.protocol;
 
+import io.netty.channel.ChannelHandler;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
-import org.jboss.netty.channel.ChannelHandler;
 
 import java.util.Map;
 

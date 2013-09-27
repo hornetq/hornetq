@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.handler.ssl.SslHandler;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQInterruptedException;
@@ -28,15 +31,11 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.handler.ssl.SslHandler;
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
  *
  */
 public class NettyConnection implements Connection
@@ -96,7 +95,7 @@ public class NettyConnection implements Connection
          return;
       }
 
-      SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
+      SslHandler sslHandler = (SslHandler)channel.pipeline().get("ssl");
       if (sslHandler != null)
       {
          try
@@ -128,12 +127,13 @@ public class NettyConnection implements Connection
 
    public HornetQBuffer createBuffer(final int size)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(size));
+      return new ChannelBufferWrapper(channel.alloc().buffer(size));
    }
 
    public Object getID()
    {
-      return channel.getId();
+      // TODO: Think of it
+      return channel.hashCode();
    }
 
    // This is called periodically to flush the batch buffer
@@ -150,9 +150,9 @@ public class NettyConnection implements Connection
          {
             if (batchBuffer != null && batchBuffer.readable())
             {
-               channel.write(batchBuffer.channelBuffer());
+               channel.write(batchBuffer);
 
-               batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+               batchBuffer = createBuffer(BATCHING_BUFFER_SIZE);
             }
          }
          finally
@@ -210,7 +210,7 @@ public class NettyConnection implements Connection
                }
             }
 
-            ChannelFuture future = channel.write(buffer.channelBuffer());
+            ChannelFuture future = channel.write(buffer.byteBuf());
 
             if (flush)
             {
@@ -247,7 +247,7 @@ public class NettyConnection implements Connection
 
    public String getRemoteAddress()
    {
-      return channel.getRemoteAddress().toString();
+      return channel.remoteAddress().toString();
    }
 
    public boolean isDirectDeliver()
@@ -299,7 +299,7 @@ public class NettyConnection implements Connection
    @Override
    public String toString()
    {
-      return super.toString() + "[local= " + channel.getLocalAddress() + ", remote=" + channel.getRemoteAddress() + "]";
+      return super.toString() + "[local= " + channel.localAddress() + ", remote=" + channel.remoteAddress() + "]";
    }
 
    // Package protected ---------------------------------------------

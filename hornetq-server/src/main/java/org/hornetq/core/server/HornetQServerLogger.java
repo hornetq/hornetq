@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.transaction.xa.Xid;
 
+import io.netty.channel.Channel;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -73,7 +74,6 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.netty.channel.Channel;
 import org.w3c.dom.Node;
 
 @MessageLogger(projectCode = "HQ")
