@@ -111,7 +111,7 @@ public final class ReplicationManager implements HornetQComponent
    private volatile boolean enabled;
 
    private final Object replicationLock = new Object();
-   private final Object largeMessageSyncGuard = new Object();
+
    private final HashMap<Long, Pair<String, Long>> largeMessagesToSync = new HashMap<Long, Pair<String, Long>>();
 
    private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();

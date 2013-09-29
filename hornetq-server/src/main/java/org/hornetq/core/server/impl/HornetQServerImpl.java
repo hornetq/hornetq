@@ -565,6 +565,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (localReplicationManager != null)
          {
+            localReplicationManager.getBackupTransportConnection().getTransportConnection().checkFlushBatchBuffer();
             replicationManager.sendLiveIsStopping(LiveStopping.STOP_CALLED);
             // Schedule for 10 seconds
             // this pool gets a 'hard' shutdown, no need to manage the Future of this Runnable.

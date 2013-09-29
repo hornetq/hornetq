@@ -129,6 +129,25 @@ public class InVMConnection implements Connection
 
    public void checkFlushBatchBuffer()
    {
+      final CountDownLatch latch = new CountDownLatch(1);
+      executor.execute(new Runnable(){
+         public void run()
+         {
+            latch.countDown();
+         }
+      });
+
+      try
+      {
+         if (!latch.await(10, TimeUnit.SECONDS))
+         {
+            HornetQServerLogger.LOGGER.timedOutFlushingInvmChannel();
+         }
+      }
+      catch (InterruptedException e)
+      {
+         throw new HornetQInterruptedException(e);
+      }
    }
 
    public void write(final HornetQBuffer buffer)
