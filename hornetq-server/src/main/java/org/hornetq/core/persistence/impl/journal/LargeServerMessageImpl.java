@@ -241,11 +241,6 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
       validateFile();
       releaseResources();
       storageManager.deleteLargeMessageFile(this);
-      if (pendingRecordID >= 0)
-      {
-         storageManager.confirmPendingLargeMessage(pendingRecordID);
-         pendingRecordID = -1;
-      }
    }
 
    // We cache this
