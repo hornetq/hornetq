@@ -210,7 +210,7 @@ public class NettyConnection implements Connection
                }
             }
 
-            ChannelFuture future = channel.write(buffer.byteBuf());
+            ChannelFuture future = channel.writeAndFlush(buffer.byteBuf());
 
             if (flush)
             {
