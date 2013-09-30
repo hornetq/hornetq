@@ -94,7 +94,6 @@ class HornetQChannelHandler extends ChannelDuplexHandler
       {
          return;
       }
-
       // We don't want to log this - since it is normal for this to happen during failover/reconnect
       // and we don't want to spew out stack traces in that event
       // The user has access to this exeception anyway via the HornetQException initial cause

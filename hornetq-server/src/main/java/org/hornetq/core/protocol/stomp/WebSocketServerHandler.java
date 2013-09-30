@@ -108,7 +108,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             this.handshaker.close(ctx.channel(), ((CloseWebSocketFrame) frame).retain());
             return false;
         } else if (frame instanceof PingWebSocketFrame) {
-            ctx.write(new PongWebSocketFrame(frame.content().retain()));
+            ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
             return false;
         } else if (!(frame instanceof TextWebSocketFrame)) {
             throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
@@ -125,7 +125,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
         }
 
         // Send the response and close the connection if necessary.
-        ChannelFuture f = ctx.write(res);
+        ChannelFuture f = ctx.writeAndFlush(res);
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }

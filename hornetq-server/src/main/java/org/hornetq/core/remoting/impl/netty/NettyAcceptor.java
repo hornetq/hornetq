@@ -52,7 +52,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
-import io.netty.channel.socket.oio.OioSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -394,7 +393,6 @@ public class NettyAcceptor implements Acceptor
          public void initChannel(Channel channel) throws Exception
          {
             Map<String, ChannelHandler> handlers = new LinkedHashMap<String, ChannelHandler>();
-
             if (sslEnabled)
             {
                SSLEngine engine = context.createSSLEngine();
@@ -566,6 +564,8 @@ public class NettyAcceptor implements Acceptor
 
       eventLoopGroup.shutdownGracefully();
       eventLoopGroup = null;
+
+      channelClazz = null;
 
       for (Connection connection : connections.values())
       {

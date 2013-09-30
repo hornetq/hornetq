@@ -150,7 +150,7 @@ public class NettyConnection implements Connection
          {
             if (batchBuffer != null && batchBuffer.readable())
             {
-               channel.write(batchBuffer);
+               channel.writeAndFlush(batchBuffer.byteBuf());
 
                batchBuffer = createBuffer(BATCHING_BUFFER_SIZE);
             }

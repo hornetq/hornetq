@@ -640,7 +640,7 @@ public class NettyConnector extends AbstractConnector
 
       future.awaitUninterruptibly();
 
-      if (future.isSuccess())
+       if (future.isSuccess())
       {
          final Channel ch = future.channel();
          SslHandler sslHandler = ch.pipeline().get(SslHandler.class);
@@ -677,7 +677,6 @@ public class NettyConnector extends AbstractConnector
          Listener connectionListener = new Listener();
          NettyConnection conn = new NettyConnection(configuration, ch, connectionListener, !httpEnabled && batchDelay > 0, false);
          connectionListener.connectionCreated(null, conn, HornetQClient.DEFAULT_CORE_PROTOCOL);
-
          return conn;
       }
       else
@@ -842,7 +841,7 @@ public class NettyConnector extends AbstractConnector
                FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
                httpRequest.headers().add(HttpHeaders.Names.HOST, NettyConnector.this.host);
                waitingGet = true;
-               channel.write(httpRequest);
+               channel.writeAndFlush(httpRequest);
             }
          }
 
