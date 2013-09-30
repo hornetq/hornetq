@@ -58,6 +58,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -463,7 +464,7 @@ public class NettyAcceptor implements Acceptor
       bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
       bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
       bootstrap.childOption(ChannelOption.ALLOCATOR, allocator);
-      channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", eventLoopGroup.next());
+      channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", ImmediateEventExecutor.INSTANCE);
 
       serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", eventLoopGroup.next());
 
