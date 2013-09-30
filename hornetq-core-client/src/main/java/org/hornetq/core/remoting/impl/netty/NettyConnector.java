@@ -21,8 +21,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +35,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ChannelFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -64,7 +61,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestEncoder;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslHandler;
@@ -104,7 +100,7 @@ public class NettyConnector extends AbstractConnector
 
    // Attributes ----------------------------------------------------
 
-   private ChannelFactory<Channel> channelFactory;
+   private Class<? extends Channel> channelClazz;
 
    private Bootstrap bootstrap;
 
@@ -336,7 +332,7 @@ public class NettyConnector extends AbstractConnector
 
    public synchronized void start()
    {
-      if (channelFactory != null)
+      if (channelClazz != null)
       {
          return;
       }
@@ -366,40 +362,21 @@ public class NettyConnector extends AbstractConnector
                    nioEventLoopGroup = new NioEventLoopGroup(threadsToUse);
                }
 
-               channelFactory = new ChannelFactory<Channel>()
-               {
-                  @Override
-                  public Channel newChannel()
-                  {
-                     return new NioSocketChannel();
-                  }
-               };
+               channelClazz = NioSocketChannel.class;
                group = nioEventLoopGroup;
                nioChannelFactoryCount.incrementAndGet();
             }
          }
          else
          {
-            channelFactory = new ChannelFactory<Channel>()
-            {
-               @Override
-               public Channel newChannel()
-               {
-                  return new NioSocketChannel();
-               }
-            };
+            channelClazz = NioSocketChannel.class;
             group = new NioEventLoopGroup(threadsToUse);
          }
 
       }
       else
       {
-         channelFactory = new ChannelFactory<Channel>() {
-            @Override
-            public Channel newChannel() {
-               return new OioSocketChannel();
-            }
-         };
+         channelClazz = OioSocketChannel.class;
          group = new OioEventLoopGroup();
       }
       // if we are a servlet wrap the socketChannelFactory
@@ -410,7 +387,7 @@ public class NettyConnector extends AbstractConnector
          //channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory);
       }
       bootstrap = new Bootstrap();
-      bootstrap.channelFactory(channelFactory);
+      bootstrap.channel(channelClazz);
       bootstrap.group(group);
 
       bootstrap.option(ChannelOption.TCP_NODELAY, tcpNoDelay);
@@ -543,7 +520,7 @@ public class NettyConnector extends AbstractConnector
 
    public synchronized void close()
    {
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return;
       }
@@ -576,7 +553,7 @@ public class NettyConnector extends AbstractConnector
       {
          group.shutdownGracefully();
       }
-      channelFactory = null;
+      channelClazz = null;
 
       for (Connection connection : connections.values())
       {
@@ -588,12 +565,12 @@ public class NettyConnector extends AbstractConnector
 
    public boolean isStarted()
    {
-      return channelFactory != null;
+      return channelClazz != null;
    }
 
    public Connection createConnection()
    {
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return null;
       }

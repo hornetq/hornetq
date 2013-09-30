@@ -30,17 +30,15 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import io.netty.bootstrap.ChannelFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -95,7 +93,7 @@ public class NettyAcceptor implements Acceptor
 {
    private final ClusterConnection clusterConnection;
 
-   private ChannelFactory channelFactory;
+   private Class<? extends ServerChannel> channelClazz;
    private EventLoopGroup eventLoopGroup;
 
    private volatile ChannelGroup serverChannelGroup;
@@ -318,7 +316,7 @@ public class NettyAcceptor implements Acceptor
 
    public synchronized void start() throws Exception
    {
-      if (channelFactory != null)
+      if (channelClazz != null)
       {
          // Already started
          return;
@@ -330,14 +328,7 @@ public class NettyAcceptor implements Acceptor
 
       if (useInvm)
       {
-         channelFactory = new ChannelFactory()
-         {
-            @Override
-            public Channel newChannel()
-            {
-               return new LocalServerChannel();
-            }
-         };
+         channelClazz = LocalServerChannel.class;
          eventLoopGroup = new LocalEventLoopGroup();
       }
       else if (useNio)
@@ -354,33 +345,19 @@ public class NettyAcceptor implements Acceptor
          {
             threadsToUse = this.nioRemotingThreads;
          }
-         channelFactory = new ChannelFactory()
-         {
-            @Override
-            public Channel newChannel()
-            {
-               return new NioServerSocketChannel();
-            }
-         };
+         channelClazz = NioServerSocketChannel.class;
          eventLoopGroup = new NioEventLoopGroup(threadsToUse);
          //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
       else
       {
-         channelFactory = new ChannelFactory()
-         {
-             @Override
-             public Channel newChannel()
-             {
-                 return new OioServerSocketChannel();
-             }
-         };
+         channelClazz = OioServerSocketChannel.class;
          eventLoopGroup = new OioEventLoopGroup(); //new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
 
       bootstrap = new ServerBootstrap();
       bootstrap.group(eventLoopGroup);
-      bootstrap.channelFactory(channelFactory);
+      bootstrap.channel(channelClazz);
       final SSLContext context;
       if (sslEnabled)
       {
@@ -539,7 +516,7 @@ public class NettyAcceptor implements Acceptor
 
    public synchronized void stop()
    {
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return;
       }
@@ -619,7 +596,7 @@ public class NettyAcceptor implements Acceptor
 
    public boolean isStarted()
    {
-      return channelFactory != null;
+      return channelClazz != null;
    }
 
    public synchronized void pause()
@@ -629,7 +606,7 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return;
       }
