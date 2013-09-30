@@ -31,6 +31,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -325,11 +328,12 @@ public class NettyAcceptor implements Acceptor
        // TODO: Fix me
       //bossExecutor = new VirtualExecutorService(threadPool);
       //VirtualExecutorService workerExecutor = new VirtualExecutorService(threadPool);
-
+      ByteBufAllocator allocator;
       if (useInvm)
       {
          channelClazz = LocalServerChannel.class;
          eventLoopGroup = new LocalEventLoopGroup();
+         allocator = new UnpooledByteBufAllocator(false);
       }
       else if (useNio)
       {
@@ -347,12 +351,14 @@ public class NettyAcceptor implements Acceptor
          }
          channelClazz = NioServerSocketChannel.class;
          eventLoopGroup = new NioEventLoopGroup(threadsToUse);
-         //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
+         allocator = PooledByteBufAllocator.DEFAULT;
+          //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
       else
       {
          channelClazz = OioServerSocketChannel.class;
          eventLoopGroup = new OioEventLoopGroup(); //new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         allocator = new UnpooledByteBufAllocator(false);
       }
 
       bootstrap = new ServerBootstrap();
@@ -456,7 +462,7 @@ public class NettyAcceptor implements Acceptor
       bootstrap.option(ChannelOption.SO_REUSEADDR, true);
       bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
       bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-
+      bootstrap.childOption(ChannelOption.ALLOCATOR, allocator);
       channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", eventLoopGroup.next());
 
       serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", eventLoopGroup.next());
