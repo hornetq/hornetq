@@ -3360,7 +3360,10 @@ public class JournalStorageManager implements StorageManager
          StringBuffer buffer = new StringBuffer();
          buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
          buffer.append("messageID=" + msg.getMessageID());
-         buffer.append(";userMessageID=" + msg.getUserID().toString());
+         if (msg.getUserID() != null)
+         {
+            buffer.append(";userMessageID=" + msg.getUserID().toString());
+         }
          buffer.append(";properties=[");
 
          Set<SimpleString> properties = msg.getPropertyNames();

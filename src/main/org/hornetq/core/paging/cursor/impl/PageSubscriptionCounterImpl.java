@@ -165,8 +165,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          // it could be null on testcases... which is ok
          this.subscription.notEmpty();
       }
+      
       this.value.set(value);
       this.recordID = recordID;
+      if (value < 0)
+      {
+         log.warn("loading negative pageCounter=" + this.toString());
+      }
    }
 
    /* (non-Javadoc)
@@ -247,12 +252,18 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
+
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#addInc(long, int)
     */
    public void addInc(long id, int variance)
    {
       value.addAndGet(variance);
+      
+      if (variance < 0 && value.get() < 0)
+      {
+         log.warn("Page Counter on subscription is negative, " + this.toString(), new Exception ("trace"));
+      }
 
       if (id >= 0)
       {
@@ -329,6 +340,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    }
 
    // Public --------------------------------------------------------
+   @Override
+   public String toString()
+   {
+      return "PageSubscriptionCounterImpl [address = " + subscription.getPagingStore().getAddress() + ", queue=" + subscription.getQueue().getName() +
+              ", value = " + value.get() + "]";
+   }
+
 
    // Package protected ---------------------------------------------
 
