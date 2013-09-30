@@ -13,6 +13,7 @@
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class NettyConnectionTest extends UnitTestCase
    @Test
    public void testGetID() throws Exception
    {
-      Channel channel = new EmbeddedChannel();
+      Channel channel = createChannel();
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
 
       Assert.assertEquals(channel.hashCode(), conn.getID());
@@ -55,7 +56,7 @@ public class NettyConnectionTest extends UnitTestCase
    public void testWrite() throws Exception
    {
       HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
-      EmbeddedChannel channel = new EmbeddedChannel();
+      EmbeddedChannel channel = createChannel();
 
       Assert.assertEquals(0, channel.outboundMessages().size());
 
@@ -68,7 +69,7 @@ public class NettyConnectionTest extends UnitTestCase
    @Test
    public void testCreateBuffer() throws Exception
    {
-      EmbeddedChannel channel = new EmbeddedChannel();
+      EmbeddedChannel channel = createChannel();
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
 
       final int size = 1234;
@@ -77,6 +78,11 @@ public class NettyConnectionTest extends UnitTestCase
       buff.writeByte((byte)0x00); // Netty buffer does lazy initialization.
       Assert.assertEquals(size, buff.capacity());
 
+   }
+
+   private static EmbeddedChannel createChannel()
+   {
+       return new EmbeddedChannel(new ChannelInboundHandlerAdapter());
    }
 
    class MyListener implements ConnectionLifeCycleListener

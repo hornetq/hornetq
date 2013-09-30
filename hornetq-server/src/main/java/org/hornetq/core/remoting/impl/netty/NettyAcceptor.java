@@ -466,7 +466,7 @@ public class NettyAcceptor implements Acceptor
       bootstrap.childOption(ChannelOption.ALLOCATOR, allocator);
       channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", ImmediateEventExecutor.INSTANCE);
 
-      serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", eventLoopGroup.next());
+      serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", ImmediateEventExecutor.INSTANCE);
 
       startServerChannels();
 
