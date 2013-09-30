@@ -2394,6 +2394,22 @@ public class JournalStorageManager implements StorageManager
 
    // Package protected ---------------------------------------------
 
+   private void confirmLargeMessage(final LargeServerMessage largeServerMessage)
+   {
+      if (largeServerMessage.getPendingRecordID() >= 0)
+      {
+         try
+         {
+            confirmPendingLargeMessage(largeServerMessage.getPendingRecordID());
+            largeServerMessage.setPendingRecordID(-1);
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         }
+      }
+   }
+
    // This should be accessed from this package only
    void deleteLargeMessageFile(final LargeServerMessage largeServerMessage) throws HornetQException
    {
@@ -2413,6 +2429,7 @@ public class JournalStorageManager implements StorageManager
                synchronized (largeMessagesToDelete)
                {
                   largeMessagesToDelete.add(Long.valueOf(largeServerMessage.getMessageID()));
+                  confirmLargeMessage(largeServerMessage);
                }
                return;
             }
@@ -2436,6 +2453,9 @@ public class JournalStorageManager implements StorageManager
                      replicator.largeMessageDelete(largeServerMessage.getMessageID());
                   }
                   file.delete();
+
+                  // The confirm could only be done after the actual delete is done
+                  confirmLargeMessage(largeServerMessage);
                }
                finally
                {
