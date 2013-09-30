@@ -45,8 +45,8 @@ public class HornetQFrameDecoderTest {
             }
         }));
 
-        assertFalse("Should not readable", decoder.writeInbound(buffer.duplicate().slice(0, 2)));
-        assertTrue("Should be readable", decoder.writeInbound(buffer.duplicate().slice(3, 2)));
+        assertFalse("Should not readable", decoder.writeInbound(buffer.duplicate().slice(0, 2).retain()));
+        assertTrue("Should be readable", decoder.writeInbound(buffer.duplicate().slice(3, 2).retain()));
 
         assertTrue("There must be something to poll", decoder.finish());
         ByteBuf buf = (ByteBuf) decoder.readInbound();
