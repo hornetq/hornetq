@@ -108,6 +108,8 @@ public class DelayedMessageTest extends ServiceTestBase
       {
          ClientMessage tm = consumer2.receive(500);
 
+         tm.acknowledge();
+
          Assert.assertNotNull(tm);
 
          Assert.assertEquals("message" + i, tm.getBodyBuffer().readString());
