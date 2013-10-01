@@ -1039,6 +1039,11 @@ public class QueueImpl implements Queue
 
    private final RefsOperation getRefsOperation(final Transaction tx)
    {
+      return getRefsOperation(tx, false);
+   }
+
+   private final RefsOperation getRefsOperation(final Transaction tx, boolean ignoreRedlieveryCheck)
+   {
       synchronized (tx)
       {
          RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
@@ -1052,19 +1057,29 @@ public class QueueImpl implements Queue
             tx.addOperation(oper);
          }
 
+         if (ignoreRedlieveryCheck)
+         {
+            oper.setIgnoreRedeliveryCheck();
+         }
+
          return oper;
       }
    }
 
    public void cancel(final Transaction tx, final MessageReference reference)
    {
-      getRefsOperation(tx).addAck(reference);
+      cancel(tx, reference, false);
+   }
+
+   public void cancel(final Transaction tx, final MessageReference reference, boolean ignoreRedeliveryCheck)
+   {
+      getRefsOperation(tx, ignoreRedeliveryCheck).addAck(reference);
    }
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
       deliveringCount.decrementAndGet();
-      if (checkRedelivery(reference, timeBase))
+      if (checkRedelivery(reference, timeBase, false))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference, false))
          {
@@ -2168,7 +2183,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public boolean checkRedelivery(final MessageReference reference, final long timeBase) throws Exception
+   public boolean checkRedelivery(final MessageReference reference, final long timeBase, final boolean ignoreRedeliveryDelay) throws Exception
    {
       ServerMessage message = reference.getMessage();
 
@@ -2207,7 +2222,7 @@ public class QueueImpl implements Queue
       else
       {
          // Second check Redelivery Delay
-         if (redeliveryDelay > 0)
+         if (!ignoreRedeliveryDelay && redeliveryDelay > 0)
          {
             redeliveryDelay = calculateRedeliveryDelay(addressSettings, deliveryCount);
 
@@ -2626,6 +2641,19 @@ public class QueueImpl implements Queue
 
       List<ServerMessage> pagedMessagesToPostACK = null;
 
+      /**
+       * It will ignore redelivery check, which is used during consumer.close
+       * to not perform reschedule redelivery check
+       */
+      protected boolean ignoreRedeliveryCheck = false;
+
+
+      // once turned on, we shouldn't turn it off, that's why no parameters
+      public void setIgnoreRedeliveryCheck()
+      {
+         ignoreRedeliveryCheck = true;
+      }
+
       synchronized void addAck(final MessageReference ref)
       {
          refsToAck.add(ref);
@@ -2654,7 +2682,8 @@ public class QueueImpl implements Queue
             }
             try
             {
-               if (ref.getQueue().checkRedelivery(ref, timeBase))
+               // if ignore redelivery check, we just perform redelivery straight
+               if (ref.getQueue().checkRedelivery(ref, timeBase, ignoreRedeliveryCheck))
                {
                   LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 
