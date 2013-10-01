@@ -53,6 +53,12 @@ public class FakeQueue implements Queue
 
    }
 
+   @Override
+   public void cancel(Transaction tx, MessageReference ref, boolean ignoreRedeliveryCheck)
+   {
+      // no-op
+   }
+
    PageSubscription subs;
 
    public boolean isDirectDeliver()
@@ -193,7 +199,7 @@ public class FakeQueue implements Queue
    }
 
    @Override
-   public boolean checkRedelivery(final MessageReference ref, final long timeBase) throws Exception
+   public boolean checkRedelivery(final MessageReference ref, final long timeBase, final boolean check) throws Exception
    {
       // no-op
       return false;
