@@ -193,13 +193,17 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       session.start();
       ClientMessage message3 = consumer.receive(1000);
+      message3.acknowledge();
       ClientMessage message2 = consumer2.receive(1000);
+      message2.acknowledge();
       Assert.assertEquals("m1", message3.getBodyBuffer().readString());
       Assert.assertEquals("m1", message2.getBodyBuffer().readString());
       long time = System.currentTimeMillis();
       // force redelivery
       consumer.close();
       consumer2.close();
+      // this will make it redelivery-delay
+      session.rollback();
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
       message3 = consumer.receive(5250);
@@ -244,14 +248,17 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start();
       ClientMessage message3 = consumer.receive(1000);
       Assert.assertNotNull(message3);
+      message3.acknowledge();
       ClientMessage message2 = consumer2.receive(1000);
       Assert.assertNotNull(message2);
+      message2.acknowledge();
       Assert.assertEquals("m1", message3.getBodyBuffer().readString());
       Assert.assertEquals("m1", message2.getBodyBuffer().readString());
       long time = System.currentTimeMillis();
       // force redelivery
       consumer.close();
       consumer2.close();
+      session.rollback();
       producer.close();
       session.close();
       server.stop();
