@@ -672,7 +672,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
    {
-      return moveMessages(FLUSH_LIMIT, filterStr, otherQueueName, false);
+      return moveMessages(FLUSH_LIMIT, filterStr, otherQueueName, rejectDuplicates);
    }
 
    public int moveMessages(final int flushLimit, final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
