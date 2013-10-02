@@ -16,6 +16,7 @@ cp hornetq-jms-client-java5.jar dist-rollout/hornetq-jms-client.jar
 cp hornetq-jms.jar dist-rollout/
 cp hornetq-logging.jar dist-rollout/
 cp hornetq-ra.jar dist-rollout/
+cp hornetq-jboss-as-integration.jar dist-rollout/
 cd dist-rollout
 zip -r dist-rollout *
 
