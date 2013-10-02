@@ -14,9 +14,7 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.hornetq.utils.DataConstants;
 
@@ -37,6 +35,6 @@ public class HornetQFrameDecoder2 extends LengthFieldBasedFrameDecoder
 
     @Override
     protected ByteBuf extractFrame(ChannelHandlerContext ctx, ByteBuf buffer, int index, int length) {
-        return buffer.readerIndex(buffer.readerIndex() - DataConstants.SIZE_INT).readBytes(length).skipBytes(DataConstants.SIZE_INT);
+        return super.extractFrame(ctx, buffer, index, length).skipBytes(DataConstants.SIZE_INT);
     }
 }
