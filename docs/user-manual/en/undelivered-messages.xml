@@ -54,12 +54,23 @@
          <programlisting>
 &lt;!-- delay redelivery of messages for 5s -->
 &lt;address-setting match="jms.queue.exampleQueue">
+   &lt;!-- default is 1.0 --> 
+   &lt;redelivery-delay-multiplier>1.5&lt;/redelivery-delay-multiplier>
+   &lt;!-- default is 0 (no delay) --> 
    &lt;redelivery-delay>5000&lt;/redelivery-delay>
+   &lt;!-- default is redelivery-delay * 10 -->
+   &lt;max-redelivery-delay>50000&lt;/max-redelivery-delay>
+ 
 &lt;/address-setting></programlisting>
          <para>If a <literal>redelivery-delay</literal> is specified, HornetQ will wait this delay
-            before redelivering the messages</para>
+            before redelivering the messages.</para>
          <para>By default, there is no redelivery delay (<literal>redelivery-delay</literal>is set
             to 0).</para>
+         <para>Other subsequent messages will be delivery regularly, only the cancelled message
+               will be sent asynchronously back to the queue after the delay.</para>
+         <para>You can specify a multiplier that will take effect on top of the redelivery-delay
+               with a max-redelivery-delay to be taken into account.</para>
+         <para>The max-redelivery-delay is defaulted to redelivery-delay * 10</para>
          <para>Address wildcards can be used to configure redelivery delay for a set of addresses
             (see <xref linkend="wildcard-syntax"/>), so you don't have to specify redelivery delay
             individually for each address.</para>
