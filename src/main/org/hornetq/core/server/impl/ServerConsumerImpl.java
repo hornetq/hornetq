@@ -402,7 +402,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          MessageReference ref = iter.next();
 
-         ref.getQueue().cancel(tx, ref);
+         ref.getQueue().cancel(tx, ref, true);
       }
 
       tx.rollback();
