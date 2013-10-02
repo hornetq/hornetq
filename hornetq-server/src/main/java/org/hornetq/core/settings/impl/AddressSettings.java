@@ -185,7 +185,9 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    public long getMaxRedeliveryDelay()
    {
-      return maxRedeliveryDelay != null ? maxRedeliveryDelay : getRedeliveryDelay();
+      // default is redelivery-delay * 10 as specified on the docs and at this JIRA:
+      // https://issues.jboss.org/browse/HORNETQ-1263
+      return maxRedeliveryDelay != null ? maxRedeliveryDelay : (getRedeliveryDelay() * 10);
    }
 
    public void setMaxRedeliveryDelay(final long maxRedeliveryDelay)
