@@ -1654,7 +1654,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          CoreRemotingConnection theConn = connection;
 
-         if (theConn != null && connectionID == theConn.getID())
+         if (theConn != null && connectionID.equals(theConn.getID()))
          {
             theConn.bufferReceived(connectionID, buffer);
          }
