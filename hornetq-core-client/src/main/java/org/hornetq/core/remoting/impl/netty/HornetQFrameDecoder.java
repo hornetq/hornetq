@@ -14,6 +14,7 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
@@ -46,20 +47,16 @@ public class HornetQFrameDecoder extends ByteToMessageDecoder
    @Override
    protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, List<Object> out) throws Exception
    {
-      for (;;)
+      int start = in.readerIndex();
+
+      int length = decoder.isReadyToHandle(new ChannelBufferWrapper(in));
+
+      in.readerIndex(start);
+
+      if (length == -1)
       {
-         int start = in.readerIndex();
-
-         int length = decoder.isReadyToHandle(new ChannelBufferWrapper(in));
-
-         in.readerIndex(start);
-
-         if (length == -1)
-         {
-             return;
-         }
-         out.add(in.readBytes(length));
+         return;
       }
-
+      out.add(ByteBufUtil.readBytes(ctx.alloc(), in, length));
    }
 }
