@@ -4,21 +4,18 @@ src/bin/build.sh "$@"
 
 # the java5 client jars are replacing the regular clients on this branch
 #   as agreed with the users of this branch (Customers)
-cd build/jars
-mv hornetq-jms-client-java5.jar hornetq-jms-client.jar
-mv hornetq-core-client-java5.jar hornetq-core-client.jar 
-
 
 #generating the dist-rollout.zip
-rm -rf dist-oneoff
-mkdir dist-oneoff
-cp hornetq-core.jar dist-oneoff/
-cp hornetq-bootstrap.jar dist-oneoff/
-cp hornetq-core-client.jar dist-oneoff/
-cp hornetq-jms-client.jar dist-oneoff/
-cp hornetq-jms.jar dist-oneoff/
-cp hornetq-logging.jar dist-oneoff/
-cp hornetq-ra.jar dist-oneoff/
-cd dist-oneoff
+cd build/jars
+rm -rf dist-rollout
+mkdir dist-rollout
+cp hornetq-core.jar dist-rollout/
+cp hornetq-bootstrap.jar dist-rollout/
+cp hornetq-core-client-java5.jar dist-rollout/hornetq-core-client.jar
+cp hornetq-jms-client-java5.jar dist-rollout/hornetq-jms-client.jar
+cp hornetq-jms.jar dist-rollout/
+cp hornetq-logging.jar dist-rollout/
+cp hornetq-ra.jar dist-rollout/
+cd dist-rollout
 zip -r dist-rollout *
 
