@@ -16,6 +16,7 @@ package org.hornetq.core.buffers.impl;
 import java.nio.ByteBuffer;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.DataConstants;
@@ -31,7 +32,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public ChannelBufferWrapper(final ByteBuf buffer)
    {
-      this.buffer = buffer;
+      this.buffer = Unpooled.unreleasableBuffer(buffer);
    }
 
    public boolean readBoolean()
