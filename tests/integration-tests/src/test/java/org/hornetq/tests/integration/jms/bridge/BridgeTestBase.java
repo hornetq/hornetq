@@ -104,6 +104,8 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    private HashMap<String, Object> params1;
 
+   protected ConnectionFactoryFactory cff0LowProducerWindow;
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -224,6 +226,27 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected void setUpAdministeredObjects() throws Exception
    {
+      cff0LowProducerWindow = new ConnectionFactoryFactory()
+      {
+         public ConnectionFactory createConnectionFactory() throws Exception
+         {
+            HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                  new TransportConfiguration(
+                        INVM_CONNECTOR_FACTORY));
+
+            // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
+            cf.setReconnectAttempts(0);
+            cf.setBlockOnNonDurableSend(true);
+            cf.setBlockOnDurableSend(true);
+            cf.setCacheLargeMessagesClient(true);
+            cf.setProducerWindowSize(100);
+
+            return (ConnectionFactory)cf;
+         }
+
+      };
+
+
       cff0 = new ConnectionFactoryFactory()
       {
          public ConnectionFactory createConnectionFactory() throws Exception
