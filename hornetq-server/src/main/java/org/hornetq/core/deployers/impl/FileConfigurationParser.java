@@ -196,6 +196,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       config.setResolveProtocols(getBoolean(e, "resolve-protocols", config.isResolveProtocols()));
 
+
+      config.setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
+            config.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
+
       config.setBackup(getBoolean(e, "backup", config.isBackup()));
 
       config.setSharedStore(getBoolean(e, "shared-store", config.isSharedStore()));
