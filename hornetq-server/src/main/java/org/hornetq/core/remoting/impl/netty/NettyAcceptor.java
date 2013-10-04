@@ -32,7 +32,6 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -351,14 +350,12 @@ public class NettyAcceptor implements Acceptor
          }
          channelClazz = NioServerSocketChannel.class;
          eventLoopGroup = new NioEventLoopGroup(threadsToUse);
-         allocator = PooledByteBufAllocator.DEFAULT;
           //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
       else
       {
          channelClazz = OioServerSocketChannel.class;
          eventLoopGroup = new OioEventLoopGroup(); //new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
-         allocator = new UnpooledByteBufAllocator(false);
       }
 
       bootstrap = new ServerBootstrap();
@@ -461,7 +458,7 @@ public class NettyAcceptor implements Acceptor
       bootstrap.option(ChannelOption.SO_REUSEADDR, true);
       bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
       bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-      bootstrap.childOption(ChannelOption.ALLOCATOR, allocator);
+      bootstrap.childOption(ChannelOption.ALLOCATOR, PartialPooledByteBufAllocator.INSTANCE);
       channelGroup = new DefaultChannelGroup("hornetq-accepted-channels", ImmediateEventExecutor.INSTANCE);
 
       serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", ImmediateEventExecutor.INSTANCE);
