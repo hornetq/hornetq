@@ -48,9 +48,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.channel.socket.oio.OioSocketChannel;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
@@ -120,8 +118,6 @@ public class NettyConnector extends AbstractConnector
    private final long httpClientIdleScanPeriod;
 
    private final boolean httpRequiresSessionId;
-
-   private final boolean useNio;
 
    private final boolean useServlet;
 
@@ -232,10 +228,6 @@ public class NettyConnector extends AbstractConnector
          httpRequiresSessionId = false;
       }
 
-      useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-         TransportConstants.DEFAULT_USE_NIO_CLIENT,
-         configuration);
-
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
          -1,
          configuration);
@@ -327,7 +319,7 @@ public class NettyConnector extends AbstractConnector
          ", sslEnabled=" +
          sslEnabled +
          ", useNio=" +
-         useNio +
+         true +
          "]";
    }
 
@@ -338,46 +330,38 @@ public class NettyConnector extends AbstractConnector
          return;
       }
 
-      if (useNio)
+      int threadsToUse;
+
+      if (nioRemotingThreads == -1)
       {
-         int threadsToUse;
+         // Default to number of cores * 3
 
-         if (nioRemotingThreads == -1)
+         threadsToUse = Runtime.getRuntime().availableProcessors() * 3;
+      }
+      else
+      {
+         threadsToUse = this.nioRemotingThreads;
+      }
+
+
+      if(useNioGlobalWorkerPool)
+      {
+         synchronized (nioWorkerPoolGuard)
          {
-            // Default to number of cores * 3
-
-            threadsToUse = Runtime.getRuntime().availableProcessors() * 3;
-         }
-         else
-         {
-            threadsToUse = this.nioRemotingThreads;
-         }
-
-
-         if(useNioGlobalWorkerPool)
-         {
-            synchronized (nioWorkerPoolGuard)
+            if (nioEventLoopGroup == null)
             {
-               if (nioEventLoopGroup == null)
-               {
-                   nioEventLoopGroup = new NioEventLoopGroup(threadsToUse);
-               }
-
-               channelClazz = NioSocketChannel.class;
-               group = nioEventLoopGroup;
-               nioChannelFactoryCount.incrementAndGet();
+               nioEventLoopGroup = new NioEventLoopGroup(threadsToUse);
             }
-         }
-         else
-         {
+
             channelClazz = NioSocketChannel.class;
-            group = new NioEventLoopGroup(threadsToUse);
+            group = nioEventLoopGroup;
+            nioChannelFactoryCount.incrementAndGet();
          }
       }
       else
       {
-         channelClazz = OioSocketChannel.class;
-         group = new OioEventLoopGroup();
+         channelClazz = NioSocketChannel.class;
+         group = new NioEventLoopGroup(threadsToUse);
       }
       // if we are a servlet wrap the socketChannelFactory
       if (useServlet)

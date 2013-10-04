@@ -48,9 +48,7 @@ import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -117,8 +115,6 @@ public class NettyAcceptor implements Acceptor
    private final long httpServerScanPeriod;
 
    private final long httpResponseTime;
-
-   private final boolean useNio;
 
    private final boolean useInvm;
 
@@ -236,9 +232,6 @@ public class NettyAcceptor implements Acceptor
          httpResponseTime = 0;
          httpKeepAliveRunnable = null;
       }
-      useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-                                                      TransportConstants.DEFAULT_USE_NIO_SERVER,
-                                                      configuration);
 
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
                                                               -1,
@@ -334,7 +327,7 @@ public class NettyAcceptor implements Acceptor
          eventLoopGroup = new LocalEventLoopGroup();
          allocator = new UnpooledByteBufAllocator(false);
       }
-      else if (useNio)
+      else
       {
          int threadsToUse;
 
@@ -350,12 +343,7 @@ public class NettyAcceptor implements Acceptor
          }
          channelClazz = NioServerSocketChannel.class;
          eventLoopGroup = new NioEventLoopGroup(threadsToUse);
-          //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
-      }
-      else
-      {
-         channelClazz = OioServerSocketChannel.class;
-         eventLoopGroup = new OioEventLoopGroup(); //new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
 
       bootstrap = new ServerBootstrap();
