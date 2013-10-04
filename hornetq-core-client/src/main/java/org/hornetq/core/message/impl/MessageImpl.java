@@ -597,51 +597,7 @@ public abstract class MessageImpl implements MessageInternal
 
    public void putObjectProperty(final SimpleString key, final Object value) throws HornetQPropertyConversionException
    {
-      if (value == null)
-      {
-         properties.putNullValue(key);
-      }
-      else if (value instanceof Boolean)
-      {
-         properties.putBooleanProperty(key, (Boolean)value);
-      }
-      else if (value instanceof Byte)
-      {
-         properties.putByteProperty(key, (Byte)value);
-      }
-      else if (value instanceof Short)
-      {
-         properties.putShortProperty(key, (Short)value);
-      }
-      else if (value instanceof Integer)
-      {
-         properties.putIntProperty(key, (Integer)value);
-      }
-      else if (value instanceof Long)
-      {
-         properties.putLongProperty(key, (Long)value);
-      }
-      else if (value instanceof Float)
-      {
-         properties.putFloatProperty(key, (Float)value);
-      }
-      else if (value instanceof Double)
-      {
-         properties.putDoubleProperty(key, (Double)value);
-      }
-      else if (value instanceof String)
-      {
-         properties.putSimpleStringProperty(key, new SimpleString((String)value));
-      }
-      else if (value instanceof SimpleString)
-      {
-         properties.putSimpleStringProperty(key, (SimpleString)value);
-      }
-      else
-      {
-         throw new HornetQPropertyConversionException(value.getClass() + " is not a valid property type");
-      }
-
+      TypedProperties.setObjectProperty(key, value, properties);
       bufferValid = false;
    }
 
