@@ -2714,17 +2714,24 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(bb);
 
-      JournalImpl.writeHeader(buffer, userVersion, fileID);
+      try
+      {
+         JournalImpl.writeHeader(buffer, userVersion, fileID);
 
-      bb.rewind();
+         bb.rewind();
 
-      int bufferSize = bb.limit();
+         int bufferSize = bb.limit();
 
-      sequentialFile.position(0);
+         sequentialFile.position(0);
 
-      sequentialFile.writeDirect(bb, true);
-
-      return bufferSize;
+         sequentialFile.writeDirect(bb, true);
+         return bufferSize;
+      }
+      finally
+      {
+         // release it
+         buffer.byteBuf().release();
+      }
    }
 
    /**
