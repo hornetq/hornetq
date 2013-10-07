@@ -2440,8 +2440,6 @@ public class HornetQServerImpl implements HornetQServer
                throw HornetQMessageBundle.BUNDLE.backupServerNotInSync();
             }
 
-            backupUpToDate = false;
-
             configuration.setBackup(false);
             synchronized (HornetQServerImpl.this)
             {

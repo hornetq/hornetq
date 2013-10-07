@@ -8,7 +8,6 @@ import org.hornetq.core.journal.impl.JournalConstants;
  */
 public final class HornetQDefaultConfiguration
 {
-   private static int maxSavedReplicatedJournalsSize;
    /*
     * <p> In order to avoid compile time in-lining of constants, all access is done through methods
     * and all fields are PRIVATE STATIC but not FINAL. This is done following the recommendation at
