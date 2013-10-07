@@ -193,6 +193,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
                                                                          config.isFailoverOnServerShutdown()));
       config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
+
+      config.setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
+            config.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
+
       config.setBackup(getBoolean(e, "backup", config.isBackup()));
 
       config.setSharedStore(getBoolean(e, "shared-store", config.isSharedStore()));

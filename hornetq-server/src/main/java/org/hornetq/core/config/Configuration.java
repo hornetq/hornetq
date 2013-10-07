@@ -918,4 +918,19 @@ public interface Configuration extends Serializable
     * @return name of the cluster configuration to use
     */
    String getReplicationClustername();
+
+   /**
+    * How many backup journals to keep after failback occurs.
+    * <p>
+    * This value is only used by replicating backups after a live server has failed back. Beofre the backup restarts
+    * it will copy its journals into another directory to keep.
+    * @param maxSavedReplicatedJournalsSize
+    */
+   void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize);
+
+   /**
+    * @see #setMaxSavedReplicatedJournalSize(int)
+    * @return the number of backup journals to keep after failback has occurred
+    */
+   int getMaxSavedReplicatedJournalsSize();
 }
