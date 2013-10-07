@@ -60,7 +60,7 @@ public class NettyConnectorTest extends ServiceTestBase
       
       Bootstrap bootstrap = connector.getBootStrap();
       
-      assertEquals(timeout, bootstrap.connect().channel().config().getConnectTimeoutMillis());
+      assertEquals(timeout, bootstrap.register().channel().config().getConnectTimeoutMillis());
       
       factory.close();
       locator.close();
