@@ -2440,8 +2440,6 @@ public class HornetQServerImpl implements HornetQServer
                throw HornetQMessageBundle.BUNDLE.backupServerNotInSync();
             }
 
-            backupUpToDate = false;
-
             configuration.setBackup(false);
             synchronized (HornetQServerImpl.this)
             {
@@ -2797,6 +2795,8 @@ public class HornetQServerImpl implements HornetQServer
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
                   clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), pair, true);
 
+                  backupUpToDate = false;
+
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
                      BackupTopologyListener listener1 = new BackupTopologyListener(getNodeID().toString());
@@ -2810,7 +2810,6 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            //
                         }
-
                         //if we have to many backups kept just stop, other wise restart as a backup
                         if(countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
                         {
@@ -3015,7 +3014,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (!fDir.isDirectory())
                {
-                  throw new IllegalStateException("Path " + fDir + " exists and it is not a directory");
+                  throw HornetQMessageBundle.BUNDLE.journalDirIsFile(fDir);
                }
 
                if (fDir.list().length > 0)
@@ -3041,12 +3040,33 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (!dir.renameTo(newPath))
             {
-               throw new IllegalStateException("Could not move " + dir);
+               throw HornetQMessageBundle.BUNDLE.couldNotMoveJournal(dir);
             }
 
             HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
          }
-         dir.mkdir();
+         /*
+         * sometimes OS's can hold on to file handles for a while so we need to check this actually qorks and then wait
+         * a while and try again if it doesn't
+         * */
+
+         File dirToRecreate = new File(dir0);
+          int count = 0;
+         while(!dirToRecreate.exists() && !dirToRecreate.mkdir())
+         {
+            try
+            {
+               Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            count++;
+            if(count == 5)
+            {
+               throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
+            }
+         }
       }
    }
 }
