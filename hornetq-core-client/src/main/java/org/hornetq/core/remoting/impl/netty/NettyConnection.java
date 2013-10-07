@@ -13,6 +13,7 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -247,7 +248,12 @@ public class NettyConnection implements Connection
 
    public String getRemoteAddress()
    {
-      return channel.remoteAddress().toString();
+      SocketAddress address =  channel.remoteAddress();
+      if (address == null)
+      {
+         return null;
+      }
+      return address.toString();
    }
 
    public boolean isDirectDeliver()
