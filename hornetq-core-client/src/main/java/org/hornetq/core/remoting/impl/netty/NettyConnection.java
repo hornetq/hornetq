@@ -45,7 +45,7 @@ public class NettyConnection implements Connection
 
    // Attributes ----------------------------------------------------
 
-   private final Channel channel;
+   protected final Channel channel;
 
    private boolean closed;
 

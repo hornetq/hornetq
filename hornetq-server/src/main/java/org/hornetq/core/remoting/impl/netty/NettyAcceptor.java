@@ -32,6 +32,7 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -150,7 +151,7 @@ public class NettyAcceptor implements Acceptor
 
    private HttpAcceptorHandler httpHandler = null;
 
-   private final ConcurrentMap<Object, NettyConnection> connections = new ConcurrentHashMap<Object, NettyConnection>();
+   private final ConcurrentMap<Object, NettyServerConnection> connections = new ConcurrentHashMap<Object, NettyServerConnection>();
 
    private final Map<String, Object> configuration;
 
@@ -667,7 +668,7 @@ public class NettyAcceptor implements Acceptor
          super.channelActive(ctx);
          Listener connectionListener = new Listener();
 
-         NettyConnection nc = new NettyConnection(configuration, ctx.channel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
+         NettyServerConnection nc = new NettyServerConnection(configuration, ctx.channel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
 
          connectionListener.connectionCreated(NettyAcceptor.this, nc, HornetQClient.DEFAULT_CORE_PROTOCOL);
 
@@ -700,7 +701,7 @@ public class NettyAcceptor implements Acceptor
    {
       public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
-         if (connections.putIfAbsent(connection.getID(), (NettyConnection)connection) != null)
+         if (connections.putIfAbsent(connection.getID(), (NettyServerConnection)connection) != null)
          {
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
@@ -732,7 +733,7 @@ public class NettyAcceptor implements Acceptor
 
       public void connectionReadyForWrites(final Object connectionID, boolean ready)
       {
-         NettyConnection conn = connections.get(connectionID);
+         NettyServerConnection conn = connections.get(connectionID);
 
          if (conn != null)
          {

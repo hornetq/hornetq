@@ -102,12 +102,12 @@ public class TransportConstants
 
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
-   public static final boolean DEFAULT_USE_NIO_SERVER = false;
+   public static final boolean DEFAULT_USE_NIO_SERVER = true;
 
    // For client, using old IO can be quicker
-   public static final boolean DEFAULT_USE_NIO_CLIENT = false;
+   public static final boolean DEFAULT_USE_NIO_CLIENT = true;
 
-   public static final boolean DEFAULT_USE_NIO_GLOBAL_WORKER_POOL = false;
+   public static final boolean DEFAULT_USE_NIO_GLOBAL_WORKER_POOL = true;
 
    public static final boolean DEFAULT_USE_INVM = false;
 

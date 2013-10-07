@@ -36,6 +36,7 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
@@ -390,7 +391,7 @@ public class NettyConnector extends AbstractConnector
       }
       bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
       bootstrap.option(ChannelOption.SO_REUSEADDR, true);
-      bootstrap.option(ChannelOption.ALLOCATOR, PartialPooledByteBufAllocator.INSTANCE);
+      bootstrap.option(ChannelOption.ALLOCATOR, new UnpooledByteBufAllocator(false));
       channelGroup = new DefaultChannelGroup("hornetq-connector", ImmediateEventExecutor.INSTANCE);
 
       final SSLContext context;

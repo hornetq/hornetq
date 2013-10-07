@@ -29,12 +29,24 @@ import org.hornetq.utils.UTF8Util;
 public class ChannelBufferWrapper implements HornetQBuffer
 {
    protected ByteBuf buffer; // NO_UCD (use final)
-
+   private final boolean releasable;
    public ChannelBufferWrapper(final ByteBuf buffer)
    {
-      this.buffer = Unpooled.unreleasableBuffer(buffer);
+      this(buffer, false);
    }
 
+   public ChannelBufferWrapper(final ByteBuf buffer, boolean releasable)
+   {
+       if (!releasable)
+       {
+          this.buffer = Unpooled.unreleasableBuffer(buffer);
+       }
+       else
+       {
+          this.buffer = buffer;
+       }
+       this.releasable = releasable;
+   }
    public boolean readBoolean()
    {
       return readByte() != 0;
@@ -202,12 +214,12 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public HornetQBuffer copy()
    {
-      return new ChannelBufferWrapper(buffer.copy());
+      return new ChannelBufferWrapper(buffer.copy(), releasable);
    }
 
    public HornetQBuffer copy(final int index, final int length)
    {
-      return new ChannelBufferWrapper(buffer.copy(index, length));
+      return new ChannelBufferWrapper(buffer.copy(index, length), releasable);
    }
 
    public void discardReadBytes()
@@ -217,7 +229,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public HornetQBuffer duplicate()
    {
-      return new ChannelBufferWrapper(buffer.duplicate());
+      return new ChannelBufferWrapper(buffer.duplicate(), releasable);
    }
 
    public byte getByte(final int index)
@@ -357,7 +369,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public HornetQBuffer readBytes(final int length)
    {
-      return new ChannelBufferWrapper(buffer.readBytes(length));
+      return new ChannelBufferWrapper(buffer.readBytes(length), releasable);
    }
 
    public char readChar()
@@ -402,7 +414,7 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public HornetQBuffer readSlice(final int length)
    {
-      return new ChannelBufferWrapper(buffer.readSlice(length));
+      return new ChannelBufferWrapper(buffer.readSlice(length), releasable);
    }
 
    public short readUnsignedByte()
@@ -507,12 +519,12 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public HornetQBuffer slice()
    {
-      return new ChannelBufferWrapper(buffer.slice());
+      return new ChannelBufferWrapper(buffer.slice(), releasable);
    }
 
    public HornetQBuffer slice(final int index, final int length)
    {
-      return new ChannelBufferWrapper(buffer.slice(index, length));
+      return new ChannelBufferWrapper(buffer.slice(index, length), releasable);
    }
 
    public ByteBuffer toByteBuffer()
