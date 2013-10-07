@@ -1059,4 +1059,85 @@ public final class TypedProperties
          return DataConstants.SIZE_BYTE + SimpleString.sizeofString(val);
       }
    }
+
+   public Map<String, Object> getMap()
+   {
+      Map<String, Object> m = new HashMap<String, Object>();
+      for (Entry<SimpleString,PropertyValue> entry:properties.entrySet()) {
+         Object val = entry.getValue().getValue();
+         if (val instanceof SimpleString)
+         {
+            m.put(entry.getKey().toString(), ((SimpleString)val).toString());
+         }
+         else
+         {
+            m.put(entry.getKey().toString(), val);
+         }
+      }
+      return m;
+   }
+
+   /**
+    * Helper for {@link MapMessage#setObjectProperty(String, Object)}
+    * @param name
+    * @param value
+    * @param map
+    * @throws MessageFormatException
+    */
+   public static final void setObjectProperty(final SimpleString key, final Object value,
+                                              final TypedProperties properties)
+   {
+      if (value == null)
+      {
+         properties.putNullValue(key);
+      }
+      else if (value instanceof Boolean)
+      {
+         properties.putBooleanProperty(key, (Boolean)value);
+      }
+      else if (value instanceof Byte)
+      {
+         properties.putByteProperty(key, (Byte)value);
+      }
+      else if (value instanceof Character)
+      {
+         properties.putCharProperty(key, (Character)value);
+      }
+      else if (value instanceof Short)
+      {
+         properties.putShortProperty(key, (Short)value);
+      }
+      else if (value instanceof Integer)
+      {
+         properties.putIntProperty(key, (Integer)value);
+      }
+      else if (value instanceof Long)
+      {
+         properties.putLongProperty(key, (Long)value);
+      }
+      else if (value instanceof Float)
+      {
+         properties.putFloatProperty(key, (Float)value);
+      }
+      else if (value instanceof Double)
+      {
+         properties.putDoubleProperty(key, (Double)value);
+      }
+      else if (value instanceof String)
+      {
+         properties.putSimpleStringProperty(key, new SimpleString((String)value));
+      }
+      else if (value instanceof SimpleString)
+      {
+         properties.putSimpleStringProperty(key, (SimpleString)value);
+      }
+      else if (value instanceof byte[])
+      {
+         properties.putBytesProperty(key, (byte[])value);
+      }
+      else
+      {
+         throw new HornetQPropertyConversionException(value.getClass() + " is not a valid property type");
+      }
+   }
 }

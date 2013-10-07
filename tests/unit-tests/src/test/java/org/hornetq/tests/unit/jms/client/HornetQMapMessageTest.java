@@ -789,6 +789,13 @@ public class HornetQMapMessageTest extends UnitTestCase
       doTestSetObject(RandomUtil.randomBytes());
    }
 
+
+   @Test
+   public void testObjectNull() throws Exception
+   {
+      doTestSetObject(null);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
