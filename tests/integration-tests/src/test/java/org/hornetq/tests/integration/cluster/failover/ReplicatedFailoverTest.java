@@ -13,12 +13,84 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ReplicatedFailoverTest extends FailoverTest
 {
 
+   @Test
+   /*
+   * default maxSavedReplicatedJournalsSize is 2, this means the backup will fall back to replicated only twice, after this
+   * it is stopped permanently
+   *
+   * */
+   public void testReplicatedFailback() throws Exception
+   {
+      try
+      {
+         backupServer.getServer().getConfiguration().setFailbackDelay(2000);
+         createSessionFactory();
+
+         ClientSession session = createSession(sf, true, true);
+
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+         crash(session);
+
+         liveServer.getServer().getConfiguration().setCheckForLiveServer(true);
+
+         liveServer.start();
+
+         waitForRemoteBackupSynchronization(liveServer.getServer());
+
+         waitForRemoteBackupSynchronization(backupServer.getServer());
+
+         waitForServer(liveServer.getServer());
+
+         session = createSession(sf, true, true);
+
+         crash(session);
+
+         liveServer.getServer().getConfiguration().setCheckForLiveServer(true);
+
+         liveServer.start();
+
+         waitForRemoteBackupSynchronization(liveServer.getServer());
+
+         waitForRemoteBackupSynchronization(backupServer.getServer());
+
+         waitForServer(liveServer.getServer());
+
+         session = createSession(sf, true, true);
+
+         crash(session);
+
+         liveServer.getServer().getConfiguration().setCheckForLiveServer(true);
+
+         liveServer.start();
+
+         waitForRemoteBackupSynchronization(liveServer.getServer());
+
+         waitForServer(liveServer.getServer());
+
+         //this will give the backup time to stop fully
+         waitForServerToStop(backupServer.getServer());
+
+         assertFalse(backupServer.getServer().isStarted());
+
+         //the server wouldnt have reset to backup
+         assertFalse(backupServer.getServer().getConfiguration().isBackup());
+      }
+      finally
+      {
+         sf.close();
+      }
+   }
    @Override
    protected void createConfigs() throws Exception
    {
