@@ -2795,6 +2795,8 @@ public class HornetQServerImpl implements HornetQServer
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
                   clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), pair, true);
 
+                  backupUpToDate = false;
+
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
                      BackupTopologyListener listener1 = new BackupTopologyListener(getNodeID().toString());
@@ -2808,7 +2810,6 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            //
                         }
-
                         //if we have to many backups kept just stop, other wise restart as a backup
                         if(countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
                         {
