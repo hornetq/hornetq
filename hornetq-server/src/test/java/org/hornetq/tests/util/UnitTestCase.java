@@ -163,7 +163,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
    private final Set<ExecutorService> executorSet = new HashSet<ExecutorService>();
 
-   private boolean checkThread = false;
+   private boolean checkThread = true;
 
    protected void disableCheckThread()
    {
@@ -1082,6 +1082,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
                forceGC();
                Thread.sleep(500);
                log.info("There are still threads running, trying again");
+                System.out.println(buffer);
             }
          }
 
@@ -1237,6 +1238,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       else if (javaVendor.contains("IBM") && threadName.equals("MemoryPoolMXBean notification dispatcher"))
       {
          return true;
+      }
+      else if (threadName.contains("globalEventExecutor"))
+      {
+          return true;
       }
       else
       {
