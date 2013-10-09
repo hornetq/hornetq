@@ -548,7 +548,7 @@ public class NettyAcceptor implements Acceptor
          }
       }
 
-      eventLoopGroup.shutdownGracefully();
+      eventLoopGroup.shutdownGracefully(1, 1, TimeUnit.SECONDS).awaitUninterruptibly();
       eventLoopGroup = null;
 
       channelClazz = null;
