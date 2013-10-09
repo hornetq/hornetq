@@ -255,6 +255,11 @@ public interface HornetQServerLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void deprecatedConfigurationOption(String deprecatedOption);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221039, value = "Restarting as Replicating backup server after live restart",
+         format = Message.Format.MESSAGE_FORMAT)
+   void restartingReplicatedBackupAfterFailback();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
          format = Message.Format.MESSAGE_FORMAT)

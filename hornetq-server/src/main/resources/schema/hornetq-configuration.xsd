@@ -135,6 +135,16 @@
           </xsd:annotation>
         </xsd:element>
 
+        <xsd:element name="max-saved-replicated-journals-size" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation>
+              This specifies how many times a replicated backup server can restart after moving
+              its files on start. Once there are this number of backup journal files the server
+              will stop permanently after if fails back.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+
         <xsd:element name="password-codec" type="xsd:string"
                      default="org.hornetq.utils.DefaultSensitiveStringCodec" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuration.masked-password">
