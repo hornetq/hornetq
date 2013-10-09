@@ -68,7 +68,7 @@ public class FailoverTest extends FailoverTestBase
    private static final int NUM_MESSAGES = 100;
 
    private ServerLocator locator;
-   private ClientSessionFactoryInternal sf;
+   protected ClientSessionFactoryInternal sf;
 
    @Override
    @Before
@@ -773,7 +773,7 @@ public class FailoverTest extends FailoverTestBase
       assertNull("there should be no more messages to receive! " + msg, msg);
    }
 
-   private void createSessionFactory() throws Exception
+   protected void createSessionFactory() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -1662,7 +1662,7 @@ public class FailoverTest extends FailoverTestBase
       receiveDurableMessages(consumer);
    }
 
-   private void sendMessagesSomeDurable(ClientSession session, ClientProducer producer) throws Exception
+   protected void sendMessagesSomeDurable(ClientSession session, ClientProducer producer) throws Exception
    {
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
@@ -1707,7 +1707,7 @@ public class FailoverTest extends FailoverTestBase
       receiveDurableMessages(consumer);
    }
 
-   private void receiveDurableMessages(ClientConsumer consumer) throws HornetQException
+   protected void receiveDurableMessages(ClientConsumer consumer) throws HornetQException
    {
       // During failover non-persistent messages may disappear but in certain cases they may survive.
       // For that reason the test is validating all the messages but being permissive with non-persistent messages

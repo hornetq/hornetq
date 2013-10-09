@@ -213,6 +213,8 @@ public class ConfigurationImpl implements Configuration
 
    private String replicationClusterName;
 
+   private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1032,6 +1034,18 @@ public class ConfigurationImpl implements Configuration
    public String getReplicationClustername()
    {
       return replicationClusterName;
+   }
+
+   @Override
+   public void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
+   {
+      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+   }
+
+   @Override
+   public int getMaxSavedReplicatedJournalsSize()
+   {
+      return maxSavedReplicatedJournalsSize;
    }
 
    @Override

@@ -46,6 +46,8 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
+import java.io.File;
+
 /**
  * Logger Code 11
  * <p>
@@ -321,4 +323,11 @@ public interface HornetQMessageBundle
             format = Message.Format.MESSAGE_FORMAT)
    HornetQClusterSecurityException unableToValidateClusterUser(String user);
 
+   @Message(id = 119100, value = "Trying to move a journal file that refers to a file instead of a directory: {0}",
+         format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException journalDirIsFile(File fDir);
+
+   @Message(id = 119101, value = "error trying to backup journal files at directory: {0}",
+         format = Message.Format.MESSAGE_FORMAT)
+   IllegalStateException couldNotMoveJournal(File dir);
 }

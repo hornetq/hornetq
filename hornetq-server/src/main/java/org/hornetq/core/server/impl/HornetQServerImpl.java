@@ -18,6 +18,7 @@ import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_
 import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
@@ -2794,6 +2795,8 @@ public class HornetQServerImpl implements HornetQServer
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
                   clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), pair, true);
 
+                  backupUpToDate = false;
+
                   if (isFailBackRequest && configuration.isAllowAutoFailBack())
                   {
                      BackupTopologyListener listener1 = new BackupTopologyListener(getNodeID().toString());
@@ -2807,8 +2810,19 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            //
                         }
-                        stop(true);
-                        HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
+                        //if we have to many backups kept just stop, other wise restart as a backup
+                        if(countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
+                        {
+                           stop(true);
+                           HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
+                        }
+                        else
+                        {
+                           stop(true);
+                           HornetQServerLogger.LOGGER.restartingReplicatedBackupAfterFailback();
+                           configuration.setBackup(true);
+                           start();
+                        }
                      }
                      else
                      {
@@ -2869,6 +2883,29 @@ public class HornetQServerImpl implements HornetQServer
       clusterManager.announceBackup();
       backupUpToDate = true;
       backupSyncLatch.countDown();
+   }
+
+   private int countNumberOfCopiedJournals()
+   {
+      //will use the main journal to check for how many backups have been kept
+      File journalDir = new File(configuration.getJournalDirectory());
+      final String fileName = journalDir.getName();
+      int numberOfbackupsSaved = 0;
+      //fine if it doesn't exist, we aren't using file based persistence so it's no issue
+      if(journalDir.exists())
+      {
+         File parentFile = new File(journalDir.getParent());
+         String[] backupJournals = parentFile.list(new FilenameFilter()
+         {
+            @Override
+            public boolean accept(File dir, String name)
+            {
+               return name.startsWith(fileName) && !name.matches(fileName);
+            }
+         });
+         numberOfbackupsSaved = backupJournals != null?backupJournals.length:0;
+      }
+      return numberOfbackupsSaved;
    }
 
    private final class ReplicationFailureListener implements FailureListener, CloseListener
@@ -2977,7 +3014,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (!fDir.isDirectory())
                {
-                  throw new IllegalStateException("Path " + fDir + " exists and it is not a directory");
+                  throw HornetQMessageBundle.BUNDLE.journalDirIsFile(fDir);
                }
 
                if (fDir.list().length > 0)
@@ -3003,12 +3040,33 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (!dir.renameTo(newPath))
             {
-               throw new IllegalStateException("Could not move " + dir);
+               throw HornetQMessageBundle.BUNDLE.couldNotMoveJournal(dir);
             }
 
             HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
          }
-         dir.mkdir();
+         /*
+         * sometimes OS's can hold on to file handles for a while so we need to check this actually qorks and then wait
+         * a while and try again if it doesn't
+         * */
+
+         File dirToRecreate = new File(dir0);
+          int count = 0;
+         while(!dirToRecreate.exists() && !dirToRecreate.mkdir())
+         {
+            try
+            {
+               Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            count++;
+            if(count == 5)
+            {
+               throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
+            }
+         }
       }
    }
 }
