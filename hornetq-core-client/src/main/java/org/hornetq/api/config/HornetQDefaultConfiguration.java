@@ -426,6 +426,11 @@ public final class HornetQDefaultConfiguration
        return DEFAULT_BRIDGE_CONNECT_SAME_NODE;
    }
 
+   public static int getDefaultMaxSavedReplicatedJournalsSize()
+   {
+      return DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE;
+   }
+
    //shared by client and core/server
    private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
 
@@ -493,6 +498,7 @@ public final class HornetQDefaultConfiguration
    private static SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("hornetq.notifications");
    private static String DEFAULT_CLUSTER_USER = "HORNETQ.CLUSTER.ADMIN.USER";
    private static String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
+   private static int DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE = 2;
    private static long DEFAULT_BROADCAST_PERIOD = 2000;
    private static long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
    private static long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;

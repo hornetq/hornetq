@@ -361,6 +361,24 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+   protected void waitForServerToStop(HornetQServer server) throws InterruptedException
+   {
+      if (server == null)
+         return;
+      final long wait = 5000;
+      long timetowait = System.currentTimeMillis() + wait;
+      while (server.isStarted() && System.currentTimeMillis() < timetowait)
+      {
+         Thread.sleep(50);
+      }
+
+      if (server.isStarted())
+      {
+         log.info(threadDump("Server didn't start"));
+         fail("server didnt start: " + server);
+      }
+   }
+
    /**
     * @param backup
     */
