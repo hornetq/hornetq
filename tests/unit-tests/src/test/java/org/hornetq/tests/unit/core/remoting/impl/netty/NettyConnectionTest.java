@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
 
@@ -62,7 +63,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
       conn.write(buff);
-
+      channel.runPendingTasks();
       Assert.assertEquals(1, channel.outboundMessages().size());
    }
 
