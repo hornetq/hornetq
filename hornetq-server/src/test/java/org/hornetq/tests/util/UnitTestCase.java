@@ -163,7 +163,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    private final Collection<HornetQComponent> otherComponents = new HashSet<HornetQComponent>();
    private final Set<ExecutorService> executorSet = new HashSet<ExecutorService>();
 
-   private boolean checkThread = true;
+   private boolean checkThread = false;
 
    protected void disableCheckThread()
    {
