@@ -18,8 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -211,15 +213,28 @@ public class NettyConnection implements Connection
                }
             }
 
-            ChannelFuture future = channel.writeAndFlush(buffer.byteBuf());
+            final ByteBuf buf = buffer.byteBuf();
+            final ChannelPromise promise;
+            if (flush) {
+                promise = channel.newPromise();
+            } else {
+                promise = channel.voidPromise();
+            }
+            final Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    channel.writeAndFlush(buf, promise);
+                }
+            };
+            channel.eventLoop().execute(task);
 
-            if (flush)
+            if (flush && !channel.eventLoop().inEventLoop())
             {
                while (true)
                {
                   try
                   {
-                     boolean ok = future.await(10000);
+                     boolean ok = promise.await(10000);
 
                      if (!ok)
                      {
