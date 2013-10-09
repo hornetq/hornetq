@@ -13,11 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class ReplicatedFailoverTest extends FailoverTest
@@ -34,6 +31,7 @@ public class ReplicatedFailoverTest extends FailoverTest
       try
       {
          backupServer.getServer().getConfiguration().setFailbackDelay(2000);
+         backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(2);
          createSessionFactory();
 
          ClientSession session = createSession(sf, true, true);
