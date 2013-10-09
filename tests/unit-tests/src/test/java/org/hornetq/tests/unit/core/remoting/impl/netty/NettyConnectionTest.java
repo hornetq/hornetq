@@ -63,7 +63,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
       conn.write(buff);
-      channel.runPendingTasks();
+      Assert.assertTrue(channel.finish());
       Assert.assertEquals(1, channel.outboundMessages().size());
    }
 

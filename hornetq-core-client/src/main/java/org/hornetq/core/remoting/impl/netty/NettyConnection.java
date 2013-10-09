@@ -22,6 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import io.netty.handler.ssl.SslHandler;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -213,22 +214,37 @@ public class NettyConnection implements Connection
                }
             }
 
+            // depending on if we need to flush or not we can use a voidPromise or
+            // use a normal promise
             final ByteBuf buf = buffer.byteBuf();
             final ChannelPromise promise;
-            if (flush) {
-                promise = channel.newPromise();
-            } else {
-                promise = channel.voidPromise();
+            if (flush)
+            {
+               promise = channel.newPromise();
             }
-            final Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    channel.writeAndFlush(buf, promise);
-                }
-            };
-            channel.eventLoop().execute(task);
+            else
+            {
+               promise = channel.voidPromise();
+            }
 
-            if (flush && !channel.eventLoop().inEventLoop())
+            EventLoop eventLoop = channel.eventLoop();
+
+            // create a task which will be picked up by the eventloop and trigger the write.
+            // This is mainly needed as this method is triggered by different threads for the same channel.
+            // if we not do this we may produce out of order writes.
+            final Runnable task = new Runnable()
+            {
+               @Override
+               public void run()
+               {
+                  channel.writeAndFlush(buf, promise);
+               }
+            };
+            // execute the task on the eventloop
+             eventLoop.execute(task);
+
+            // only try to wait if not in the eventloop otherwise we will produce a deadlock
+            if (flush && !eventLoop.inEventLoop())
             {
                while (true)
                {
