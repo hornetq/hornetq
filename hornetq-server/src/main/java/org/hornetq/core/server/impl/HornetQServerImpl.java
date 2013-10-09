@@ -3045,7 +3045,26 @@ public class HornetQServerImpl implements HornetQServer
 
             HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
          }
-         dir.mkdir();
+         /*
+         * sometimes OS's can hold on to file handles for a while so we need to check this actually qorks and then wait
+         * a while and try again if it doesn't
+         * */
+         int count = 0;
+         while(!dir.exists() && !dir.mkdir())
+         {
+            try
+            {
+               Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            count++;
+            if(count == 5)
+            {
+               throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
+            }
+         }
       }
    }
 }
