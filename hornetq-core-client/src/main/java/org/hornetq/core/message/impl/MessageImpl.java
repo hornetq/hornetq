@@ -161,13 +161,13 @@ public abstract class MessageImpl implements MessageInternal
 
          if (other.buffer != null)
          {
-            createBody(other.buffer.capacity());
+            other.bufferUsed = true;
 
             // We need to copy the underlying buffer too, since the different messsages thereafter might have different
             // properties set on them, making their encoding different
-            buffer = other.buffer.copy(0, other.buffer.capacity());
+            buffer = other.buffer.copy(0, other.buffer.writerIndex());
 
-            buffer.setIndex(other.buffer.readerIndex(), other.buffer.writerIndex());
+            buffer.setIndex(other.buffer.readerIndex(), buffer.capacity());
          }
       }
    }
@@ -963,9 +963,7 @@ public abstract class MessageImpl implements MessageInternal
       // There's a bug in netty which means a dynamic buffer won't resize until you write a byte
       buffer.writeByte((byte)0);
 
-      int limit = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
-
-      buffer.setIndex(limit, limit);
+      buffer.setIndex(BODY_OFFSET, BODY_OFFSET);
    }
 
    private void forceCopy()
