@@ -536,7 +536,7 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
-         group.shutdownGracefully(1, 1, TimeUnit.SECONDS).awaitUninterruptibly();
+         group.shutdown();
       }
       channelClazz = null;
 
@@ -944,7 +944,7 @@ public class NettyConnector extends AbstractConnector
    {
       if (nioEventLoopGroup != null)
       {
-        nioEventLoopGroup.shutdownGracefully(1, 1, TimeUnit.SECONDS).awaitUninterruptibly();
+        nioEventLoopGroup.shutdown();
         nioEventLoopGroup = null;
       }
    }
