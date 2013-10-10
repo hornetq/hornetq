@@ -64,7 +64,7 @@ import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.ImmediateEventExecutor;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
@@ -392,7 +392,7 @@ public class NettyConnector extends AbstractConnector
       bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
       bootstrap.option(ChannelOption.SO_REUSEADDR, true);
       bootstrap.option(ChannelOption.ALLOCATOR, new UnpooledByteBufAllocator(false));
-      channelGroup = new DefaultChannelGroup("hornetq-connector", ImmediateEventExecutor.INSTANCE);
+      channelGroup = new DefaultChannelGroup("hornetq-connector", GlobalEventExecutor.INSTANCE);
 
       final SSLContext context;
       if (sslEnabled)
