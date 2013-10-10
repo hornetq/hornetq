@@ -596,7 +596,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return;
       synchronized (failoverLock)
       {
-         if (connection == null || connection.getID() != connectionID || exitLoop)
+         if (connection == null || !connection.getID().equals(connectionID) || exitLoop)
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
             // over then a async connection exception or disconnect
