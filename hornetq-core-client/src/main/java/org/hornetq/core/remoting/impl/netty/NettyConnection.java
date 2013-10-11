@@ -228,23 +228,31 @@ public class NettyConnection implements Connection
             }
 
             EventLoop eventLoop = channel.eventLoop();
-
-            // create a task which will be picked up by the eventloop and trigger the write.
-            // This is mainly needed as this method is triggered by different threads for the same channel.
-            // if we not do this we may produce out of order writes.
-            final Runnable task = new Runnable()
+            boolean inEventLoop = eventLoop.inEventLoop();
+            if (!inEventLoop)
             {
-               @Override
-               public void run()
-               {
-                  channel.writeAndFlush(buf, promise);
-               }
-            };
-            // execute the task on the eventloop
-             eventLoop.execute(task);
+               channel.writeAndFlush(buf, promise);
+            }
+            else
+            {
+                // create a task which will be picked up by the eventloop and trigger the write.
+                // This is mainly needed as this method is triggered by different threads for the same channel.
+                // if we not do this we may produce out of order writes.
+                final Runnable task = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        channel.writeAndFlush(buf, promise);
+                    }
+                };
+                // execute the task on the eventloop
+                eventLoop.execute(task);
+            }
+
 
             // only try to wait if not in the eventloop otherwise we will produce a deadlock
-            if (flush && !eventLoop.inEventLoop())
+            if (flush && !inEventLoop)
             {
                while (true)
                {
