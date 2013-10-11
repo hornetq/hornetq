@@ -178,7 +178,8 @@ public abstract class NodeManager implements HornetQComponent
 
       boolean fileCreated = false;
 
-      if (!serverLockFile.exists())
+      int count = 0;
+      while (!serverLockFile.exists())
       {
          try
          {
@@ -191,6 +192,21 @@ public abstract class NodeManager implements HornetQComponent
          }
          catch (IOException e)
          {
+            /*
+            * on some OS's this may fail weirdly even tho the parent dir exists, retrying will work, some weird timing issue i think
+            * */
+            if(count < 5)
+            {
+               try
+               {
+                  Thread.sleep(100);
+               }
+               catch (InterruptedException e1)
+               {
+               }
+               count++;
+               continue;
+            }
             HornetQServerLogger.LOGGER.nodeManagerCantOpenFile(e, serverLockFile);
             throw e;
          }
