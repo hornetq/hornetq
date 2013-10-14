@@ -135,6 +135,7 @@ import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.HABackupManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;
@@ -239,6 +240,8 @@ public class HornetQServerImpl implements HornetQServer
    private volatile HornetQServerControlImpl messagingServerControl;
 
    private volatile ClusterManager clusterManager;
+
+   private volatile HABackupManager haBackupManager;
 
    private volatile StorageManager storageManager;
 
@@ -626,6 +629,7 @@ public class HornetQServerImpl implements HornetQServer
       if (managementService != null)
          managementService.unregisterServer();
 
+      stopComponent(haBackupManager);
       stopComponent(managementService);
       stopComponent(replicationEndpoint); // applies to a "backup" server
       stopComponent(pagingManager);
@@ -949,6 +953,11 @@ public class HornetQServerImpl implements HornetQServer
    public ClusterManager getClusterManager()
    {
       return clusterManager;
+   }
+
+   public HABackupManager getHaBackupManager()
+   {
+      return haBackupManager;
    }
 
    public ServerSession createSession(final String name,
@@ -1530,7 +1539,9 @@ public class HornetQServerImpl implements HornetQServer
       // This can't be created until node id is set
       clusterManager =
                new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
-                                  nodeManager, configuration.isBackup(), threadPool);
+                                  nodeManager, configuration.isBackup());
+
+      haBackupManager = new HABackupManager(this, executorFactory, scheduledPool, nodeManager, configuration, clusterManager);
 
       clusterManager.deploy();
 
@@ -2119,8 +2130,8 @@ public class HornetQServerImpl implements HornetQServer
                {
                   HornetQServerLogger.LOGGER.debug("announcing backup to the former live" + this);
                }
-
-               clusterManager.announceBackup();
+               haBackupManager.start();
+               haBackupManager.announceBackup();
                Thread.sleep(configuration.getFailbackDelay());
             }
 
@@ -2171,7 +2182,7 @@ public class HornetQServerImpl implements HornetQServer
             if (!initialisePart1())
                return;
 
-            clusterManager.start();
+            haBackupManager.start();
 
             state = SERVER_STATE.STARTED;
 
@@ -2181,14 +2192,14 @@ public class HornetQServerImpl implements HornetQServer
 
             configuration.setBackup(false);
 
+            haBackupManager.activated();
+
             if (state != SERVER_STATE.STARTED)
             {
                return;
             }
 
             initialisePart2();
-
-            clusterManager.activate();
 
             HornetQServerLogger.LOGGER.backupServerIsLive();
 
@@ -2378,7 +2389,7 @@ public class HornetQServerImpl implements HornetQServer
 
             // nodeManager.startBackup();
 
-            clusterManager.start();
+            haBackupManager.start();
 
             replicationEndpoint.setQuorumManager(quorumManager);
             replicationEndpoint.setExecutor(executorFactory.getExecutor());
@@ -2501,8 +2512,8 @@ public class HornetQServerImpl implements HornetQServer
                HornetQServerLogger.LOGGER.becomingLive(HornetQServerImpl.this);
                nodeManager.stopBackup();
                storageManager.start();
+               haBackupManager.activated();
                initialisePart2();
-               clusterManager.activate();
             }
          }
          catch (Exception e)
@@ -2933,7 +2944,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public void setRemoteBackupUpToDate()
    {
-      clusterManager.announceBackup();
+      haBackupManager.announceBackup();
       backupUpToDate = true;
       backupSyncLatch.countDown();
    }

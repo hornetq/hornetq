@@ -92,7 +92,6 @@ public class ClusterConnectionBridge extends BridgeImpl
                                   final boolean useDuplicateDetection,
                                   final String user,
                                   final String password,
-                                  final boolean activated,
                                   final StorageManager storageManager,
                                   final SimpleString managementAddress,
                                   final SimpleString managementNotificationAddress,
@@ -116,7 +115,6 @@ public class ClusterConnectionBridge extends BridgeImpl
             useDuplicateDetection,
             user,
             password,
-            activated,
             storageManager);
 
       this.discoveryLocator = discoveryLocator;
