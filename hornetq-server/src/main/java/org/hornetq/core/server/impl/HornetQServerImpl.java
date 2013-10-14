@@ -50,7 +50,6 @@ import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
-import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -133,6 +132,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.cluster.BackupManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
@@ -239,6 +239,8 @@ public class HornetQServerImpl implements HornetQServer
    private volatile HornetQServerControlImpl messagingServerControl;
 
    private volatile ClusterManager clusterManager;
+
+   private volatile BackupManager backupManager;
 
    private volatile StorageManager storageManager;
 
@@ -626,6 +628,7 @@ public class HornetQServerImpl implements HornetQServer
       if (managementService != null)
          managementService.unregisterServer();
 
+      stopComponent(backupManager);
       stopComponent(managementService);
       stopComponent(replicationEndpoint); // applies to a "backup" server
       stopComponent(pagingManager);
@@ -949,6 +952,11 @@ public class HornetQServerImpl implements HornetQServer
    public ClusterManager getClusterManager()
    {
       return clusterManager;
+   }
+
+   public BackupManager getBackupManager()
+   {
+      return backupManager;
    }
 
    public ServerSession createSession(final String name,
@@ -1530,7 +1538,9 @@ public class HornetQServerImpl implements HornetQServer
       // This can't be created until node id is set
       clusterManager =
                new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
-                                  nodeManager, configuration.isBackup(), threadPool);
+                                  nodeManager, configuration.isBackup());
+
+      backupManager = new BackupManager(this, executorFactory, scheduledPool, nodeManager, configuration, clusterManager);
 
       clusterManager.deploy();
 
@@ -2119,8 +2129,8 @@ public class HornetQServerImpl implements HornetQServer
                {
                   HornetQServerLogger.LOGGER.debug("announcing backup to the former live" + this);
                }
-
-               clusterManager.announceBackup();
+               backupManager.start();
+               backupManager.announceBackup();
                Thread.sleep(configuration.getFailbackDelay());
             }
 
@@ -2171,7 +2181,7 @@ public class HornetQServerImpl implements HornetQServer
             if (!initialisePart1())
                return;
 
-            clusterManager.start();
+            backupManager.start();
 
             state = SERVER_STATE.STARTED;
 
@@ -2181,14 +2191,14 @@ public class HornetQServerImpl implements HornetQServer
 
             configuration.setBackup(false);
 
+            backupManager.activated();
+
             if (state != SERVER_STATE.STARTED)
             {
                return;
             }
 
             initialisePart2();
-
-            clusterManager.activate();
 
             HornetQServerLogger.LOGGER.backupServerIsLive();
 
@@ -2378,7 +2388,7 @@ public class HornetQServerImpl implements HornetQServer
 
             // nodeManager.startBackup();
 
-            clusterManager.start();
+            backupManager.start();
 
             replicationEndpoint.setQuorumManager(quorumManager);
             replicationEndpoint.setExecutor(executorFactory.getExecutor());
@@ -2501,8 +2511,8 @@ public class HornetQServerImpl implements HornetQServer
                HornetQServerLogger.LOGGER.becomingLive(HornetQServerImpl.this);
                nodeManager.stopBackup();
                storageManager.start();
+               backupManager.activated();
                initialisePart2();
-               clusterManager.activate();
             }
          }
          catch (Exception e)
@@ -2933,7 +2943,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public void setRemoteBackupUpToDate()
    {
-      clusterManager.announceBackup();
+      backupManager.announceBackup();
       backupUpToDate = true;
       backupSyncLatch.countDown();
    }

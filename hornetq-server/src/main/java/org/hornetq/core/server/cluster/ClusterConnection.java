@@ -52,8 +52,6 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
     */
    Map<String, String> getNodes();
 
-   void activate() throws Exception;
-
    TransportConfiguration getConnector();
 
    Topology getTopology();
@@ -63,9 +61,7 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    // for debug
    String describe();
 
-   void informTopology();
-
-   void announceBackup();
+   void informClusterOfBackup();
 
    boolean isNodeActive(String id);
 
