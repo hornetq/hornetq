@@ -33,18 +33,28 @@
             thread pool for scheduled use. A Java scheduled thread pool cannot be configured to use
             a standard thread pool, otherwise we could use a single thread pool for both scheduled
             and non scheduled activity.</para>
-        <para>When using old (blocking) IO, a separate thread pool is also used to service
-            connections. Since old IO requires a thread per connection it does not make sense to get
-            them from the standard pool as the pool will easily get exhausted if too many
-            connections are made, resulting in the server "hanging" since it has no remaining
-            threads to do anything else. If you require the server to handle many concurrent
-            connections you should make sure you use NIO, not old IO.</para>
-        <para>When using new IO (NIO), HornetQ will, by default, use a number of threads equal to
-            three times the number of cores (or hyper-threads) as reported by
-            Runtime.getRuntime().availableProcessors() for processing incoming packets. If you want
-            to override this value, you can set the number of threads by specifying the parameter
-                <literal>nio-remoting-threads</literal> in the transport configuration. See the
-                <xref linkend="configuring-transports"/> for more information on this.</para>
+        <para>A separate thread pool is also used to service connections. HornetQ can use "old"
+            (blocking) IO or "new" (non-blocking) IO also called NIO.  Both of these options use
+            a separate thread pool, but each of them behaves uniquely.</para>
+        <para>Since old IO requires a thread per connection its thread pool is unbounded. The thread
+            pool is created via <literal>
+            java.util.concurrent.Executors.newCachedThreadPool(ThreadFactory)</literal>.  As the
+            JavaDoc for this method states:
+            <quote>Creates a thread pool that creates new threads as needed, but will reuse previously
+            constructed threads when they are available, and uses the provided ThreadFactory to create
+            new threads when needed.</quote>
+            Threads from this pool which are idle for more than 60 seconds will time out and be
+            removed.  If old IO connections were serviced from the standard pool the pool would
+            easily get exhausted if too many connections were made, resulting in the server "hanging"
+            since it has no remaining threads to do anything else. However, even an unbounded thread
+            pool can run into trouble if it becomes too large. If you require the server to handle
+            many concurrent connections you should use NIO, not old IO.</para>
+        <para>When using new IO (NIO), HornetQ will, by default, cap its thread pool at three times
+            the number of cores (or hyper-threads) as reported by <literal>
+            Runtime.getRuntime().availableProcessors()</literal> for processing incoming packets.
+            To override this value, you can set the number of threads by specifying the parameter
+            <literal>nio-remoting-threads</literal> in the transport configuration. See the
+            <xref linkend="configuring-transports"/> for more information on this.</para>
         <para>There are also a small number of other places where threads are used directly, we'll
             discuss each in turn.</para>
         <section id="server.scheduled.thread.pool">
