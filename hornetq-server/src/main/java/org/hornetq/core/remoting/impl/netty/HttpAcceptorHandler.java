@@ -83,7 +83,7 @@ class HttpAcceptorHandler extends ChannelDuplexHandler
       // if we are a post then we send upstream, otherwise we are just being prompted for a response.
       if (method.equals(HttpMethod.POST))
       {
-         ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
+         ctx.fireChannelRead(ReferenceCountUtil.retain(((FullHttpRequest) msg).content()));
          // TODO: Not return here looks like a bug
       }
       // add a new response
