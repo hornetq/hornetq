@@ -38,8 +38,6 @@ public interface Bridge extends Consumer, HornetQComponent
 
    SimpleString getForwardingAddress();
 
-   void activate();
-
    void flushExecutor();
 
    void setNotificationService(NotificationService notificationService);

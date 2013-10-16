@@ -15,17 +15,14 @@ package org.hornetq.core.server.cluster;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
@@ -36,6 +33,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -77,9 +75,9 @@ import org.hornetq.utils.FutureLatch;
  */
 public final class ClusterManager implements HornetQComponent
 {
-   private final Map<String, BroadcastGroup> broadcastGroups = new HashMap<String, BroadcastGroup>();
+   private final Map<String, BroadcastGroup> broadcastGroups = new HashMap();
 
-   private final Map<String, Bridge> bridges = new HashMap<String, Bridge>();
+   private final Map<String, Bridge> bridges = new HashMap();
 
    private final ExecutorFactory executorFactory;
 
@@ -94,8 +92,6 @@ public final class ClusterManager implements HornetQComponent
    private final ManagementService managementService;
 
    private final Configuration configuration;
-
-   private final ExecutorService threadPool;
 
    enum State
    {
@@ -114,8 +110,6 @@ public final class ClusterManager implements HornetQComponent
 
    private volatile State state = State.STOPPED;
 
-   private volatile boolean backup;
-
    // the cluster connections which links this node to other cluster nodes
    private final Map<String, ClusterConnection> clusterConnections = new HashMap<String, ClusterConnection>();
 
@@ -131,12 +125,12 @@ public final class ClusterManager implements HornetQComponent
                          final ScheduledExecutorService scheduledExecutor,
                          final ManagementService managementService,
                          final Configuration configuration,
-                         final NodeManager nodeManager, final boolean backup,
-                         ExecutorService threadPool)
+                         final NodeManager nodeManager,
+                         final boolean backup)
    {
       this.executorFactory = executorFactory;
 
-      executor = executorFactory.getExecutor();;
+      executor = executorFactory.getExecutor();
 
       this.server = server;
 
@@ -149,10 +143,6 @@ public final class ClusterManager implements HornetQComponent
       this.configuration = configuration;
 
       this.nodeManager = nodeManager;
-
-      this.backup = backup;
-
-      this.threadPool = threadPool;
    }
 
    public String describe()
@@ -248,30 +238,46 @@ public final class ClusterManager implements HornetQComponent
 
       for (BroadcastGroup group: broadcastGroups.values())
       {
-         if (!backup)
+         try
          {
             group.start();
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.unableToStartBroadcastGroup(e, group.getName());
          }
       }
 
       for (ClusterConnection conn : clusterConnections.values())
       {
-         conn.start();
-         if (backup && configuration.isSharedStore())
+         try
          {
-            conn.informTopology();
-            conn.announceBackup();
+            conn.start();
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.unableToStartClusterConnection(e, conn.getName());
          }
       }
 
       deployConfiguredBridges();
+
+      for (Bridge bridge : bridges.values())
+      {
+         try
+         {
+            bridge.start();
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.unableToStartBridge(e, bridge.getName());
+         }
+      }
       state = State.STARTED;
    }
 
    private final void deployConfiguredBridges() throws Exception
    {
-      if (backup)
-         return;
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
          deployBridge(config);
@@ -288,19 +294,19 @@ public final class ClusterManager implements HornetQComponent
          }
          state = State.STOPPING;
 
-            for (BroadcastGroup group : broadcastGroups.values())
-            {
-               group.stop();
-               managementService.unregisterBroadcastGroup(group.getName());
-            }
+         for (BroadcastGroup group : broadcastGroups.values())
+         {
+            group.stop();
+            managementService.unregisterBroadcastGroup(group.getName());
+         }
 
-            broadcastGroups.clear();
+         broadcastGroups.clear();
 
-            for (ClusterConnection clusterConnection : clusterConnections.values())
-            {
-               clusterConnection.stop();
-               managementService.unregisterCluster(clusterConnection.getName().toString());
-            }
+         for (ClusterConnection clusterConnection : clusterConnections.values())
+         {
+            clusterConnection.stop();
+            managementService.unregisterCluster(clusterConnection.getName().toString());
+         }
 
          for (Bridge bridge : bridges.values())
          {
@@ -364,66 +370,6 @@ public final class ClusterManager implements HornetQComponent
       return clusterConnections.get(name);
    }
 
-   /**
-    * Activates several cluster services. Used by backups on failover.
-    * @throws Exception
-    */
-   public synchronized void activate() throws Exception
-   {
-      if (state != State.STARTED && state != State.DEPLOYED)
-         return;
-
-      if (backup)
-      {
-         backup = false;
-
-         deployConfiguredBridges();
-
-         for (BroadcastGroup broadcastGroup : broadcastGroups.values())
-         {
-            try
-            {
-               broadcastGroup.start();
-            }
-            catch (Exception e)
-            {
-               HornetQServerLogger.LOGGER.unableToStartBroadcastGroup(e, broadcastGroup.getName());
-            }
-         }
-
-         for (ClusterConnection clusterConnection : clusterConnections.values())
-         {
-            try
-            {
-               clusterConnection.activate();
-            }
-            catch (Exception e)
-            {
-               HornetQServerLogger.LOGGER.unableToStartClusterConnection(e, clusterConnection.getName());
-            }
-         }
-
-         for (Bridge bridge : bridges.values())
-         {
-            try
-            {
-               bridge.start();
-            }
-            catch (Exception e)
-            {
-               HornetQServerLogger.LOGGER.unableToStartBridge(e, bridge.getName());
-            }
-         }
-      }
-   }
-
-   public void announceBackup()
-   {
-      for (ClusterConnection conn : cloneClusterConnections())
-      {
-         conn.announceBackup();
-      }
-   }
 
    /**
     * XXX HORNETQ-720
@@ -527,7 +473,7 @@ public final class ClusterManager implements HornetQComponent
       }
       else
       {
-         TransportConfiguration[] tcConfigs = connectorNameListToArray(config.getStaticConnectors());
+         TransportConfiguration[] tcConfigs = ClusterConfigurationUtil.connectorNameListToArray(config.getStaticConnectors(), configuration);
 
          if (tcConfigs == null)
          {
@@ -620,7 +566,6 @@ public final class ClusterManager implements HornetQComponent
                                      config.isUseDuplicateDetection(),
                                      config.getUser(),
                                      config.getPassword(),
-                                     !backup,
                                      server.getStorageManager());
 
       bridges.put(config.getName(), bridge);
@@ -726,6 +671,15 @@ public final class ClusterManager implements HornetQComponent
       clearClusterConnections();
    }
 
+   public void informClusterOfBackup(String name)
+   {
+      ClusterConnection clusterConnection = clusterConnections.get(name);
+      if(clusterConnection != null)
+      {
+         clusterConnection.informClusterOfBackup();
+      }
+   }
+
    // Private methods ----------------------------------------------------------------------------------------------------
 
 
@@ -737,27 +691,9 @@ public final class ClusterManager implements HornetQComponent
 
    private void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
-      if (config.getName() == null)
-      {
-         HornetQServerLogger.LOGGER.clusterConnectionNotUnique();
+      TransportConfiguration connector = ClusterConfigurationUtil.getTransportConfiguration(config, configuration);
 
-         return;
-      }
-
-      if (config.getAddress() == null)
-      {
-         HornetQServerLogger.LOGGER.clusterConnectionNoForwardAddress();
-
-         return;
-      }
-
-      TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
-
-      if (connector == null)
-      {
-         HornetQServerLogger.LOGGER.clusterConnectionNoConnector(config.getConnectorName());
-         return;
-      }
+      if (connector == null) return;
 
       if (clusterConnections.containsKey(config.getName()))
       {
@@ -766,18 +702,12 @@ public final class ClusterManager implements HornetQComponent
       }
 
       ClusterConnectionImpl clusterConnection;
-      DiscoveryGroupConfiguration dg;
 
       if (config.getDiscoveryGroupName() != null)
       {
-         dg = configuration.getDiscoveryGroupConfigurations()
-                                                       .get(config.getDiscoveryGroupName());
+         DiscoveryGroupConfiguration dg = ClusterConfigurationUtil.getDiscoveryGroupConfiguration(config, configuration);
 
-         if (dg == null)
-         {
-            HornetQServerLogger.LOGGER.clusterConnectionNoDiscoveryGroup(config.getDiscoveryGroupName());
-            return;
-         }
+         if (dg == null) return;
 
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
@@ -805,14 +735,12 @@ public final class ClusterManager implements HornetQComponent
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
                                                        executorFactory,
-                                                       threadPool,
                                                        server,
                                                        postOffice,
                                                        managementService,
                                                        scheduledExecutor,
                                                        config.getMaxHops(),
                                                        nodeManager,
-                                                       backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
                                                        config.isAllowDirectConnectionsOnly(),
@@ -821,8 +749,7 @@ public final class ClusterManager implements HornetQComponent
       }
       else
       {
-         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
-                                                                                  : null;
+         TransportConfiguration[] tcConfigs = ClusterConfigurationUtil.getTransportConfigurations(config, configuration);
 
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
@@ -847,20 +774,19 @@ public final class ClusterManager implements HornetQComponent
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
                                                        executorFactory,
-                                                       threadPool,
                                                        server,
                                                        postOffice,
                                                        managementService,
                                                        scheduledExecutor,
                                                        config.getMaxHops(),
                                                        nodeManager,
-                                                       backup,
                                                        server.getConfiguration().getClusterUser(),
                                                        server.getConfiguration().getClusterPassword(),
                                                        config.isAllowDirectConnectionsOnly(),
                                                        config.getClusterNotificationInterval(),
                                                        config.getClusterNotificationAttempts());
       }
+
 
       if (defaultClusterConnection == null)
       {
@@ -950,28 +876,6 @@ public final class ClusterManager implements HornetQComponent
    private void logWarnNoConnector(final String connectorName, final String bgName)
    {
       HornetQServerLogger.LOGGER.broadcastGroupNoConnector(connectorName, bgName);
-   }
-
-   private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
-   {
-      TransportConfiguration[] tcConfigs = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
-                                                                                       connectorNames.size());
-      int count = 0;
-      for (String connectorName : connectorNames)
-      {
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-
-         if (connector == null)
-         {
-            HornetQServerLogger.LOGGER.bridgeNoConnector(connectorName);
-
-            return null;
-         }
-
-         tcConfigs[count++] = connector;
-      }
-
-      return tcConfigs;
    }
 
    private synchronized Collection<ClusterConnection> cloneClusterConnections()

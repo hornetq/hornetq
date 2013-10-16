@@ -26,8 +26,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +34,6 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.management.ManagementHelper;
@@ -51,7 +48,6 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -82,8 +78,6 @@ import org.hornetq.utils.TypedProperties;
 public final class ClusterConnectionImpl implements ClusterConnection, AfterConnectInternalListener
 {
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
-
-   private final ExecutorService threadPool;
 
    private final ExecutorFactory executorFactory;
 
@@ -134,8 +128,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final NodeManager nodeManager;
 
-   private boolean backup;
-
    private volatile boolean started;
 
    private final String clusterUser;
@@ -161,11 +153,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final Topology topology = new Topology(this);
 
-   private volatile ServerLocatorInternal backupServerLocator;
-   private volatile boolean announcingBackup;
    private volatile boolean stopping = false;
+
    private LiveNotifier liveNotifier = null;
+
    private final long clusterNotificationInterval;
+
    private final int clusterNotificationAttempts;
 
    /**
@@ -190,14 +183,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
                                 final ExecutorFactory executorFactory,
-                                final ExecutorService threadPool,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final int maxHops,
                                 final NodeManager nodeManager,
-                                final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
                                 final boolean allowDirectConnectionsOnly,
@@ -238,8 +229,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.executor = executorFactory.getExecutor();
 
-      this.threadPool = threadPool;
-
       this.topology.setExecutor(executor);
 
       this.server = server;
@@ -251,8 +240,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       this.scheduledExecutor = scheduledExecutor;
 
       this.maxHops = maxHops;
-
-      this.backup = backup;
 
       this.clusterUser = clusterUser;
 
@@ -270,8 +257,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       clusterConnector = new StaticClusterConnector(staticTranspConfigs);
 
-      setUpBackupLocator();
-
       if (staticTranspConfigs != null && staticTranspConfigs.length > 0)
       {
          // a cluster connection will connect to other nodes only if they are directly connected
@@ -282,18 +267,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
       }
 
-   }
-
-   private void setUpBackupLocator()
-   {
-      backupServerLocator = clusterConnector.createServerLocator();
-
-      if (backupServerLocator != null)
-      {
-         backupServerLocator.setIdentity("backupLocatorFor='" + server + "'");
-         backupServerLocator.setReconnectAttempts(-1);
-         backupServerLocator.setInitialConnectAttempts(-1);
-      }
    }
 
    /**
@@ -319,14 +292,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final boolean routeWhenNoConsumers,
                                 final int confirmationWindowSize,
                                 final ExecutorFactory executorFactory,
-                                final ExecutorService threadPool,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final int maxHops,
                                 final NodeManager nodeManager,
-                                final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword,
                                 final boolean allowDirectConnectionsOnly,
@@ -373,8 +344,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.executor = executorFactory.getExecutor();
 
-      this.threadPool = threadPool;
-
       this.topology.setExecutor(executor);
 
       this.server = server;
@@ -387,8 +356,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       this.maxHops = maxHops;
 
-      this.backup = backup;
-
       this.clusterUser = clusterUser;
 
       this.clusterPassword = clusterPassword;
@@ -397,7 +364,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       clusterConnector = new DiscoveryClusterConnector(dg);
 
-      setUpBackupLocator();
       this.manager = manager;
    }
 
@@ -412,11 +378,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          stopping = false;
          started = true;
-
-         if (!backup)
-         {
-            activate();
-         }
+         activate();
       }
 
    }
@@ -477,22 +439,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                       props);
          managementService.sendNotification(notification);
       }
-
-      if (announcingBackup)
-      {/*
-        * The executor used is ordered so if we are announcing the backup, scheduling the following
-        * Runnable would never execute.
-        */
-         closeLocator(backupServerLocator);
-      }
       executor.execute(new Runnable()
       {
          public void run()
          {
             synchronized (ClusterConnectionImpl.this)
             {
-               closeLocator(backupServerLocator);
-               backupServerLocator = null;
                closeLocator(serverLocator);
                serverLocator = null;
             }
@@ -510,71 +462,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    {
       if (locator != null)
          locator.close();
-   }
-
-   public void announceBackup()
-   {
-      executor.execute(new Runnable()
-      {
-
-         public void run()
-         {
-            if (stopping)
-               return;
-            try
-            {
-               ServerLocatorInternal localBackupLocator = backupServerLocator;
-               if (localBackupLocator == null)
-               {
-                  if (!stopping)
-                     HornetQServerLogger.LOGGER.error("Error announcing backup: backupServerLocator is null. " + this);
-                  return;
-               }
-               if (HornetQServerLogger.LOGGER.isDebugEnabled())
-               {
-                  HornetQServerLogger.LOGGER.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
-               }
-               announcingBackup = true;
-               ClientSessionFactory backupSessionFactory = localBackupLocator.connect();
-               if (backupSessionFactory != null)
-               {
-                  backupSessionFactory.getConnection()
-                                      .getChannel(0, -1)
-                                      .send(new NodeAnnounceMessage(System.currentTimeMillis(),
-                                                                    nodeManager.getNodeId().toString(),
-                                                                    manager.getNodeGroupName(),
-                                                                    true,
-                                                                    connector,
-                                                                    null));
-                  HornetQServerLogger.LOGGER.backupAnnounced();
-               }
-            }
-            catch (RejectedExecutionException e)
-            {
-               // assumption is that the whole server is being stopped. So the exception is ignored.
-            }
-            catch (Exception e)
-            {
-               if (scheduledExecutor.isShutdown())
-                  return;
-               if (stopping)
-                  return;
-               HornetQServerLogger.LOGGER.errorAnnouncingBackup();
-
-               scheduledExecutor.schedule(new Runnable(){
-                  public void run()
-                  {
-                     announceBackup();
-                  }
-
-               }, retryInterval, TimeUnit.MILLISECONDS);
-            }
-            finally
-            {
-               announcingBackup = false;
-            }
-         }
-      });
    }
 
    private TopologyMember getLocalMember()
@@ -694,7 +581,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
-   public synchronized void activate() throws Exception
+   private synchronized void activate() throws Exception
    {
       if (!started)
       {
@@ -706,25 +593,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          HornetQServerLogger.LOGGER.debug("Activating cluster connection nodeID=" + nodeManager.getNodeId() + " for server=" + this.server);
       }
 
-      backup = false;
-
       liveNotifier = new LiveNotifier();
       liveNotifier.updateAsLive();
       liveNotifier.schedule();
-
-      if (backupServerLocator != null)
-      {
-         // todo we could use the topology of this to preempt it arriving from the cc
-         try
-         {
-            backupServerLocator.close();
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorClosingBackupFactoryOnClusterConnection(e);
-         }
-         backupServerLocator = null;
-      }
 
       serverLocator = clusterConnector.createServerLocator();
 
@@ -928,20 +799,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
    }
 
-   public synchronized void informTopology()
+   public synchronized void informClusterOfBackup()
    {
       String nodeID = server.getNodeID().toString();
 
-      TopologyMemberImpl localMember;
-
-      if (backup)
-      {
-         localMember = new TopologyMemberImpl(nodeID, null, null, connector);
-      }
-      else
-      {
-         localMember = new TopologyMemberImpl(nodeID, null, connector, null);
-      }
+      TopologyMemberImpl localMember = new TopologyMemberImpl(nodeID, null, null, connector);
 
       topology.updateAsLive(nodeID, localMember);
    }
@@ -1034,7 +896,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                    useDuplicateDetection,
                                                                    clusterUser,
                                                                    clusterPassword,
-                                                                   !backup,
                                                                    server.getStorageManager(),
                                                                    managementService.getManagementAddress(),
                                                                    managementService.getManagementNotificationAddress(),
