@@ -173,6 +173,18 @@ public final class ClusterManager implements HornetQComponent
       return str.toString();
    }
 
+   public boolean isBackupAnnounced()
+   {
+      for (ClusterConnection backupConnector : clusterConnections.values())
+      {
+         if(!backupConnector.isBackupAnnounced())
+         {
+            return false;
+         }
+      }
+      return true;
+   }
+
    /**
     * Return the default ClusterConnection to be used case it's not defined by the acceptor
     * @return default connection
