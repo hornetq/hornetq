@@ -37,6 +37,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -214,6 +215,7 @@ public class AddressControlTest extends ManagementTestBase
    {
       session.close();
       server.stop();
+      server.getConfiguration().setPersistenceEnabled(true);
 
       SimpleString address = RandomUtil.randomSimpleString();
 
@@ -230,6 +232,8 @@ public class AddressControlTest extends ManagementTestBase
       session = sf.createSession(false, true, false);
       session.start();
       session.createQueue(address, address, true);
+
+      QueueImpl serverQueue = (QueueImpl)server.locateQueue(address);
 
       ClientProducer producer = session.createProducer(address);
 
@@ -263,7 +267,12 @@ public class AddressControlTest extends ManagementTestBase
       producer.send(msg);
 
       session.commit();
-      Assert.assertEquals(2, addressControl.getNumberOfPages());
+
+      Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
+
+      System.out.println("Address size=" + addressControl.getAddressSize());
+
+      Assert.assertEquals(serverQueue.getPageSubscription().getPagingStore().getAddressSize(), addressControl.getAddressSize());
    }
 
    public void testGetNumberOfBytesPerPage() throws Exception
