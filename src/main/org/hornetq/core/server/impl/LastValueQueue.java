@@ -268,5 +268,17 @@ public class LastValueQueue extends QueueImpl
       {
          return ref.getMessage().getMemoryEstimate();
       }
+
+      @Override
+      public void setConsumerId(long id)
+      {
+         ref.setConsumerId(id);
+      }
+
+      @Override
+      public long getConsumerId()
+      {
+         return ref.getConsumerId();
+      }
    }
 }

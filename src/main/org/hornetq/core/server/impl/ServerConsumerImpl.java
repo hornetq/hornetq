@@ -223,6 +223,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       synchronized(lock)
       {
+         session.getInTxMessages(refList, id);
          refList.addAll(deliveringRefs);
       }
    }
@@ -695,6 +696,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                                 " queue = " +
                                 messageQueue.getName());
                throw e;
+            }
+
+            if (session.isFromRa() && (!startedTransaction))
+            {
+               ref.setConsumerId(id);
             }
 
             ref.getQueue().acknowledge(tx, ref);

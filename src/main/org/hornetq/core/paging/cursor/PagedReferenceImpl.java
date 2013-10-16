@@ -54,6 +54,8 @@ public class PagedReferenceImpl implements PagedReference
 
    private final PageSubscription subscription;
 
+   private long consumerId = -1;
+
    public ServerMessage getMessage()
    {
       return getPagedMessage().getMessage();
@@ -265,6 +267,18 @@ public class PagedReferenceImpl implements PagedReference
              ", subscription=" +
              subscription +
              "]";
+   }
+
+   @Override
+   public void setConsumerId(long id)
+   {
+      consumerId = id;
+   }
+
+   @Override
+   public long getConsumerId()
+   {
+      return consumerId;
    }
 
 }
