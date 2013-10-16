@@ -168,13 +168,13 @@ public abstract class MessageImpl implements MessageInternal
 
          if (other.buffer != null)
          {
-            createBody(other.buffer.capacity());
+            other.bufferUsed = true;
 
             // We need to copy the underlying buffer too, since the different messsages thereafter might have different
             // properties set on them, making their encoding different
-            buffer = other.buffer.copy(0, other.buffer.capacity());
+            buffer = other.buffer.copy(0, other.buffer.writerIndex());
 
-            buffer.setIndex(other.buffer.readerIndex(), other.buffer.writerIndex());
+            buffer.setIndex(other.buffer.readerIndex(), buffer.capacity());
          }
       }
    }
