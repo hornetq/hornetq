@@ -62,10 +62,12 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.impl.QueueImpl.RefsOperation;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.impl.TransactionImpl;
@@ -157,6 +159,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
 
    private long creationTime = System.currentTimeMillis();
+
+   private boolean fromRa;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -1118,6 +1122,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void start()
    {
+      String metaData = this.getMetaData("resource-adapter");
+      this.fromRa = (metaData != null) && metaData.equals("inbound");
+
       setStarted(true);
    }
 
@@ -1604,5 +1611,33 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       routingContext.clear();
+   }
+
+   @Override
+   public void getInTxMessages(List<MessageReference> refList, long consumerId)
+   {
+      if (this.fromRa && this.tx != null)
+      {
+         Object obj = tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+         if (obj != null)
+         {
+            RefsOperation oper = (RefsOperation)obj;
+            List<MessageReference> refs = new ArrayList<MessageReference>(oper.refsToAck);
+
+            for (MessageReference m : refs)
+            {
+               if (m.getConsumerId() == consumerId)
+               {
+                  refList.add(m);
+               }
+            }
+         }
+      }
+   }
+
+   @Override
+   public boolean isFromRa()
+   {
+      return this.fromRa;
    }
 }

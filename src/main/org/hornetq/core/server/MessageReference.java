@@ -71,4 +71,8 @@ public interface MessageReference
 
 
    void handled();
+
+   void setConsumerId(long id);
+
+   long getConsumerId();
 }

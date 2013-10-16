@@ -44,6 +44,8 @@ public class MessageReferenceImpl implements MessageReference
 
    private final Queue queue;
 
+   private long consumerId = -1;
+
    // Static --------------------------------------------------------
 
    private static final int memoryOffset;
@@ -209,6 +211,18 @@ public class MessageReferenceImpl implements MessageReference
              getMessage();
    }
    // Package protected ---------------------------------------------
+
+   @Override
+   public void setConsumerId(long id)
+   {
+      this.consumerId = id;
+   }
+
+   @Override
+   public long getConsumerId()
+   {
+      return this.consumerId;
+   }
 
    // Protected -----------------------------------------------------
 
