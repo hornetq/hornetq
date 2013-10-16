@@ -753,4 +753,24 @@ public class FakeQueue implements Queue
       
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference, boolean)
+    */
+   @Override
+   public void cancel(Transaction tx, MessageReference ref, boolean ignoreRedeliveryCheck)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#checkRedelivery(org.hornetq.core.server.MessageReference, long, boolean)
+    */
+   @Override
+   public boolean checkRedelivery(MessageReference ref, long timeBase, boolean ignoreRedeliveryDelay) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
 }
