@@ -596,6 +596,7 @@ public class FailoverTest extends FailoverTestBase
    public void testFailBack() throws Exception
    {
       boolean doFailBack = true;
+      backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(0);
       simpleReplication(doFailBack);
    }
 

@@ -91,7 +91,7 @@ public class FailBackManualTest extends FailoverTestBase
 
       t.start();
 
-      waitForRemoteBackup(sf, 10, true, backupServer.getServer());
+      waitForRemoteBackup(sf, 10, false, backupServer.getServer());
 
       assertTrue(backupServer.isStarted());
 
