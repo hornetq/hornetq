@@ -40,6 +40,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.group.ChannelGroup;
@@ -54,6 +55,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -524,8 +526,6 @@ public class NettyAcceptor implements Acceptor
          batchFlusherFuture = null;
       }
 
-      serverChannelGroup.close().awaitUninterruptibly();
-
       if (httpKeepAliveRunnable != null)
       {
          httpKeepAliveRunnable.close();
@@ -549,7 +549,7 @@ public class NettyAcceptor implements Acceptor
          }
       }
 
-      eventLoopGroup.shutdown();
+      eventLoopGroup.shutdownGracefully().awaitUninterruptibly();
       eventLoopGroup = null;
 
       channelClazz = null;

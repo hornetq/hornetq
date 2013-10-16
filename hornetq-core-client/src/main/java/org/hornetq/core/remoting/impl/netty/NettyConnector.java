@@ -21,6 +21,7 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -63,6 +65,7 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
@@ -536,7 +539,7 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
-         group.shutdown();
+          group.shutdownGracefully().awaitUninterruptibly();
       }
       channelClazz = null;
 
@@ -944,7 +947,7 @@ public class NettyConnector extends AbstractConnector
    {
       if (nioEventLoopGroup != null)
       {
-        nioEventLoopGroup.shutdown();
+        nioEventLoopGroup.shutdownGracefully().awaitUninterruptibly();
         nioEventLoopGroup = null;
       }
    }
