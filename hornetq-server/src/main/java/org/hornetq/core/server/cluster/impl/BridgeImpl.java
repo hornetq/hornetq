@@ -141,8 +141,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private boolean deliveringLargeMessage;
 
-   private boolean activated;
-
    private int reconnectAttemptsInUse;
 
    private int retryCount = 0;
@@ -168,7 +166,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final boolean useDuplicateDetection,
                      final String user,
                      final String password,
-                     final boolean activated,
                      final StorageManager storageManager)
    {
 
@@ -207,8 +204,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.user = user;
 
       this.password = password;
-
-      this.activated = activated;
    }
 
    public final static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
@@ -246,10 +241,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       stopping = false;
 
-      if (activated)
-      {
-         activate();
-      }
+      activate();
 
       if (notificationService != null)
       {
@@ -436,8 +428,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public synchronized void activate()
    {
-      activated = true;
-
       executor.execute(new ConnectRunnable(this));
    }
 
