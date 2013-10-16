@@ -163,6 +163,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private volatile ServerLocatorInternal backupServerLocator;
    private volatile boolean announcingBackup;
+   private boolean backupAnnounced;
    private volatile boolean stopping = false;
    private LiveNotifier liveNotifier = null;
    private final long clusterNotificationInterval;
@@ -409,7 +410,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          {
             return;
          }
-
+         backupAnnounced = false;
          stopping = false;
          started = true;
 
@@ -512,6 +513,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          locator.close();
    }
 
+   public boolean isBackupAnnounced()
+   {
+      return backupAnnounced;
+   }
+
    public void announceBackup()
    {
       executor.execute(new Runnable()
@@ -547,6 +553,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                     connector,
                                                                     null));
                   HornetQServerLogger.LOGGER.backupAnnounced();
+                  backupAnnounced = true;
                }
             }
             catch (RejectedExecutionException e)

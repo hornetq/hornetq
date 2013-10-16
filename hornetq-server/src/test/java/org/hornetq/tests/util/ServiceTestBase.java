@@ -402,7 +402,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       while (true)
       {
          if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
-                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
+                  (actualServer.isRemoteBackupUpToDate() || !waitForSync) &&
+                        (!waitForSync || actualServer.getClusterManager() != null && actualServer.getClusterManager().isBackupAnnounced()))
          {
             break;
          }
