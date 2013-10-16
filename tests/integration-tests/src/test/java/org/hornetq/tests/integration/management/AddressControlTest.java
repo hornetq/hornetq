@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -233,6 +234,8 @@ public class AddressControlTest extends ManagementTestBase
       session.start();
       session.createQueue(address, address, true);
 
+      QueueImpl serverQueue = (QueueImpl)server.locateQueue(address);
+
       ClientProducer producer = session.createProducer(address);
 
       for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
@@ -265,7 +268,12 @@ public class AddressControlTest extends ManagementTestBase
       producer.send(msg);
 
       session.commit();
-         Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
+
+      Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
+
+      System.out.println("Address size=" + addressControl.getAddressSize());
+
+      Assert.assertEquals(serverQueue.getPageSubscription().getPagingStore().getAddressSize(), addressControl.getAddressSize());
    }
 
    @Test
