@@ -13,14 +13,20 @@
 
 package org.hornetq.tests.unit.core.message.impl;
 
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -258,6 +264,142 @@ public class MessageImplTest extends UnitTestCase
 
          Assert.assertEquals(val1, val2);
       }
+   }
+
+   public void testMessageCopyIssue() throws Exception
+   {
+      for (long i = 0 ; i < 300; i++)
+      {
+         if (i % 10 == 0)System.out.println("#test " + i);
+         internalMessageCopy();
+      }
+   }
+
+   private void internalMessageCopy() throws Exception
+   {
+      final long RUNS = 2;
+      final ServerMessageImpl msg = new ServerMessageImpl(123, 18);
+
+      msg.setMessageID(RandomUtil.randomLong());
+      msg.encodeMessageIDToBuffer();
+      msg.setAddress(new SimpleString("Batatantkashf aksjfh aksfjh askfdjh askjfh "));
+
+      final AtomicInteger errors = new AtomicInteger(0);
+
+      int T1_number = 10;
+      int T2_number = 10;
+
+      final CountDownLatch latchAlign = new CountDownLatch(T1_number + T2_number);
+      final CountDownLatch latchReady = new CountDownLatch(1);
+      class T1 extends  Thread
+      {
+         @Override
+         public void run()
+         {
+            latchAlign.countDown();
+            try
+            {
+               latchReady.await();
+            }
+            catch (Exception ignored)
+            {
+            }
+
+            for (int i = 0; i < RUNS; i ++)
+            {
+               try
+               {
+                  ServerMessageImpl newMsg = (ServerMessageImpl)msg.copy();
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         }
+      };
+
+      final String bigString;
+      {
+         StringBuffer buffer = new StringBuffer();
+         for (int i = 0 ; i < 500; i++)
+         {
+            buffer.append(" ");
+         }
+         bigString = buffer.toString();
+      }
+
+
+      class T2 extends  Thread
+      {
+         @Override
+         public void run()
+         {
+            latchAlign.countDown();
+            try
+            {
+               latchReady.await();
+            }
+            catch (Exception ignored)
+            {
+            }
+
+            for (int i = 0; i < RUNS; i ++)
+            {
+               try
+               {
+                  SessionSendMessage ssm = new SessionSendMessage(msg, true);
+                  HornetQBuffer buf = ssm.encode(null);
+                  simulateRead(buf);
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         }
+      };
+
+
+      ArrayList<Thread> threads = new ArrayList<Thread>();
+
+      for (int i = 0 ; i < T1_number; i++)
+      {
+         T1 t = new T1();
+         threads.add(t);
+         t.start();
+      }
+
+      for (int i = 0 ; i < T2_number; i++)
+      {
+         T2 t2 = new T2();
+         threads.add(t2);
+         t2.start();
+      }
+
+      latchAlign.await();
+
+      latchReady.countDown();
+
+      for (Thread t : threads)
+      {
+         t.join();
+      }
+
+      assertEquals(0, errors.get());
+   }
+
+
+
+   private void simulateRead(HornetQBuffer buf)
+   {
+      buf.setIndex(buf.capacity() /2, buf.capacity() /2);
+
+      // ok this is not actually happening during the read process, but changing this shouldn't affect the buffer on copy
+      // this is to exagerate the isolation on this test
+      buf.writeBytes(new byte[1024]);
    }
 
    // Private ----------------------------------------------------------------------------------
