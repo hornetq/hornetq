@@ -15,9 +15,11 @@ package org.hornetq.core.client.impl;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A ClientProducerCreditsImpl
@@ -87,7 +89,12 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
             this.blocked = true;
             try
             {
-               semaphore.acquire(credits);
+               while (!semaphore.tryAcquire(credits, 10, TimeUnit.SECONDS))
+               {
+                  // I'm using string concatenation here in case address is null
+                  // better getting a "null" string than a NPE
+                  HornetQClientLogger.LOGGER.outOfCreditOnFlowControl("" + address);
+               }
             }
             finally
             {
