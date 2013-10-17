@@ -390,4 +390,11 @@ public interface HornetQClientLogger extends BasicLogger
       format = Message.Format.MESSAGE_FORMAT)
    void packetOutOfOrder(Object obj, @Cause Throwable t);
 
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214024,
+            value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
+            format = Message.Format.MESSAGE_FORMAT)
+   void outOfCreditOnFlowControl (String address);
+
 }
