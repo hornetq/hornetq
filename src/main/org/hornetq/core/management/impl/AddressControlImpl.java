@@ -196,6 +196,46 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       }
    }
 
+   public long getAddressSize() throws Exception
+   {
+      clearIO();
+      try
+      {
+         return pagingManager.getPageStore(address).getAddressSize();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public long getNumberOfMessages() throws Exception
+   {
+      clearIO();
+      long totalMsgs = 0;
+      try
+      {
+         Bindings bindings = postOffice.getBindingsForAddress(address);
+         List<String> queueNames = new ArrayList<String>();
+         for (Binding binding : bindings.getBindings())
+         {
+            if (binding instanceof QueueBinding)
+            {
+               totalMsgs += ((QueueBinding) binding).getQueue().getMessageCount();
+            }
+         }
+         return totalMsgs;
+      }
+      catch (Throwable t)
+      {
+         throw new IllegalStateException(t.getMessage());
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public boolean isPaging() throws Exception
    {
       clearIO();
