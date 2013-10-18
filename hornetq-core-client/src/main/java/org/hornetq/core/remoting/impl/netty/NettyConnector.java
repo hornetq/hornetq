@@ -21,7 +21,8 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.Iterator;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,6 +71,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
@@ -80,6 +82,7 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.FutureLatch;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * A NettyConnector
@@ -354,7 +357,7 @@ public class NettyConnector extends AbstractConnector
          {
             if (nioEventLoopGroup == null)
             {
-               nioEventLoopGroup = new NioEventLoopGroup(threadsToUse);
+               nioEventLoopGroup = new NioEventLoopGroup(threadsToUse, new HornetQThreadFactory("HornetQ-client-netty-threads", true, getThisClassLoader()));
             }
 
             channelClazz = NioSocketChannel.class;
@@ -537,7 +540,7 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
-          group.shutdownGracefully().awaitUninterruptibly();
+         group.shutdown();
       }
       channelClazz = null;
 
@@ -945,7 +948,7 @@ public class NettyConnector extends AbstractConnector
    {
       if (nioEventLoopGroup != null)
       {
-        nioEventLoopGroup.shutdownGracefully().awaitUninterruptibly();
+        nioEventLoopGroup.shutdown();
         nioEventLoopGroup = null;
       }
    }
@@ -961,6 +964,19 @@ public class NettyConnector extends AbstractConnector
    {
       return bootstrap;
    }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return ClientSessionFactoryImpl.class.getClassLoader();
+         }
+      });
+
+   }
+
 
 }
 
