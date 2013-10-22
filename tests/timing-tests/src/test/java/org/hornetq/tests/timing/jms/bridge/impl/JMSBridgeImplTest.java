@@ -423,9 +423,20 @@ public class JMSBridgeImplTest extends UnitTestCase
    }
 
    @Test
-   public void testAutoAckOnSource() throws Exception
+   public void testAutoAckOnSourceBatchOfOne() throws Exception
    {
-      final int numMessages = 10;
+      doTestAutoAckOnSource(1);
+   }
+
+   @Test
+   public void testAutoAckOnSourceBatchOfTen() throws Exception
+   {
+      doTestAutoAckOnSource(10);
+   }
+
+   public void doTestAutoAckOnSource(int maxBatchSize) throws Exception
+   {
+      final int numMessages = maxBatchSize;
 
       ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
       ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
@@ -442,7 +453,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setTargetDestinationFactory(targetDF);
       bridge.setFailureRetryInterval(10);
       bridge.setMaxRetries(1);
-      bridge.setMaxBatchSize(1);
+      bridge.setMaxBatchSize(maxBatchSize);
       bridge.setMaxBatchTime(-1);
       bridge.setTransactionManager(tm);
       bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
@@ -470,7 +481,7 @@ public class JMSBridgeImplTest extends UnitTestCase
             ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
             JMSQueueControl.class,
             false);
-      assertTrue(jmsQueueControl.getDeliveringCount() != numMessages);
+      Assert.assertNotSame(jmsQueueControl.getDeliveringCount(), numMessages);
 
       bridge.stop();
       Assert.assertFalse(bridge.isStarted());

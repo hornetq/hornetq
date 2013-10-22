@@ -1290,13 +1290,15 @@ public final class JMSBridgeImpl implements JMSBridge
 
          // Now the sending session
 
+         // bridging on the same server
          if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
          {
              targetConn = sourceConn;
              targetSession = sourceSession;
          }
-         else
+         else // bridging across different servers
          {
+            // QoS = ONCE_AND_ONLY_ONCE
             if (forwardMode == JMSBridgeImpl.FORWARD_MODE_XA)
             {
                if (JMSBridgeImpl.trace)
@@ -1310,7 +1312,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
                targetSession = ((XAConnection)targetConn).createXASession();
             }
-            else
+            else // QoS = DUPLICATES_OK || AT_MOST_ONCE
             {
                if (JMSBridgeImpl.trace)
                {
@@ -1516,7 +1518,8 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       try
       {
-         if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
+         if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE ||
+            (qualityOfServiceMode == QualityOfServiceMode.AT_MOST_ONCE && maxBatchSize > 1))
          {
             // We client ack before sending
 
@@ -1563,7 +1566,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
             if (JMSBridgeImpl.trace)
             {
-               HornetQJMSServerLogger.LOGGER.trace("Committed source session");
+               HornetQJMSServerLogger.LOGGER.trace("Committed target session");
             }
          }
 
