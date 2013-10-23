@@ -23,7 +23,15 @@ import org.hornetq.api.core.SimpleString;
  */
 public final class GroupingHandlerConfiguration implements Serializable
 {
-   private static final long serialVersionUID = -4600283023652477326L;
+   public static final long serialVersionUID = -4600283023652477326L;
+
+   public static final int DEFAULT_TIMEOUT = 5000;
+
+   public static final int DEFAULT_GROUP_TIMEOUT = -1;
+
+   public static final long DEFAULT_REAPER_PERIOD = 30000;
+
+   public static final int DEFAULT_REAPER_PRIORITY = 3;
 
    private final SimpleString name;
 
@@ -33,22 +41,37 @@ public final class GroupingHandlerConfiguration implements Serializable
 
    private final long timeout;
 
-   public static final int DEFAULT_TIMEOUT = 5000;
+   private long groupTimeout;
+
+   private final long reaperPeriod;
+
+   private final int reaperPriority;
+
 
    public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, final SimpleString address)
    {
-      this(name, type, address, GroupingHandlerConfiguration.DEFAULT_TIMEOUT);
+      this(name, type, address,
+            GroupingHandlerConfiguration.DEFAULT_TIMEOUT,
+            GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT,
+            GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD,
+            GroupingHandlerConfiguration.DEFAULT_REAPER_PRIORITY);
    }
 
    public GroupingHandlerConfiguration(final SimpleString name,
                                        final TYPE type,
                                        final SimpleString address,
-                                       final int timeout)
+                                       final int timeout,
+                                       final long groupTimeout,
+                                       final long reaperPeriod,
+                                       final int reaperPriority)
    {
       this.type = type;
       this.name = name;
       this.address = address;
       this.timeout = timeout;
+      this.groupTimeout = groupTimeout;
+      this.reaperPeriod = reaperPeriod;
+      this.reaperPriority = reaperPriority;
    }
 
    public SimpleString getName()
@@ -69,6 +92,21 @@ public final class GroupingHandlerConfiguration implements Serializable
    public long getTimeout()
    {
       return timeout;
+   }
+
+   public long getGroupTimeout()
+   {
+      return groupTimeout;
+   }
+
+   public long getReaperPeriod()
+   {
+      return reaperPeriod;
+   }
+
+   public int getReaperPriority()
+   {
+      return reaperPriority;
    }
 
    public enum TYPE
