@@ -849,11 +849,19 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void setUpGroupHandler(final GroupingHandlerConfiguration.TYPE type, final int node, final int timeout)
    {
+      setUpGroupHandler(type, node, timeout, -1, GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD);
+   }
+
+   protected void setUpGroupHandler(final GroupingHandlerConfiguration.TYPE type, final int node, final int timeout, final long groupTimeout,
+                                    final long reaperPeriod)
+   {
       servers[node].getConfiguration()
-                   .setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"),
-                                                                                     type,
-                                                                                     new SimpleString("queues"),
-                                                                                     timeout));
+            .setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"),
+                  type,
+                  new SimpleString("queues"),
+                  timeout,
+                  groupTimeout,
+                  reaperPeriod, GroupingHandlerConfiguration.DEFAULT_REAPER_PRIORITY));
    }
 
    protected void setUpGroupHandler(final GroupingHandler groupingHandler, final int node)

@@ -255,6 +255,18 @@ public interface HornetQServerLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void deprecatedConfigurationOption(String deprecatedOption);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221039, value = "Restarting as Replicating backup server after live restart",
+         format = Message.Format.MESSAGE_FORMAT)
+   void restartingReplicatedBackupAfterFailback();
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(
+         id = 221040,
+         value =  "Group Bindings removed from {0}",
+         format = Message.Format.MESSAGE_FORMAT)
+   void groupingQueueRemovedComplete(SimpleString clusterName);
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
          format = Message.Format.MESSAGE_FORMAT)
@@ -991,6 +1003,13 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222166, value = "Error stopping naming server", format = Message.Format.MESSAGE_FORMAT)
    void unableToStopNamingServer(@Cause Exception e);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+         id = 222167,
+         value =  "Group Binding not available so deleting {0} groups from {1}, groups will be bound to another node",
+         format = Message.Format.MESSAGE_FORMAT)
+   void groupingQueueRemoved(int size, SimpleString clusterName);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)

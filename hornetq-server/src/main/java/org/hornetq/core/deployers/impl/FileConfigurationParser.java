@@ -1165,12 +1165,18 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       String type = getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
       String address = getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
       Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, Validators.GT_ZERO);
+      Integer groupTimeout = getInteger(node, "group-timeout", GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
+      Long reaperPeriod = getLong(node, "reaper-period", GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD, Validators.GT_ZERO);
+      Integer reaperPriority = getInteger(node, "reaper-priority", GroupingHandlerConfiguration.DEFAULT_REAPER_PRIORITY, Validators.THREAD_PRIORITY_RANGE);
       mainConfiguration.setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString(name),
                                                                                          type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())
                                                                                                                                                        ? GroupingHandlerConfiguration.TYPE.LOCAL
                                                                                                                                                        : GroupingHandlerConfiguration.TYPE.REMOTE,
                                                                                          new SimpleString(address),
-                                                                                         timeout));
+                                                                                         timeout,
+                                                                                         groupTimeout,
+                                                                                         reaperPeriod,
+                                                                                         reaperPriority));
    }
 
    private void parseBridgeConfiguration(final Element brNode, final Configuration mainConfig) throws Exception
