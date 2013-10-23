@@ -123,6 +123,12 @@ public final class RemoteGroupingHandler implements GroupingHandler
       return responses.get(fullID);
    }
 
+   @Override
+   public void awaitBindings()
+   {
+      // NO-OP
+   }
+
    public void proposed(final Response response) throws Exception
    {
       try
