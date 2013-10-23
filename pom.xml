@@ -208,9 +208,9 @@
          </dependency>
          <!--this for xa recovery-->
          <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjts</artifactId>
-            <version>4.16.4.Final</version>
+            <groupId>org.jboss.jbossts.jts</groupId>
+            <artifactId>jbossjts-jacorb</artifactId>
+            <version>4.17.13.Final</version>
          </dependency>
          <!--needed to compile security-->
          <dependency>

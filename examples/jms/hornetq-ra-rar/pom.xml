@@ -35,8 +35,8 @@
                     <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>jboss.jbossts</groupId>
-                    <artifactId>jbossjts</artifactId>
+                    <groupId>jboss.jbossts.jts</groupId>
+                    <artifactId>jbossjts-jacorb</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
