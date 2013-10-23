@@ -36,4 +36,6 @@ public interface GroupingHandler extends NotificationListener
    void addGroupBinding(GroupBinding groupBinding);
 
    Response getProposal(SimpleString fullID);
+
+   void awaitBindings() throws Exception;
 }
