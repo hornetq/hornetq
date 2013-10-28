@@ -1926,15 +1926,15 @@ public class HornetQServerImpl implements HornetQServer
          if (config.getType() == GroupingHandlerConfiguration.TYPE.LOCAL)
          {
             groupingHandler1 =
-                     new LocalGroupingHandler(executorFactory,
-               managementService,
-               config.getName(),
-               config.getAddress(),
-               getStorageManager(),
-               config.getTimeout(),
-               config.getGroupTimeout(),
-               config.getReaperPeriod(),
-               config.getReaperPriority());
+               new LocalGroupingHandler(executorFactory,
+                                        scheduledPool,
+                                        managementService,
+                                        config.getName(),
+                                        config.getAddress(),
+                                        getStorageManager(),
+                                        config.getTimeout(),
+                                        config.getGroupTimeout(),
+                                        config.getReaperPeriod());
          }
          else
          {

@@ -861,7 +861,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                   new SimpleString("queues"),
                   timeout,
                   groupTimeout,
-                  reaperPeriod, GroupingHandlerConfiguration.DEFAULT_REAPER_PRIORITY));
+                  reaperPeriod));
    }
 
    protected void setUpGroupHandler(final GroupingHandler groupingHandler, final int node)
