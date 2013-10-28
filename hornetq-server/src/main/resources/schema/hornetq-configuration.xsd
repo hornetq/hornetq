@@ -1270,10 +1270,25 @@
           <xsd:documentation>A reference to a cluster connection address</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-
       <xsd:element name="timeout" type="xsd:int" default="5000" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:default="(ms)">
           <xsd:documentation>How long to wait for a decision</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="group-timeout" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(ms)">
+          <xsd:documentation>How long a group binding will be used, -1 means for ever. Bindings are removed after this wait
+          elapses. Only valid for LOCAL handlers</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reaper-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="(ms)">
+          <xsd:documentation>How often the reaper will be run to check for timed out group bindings. Only valid for LOCAL handlers</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reaper-priority" type="xsd:int" default="3" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:default="3">
+          <xsd:documentation>the priority of the thread checking the group bindings</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
     </xsd:all>

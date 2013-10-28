@@ -57,6 +57,8 @@ public final class RemoteGroupingHandler implements GroupingHandler
 
    private final ConcurrentMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
 
+   private boolean started = false;
+
    public RemoteGroupingHandler(final ManagementService managementService,
                                 final SimpleString name,
                                 final SimpleString address,
@@ -71,6 +73,26 @@ public final class RemoteGroupingHandler implements GroupingHandler
    public SimpleString getName()
    {
       return name;
+   }
+
+   @Override
+   public void start() throws Exception
+   {
+      if(started)
+         return;
+      started = true;
+   }
+
+   @Override
+   public void stop() throws Exception
+   {
+      started = false;
+   }
+
+   @Override
+   public boolean isStarted()
+   {
+      return started;
    }
 
    public Response propose(final Proposal proposal) throws Exception
@@ -121,6 +143,31 @@ public final class RemoteGroupingHandler implements GroupingHandler
    public Response getProposal(final SimpleString fullID)
    {
       return responses.get(fullID);
+   }
+
+   @Override
+   public void awaitBindings()
+   {
+      // NO-OP
+   }
+
+   @Override
+   public void remove(SimpleString groupid, SimpleString clusterName, int distance) throws Exception
+   {
+      List<SimpleString> groups = groupMap.get(clusterName);
+      if(groups != null)
+      {
+         groups.remove(groupid);
+      }
+      responses.remove(groupid);
+      TypedProperties props = new TypedProperties();
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, groupid);
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, clusterName);
+      props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance);
+      Notification notification = new Notification(null, NotificationType.UNPROPOSAL, props);
+      managementService.sendNotification(notification);
    }
 
    public void proposed(final Response response) throws Exception

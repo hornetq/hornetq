@@ -15,7 +15,14 @@ package org.hornetq.core.server.group.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
@@ -27,6 +34,7 @@ import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
+import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -50,17 +58,47 @@ public final class LocalGroupingHandler implements GroupingHandler
 
    private final long timeout;
 
-   public LocalGroupingHandler(final ManagementService managementService,
+   private final Lock lock = new ReentrantLock();
+
+   private final Condition awaitCondition = lock.newCondition();
+
+   private final List<SimpleString> bindingsAdded = new ArrayList<SimpleString>();
+
+   private final int reaperPriority;
+
+   private final long groupTimeout;
+
+   private boolean waitingForBindings = false;
+
+   private final Executor executor;
+
+   private boolean started;
+
+   private GroupIdReaper reaperRunnable;
+
+   private volatile Thread reaperThread;
+
+   private long reaperPeriod;
+
+   public LocalGroupingHandler(final ExecutorFactory executorFactory,
+                               final ManagementService managementService,
                                final SimpleString name,
                                final SimpleString address,
                                final StorageManager storageManager,
-                               final long timeout)
+                               final long timeout,
+                               final long groupTimeout,
+                               long reaperPeriod,
+                               int reaperPriority)
    {
+      this.reaperPeriod = reaperPeriod;
+      this.reaperPriority = reaperPriority;
+      this.executor = executorFactory.getExecutor();
       this.managementService = managementService;
       this.name = name;
       this.address = address;
       this.storageManager = storageManager;
       this.timeout = timeout;
+      this.groupTimeout = groupTimeout;
    }
 
    public SimpleString getName()
@@ -116,6 +154,11 @@ public final class LocalGroupingHandler implements GroupingHandler
    {
    }
 
+   @Override
+   public void remove(SimpleString groupid, SimpleString clusterName, int distance)
+   {
+   }
+
    public void send(final Response response, final int distance) throws Exception
    {
       TypedProperties props = new TypedProperties();
@@ -153,28 +196,217 @@ public final class LocalGroupingHandler implements GroupingHandler
       return original == null ? null : new Response(fullID, original.getClusterName());
    }
 
+   @Override
+   public void awaitBindings() throws Exception
+   {
+      if (groupMap.size() > 0)
+      {
+         try
+         {
+            lock.lock();
+            waitingForBindings = true;
+            //make a copy of the bindings added so far from the cluster via onNotification().
+            List<SimpleString> bindingsAlreadyAdded = new ArrayList<SimpleString>(bindingsAdded);
+            //clear the bindings
+            bindingsAdded.clear();
+            //now add all the group bindings that were loaded by the journal
+            bindingsAdded.addAll(groupMap.keySet());
+            //and if we remove persisted bindings from whats been added so far we have left any bindings we havent yet
+            //received via onNotification
+            bindingsAdded.removeAll(bindingsAlreadyAdded);
+            //now we wait here for the rest to be received in onNotification, it will signal once all have been received.
+            //if we arent signaled then bindingsAdded still has some groupids we need to remove.
+            if(!awaitCondition.await(timeout, TimeUnit.MILLISECONDS))
+            {
+               //if we get here there are some bindings that we haven't been told about in the cluster so we need to remove them.
+               for (SimpleString clusterName : groupMap.keySet())
+               {
+                  if(bindingsAdded.contains(clusterName))
+                  {
+                     removeGrouping(clusterName, true);
+                  }
+               }
+            }
+         }
+         finally
+         {
+            waitingForBindings = false;
+            lock.unlock();
+         }
+      }
+   }
+
    public void onNotification(final Notification notification)
    {
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
          SimpleString clusterName = notification.getProperties()
                                                 .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         List<GroupBinding> list = groupMap.remove(clusterName);
-         if (list != null)
+         removeGrouping(clusterName, false);
+      }
+      else if(notification.getType() == NotificationType.BINDING_ADDED)
+      {
+         SimpleString clusterName = notification.getProperties()
+               .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         try
          {
-            for (GroupBinding val : list)
+            lock.lock();
+            //if we are not yet waiting for bindings then add any new ones.
+            if(!waitingForBindings && !bindingsAdded.contains(clusterName))
             {
-               if (val != null)
+               bindingsAdded.add(clusterName);
+            }
+            //we are now waiting for bindings in awaitBindings() so remove
+            else
+            {
+               bindingsAdded.remove(clusterName);
+            }
+            //and signal once we have heard from all of them.
+            if(waitingForBindings && bindingsAdded.size() == 0)
+            {
+               awaitCondition.signal();
+            }
+         }
+         finally
+         {
+            lock.unlock();
+         }
+      }
+   }
+   public synchronized void start() throws Exception
+   {
+      if (started)
+         return;
+      if (reaperPeriod > 0 && groupTimeout > 0)
+      {
+         if (reaperRunnable != null)
+            reaperRunnable.stop();
+         reaperRunnable = new GroupIdReaper();
+         reaperThread = new Thread(reaperRunnable, "hornetq-expiry-reaper-thread");
+
+         reaperThread.setPriority(reaperPriority);
+
+         reaperThread.start();
+      }
+      started = true;
+   }
+
+   public synchronized void stop() throws Exception
+   {
+      started = false;
+      if (reaperRunnable != null)
+         reaperRunnable.stop();
+
+      if (reaperThread != null)
+      {
+         reaperThread.join();
+
+         reaperThread = null;
+      }
+   }
+
+   public boolean isStarted()
+   {
+      return started;
+   }
+
+   private void removeGrouping(final SimpleString clusterName, final boolean warn)
+   {
+      final List<GroupBinding> list = groupMap.remove(clusterName);
+      if(warn && list != null)
+      {
+         HornetQServerLogger.LOGGER.groupingQueueRemoved(list.size(), clusterName);
+      }
+      if (list != null)
+      {
+         executor.execute(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               for (GroupBinding val : list)
                {
-                  map.remove(val.getGroupId());
+                  if (val != null)
+                  {
+
+                     map.remove(val.getGroupId());
+
+                     try
+                     {
+                        storageManager.deleteGrouping(val, map.isEmpty());
+                     }
+                     catch (Exception e)
+                     {
+                        HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, val.getGroupId());
+                     }
+                  }
+               }
+               if(warn)
+               {
+                  HornetQServerLogger.LOGGER.groupingQueueRemovedComplete(clusterName);
+               }
+            }
+         });
+
+      }
+   }
+
+   private final class GroupIdReaper implements Runnable
+   {
+      private final CountDownLatch latch = new CountDownLatch(1);
+
+      public void stop()
+      {
+         latch.countDown();
+      }
+
+      public void run()
+      {
+         // The reaper thread should be finished case the PostOffice is gone
+         // This is to avoid leaks on PostOffice between stops and starts
+         while (isStarted())
+         {
+            try
+            {
+               if (latch.await(reaperPeriod, TimeUnit.MILLISECONDS))
+                  return;
+            }
+            catch (InterruptedException e1)
+            {
+               throw new HornetQInterruptedException(e1);
+            }
+            if (!isStarted())
+               return;
+
+            for (GroupBinding groupBinding : map.values())
+            {
+               if(groupBinding.getTimeCreated() + groupTimeout > System.currentTimeMillis())
+               {
+                  map.remove(groupBinding.getGroupId());
+                  List<GroupBinding> groupBindings = groupMap.get(groupBinding.getClusterName());
+                  groupBindings.remove(groupBinding);
+                  TypedProperties props = new TypedProperties();
+                  props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, groupBinding.getGroupId());
+                  props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, groupBinding.getClusterName());
+                  props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
+                  props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
+                  props.putIntProperty(ManagementHelper.HDR_DISTANCE, 0);
+                  Notification notification = new Notification(null, NotificationType.UNPROPOSAL, props);
                   try
                   {
-                     storageManager.deleteGrouping(val);
+                     managementService.sendNotification(notification);
                   }
                   catch (Exception e)
                   {
-                     HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, val.getGroupId());
+                     HornetQServerLogger.LOGGER.errorHandlingMessage(e);
+                  }
+                  try
+                  {
+                     storageManager.deleteGrouping(groupBinding, true);
+                  }
+                  catch (Exception e)
+                  {
+                     HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, groupBinding.getGroupId());
                   }
                }
             }

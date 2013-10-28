@@ -13,6 +13,7 @@
 package org.hornetq.core.server.group;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
@@ -21,7 +22,7 @@ import org.hornetq.core.server.management.NotificationListener;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public interface GroupingHandler extends NotificationListener
+public interface GroupingHandler extends NotificationListener, HornetQComponent
 {
    SimpleString getName();
 
@@ -36,4 +37,8 @@ public interface GroupingHandler extends NotificationListener
    void addGroupBinding(GroupBinding groupBinding);
 
    Response getProposal(SimpleString fullID);
+
+   void awaitBindings() throws Exception;
+
+   void remove(SimpleString groupid, SimpleString clusterName, int distance) throws Exception;
 }
