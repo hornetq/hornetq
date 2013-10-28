@@ -19,6 +19,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -41,7 +45,7 @@ public final class VersionLoader
 
    private static String PROP_FILE_NAME;
 
-   private static Version version;
+   private static Version[] versions;
 
    static
    {
@@ -69,24 +73,34 @@ public final class VersionLoader
             PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
          }
 
-         VersionLoader.version = VersionLoader.load();
+         VersionLoader.versions = VersionLoader.load();
       }
       catch (Throwable e)
       {
-         VersionLoader.version = null;
+         VersionLoader.versions = null;
          HornetQClientLogger.LOGGER.error(e.getMessage(), e);
       }
 
    }
-
-   public static Version getVersion()
+   
+   public static Version[] getClientVersions()
    {
-      if (VersionLoader.version == null)
+      if (VersionLoader.versions == null)
       {
          throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
       }
 
-      return VersionLoader.version;
+      return VersionLoader.versions;
+   }
+
+   public static Version getVersion()
+   {
+      if (VersionLoader.versions == null)
+      {
+         throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
+      }
+
+      return VersionLoader.versions[0];
    }
 
    public static String getClasspathString() {
@@ -101,7 +115,7 @@ public final class VersionLoader
        return classpath.toString();
    }
 
-   private static Version load()
+   private static Version[] load()
    {
       Properties versionProps = new Properties();
       final InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
@@ -119,17 +133,31 @@ public final class VersionLoader
             int majorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.majorVersion"));
             int minorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.minorVersion"));
             int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
-            int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
+            int[] incrementingVersions = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.incrementingVersion"));
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
             int[] compatibleVersionArray = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.compatibleVersionList"));
-
-            return new VersionImpl(versionName,
+            List<Version> definedVersions = new ArrayList<Version>(incrementingVersions.length);
+            for(int incrementingVersion : incrementingVersions)
+            {
+                definedVersions.add(new VersionImpl(versionName,
                                    majorVersion,
                                    minorVersion,
                                    microVersion,
                                    incrementingVersion,
                                    versionSuffix,
-                                   compatibleVersionArray);
+                                   compatibleVersionArray));
+            }
+            //We want the higher version to be the first
+            Collections.sort(definedVersions, new Comparator<Version>() 
+            {
+                @Override
+                public int compare(Version version1, Version version2) 
+                {
+                    return version2.getIncrementingVersion() - version1.getIncrementingVersion();
+                }
+                
+            });
+            return definedVersions.toArray(new Version[incrementingVersions.length]);            
          }
          catch (IOException e)
          {
