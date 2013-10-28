@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -1788,9 +1791,36 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
    {
       is.defaultReadObject();
+      if(stateGuard == null)
+      {
+          setGuard("stateGuard");
+      }
+      if(topologyArrayGuard == null)
+      {
+          setGuard("topologyArrayGuard");
+      }
       //is transient so need to create, for compatibility issues
       packetDecoder = ClientPacketDecoder.INSTANCE;
    }
+
+    private void setGuard(String fieldName) {
+        try {
+            Field guardField = this.getClass().getDeclaredField(fieldName);
+            guardField.setAccessible(true);
+            guardField.set(this, new String());
+            guardField.setAccessible(false);
+        } catch (NoSuchFieldException ex) {
+            Logger.getLogger(ServerLocatorImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(ServerLocatorImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(ServerLocatorImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(ServerLocatorImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+
    private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
