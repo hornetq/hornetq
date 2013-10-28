@@ -64,7 +64,6 @@
       <timeout>5000</timeout>
       <group-timeout>-1</group-timeout>
       <reaper-period>30000</reaper-period>
-      <reaper-priority>3</reaper-priority>
    </grouping-handler>
    
    <!-- Other config -->

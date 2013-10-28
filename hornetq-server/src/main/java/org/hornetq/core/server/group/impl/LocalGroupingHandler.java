@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -64,35 +66,35 @@ public final class LocalGroupingHandler implements GroupingHandler
 
    private final List<SimpleString> bindingsAdded = new ArrayList<SimpleString>();
 
-   private final int reaperPriority;
-
    private final long groupTimeout;
 
    private boolean waitingForBindings = false;
 
    private final Executor executor;
 
+   private final ScheduledExecutorService scheduledExecutor;
+
    private boolean started;
 
    private GroupIdReaper reaperRunnable;
 
-   private volatile Thread reaperThread;
+   private ScheduledFuture reaperFuture;
 
    private long reaperPeriod;
 
    public LocalGroupingHandler(final ExecutorFactory executorFactory,
+                               final ScheduledExecutorService scheduledExecutor,
                                final ManagementService managementService,
                                final SimpleString name,
                                final SimpleString address,
                                final StorageManager storageManager,
                                final long timeout,
                                final long groupTimeout,
-                               long reaperPeriod,
-                               int reaperPriority)
+                               long reaperPeriod)
    {
       this.reaperPeriod = reaperPeriod;
-      this.reaperPriority = reaperPriority;
       this.executor = executorFactory.getExecutor();
+      this.scheduledExecutor = scheduledExecutor;
       this.managementService = managementService;
       this.name = name;
       this.address = address;
@@ -279,14 +281,16 @@ public final class LocalGroupingHandler implements GroupingHandler
          return;
       if (reaperPeriod > 0 && groupTimeout > 0)
       {
-         if (reaperRunnable != null)
-            reaperRunnable.stop();
+         if (reaperFuture != null)
+         {
+            reaperFuture.cancel(true);
+            reaperFuture = null;
+         }
+
          reaperRunnable = new GroupIdReaper();
-         reaperThread = new Thread(reaperRunnable, "hornetq-expiry-reaper-thread");
 
-         reaperThread.setPriority(reaperPriority);
-
-         reaperThread.start();
+         reaperFuture = scheduledExecutor.scheduleAtFixedRate(reaperRunnable, reaperPeriod,
+                                                              reaperPeriod, TimeUnit.MILLISECONDS);
       }
       started = true;
    }
@@ -294,14 +298,10 @@ public final class LocalGroupingHandler implements GroupingHandler
    public synchronized void stop() throws Exception
    {
       started = false;
-      if (reaperRunnable != null)
-         reaperRunnable.stop();
-
-      if (reaperThread != null)
+      if (reaperFuture != null)
       {
-         reaperThread.join();
-
-         reaperThread = null;
+         reaperFuture.cancel(true);
+         reaperFuture = null;
       }
    }
 
@@ -353,28 +353,12 @@ public final class LocalGroupingHandler implements GroupingHandler
 
    private final class GroupIdReaper implements Runnable
    {
-      private final CountDownLatch latch = new CountDownLatch(1);
-
-      public void stop()
-      {
-         latch.countDown();
-      }
-
       public void run()
       {
          // The reaper thread should be finished case the PostOffice is gone
          // This is to avoid leaks on PostOffice between stops and starts
-         while (isStarted())
+         if (isStarted())
          {
-            try
-            {
-               if (latch.await(reaperPeriod, TimeUnit.MILLISECONDS))
-                  return;
-            }
-            catch (InterruptedException e1)
-            {
-               throw new HornetQInterruptedException(e1);
-            }
             if (!isStarted())
                return;
 

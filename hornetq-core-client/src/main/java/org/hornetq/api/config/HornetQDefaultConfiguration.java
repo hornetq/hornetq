@@ -426,10 +426,6 @@ public final class HornetQDefaultConfiguration
        return DEFAULT_BRIDGE_CONNECT_SAME_NODE;
    }
 
-   public static int getDefaultMaxSavedReplicatedJournalsSize()
-   {
-      return DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE;
-   }
    public static long getDefaultGroupTimeout()
    {
       return DEFAULT_GROUP_TIMEOUT;
