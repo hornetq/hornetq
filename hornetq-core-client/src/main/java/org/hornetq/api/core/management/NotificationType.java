@@ -44,7 +44,8 @@ public enum NotificationType
    ACCEPTOR_STARTED(16),
    ACCEPTOR_STOPPED(17),
    PROPOSAL(18),
-   PROPOSAL_RESPONSE(19);
+   PROPOSAL_RESPONSE(19),
+   UNPROPOSAL(20);
 
    private final int value;
 

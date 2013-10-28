@@ -593,6 +593,7 @@ public class HornetQServerImpl implements HornetQServer
          if (groupingHandler != null)
          {
             managementService.removeNotificationListener(groupingHandler);
+            groupingHandler.stop();
             groupingHandler = null;
          }
          stopComponent(clusterManager);
@@ -1663,6 +1664,10 @@ public class HornetQServerImpl implements HornetQServer
          deploymentManager.start();
       }
 
+      if(groupingHandler != null)
+      {
+         groupingHandler.start();
+      }
       // We do this at the end - we don't want things like MDBs or other connections connecting to a backup server until
       // it is activated
 
@@ -1987,7 +1992,10 @@ public class HornetQServerImpl implements HornetQServer
                config.getName(),
                config.getAddress(),
                getStorageManager(),
-               config.getTimeout());
+               config.getTimeout(),
+               config.getGroupTimeout(),
+               config.getReaperPeriod(),
+               config.getReaperPriority());
          }
          else
          {
