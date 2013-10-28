@@ -1308,6 +1308,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
                   break;
                }
+               case UNPROPOSAL:
+               {
+                  doUnProposalReceived(message);
+                  break;
+               }
                default:
                {
                   throw HornetQMessageBundle.BUNDLE.invalidType(ntype);
@@ -1342,6 +1347,26 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          {
             server.getGroupingHandler().send(response, 0);
          }
+      }
+
+      /*
+      * Inform the grouping handler of a proposal(groupid) being removed
+      * */
+      private synchronized void doUnProposalReceived(final ClientMessage message) throws Exception
+      {
+         if (!message.containsProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID))
+         {
+            throw new IllegalStateException("proposal type is null");
+         }
+
+         SimpleString groupId = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
+
+         SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
+
+         Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
+         server.getGroupingHandler().remove(groupId, clusterName, hops + 1);
+
       }
 
       /*

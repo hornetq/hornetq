@@ -23,7 +23,13 @@ import org.hornetq.api.core.SimpleString;
  */
 public final class GroupingHandlerConfiguration implements Serializable
 {
-   private static final long serialVersionUID = -4600283023652477326L;
+   public static final long serialVersionUID = -4600283023652477326L;
+
+   public static final int DEFAULT_TIMEOUT = 5000;
+
+   public static final int DEFAULT_GROUP_TIMEOUT = -1;
+
+   public static final long DEFAULT_REAPER_PERIOD = 30000;
 
    private final SimpleString name;
 
@@ -33,22 +39,32 @@ public final class GroupingHandlerConfiguration implements Serializable
 
    private final long timeout;
 
-   public static final int DEFAULT_TIMEOUT = 5000;
+   private long groupTimeout;
+
+   private final long reaperPeriod;
+
 
    public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, final SimpleString address)
    {
-      this(name, type, address, GroupingHandlerConfiguration.DEFAULT_TIMEOUT);
+      this(name, type, address,
+            GroupingHandlerConfiguration.DEFAULT_TIMEOUT,
+            GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT,
+            GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD);
    }
 
    public GroupingHandlerConfiguration(final SimpleString name,
                                        final TYPE type,
                                        final SimpleString address,
-                                       final int timeout)
+                                       final int timeout,
+                                       final long groupTimeout,
+                                       final long reaperPeriod)
    {
       this.type = type;
       this.name = name;
       this.address = address;
       this.timeout = timeout;
+      this.groupTimeout = groupTimeout;
+      this.reaperPeriod = reaperPeriod;
    }
 
    public SimpleString getName()
@@ -69,6 +85,16 @@ public final class GroupingHandlerConfiguration implements Serializable
    public long getTimeout()
    {
       return timeout;
+   }
+
+   public long getGroupTimeout()
+   {
+      return groupTimeout;
+   }
+
+   public long getReaperPeriod()
+   {
+      return reaperPeriod;
    }
 
    public enum TYPE

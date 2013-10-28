@@ -430,6 +430,10 @@ public final class HornetQDefaultConfiguration
    {
       return DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE;
    }
+   public static long getDefaultGroupTimeout()
+   {
+      return DEFAULT_GROUP_TIMEOUT;
+   }
 
    //shared by client and core/server
    private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
@@ -527,6 +531,7 @@ public final class HornetQDefaultConfiguration
    private static boolean DEFAULT_MASK_PASSWORD = false;
    private static long DEFAULT_CLUSTER_NOTIFICATION_INTERVAL = 1000;
    private static int DEFAULT_CLUSTER_NOTIFICATION_ATTEMPTS = 2;
+   private static long DEFAULT_GROUP_TIMEOUT = -1;
 
    //properties passed to acceptor/connectors.
    private static String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
