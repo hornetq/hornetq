@@ -39,6 +39,188 @@ public class ClusteredGroupingTest extends ClusterTestBase
 {
 
    @Test
+   public void testGroupingGroupTimeout() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, -1, 2000, 500);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 0, false);
+
+      final CountDownLatch latch = new CountDownLatch(4);
+
+      getServer(1).getManagementService().addNotificationListener(new NotificationListener()
+      {
+         @Override
+         public void onNotification(Notification notification)
+         {
+            if(notification.getType() == NotificationType.UNPROPOSAL)
+            {
+               latch.countDown();
+            }
+         }
+      });
+      getServer(2).getManagementService().addNotificationListener(new NotificationListener()
+      {
+         @Override
+         public void onNotification(Notification notification)
+         {
+            if(notification.getType() == NotificationType.UNPROPOSAL)
+            {
+               latch.countDown();
+            }
+         }
+      });
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+      verifyReceiveAll(10, 0);
+
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+
+      verifyReceiveAll(10, 0);
+
+      removeConsumer(0);
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      addConsumer(0, 0, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 0, false);
+      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+      verifyReceiveAll(10, 0);
+
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+
+      verifyReceiveAll(10, 0);
+   }
+
+   @Test
+   public void testGroupingGroupTimeoutSendRemote() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, -1, 2000, 500);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      waitForBindings(2, "queues.testaddress", 2, 0, false);
+
+      final CountDownLatch latch = new CountDownLatch(4);
+
+      getServer(1).getManagementService().addNotificationListener(new NotificationListener()
+      {
+         @Override
+         public void onNotification(Notification notification)
+         {
+            if(notification.getType() == NotificationType.UNPROPOSAL)
+            {
+               latch.countDown();
+            }
+         }
+      });
+      getServer(2).getManagementService().addNotificationListener(new NotificationListener()
+      {
+         @Override
+         public void onNotification(Notification notification)
+         {
+            if(notification.getType() == NotificationType.UNPROPOSAL)
+            {
+               latch.countDown();
+            }
+         }
+      });
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+      verifyReceiveAll(10, 0);
+
+      sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+
+      verifyReceiveAll(10, 0);
+
+      removeConsumer(0);
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      addConsumer(0, 1, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+      verifyReceiveAll(10, 0);
+
+      sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+
+      verifyReceiveAll(10, 0);
+   }
+
+   @Test
    public void testGroupingSimple() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -265,6 +447,30 @@ public class ClusteredGroupingTest extends ClusterTestBase
          public SimpleString getName()
          {
             return null;
+         }
+
+         @Override
+         public void remove(SimpleString id, SimpleString groupId, int distance)
+         {
+            //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         @Override
+         public void start() throws Exception
+         {
+            //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         @Override
+         public void stop() throws Exception
+         {
+            //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         @Override
+         public boolean isStarted()
+         {
+            return false;
          }
 
          public Response propose(final Proposal proposal) throws Exception

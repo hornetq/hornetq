@@ -66,6 +66,7 @@ public class Response
    public String toString()
    {
       return "accepted = " + accepted +
+             " groupid = "  + groupId +
              " clusterName = " +
              clusterName +
              " alternativeClusterName = " +
