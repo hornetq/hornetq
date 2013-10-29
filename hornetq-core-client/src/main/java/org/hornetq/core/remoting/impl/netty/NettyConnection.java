@@ -92,36 +92,31 @@ public class NettyConnection implements Connection
 
    // Connection implementation ----------------------------
 
-   public synchronized void close()
+   public void close()
    {
       if (closed)
       {
          return;
       }
 
-      SslHandler sslHandler = (SslHandler)channel.pipeline().get("ssl");
-      if (sslHandler != null)
+      final SslHandler sslHandler = (SslHandler)channel.pipeline().get("ssl");
+      EventLoop eventLoop = channel.eventLoop();
+      boolean inEventLoop = eventLoop.inEventLoop();
+      //if we are in an event loop we need to close the channel after the writes have finished
+      if(!inEventLoop)
       {
-         try
-         {
-            ChannelFuture sslCloseFuture = sslHandler.close();
-
-            if (!sslCloseFuture.awaitUninterruptibly(10000))
-            {
-               HornetQClientLogger.LOGGER.timeoutClosingSSL();
-            }
-         }
-         catch (Throwable t)
-         {
-            // ignore
-         }
+         closeSSLAndChannel(sslHandler, channel);
       }
-
-      ChannelFuture closeFuture = channel.close();
-
-      if (!closeFuture.awaitUninterruptibly(10000))
+      else
       {
-         HornetQClientLogger.LOGGER.timeoutClosingNettyChannel();
+         eventLoop.execute(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               closeSSLAndChannel(sslHandler, channel);
+            }
+         });
       }
 
       closed = true;
@@ -353,6 +348,32 @@ public class NettyConnection implements Connection
 
    // Private -------------------------------------------------------
 
+
+   private void closeSSLAndChannel(SslHandler sslHandler, Channel channel)
+   {
+      if (sslHandler != null)
+      {
+         try
+         {
+            ChannelFuture sslCloseFuture = sslHandler.close();
+
+            if (!sslCloseFuture.awaitUninterruptibly(10000))
+            {
+               HornetQClientLogger.LOGGER.timeoutClosingSSL();
+            }
+         }
+         catch (Throwable t)
+         {
+            // ignore
+         }
+      }
+
+      ChannelFuture closeFuture = channel.close();
+      if (!closeFuture.awaitUninterruptibly(10000))
+      {
+         HornetQClientLogger.LOGGER.timeoutClosingNettyChannel();
+      }
+   }
    // Inner classes -------------------------------------------------
 
 }
