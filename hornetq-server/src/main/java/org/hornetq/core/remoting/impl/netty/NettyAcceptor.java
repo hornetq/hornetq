@@ -15,6 +15,8 @@ package org.hornetq.core.remoting.impl.netty;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -65,6 +67,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
@@ -81,6 +84,7 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -346,7 +350,7 @@ public class NettyAcceptor implements Acceptor
             threadsToUse = this.nioRemotingThreads;
          }
          channelClazz = NioServerSocketChannel.class;
-         eventLoopGroup = new NioEventLoopGroup(threadsToUse);
+         eventLoopGroup = new NioEventLoopGroup(threadsToUse, new HornetQThreadFactory("hornetq-netty-threads", true, getThisClassLoader()));
          //channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor, threadsToUse);
       }
 
@@ -549,7 +553,7 @@ public class NettyAcceptor implements Acceptor
          }
       }
 
-      eventLoopGroup.shutdownGracefully().awaitUninterruptibly();
+      eventLoopGroup.shutdown();
       eventLoopGroup = null;
 
       channelClazz = null;
@@ -762,5 +766,17 @@ public class NettyAcceptor implements Acceptor
       {
          cancelled = true;
       }
+   }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return ClientSessionFactoryImpl.class.getClassLoader();
+         }
+      });
+
    }
 }
