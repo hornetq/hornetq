@@ -33,7 +33,7 @@
     </prerequisites>
 
    <properties>
-      <netty.version>4.0.10.Final</netty.version>
+      <netty.version>4.0.12.Final-SNAPSHOT</netty.version>
 
       <hornetq.version.versionName>Andromedian Fly</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
@@ -437,6 +437,15 @@
          <id>jboss.release</id>
          <name>JBoss releases</name>
          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+      </repository>
+      <repository>
+          <snapshots>
+              <enabled>true</enabled>
+              <updatePolicy>always</updatePolicy>
+          </snapshots>
+           <id>sonatype-snapshots</id>
+           <name>sonatype-snapshots</name>
+           <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
       </repository>
    </repositories>
    <pluginRepositories>
