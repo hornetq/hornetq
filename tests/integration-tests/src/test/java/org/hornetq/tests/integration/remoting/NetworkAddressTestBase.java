@@ -219,16 +219,18 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       Configuration config = createDefaultConfig(true);
       config.setAcceptorConfigurations(transportConfigs);
       HornetQServer messagingService = createServer(false, config);
-      messagingService.start();
-
-      params = new HashMap<String, Object>();
-      params.put(getHostPropertyKey(), connectorHost);
-      if(localPort != 0)
+      try
       {
-         params.put(getLocalPortProperty(), localPort);
-      }
-      TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
-      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(connectorConfig));
+         messagingService.start();
+
+         params = new HashMap<String, Object>();
+         params.put(getHostPropertyKey(), connectorHost);
+         if(localPort != 0)
+         {
+            params.put(getLocalPortProperty(), localPort);
+         }
+         TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
+         ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(connectorConfig));
 
          if (mustConnect)
          {
@@ -254,7 +256,12 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
             {
             }
          }
-         }
+      }
+      finally
+      {
+         messagingService.stop();
+      }
+   }
 
    // Package protected ---------------------------------------------
 
