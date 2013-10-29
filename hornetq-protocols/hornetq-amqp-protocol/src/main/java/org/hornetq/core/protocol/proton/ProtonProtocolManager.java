@@ -112,7 +112,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    {
       ProtonRemotingConnection protonRemotingConnection = (ProtonRemotingConnection) connection;
       protonRemotingConnection.setDataReceived();
-      byte[] frame = new byte[buffer.capacity()];
+      byte[] frame = new byte[buffer.readableBytes()];
       buffer.readBytes(frame);
 
       protonRemotingConnection.handleFrame(frame);

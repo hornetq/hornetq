@@ -331,9 +331,9 @@ public class ProtonRemotingConnection implements RemotingConnection
 
          initialised = true;
 
-         if (buffer.capacity() > VERSION_HEADER.length)
+         if (buffer.readableBytes() > 0)
          {
-            protonProtocolManager.handleBuffer(this, buffer.copy(VERSION_HEADER.length, buffer.capacity() - VERSION_HEADER.length));
+            protonProtocolManager.handleBuffer(this, buffer.copy(buffer.readerIndex(), buffer.readableBytes()));
          }
 
          if (sasl != null)
