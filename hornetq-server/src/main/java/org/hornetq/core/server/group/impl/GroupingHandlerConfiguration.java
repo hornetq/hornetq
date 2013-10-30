@@ -55,6 +55,16 @@ public final class GroupingHandlerConfiguration implements Serializable
    public GroupingHandlerConfiguration(final SimpleString name,
                                        final TYPE type,
                                        final SimpleString address,
+                                       final int timeout)
+   {
+      this(name, type, address, timeout,
+            GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT,
+            GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD);
+   }
+
+   public GroupingHandlerConfiguration(final SimpleString name,
+                                       final TYPE type,
+                                       final SimpleString address,
                                        final int timeout,
                                        final long groupTimeout,
                                        final long reaperPeriod)
