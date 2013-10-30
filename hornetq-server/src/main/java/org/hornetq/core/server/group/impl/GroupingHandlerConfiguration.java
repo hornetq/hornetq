@@ -31,6 +31,10 @@ public final class GroupingHandlerConfiguration implements Serializable
 
    public static final long DEFAULT_REAPER_PERIOD = 30000;
 
+   public static final String GROUP_TIMEOUT_PROP_NAME = "org.hornetq.GroupingHandlerConfiguration.groupTimeout";
+
+   public static final String REAPER_PERIOD_PROP_NAME = "org.hornetq.GroupingHandlerConfiguration.reaperPeriod";
+
    private final SimpleString name;
 
    private final TYPE type;
@@ -73,8 +77,23 @@ public final class GroupingHandlerConfiguration implements Serializable
       this.name = name;
       this.address = address;
       this.timeout = timeout;
-      this.groupTimeout = groupTimeout;
-      this.reaperPeriod = reaperPeriod;
+      if (System.getProperty(GROUP_TIMEOUT_PROP_NAME) != null)
+      {
+         this.groupTimeout = Long.parseLong(System.getProperty(GROUP_TIMEOUT_PROP_NAME));
+      }
+      else
+      {
+         this.groupTimeout = groupTimeout;
+      }
+
+      if (System.getProperty(REAPER_PERIOD_PROP_NAME) != null)
+      {
+         this.reaperPeriod = Long.parseLong(System.getProperty(REAPER_PERIOD_PROP_NAME));
+      }
+      else
+      {
+         this.reaperPeriod = reaperPeriod;
+      }
    }
 
    public SimpleString getName()
