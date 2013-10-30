@@ -362,7 +362,7 @@
       </dependencySet>
       <dependencySet>
          <includes>
-            <include>io.netty:netty</include>
+            <include>io.netty:netty-all</include>
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
