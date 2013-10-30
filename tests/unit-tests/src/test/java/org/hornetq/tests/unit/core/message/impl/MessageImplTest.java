@@ -16,7 +16,6 @@ package org.hornetq.tests.unit.core.message.impl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -37,7 +36,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class MessageImplTest extends UnitTestCase
 {
-   @Test
    public void getSetAttributes()
    {
       for (int j = 0; j < 10; j++)
@@ -229,7 +227,6 @@ public class MessageImplTest extends UnitTestCase
       }
    }
 
-   @Test
    public void testMessageCopyIssue() throws Exception
    {
       for (long i = 0 ; i < 300; i++)
