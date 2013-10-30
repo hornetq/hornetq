@@ -145,6 +145,10 @@ public class StompFrame
 
          size = buffer.writerIndex();
       }
+      else
+      {
+         buffer.readerIndex(0);
+      }
       return buffer;
    }
 
