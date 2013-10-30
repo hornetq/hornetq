@@ -47,30 +47,28 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
    public void testOrdinaryFragmentation() throws Exception
    {
       final EmbeddedChannel decoder = new EmbeddedChannel(new HornetQFrameDecoder2());
+      final byte[] data = new byte[HornetQFrameDecoder2Test.MSG_LEN];
+      HornetQFrameDecoder2Test.rand.nextBytes(data);
 
       ByteBuf src = Unpooled.buffer(HornetQFrameDecoder2Test.MSG_CNT * (HornetQFrameDecoder2Test.MSG_LEN + 4));
       while (src.writerIndex() < src.capacity())
       {
          src.writeInt(HornetQFrameDecoder2Test.MSG_LEN);
-         byte[] data = new byte[HornetQFrameDecoder2Test.MSG_LEN];
-         HornetQFrameDecoder2Test.rand.nextBytes(data);
          src.writeBytes(data);
       }
 
       List<ByteBuf> packets = new ArrayList<ByteBuf>();
-      for (int i = 0; i < src.capacity();)
+      while (src.isReadable())
       {
          int length = Math.min(HornetQFrameDecoder2Test.rand.nextInt(HornetQFrameDecoder2Test.FRAGMENT_MAX_LEN),
-                               src.capacity() - i);
-         packets.add(src.copy(i, length));
-         i += length;
+                               src.readableBytes());
+         packets.add(src.readBytes(length));
       }
 
       int cnt = 0;
-      for (int i = 0; i < packets.size(); i++)
+      for (ByteBuf p: packets)
       {
-         ByteBuf p = packets.get(i);
-         decoder.writeInbound(p.duplicate());
+         decoder.writeInbound(p);
          for (;;)
          {
             ByteBuf frame = (ByteBuf) decoder.readInbound();
@@ -80,8 +78,7 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
             }
             Assert.assertEquals(4, frame.readerIndex());
             Assert.assertEquals(HornetQFrameDecoder2Test.MSG_LEN, frame.readableBytes());
-            Assert.assertEquals(src.slice(cnt * (HornetQFrameDecoder2Test.MSG_LEN + 4) + 4,
-                                          HornetQFrameDecoder2Test.MSG_LEN), frame);
+            Assert.assertEquals(Unpooled.wrappedBuffer(data), frame);
             cnt++;
             frame.release();
          }
