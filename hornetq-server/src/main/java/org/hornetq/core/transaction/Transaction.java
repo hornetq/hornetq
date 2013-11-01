@@ -62,8 +62,6 @@ public interface Transaction
 
    boolean hasTimedOut(long currentTime, int defaultTimeout);
 
-   void setWaitBeforeCommit(boolean waitBeforeCommit);
-
    void putProperty(int index, Object property);
 
    Object getProperty(int index);

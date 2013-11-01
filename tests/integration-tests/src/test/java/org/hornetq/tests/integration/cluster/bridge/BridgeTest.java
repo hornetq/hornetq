@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
+import org.hornetq.utils.ReusableLatch;
+import org.junit.Before;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,6 +79,16 @@ public class BridgeTest extends ServiceTestBase
    {
       return false;
    }
+
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      StopInterceptor.reset();
+      super.setUp();
+   }
+
 
    private String getConnector()
    {
@@ -1316,7 +1328,6 @@ public class BridgeTest extends ServiceTestBase
       final int PAGE_MAX = 100 * 1024;
 
       final int PAGE_SIZE = 10 * 1024;
-      ServerLocator locator = null;
       try
       {
 
@@ -1325,7 +1336,7 @@ public class BridgeTest extends ServiceTestBase
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
          addTargetParameters(server1Params);
-         server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, true, PAGE_SIZE, PAGE_MAX, server1Params);
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
@@ -1340,6 +1351,8 @@ public class BridgeTest extends ServiceTestBase
 
          server0.getConfiguration().setConnectorConfigurations(connectors);
 
+         server0.getConfiguration().setIDCacheSize(20000);
+
          ArrayList<String> staticConnectors = new ArrayList<String>();
          staticConnectors.add(server1tc.getName());
 
@@ -1351,17 +1364,21 @@ public class BridgeTest extends ServiceTestBase
             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
             HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
             HornetQClient.DEFAULT_CONNECTION_TTL,
-            1000,
+            1,
             HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
             1d,
             -1,
             -1,
             false,
-            0,
+            1,
             staticConnectors,
             false,
             HornetQDefaultConfiguration.getDefaultClusterUser(),
             HornetQDefaultConfiguration.getDefaultClusterPassword());
+
+         bridgeConfiguration.setCallTimeout(1000);
+
+         bridgeConfiguration.setUseDuplicateDetection(true);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
          bridgeConfigs.add(bridgeConfiguration);
@@ -1377,6 +1394,12 @@ public class BridgeTest extends ServiceTestBase
          queueConfigs1.add(queueConfig1);
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
+         List<String> interceptorToStop = new ArrayList<String>();
+         interceptorToStop.add(StopInterceptor.class.getName());
+         server1.getConfiguration().setIncomingInterceptorClassNames(interceptorToStop);
+
+         StopInterceptor.serverToStop = server0;
+
          server1.start();
          server0.start();
 
@@ -1385,7 +1408,7 @@ public class BridgeTest extends ServiceTestBase
 
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
-         ClientSession session0 = sf0.createSession(false, true, true);
+         ClientSession session0 = sf0.createSession(false, false, true);
 
          ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -1395,31 +1418,92 @@ public class BridgeTest extends ServiceTestBase
 
          session1.start();
 
-         final int numMessages = 500;
+         final int numMessages = 6000;
 
          final SimpleString propKey = new SimpleString("testkey");
 
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session0.createMessage(true);
+            message.getBodyBuffer().writeBytes(new byte[512]);
 
             message.putIntProperty(propKey, i);
 
             producer0.send(message);
          }
 
+         session0.commit();
+
+         assertTrue(StopInterceptor.latch.await(1, TimeUnit.HOURS));
+
+         StopInterceptor.thread.join(15000);
+
+         if (StopInterceptor.thread.isAlive())
+         {
+            System.out.println(threadDump("Still alive, stop didn't work!!!"));
+            fail("Thread that should restart the server still alive");
+         }
+
+
+         // Restarting the server
+         server0.start();
+
+         HashMap<Integer, AtomicInteger> receivedMsg = new HashMap<Integer, AtomicInteger>();
+
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = consumer1.receive(5000);
 
-            Assert.assertNotNull(message);
+            if (message == null)
+            {
+               break;
+            }
 
-            Assert.assertEquals(i, message.getObjectProperty(propKey));
+            Integer msgKey = message.getIntProperty(propKey);
 
-            message.acknowledge();
+            AtomicInteger msgCount = receivedMsg.get(msgKey);
+
+            if (msgKey.intValue() != i)
+            {
+               System.err.println("Message " + msgCount + " received out of order, expected to be " + i + " it's acceptable but not the ideal!");
+            }
+
+            if (msgCount == null)
+            {
+               msgCount = new AtomicInteger();
+               receivedMsg.put(msgKey, msgCount);
+            }
+
+            msgCount.incrementAndGet();
+
+            if (i % 500 == 0) System.out.println("received " + i);
          }
 
-         Assert.assertNull(consumer1.receiveImmediate());
+         boolean failed = false;
+
+         if (consumer1.receiveImmediate() != null)
+         {
+            System.err.println("Unexpected message received");
+            failed = true;
+         }
+
+         for (int i = 0 ; i < numMessages; i++)
+         {
+            AtomicInteger msgCount = receivedMsg.get((Integer)i);
+            if (msgCount == null)
+            {
+               System.err.println("Msg " + i + " wasn't received");
+               failed = true;
+            }
+            else if (msgCount.get() > 1)
+            {
+               System.err.println("msg " + i + " was received " + msgCount.get() + " times");
+               failed = true;
+            }
+
+         }
+
+         assertFalse("Test failed", failed);
 
          session0.close();
 
@@ -1460,6 +1544,71 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
+
+   // Stops a server after 100 messages received
+   public static class StopInterceptor implements Interceptor
+   {
+      static HornetQServer serverToStop;
+
+      static Thread thread;
+
+      static final ReusableLatch latch = new ReusableLatch(0);
+
+
+      public static void reset()
+      {
+         latch.setCount(1);
+         serverToStop = null;
+         count = 0;
+         thread = null;
+      }
+
+      static int count = 0;
+      @Override
+      public synchronized boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      {
+
+         if (packet instanceof SessionSendMessage && count == 1000)
+         {
+            System.out.println("Going to kill the server");
+         }
+         if (packet instanceof SessionSendMessage && ++count == 5000)
+         {
+            try
+            {
+               System.out.println("Stopping server after " + count + " messages");
+
+               thread = new Thread("***Server Restarter***")
+               {
+
+                  public void run()
+                  {
+                     try
+                     {
+                        System.out.println("Stopping server");
+                        latch.countDown();
+                        serverToStop.stop(false);
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+               };
+
+               thread.start();
+
+               latch.await();
+               return true;
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+         return true;
+      }
+   }
 
    public void testBridgeWithLargeMessage() throws Exception
    {

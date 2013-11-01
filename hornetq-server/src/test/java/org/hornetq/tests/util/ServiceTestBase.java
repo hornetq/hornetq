@@ -651,18 +651,10 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                            final int maxAddressSize,
                                                            final Map<String, Object> params) throws Exception
    {
-      if (isNetty)
-      {
-         return createServer(realFiles, createDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
-                             pageSize,
-                             maxAddressSize,
-                             new HashMap<String, AddressSettings>());
-      }
-      else
-      {
-         return createServer(realFiles, createDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), -1, -1,
-                             new HashMap<String, AddressSettings>());
-      }
+      return createServer(realFiles, createDefaultConfig(index, params, (isNetty ? NETTY_ACCEPTOR_FACTORY : INVM_ACCEPTOR_FACTORY)),
+                          pageSize,
+                          maxAddressSize,
+                          new HashMap<String, AddressSettings>());
    }
 
    protected ServerLocator createFactory(final boolean isNetty) throws Exception

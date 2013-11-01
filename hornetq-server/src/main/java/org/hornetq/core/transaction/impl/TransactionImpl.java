@@ -49,10 +49,6 @@ public class TransactionImpl implements Transaction
 
    private final long id;
 
-   /**
-    * if the appendCommit has to be done only after the current operations are completed
-    */
-   private boolean waitBeforeCommit = false;
 
    private volatile State state = State.ACTIVE;
 
@@ -285,58 +281,10 @@ public class TransactionImpl implements Transaction
       if (containsPersistent || xid != null && state == State.PREPARED)
       {
 
-         if (waitBeforeCommit)
-         {
-            // we will wait all the pending operations to finish before we can add this
-            asyncAppendCommit();
-         }
-         else
-         {
-            storageManager.commit(id);
-         }
+         storageManager.commit(id);
 
          state = State.COMMITTED;
       }
-   }
-
-   /**
-    *
-    */
-   protected void asyncAppendCommit()
-   {
-      final OperationContext ctx = storageManager.getContext();
-      storageManager.afterCompleteOperations(new IOAsyncTask()
-      {
-         public void onError(int errorCode, String errorMessage)
-         {
-            HornetQServerLogger.LOGGER.error("Error=" + errorCode + ", message=" + errorMessage);
-         }
-
-         public void done()
-         {
-            OperationContext originalCtx = storageManager.getContext();
-            try
-            {
-               storageManager.setContext(ctx);
-               storageManager.commit(id, false);
-            }
-            catch (Exception e)
-            {
-               onError(HornetQExceptionType.IO_ERROR.getCode(), e.getMessage());
-            }
-            finally
-            {
-               storageManager.setContext(originalCtx);
-            }
-         }
-
-         @Override
-         public String toString()
-         {
-            return IOAsyncTask.class.getName() + "(" + TransactionImpl.class.getName() + "-AsyncAppendCommit)";
-         }
-      });
-      storageManager.lineUpContext();
    }
 
    public void rollback() throws Exception
@@ -408,11 +356,6 @@ public class TransactionImpl implements Transaction
    public void setState(final State state)
    {
       this.state = state;
-   }
-
-   public void setWaitBeforeCommit(boolean waitBeforeCommit)
-   {
-      this.waitBeforeCommit = waitBeforeCommit;
    }
 
    public Xid getXid()
