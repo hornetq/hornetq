@@ -895,21 +895,22 @@ public class PagingStoreImpl implements PagingStore
                currentPageSize.addAndGet(bytesToWrite);
             }
 
+            if (tx != null)
+            {
+               installPageTransaction(tx, listCtx);
+            }
+
             currentPage.write(pagedMessage);
+
+            if (tx == null && syncNonTransactional)
+            {
+               sync();
+            }
 
             if (isTrace)
             {
                HornetQServerLogger.LOGGER.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() +
                   " pageId=" + currentPage.getPageId());
-            }
-
-            if (tx != null)
-            {
-               installPageTransaction(tx, listCtx);
-            }
-            else if (syncNonTransactional)
-            {
-               sync();
             }
 
             return true;
