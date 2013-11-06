@@ -836,7 +836,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                CreateSessionResponseMessage response;
                try
                {
-                  response = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
+                  response = sendCreateSessionMessage(channel1, request);
                }
                catch (HornetQException e)
                {
@@ -945,6 +945,28 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       // Should never get here
       throw HornetQClientMessageBundle.BUNDLE.clietSessionInternal();
+   }
+
+   private CreateSessionResponseMessage sendCreateSessionMessage(final Channel channel1, Packet request) throws HornetQException {
+      CreateSessionResponseMessage response = null;
+
+      try
+      {
+         response = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
+      }
+      catch (HornetQException e)
+      {
+         if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+         {
+            if (((CreateSessionMessage) request).getVersion() == 123)
+            {
+               ((CreateSessionMessage) request).setVersion(122);
+               response = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
+            }
+         }
+      }
+      
+      return response;
    }
 
    private void callSessionFailureListeners(final HornetQException me, final boolean afterReconnect,

@@ -109,6 +109,11 @@ public class CreateSessionMessage extends PacketImpl
       return version;
    }
 
+   public void setVersion(int version)
+   {
+      this.version = version;
+   }
+
    public String getUsername()
    {
       return username;
