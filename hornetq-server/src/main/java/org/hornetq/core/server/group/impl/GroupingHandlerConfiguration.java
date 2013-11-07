@@ -27,7 +27,7 @@ public final class GroupingHandlerConfiguration implements Serializable
 
    public static final int DEFAULT_TIMEOUT = 5000;
 
-   public static final int DEFAULT_GROUP_TIMEOUT = -1;
+   public static final long DEFAULT_GROUP_TIMEOUT = -1;
 
    public static final long DEFAULT_REAPER_PERIOD = 30000;
 
