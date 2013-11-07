@@ -908,6 +908,12 @@ public class PagingStoreImpl implements TestSupportPageStore
             currentPageSize.addAndGet(bytesToWrite);
          }
 
+         if (tx != null)
+         {
+            installPageTransaction(tx, listCtx);
+            tx.setWaitBeforeCommit(true);
+         }
+
          currentPage.write(pagedMessage);
 
          if (isTrace)
@@ -916,13 +922,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                       " pageId=" + currentPage.getPageId());
          }
 
-
-         if (tx != null)
-         {
-            installPageTransaction(tx, listCtx);
-            tx.setWaitBeforeCommit(true);
-         }
-         else
          if (sync && tx == null)
          {
             sync();
