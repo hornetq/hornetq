@@ -15,9 +15,8 @@ package org.hornetq.api.core;
 
 import java.nio.ByteBuffer;
 
+import io.netty.buffer.Unpooled;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 
 /**
  * Factory class to create instances of {@link HornetQBuffer}.
@@ -33,7 +32,7 @@ public final class HornetQBuffers
     */
    public static HornetQBuffer dynamicBuffer(final int size)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(size));
+      return new ChannelBufferWrapper(Unpooled.buffer(size));
    }
 
    /**
@@ -44,11 +43,11 @@ public final class HornetQBuffers
     */
    public static HornetQBuffer dynamicBuffer(final byte[] bytes)
    {
-      ChannelBuffer buff = ChannelBuffers.dynamicBuffer(bytes.length);
+      HornetQBuffer buff = dynamicBuffer(bytes.length);
 
       buff.writeBytes(bytes);
 
-      return new ChannelBufferWrapper(buff);
+      return buff;
    }
 
    /**
@@ -61,7 +60,7 @@ public final class HornetQBuffers
     */
    public static HornetQBuffer wrappedBuffer(final ByteBuffer underlying)
    {
-      HornetQBuffer buff = new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
+      HornetQBuffer buff = new ChannelBufferWrapper(Unpooled.wrappedBuffer(underlying));
 
       buff.clear();
 
@@ -76,7 +75,7 @@ public final class HornetQBuffers
     */
    public static HornetQBuffer wrappedBuffer(final byte[] underlying)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.wrappedBuffer(underlying));
+      return new ChannelBufferWrapper(Unpooled.wrappedBuffer(underlying));
    }
 
    /**
@@ -87,7 +86,7 @@ public final class HornetQBuffers
     */
    public static HornetQBuffer fixedBuffer(final int size)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.buffer(size));
+      return new ChannelBufferWrapper(Unpooled.buffer(size, size));
    }
 
    private HornetQBuffers()

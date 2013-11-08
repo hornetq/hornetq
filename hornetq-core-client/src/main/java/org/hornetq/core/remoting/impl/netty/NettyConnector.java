@@ -21,8 +21,8 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,11 +35,43 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.ClientCookieEncoder;
+import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpResponseDecoder;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
@@ -50,48 +82,14 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.FutureLatch;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.UpstreamMessageEvent;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientBossPool;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioWorkerPool;
-import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.Cookie;
-import org.jboss.netty.handler.codec.http.CookieDecoder;
-import org.jboss.netty.handler.codec.http.CookieEncoder;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.util.Version;
-import org.jboss.netty.util.VirtualExecutorService;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * A NettyConnector
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
+ * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  */
 public class NettyConnector extends AbstractConnector
 {
@@ -105,11 +103,17 @@ public class NettyConnector extends AbstractConnector
    public static final String HORNETQ_TRUSTSTORE_PATH_PROP_NAME = "org.hornetq.ssl.trustStore";
    public static final String HORNETQ_TRUSTSTORE_PASSWORD_PROP_NAME = "org.hornetq.ssl.trustStorePassword";
 
+   static
+   {
+      // Disable resource leak detection for performance reasons by default
+      ResourceLeakDetector.setEnabled(false);
+   }
+
    // Attributes ----------------------------------------------------
 
-   private ClientSocketChannelFactory channelFactory;
+   private Class<? extends Channel> channelClazz;
 
-   private ClientBootstrap bootstrap;
+   private Bootstrap bootstrap;
 
    private ChannelGroup channelGroup;
 
@@ -126,8 +130,6 @@ public class NettyConnector extends AbstractConnector
    private final long httpClientIdleScanPeriod;
 
    private final boolean httpRequiresSessionId;
-
-   private final boolean useNio;
 
    private final boolean useServlet;
 
@@ -163,8 +165,6 @@ public class NettyConnector extends AbstractConnector
 
    private final boolean useNioGlobalWorkerPool;
 
-   private final VirtualExecutorService virtualExecutor;
-
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Executor closeExecutor;
@@ -173,15 +173,12 @@ public class NettyConnector extends AbstractConnector
 
    private ScheduledFuture<?> batchFlusherFuture;
 
-   private static NioWorkerPool nioWorkerPool;
-
-   private static NioClientBossPool nioBossPool;
+   private static EventLoopGroup nioEventLoopGroup;
+   private EventLoopGroup group;
 
    private static final Object nioWorkerPoolGuard = new Object();
 
    private static final AtomicInteger nioChannelFactoryCount = new AtomicInteger(0);
-
-   private final Executor threadPool;
 
    private int connectTimeoutMillis;
 
@@ -240,10 +237,6 @@ public class NettyConnector extends AbstractConnector
          httpClientIdleScanPeriod = -1;
          httpRequiresSessionId = false;
       }
-
-      useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
-         TransportConstants.DEFAULT_USE_NIO_CLIENT,
-         configuration);
 
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
          -1,
@@ -315,11 +308,6 @@ public class NettyConnector extends AbstractConnector
          TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
          configuration);
       this.closeExecutor = closeExecutor;
-
-      this.threadPool = threadPool;
-
-      virtualExecutor = new VirtualExecutorService(threadPool);
-
       this.scheduledThreadPool = scheduledThreadPool;
    }
 
@@ -338,85 +326,77 @@ public class NettyConnector extends AbstractConnector
          ", sslEnabled=" +
          sslEnabled +
          ", useNio=" +
-         useNio +
+         true +
          "]";
    }
 
    public synchronized void start()
    {
-      if (channelFactory != null)
+      if (channelClazz != null)
       {
          return;
       }
 
-      if (useNio)
+      int threadsToUse;
+
+      if (nioRemotingThreads == -1)
       {
-         int threadsToUse;
+         // Default to number of cores * 3
 
-         if (nioRemotingThreads == -1)
-         {
-            // Default to number of cores * 3
-
-            threadsToUse = Runtime.getRuntime().availableProcessors() * 3;
-         }
-         else
-         {
-            threadsToUse = this.nioRemotingThreads;
-         }
-
-         if(useNioGlobalWorkerPool)
-         {
-            synchronized (nioWorkerPoolGuard)
-            {
-               if (nioWorkerPool == null)
-               {
-                  nioWorkerPool = new NioWorkerPool(threadPool, threadsToUse, null);
-               }
-               if(nioBossPool == null)
-               {
-                  //only used for connect so 1 will do
-                  nioBossPool = new NioClientBossPool(virtualExecutor, 1);
-               }
-               channelFactory = new NioClientSocketChannelFactory(nioBossPool, nioWorkerPool);
-               nioChannelFactoryCount.incrementAndGet();
-            }
-         }
-         else
-         {
-            channelFactory = new NioClientSocketChannelFactory(virtualExecutor, virtualExecutor, threadsToUse);
-         }
-
+         threadsToUse = Runtime.getRuntime().availableProcessors() * 3;
       }
       else
       {
-         channelFactory = new OioClientSocketChannelFactory(virtualExecutor);
+         threadsToUse = this.nioRemotingThreads;
+      }
+
+
+      if(useNioGlobalWorkerPool)
+      {
+         synchronized (nioWorkerPoolGuard)
+         {
+            if (nioEventLoopGroup == null)
+            {
+               nioEventLoopGroup = new NioEventLoopGroup(threadsToUse, new HornetQThreadFactory("HornetQ-client-netty-threads", true, getThisClassLoader()));
+            }
+
+            channelClazz = NioSocketChannel.class;
+            group = nioEventLoopGroup;
+            nioChannelFactoryCount.incrementAndGet();
+         }
+      }
+      else
+      {
+         channelClazz = NioSocketChannel.class;
+         group = new NioEventLoopGroup(threadsToUse);
       }
       // if we are a servlet wrap the socketChannelFactory
       if (useServlet)
       {
-         ClientSocketChannelFactory proxyChannelFactory = channelFactory;
-         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory);
+         // TODO: This will be replaced by allow upgrade HTTP connection from Undertow.;
       }
-      bootstrap = new ClientBootstrap(channelFactory);
+      bootstrap = new Bootstrap();
+      bootstrap.channel(channelClazz);
+      bootstrap.group(group);
 
-      bootstrap.setOption("tcpNoDelay", tcpNoDelay);
+      bootstrap.option(ChannelOption.TCP_NODELAY, tcpNoDelay);
 
       if (connectTimeoutMillis != -1)
       {
-         bootstrap.setOption("connectTimeoutMillis", connectTimeoutMillis);
+         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis);
       }
       if (tcpReceiveBufferSize != -1)
       {
-         bootstrap.setOption("receiveBufferSize", tcpReceiveBufferSize);
+         bootstrap.option(ChannelOption.SO_RCVBUF, tcpReceiveBufferSize);
       }
       if (tcpSendBufferSize != -1)
       {
-         bootstrap.setOption("sendBufferSize", tcpSendBufferSize);
+         bootstrap.option(ChannelOption.SO_SNDBUF, tcpSendBufferSize);
       }
-      bootstrap.setOption("keepAlive", true);
-      bootstrap.setOption("reuseAddress", true);
-
-      channelGroup = new DefaultChannelGroup("hornetq-connector");
+      bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+      bootstrap.option(ChannelOption.SO_REUSEADDR, true);
+      bootstrap.option(ChannelOption.ALLOCATOR, new UnpooledByteBufAllocator(false));
+      channelGroup = new DefaultChannelGroup("hornetq-connector", GlobalEventExecutor.INSTANCE);
 
       final SSLContext context;
       if (sslEnabled)
@@ -480,47 +460,41 @@ public class NettyConnector extends AbstractConnector
 
       if (context != null && useServlet)
       {
-         bootstrap.setOption("sslContext", context);
+         // TODO: Fix me
+         //bootstrap.setOption("sslContext", context);
       }
 
-      bootstrap.setPipelineFactory(new ChannelPipelineFactory()
+      bootstrap.handler(new ChannelInitializer<Channel>()
       {
-         public ChannelPipeline getPipeline() throws Exception
-         {
-            List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
+          public void initChannel(Channel channel) throws Exception
+          {
+              ChannelPipeline pipeline = channel.pipeline();
+              if (sslEnabled && !useServlet) {
+                  SSLEngine engine = context.createSSLEngine();
 
-            if (sslEnabled && !useServlet)
-            {
-               SSLEngine engine = context.createSSLEngine();
+                  engine.setUseClientMode(true);
 
-               engine.setUseClientMode(true);
+                  engine.setWantClientAuth(true);
 
-               engine.setWantClientAuth(true);
+                  SslHandler handler = new SslHandler(engine);
 
-               SslHandler handler = new SslHandler(engine);
+                  pipeline.addLast(handler);
+              }
 
-               handlers.add(handler);
-            }
+              if (httpEnabled) {
+                  pipeline.addLast(new HttpRequestEncoder());
 
-            if (httpEnabled)
-            {
-               handlers.add(new HttpRequestEncoder());
+                  pipeline.addLast(new HttpResponseDecoder());
 
-               handlers.add(new HttpResponseDecoder());
+                  pipeline.addLast(new HttpObjectAggregator(Integer.MAX_VALUE));
 
-               handlers.add(new HttpChunkAggregator(Integer.MAX_VALUE));
+                  pipeline.addLast(new HttpHandler());
+              }
 
-               handlers.add(new HttpHandler());
-            }
+              pipeline.addLast(new HornetQFrameDecoder2());
 
-            handlers.add(new HornetQFrameDecoder2());
-
-            handlers.add(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
-
-            ChannelPipeline pipeline = Channels.pipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
-
-            return pipeline;
-         }
+              pipeline.addLast(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
+          }
       });
 
       if (batchDelay > 0)
@@ -530,12 +504,12 @@ public class NettyConnector extends AbstractConnector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-       HornetQClientLogger.LOGGER.debug("Started Netty Connector version " + Version.ID);
+       HornetQClientLogger.LOGGER.debug("Started Netty Connector version "); // + Version.ID);
    }
 
    public synchronized void close()
    {
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return;
       }
@@ -566,9 +540,9 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
-         channelFactory.releaseExternalResources();
+         group.shutdown();
       }
-      channelFactory = null;
+      channelClazz = null;
 
       for (Connection connection : connections.values())
       {
@@ -580,12 +554,12 @@ public class NettyConnector extends AbstractConnector
 
    public boolean isStarted()
    {
-      return channelFactory != null;
+      return channelClazz != null;
    }
 
    public Connection createConnection()
    {
-      if (channelFactory == null)
+      if (channelClazz == null)
       {
          return null;
       }
@@ -595,9 +569,10 @@ public class NettyConnector extends AbstractConnector
       {
          try
          {
+            // TODO: Fix me
             URI uri = new URI("http", null, host, port, servletPath, null, null);
-            bootstrap.setOption("serverName", uri.getHost());
-            bootstrap.setOption("serverPath", uri.getRawPath());
+            //bootstrap.setOption("serverName", uri.getHost());
+            //bootstrap.setOption("serverPath", uri.getRawPath());
          }
          catch (URISyntaxException e)
          {
@@ -647,29 +622,29 @@ public class NettyConnector extends AbstractConnector
 
       future.awaitUninterruptibly();
 
-      if (future.isSuccess())
+       if (future.isSuccess())
       {
-         final Channel ch = future.getChannel();
-         SslHandler sslHandler = ch.getPipeline().get(SslHandler.class);
+         final Channel ch = future.channel();
+         SslHandler sslHandler = ch.pipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
-            ChannelFuture handshakeFuture = sslHandler.handshake();
+            Future<Channel> handshakeFuture = sslHandler.handshakeFuture();
             if (handshakeFuture.awaitUninterruptibly(30000))
             {
                if (handshakeFuture.isSuccess())
                {
-                  ch.getPipeline().get(HornetQChannelHandler.class).active = true;
+                  ch.pipeline().get(HornetQChannelHandler.class).active = true;
                }
                else
                {
                   ch.close().awaitUninterruptibly();
-                  HornetQClientLogger.LOGGER.errorCreatingNettyConnection(handshakeFuture.getCause());
+                  HornetQClientLogger.LOGGER.errorCreatingNettyConnection(handshakeFuture.cause());
                   return null;
                }
             }
             else
             {
-               handshakeFuture.setFailure(new SSLException("Handshake was not completed in 30 seconds"));
+               //handshakeFuture.setFailure(new SSLException("Handshake was not completed in 30 seconds"));
                ch.close().awaitUninterruptibly();
                return null;
             }
@@ -677,23 +652,22 @@ public class NettyConnector extends AbstractConnector
          }
          else
          {
-            ch.getPipeline().get(HornetQChannelHandler.class).active = true;
+            ch.pipeline().get(HornetQChannelHandler.class).active = true;
          }
 
          // No acceptor on a client connection
          Listener connectionListener = new Listener();
          NettyConnection conn = new NettyConnection(configuration, ch, connectionListener, !httpEnabled && batchDelay > 0, false);
          connectionListener.connectionCreated(null, conn, HornetQClient.DEFAULT_CORE_PROTOCOL);
-
          return conn;
       }
       else
       {
-         Throwable t = future.getCause();
+         Throwable t = future.cause();
 
          if (t != null && !(t instanceof ConnectException))
          {
-            HornetQClientLogger.LOGGER.errorCreatingNettyConnection(future.getCause());
+            HornetQClientLogger.LOGGER.errorCreatingNettyConnection(future.cause());
          }
 
          return null;
@@ -720,7 +694,7 @@ public class NettyConnector extends AbstractConnector
       }
    }
 
-   class HttpHandler extends SimpleChannelHandler
+   class HttpHandler extends ChannelDuplexHandler
    {
       private Channel channel;
 
@@ -738,11 +712,7 @@ public class NettyConnector extends AbstractConnector
 
       private boolean handshaking = false;
 
-      private final CookieDecoder cookieDecoder = new CookieDecoder();
-
       private String cookie;
-
-      private final CookieEncoder cookieEncoder = new CookieEncoder(false);
 
       public HttpHandler() throws Exception
       {
@@ -750,10 +720,10 @@ public class NettyConnector extends AbstractConnector
       }
 
       @Override
-      public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+      public void channelActive(final ChannelHandlerContext ctx) throws Exception
       {
-         super.channelConnected(ctx, e);
-         channel = e.getChannel();
+         super.channelActive(ctx);
+         channel = ctx.channel();
          if (httpClientIdleScanPeriod > 0)
          {
             task = new HttpIdleTimer();
@@ -766,43 +736,41 @@ public class NettyConnector extends AbstractConnector
       }
 
       @Override
-      public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
+      public void channelInactive(final ChannelHandlerContext ctx) throws Exception
       {
          if (task != null)
          {
             task.close();
          }
 
-         super.channelClosed(ctx, e);
+         super.channelInactive(ctx);
       }
 
       @Override
-      public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+      public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
       {
-         HttpResponse response = (HttpResponse)e.getMessage();
+         FullHttpResponse response = (FullHttpResponse) msg;
          if (httpRequiresSessionId && !active)
          {
-            Set<Cookie> cookieMap = cookieDecoder.decode(response.getHeader(HttpHeaders.Names.SET_COOKIE));
+            Set<Cookie> cookieMap = CookieDecoder.decode(response.headers().get(HttpHeaders.Names.SET_COOKIE));
             for (Cookie cookie : cookieMap)
             {
                if (cookie.getName().equals("JSESSIONID"))
                {
-                  cookieEncoder.addCookie(cookie);
-                  this.cookie = cookieEncoder.encode();
+                  this.cookie = ClientCookieEncoder.encode(cookie);
                }
             }
             active = true;
             handShakeFuture.run();
          }
-         MessageEvent event = new UpstreamMessageEvent(e.getChannel(), response.getContent(), e.getRemoteAddress());
          waitingGet = false;
-         ctx.sendUpstream(event);
+         ctx.fireChannelRead(response.content());
       }
 
       @Override
-      public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
+      public void write(final ChannelHandlerContext ctx, final Object msg, ChannelPromise promise) throws Exception
       {
-         if (e.getMessage() instanceof ChannelBuffer)
+         if (msg instanceof ByteBuf)
          {
             if (httpRequiresSessionId && !active)
             {
@@ -819,21 +787,20 @@ public class NettyConnector extends AbstractConnector
                }
             }
 
-            HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, url);
-            httpRequest.addHeader(HttpHeaders.Names.HOST, NettyConnector.this.host);
+            ByteBuf buf = (ByteBuf) msg;
+            FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, url, buf);
+            httpRequest.headers().add(HttpHeaders.Names.HOST, NettyConnector.this.host);
             if (cookie != null)
             {
-               httpRequest.addHeader(HttpHeaders.Names.COOKIE, cookie);
+               httpRequest.headers().add(HttpHeaders.Names.COOKIE, cookie);
             }
-            ChannelBuffer buf = (ChannelBuffer)e.getMessage();
-            httpRequest.setContent(buf);
-            httpRequest.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
-            Channels.write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
+            httpRequest.headers().add(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.readableBytes()));
+            ctx.write(httpRequest, promise);
             lastSendTime = System.currentTimeMillis();
          }
          else
          {
-            Channels.write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
+            ctx.write(msg, promise);
             lastSendTime = System.currentTimeMillis();
          }
       }
@@ -853,10 +820,10 @@ public class NettyConnector extends AbstractConnector
 
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
-               HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
-               httpRequest.addHeader(HttpHeaders.Names.HOST, NettyConnector.this.host);
+               FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
+               httpRequest.headers().add(HttpHeaders.Names.HOST, NettyConnector.this.host);
                waitingGet = true;
-               channel.write(httpRequest);
+               channel.writeAndFlush(httpRequest);
             }
          }
 
@@ -979,15 +946,10 @@ public class NettyConnector extends AbstractConnector
 
    private void closePools()
    {
-      if (nioBossPool != null)
+      if (nioEventLoopGroup != null)
       {
-         nioBossPool.shutdown();
-         nioBossPool = null;
-      }
-      if (nioWorkerPool != null)
-      {
-         nioWorkerPool.shutdown();
-         nioWorkerPool = null;
+        nioEventLoopGroup.shutdown();
+        nioEventLoopGroup = null;
       }
    }
 
@@ -998,10 +960,23 @@ public class NettyConnector extends AbstractConnector
    }
 
    //for test purpose only
-   public ClientBootstrap getBootStrap()
+   public Bootstrap getBootStrap()
    {
       return bootstrap;
    }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return ClientSessionFactoryImpl.class.getClassLoader();
+         }
+      });
+
+   }
+
 
 }
 

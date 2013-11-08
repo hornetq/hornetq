@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.netty.buffer.ByteBuf;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
@@ -111,7 +112,7 @@ public final class Page implements Comparable<Page>
       size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
       ByteBuffer directBuffer = storage.allocateDirectBuffer((int)file.size());
-
+      HornetQBuffer fileBuffer = null;
       try
       {
 
@@ -120,7 +121,7 @@ public final class Page implements Comparable<Page>
 
          directBuffer.rewind();
 
-         HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(directBuffer);
+         fileBuffer = HornetQBuffers.wrappedBuffer(directBuffer);
          fileBuffer.writerIndex(fileBuffer.capacity());
 
          while (fileBuffer.readable())
@@ -171,6 +172,9 @@ public final class Page implements Comparable<Page>
       }
       finally
       {
+         if (fileBuffer != null) {
+             fileBuffer.byteBuf().unwrap().release();
+         }
          storage.freeDirectBuffer(directBuffer);
       }
 

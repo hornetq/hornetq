@@ -139,7 +139,7 @@ class CoreProtocolManager implements ProtocolManager
    }
 
    @Override
-   public void addChannelHandlers(String protocol, Map<String, org.jboss.netty.channel.ChannelHandler> handlers, BufferDecoder decoder)
+   public void addChannelHandlers(String protocol, Map<String, io.netty.channel.ChannelHandler> handlers, BufferDecoder decoder)
    {
       handlers.put("hornetq-decoder", new HornetQFrameDecoder2());
    }

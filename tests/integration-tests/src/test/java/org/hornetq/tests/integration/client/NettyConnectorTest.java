@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import io.netty.bootstrap.Bootstrap;
 import org.junit.Before;
 import org.junit.After;
 
@@ -25,7 +26,6 @@ import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.jboss.netty.bootstrap.ClientBootstrap;
 
 /**
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -58,9 +58,9 @@ public class NettyConnectorTest extends ServiceTestBase
       ClientSessionFactoryImpl factory = (ClientSessionFactoryImpl) locator.createSessionFactory();
       NettyConnector connector = (NettyConnector) factory.getConnector();
       
-      ClientBootstrap bootstrap = connector.getBootStrap();
+      Bootstrap bootstrap = connector.getBootStrap();
       
-      assertEquals(timeout, bootstrap.getOption("connectTimeoutMillis"));
+      assertEquals(timeout, bootstrap.register().channel().config().getConnectTimeoutMillis());
       
       factory.close();
       locator.close();

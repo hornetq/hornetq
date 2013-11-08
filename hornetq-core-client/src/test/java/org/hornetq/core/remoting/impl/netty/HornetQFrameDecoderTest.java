@@ -12,29 +12,29 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.CharsetUtil;
 import org.junit.Test;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.spi.core.remoting.BufferDecoder;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.handler.codec.embedder.DecoderEmbedder;
-import org.jboss.netty.util.CharsetUtil;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  *
  */
-public class HornetQFrameDecoderTest extends Assert{
+public class HornetQFrameDecoderTest {
 
    @Test
     public void testDecoding() {
-        final ChannelBuffer buffer = ChannelBuffers.copiedBuffer("TestBytes", CharsetUtil.US_ASCII);
+        final ByteBuf buffer = Unpooled.copiedBuffer("TestBytes", CharsetUtil.US_ASCII);
 
-        DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder(new BufferDecoder() {
+        EmbeddedChannel decoder = new EmbeddedChannel(new HornetQFrameDecoder(new BufferDecoder() {
 
             @Override
             public int isReadyToHandle(HornetQBuffer buffer) {
@@ -45,13 +45,13 @@ public class HornetQFrameDecoderTest extends Assert{
             }
         }));
 
-        assertFalse("Should not readable", decoder.offer(buffer.duplicate().slice(0, 2)));
-        assertTrue("Should be readable", decoder.offer(buffer.duplicate().slice(3, 2)));
+        assertFalse("Should not readable", decoder.writeInbound(buffer.duplicate().slice(0, 2).retain()));
+        assertTrue("Should be readable", decoder.writeInbound(buffer.duplicate().slice(3, 2).retain()));
 
         assertTrue("There must be something to poll", decoder.finish());
-        ChannelBuffer buf = decoder.poll();
+        ByteBuf buf = (ByteBuf) decoder.readInbound();
         assertEquals("Expected created ChannelBuffer which contains 2 bytes", 2, buf.readableBytes());
         assertEquals("Buffer content missmatch", buffer.slice(0,2), buf);
-        assertNull("Not expected buffer", decoder.poll());
+        assertNull("Not expected buffer", decoder.readInbound());
     }
 }

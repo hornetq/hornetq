@@ -1082,6 +1082,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
                forceGC();
                Thread.sleep(500);
                log.info("There are still threads running, trying again");
+                System.out.println(buffer);
             }
          }
 
@@ -1237,6 +1238,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       else if (javaVendor.contains("IBM") && threadName.equals("MemoryPoolMXBean notification dispatcher"))
       {
          return true;
+      }
+      else if (threadName.contains("globalEventExecutor"))
+      {
+          return true;
       }
       else
       {

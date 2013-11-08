@@ -13,10 +13,17 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
+import io.netty.handler.ssl.SslHandler;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQInterruptedException;
@@ -28,15 +35,11 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.handler.ssl.SslHandler;
-
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
  *
  */
 public class NettyConnection implements Connection
@@ -46,7 +49,7 @@ public class NettyConnection implements Connection
 
    // Attributes ----------------------------------------------------
 
-   private final Channel channel;
+   protected final Channel channel;
 
    private boolean closed;
 
@@ -89,36 +92,31 @@ public class NettyConnection implements Connection
 
    // Connection implementation ----------------------------
 
-   public synchronized void close()
+   public void close()
    {
       if (closed)
       {
          return;
       }
 
-      SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
-      if (sslHandler != null)
+      final SslHandler sslHandler = (SslHandler)channel.pipeline().get("ssl");
+      EventLoop eventLoop = channel.eventLoop();
+      boolean inEventLoop = eventLoop.inEventLoop();
+      //if we are in an event loop we need to close the channel after the writes have finished
+      if(!inEventLoop)
       {
-         try
-         {
-            ChannelFuture sslCloseFuture = sslHandler.close();
-
-            if (!sslCloseFuture.awaitUninterruptibly(10000))
-            {
-               HornetQClientLogger.LOGGER.timeoutClosingSSL();
-            }
-         }
-         catch (Throwable t)
-         {
-            // ignore
-         }
+         closeSSLAndChannel(sslHandler, channel);
       }
-
-      ChannelFuture closeFuture = channel.close();
-
-      if (!closeFuture.awaitUninterruptibly(10000))
+      else
       {
-         HornetQClientLogger.LOGGER.timeoutClosingNettyChannel();
+         eventLoop.execute(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               closeSSLAndChannel(sslHandler, channel);
+            }
+         });
       }
 
       closed = true;
@@ -128,12 +126,13 @@ public class NettyConnection implements Connection
 
    public HornetQBuffer createBuffer(final int size)
    {
-      return new ChannelBufferWrapper(ChannelBuffers.dynamicBuffer(size));
+      return new ChannelBufferWrapper(channel.alloc().buffer(size));
    }
 
    public Object getID()
    {
-      return channel.getId();
+      // TODO: Think of it
+      return channel.hashCode();
    }
 
    // This is called periodically to flush the batch buffer
@@ -150,9 +149,9 @@ public class NettyConnection implements Connection
          {
             if (batchBuffer != null && batchBuffer.readable())
             {
-               channel.write(batchBuffer.channelBuffer());
+               channel.writeAndFlush(batchBuffer.byteBuf());
 
-               batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+               batchBuffer = createBuffer(BATCHING_BUFFER_SIZE);
             }
          }
          finally
@@ -210,15 +209,51 @@ public class NettyConnection implements Connection
                }
             }
 
-            ChannelFuture future = channel.write(buffer.channelBuffer());
-
+            // depending on if we need to flush or not we can use a voidPromise or
+            // use a normal promise
+            final ByteBuf buf = buffer.byteBuf();
+            final ChannelPromise promise;
             if (flush)
+            {
+               promise = channel.newPromise();
+            }
+            else
+            {
+               promise = channel.voidPromise();
+            }
+
+            EventLoop eventLoop = channel.eventLoop();
+            boolean inEventLoop = eventLoop.inEventLoop();
+            if (!inEventLoop)
+            {
+               channel.writeAndFlush(buf, promise);
+            }
+            else
+            {
+                // create a task which will be picked up by the eventloop and trigger the write.
+                // This is mainly needed as this method is triggered by different threads for the same channel.
+                // if we not do this we may produce out of order writes.
+                final Runnable task = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        channel.writeAndFlush(buf, promise);
+                    }
+                };
+                // execute the task on the eventloop
+                eventLoop.execute(task);
+            }
+
+
+            // only try to wait if not in the eventloop otherwise we will produce a deadlock
+            if (flush && !inEventLoop)
             {
                while (true)
                {
                   try
                   {
-                     boolean ok = future.await(10000);
+                     boolean ok = promise.await(10000);
 
                      if (!ok)
                      {
@@ -247,7 +282,12 @@ public class NettyConnection implements Connection
 
    public String getRemoteAddress()
    {
-      return channel.getRemoteAddress().toString();
+      SocketAddress address =  channel.remoteAddress();
+      if (address == null)
+      {
+         return null;
+      }
+      return address.toString();
    }
 
    public boolean isDirectDeliver()
@@ -299,7 +339,7 @@ public class NettyConnection implements Connection
    @Override
    public String toString()
    {
-      return super.toString() + "[local= " + channel.getLocalAddress() + ", remote=" + channel.getRemoteAddress() + "]";
+      return super.toString() + "[local= " + channel.localAddress() + ", remote=" + channel.remoteAddress() + "]";
    }
 
    // Package protected ---------------------------------------------
@@ -308,6 +348,32 @@ public class NettyConnection implements Connection
 
    // Private -------------------------------------------------------
 
+
+   private void closeSSLAndChannel(SslHandler sslHandler, Channel channel)
+   {
+      if (sslHandler != null)
+      {
+         try
+         {
+            ChannelFuture sslCloseFuture = sslHandler.close();
+
+            if (!sslCloseFuture.awaitUninterruptibly(10000))
+            {
+               HornetQClientLogger.LOGGER.timeoutClosingSSL();
+            }
+         }
+         catch (Throwable t)
+         {
+            // ignore
+         }
+      }
+
+      ChannelFuture closeFuture = channel.close();
+      if (!closeFuture.awaitUninterruptibly(10000))
+      {
+         HornetQClientLogger.LOGGER.timeoutClosingNettyChannel();
+      }
+   }
    // Inner classes -------------------------------------------------
 
 }

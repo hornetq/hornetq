@@ -12,14 +12,15 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
 
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
 
@@ -30,13 +31,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelConfig;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipeline;
 
 /**
  *
@@ -52,30 +47,30 @@ public class NettyConnectionTest extends UnitTestCase
    @Test
    public void testGetID() throws Exception
    {
-      Channel channel = new SimpleChannel(RandomUtil.randomInt());
+      Channel channel = createChannel();
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
 
-      Assert.assertEquals(channel.getId().intValue(), conn.getID());
+      Assert.assertEquals(channel.hashCode(), conn.getID());
    }
 
    @Test
    public void testWrite() throws Exception
    {
       HornetQBuffer buff = HornetQBuffers.wrappedBuffer(ByteBuffer.allocate(128));
-      SimpleChannel channel = new SimpleChannel(RandomUtil.randomInt());
+      EmbeddedChannel channel = createChannel();
 
-      Assert.assertEquals(0, channel.getWritten().size());
+      Assert.assertEquals(0, channel.outboundMessages().size());
 
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
       conn.write(buff);
-
-      Assert.assertEquals(1, channel.getWritten().size());
+      channel.runPendingTasks();
+      Assert.assertEquals(1, channel.outboundMessages().size());
    }
 
    @Test
    public void testCreateBuffer() throws Exception
    {
-      Channel channel = new SimpleChannel(RandomUtil.randomInt());
+      EmbeddedChannel channel = createChannel();
       NettyConnection conn = new NettyConnection(emptyMap, channel, new MyListener(), false, false);
 
       final int size = 1234;
@@ -86,154 +81,9 @@ public class NettyConnectionTest extends UnitTestCase
 
    }
 
-   private final class SimpleChannel implements Channel
+   private static EmbeddedChannel createChannel()
    {
-      private final int id;
-
-      private final List<Object> written = new LinkedList<Object>();
-
-      private SimpleChannel(final int id)
-      {
-         this.id = id;
-      }
-
-      public List<Object> getWritten()
-      {
-         return written;
-      }
-
-      public int compareTo(final Channel arg0)
-      {
-         return 0;
-      }
-
-      public ChannelFuture write(final Object arg0, final SocketAddress arg1)
-      {
-         written.add(arg0);
-         return null;
-      }
-
-      public ChannelFuture write(final Object arg0)
-      {
-         written.add(arg0);
-         return null;
-      }
-
-      public ChannelFuture unbind()
-      {
-         return null;
-      }
-
-      public ChannelFuture setReadable(final boolean arg0)
-      {
-         return null;
-      }
-
-      public ChannelFuture setInterestOps(final int arg0)
-      {
-         return null;
-      }
-
-      public boolean isWritable()
-      {
-         return false;
-      }
-
-      public boolean isReadable()
-      {
-         return false;
-      }
-
-      public boolean isOpen()
-      {
-         return false;
-      }
-
-      public boolean isConnected()
-      {
-         return false;
-      }
-
-      public boolean isBound()
-      {
-         return false;
-      }
-
-      public SocketAddress getRemoteAddress()
-      {
-         return null;
-      }
-
-      public ChannelPipeline getPipeline()
-      {
-         return null;
-      }
-
-      public Channel getParent()
-      {
-         return null;
-      }
-
-      public SocketAddress getLocalAddress()
-      {
-         return null;
-      }
-
-      public int getInterestOps()
-      {
-         return 0;
-      }
-
-      public Integer getId()
-      {
-         return id;
-      }
-
-      public ChannelFactory getFactory()
-      {
-         return null;
-      }
-
-      public ChannelConfig getConfig()
-      {
-         return null;
-      }
-
-      public ChannelFuture getCloseFuture()
-      {
-         return null;
-      }
-
-      public ChannelFuture disconnect()
-      {
-         return null;
-      }
-
-      public ChannelFuture connect(final SocketAddress arg0)
-      {
-         return null;
-      }
-
-      public ChannelFuture close()
-      {
-         return null;
-      }
-
-      public ChannelFuture bind(final SocketAddress arg0)
-      {
-         return null;
-      }
-
-       @Override
-       public Object getAttachment()
-       {
-           return null;
-       }
-
-       @Override
-       public void setAttachment(Object attachment) {
-           // nothing to-do
-       }
+       return new EmbeddedChannel(new ChannelInboundHandlerAdapter());
    }
 
    class MyListener implements ConnectionLifeCycleListener

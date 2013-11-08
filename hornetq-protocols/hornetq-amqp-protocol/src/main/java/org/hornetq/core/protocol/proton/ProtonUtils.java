@@ -552,18 +552,19 @@ public class ProtonUtils
 
       private static Section populateBody(ServerMessage message)
       {
+         // TODO: Depend on array() is most likely not a very good idea
          Integer type = message.getIntProperty(MESSAGE_TYPE);
          switch (type)
          {
             case 0:
             case 1:
-               return new Data(new Binary(message.getBodyBuffer().copy().channelBuffer().array()));
+               return new Data(new Binary(message.getBodyBuffer().copy().byteBuf().array()));
             case 2:
-               return new AmqpValue(new Binary(message.getBodyBuffer().copy().channelBuffer().array()));
+               return new AmqpValue(new Binary(message.getBodyBuffer().copy().byteBuf().array()));
             case 3:
                return new AmqpValue(message.getBodyBuffer().copy().readNullableString());
             default:
-               return new Data(new Binary(message.getBodyBuffer().copy().channelBuffer().array()));
+               return new Data(new Binary(message.getBodyBuffer().copy().byteBuf().array()));
          }
       }
    }

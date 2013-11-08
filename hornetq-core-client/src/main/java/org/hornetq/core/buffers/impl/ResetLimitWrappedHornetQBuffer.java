@@ -33,7 +33,7 @@ public final class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 
    public ResetLimitWrappedHornetQBuffer(final int limit, final HornetQBuffer buffer, final MessageInternal message)
    {
-      super(buffer.channelBuffer());
+      super(buffer.byteBuf());
 
       this.limit = limit;
 
@@ -57,7 +57,11 @@ public final class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 
    public void setBuffer(final HornetQBuffer buffer)
    {
-      this.buffer = buffer.channelBuffer();
+      if (this.buffer != null)
+      {
+         this.buffer.release();
+      }
+      this.buffer = buffer.byteBuf();
    }
 
    @Override

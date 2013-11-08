@@ -11,5 +11,15 @@ grant {
         permission java.io.FilePermission "${user.dir}/hornetq-core-client/target/classes/-", "read";
         permission java.io.FilePermission "${user.dir}/hornetq-core-client/target/hornetq-core-client-${project.version}.jar", "read";
         permission java.util.PropertyPermission "hornetq.version.property.filename", "read";
+        permission java.util.PropertyPermission "io.netty.eventLoopThreads", "read";
+        permission java.util.PropertyPermission "io.netty.noUnsafe", "read";
+        permission java.util.PropertyPermission "io.netty.tryUnsafe", "read";
+        permission java.util.PropertyPermission "org.jboss.netty.tryUnsafe", "read";
+        permission java.util.PropertyPermission "io.netty.noJavassist", "read";
+        permission java.util.PropertyPermission "io.netty.noKeySetOptimization", "read";
+        permission java.util.PropertyPermission "io.netty.selectorAutoRebuildThreshold", "read";
+        permission java.util.PropertyPermission "io.netty.initialSeedUniquifier", "read";
+        permission java.util.PropertyPermission "io.netty.noResourceLeakDetection", "read";
         permission java.lang.RuntimePermission "setContextClassLoader";
+        permission java.lang.RuntimePermission "accessDeclaredMembers";
 };

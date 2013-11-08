@@ -148,6 +148,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          if (count == 0)
          {
             pagingStore.addSize(-getMemoryEstimate() - MessageReferenceImpl.getMemoryEstimate());
+
+            if (buffer != null)
+            {
+               // release the buffer now
+               buffer.byteBuf().release();
+            }
          }
          else
          {
@@ -308,7 +314,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    @Override
    public String toString()
    {
-      return "ServerMessage[messageID=" + messageID + ",durable=" + isDurable() + ",userID=" + getUserID() + ",priority=" + this.getPriority() + ", bodySize=" + this.getBodyBuffer().capacity() +
+      return "ServerMessage[messageID=" + messageID + ",durable=" + isDurable() + ",userID=" + getUserID() + ",priority=" + this.getPriority() + ", bodySize=" + this.getBodyBufferCopy().capacity() +
           ",expiration=" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : 0) +
           ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
