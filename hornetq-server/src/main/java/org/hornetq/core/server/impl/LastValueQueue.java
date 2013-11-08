@@ -155,6 +155,23 @@ public class LastValueQueue extends QueueImpl
       }
    }
 
+
+   @Override
+   protected void refRemoved(MessageReference ref)
+   {
+      synchronized (this)
+      {
+         SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
+
+         if (prop != null)
+         {
+            map.remove(prop);
+         }
+      }
+
+      super.refRemoved(ref);
+   }
+
    private class HolderReference implements MessageReference
    {
       private final SimpleString prop;
