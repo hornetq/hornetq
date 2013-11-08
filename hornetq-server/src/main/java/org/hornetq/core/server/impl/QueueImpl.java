@@ -1034,7 +1034,7 @@ public class QueueImpl implements Queue
       getRefsOperation(tx).addAck(ref);
 
       // https://issues.jboss.org/browse/HORNETQ-609
-      deliveringCount.incrementAndGet();
+      incDelivering();
    }
 
    private final RefsOperation getRefsOperation(final Transaction tx)
@@ -1078,7 +1078,7 @@ public class QueueImpl implements Queue
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
-      deliveringCount.decrementAndGet();
+      decDelivering();
       if (checkRedelivery(reference, timeBase, false))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference, false))
@@ -1117,7 +1117,7 @@ public class QueueImpl implements Queue
 
    public void referenceHandled()
    {
-      deliveringCount.incrementAndGet();
+      incDelivering();
    }
 
    public long getMessagesAdded()
@@ -1167,7 +1167,7 @@ public class QueueImpl implements Queue
          @Override
          public void actMessage(Transaction tx, MessageReference ref) throws Exception
          {
-            deliveringCount.incrementAndGet();
+            incDelivering();
             acknowledge(tx, ref);
             refRemoved(ref);
          }
@@ -1315,7 +1315,7 @@ public class QueueImpl implements Queue
             MessageReference ref = iter.next();
             if (ref.getMessage().getMessageID() == messageID)
             {
-               deliveringCount.incrementAndGet();
+               incDelivering();
                acknowledge(tx, ref);
                iter.remove();
                refRemoved(ref);
@@ -1388,7 +1388,7 @@ public class QueueImpl implements Queue
             MessageReference ref = iter.next();
             if (ref.getMessage().getMessageID() == messageID)
             {
-               deliveringCount.incrementAndGet();
+               incDelivering();
                expire(ref);
                iter.remove();
                refRemoved(ref);
@@ -1426,7 +1426,7 @@ public class QueueImpl implements Queue
             MessageReference ref = iter.next();
             if (filter == null || filter.match(ref.getMessage()))
             {
-               deliveringCount.incrementAndGet();
+               incDelivering();
                expire(tx, ref);
                iter.remove();
                refRemoved(ref);
@@ -1488,7 +1488,7 @@ public class QueueImpl implements Queue
                   {
                      if (ref.getMessage().isExpired())
                      {
-                        deliveringCount.incrementAndGet();
+                        incDelivering();
                         expired = true;
                         expire(ref);
                         iter.remove();
@@ -1534,7 +1534,7 @@ public class QueueImpl implements Queue
             MessageReference ref = iter.next();
             if (ref.getMessage().getMessageID() == messageID)
             {
-               deliveringCount.incrementAndGet();
+               incDelivering();
                sendToDeadLetterAddress(ref);
                iter.remove();
                refRemoved(ref);
@@ -1561,7 +1561,7 @@ public class QueueImpl implements Queue
             MessageReference ref = iter.next();
             if (filter == null || filter.match(ref.getMessage()))
             {
-               deliveringCount.incrementAndGet();
+               incDelivering();
                sendToDeadLetterAddress(ref);
                iter.remove();
                refRemoved(ref);
@@ -1596,14 +1596,14 @@ public class QueueImpl implements Queue
             {
                iter.remove();
                refRemoved(ref);
-               deliveringCount.incrementAndGet();
+               incDelivering();
                try
                {
                   move(toAddress, ref, false, rejectDuplicate);
                }
                catch (Exception e)
                {
-                  deliveringCount.decrementAndGet();
+                  decDelivering();
                   throw e;
                }
                return true;
@@ -1635,7 +1635,7 @@ public class QueueImpl implements Queue
          {
             boolean ignored = false;
 
-            deliveringCount.incrementAndGet();
+            incDelivering();
 
             if (rejectDuplicates)
             {
@@ -2239,7 +2239,7 @@ public class QueueImpl implements Queue
             }
          }
 
-         deliveringCount.decrementAndGet();
+         decDelivering();
 
          return true;
       }
@@ -2539,7 +2539,7 @@ public class QueueImpl implements Queue
    {
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
-      queue.deliveringCount.decrementAndGet();
+      queue.decDelivering();
 
       if (ref.isPaged())
       {
@@ -2955,6 +2955,17 @@ public class QueueImpl implements Queue
          messagesIterator.close();
       }
    }
+
+   private int incDelivering()
+   {
+      return deliveringCount.incrementAndGet();
+   }
+
+   private void decDelivering()
+   {
+      deliveringCount.decrementAndGet();
+   }
+
 
    private class AddressSettingsRepositoryListener implements HierarchicalRepositoryChangeListener
    {

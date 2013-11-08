@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+import org.hornetq.core.server.Queue;
 import org.junit.Before;
 import org.junit.After;
 
@@ -439,6 +440,8 @@ public class LVQTest extends UnitTestCase
    @Test
    public void testMultipleAcksPersistedCorrectly() throws Exception
    {
+
+      Queue queue = server.locateQueue(qName1);
       ClientProducer producer = clientSession.createProducer(address);
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
@@ -491,6 +494,37 @@ public class LVQTest extends UnitTestCase
       Assert.assertNotNull(m);
       m.acknowledge();
       Assert.assertEquals(m.getBodyBuffer().readString(), "m6");
+
+      assertEquals(0, queue.getDeliveringCount());
+   }
+
+   @Test
+   public void testMultipleAcksPersistedCorrectly2() throws Exception
+   {
+
+      Queue queue = server.locateQueue(qName1);
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientConsumer consumer = clientSession.createConsumer(qName1);
+      SimpleString rh = new SimpleString("SMID1");
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      m1.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
+      m1.setDurable(true);
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      m2.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
+      m2.setDurable(true);
+      clientSession.start();
+      producer.send(m1);
+      ClientMessage m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
+      producer.send(m2);
+      m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m2");
+
+      assertEquals(0, queue.getDeliveringCount());
    }
 
    @Test
