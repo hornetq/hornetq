@@ -71,6 +71,7 @@ public class LastValueQueue extends QueueImpl
             storageManager,
             addressSettingsRepository,
             executor);
+      new Exception ("LastValueQeue " + this ).toString();
    }
 
    @Override
@@ -88,7 +89,7 @@ public class LastValueQueue extends QueueImpl
 
             MessageReference oldRef = hr.getReference();
 
-            super.referenceHandled();
+            referenceHandled();
 
             try
             {
@@ -174,8 +175,8 @@ public class LastValueQueue extends QueueImpl
 
       public void handled()
       {
+         ref.handled();
          // We need to remove the entry from the map just before it gets delivered
-
          map.remove(prop);
       }
 
