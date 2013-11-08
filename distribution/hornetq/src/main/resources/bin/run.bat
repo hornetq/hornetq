@@ -18,4 +18,4 @@ mkdir ..\logs
 echo ***********************************************************************************
 echo "java %JVM_ARGS% -classpath %CLASSPATH% org.hornetq.integration.bootstrap.HornetQBootstrapServer hornetq-beans.xml"
 echo ***********************************************************************************
-java %JVM_ARGS% -classpath %CLASSPATH% org.hornetq.integration.bootstrap.HornetQBootstrapServer hornetq-beans.xml
+java %JVM_ARGS% -classpath "%CLASSPATH%" org.hornetq.integration.bootstrap.HornetQBootstrapServer hornetq-beans.xml
