@@ -2014,7 +2014,7 @@ public class QueueImpl implements Queue
    /**
     * @param ref
     */
-   private void refRemoved(MessageReference ref)
+   protected void refRemoved(MessageReference ref)
    {
       queueMemorySize.addAndGet(-ref.getMessageMemoryEstimate());
       if (ref.isPaged())

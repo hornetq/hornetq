@@ -499,6 +499,32 @@ public class LVQTest extends UnitTestCase
    }
 
    @Test
+   public void testRemoveMessageThroughManagement() throws Exception
+   {
+
+      Queue queue = server.locateQueue(qName1);
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientConsumer consumer = clientSession.createConsumer(qName1);
+      SimpleString rh = new SimpleString("SMID1");
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      m1.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
+      m1.setDurable(true);
+      producer.send(m1);
+
+      queue.deleteAllReferences();
+
+      producer.send(m1);
+
+      clientSession.start();
+      ClientMessage m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
+
+      assertEquals(0, queue.getDeliveringCount());
+   }
+
+   @Test
    public void testMultipleAcksPersistedCorrectly2() throws Exception
    {
 
