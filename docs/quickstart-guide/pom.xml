@@ -79,7 +79,7 @@
     			<plugin>
     				<groupId>org.jboss.maven.plugins</groupId>
     				<artifactId>maven-jdocbook-plugin</artifactId>
-    				<version>2.2.1</version>
+               <version>2.3.5</version>
     				<extensions>true</extensions>
     				<configuration>
     				  <formats>
@@ -116,7 +116,7 @@
     			<plugin>
     				<groupId>org.jboss.maven.plugins</groupId>
     				<artifactId>maven-jdocbook-plugin</artifactId>
-    				<version>2.2.1</version>
+               <version>2.2.1</version>
     				<extensions>true</extensions>
     				<configuration>
     				  <formats>
@@ -161,7 +161,7 @@
     			<plugin>
     				<groupId>org.jboss.maven.plugins</groupId>
     				<artifactId>maven-jdocbook-plugin</artifactId>
-    				<version>2.1.0</version>
+    				<version>2.2.1</version>
     				<extensions>true</extensions>
     				<configuration>
     				  <formats>
@@ -190,7 +190,7 @@
 		              <dependency>
 		                 <groupId>org.jboss.pressgang</groupId>
 		                 <artifactId>pressgang-xslt</artifactId>
-		                 <version>1.2.0</version>
+		                 <version>2.0.2</version>
 		              </dependency>
 		              <dependency>
 		                 <groupId>org.jboss</groupId>
