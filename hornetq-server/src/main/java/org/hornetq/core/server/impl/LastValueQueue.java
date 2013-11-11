@@ -71,6 +71,7 @@ public class LastValueQueue extends QueueImpl
             storageManager,
             addressSettingsRepository,
             executor);
+      new Exception ("LastValueQeue " + this ).toString();
    }
 
    @Override
@@ -88,7 +89,7 @@ public class LastValueQueue extends QueueImpl
 
             MessageReference oldRef = hr.getReference();
 
-            super.referenceHandled();
+            referenceHandled();
 
             try
             {
@@ -154,6 +155,23 @@ public class LastValueQueue extends QueueImpl
       }
    }
 
+
+   @Override
+   protected void refRemoved(MessageReference ref)
+   {
+      synchronized (this)
+      {
+         SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
+
+         if (prop != null)
+         {
+            map.remove(prop);
+         }
+      }
+
+      super.refRemoved(ref);
+   }
+
    private class HolderReference implements MessageReference
    {
       private final SimpleString prop;
@@ -174,8 +192,8 @@ public class LastValueQueue extends QueueImpl
 
       public void handled()
       {
+         ref.handled();
          // We need to remove the entry from the map just before it gets delivered
-
          map.remove(prop);
       }
 
