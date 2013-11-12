@@ -37,7 +37,7 @@
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol"  value="stomp"/>
+   &lt;param key="protocol"  value="STOMP"/>
    &lt;param key="port"  value="61613"/>
 &lt;/acceptor></programlisting>
           <para>With this configuration, HornetQ will accept Stomp connections on 
@@ -91,7 +91,7 @@
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol"  value="stomp"/>
+   &lt;param key="protocol"  value="STOMP"/>
    &lt;param key="port"  value="61613"/>
    &lt;param key="connection-ttl"  value="20000"/>
 &lt;/acceptor></programlisting>
@@ -157,7 +157,7 @@ destination:jms.topic.stocks
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="stomp"/>
+   &lt;param key="protocol" value="STOMP"/>
    &lt;param key="port" value="61613"/>
    &lt;param key="stomp-enable-message-id" value="true"/>
 &lt;/acceptor></programlisting>
@@ -179,7 +179,7 @@ hq-message-id : STOMP12345</programlisting>
 <programlisting>
    &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="stomp"/>
+   &lt;param key="protocol" value="STOMP"/>
    &lt;param key="port" value="61613"/>
    &lt;param key="stomp-min-large-message-size" value="10240"/>
 &lt;/acceptor></programlisting>
@@ -204,7 +204,7 @@ hq-message-id : STOMP12345</programlisting>
          <programlisting>
 &lt;acceptor name="stomp-ws-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="stomp_ws"/>
+   &lt;param key="protocol" value="STOMP_WS"/>
    &lt;param key="port" value="61614"/>
 &lt;/acceptor></programlisting>
          <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 

@@ -28,7 +28,7 @@
       <!-- will listen on port 61614)              -->
       <acceptor name="stomp-websocket">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>        
-         <param key="protocol" value="stomp_ws" />
+         <param key="protocol" value="STOMP_WS" />
          <param key="port" value="61614" />
       </acceptor>
    </acceptors>
