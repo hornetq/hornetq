@@ -461,10 +461,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "1");
 
-      Map<ActivationSpec, HornetQActivation> activations = qResourceAdapter.getActivations();
-      assertEquals(1,activations.size());
+      HornetQActivation activation = lookupActivation(qResourceAdapter);
 
-      HornetQActivation activation = activations.values().iterator().next();
       SimpleString tempQueueName = activation.getTopicTemporaryQueue();
 
       QueueQuery query = session.queueQuery(tempQueueName);
