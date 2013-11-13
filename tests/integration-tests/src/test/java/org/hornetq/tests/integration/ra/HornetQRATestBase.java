@@ -11,16 +11,19 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.junit.Before;
 import org.junit.After;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.UnavailableException;
 import javax.resource.spi.XATerminator;
@@ -80,6 +83,14 @@ public abstract class HornetQRATestBase  extends JMSTestBase
       locator.close();
 
       super.tearDown();
+   }
+
+   protected HornetQActivation lookupActivation(HornetQResourceAdapter qResourceAdapter)
+   {
+      Map<ActivationSpec, HornetQActivation> activations = qResourceAdapter.getActivations();
+      assertEquals(1, activations.size());
+
+      return activations.values().iterator().next();
    }
 
    protected HornetQResourceAdapter newResourceAdapter()

@@ -164,25 +164,32 @@ public class HornetQMessageHandler implements MessageHandler
       }
       else
       {
-         SimpleString queueName;
+         SimpleString tempQueueName;
          if (activation.isTopic())
          {
             if (activation.getTopicTemporaryQueue() == null)
             {
-               queueName = new SimpleString(UUID.randomUUID().toString());
-               session.createTemporaryQueue(activation.getAddress(), queueName, selectorString);
-               activation.setTopicTemporaryQueue(queueName);
+               tempQueueName = new SimpleString(UUID.randomUUID().toString());
+               session.createTemporaryQueue(activation.getAddress(), tempQueueName, selectorString);
+               activation.setTopicTemporaryQueue(tempQueueName);
             }
             else
             {
-               queueName = activation.getTopicTemporaryQueue();
+               tempQueueName = activation.getTopicTemporaryQueue();
+               QueueQuery queueQuery = session.queueQuery(tempQueueName);
+               if (!queueQuery.isExists())
+               {
+                  // this is because we could be using remote servers (in cluster maybe)
+                  // and the queue wasn't created on that node yet.
+                  session.createTemporaryQueue(activation.getAddress(), tempQueueName, selectorString);
+               }
             }
          }
          else
          {
-            queueName = activation.getAddress();
+            tempQueueName = activation.getAddress();
          }
-         consumer = (ClientConsumerInternal)session.createConsumer(queueName, selectorString);
+         consumer = (ClientConsumerInternal)session.createConsumer(tempQueueName, selectorString);
       }
 
       // Create the endpoint, if we are transacted pass the sesion so it is enlisted, unless using Local TX
@@ -255,6 +262,8 @@ public class HornetQMessageHandler implements MessageHandler
             QueueQuery subResponse = session.queueQuery(tmpQueue);
             if (subResponse.getConsumerCount() == 0)
             {
+               // This is optional really, since we now use temporaryQueues, we could simply ignore this
+               // and the server temporary queue would remove this as soon as the queue was removed
                session.deleteQueue(tmpQueue);
             }
          }

@@ -382,7 +382,19 @@ public class HornetQActivation
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
 
-      for (HornetQMessageHandler handler : handlers)
+      final HornetQMessageHandler[] handlersCopy = new HornetQMessageHandler[handlers.size()];
+
+      // We need to do from last to first as any temporary queue will have been created on the first handler
+      // So we invert the handlers here
+      for (int i = 0; i < handlers.size(); i++)
+      {
+         // The index here is the complimentary so it's inverting the array
+         handlersCopy[i] = handlers.get(handlers.size()-i-1);
+      }
+
+      handlers.clear();
+
+      for (HornetQMessageHandler handler: handlersCopy)
       {
          handler.interruptConsumer();
       }
@@ -391,11 +403,10 @@ public class HornetQActivation
       {
          public void run()
          {
-            for (HornetQMessageHandler handler : handlers)
+            for (HornetQMessageHandler handler : handlersCopy)
             {
                handler.teardown();
             }
-            handlers.clear();
          }
       };
 
