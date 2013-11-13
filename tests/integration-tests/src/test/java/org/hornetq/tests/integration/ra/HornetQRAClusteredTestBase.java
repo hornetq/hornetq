@@ -15,10 +15,10 @@ import java.util.Set;
 
 public class HornetQRAClusteredTestBase extends HornetQRATestBase
 {
-   private HornetQServer secondaryServer;
-   private JMSServerManagerImpl secondaryJmsServer;
-   private TransportConfiguration secondaryConnector;
-   private TransportConfiguration primaryConnector;
+   protected HornetQServer secondaryServer;
+   protected JMSServerManagerImpl secondaryJmsServer;
+   protected TransportConfiguration secondaryConnector;
+   protected TransportConfiguration primaryConnector;
 
    @Before
    @Override
