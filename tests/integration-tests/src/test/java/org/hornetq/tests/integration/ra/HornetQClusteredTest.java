@@ -1,11 +1,17 @@
 package org.hornetq.tests.integration.ra;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.server.Queue;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class HornetQClusteredTest extends HornetQRAClusteredTestBase
 {
@@ -38,5 +44,55 @@ public class HornetQClusteredTest extends HornetQRAClusteredTestBase
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
 
       qResourceAdapter.stop();
+   }
+
+
+   /**
+    * https://bugzilla.redhat.com/show_bug.cgi?id=1029076
+    * Look at the logs for this test, if you see exceptions it's an issue.
+    * @throws Exception
+    */
+   @Test
+   public void testNonDurableInCluster() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("test");
+      clientProducer.send(message);
+
+
+      HornetQActivation activation =  lookupActivation(qResourceAdapter);
+
+      SimpleString tempQueue = activation.getTopicTemporaryQueue();
+
+      assertNotNull(server.locateQueue(tempQueue));
+      assertNotNull(secondaryServer.locateQueue(tempQueue));
+
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "test");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
+
+      assertNull(server.locateQueue(tempQueue));
+      assertNull(secondaryServer.locateQueue(tempQueue));
+
    }
 }
