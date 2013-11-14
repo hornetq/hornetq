@@ -12,12 +12,7 @@
  */
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
-import io.netty.channel.ChannelHandler;
-import org.hornetq.spi.core.protocol.ConnectionEntry;
-import org.hornetq.spi.core.protocol.ProtocolManager;
-import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.BufferDecoder;
+import org.hornetq.core.protocol.ProtocolHandler;
 import org.junit.Before;
 import org.junit.After;
 
@@ -117,45 +112,10 @@ public class NettyAcceptorTest extends UnitTestCase
       pool2 = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
       NettyAcceptor acceptor = new NettyAcceptor(params,
                                                  handler,
-                                                 null,
                                                  listener,
                                                  pool1,
                                                  pool2,
-            new ProtocolManager()
-            {
-               @Override
-               public ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection)
-               {
-                  return null;
-               }
-
-               @Override
-               public void removeHandler(String name)
-               {
-               }
-
-               @Override
-               public int isReadyToHandle(HornetQBuffer buffer)
-               {
-                  return 0;
-               }
-
-               @Override
-               public void handleBuffer(RemotingConnection connection, HornetQBuffer buffer)
-               {
-               }
-
-               @Override
-               public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
-               {
-               }
-
-               @Override
-               public boolean isSupportsWebsockets(String protocol)
-               {
-                  return false;
-               }
-            });
+            null);
 
       addHornetQComponent(acceptor);
       acceptor.start();

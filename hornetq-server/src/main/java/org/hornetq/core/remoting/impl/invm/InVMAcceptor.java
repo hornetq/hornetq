@@ -21,7 +21,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;

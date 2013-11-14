@@ -241,25 +241,60 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                }
             }
 
-            String protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
-                  TransportConstants.DEFAULT_PROTOCOL,
+            Map<String, ProtocolManager> supportedProtocols = new ConcurrentHashMap();
+
+            String protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME, null,
                   info.getParams());
 
-            ProtocolManager manager = protocolMap.get(protocol);
-            if (manager == null)
+            if(protocol != null)
             {
-               throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(protocol);
+               HornetQServerLogger.LOGGER.warnDeprecatedProtocol();
+               ProtocolManager protocolManager = protocolMap.get(protocol);
+
+               if(protocolManager == null)
+               {
+                  throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(protocol);
+               }
+               else
+               {
+                  supportedProtocols.put(protocol, protocolManager);
+               }
             }
+
+            String protocols = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOLS_PROP_NAME, null,
+                  info.getParams());
+
+            if(protocols != null)
+            {
+               String[] actualProtocols = protocols.split(",");
+
+               if(actualProtocols != null)
+               {
+                  for (String actualProtocol : actualProtocols)
+                  {
+                     ProtocolManager protocolManager = protocolMap.get(actualProtocol);
+
+                     if(protocolManager == null)
+                     {
+                        throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(actualProtocol);
+                     }
+                     else
+                     {
+                        supportedProtocols.put(actualProtocol, protocolManager);
+                     }
+                  }
+               }
+            }
+
             ClusterConnection clusterConnection = lookupClusterConnection(info);
 
             Acceptor acceptor = factory.createAcceptor(clusterConnection,
                                                        info.getParams(),
                                                        new DelegatingBufferHandler(),
-                                                       manager,
                                                        this,
                                                        threadPool,
                                                        scheduledThreadPool,
-                                                       manager);
+                                                       supportedProtocols.isEmpty()?protocolMap:supportedProtocols);
 
             if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
             {

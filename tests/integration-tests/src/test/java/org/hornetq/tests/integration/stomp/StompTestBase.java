@@ -16,16 +16,31 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
-import org.junit.Before;
-import org.junit.After;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -36,8 +51,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import org.junit.Assert;
 
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.api.core.TransportConfiguration;
@@ -58,14 +71,12 @@ import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 public abstract class StompTestBase extends UnitTestCase
 {
    protected final int port = 61613;
-
-   private Socket stompSocket;
-
-   private ByteArrayOutputStream inputBuffer;
 
    private ConnectionFactory connectionFactory;
 
@@ -85,6 +96,13 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected boolean autoCreateServer = true;
 
+   private Bootstrap bootstrap;
+
+   private Channel channel;
+
+   private BlockingQueue priorityQueue;
+
+   private EventLoopGroup group;
 
 
    // Implementation methods
@@ -94,15 +112,13 @@ public abstract class StompTestBase extends UnitTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
+      priorityQueue = new ArrayBlockingQueue(1000);
       if (autoCreateServer)
       {
          server = createServer();
          server.start();
          connectionFactory = createConnectionFactory();
-
-         stompSocket = createSocket();
-         inputBuffer = new ByteArrayOutputStream();
+         createBootstrap();
 
          connection = connectionFactory.createConnection();
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -110,6 +126,47 @@ public abstract class StompTestBase extends UnitTestCase
          topic = session.createTopic(getTopicName());
          connection.start();
       }
+   }
+
+   private void createBootstrap()
+   {
+      group = new NioEventLoopGroup();
+      bootstrap = new Bootstrap();
+      bootstrap.group(group)
+            .channel(NioSocketChannel.class)
+            .option(ChannelOption.TCP_NODELAY, true)
+            .handler(new ChannelInitializer<SocketChannel>()
+            {
+               @Override
+               public void initChannel(SocketChannel ch) throws Exception
+               {
+                  addChannelHandlers(ch);
+               }
+            });
+
+      // Start the client.
+      try
+      {
+         channel = bootstrap.connect("localhost", port).sync().channel();
+         handshake();
+      }
+      catch (InterruptedException e)
+      {
+         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+
+   }
+
+   protected void handshake() throws InterruptedException
+   {
+   }
+
+
+   protected void addChannelHandlers(SocketChannel ch) throws URISyntaxException
+   {
+      ch.pipeline().addLast("decoder", new StringDecoder(Charset.forName("UTF-8")));
+      ch.pipeline().addLast("encoder", new StringEncoder(Charset.forName("UTF-8")));
+      ch.pipeline().addLast(new StompClientHandler());
    }
 
    protected void setUpAfterServer() throws Exception
@@ -123,9 +180,7 @@ public abstract class StompTestBase extends UnitTestCase
       HornetQConnectionFactory hqFact = (HornetQConnectionFactory)connectionFactory;
 
       hqFact.setCompressLargeMessage(jmsCompressLarge);
-      
-      stompSocket = createSocket();
-      inputBuffer = new ByteArrayOutputStream();
+      createBootstrap();
 
       connection = connectionFactory.createConnection();
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -170,9 +225,11 @@ public abstract class StompTestBase extends UnitTestCase
       if (autoCreateServer)
       {
          connection.close();
-         if (stompSocket != null)
+
+         if (group != null)
          {
-            stompSocket.close();
+            channel.close();
+            group.shutdown();
          }
          server.stop();
       }
@@ -182,9 +239,9 @@ public abstract class StompTestBase extends UnitTestCase
    protected void cleanUp() throws Exception
    {
       connection.close();
-      if (stompSocket != null)
+      if (group != null)
       {
-         stompSocket.close();
+         group.shutdown();
       }
    }
 
@@ -195,15 +252,14 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected void reconnect(long sleep) throws Exception
    {
-      stompSocket.close();
+      group.shutdown();
 
       if (sleep > 0)
       {
          Thread.sleep(sleep);
       }
 
-      stompSocket = createSocket();
-      inputBuffer = new ByteArrayOutputStream();
+      createBootstrap();
    }
 
    protected ConnectionFactory createConnectionFactory()
@@ -236,57 +292,30 @@ public abstract class StompTestBase extends UnitTestCase
       return "jms.topic.";
    }
 
+
+
+   protected void assertChannelClosed() throws InterruptedException
+   {
+      boolean closed = channel.closeFuture().await(5000);
+      assertTrue("channel not closed", closed);
+   }
+
    public void sendFrame(String data) throws Exception
    {
-      byte[] bytes = data.getBytes("UTF-8");
-      OutputStream outputStream = stompSocket.getOutputStream();
-      for (byte b : bytes)
-      {
-         outputStream.write(b);
-      }
-      outputStream.flush();
+      channel.writeAndFlush(data);
    }
 
    public void sendFrame(byte[] data) throws Exception
    {
-      OutputStream outputStream = stompSocket.getOutputStream();
-      for (byte element : data)
-      {
-         outputStream.write(element);
-      }
-      outputStream.flush();
+      ByteBuf buffer = Unpooled.buffer(data.length);
+      buffer.writeBytes(data);
+      channel.writeAndFlush(buffer);
    }
 
    public String receiveFrame(long timeOut) throws Exception
    {
-      stompSocket.setSoTimeout((int)timeOut);
-      InputStream is = stompSocket.getInputStream();
-      int c = 0;
-      for (;;)
-      {
-         c = is.read();
-         if (c < 0)
-         {
-            throw new IOException("socket closed.");
-         }
-         else if (c == 0)
-         {
-            c = is.read();
-            if (c != '\n')
-            {
-               byte[] ba = inputBuffer.toByteArray();
-               System.out.println(new String(ba, "UTF-8"));
-            }
-            Assert.assertEquals("Expecting stomp frame to terminate with \0\n", c, '\n');
-            byte[] ba = inputBuffer.toByteArray();
-            inputBuffer.reset();
-            return new String(ba, "UTF-8");
-         }
-         else
-         {
-            inputBuffer.write(c);
-         }
-      }
+      String msg = (String) priorityQueue.poll(timeOut, TimeUnit.MILLISECONDS);
+      return msg;
    }
 
    public void sendMessage(String msg) throws Exception
@@ -334,4 +363,38 @@ public abstract class StompTestBase extends UnitTestCase
       // from the frame
       Thread.sleep(500);
    }
+
+   class StompClientHandler extends SimpleChannelInboundHandler<String>
+   {
+      StringBuffer currentMessage = new StringBuffer("");
+
+      @Override
+      protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception
+      {
+         currentMessage.append(msg);
+         String fullMessage = currentMessage.toString();
+         if(fullMessage.contains("\0\n"))
+         {
+            int messageEnd = fullMessage.indexOf("\0\n");
+            String actualMessage = fullMessage.substring(0, messageEnd);
+            fullMessage = fullMessage.substring(messageEnd + 2);
+            currentMessage = new StringBuffer("");
+            priorityQueue.add(actualMessage);
+            if(fullMessage.length() > 0)
+            {
+               channelRead(ctx, fullMessage);
+            }
+         }
+      }
+
+      @Override
+      public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+      {
+         cause.printStackTrace();
+         ctx.close();
+      }
+   }
+
+
+
 }

@@ -21,10 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.channel.ChannelPipeline;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
@@ -34,7 +31,7 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.postoffice.BindingType;
-import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder;
+import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
@@ -47,7 +44,6 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -131,13 +127,6 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    {
    }
 
-   public int isReadyToHandle(HornetQBuffer buffer)
-   {
-      // This never gets called
-
-      return -1;
-   }
-
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
@@ -174,22 +163,21 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    }
 
    @Override
-   public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
+   public void addChannelHandlers(ChannelPipeline pipeline)
    {
-      if (StompProtocolManagerFactory.STOMP_WS_PROTOCOL_NAME.contentEquals(protocol))
-      {
-         handlers.put("http-decoder", new HttpRequestDecoder());
-         handlers.put("http-aggregator", new HttpObjectAggregator(65536));
-         handlers.put("http-encoder", new HttpResponseEncoder());
-         handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
-         handlers.put("websocket-handler", new WebSocketServerHandler());
-      }
    }
 
    @Override
-   public boolean isSupportsWebsockets(String protocol)
+   public boolean isProtocol(byte[] array)
    {
-      return StompProtocolManagerFactory.STOMP_WS_PROTOCOL_NAME.equals(protocol);
+      String frameStart = new String(array);
+      return frameStart.startsWith(StompCommands.CONNECT.name()) || frameStart.startsWith(StompCommands.STOMP.name());
+   }
+
+   @Override
+   public void handshake(NettyServerConnection connection, HornetQBuffer buffer)
+   {
+      //Todo move handshake to here
    }
 
    // Public --------------------------------------------------------

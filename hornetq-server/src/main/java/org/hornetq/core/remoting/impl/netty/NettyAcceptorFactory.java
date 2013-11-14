@@ -22,7 +22,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
-import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 
@@ -36,13 +35,12 @@ public class NettyAcceptorFactory implements AcceptorFactory
    public Acceptor createAcceptor(final ClusterConnection connection,
                                   final Map<String, Object> configuration,
                                   final BufferHandler handler,
-                                  final BufferDecoder decoder,
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
                                   final ScheduledExecutorService scheduledThreadPool,
-                                  ProtocolManager manager)
+                                  final Map<String, ProtocolManager> protocolMap)
    {
-      return new NettyAcceptor(connection, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, manager);
+      return new NettyAcceptor(connection, configuration, handler, listener, threadPool, scheduledThreadPool, protocolMap);
    }
 
    public Set<String> getAllowableProperties()

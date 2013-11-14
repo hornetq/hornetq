@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
+import io.netty.channel.ChannelPipeline;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -45,6 +46,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
+import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -52,7 +54,6 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.api.core.Pair;
 
@@ -139,22 +140,34 @@ class CoreProtocolManager implements ProtocolManager
    }
 
    @Override
-   public void addChannelHandlers(String protocol, Map<String, io.netty.channel.ChannelHandler> handlers, BufferDecoder decoder)
+   public void addChannelHandlers(ChannelPipeline pipeline)
    {
-      handlers.put("hornetq-decoder", new HornetQFrameDecoder2());
+      pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder2());
    }
 
    @Override
-   public boolean isSupportsWebsockets(String protocol)
+   public boolean isProtocol(byte[] array)
    {
-      return false;
+      String frameStart = new String(array);
+      return frameStart.startsWith("HORNETQ");
    }
 
-   // This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
-   // optimised version HornetQFrameDecoder2, which never calls this
-   public int isReadyToHandle(HornetQBuffer buffer)
+   @Override
+   public void handshake(NettyServerConnection connection, HornetQBuffer buffer)
    {
-      return -1;
+      //if we are not an old client then handshake
+      if(buffer.getByte(0) == 'H' &&
+            buffer.getByte(1) == 'O' &&
+            buffer.getByte(2) == 'R' &&
+            buffer.getByte(3) == 'N' &&
+            buffer.getByte(4) == 'E' &&
+            buffer.getByte(5) == 'T' &&
+            buffer.getByte(6) == 'Q'
+            )
+      {
+         //todo add some handshaking
+         buffer.readBytes(7);
+      }
    }
 
    @Override

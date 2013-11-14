@@ -28,8 +28,7 @@ public interface BufferDecoder
     * called by the remoting system prior to {@link org.hornetq.spi.core.remoting.BufferHandler#bufferReceived(Object, org.hornetq.api.core.HornetQBuffer)}.
     * <p/>
     * The implementation should return true if there is enough data in the buffer to decode. otherwise false.
-    *
-    * @param buffer the buffer
+    *                  * @param buffer the buffer
     * @return true id the buffer can be decoded..
     */
    int isReadyToHandle(HornetQBuffer buffer);
