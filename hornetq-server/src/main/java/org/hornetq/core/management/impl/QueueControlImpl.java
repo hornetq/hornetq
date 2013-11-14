@@ -518,6 +518,51 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
+   public long getOldestMessageTimestamp() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Filter filter = null;
+         queue.flushExecutor();
+         LinkedListIterator<MessageReference> iterator = queue.totalIterator();
+         try
+         {
+            Message message = null;
+            while (iterator.hasNext() && message == null)
+            {
+               MessageReference ref = iterator.next();
+               if (filter == null || filter.match(ref.getMessage()))
+               {
+                  message = ref.getMessage();
+               }
+            }
+            if(message == null)
+            {
+               return -1;
+            }
+            else
+            {
+               return message.getTimestamp();
+            }
+         }
+         finally
+         {
+            iterator.close();
+         }
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e.getMessage());
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public long countMessages(final String filterStr) throws Exception
    {
       checkStarted();
