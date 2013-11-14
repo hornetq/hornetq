@@ -56,7 +56,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY));
 
       server = addServer(HornetQServers.newHornetQServer(conf, false));
 

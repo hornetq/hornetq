@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import com.sun.corba.se.pept.protocol.ProtocolHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -32,7 +33,7 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @version $Rev$, $Date$
  */
-class HornetQChannelHandler extends ChannelDuplexHandler
+public class HornetQChannelHandler extends ChannelDuplexHandler
 {
    private final ChannelGroup group;
 
@@ -42,9 +43,9 @@ class HornetQChannelHandler extends ChannelDuplexHandler
 
    volatile boolean active;
 
-   HornetQChannelHandler(final ChannelGroup group,
-                         final BufferHandler handler,
-                         final ConnectionLifeCycleListener listener)
+   protected HornetQChannelHandler(final ChannelGroup group,
+                                   final BufferHandler handler,
+                                   final ConnectionLifeCycleListener listener)
    {
       this.group = group;
       this.handler = handler;

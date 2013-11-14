@@ -69,6 +69,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -852,6 +853,10 @@ public class NettyConnector extends AbstractConnector
          {
             throw HornetQClientMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
+         String handshake = "HORNETQ";
+         HornetQBuffer buffer = connection.createBuffer(handshake.length());
+         buffer.writeBytes(handshake.getBytes());
+         connection.write(buffer);
       }
 
       public void connectionDestroyed(final Object connectionID)

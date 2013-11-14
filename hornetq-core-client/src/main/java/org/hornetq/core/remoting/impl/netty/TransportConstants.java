@@ -172,7 +172,6 @@ public class TransportConstants
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
       allowableAcceptorKeys.add(TransportConstants.SSL_ENABLED_PROP_NAME);
-      allowableAcceptorKeys.add(TransportConstants.HTTP_ENABLED_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.USE_NIO_PROP_NAME);

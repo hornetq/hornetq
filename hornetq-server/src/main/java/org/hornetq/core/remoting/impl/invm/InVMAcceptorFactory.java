@@ -39,7 +39,8 @@ public class InVMAcceptorFactory implements AcceptorFactory
                                   final BufferDecoder decoder,
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
-                                  final ScheduledExecutorService scheduledThreadPool, ProtocolManager manager)
+                                  final ScheduledExecutorService scheduledThreadPool,
+                                  final Map<String, ProtocolManager> protocolHandler)
    {
       return new InVMAcceptor(clusterConnection, configuration, handler, listener, threadPool);
    }

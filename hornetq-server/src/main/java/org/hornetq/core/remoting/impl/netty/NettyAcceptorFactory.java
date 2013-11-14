@@ -40,9 +40,9 @@ public class NettyAcceptorFactory implements AcceptorFactory
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
                                   final ScheduledExecutorService scheduledThreadPool,
-                                  ProtocolManager manager)
+                                  final Map<String, ProtocolManager> protocolMap)
    {
-      return new NettyAcceptor(connection, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, manager);
+      return new NettyAcceptor(connection, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, protocolMap);
    }
 
    public Set<String> getAllowableProperties()

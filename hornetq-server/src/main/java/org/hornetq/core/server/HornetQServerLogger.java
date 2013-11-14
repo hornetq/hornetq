@@ -172,8 +172,8 @@ public interface HornetQServerLogger extends BasicLogger
    void journalUnreferencedMessage(Long messageID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221020, value = "Started Netty Acceptor version {0} {1}:{2,number,#} for {3} protocol", format = Message.Format.MESSAGE_FORMAT)
-   void startedNettyAcceptor(String id, String host, Integer port, String protocol);
+   @Message(id = 221020, value = "Started Netty Acceptor version {0} {1}:{2,number,#}", format = Message.Format.MESSAGE_FORMAT)
+   void startedNettyAcceptor(String id, String host, Integer port);
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221021, value = "failed to remove connection", format = Message.Format.MESSAGE_FORMAT)

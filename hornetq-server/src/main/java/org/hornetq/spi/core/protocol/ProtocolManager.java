@@ -14,7 +14,10 @@
 package org.hornetq.spi.core.protocol;
 
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelPipeline;
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
+import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
@@ -38,7 +41,9 @@ public interface ProtocolManager extends BufferDecoder
 
    void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
 
-   void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder);
+   void addChannelHandlers(ChannelPipeline pipeline);
 
-   boolean isSupportsWebsockets(String protocol);
+   boolean isProtocol(byte[] array);
+
+   void handshake(NettyServerConnection connection, HornetQBuffer buffer);
 }

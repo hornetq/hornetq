@@ -18,13 +18,10 @@ import java.net.SocketAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +31,6 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -49,9 +45,6 @@ import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -60,11 +53,9 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.protocol.ProtocolHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
@@ -121,17 +112,9 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean sslEnabled;
 
-   private final boolean httpEnabled;
-
-   private final long httpServerScanPeriod;
-
-   private final long httpResponseTime;
-
    private final boolean useInvm;
 
-   private final String protocol;
-
-   private final ProtocolManager protocolManager;
+   private final ProtocolHandler protocolHandler;
 
    private final String host;
 
@@ -156,10 +139,6 @@ public class NettyAcceptor implements Acceptor
    private final int tcpReceiveBufferSize;
 
    private final int nioRemotingThreads;
-
-   private final HttpKeepAliveRunnable httpKeepAliveRunnable;
-
-   private HttpAcceptorHandler httpHandler = null;
 
    private final ConcurrentMap<Object, NettyServerConnection> connections = new ConcurrentHashMap<Object, NettyServerConnection>();
 
@@ -186,9 +165,9 @@ public class NettyAcceptor implements Acceptor
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
                         final ScheduledExecutorService scheduledThreadPool,
-                        final ProtocolManager protocolManager)
+                        final Map<String, ProtocolManager> protocolMap)
    {
-      this(null, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, protocolManager);
+      this(null, configuration, handler, decoder, listener, threadPool, scheduledThreadPool, protocolMap);
    }
 
 
@@ -199,7 +178,7 @@ public class NettyAcceptor implements Acceptor
                         final ConnectionLifeCycleListener listener,
                         final Executor threadPool,
                         final ScheduledExecutorService scheduledThreadPool,
-                        final ProtocolManager protocolManager)
+                        final Map<String, ProtocolManager> protocolMap)
    {
 
       this.clusterConnection = clusterConnection;
@@ -216,46 +195,17 @@ public class NettyAcceptor implements Acceptor
                                                           TransportConstants.DEFAULT_SSL_ENABLED,
                                                           configuration);
 
-      httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
-                                                           TransportConstants.DEFAULT_HTTP_ENABLED,
-                                                           configuration);
-
-      if (httpEnabled)
-      {
-         httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME,
-                                                                    TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD,
-                                                                    configuration);
-         httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME,
-                                                                TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
-                                                                configuration);
-         httpKeepAliveRunnable = new HttpKeepAliveRunnable();
-         Future<?> future = scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable,
-                                                                    httpServerScanPeriod,
-                                                                    httpServerScanPeriod,
-                                                                    TimeUnit.MILLISECONDS);
-         httpKeepAliveRunnable.setFuture(future);
-      }
-      else
-      {
-         httpServerScanPeriod = 0;
-         httpResponseTime = 0;
-         httpKeepAliveRunnable = null;
-      }
-
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
                                                               -1,
                                                               configuration);
       backlog = ConfigurationHelper.getIntProperty(TransportConstants.BACKLOG_PROP_NAME,
-                                                   -1,
-                                                   configuration);
+            -1,
+            configuration);
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
-                                                       TransportConstants.DEFAULT_USE_INVM,
-                                                       configuration);
-      protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME,
-                                                                 TransportConstants.DEFAULT_PROTOCOL,
-                                                                 configuration);
+            TransportConstants.DEFAULT_USE_INVM,
+            configuration);
 
-      this.protocolManager = protocolManager;
+      this.protocolHandler = new ProtocolHandler(protocolMap, this, configuration, scheduledThreadPool);
 
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                    TransportConstants.DEFAULT_HOST,
@@ -378,7 +328,7 @@ public class NettyAcceptor implements Acceptor
          @Override
          public void initChannel(Channel channel) throws Exception
          {
-            Map<String, ChannelHandler> handlers = new LinkedHashMap<String, ChannelHandler>();
+            ChannelPipeline pipeline = channel.pipeline();
             if (sslEnabled)
             {
                SSLEngine engine = context.createSSLEngine();
@@ -390,42 +340,9 @@ public class NettyAcceptor implements Acceptor
 
                SslHandler handler = new SslHandler(engine);
 
-               handlers.put("ssl", handler);
+               pipeline.addLast("ssl", handler);
             }
-
-            if (httpEnabled)
-            {
-               handlers.put("http-decoder", new HttpRequestDecoder());
-
-               handlers.put("http-aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
-
-               handlers.put("http-encoder", new HttpResponseEncoder());
-
-               httpHandler = new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime);
-               handlers.put("http-handler", httpHandler);
-            }
-
-            protocolManager.addChannelHandlers(protocol, handlers, decoder);
-
-            handlers.put("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
-
-            /**
-             * STOMP_WS protocol mandates use of named handlers to be able to replace http codecs
-             * by websocket codecs after handshake.
-             * Other protocols can use a faster static channel pipeline directly.
-             */
-            ChannelPipeline pipeline = channel.pipeline();
-            if(protocolManager.isSupportsWebsockets(protocol))
-            {
-               for (Entry<String, ChannelHandler> handler : handlers.entrySet())
-               {
-                  pipeline.addLast(handler.getKey(), handler.getValue());
-               }
-            }
-            else
-            {
-               pipeline.addLast(handlers.values().toArray(new ChannelHandler[handlers.size()]));
-            }
+            pipeline.addLast(protocolHandler.getProtocolDecoder());
          }
       };
       bootstrap.childHandler(factory);
@@ -478,7 +395,7 @@ public class NettyAcceptor implements Acceptor
       }
 
       // TODO: Think about add Version back to netty
-      HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port, protocol);
+      HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port);
    }
 
    private void startServerChannels()
@@ -512,6 +429,11 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
+      if (protocolHandler != null)
+      {
+         protocolHandler.close();
+      }
+
       if (batchFlusherFuture != null)
       {
          batchFlusherFuture.cancel(false);
@@ -523,10 +445,6 @@ public class NettyAcceptor implements Acceptor
          batchFlusherFuture = null;
       }
 
-      if (httpKeepAliveRunnable != null)
-      {
-         httpKeepAliveRunnable.close();
-      }
 
       // serverChannelGroup has been unbound in pause()
       serverChannelGroup.close().awaitUninterruptibly();
@@ -575,11 +493,6 @@ public class NettyAcceptor implements Acceptor
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
-      }
-
-      if (httpHandler != null)
-      {
-         httpHandler.shutdown();
       }
 
       paused = false;
@@ -649,10 +562,21 @@ public class NettyAcceptor implements Acceptor
       return clusterConnection;
    }
 
+   public BufferDecoder getDecoder()
+   {
+      return decoder;
+   }
+
+   public ConnectionCreator createConnectionCreator()
+   {
+      return new HornetQServerChannelHandler(channelGroup, handler, new Listener());
+   }
+
    // Inner classes -----------------------------------------------------------------------------
 
-   private final class HornetQServerChannelHandler extends HornetQChannelHandler
+   private final class HornetQServerChannelHandler extends HornetQChannelHandler implements ConnectionCreator
    {
+
       HornetQServerChannelHandler(final ChannelGroup group,
                                   final BufferHandler handler,
                                   final ConnectionLifeCycleListener listener)
@@ -660,15 +584,14 @@ public class NettyAcceptor implements Acceptor
          super(group, handler, listener);
       }
 
-      @Override
-      public void channelActive(final ChannelHandlerContext ctx) throws Exception
+      public NettyServerConnection createConnection(final ChannelHandlerContext ctx, String protocol, boolean httpEnabled) throws Exception
       {
          super.channelActive(ctx);
          Listener connectionListener = new Listener();
 
          NettyServerConnection nc = new NettyServerConnection(configuration, ctx.channel(), connectionListener, !httpEnabled && batchDelay > 0, directDeliver);
 
-         connectionListener.connectionCreated(NettyAcceptor.this, nc, HornetQClient.DEFAULT_CORE_PROTOCOL);
+         connectionListener.connectionCreated(NettyAcceptor.this, nc, protocol);
 
          SslHandler sslHandler = ctx.pipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -692,6 +615,7 @@ public class NettyAcceptor implements Acceptor
          {
             active = true;
          }
+         return nc;
       }
    }
 
@@ -704,7 +628,7 @@ public class NettyAcceptor implements Acceptor
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
 
-         listener.connectionCreated(component, connection, NettyAcceptor.this.protocol);
+         listener.connectionCreated(component, connection, protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)
