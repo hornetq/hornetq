@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.core.client.HornetQClientMessageBundle;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -256,12 +257,21 @@ public class TransportConfiguration implements Serializable
             {
                str.append("&");
             }
-            String encodedKey = replaceWildcardChars(entry.getKey());
 
-            String val = entry.getValue() == null ? "null" : entry.getValue().toString();
-            String encodedVal = replaceWildcardChars(val);
+            String key = entry.getKey();
 
-            str.append(encodedKey).append('=').append(encodedVal);
+            // HORNETQ-1281 - don't log passwords
+            String val;
+            if (key.equals(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME) || key.equals(TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD))
+            {
+               val = "****";
+            }
+            else
+            {
+               val = entry.getValue() == null ? "null" : entry.getValue().toString();
+            }
+
+            str.append(replaceWildcardChars(key)).append('=').append(replaceWildcardChars(val));
 
             first = false;
          }
