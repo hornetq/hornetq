@@ -245,6 +245,12 @@ public class StompSession implements SessionCallback
                                String ack) throws Exception
    {
       SimpleString queue = SimpleString.toSimpleString(destination);
+      int receiveCredits = consumerCredits;
+      if (ack.equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
+      {
+         receiveCredits = -1;
+      }
+
       if (destination.startsWith("jms.topic"))
       {
          // subscribes to a topic
@@ -266,24 +272,15 @@ public class StompSession implements SessionCallback
             queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
             session.createQueue(SimpleString.toSimpleString(destination), queue, SimpleString.toSimpleString(selector), true, false);
          }
-        ((ServerSessionImpl)session).createConsumer(consumerID, queue, null, false, false);
+        ((ServerSessionImpl)session).createConsumer(consumerID, queue, null, false, false, receiveCredits);
       } 
       else 
       {
-        ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false);
+        ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false, receiveCredits);
       }
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
-
-      if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
-      {
-         session.receiveConsumerCredits(consumerID, -1);
-      }
-      else
-      {
-         session.receiveConsumerCredits(consumerID, consumerCredits);
-      }
 
       session.start();
    }

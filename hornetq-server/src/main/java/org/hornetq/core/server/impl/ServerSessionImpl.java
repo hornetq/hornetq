@@ -341,14 +341,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                               final SimpleString filterString,
                               final boolean browseOnly) throws Exception
    {
-      this.createConsumer(consumerID, queueName, filterString, browseOnly, true);
+      this.createConsumer(consumerID, queueName, filterString, browseOnly, true, null);
    }
 
    public void createConsumer(final long consumerID,
                               final SimpleString queueName,
                               final SimpleString filterString,
                               final boolean browseOnly,
-                              final boolean supportLargeMessage) throws Exception
+                              final boolean supportLargeMessage,
+                              final Integer credits) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -372,8 +373,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                        preAcknowledge,
                                                        strictUpdateDeliveryCount,
                                                        managementService,
-                                                       supportLargeMessage);
-
+                                                       supportLargeMessage,
+                                                       credits);
       consumers.put(consumer.getID(), consumer);
 
       if (!browseOnly)
