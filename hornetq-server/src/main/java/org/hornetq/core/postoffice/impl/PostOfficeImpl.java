@@ -713,7 +713,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          // only override the exiration on messages where the expiration hasn't been set by the user
          if (message.getExpiration() == 0)
          {
-            message.setExpiration(expirationOverride);
+            message.setExpiration(System.currentTimeMillis() + expirationOverride);
          }
       }
    }
