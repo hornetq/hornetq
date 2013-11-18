@@ -573,7 +573,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQRALogger.LOGGER.trace("setPassword(" + value + ")");
+         HornetQRALogger.LOGGER.trace("setPassword(****)");
       }
 
       password = value;
