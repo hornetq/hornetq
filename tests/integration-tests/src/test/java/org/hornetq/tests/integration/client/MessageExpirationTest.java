@@ -83,20 +83,29 @@ public class MessageExpirationTest extends ServiceTestBase
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
 
+      session.close();
+
+      session =  addClientSession(sf.createSession(false, false, false));
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createMessage(false);
-      AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(queue.toString());
-      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION * 5);
-      message.setExpiration(System.currentTimeMillis() + MessageExpirationTest.EXPIRATION);
-      producer.send(message);
 
-      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION);
+      server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
+
+      producer.send(message);
+      session.commit();
 
       session.start();
-
       ClientConsumer consumer = session.createConsumer(queue);
+      assertNotNull(consumer.receiveImmediate());
+      // we recieve the message and then rollback...   then we wait some time > expiration, the message must be gone
+      session.rollback();
+
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
       ClientMessage message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 
@@ -110,19 +119,44 @@ public class MessageExpirationTest extends ServiceTestBase
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
 
+      session.close();
+
+      session =  addClientSession(sf.createSession(false, false, false));
+
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createMessage(false);
-      AddressSettings addressSettings = server.getAddressSettingsRepository().getMatch(queue.toString());
-      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION);
-      producer.send(message);
 
-      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION);
+      server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
+
+
+      // The server must ignore the expiry on the server
+      message.setExpiration(System.currentTimeMillis() + EXPIRATION * 3);
+
+      producer.send(message);
+      session.commit();
 
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queue);
+
+      assertNotNull(consumer.receiveImmediate());
+
+      session.rollback();
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+
+      assertNotNull(consumer.receiveImmediate());
+      session.rollback();
+
+
+      Thread.sleep(EXPIRATION * 4);
+
       ClientMessage message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 
