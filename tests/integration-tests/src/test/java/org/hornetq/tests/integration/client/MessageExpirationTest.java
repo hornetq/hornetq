@@ -96,69 +96,42 @@ public class MessageExpirationTest extends ServiceTestBase
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
 
       producer.send(message);
-      session.commit();
 
-      session.start();
-      ClientConsumer consumer = session.createConsumer(queue);
-      assertNotNull(consumer.receiveImmediate());
-      // we recieve the message and then rollback...   then we wait some time > expiration, the message must be gone
-      session.rollback();
-
-
-      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
-      ClientMessage message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
-
-      consumer.close();
-      session.deleteQueue(queue);
-   }
-
-   @Test
-   public void testMessageExpiredWithoutExpiryAddressWithExpiryDelayOverrideThatShouldNotBeApplied() throws Exception
-   {
-      SimpleString address = RandomUtil.randomSimpleString();
-      SimpleString queue = RandomUtil.randomSimpleString();
-
-      session.close();
-
-      session =  addClientSession(sf.createSession(false, false, false));
-
-      session.createQueue(address, queue, false);
-
-      ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createMessage(false);
-
-
-
-      AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setExpiryDelay((long) MessageExpirationTest.EXPIRATION);
-      server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
-
-
-      // The server must ignore the expiry on the server
+      // second message, this message shouldn't be overriden
+      message = session.createMessage(false);
       message.setExpiration(System.currentTimeMillis() + EXPIRATION * 3);
-
       producer.send(message);
       session.commit();
 
       session.start();
-
       ClientConsumer consumer = session.createConsumer(queue);
-
+      // non expired.. should receive both
+      assertNotNull(consumer.receiveImmediate());
       assertNotNull(consumer.receiveImmediate());
 
+      // stopping the consumer to cleanup the client's buffer
+      session.stop();
+
+      // we recieve the message and then rollback...   then we wait some time > expiration, the message must be gone
+      session.rollback();
+
+
+
+      Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+      session.start();
+
+      // one expired as we changed the expiry in one of the messages... should receive just one
+      assertNotNull(consumer.receiveImmediate());
+      assertNull(consumer.receiveImmediate());
+
+      session.stop();
       session.rollback();
 
       Thread.sleep(MessageExpirationTest.EXPIRATION * 2);
+      session.start();
 
-      assertNotNull(consumer.receiveImmediate());
-      session.rollback();
-
-
-      Thread.sleep(EXPIRATION * 4);
-
-      ClientMessage message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
+      // both expired... nothing should be received
+      assertNull(consumer.receiveImmediate());
 
       consumer.close();
       session.deleteQueue(queue);
