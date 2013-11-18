@@ -152,7 +152,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          final ManagementService managementService) throws Exception
    {
       this(id, session, binding, filter, started, browseOnly, storageManager, callback, 
-            preAcknowledge, strictUpdateDeliveryCount, managementService, true);
+            preAcknowledge, strictUpdateDeliveryCount, managementService, true, null);
    }
 
    public ServerConsumerImpl(final long id,
@@ -166,7 +166,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                              final boolean preAcknowledge,
                              final boolean strictUpdateDeliveryCount,
                              final ManagementService managementService,
-                             final boolean supportLargeMessage) throws Exception
+                             final boolean supportLargeMessage,
+                             final Integer credits) throws Exception
    {
       this.id = id;
 
@@ -207,6 +208,18 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          messageQueue.addConsumer(this);
       }
       this.supportLargeMessage = supportLargeMessage;
+
+      if (credits != null)
+      {
+         if (credits == -1)
+         {
+            availableCredits = null;
+         }
+         else
+         {
+            availableCredits.set(credits);
+         }
+      }
    }
 
    // ServerConsumer implementation
