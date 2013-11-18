@@ -606,11 +606,11 @@ public final class StompConnection implements RemotingConnection
       {
          if (minLargeMessageSize == -1 || (message.getBodyBuffer().writerIndex() < minLargeMessageSize))
          {
-            stompSession.sendInternal(message, true);
+            stompSession.sendInternal(message, false);
          }
          else
          {
-            stompSession.sendInternalLarge(message, true);
+            stompSession.sendInternalLarge(message, false);
          }
       }
       catch (Exception e)
