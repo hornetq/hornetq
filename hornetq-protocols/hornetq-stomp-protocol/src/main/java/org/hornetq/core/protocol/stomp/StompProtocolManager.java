@@ -292,6 +292,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
             {
                try
                {
+                  session.getSession().stop();
                   session.getSession().rollback(true);
                   session.getSession().close(false);
                }
