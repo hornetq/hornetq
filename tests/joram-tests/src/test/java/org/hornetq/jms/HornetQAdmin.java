@@ -248,7 +248,7 @@ public class HornetQAdmin implements Admin
          return;
       }
 
-      String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
+      String[] vmArgs = new String[] {};
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
 
