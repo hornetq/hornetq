@@ -970,6 +970,15 @@ public class NettyConnector extends AbstractConnector
       return bootstrap;
    }
 
+   public static void clearThreadPools()
+   {
+      if (nioEventLoopGroup != null)
+      {
+         nioEventLoopGroup.shutdown();
+         nioEventLoopGroup = null;
+      }
+   }
+
    private static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
