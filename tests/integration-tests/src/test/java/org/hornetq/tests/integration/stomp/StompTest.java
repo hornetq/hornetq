@@ -119,14 +119,8 @@ public class StompTest extends StompTestBase
                      "\n\n" +
                      "Hello World" +
                      Stomp.NULL;
-      try
-      {
-         sendFrame(frame);
-         Assert.fail("the socket must have been closed when the server handled the DISCONNECT");
-      }
-      catch (IOException e)
-      {
-      }
+
+      assertChannelClosed();
    }
 
    @Test
@@ -258,7 +252,7 @@ public class StompTest extends StompTestBase
       baos.write(data);
       baos.write('\0');
       baos.flush();
-      sendFrame(baos.toByteArray());
+      sendFrame(new String(baos.toByteArray()));
 
       BytesMessage message = (BytesMessage)consumer.receive(10000);
       Assert.assertNotNull(message);
@@ -848,16 +842,9 @@ public class StompTest extends StompTestBase
       // send a message to our queue
       sendMessage("second message");
 
-      try
-      {
-         frame = receiveFrame(1000);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received since subscription was removed");
-      }
-      catch (SocketTimeoutException e)
-      {
-
-      }
+      frame = receiveFrame(1000);
+      log.info("Received frame: " + frame);
+      Assert.assertNull("No message should have been received since subscription was removed", frame);
    }
 
    @Test
@@ -893,16 +880,10 @@ public class StompTest extends StompTestBase
       // send a message to our queue
       sendMessage("second message");
 
-      try
-      {
-         frame = receiveFrame(1000);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received since subscription was removed");
-      }
-      catch (SocketTimeoutException e)
-      {
+      frame = receiveFrame(1000);
+      log.info("Received frame: " + frame);
+      Assert.assertNull("No message should have been received since subscription was removed", frame);
 
-      }
    }
 
    @Test
@@ -1109,18 +1090,12 @@ public class StompTest extends StompTestBase
 
       sendMessage(getName(), topic);
 
-      try
-      {
-         frame = receiveFrame(1000);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received since subscription was removed");
-      }
-      catch (SocketTimeoutException e)
-      {
+      frame = receiveFrame(1000);
+      log.info("Received frame: " + frame);
+      Assert.assertNull("No message should have been received since subscription was removed", frame);
 
-      }
 
-      frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
+         frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
       sendFrame(frame);
    }
 
@@ -1245,17 +1220,12 @@ public class StompTest extends StompTestBase
       frame = "SEND\n" + "destination:" + getTopicPrefix() + getTopicName() + "\n\n" + "Hello World" + Stomp.NULL;
       sendFrame(frame);
 
-      try
-      {
-         frame = receiveFrame(2000);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received since subscription is noLocal");
-      }
-      catch (SocketTimeoutException e)
-      {
-      }
+      frame = receiveFrame(2000);
+      log.info("Received frame: " + frame);
+      Assert.assertNull("No message should have been received since subscription was removed", frame);
 
-      // send message on another JMS connection => it should be received
+
+         // send message on another JMS connection => it should be received
       sendMessage(getName(), topic);
       frame = receiveFrame(10000);
       Assert.assertTrue(frame.startsWith("MESSAGE"));
@@ -1306,15 +1276,8 @@ public class StompTest extends StompTestBase
       frame = "ABORT\n" + "transaction: tx1\n" + "\n\n" + Stomp.NULL;
       sendFrame(frame);
 
-      try
-      {
-         frame = receiveFrame(1000);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received as the message was acked even though the transaction has been aborted");
-      }
-      catch (SocketTimeoutException e)
-      {
-      }
+      frame = receiveFrame(1000);
+      Assert.assertNull("No message should have been received as the message was acked even though the transaction has been aborted", frame);
 
       frame = "UNSUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + Stomp.NULL;
       sendFrame(frame);
@@ -1327,7 +1290,7 @@ public class StompTest extends StompTestBase
    @Test
    public void testMultiProtocolConsumers() throws Exception
    {
-      final int TIME_OUT = 100;
+      final int TIME_OUT = 5000;
 
       int count = 1000;
 
@@ -1382,16 +1345,9 @@ public class StompTest extends StompTestBase
 
       sendMessage(getName(), topic);
 
-      try
-      {
-         frame = receiveFrame(TIME_OUT);
-         log.info("Received frame: " + frame);
-         Assert.fail("No message should have been received since subscription was removed");
-      }
-      catch (SocketTimeoutException e)
-      {
-
-      }
+      frame = receiveFrame(TIME_OUT);
+      log.info("Received frame: " + frame);
+      Assert.assertNull("No message should have been received since subscription was removed", frame);
 
       frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
       sendFrame(frame);

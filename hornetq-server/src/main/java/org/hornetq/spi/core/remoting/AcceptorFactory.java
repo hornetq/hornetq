@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.core.protocol.ProtocolHandler;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 
@@ -36,13 +37,14 @@ public interface AcceptorFactory
     * Create a new instance of an Acceptor.
     *
     *
+    *
     * @param configuration       the configuration
     * @param handler             the handler
     * @param decoder             the decoder
     * @param listener            the listener
     * @param threadPool          the threadpool
     * @param scheduledThreadPool a scheduled thread pool
-    * @param manager
+    * @param protocolHandler
     * @return an acceptor
     */
    Acceptor createAcceptor(ClusterConnection clusterConnection,
@@ -52,7 +54,7 @@ public interface AcceptorFactory
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
                            ScheduledExecutorService scheduledThreadPool,
-                           ProtocolManager manager);
+                           Map<String, ProtocolManager> protocolMap);
 
    /**
     * Returns the allowable properties for this acceptor.

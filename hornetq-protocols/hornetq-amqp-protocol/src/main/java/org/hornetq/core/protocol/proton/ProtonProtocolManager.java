@@ -21,7 +21,7 @@
 */
 package org.hornetq.core.protocol.proton;
 
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelPipeline;
 import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.amqp.transaction.Coordinator;
@@ -44,6 +44,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateException;
+import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -54,13 +55,11 @@ import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
-import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.UUIDGenerator;
 
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
-import java.util.Map;
 
 /**
  * A proton protocol manager, basically reads the Proton Input and maps proton resources to HornetQ resources
@@ -119,15 +118,22 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    }
 
    @Override
-   public void addChannelHandlers(String protocol, Map<String, ChannelHandler> handlers, BufferDecoder decoder)
+   public void addChannelHandlers(ChannelPipeline pipeliner)
    {
       //we don't need any we do our own decoding
    }
 
    @Override
-   public boolean isSupportsWebsockets(String protocol)
+   public boolean isProtocol(byte[] array)
    {
-      return false;
+      String startFrame = new String(array);
+      return startFrame.startsWith("AMQP");
+   }
+
+   @Override
+   public void handshake(NettyServerConnection connection, HornetQBuffer buffer)
+   {
+      //todo move handshake to here
    }
 
    @Override

@@ -87,27 +87,14 @@ public class ExtraStompTest extends StompTestBase
          String frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 1" + Stomp.NULL;
          sendFrame(frame);
 
-         //sleep to let the connection die
-         Thread.sleep(8000);
-
-         frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World 2" + Stomp.NULL;
-
-         try
-         {
-            sendFrame(frame);
-            fail("Message has been sent successfully after ttl expires! ttl configuration not working!");
-         }
-         catch (SocketException e)
-         {
-            //expected.
-         }
+         assertChannelClosed();
 
          MessageConsumer consumer = session.createConsumer(queue);
 
-         TextMessage message = (TextMessage)consumer.receive(1000);
+         TextMessage message = (TextMessage)consumer.receiveNoWait();
          Assert.assertNotNull(message);
 
-         message = (TextMessage)consumer.receive(2000);
+         message = (TextMessage)consumer.receiveNoWait();
          Assert.assertNull(message);
       }
       finally

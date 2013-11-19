@@ -37,6 +37,7 @@ import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.protocol.ProtocolHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
@@ -259,7 +260,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        this,
                                                        threadPool,
                                                        scheduledThreadPool,
-                                                       manager);
+                                                       protocolMap);
 
             if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
             {

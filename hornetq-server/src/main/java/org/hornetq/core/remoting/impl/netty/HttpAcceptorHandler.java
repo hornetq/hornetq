@@ -38,7 +38,7 @@ import io.netty.util.ReferenceCountUtil;
  * a response.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-class HttpAcceptorHandler extends ChannelDuplexHandler
+public class HttpAcceptorHandler extends ChannelDuplexHandler
 {
    private final BlockingQueue<ResponseHolder> responses = new LinkedBlockingQueue<ResponseHolder>();
 
@@ -52,18 +52,12 @@ class HttpAcceptorHandler extends ChannelDuplexHandler
 
    private Channel channel;
 
-   public HttpAcceptorHandler(final HttpKeepAliveRunnable httpKeepAliveTask, final long responseTime)
+   public HttpAcceptorHandler(final HttpKeepAliveRunnable httpKeepAliveTask, final long responseTime, Channel channel)
    {
       super();
       this.responseTime = responseTime;
       this.httpKeepAliveTask = httpKeepAliveTask;
-   }
-
-   @Override
-   public void channelActive(final ChannelHandlerContext ctx) throws Exception
-   {
-      super.channelActive(ctx);
-      channel = ctx.channel();
+      this.channel = channel;
       httpKeepAliveTask.registerKeepAliveHandler(this);
    }
 
@@ -81,15 +75,16 @@ class HttpAcceptorHandler extends ChannelDuplexHandler
       FullHttpRequest request = (FullHttpRequest) msg;
       HttpMethod method = request.getMethod();
       // if we are a post then we send upstream, otherwise we are just being prompted for a response.
-      if (method.equals(HttpMethod.POST))
+      if (method.equals(HttpMethod.POST ) )
       {
          ctx.fireChannelRead(ReferenceCountUtil.retain(((FullHttpRequest) msg).content()));
-         // TODO: Not return here looks like a bug
+         // add a new response
+         responses.put(new ResponseHolder(System.currentTimeMillis() + responseTime,
+               new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
+         ReferenceCountUtil.release(msg);
+         return;
       }
-      // add a new response
-      responses.put(new ResponseHolder(System.currentTimeMillis() + responseTime,
-                                       new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
-      ReferenceCountUtil.release(msg);
+      super.channelRead(ctx, msg);
    }
 
    @Override
@@ -235,6 +230,7 @@ class HttpAcceptorHandler extends ChannelDuplexHandler
       {
          executor.shutdownNow();
       }
+      responses.clear();
    }
 
    /**
