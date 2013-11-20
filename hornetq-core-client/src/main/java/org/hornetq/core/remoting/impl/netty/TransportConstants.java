@@ -53,6 +53,8 @@ public class TransportConstants
 
    public static final String PROTOCOL_PROP_NAME = "protocol";
 
+   public static final String PROTOCOLS_PROP_NAME = "protocols";
+
    public static final String HOST_PROP_NAME = "host";
 
    public static final String PORT_PROP_NAME = "port";
@@ -107,8 +109,6 @@ public class TransportConstants
    public static final boolean DEFAULT_USE_INVM = false;
 
    public static final boolean DEFAULT_USE_SERVLET = false;
-
-   public static final String DEFAULT_PROTOCOL = HornetQClient.DEFAULT_CORE_PROTOCOL;
 
    public static final String DEFAULT_HOST = "localhost";
 
@@ -172,12 +172,12 @@ public class TransportConstants
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
       allowableAcceptorKeys.add(TransportConstants.SSL_ENABLED_PROP_NAME);
-      allowableAcceptorKeys.add(TransportConstants.HTTP_ENABLED_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.USE_NIO_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.USE_INVM_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.PROTOCOL_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.PROTOCOLS_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HOST_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.PORT_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);

@@ -87,6 +87,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
@@ -1298,6 +1299,16 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          ServerLocatorImpl.clearThreadPools();
       }
       catch (Throwable e)
+      {
+         log.info(threadDump(e.getMessage()));
+         System.err.println(threadDump(e.getMessage()));
+      }
+
+      try
+      {
+         NettyConnector.clearThreadPools();
+      }
+      catch (Exception e)
       {
          log.info(threadDump(e.getMessage()));
          System.err.println(threadDump(e.getMessage()));

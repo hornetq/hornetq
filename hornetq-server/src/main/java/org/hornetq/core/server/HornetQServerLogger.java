@@ -172,8 +172,8 @@ public interface HornetQServerLogger extends BasicLogger
    void journalUnreferencedMessage(Long messageID);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221020, value = "Started Netty Acceptor version {0} {1}:{2,number,#} for {3} protocol", format = Message.Format.MESSAGE_FORMAT)
-   void startedNettyAcceptor(String id, String host, Integer port, String protocol);
+   @Message(id = 221020, value = "Started Netty Acceptor version {0} {1}:{2,number,#}", format = Message.Format.MESSAGE_FORMAT)
+   void startedNettyAcceptor(String id, String host, Integer port);
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221021, value = "failed to remove connection", format = Message.Format.MESSAGE_FORMAT)
@@ -1003,6 +1003,11 @@ public interface HornetQServerLogger extends BasicLogger
          value =  "Group Binding not available so deleting {0} groups from {1}, groups will be bound to another node",
          format = Message.Format.MESSAGE_FORMAT)
    void groupingQueueRemoved(int size, SimpleString clusterName);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222168, value = "The 'protocol' property is deprecated, if you want this Acceptor to support multiple protocols use the 'protocols' property, i.e. 'CORE,AMQP,STOMP'",
+         format = Message.Format.MESSAGE_FORMAT)
+   void warnDeprecatedProtocol();
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)

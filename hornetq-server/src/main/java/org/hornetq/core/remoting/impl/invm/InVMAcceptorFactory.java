@@ -21,7 +21,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.AcceptorFactory;
-import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 
@@ -36,10 +35,10 @@ public class InVMAcceptorFactory implements AcceptorFactory
    public Acceptor createAcceptor(final ClusterConnection clusterConnection,
                                   final Map<String, Object> configuration,
                                   final BufferHandler handler,
-                                  final BufferDecoder decoder,
                                   final ConnectionLifeCycleListener listener,
                                   final Executor threadPool,
-                                  final ScheduledExecutorService scheduledThreadPool, ProtocolManager manager)
+                                  final ScheduledExecutorService scheduledThreadPool,
+                                  final Map<String, ProtocolManager> protocolHandler)
    {
       return new InVMAcceptor(clusterConnection, configuration, handler, listener, threadPool);
    }

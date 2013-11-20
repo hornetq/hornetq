@@ -31,9 +31,7 @@ public class StompProtocolManagerFactory implements ProtocolManagerFactory
 {
    public final static String STOMP_PROTOCOL_NAME = "STOMP";
 
-   public final static String STOMP_WS_PROTOCOL_NAME = "STOMP_WS";
-
-   private static String[] SUPPORTED_PROTOCOLS = {STOMP_PROTOCOL_NAME, STOMP_WS_PROTOCOL_NAME};
+   private static String[] SUPPORTED_PROTOCOLS = {STOMP_PROTOCOL_NAME};
 
    public ProtocolManager createProtocolManager(final HornetQServer server, final List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors)
    {

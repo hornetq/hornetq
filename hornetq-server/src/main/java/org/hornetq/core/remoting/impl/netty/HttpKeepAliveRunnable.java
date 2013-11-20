@@ -51,13 +51,18 @@ public class HttpKeepAliveRunnable implements Runnable
    public synchronized void unregisterKeepAliveHandler(final HttpAcceptorHandler httpAcceptorHandler)
    {
       handlers.remove(httpAcceptorHandler);
+      httpAcceptorHandler.shutdown();
    }
 
    public void close()
    {
+      for (HttpAcceptorHandler handler : handlers)
+      {
+         handler.shutdown();
+      }
       if (future != null)
       {
-         future.cancel(false);
+         future.cancel(true);
       }
 
       closed = true;
