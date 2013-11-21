@@ -7,10 +7,6 @@ Make sure you install these packages:
 
 - G++ (yum install gcc-c++ or aptitude install g++)
 - Gcc (yum insall gcc or aptitude install gcc)
-- autotools-dev (including libtool, automake, autoconf) (yum install autoconf libtool or aptitude install autotools-dev autoconf libtool)
-- Make (yum install make or aptitude install make)
-- libaio (0.3.106) (yum install libaio or aptitude install libaio)
-- libaio-dev (yum install libaio-devel or aptitude install libaio-dev)
 - JDK (full JDK)
 
 
@@ -33,8 +29,8 @@ Example:
  $> export JAVA_HOME=/usr/share/jdk1.5.0_13
  
  
-2. Call bootstrap. Bootstrap will call all the initial scripts you need
- $>  ./bootstrap
+2. Call compile-native.sh. Bootstrap will call all the initial scripts you need
+ $>  ./compile-native.sh
  
 if you are missing any dependencies, autoconf would tell you what you're missing.
  
@@ -44,41 +40,6 @@ COMPILED FILE
 The produced file will be under ./src/.libs/libHornetQLibAIO.so
 
 
-PERF-DISK
-
-There is a script on this directory called perf-disk. This script will tell you how many bytes per second your disk is capable of.
-
-If you interrupt this script, you will see a file (/tmp/foo.dat) created on your disk, which is used to measure the performance.
-
-
-DISKTEST
-
-There is also an executable that performs direct libaio write emulating the same behaviour you should see on the Journal.
-
-To verify what is your maximum disk throughput execute disktest
-
-Usage: disktest<Platform> <directory> <number-of-files>
-
-example:
-chmod +x disktest
-./disktest32 /tmp 20
-
-
-At the end of the execution you will see something like:
-
-Total time on write files = 198, Bytes/millisecond = 105916 
-
-disktest is also compiled by our build scripts. disktest.cpp is also a sample of how to make calls into libaio.
-
-
-
 DOCUMENTATION
 
 The User Manual, chapter 38 (Libaio Native Libraries) will provide more details about our native libraries on libaio.
-
-
-
-README IS A REQUIRED FILE
-
-This file exists here as required by autoconf, or else we would have a compilation error.
-

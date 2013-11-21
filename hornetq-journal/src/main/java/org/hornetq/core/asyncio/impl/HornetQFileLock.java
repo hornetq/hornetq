@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
+import org.hornetq.core.libaio.Native;
+
 /**
  * A HornetQFileLock
  * @author clebertsuconic
@@ -41,6 +43,6 @@ public class HornetQFileLock extends FileLock
    @Override
    public void release() throws IOException
    {
-      AsynchronousFileImpl.closeFile(handle);
+      Native.closeFile(handle);
    }
 }

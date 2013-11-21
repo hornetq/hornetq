@@ -26,6 +26,7 @@ import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.libaio.Native;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -129,7 +130,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
 
    public void releaseDirectBuffer(final ByteBuffer buffer)
    {
-      AsynchronousFileImpl.destroyBuffer(buffer);
+      Native.destroyBuffer(buffer);
    }
 
    public ByteBuffer newBuffer(int size)
@@ -175,7 +176,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
    @Override
    public synchronized void releaseBuffer(final ByteBuffer buffer)
    {
-      AsynchronousFileImpl.destroyBuffer(buffer);
+      Native.destroyBuffer(buffer);
    }
 
    @Override

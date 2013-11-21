@@ -31,8 +31,12 @@ import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.IOExceptionListener;
+import org.hornetq.core.libaio.Native;
 import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.ReusableLatch;
+
+
+import static org.hornetq.core.libaio.Native.*;
 
 /**
  *
@@ -55,7 +59,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     * <p>
     * Or else the native module won't be loaded because of version mismatches
     */
-   private static final int EXPECTED_NATIVE_VERSION = 51;
+   private static final int EXPECTED_NATIVE_VERSION = 52;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
@@ -87,21 +91,34 @@ public class AsynchronousFileImpl implements AsynchronousFile
       AsynchronousFileImpl.totalMaxIO.set(0);
    }
 
+   public static int openFile(String fileName)
+   {
+      return Native.openFile(fileName);
+   }
+
+   public static void closeFile(int handle)
+   {
+      Native.closeFile(handle);
+   }
+
+   public static void destroyBuffer(ByteBuffer buffer)
+   {
+      Native.destroyBuffer(buffer);
+   }
+
    private static boolean loadLibrary(final String name)
    {
       try
       {
          HornetQJournalLogger.LOGGER.trace(name + " being loaded");
          System.loadLibrary(name);
-         if (AsynchronousFileImpl.getNativeVersion() != AsynchronousFileImpl.EXPECTED_NATIVE_VERSION)
+         if (getNativeVersion() != AsynchronousFileImpl.EXPECTED_NATIVE_VERSION)
          {
             HornetQJournalLogger.LOGGER.incompatibleNativeLibrary();
             return false;
          }
          else
          {
-            // Initializing nanosleep
-            AsynchronousFileImpl.setNanoSleepInterval(1);
             return true;
          }
       }
@@ -217,7 +234,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          try
          {
-            handler = AsynchronousFileImpl.init(fileName1, this.maxIO, HornetQJournalLogger.LOGGER);
+            handler = Native.init(AsynchronousFileImpl.class, fileName1, this.maxIO, HornetQJournalLogger.LOGGER);
          }
          catch (HornetQException e)
          {
@@ -274,7 +291,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          if (handler != null)
          {
-            AsynchronousFileImpl.closeInternal(handler);
+            closeInternal(handler);
             AsynchronousFileImpl.addMax(-maxIO);
          }
          opened = false;
@@ -291,7 +308,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       try
       {
-         writeInternal(handler, positionToWrite, size, bytes);
+         Native.writeInternal(handler, positionToWrite, size, bytes);
       }
       catch (HornetQException e)
       {
@@ -335,7 +352,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
                try
                {
-                  write(handler, sequence, position, size, directByteBuffer, aioCallback);
+                  Native.write(AsynchronousFileImpl.this, handler, sequence, position, size, directByteBuffer, aioCallback);
                }
                catch (HornetQException e)
                {
@@ -360,7 +377,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          try
          {
-            write(handler, sequence, position, size, directByteBuffer, aioCallback);
+            Native.write(this, handler, sequence, position, size, directByteBuffer, aioCallback);
          }
          catch (HornetQException e)
          {
@@ -388,7 +405,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       maxIOSemaphore.acquireUninterruptibly();
       try
       {
-         read(handler, position, size, directByteBuffer, aioPackage);
+         Native.read(this, handler, position, size, directByteBuffer, aioPackage);
       }
       catch (HornetQException e)
       {
@@ -416,7 +433,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       checkOpened();
       try {
-         AsynchronousFileImpl.fill(handler, position, blocks, size, fillChar);
+         Native.fill(handler, position, blocks, size, fillChar);
       }
       catch (HornetQException e)
       {
@@ -442,7 +459,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          throw new RuntimeException("Buffer size needs to be aligned to 512");
       }
 
-      return AsynchronousFileImpl.newNativeBuffer(size);
+      return newNativeBuffer(size);
    }
 
    public void setBufferCallback(final BufferCallback callback)
@@ -458,7 +475,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    public static void clearBuffer(final ByteBuffer buffer)
    {
-      AsynchronousFileImpl.resetBuffer(buffer, buffer.limit());
+      Native.resetBuffer(buffer, buffer.limit());
       buffer.position(0);
    }
 
@@ -604,7 +621,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          return;
       }
-      AsynchronousFileImpl.internalPollEvents(handler);
+      Native.internalPollEvents(handler);
    }
 
    private void startPoller()
@@ -648,7 +665,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     */
    private void stopPoller() throws HornetQException, InterruptedException
    {
-      AsynchronousFileImpl.stopPoller(handler);
+      Native.stopPoller(handler);
       // We need to make sure we won't call close until Poller is
       // completely done, or we might get beautiful GPFs
       pollerLatch.await();
@@ -669,54 +686,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
    // Native ----------------------------------------------------------------------------
 
 
-   // Functions used for locking files .....
-   public static native int openFile(String fileName);
-
-   public static native void closeFile(int handle);
-
-   private static native boolean flock(int handle);
-   // Functions used for locking files ^^^^^^^^
-
-   private static native void resetBuffer(ByteBuffer directByteBuffer, int size);
-
-   public static native void destroyBuffer(ByteBuffer buffer);
-
-   /** Instead of passing the nanoSeconds through the stack call every time, we set it statically inside the native method */
-   public static native void setNanoSleepInterval(int nanoseconds);
-
-   public static native void nanoSleep();
-
-   private static native ByteBuffer newNativeBuffer(long size);
-
-   private static native ByteBuffer init(String fileName, int maxIO, HornetQJournalLogger logger) throws HornetQException;
-
-   private native long size0(ByteBuffer handle) throws HornetQException;
-
-   private native void write(ByteBuffer handle,
-                             long sequence,
-                             long position,
-                             long size,
-                             ByteBuffer buffer,
-                             AIOCallback aioPackage) throws HornetQException;
-
-   /** a direct write to the file without the use of libaio's submit. */
-   private native void writeInternal(ByteBuffer handle, long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
-
-   private native void read(ByteBuffer handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
-
-   private static native void fill(ByteBuffer handle, long position, int blocks, long size, byte fillChar) throws HornetQException;
-
-   private static native void closeInternal(ByteBuffer handler) throws HornetQException;
-
-   private static native void stopPoller(ByteBuffer handler) throws HornetQException;
-
-   /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
-   private static native int getNativeVersion();
-
-   /** Poll asynchronous events from internal queues */
-   private static native void internalPollEvents(ByteBuffer handler);
-
-   // Inner classes ---------------------------------------------------------------------
 
    /**
     * Explicitly adding a compare to clause that returns 0 for at least the same object.
