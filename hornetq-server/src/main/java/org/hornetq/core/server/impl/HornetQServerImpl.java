@@ -1202,6 +1202,11 @@ public class HornetQServerImpl implements HornetQServer
 
    public void destroyQueue(final SimpleString queueName, final ServerSession session, final boolean checkConsumerCount) throws Exception
     {
+      destroyQueue(queueName, session, checkConsumerCount, false);
+   }
+
+   public void destroyQueue(final SimpleString queueName, final ServerSession session, final boolean checkConsumerCount, final boolean removeConsumers) throws Exception
+   {
       addressSettingsRepository.clearCache();
 
       Binding binding = postOffice.getBinding(queueName);
@@ -1233,7 +1238,7 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
-      queue.deleteQueue();
+      queue.deleteQueue(removeConsumers);
    }
 
 

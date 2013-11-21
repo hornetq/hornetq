@@ -171,6 +171,25 @@ public class ProtonSession implements SessionCallback
       //To change body of implemented methods use File | Settings | File Templates.
    }
 
+   @Override
+   public void disconnect(long consumerId, String queueName)
+   {
+      ProtonConsumer protonConsumer = consumers.remove(consumerId);
+      if(protonConsumer != null)
+      {
+         try
+         {
+            protonConsumer.close();
+         }
+         catch (HornetQAMQPException e)
+         {
+            protonConsumer.getSender().setTarget(null);
+            protonConsumer.getSender().setCondition(new ErrorCondition(e.getAmqpError(), e.getMessage()));
+         }
+         connection.write();
+      }
+   }
+
    public OperationContext getContext()
    {
       return context;

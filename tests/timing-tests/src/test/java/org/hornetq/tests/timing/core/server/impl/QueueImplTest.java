@@ -256,6 +256,11 @@ public class QueueImplTest extends UnitTestCase
             countDownLatch.countDown();
             return HandleStatus.HANDLED;
          }
+
+         @Override
+         public void disconnect()
+         {
+         }
       };
       QueueImpl queue = new QueueImpl(1,
                                   new SimpleString("address1"),

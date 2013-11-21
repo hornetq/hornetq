@@ -972,6 +972,31 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
    }
 
+   @Override
+   public void handleConsumerDisconnect(long consumerID) throws HornetQException
+   {
+      final ClientConsumerInternal consumer = getConsumer(consumerID);
+
+      if (consumer != null)
+      {
+         executor.execute(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               try
+               {
+                  consumer.close();
+               }
+               catch (HornetQException e)
+               {
+                  HornetQClientLogger.LOGGER.unableToCloseConsumer(e);
+               }
+            }
+         });
+      }
+   }
+
    public void close() throws HornetQException
    {
       if (closed)

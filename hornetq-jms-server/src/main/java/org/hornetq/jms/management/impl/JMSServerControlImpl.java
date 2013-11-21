@@ -447,13 +447,18 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
    public boolean destroyQueue(final String name) throws Exception
    {
+      return destroyQueue(name, false);
+   }
+
+   public boolean destroyQueue(final String name, final boolean removeConsumers) throws Exception
+   {
       checkStarted();
 
       clearIO();
 
       try
       {
-         boolean destroyed = server.destroyQueue(name);
+         boolean destroyed = server.destroyQueue(name, removeConsumers);
          if (destroyed)
          {
             sendNotification(NotificationType.QUEUE_DESTROYED, name);

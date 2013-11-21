@@ -169,4 +169,10 @@ public class FakeConsumer implements Consumer
       return toString();
    }
 
+   @Override
+   public void disconnect()
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
 }

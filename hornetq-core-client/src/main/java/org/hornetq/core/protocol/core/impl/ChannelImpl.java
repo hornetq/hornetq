@@ -143,6 +143,8 @@ public final class ChannelImpl implements Channel
       {
          case PacketImpl.CLUSTER_TOPOLOGY_V2:
             return version >= 122;
+         case PacketImpl.DISCONNECT_CONSUMER:
+            return  version >= 124;
          default:
             return true;
       }

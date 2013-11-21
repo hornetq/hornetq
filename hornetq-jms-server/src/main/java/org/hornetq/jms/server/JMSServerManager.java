@@ -142,6 +142,18 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean destroyQueue(String name) throws Exception;
 
+   /**
+    * destroys a queue and removes it from JNDI or BindingRegistry.
+    * disconnects any consumers connected to the queue.
+    *
+    * @param name
+    *           the name of the queue to destroy
+    * @return true if destroyed
+    * @throws Exception
+    *            if a problem occurred destroying the queue
+    */
+   boolean destroyQueue(String name, boolean removeConsumers) throws Exception;
+
    String[] getJNDIOnQueue(String queue);
 
    String[] getJNDIOnTopic(String topic);

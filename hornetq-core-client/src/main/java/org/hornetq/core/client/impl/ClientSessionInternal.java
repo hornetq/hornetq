@@ -60,6 +60,8 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 
+   void handleConsumerDisconnect(long consumerID) throws HornetQException;
+
    void preHandleFailover(CoreRemotingConnection connection);
 
    void handleFailover(CoreRemotingConnection backupConnection);

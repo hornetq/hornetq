@@ -45,7 +45,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PageSubscription;
-import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
@@ -61,7 +60,6 @@ import org.hornetq.core.server.impl.QueueFactoryImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -610,6 +608,12 @@ public class HangConsumerTest extends ServiceTestBase
       public void removeReadyListener(ReadyListener listener)
       {
          targetCallback.removeReadyListener(listener);
+      }
+
+      @Override
+      public void disconnect(long consumerId, String queueName)
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
       }
 
 

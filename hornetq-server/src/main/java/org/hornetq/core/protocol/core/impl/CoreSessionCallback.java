@@ -15,11 +15,13 @@ package org.hornetq.core.protocol.core.impl;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsFailMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -111,4 +113,16 @@ public final class CoreSessionCallback implements SessionCallback
       channel.getConnection().getTransportConnection().removeReadyListener(listener);
    }
 
+   @Override
+   public void disconnect(long consumerId, String queueName)
+   {
+      if(channel.supports(PacketImpl.DISCONNECT_CONSUMER))
+      {
+         channel.send(new DisconnectConsumerMessage(consumerId));
+      }
+      else
+      {
+         HornetQServerLogger.LOGGER.warnDisconnectOldClient(queueName);
+      }
+   }
 }

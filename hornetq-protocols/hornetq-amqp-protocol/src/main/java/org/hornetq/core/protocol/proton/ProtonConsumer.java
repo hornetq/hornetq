@@ -302,6 +302,11 @@ public class ProtonConsumer implements ProtonDeliveryHandler
       }
    }
 
+   public Sender getSender()
+   {
+      return sender;
+   }
+
    private String formatTag(byte[] tag)
    {
       StringBuffer sb = new StringBuffer();

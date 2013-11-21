@@ -49,6 +49,11 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public void deleteQueue(boolean removeConsumers) throws Exception
+   {
+   }
+
+   @Override
    public void setConsumersRefCount(HornetQServer server)
    {
 
