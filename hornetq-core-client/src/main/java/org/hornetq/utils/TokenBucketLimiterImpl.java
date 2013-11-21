@@ -13,6 +13,8 @@
 
 package org.hornetq.utils;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  *
  * A TokenBucketLimiterImpl
@@ -24,24 +26,34 @@ public class TokenBucketLimiterImpl implements TokenBucketLimiter
 {
    private final int rate;
 
+   private final long window;
+
    private final boolean spin;
 
-   private long last;
+   /**
+      Even thought we don't use TokenBucket in multiThread
+      the implementation should keep this volatile for correctness
+     */
+   private volatile long last;
 
-   private int tokens;
-
-   private int tokensAdded;
-
-   public TokenBucketLimiterImpl(final int rate)
-   {
-      this(rate, false);
-   }
+   /**
+      Even thought we don't use TokenBucket in multiThread
+      the implementation should keep this volatile for correctness
+     */
+   private volatile int tokens;
 
    public TokenBucketLimiterImpl(final int rate, final boolean spin)
+   {
+      this(rate, spin, TimeUnit.SECONDS, 1);
+   }
+
+   public TokenBucketLimiterImpl(final int rate, final boolean spin, TimeUnit unit, int unitAmount)
    {
       this.rate = rate;
 
       this.spin = spin;
+
+      this.window = unit.toMillis(unitAmount);
    }
 
    public int getRate()
@@ -87,24 +99,11 @@ public class TokenBucketLimiterImpl implements TokenBucketLimiter
 
       long diff = now - last;
 
-      if (diff >= 1000)
+      if (diff >= window)
       {
-         last = last + 1000;
+         last = System.currentTimeMillis();
 
-         tokens = 0;
-
-         tokensAdded = 0;
-      }
-
-      int tokensDue = (int)(rate * diff / 1000);
-
-      int tokensToAdd = tokensDue - tokensAdded;
-
-      if (tokensToAdd > 0)
-      {
-         tokens += tokensToAdd;
-
-         tokensAdded += tokensToAdd;
+         tokens = rate;
       }
 
       if (tokens > 0)
