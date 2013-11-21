@@ -41,6 +41,8 @@ public class TransportConstants
 
    public static final String HTTP_REQUIRES_SESSION_ID = "http-requires-session-id";
 
+   public static final String HTTP_UPGRADE_ENABLED_PROP_NAME = "http-upgrade-enabled";
+
    public static final String USE_SERVLET_PROP_NAME = "use-servlet";
 
    public static final String SERVLET_PATH = "servlet-path";
@@ -156,6 +158,8 @@ public class TransportConstants
 
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 
+   public static final boolean DEFAULT_HTTP_UPGRADE_ENABLED = false;
+
    public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
 
    public static final long DEFAULT_BATCH_DELAY = 0;
@@ -182,6 +186,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.SSL_ENABLED_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.USE_NIO_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.USE_INVM_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.PROTOCOL_PROP_NAME);
@@ -217,6 +222,7 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD);
       allowableConnectorKeys.add(TransportConstants.HTTP_REQUIRES_SESSION_ID);
+      allowableConnectorKeys.add(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.USE_SERVLET_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.SERVLET_PATH);
       allowableConnectorKeys.add(TransportConstants.USE_NIO_PROP_NAME);

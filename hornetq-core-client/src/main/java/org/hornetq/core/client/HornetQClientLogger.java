@@ -419,4 +419,8 @@ public interface HornetQClientLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 214022, value = "Invalid protocol specified. Supported protocols are: {0}", format = Message.Format.MESSAGE_FORMAT)
    void invalidProtocol(String validProtocols);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 214023, value = "HTTP Handshake failed, the received accept value %s does not match the expected response %s")
+   void httpHandshakeFailed(String response, String expectedResponse);
 }

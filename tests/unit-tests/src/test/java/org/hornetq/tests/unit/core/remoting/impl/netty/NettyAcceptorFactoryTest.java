@@ -78,7 +78,8 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
 
       };
 
-      Acceptor acceptor = factory.createAcceptor(null,
+      Acceptor acceptor = factory.createAcceptor("netty",
+                                                 null,
                                                  params,
                                                  handler,
                                                  listener,

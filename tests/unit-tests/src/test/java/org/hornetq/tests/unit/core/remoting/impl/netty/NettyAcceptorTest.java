@@ -47,7 +47,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class NettyAcceptorTest extends UnitTestCase
 {
-   private ExecutorService pool1;
    private ScheduledExecutorService pool2;
 
    @Override
@@ -69,8 +68,6 @@ public class NettyAcceptorTest extends UnitTestCase
       }
       finally
       {
-         if (pool1 != null)
-            pool1.shutdownNow();
          if (pool2 != null)
             pool2.shutdownNow();
          super.tearDown();
@@ -108,12 +105,12 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
       };
-      pool1 = Executors.newCachedThreadPool();
       pool2 = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
-      NettyAcceptor acceptor = new NettyAcceptor(params,
+      NettyAcceptor acceptor = new NettyAcceptor("netty",
+                                                 null,
+                                                 params,
                                                  handler,
                                                  listener,
-                                                 pool1,
                                                  pool2,
             null);
 
@@ -130,10 +127,8 @@ public class NettyAcceptorTest extends UnitTestCase
       Assert.assertFalse(acceptor.isStarted());
       UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
 
-      pool1.shutdown();
       pool2.shutdown();
 
-      pool1.awaitTermination(1, TimeUnit.SECONDS);
       pool2.awaitTermination(1, TimeUnit.SECONDS);
    }
 
