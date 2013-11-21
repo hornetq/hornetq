@@ -103,6 +103,14 @@ public interface JMSServerControl
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
    /**
+    * Destroys a JMS Queue with the specified name.
+    *
+    * @return {@code true} if the queue was destroyed, {@code false} else
+    */
+   @Operation(desc = "Destroy a JMS Queue", impact = MBeanOperationInfo.ACTION)
+   boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name, @Parameter(name = "removeConsumers", desc = "disconnect any consumers connected to this queue") boolean removeConsumers) throws Exception;
+
+   /**
     * Creates a JMS Topic.
     *
     * @return {@code true} if the topic was created, {@code false} else

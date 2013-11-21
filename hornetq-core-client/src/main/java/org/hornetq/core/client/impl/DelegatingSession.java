@@ -411,6 +411,12 @@ public class DelegatingSession implements ClientSessionInternal
       session.handleReceiveMessage(consumerID, message);
    }
 
+   @Override
+   public void handleConsumerDisconnect(long consumerID) throws HornetQException
+   {
+      session.handleConsumerDisconnect(consumerID);
+   }
+
    public boolean isAutoCommitAcks()
    {
       return session.isAutoCommitAcks();

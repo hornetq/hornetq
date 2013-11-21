@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.hornetq.api.core.management.Parameter;
 import org.junit.Before;
 import org.junit.After;
 
@@ -213,6 +214,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public boolean destroyQueue(final String name) throws Exception
          {
             return (Boolean)proxy.invokeOperation("destroyQueue", name);
+         }
+
+         @Override
+         public boolean destroyQueue(String name, boolean removeConsumers) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("destroyQueue", name, removeConsumers);
          }
 
          public boolean destroyTopic(final String name) throws Exception

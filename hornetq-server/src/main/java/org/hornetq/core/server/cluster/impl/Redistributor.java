@@ -95,6 +95,12 @@ public class Redistributor implements Consumer
       return "Redistributor[" + queue.getName() + "/" + queue.getID() +"]";
    }
 
+   @Override
+   public void disconnect()
+   {
+      //noop
+   }
+
    public synchronized void start()
    {
       active = true;

@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
+import org.hornetq.api.core.HornetQObjectClosedException;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.jms.client.HornetQConnection;
 import org.junit.Before;
 import org.junit.After;
 
@@ -22,10 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -304,6 +310,107 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
+   }
+
+   @Test
+   public void testDestroyQueueWithConsumers() throws Exception
+   {
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      control.createQueue(queueName, queueJNDIBinding);
+
+      UnitTestCase.checkBinding(context, queueJNDIBinding);
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      HornetQConnectionFactory cf =
+            new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      HornetQConnection connection = (HornetQConnection) cf.createConnection();
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         // create a consumer will create a Core queue bound to the topic address
+         MessageConsumer cons = session.createConsumer(HornetQJMSClient.createQueue(queueName));
+
+         control.destroyQueue(queueName, true);
+
+         UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+         checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+         Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
+
+         try
+         {
+            cons.receive(5000);
+            fail("should throw exception");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            assertTrue(e.getCause() instanceof HornetQObjectClosedException);
+         }
+      }
+      finally
+      {
+         if(connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
+   @Test
+   public void testDestroyQueueWithConsumersNetty() throws Exception
+   {
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      control.createQueue(queueName, queueJNDIBinding);
+
+      UnitTestCase.checkBinding(context, queueJNDIBinding);
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      HornetQConnectionFactory cf =
+            new HornetQConnectionFactory(false, new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+      cf.setReconnectAttempts(-1);
+      HornetQConnection connection = (HornetQConnection) cf.createConnection();
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         // create a consumer will create a Core queue bound to the topic address
+         MessageConsumer cons = session.createConsumer(HornetQJMSClient.createQueue(queueName));
+
+         control.destroyQueue(queueName, true);
+
+         UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+         checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+         Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
+
+         try
+         {
+            cons.receive(5000);
+            fail("should throw exception");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            assertTrue(e.getCause() instanceof HornetQObjectClosedException);
+         }
+      }
+      finally
+      {
+         if(connection != null)
+         {
+            connection.close();
+         }
+      }
    }
 
    @Test

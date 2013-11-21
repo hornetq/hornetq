@@ -232,4 +232,17 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    {
       return toString();
    }
+
+   @Override
+   public void disconnect()
+   {
+      try
+      {
+         stop();
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.errorStoppingConnectorService(e, getName());
+      }
+   }
 }

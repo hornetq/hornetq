@@ -67,4 +67,8 @@ public interface Consumer
     */
    String toManagementString();
 
+  /**
+   * disconnect the consumer
+   */
+   void disconnect();
 }

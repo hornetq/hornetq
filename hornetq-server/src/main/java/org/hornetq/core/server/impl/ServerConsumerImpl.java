@@ -884,6 +884,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return "ServerConsumer [id=" + id + ", filter=" + filter + ", binding=" + binding.toManagementString() + "]";
    }
 
+   @Override
+   public void disconnect()
+   {
+      callback.disconnect(id, getQueue().getName().toString());
+   }
+
    // Private --------------------------------------------------------------------------------------
 
    private void promptDelivery()

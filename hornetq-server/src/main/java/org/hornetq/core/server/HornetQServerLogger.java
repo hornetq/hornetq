@@ -1009,6 +1009,12 @@ public interface HornetQServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void warnDeprecatedProtocol();
 
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222169, value = "You have old legacy clients connected to the queue {0} and we can't disconnect them, these clients may just hang",
+         format = Message.Format.MESSAGE_FORMAT)
+   void warnDisconnectOldClient(String queueName);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
    void initializationError(@Cause Throwable e);

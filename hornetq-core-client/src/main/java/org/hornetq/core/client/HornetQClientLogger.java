@@ -295,6 +295,10 @@ public interface HornetQClientLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212051, value = "Unable to close consumer", format = Message.Format.MESSAGE_FORMAT)
+   void unableToCloseConsumer(@Cause Exception e);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 214000, value = "Failed to call onMessage", format = Message.Format.MESSAGE_FORMAT)
    void onMessageError(@Cause Throwable e);

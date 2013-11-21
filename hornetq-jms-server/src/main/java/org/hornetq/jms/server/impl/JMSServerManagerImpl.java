@@ -909,6 +909,24 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return true;
    }
 
+   public synchronized boolean destroyQueue(final String name, final boolean removeConsumers) throws Exception
+   {
+      checkInitialised();
+
+      removeFromJNDI(queues, queueJNDI, name);
+
+      queues.remove(name);
+      queueJNDI.remove(name);
+
+      jmsManagementService.unregisterQueue(name);
+
+      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null, false, removeConsumers);
+
+      storage.deleteDestination(PersistedType.Queue, name);
+
+      return true;
+   }
+
    public synchronized boolean destroyTopic(final String name) throws Exception
    {
       checkInitialised();

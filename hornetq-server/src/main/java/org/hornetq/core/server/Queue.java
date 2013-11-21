@@ -94,6 +94,8 @@ public interface Queue extends Bindable
 
    void deleteQueue() throws Exception;
 
+   void deleteQueue(boolean removeConsumers) throws Exception;
+
    void destroyPaging() throws Exception;
 
    /**

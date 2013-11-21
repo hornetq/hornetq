@@ -13,6 +13,7 @@
 
 package org.hornetq.core.client.impl;
 
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_CONSUMER;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTINUATION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_LARGE_MSG;
@@ -22,6 +23,7 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsFailMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
@@ -58,6 +60,12 @@ final class ClientSessionPacketHandler implements ChannelHandler
       {
          switch (type)
          {
+            case DISCONNECT_CONSUMER:
+            {
+               DisconnectConsumerMessage message = (DisconnectConsumerMessage) packet;
+               clientSession.handleConsumerDisconnect(message.getConsumerId());
+               break;
+            }
             case SESS_RECEIVE_CONTINUATION:
             {
                SessionReceiveContinuationMessage continuation = (SessionReceiveContinuationMessage)packet;

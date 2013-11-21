@@ -21,6 +21,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_SHARED_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_CONSUMER;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.NULL_RESPONSE;
@@ -83,6 +84,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSharedQueueMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -154,6 +156,11 @@ public abstract class PacketDecoder implements Serializable
          case DISCONNECT:
          {
             packet = new DisconnectMessage();
+            break;
+         }
+         case DISCONNECT_CONSUMER:
+         {
+            packet = new DisconnectConsumerMessage();
             break;
          }
          case EXCEPTION:

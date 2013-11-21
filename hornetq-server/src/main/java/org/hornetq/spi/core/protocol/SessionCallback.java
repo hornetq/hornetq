@@ -41,4 +41,6 @@ public interface SessionCallback
    void addReadyListener(ReadyListener listener);
 
    void removeReadyListener(ReadyListener listener);
+
+   void disconnect(long consumerId, String queueName);
 }

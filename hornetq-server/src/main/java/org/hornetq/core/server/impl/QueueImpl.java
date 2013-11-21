@@ -1334,9 +1334,12 @@ public class QueueImpl implements Queue
       }
    }
 
-
-
    public void deleteQueue() throws Exception
+   {
+      deleteQueue(false);
+   }
+
+   public void deleteQueue(boolean removeConsumers) throws Exception
    {
       synchronized (this)
       {
@@ -1352,6 +1355,14 @@ public class QueueImpl implements Queue
          deleteAllReferences();
 
          destroyPaging();
+
+         if (removeConsumers)
+         {
+            for (ConsumerHolder consumerHolder : consumerList)
+            {
+               consumerHolder.consumer.disconnect();
+            }
+         }
 
          if (isDurable())
          {
