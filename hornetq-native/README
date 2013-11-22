@@ -26,7 +26,7 @@ STEPS TO BUILD
 
 Example:
  
- $> export JAVA_HOME=/usr/share/jdk1.5.0_13
+ $> export JAVA_HOME=/usr/share/jdk1.7
  
  
 2. Call compile-native.sh. Bootstrap will call all the initial scripts you need
