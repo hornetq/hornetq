@@ -48,7 +48,7 @@ std::string io_error(int rc)
 	if (rc == -ENOSYS)
 		buffer << "AIO not in this kernel";
 	else
-		buffer << "Error:= " << strerror(-rc);
+		buffer << "Error:= " << strerror((int)-rc);
 
 	return buffer.str();
 }
@@ -154,7 +154,7 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 				long result = events[i].res;
 				if (result < 0)
 				{
-					std::string strerror = io_error(result);
+					std::string strerror = io_error((int)result);
 					adapter->onError(threadContext, result, strerror);
 				}
 				else

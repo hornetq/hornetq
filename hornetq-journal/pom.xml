@@ -35,6 +35,11 @@
          <artifactId>hornetq-commons</artifactId>
          <version>${project.version}</version>
       </dependency>
+       <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-native</artifactId>
+          <version>${project.version}</version>
+       </dependency>
       <!-- needed to compile the tests -->
       <dependency>
          <groupId>junit</groupId>

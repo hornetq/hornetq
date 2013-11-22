@@ -21,7 +21,7 @@
 #include <time.h>
 #include <sys/file.h>
 
-#include "org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h"
+#include "org_hornetq_core_libaio_Native.h"
 
 
 #include "JavaUtilities.h"
@@ -48,7 +48,7 @@ inline AIOController * getController(JNIEnv *env, jobject & controllerAddress)
  * Method:    openFile
  * Signature: (Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_openFile
+JNIEXPORT jint JNICALL Java_org_hornetq_core_libaio_Native_openFile
   (JNIEnv * env , jclass , jstring jstrFileName)
 {
 	std::string fileName = convertJavaString(env, jstrFileName);
@@ -61,7 +61,7 @@ JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_o
  * Method:    closeFile
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_closeFile
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_closeFile
   (JNIEnv * , jclass , jint handle)
 {
    close(handle);
@@ -72,7 +72,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_c
  * Method:    flock
  * Signature: (I)Z
  */
-JNIEXPORT jboolean JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_flock
+JNIEXPORT jboolean JNICALL Java_org_hornetq_core_libaio_Native_flock
   (JNIEnv * , jclass , jint handle)
 {
     return flock(handle, LOCK_EX | LOCK_NB) == 0;
@@ -85,8 +85,8 @@ JNIEXPORT jboolean JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileIm
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/Class;)J
  */
-JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_init
-  (JNIEnv * env, jclass clazz, jstring jstrFileName, jint maxIO, jobject logger)
+JNIEXPORT jobject JNICALL Java_org_hornetq_core_libaio_Native_init
+  (JNIEnv * env, jclass, jclass controllerClazz, jstring jstrFileName, jint maxIO, jobject logger)
 {
 	AIOController * controller = 0;
 	try
@@ -94,11 +94,19 @@ JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImp
 		std::string fileName = convertJavaString(env, jstrFileName);
 
 		controller = new AIOController(fileName, (int) maxIO);
-		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/hornetq/core/asyncio/AIOCallback;JLjava/nio/ByteBuffer;)V");
-		if (!controller->done) return 0;
+		controller->done = env->GetMethodID(controllerClazz,"callbackDone","(Lorg/hornetq/core/asyncio/AIOCallback;JLjava/nio/ByteBuffer;)V");
+		if (!controller->done)
+		{
+		   throwException (env, -1, "can't get callbackDone method");
+		   return 0;
+		}
 
-		controller->error = env->GetMethodID(clazz, "callbackError", "(Lorg/hornetq/core/asyncio/AIOCallback;JLjava/nio/ByteBuffer;ILjava/lang/String;)V");
-        if (!controller->error) return 0;
+		controller->error = env->GetMethodID(controllerClazz, "callbackError", "(Lorg/hornetq/core/asyncio/AIOCallback;JLjava/nio/ByteBuffer;ILjava/lang/String;)V");
+		if (!controller->done)
+		{
+		   throwException (env, -1, "can't get callbackError method");
+		   return 0;
+		}
 
         jclass loggerClass = env->GetObjectClass(logger);
 
@@ -108,8 +116,6 @@ JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImp
         if (!(controller->loggerError = env->GetMethodID(loggerClass, "error", "(Ljava/lang/Object;)V"))) return 0;
 
         controller->logger = env->NewGlobalRef(logger);
-
-//        controller->log(env,4, "Controller initialized");
 
 		return env->NewDirectByteBuffer(controller, 0);
 	}
@@ -123,8 +129,12 @@ JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImp
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_read
-  (JNIEnv *env, jobject objThis, jobject controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
+/**
+* objThis here is passed as a parameter at the java layer. It used to be a JNI this and now it's a java static method
+  where the intended reference is now passed as an argument
+*/
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_read
+  (JNIEnv *env, jclass, jobject objThis, jobject controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
 	{
@@ -155,7 +165,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_r
 
 
 // Fast memset on buffer
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_resetBuffer
   (JNIEnv *env, jclass, jobject jbuffer, jint size)
 {
 	void * buffer = env->GetDirectBufferAddress(jbuffer);
@@ -170,7 +180,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_r
 
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_destroyBuffer
   (JNIEnv * env, jclass, jobject jbuffer)
 {
     if (jbuffer == 0)
@@ -182,7 +192,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_d
 	free(buffer);
 }
 
-JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_newNativeBuffer
+JNIEXPORT jobject JNICALL Java_org_hornetq_core_libaio_Native_newNativeBuffer
   (JNIEnv * env, jclass, jlong size)
 {
 	try
@@ -216,8 +226,12 @@ JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImp
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_write
-  (JNIEnv *env, jobject objThis, jobject controllerAddress, jlong sequence, jlong position, jlong size, jobject jbuffer, jobject callback)
+/**
+* objThis here is passed as a parameter at the java layer. It used to be a JNI this and now it's a java static method
+  where the intended reference is now passed as an argument
+*/
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_write
+  (JNIEnv *env, jclass, jobject objThis, jobject controllerAddress, jlong sequence, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
 	{
@@ -241,8 +255,8 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_w
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_writeInternal
-  (JNIEnv * env, jobject , jobject controllerAddress, jlong positionToWrite, jlong size, jobject jbuffer)
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_writeInternal
+  (JNIEnv * env, jclass, jobject controllerAddress, jlong positionToWrite, jlong size, jobject jbuffer)
 {
 	try
 	{
@@ -264,7 +278,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_w
 }
 
 
-JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents
+JNIEXPORT void Java_org_hornetq_core_libaio_Native_internalPollEvents
   (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
@@ -278,7 +292,7 @@ JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalP
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_stopPoller
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_stopPoller
   (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
@@ -292,7 +306,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_s
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_closeInternal
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_closeInternal
   (JNIEnv *env, jclass, jobject controllerAddress)
 {
 	try
@@ -308,7 +322,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_c
 }
 
 
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_fill
+JNIEXPORT void JNICALL Java_org_hornetq_core_libaio_Native_fill
   (JNIEnv * env, jclass, jobject controllerAddress, jlong position, jint blocks, jlong size, jbyte fillChar)
 {
 	try
@@ -327,7 +341,7 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_f
 
 
 /** It does nothing... just return true to make sure it has all the binary dependencies */
-JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_getNativeVersion
+JNIEXPORT jint JNICALL Java_org_hornetq_core_libaio_Native_getNativeVersion
   (JNIEnv *, jclass)
 
 {
@@ -335,8 +349,8 @@ JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_g
 }
 
 
-JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_size0
-  (JNIEnv * env, jobject, jobject controllerAddress)
+JNIEXPORT jlong JNICALL Java_org_hornetq_core_libaio_Native_size0
+  (JNIEnv * env, jclass, jobject controllerAddress)
 {
 	try
 	{
@@ -357,30 +371,3 @@ JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_
 	}
 
 }
-
-/*
- * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
- * Method:    setNanoSleepInterval
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_setNanoSleepInterval
-  (JNIEnv *, jclass, jint nanotime)
-{
-	nanoTime.tv_sec = 0;
-	nanoTime.tv_nsec = (long)nanotime;
-}
-
-/*
- * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
- * Method:    nanoSleep
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_nanoSleep
-  (JNIEnv *, jclass)
-{
-	if (nanoTime.tv_nsec != 0)
-	{
-		nanosleep(&nanoTime, 0);
-	}
-}
-

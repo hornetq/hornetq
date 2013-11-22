@@ -1,5 +1,0 @@
-autoreconf --install
-./configure
-make clean
-generate-javah.sh
-make
