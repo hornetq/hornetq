@@ -70,6 +70,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -97,7 +98,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   private List<ServerLocator> locators = new ArrayList<ServerLocator>();
+   private Set<ServerLocator> locators = new ConcurrentHashSet<ServerLocator>();
 
    @Override
    protected void tearDown() throws Exception
@@ -106,6 +107,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          try
          {
+            if (locator != null)
             locator.close();
          }
          catch (Exception e)
