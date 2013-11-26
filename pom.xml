@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.4.0.Beta3</version>
+   <version>2.4.0-SNAPSHOT</version>
     <modules>
         <module>hornetq-protocols</module>
     </modules>
@@ -39,8 +39,8 @@
       <hornetq.version.minorVersion>4</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>124</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>Beta3</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>Beta3</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
