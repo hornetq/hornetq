@@ -60,6 +60,30 @@ public class SSLSupport
       return context;
    }
 
+   public static String[] parseCommaSeparatedListIntoArray(String suites)
+   {
+      String[] cipherSuites = suites.split(",");
+      for (int i = 0; i < cipherSuites.length; i++)
+      {
+         cipherSuites[i] = cipherSuites[i].trim();
+      }
+      return cipherSuites;
+   }
+
+   public static String parseArrayIntoCommandSeparatedList(String[] suites)
+   {
+      StringBuilder supportedSuites = new StringBuilder();
+
+      for (int i = 0; i < suites.length; i++)
+      {
+         supportedSuites.append(suites[i]);
+         supportedSuites.append(", ");
+      }
+
+      // trim the last 2 characters (i.e. unnecessary comma and space)
+      return supportedSuites.delete(supportedSuites.length() - 2, supportedSuites.length()).toString();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

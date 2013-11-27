@@ -17,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.junit.Assert;
-import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Message;

@@ -12,6 +12,8 @@
  */
 
 package org.hornetq.tests.integration.ssl;
+import org.hornetq.core.remoting.impl.ssl.SSLSupport;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -40,6 +42,9 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
@@ -63,6 +68,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    @Test
    public void testOneWaySSL() throws Exception
    {
+      createCustomSslServer();
       String text = RandomUtil.randomString();
 
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
@@ -70,7 +76,170 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
-      ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+      ClientSession session = addClientSession(sf.createSession(false, true, true));
+      session.createQueue(CoreClientOverOneWaySSLTest.QUEUE, CoreClientOverOneWaySSLTest.QUEUE, false);
+      ClientProducer producer = addClientProducer(session.createProducer(CoreClientOverOneWaySSLTest.QUEUE));
+
+      ClientMessage message = createTextMessage(session, text);
+      producer.send(message);
+
+      ClientConsumer consumer = addClientConsumer(session.createConsumer(CoreClientOverOneWaySSLTest.QUEUE));
+      session.start();
+
+      Message m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(text, m.getBodyBuffer().readString());
+   }
+
+   @Test
+   public void testOneWaySSLWithBadClientCipherSuite() throws Exception
+   {
+      createCustomSslServer();
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, "myBadCipherSuite");
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithBadServerCipherSuite() throws Exception
+   {
+      createCustomSslServer("myBadCipherSuite", null);
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithMismatchedCipherSuites() throws Exception
+   {
+      createCustomSslServer(getEnabledCipherSuites()[0], "TLSv1.2");
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, getEnabledCipherSuites()[1]);
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1.2");
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithBadClientProtocol() throws Exception
+   {
+      createCustomSslServer();
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "myBadProtocol");
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithBadServerProtocol() throws Exception
+   {
+      createCustomSslServer(null, "myBadProtocol");
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithMismatchedProtocols() throws Exception
+   {
+      createCustomSslServer(null, "TLSv1");
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1.2");
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      try
+      {
+         createSessionFactory(locator);
+         Assert.fail();
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.assertTrue(true);
+      }
+   }
+
+   @Test
+   public void testOneWaySSLWithGoodClientCipherSuite() throws Exception
+   {
+      createCustomSslServer();
+      String text = RandomUtil.randomString();
+
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, getSuitableCipherSuite());
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      ClientSessionFactory sf = null;
+      try
+      {
+         sf = createSessionFactory(locator);
+         Assert.assertTrue(true);
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.fail();
+      }
+
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverOneWaySSLTest.QUEUE, CoreClientOverOneWaySSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverOneWaySSLTest.QUEUE);
@@ -87,8 +256,149 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    }
 
    @Test
+   public void testOneWaySSLWithGoodServerCipherSuite() throws Exception
+   {
+      createCustomSslServer(getSuitableCipherSuite(), null);
+      String text = RandomUtil.randomString();
+
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      ClientSessionFactory sf = null;
+      try
+      {
+         sf = createSessionFactory(locator);
+         Assert.assertTrue(true);
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.fail();
+      }
+
+      ClientSession session = sf.createSession(false, true, true);
+      session.createQueue(CoreClientOverOneWaySSLTest.QUEUE, CoreClientOverOneWaySSLTest.QUEUE, false);
+      ClientProducer producer = session.createProducer(CoreClientOverOneWaySSLTest.QUEUE);
+
+      ClientMessage message = createTextMessage(session, text);
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(CoreClientOverOneWaySSLTest.QUEUE);
+      session.start();
+
+      Message m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(text, m.getBodyBuffer().readString());
+   }
+
+   @Test
+   public void testOneWaySSLWithGoodClientProtocol() throws Exception
+   {
+      createCustomSslServer();
+      String text = RandomUtil.randomString();
+
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1");
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      ClientSessionFactory sf = null;
+      try
+      {
+         sf = createSessionFactory(locator);
+         Assert.assertTrue(true);
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.fail();
+      }
+
+      ClientSession session = sf.createSession(false, true, true);
+      session.createQueue(CoreClientOverOneWaySSLTest.QUEUE, CoreClientOverOneWaySSLTest.QUEUE, false);
+      ClientProducer producer = session.createProducer(CoreClientOverOneWaySSLTest.QUEUE);
+
+      ClientMessage message = createTextMessage(session, text);
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(CoreClientOverOneWaySSLTest.QUEUE);
+      session.start();
+
+      Message m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(text, m.getBodyBuffer().readString());
+   }
+
+   @Test
+   public void testOneWaySSLWithGoodServerProtocol() throws Exception
+   {
+      createCustomSslServer(null, "TLSv1");
+      String text = RandomUtil.randomString();
+
+      tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
+      tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      ClientSessionFactory sf = null;
+      try
+      {
+         sf = createSessionFactory(locator);
+         Assert.assertTrue(true);
+      }
+      catch (HornetQNotConnectedException e)
+      {
+         Assert.fail();
+      }
+
+      ClientSession session = sf.createSession(false, true, true);
+      session.createQueue(CoreClientOverOneWaySSLTest.QUEUE, CoreClientOverOneWaySSLTest.QUEUE, false);
+      ClientProducer producer = session.createProducer(CoreClientOverOneWaySSLTest.QUEUE);
+
+      ClientMessage message = createTextMessage(session, text);
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(CoreClientOverOneWaySSLTest.QUEUE);
+      session.start();
+
+      Message m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      Assert.assertEquals(text, m.getBodyBuffer().readString());
+   }
+
+   public static String getSuitableCipherSuite() throws Exception
+   {
+      String result = "";
+
+      String[] suites = getEnabledCipherSuites();
+
+      // the certs are generated using Java keytool using RSA and not ECDSA but the JVM prefers ECDSA over RSA so we have
+      // to look through the cipher suites until we find one that's suitable for us
+      for (int i = 0; i < suites.length; i++)
+      {
+         String suite = suites[i];
+         if (!suite.contains("ECDSA") && suite.contains("RSA"))
+         {
+            result = suite;
+            break;
+         }
+      }
+
+      IntegrationTestLogger.LOGGER.info("Using suite: " + result);
+      return result;
+   }
+
+   public static String[] getEnabledCipherSuites() throws Exception {
+      SSLContext context = SSLSupport.createContext(SERVER_SIDE_KEYSTORE, PASSWORD, CLIENT_SIDE_TRUSTSTORE, PASSWORD);
+      SSLEngine engine = context.createSSLEngine();
+      return engine.getEnabledCipherSuites();
+   }
+
+   @Test
    public void testOneWaySSLWithoutTrustStore() throws Exception
    {
+      createCustomSslServer();
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
@@ -110,6 +420,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    @Test
    public void testOneWaySSLWithIncorrectTrustStorePassword() throws Exception
    {
+      createCustomSslServer();
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, "invalid password");
@@ -133,6 +444,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    @Test
    public void testOneWaySSLWithIncorrectTrustStorePath() throws Exception
    {
+      createCustomSslServer();
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, "incorrect path");
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
@@ -157,6 +469,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    @Test
    public void testPlainConnectionToSSLEndpoint() throws Exception
    {
+      createCustomSslServer();
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
@@ -187,12 +500,32 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
    public void setUp() throws Exception
    {
       super.setUp();
+   }
+
+   private void createCustomSslServer() throws Exception
+   {
+      createCustomSslServer(null, null);
+   }
+
+   private void createCustomSslServer(String cipherSuites, String protocols) throws Exception
+   {
       ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       params.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, SERVER_SIDE_KEYSTORE);
       params.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      if (cipherSuites != null)
+      {
+         params.put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, cipherSuites);
+      }
+
+      if (protocols != null)
+      {
+         params.put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, protocols);
+      }
+
       config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
       server = createServer(false, config);
       server.start();

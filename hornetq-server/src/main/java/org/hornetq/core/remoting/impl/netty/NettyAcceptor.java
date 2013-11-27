@@ -125,6 +125,10 @@ public class NettyAcceptor implements Acceptor
 
    private final String trustStorePassword;
 
+   private final String enabledCipherSuites;
+
+   private final String enabledProtocols;
+
    private final boolean needClientAuth;
 
    private final boolean tcpNoDelay;
@@ -225,6 +229,14 @@ public class NettyAcceptor implements Acceptor
                                                                     HornetQDefaultConfiguration.getPropMaskPassword(),
                                                                     HornetQDefaultConfiguration.getPropMaskPassword());
 
+         enabledCipherSuites = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME,
+                                                                     TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES,
+                                                                     configuration);
+
+         enabledProtocols = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME,
+                                                                  TransportConstants.DEFAULT_ENABLED_PROTOCOLS,
+                                                                    configuration);
+
          needClientAuth = ConfigurationHelper.getBooleanProperty(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME,
                                                                  TransportConstants.DEFAULT_NEED_CLIENT_AUTH,
                                                                  configuration);
@@ -235,6 +247,8 @@ public class NettyAcceptor implements Acceptor
          keyStorePassword = TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
          trustStorePath = TransportConstants.DEFAULT_TRUSTSTORE_PATH;
          trustStorePassword = TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
+         enabledCipherSuites = TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES;
+         enabledProtocols = TransportConstants.DEFAULT_ENABLED_PROTOCOLS;
          needClientAuth = TransportConstants.DEFAULT_NEED_CLIENT_AUTH;
       }
 
@@ -330,6 +344,41 @@ public class NettyAcceptor implements Acceptor
 
                if (needClientAuth)
                   engine.setNeedClientAuth(true);
+
+               // setting the enabled cipher suites resets the enabled protocols so we need
+               // to save the enabled protocols so that after the customer cipher suite is enabled
+               // we can reset the enabled protocols if a customer protocol isn't specified
+               String[] originalProtocols = engine.getEnabledProtocols();
+
+               if (enabledCipherSuites != null)
+               {
+                  try
+                  {
+                     engine.setEnabledCipherSuites(SSLSupport.parseCommaSeparatedListIntoArray(enabledCipherSuites));
+                  }
+                  catch (IllegalArgumentException e)
+                  {
+                     HornetQServerLogger.LOGGER.invalidCipherSuite(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedCipherSuites()));
+                     throw e;
+                  }
+               }
+
+               if (enabledProtocols != null)
+               {
+                  try
+                  {
+                     engine.setEnabledProtocols(SSLSupport.parseCommaSeparatedListIntoArray(enabledProtocols));
+                  }
+                  catch (IllegalArgumentException e)
+                  {
+                     HornetQServerLogger.LOGGER.invalidProtocol(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedProtocols()));
+                     throw e;
+                  }
+               }
+               else
+               {
+                  engine.setEnabledProtocols(originalProtocols);
+               }
 
                SslHandler handler = new SslHandler(engine);
 
