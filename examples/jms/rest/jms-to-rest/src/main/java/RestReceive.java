@@ -16,6 +16,7 @@ public class RestReceive
       Link pullConsumers = res.getHeaderAsLink("msg-pull-consumers");
       res = pullConsumers.request().formParameter("autoAck", "false").post();
       Link ackNext = res.getHeaderAsLink("msg-acknowledge-next");
+      res.releaseConnection();
       while (true)
       {
          System.out.println("Waiting...");
@@ -40,6 +41,7 @@ public class RestReceive
          {
             throw new RuntimeException("Failure! " + res.getStatus());
          }
+         res.releaseConnection();
       }
    }
 }
