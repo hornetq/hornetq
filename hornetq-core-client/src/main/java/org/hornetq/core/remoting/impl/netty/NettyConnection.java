@@ -99,7 +99,7 @@ public class NettyConnection implements Connection
          return;
       }
 
-      SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
+      SslHandler sslHandler = channel.getPipeline().get(SslHandler.class);
       if (sslHandler != null)
       {
          try
@@ -254,9 +254,9 @@ public class NettyConnection implements Connection
    }
 
    public SSLSession getSSLSession(){
-	   ChannelHandler channelHandler = channel.getPipeline().get("0");
-	   if(channelHandler != null)
-		  return ((SslHandler)channelHandler).getEngine().getSession();
+	   SslHandler sslHandler = channel.getPipeline().get(SslHandler.class);
+	   if(sslHandler != null)
+		  return sslHandler.getEngine().getSession();
 		   
 	return null;
    }
