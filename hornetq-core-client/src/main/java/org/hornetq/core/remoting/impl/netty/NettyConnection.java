@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import javax.net.ssl.SSLSession;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQInterruptedException;
@@ -31,6 +33,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -250,6 +253,14 @@ public class NettyConnection implements Connection
       return channel.getRemoteAddress().toString();
    }
 
+   public SSLSession getSSLSession(){
+	   ChannelHandler channelHandler = channel.getPipeline().get("0");
+	   if(channelHandler != null)
+		  return ((SslHandler)channelHandler).getEngine().getSession();
+		   
+	return null;
+   }
+   
    public boolean isDirectDeliver()
    {
       return directDeliver;
