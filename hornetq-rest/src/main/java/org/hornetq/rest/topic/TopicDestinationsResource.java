@@ -91,47 +91,6 @@ public class TopicDestinationsResource
       }
    }
 
-   @DELETE
-   @Path("/{topic-name}")
-   public void deleteTopic(@Context UriInfo uriInfo, @PathParam("topic-name") String name) throws Exception
-   {
-      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
-
-      TopicResource topic = topics.remove(name);
-      if (topic != null)
-      {
-         try
-         {
-            topic.stop();
-         }
-         catch (Exception e)
-         {
-
-         }
-      }
-
-      ClientSession session = manager.getSessionFactory().createSession(false, false, false);
-      try
-      {
-
-         SimpleString topicName = new SimpleString(name);
-         ClientSession.QueueQuery query = session.queueQuery(topicName);
-         if (query.isExists())
-         {
-            session.deleteQueue(topicName);
-         }
-         else
-         {
-            throw new WebApplicationException(Response.status(405).type("text/plain").entity("Topic '" + name + "' does not exist").build());
-         }
-      }
-      finally
-      {
-         try { session.close(); } catch (Exception ignored) {}
-      }
-
-   }
-
 
    @Path("/{topic-name}")
    public TopicResource findTopic(@PathParam("topic-name") String name) throws Exception
@@ -175,6 +134,7 @@ public class TopicDestinationsResource
    public TopicResource createTopicResource(String topicName, boolean defaultDurable, int timeoutSeconds, boolean duplicates) throws Exception
    {
       TopicResource topicResource = new TopicResource();
+      topicResource.setTopicDestinationsResource(this);
       topicResource.setDestination(topicName);
       topicResource.setServiceManager(manager);
       SubscriptionsResource subscriptionsResource = new SubscriptionsResource();
