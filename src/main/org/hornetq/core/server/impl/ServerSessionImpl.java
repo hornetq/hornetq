@@ -994,27 +994,41 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
-
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
+         log.warn ("A session that was already doing XA work on " + tx.getXid() + " is replacing the xid by " + xid +
+                   ". This was most likely caused from a previous communication timeout");
+         
+         try
+         {
+            if (tx.getState() != Transaction.State.PREPARED)
+            {
+               // we don't want to rollback anything prepared here
+               if (tx.getXid() != null)
+               {
+                  resourceManager.removeTransaction(tx.getXid());
+               }
+               tx.rollback();
+            }
+         }
+         catch (Exception e)
+         {
+            log.debug("An exception happened while we tried to debug the previous tx, we can ignore this exception", e);
+         }
       }
-      else
+
+      tx = newTransaction(xid);
+
+      if (isTrace)
       {
-         tx = newTransaction(xid);
+         log.trace("xastart into tx= " + tx);
+      }
 
-         if (isTrace)
-         {
-            log.trace("xastart into tx= " + tx);
-         }
+      boolean added = resourceManager.putTransaction(xid, tx);
 
-         boolean added = resourceManager.putTransaction(xid, tx);
+      if (!added)
+      {
+         final String msg = "Cannot start, there is already a xid " + tx.getXid();
 
-         if (!added)
-         {
-            final String msg = "Cannot start, there is already a xid " + tx.getXid();
-
-            throw new HornetQXAException(XAException.XAER_DUPID, msg);
-         }
+         throw new HornetQXAException(XAException.XAER_DUPID, msg);
       }
    }
 
