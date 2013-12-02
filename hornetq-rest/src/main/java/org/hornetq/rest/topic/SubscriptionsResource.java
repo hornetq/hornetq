@@ -178,15 +178,16 @@ public class SubscriptionsResource implements TimeoutTask.Callback
                );
             }
             Response.ResponseBuilder builder = Response.noContent();
+            String pathToPullSubscriptions = uriInfo.getMatchedURIs().get(0);
             if (autoAck)
             {
-               headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
-               consumer.setSessionLink(builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/auto-ack/" + consumer.getId());
+               headAutoAckSubscriptionResponse(uriInfo, consumer, builder, pathToPullSubscriptions);
+               consumer.setSessionLink(builder, uriInfo, pathToPullSubscriptions + "/auto-ack/" + consumer.getId());
             }
             else
             {
                headAcknowledgedConsumerResponse(uriInfo, (AcknowledgedQueueConsumer) consumer, builder);
-               consumer.setSessionLink(builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId());
+               consumer.setSessionLink(builder, uriInfo, pathToPullSubscriptions + "/acknowledged/" + consumer.getId());
             }
             return builder.build();
          }
@@ -223,11 +224,11 @@ public class SubscriptionsResource implements TimeoutTask.Callback
          Response.ResponseBuilder builder = Response.created(location.build());
          if (autoAck)
          {
-            QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/auto-ack/" + consumer.getId(), "-1");
+            QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(0) + "/auto-ack/" + consumer.getId(), "-1");
          }
          else
          {
-            AcknowledgedQueueConsumer.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId(), "-1");
+            AcknowledgedQueueConsumer.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(0) + "/acknowledged/" + consumer.getId(), "-1");
 
          }
          return builder.build();
@@ -297,17 +298,18 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    {
        QueueConsumer consumer = findAutoAckSubscription(consumerId);
        Response.ResponseBuilder builder = Response.noContent();
-       headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
+       String pathToPullSubscriptions = uriInfo.getMatchedURIs().get(1);
+       headAutoAckSubscriptionResponse(uriInfo, consumer, builder, pathToPullSubscriptions);
 
        return builder.build();
    }
 
-   private void headAutoAckSubscriptionResponse(UriInfo uriInfo, QueueConsumer consumer, Response.ResponseBuilder builder)
+   private void headAutoAckSubscriptionResponse(UriInfo uriInfo, QueueConsumer consumer, Response.ResponseBuilder builder, String pathToPullSubscriptions )
    {
       // we synchronize just in case a failed request is still processing
       synchronized (consumer)
       {
-         QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId(), Long.toString(consumer.getConsumeIndex()));
+         QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, pathToPullSubscriptions + "/acknowledged/" + consumer.getId(), Long.toString(consumer.getConsumeIndex()));
       }
    }
 
