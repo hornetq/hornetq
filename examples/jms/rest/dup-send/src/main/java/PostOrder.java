@@ -33,7 +33,7 @@ public class PostOrder
 
       if (res.getStatus() == 307)
       {
-         Link redirect = res.getLocation();
+         Link redirect = res.getLocationLink();
          res = redirect.request().body("application/xml", order).post();
       }
 

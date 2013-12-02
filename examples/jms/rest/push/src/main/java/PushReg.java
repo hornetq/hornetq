@@ -35,6 +35,6 @@ public class PushReg
       reg.setTarget(target);
 
       res = pushConsumers.request().body("application/xml", reg).post();
-      System.out.println("Create push registration.  Resource URL: " + res.getLocation().getHref());
+      System.out.println("Create push registration.  Resource URL: " + res.getLocationLink().getHref());
    }
 }
