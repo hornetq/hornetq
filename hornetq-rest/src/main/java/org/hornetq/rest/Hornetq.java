@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Providers;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.util.HttpMessageHelper;
@@ -146,6 +147,9 @@ public class Hornetq
       {
          throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
       }
+
+      Providers current = ResteasyProviderFactory.getContextData(Providers.class);
+      ResteasyProviderFactory.pushContext(Providers.class, factory);
       try
       {
          return reader.readFrom(type, genericType, null, ct, new Headers<String>(), new ByteArrayInputStream(body));
@@ -153,6 +157,11 @@ public class Hornetq
       catch (IOException e)
       {
          throw new RuntimeException(e);
+      }
+      finally
+      {
+         ResteasyProviderFactory.popContextData(Providers.class);
+         if (current != null) ResteasyProviderFactory.pushContext(Providers.class, current);
       }
    }
 
