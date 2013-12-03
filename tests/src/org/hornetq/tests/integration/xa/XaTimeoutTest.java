@@ -547,6 +547,17 @@ public class XaTimeoutTest extends UnitTestCase
       outProducerSession.close();
 
     }
+   
+   
+   public void testChangeXID() throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.start(xid2, XAResource.TMNOFLAGS);
+      
+   }
 
    public void testChangingTimeoutGetsPickedUp() throws Exception
    {
