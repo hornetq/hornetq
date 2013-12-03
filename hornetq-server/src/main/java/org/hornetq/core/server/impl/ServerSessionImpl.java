@@ -1020,27 +1020,40 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (tx != null)
       {
-         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
+         HornetQServerLogger.LOGGER.xidReplacedOnXStart(tx.getXid().toString(), xid.toString());
 
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
+         try
+         {
+            if (tx.getState() != Transaction.State.PREPARED)
+            {
+               // we don't want to rollback anything prepared here
+               if (tx.getXid() != null)
+               {
+                  resourceManager.removeTransaction(tx.getXid());
+               }
+               tx.rollback();
+            }
+         }
+         catch (Exception e)
+         {
+            HornetQServerLogger.LOGGER.debug("An exception happened while we tried to debug the previous tx, we can ignore this exception", e);
+         }
       }
-      else
+
+      tx = newTransaction(xid);
+
+      if (isTrace)
       {
-         tx = newTransaction(xid);
+         HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
+      }
 
-         if (isTrace)
-         {
-            HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
-         }
+      boolean added = resourceManager.putTransaction(xid, tx);
 
-         boolean added = resourceManager.putTransaction(xid, tx);
+      if (!added)
+      {
+         final String msg = "Cannot start, there is already a xid " + tx.getXid();
 
-         if (!added)
-         {
-            final String msg = "Cannot start, there is already a xid " + tx.getXid();
-
-            throw new HornetQXAException(XAException.XAER_DUPID, msg);
-         }
+         throw new HornetQXAException(XAException.XAER_DUPID, msg);
       }
    }
 

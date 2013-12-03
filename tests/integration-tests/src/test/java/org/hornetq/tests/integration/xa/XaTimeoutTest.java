@@ -558,6 +558,24 @@ public class XaTimeoutTest extends UnitTestCase
 
     }
 
+
+   /**
+    * In case a timeout happens the server's object may still have the previous XID.
+    * for that reason a new start call is supposed to clean it up with a log.warn
+    * but it should still succeed
+    * @throws Exception
+    */
+   @Test
+   public void testChangeXID() throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.start(xid2, XAResource.TMNOFLAGS);
+
+   }
+
    @Test
    public void testChangingTimeoutGetsPickedUp() throws Exception
    {

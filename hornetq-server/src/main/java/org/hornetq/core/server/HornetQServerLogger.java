@@ -1303,4 +1303,12 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 224066, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
             format = Message.Format.MESSAGE_FORMAT)
    void clusterManagerAuthenticationError(String msg);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(
+      id = 224068,
+      value = "A session that was already doing XA work on {0} is replacing the xid by {1} " +
+                               ". This was most likely caused from a previous communication timeout",
+      format = Message.Format.MESSAGE_FORMAT)
+   void xidReplacedOnXStart(String xidOriginalToString, String xidReplacedToString);
 }
