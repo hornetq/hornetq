@@ -341,11 +341,22 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    }
 
    // Public --------------------------------------------------------
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
    @Override
    public String toString()
    {
-      return "PageSubscriptionCounterImpl [address = " + subscription.getPagingStore().getAddress() + ", queue=" + subscription.getQueue().getName() +
-              ", value = " + value.get() + "]";
+      return "PageSubscriptionCounterImpl [subscriptionID=" + subscriptionID +
+             ", recordID=" +
+             recordID +
+             ", subscription=" +
+             subscription +
+             ", value=" +
+             value +
+             ", incrementRecords=" +
+             incrementRecords +
+             "]";
    }
 
 
