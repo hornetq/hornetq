@@ -13,9 +13,7 @@
 
 package org.hornetq.tests.integration.ssl;
 import org.junit.Before;
-
 import org.junit.Test;
-
 import org.junit.Assert;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
@@ -23,6 +21,7 @@ import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -30,14 +29,20 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -61,6 +66,24 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 
    private TransportConfiguration tc;
 
+   private class MyInterceptor implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.SESS_SEND)
+         {
+        	try{
+        		Assert.assertNotNull(((NettyConnection)connection.getTransportConnection()).getSSLSession().getPeerCertificateChain());
+         	} catch (SSLPeerUnverifiedException e) {
+         		Assert.fail(e.getMessage());
+			}
+         }
+
+         return true;
+      }
+
+   }
+   
    @Test
    public void testTwoWaySSL() throws Exception
    {
@@ -73,6 +96,8 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, PASSWORD);
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
+      server.getRemotingService().addIncomingInterceptor(new MyInterceptor());
+      
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverTwoWaySSLTest.QUEUE, CoreClientOverTwoWaySSLTest.QUEUE, false);
@@ -135,3 +160,4 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
       tc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
    }
 }
+
