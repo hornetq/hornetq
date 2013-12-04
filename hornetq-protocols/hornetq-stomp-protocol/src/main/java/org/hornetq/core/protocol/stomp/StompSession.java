@@ -42,6 +42,7 @@ import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.UUIDGenerator;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
 /**
  * A StompSession
  *
@@ -224,7 +225,7 @@ public class StompSession implements SessionCallback
 
       if (pair == null)
       {
-         throw new HornetQStompException("failed to ack because no message with id: " + id);
+         throw BUNDLE.failToAckMissingID(id);
       }
 
       long consumerID = pair.getA();
@@ -236,7 +237,7 @@ public class StompSession implements SessionCallback
       {
          if (!sub.getID().equals(subscriptionID))
          {
-            throw new HornetQStompException("subscription id " + subscriptionID + " does not match " + sub.getID());
+            throw BUNDLE.subscriptionIDMismatch(subscriptionID, sub.getID());
          }
       }
 
@@ -279,7 +280,7 @@ public class StompSession implements SessionCallback
          {
             if (clientID == null)
             {
-               throw new IllegalStateException("Cannot create a subscriber on the durable subscription if the client-id of the connection is not set");
+               throw BUNDLE.missingClientID();
             }
             queue = SimpleString.toSimpleString(clientID + "." + durableSubscriptionName);
             QueueQueryResult query = session.executeQueueQuery(queue);
@@ -381,7 +382,7 @@ public class StompSession implements SessionCallback
       int headerSize = message.getHeadersAndPropertiesEncodeSize();
       if (headerSize >= connection.getMinLargeMessageSize())
       {
-         throw new Exception("Message header too big, increase minLargeMessageSize please.");
+         throw BUNDLE.headerTooBig();
       }
 
       StorageManager storageManager = ((ServerSessionImpl)session).getStorageManager();

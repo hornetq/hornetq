@@ -18,7 +18,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.util.CharsetUtil;
+import io.netty.util.CharsetUtil;
 
 import java.net.URI;
 import java.net.URISyntaxException;

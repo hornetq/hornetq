@@ -24,6 +24,8 @@ import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
 import org.hornetq.core.server.HornetQServerLogger;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
 *
 * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -107,8 +109,8 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       {
          if (destination == null)
          {
-            response = new HornetQStompException("Must specify the subscription's id or " +
-                  "the destination you are unsubscribing from").getFrame();
+            HornetQStompException error = BUNDLE.needIDorDestination();
+            response = error.getFrame();
             return response;
          }
          subscriptionID = "subscription/" + destination;

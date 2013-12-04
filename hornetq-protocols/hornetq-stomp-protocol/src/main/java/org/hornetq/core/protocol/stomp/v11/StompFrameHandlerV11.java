@@ -26,6 +26,8 @@ import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
 import org.hornetq.core.server.HornetQServerLogger;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -114,7 +116,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       catch (UnsupportedEncodingException e)
       {
          HornetQServerLogger.LOGGER.errorEncodingStompPacket(e);
-         response = new HornetQStompException("Encoding error.", e).getFrame();
+         response = BUNDLE.encodingError().getFrame();
       }
 
       return response;
@@ -174,8 +176,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
       else
       {
-          response = new HornetQStompException("Must specify the subscription's id").getFrame();
-          return response;
+         response = BUNDLE.needSubscriptionID().getFrame();
+         return response;
       }
 
       try
@@ -205,7 +207,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
       if (subscriptionID == null)
       {
-         response = new HornetQStompException("subscription header is required").getFrame();
+         response = BUNDLE.needSubscriptionID().getFrame();
          return response;
       }
 
@@ -480,7 +482,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
             }
             else if (workingBuffer[offset] == CR)
             {
-               if (nextChar) throw new HornetQStompException("Invalid char sequence: two consecutive CRs.");
+               if (nextChar) throw BUNDLE.invalidTwoCRs();
                nextChar = true;
             }
             else
@@ -493,7 +495,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          
          if (nextChar)
          {
-            throw new HornetQStompException("Invalid char sequence: There is a CR not followed by an LF");
+            throw BUNDLE.badCRs();
          }
          
          //if some EOLs have been processed, drop those bytes before parsing command
@@ -757,7 +759,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                         }
                         catch (UnsupportedEncodingException e)
                         {
-                           throw new HornetQStompException("Encoding exception", e);
+                           throw BUNDLE.encodingErrorWithCause(e);
                         }
 
                         holder.reset();
@@ -802,7 +804,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   }
                   catch (UnsupportedEncodingException e)
                   {
-                     throw new HornetQStompException("Encoding exception.", e);
+                     throw BUNDLE.encodingErrorWithCause(e);
                   }
                   holder.reset();
 
