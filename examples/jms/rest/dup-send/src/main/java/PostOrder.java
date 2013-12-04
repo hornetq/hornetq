@@ -33,7 +33,8 @@ public class PostOrder
 
       if (res.getStatus() == 307)
       {
-         Link redirect = res.getLocation();
+         Link redirect = res.getLocationLink();
+         res.releaseConnection();
          res = redirect.request().body("application/xml", order).post();
       }
 
@@ -46,12 +47,14 @@ public class PostOrder
       System.out.println("Send Monica's order...");
       order.setName("Monica");
 
+      res.releaseConnection();
       res = create.request().body("application/xml", order).post();
 
       if (res.getStatus() != 201) throw new RuntimeException("Failed to post");
 
       System.out.println("Resend Monica's order over same create-next link...");
 
+      res.releaseConnection();
       res = create.request().body("application/xml", order).post();
 
       if (res.getStatus() != 201) throw new RuntimeException("Failed to post");

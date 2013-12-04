@@ -102,47 +102,6 @@ public class QueueDestinationsResource
       return queues;
    }
 
-   @DELETE
-   @Path("/{queue-name}")
-   public void deleteQueue(@Context UriInfo uriInfo, @PathParam("queue-name") String name) throws Exception
-   {
-      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
-
-      QueueResource queue = queues.remove(name);
-      if (queue != null)
-      {
-         try
-         {
-            queue.stop();
-         }
-         catch (Exception e)
-         {
-
-         }
-      }
-
-      ClientSession session = manager.getSessionFactory().createSession(false, false, false);
-      try
-      {
-
-         SimpleString queueName = new SimpleString(name);
-         ClientSession.QueueQuery query = session.queueQuery(queueName);
-         if (query.isExists())
-         {
-            session.deleteQueue(queueName);
-         }
-         else
-         {
-            throw new WebApplicationException(Response.status(405).type("text/plain").entity("Queue '" + name + "' does not exist").build());
-         }
-      }
-      finally
-      {
-         try { session.close(); } catch (Exception ignored) {}
-      }
-
-   }
-
    @Path("/{queue-name}")
    public synchronized QueueResource findQueue(@PathParam("queue-name") String name) throws Exception
    {
@@ -181,6 +140,7 @@ public class QueueDestinationsResource
            throws Exception
    {
       QueueResource queueResource = new QueueResource();
+      queueResource.setQueueDestinationsResource(this);
       queueResource.setDestination(queueName);
       queueResource.setServiceManager(manager);
 

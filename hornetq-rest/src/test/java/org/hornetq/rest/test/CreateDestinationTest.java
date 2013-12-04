@@ -31,8 +31,8 @@ public class CreateDestinationTest extends MessageTestBase
       ClientResponse cRes = create.body("application/hornetq.jms.queue+xml", queueConfig).post();
       cRes.releaseConnection();
       Assert.assertEquals(201, cRes.getStatus());
-      System.out.println("Location: " + cRes.getLocation());
-      ClientRequest request = cRes.getLocation().request();
+      System.out.println("Location: " + cRes.getLocationLink());
+      ClientRequest request = cRes.getLocationLink().request();
 
       ClientResponse<?> response = request.head();
       response.releaseConnection();
@@ -87,7 +87,7 @@ public class CreateDestinationTest extends MessageTestBase
       cRes.releaseConnection();
       Assert.assertEquals(201, cRes.getStatus());
 
-      ClientRequest request = cRes.getLocation().request();
+      ClientRequest request = cRes.getLocationLink().request();
 
       ClientResponse<?> response = request.head();
       response.releaseConnection();
@@ -99,7 +99,7 @@ public class CreateDestinationTest extends MessageTestBase
      ClientResponse<?> res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
-      Link sub1 = res.getLocation();
+      Link sub1 = res.getLocationLink();
       Assert.assertNotNull(sub1);
       Link consumeNext1 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
       Assert.assertNotNull(consumeNext1);
@@ -109,7 +109,7 @@ public class CreateDestinationTest extends MessageTestBase
       res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
-      Link sub2 = res.getLocation();
+      Link sub2 = res.getLocationLink();
       Assert.assertNotNull(sub2);
       Link consumeNext2 = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), res, "consume-next");
       Assert.assertNotNull(consumeNext1);

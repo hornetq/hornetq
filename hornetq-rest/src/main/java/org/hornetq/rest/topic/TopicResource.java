@@ -1,13 +1,18 @@
 package org.hornetq.rest.topic;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.DestinationResource;
 import org.hornetq.rest.queue.PostMessage;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -21,6 +26,7 @@ public class TopicResource extends DestinationResource
 {
    protected SubscriptionsResource subscriptions;
    protected PushSubscriptionsResource pushSubscriptions;
+   private TopicDestinationsResource topicDestinationsResource;
 
    public void start() throws Exception
    {
@@ -155,5 +161,38 @@ public class TopicResource extends DestinationResource
    public void setPushSubscriptions(PushSubscriptionsResource pushSubscriptions)
    {
       this.pushSubscriptions = pushSubscriptions;
+   }
+
+   @DELETE
+   public void deleteTopic(@Context UriInfo uriInfo) throws Exception
+   {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
+      topicDestinationsResource.getTopics().remove(destination);
+
+      try
+      {
+         stop();
+      }
+      catch (Exception ignored)
+      {
+      }
+
+      ClientSession session = serviceManager.getSessionFactory().createSession(false, false, false);
+      try
+      {
+         SimpleString topicName = new SimpleString(destination);
+         session.deleteQueue(topicName);
+      }
+      finally
+      {
+         try { session.close(); } catch (Exception ignored) {}
+      }
+
+   }
+
+   public void setTopicDestinationsResource(TopicDestinationsResource topicDestinationsResource)
+   {
+      this.topicDestinationsResource = topicDestinationsResource;
    }
 }

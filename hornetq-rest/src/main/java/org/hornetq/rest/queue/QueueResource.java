@@ -1,13 +1,18 @@
 package org.hornetq.rest.queue;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumerResource;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -21,6 +26,7 @@ public class QueueResource extends DestinationResource
 {
    protected ConsumersResource consumers;
    protected PushConsumerResource pushConsumers;
+   private QueueDestinationsResource queueDestinationsResource;
 
    public void start() throws Exception
    {
@@ -157,4 +163,31 @@ public class QueueResource extends DestinationResource
    {
       return pushConsumers;
    }
+
+   public void setQueueDestinationsResource(QueueDestinationsResource queueDestinationsResource)
+   {
+      this.queueDestinationsResource = queueDestinationsResource;
+   }
+
+
+   @DELETE
+   public void deleteQueue(@Context UriInfo uriInfo) throws Exception
+   {
+      HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
+
+      queueDestinationsResource.getQueues().remove(destination);
+      stop();
+
+      ClientSession session = serviceManager.getSessionFactory().createSession(false, false, false);
+      try
+      {
+         SimpleString queueName = new SimpleString(destination);
+         session.deleteQueue(queueName);
+      }
+      finally
+      {
+         try { session.close(); } catch (Exception ignored) {}
+      }
+   }
+
 }

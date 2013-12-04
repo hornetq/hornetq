@@ -11,6 +11,7 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Providers;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Type;
 
@@ -163,7 +164,17 @@ public class Jms
             throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
          }
 
-         return reader.readFrom(type, genericType, null, ct, new Headers<String>(), new ByteArrayInputStream(body));
+         Providers current = ResteasyProviderFactory.getContextData(Providers.class);
+         ResteasyProviderFactory.pushContext(Providers.class, factory);
+         try
+         {
+            return reader.readFrom(type, genericType, null, ct, new Headers<String>(), new ByteArrayInputStream(body));
+         }
+         finally
+         {
+            ResteasyProviderFactory.popContextData(Providers.class);
+            if (current != null) ResteasyProviderFactory.pushContext(Providers.class, current);
+         }
       }
       catch (Exception e)
       {
