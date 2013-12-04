@@ -24,6 +24,8 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -148,7 +150,8 @@ public abstract class VersionedStompFrameHandler
 
    public StompFrame onUnknown(String command)
    {
-      StompFrame response = new HornetQStompException("Unsupported command " + command).getFrame();
+      HornetQStompException error = BUNDLE.unknownCommand(command);
+      StompFrame response = error.getFrame();
       return response;
    }
 
@@ -167,7 +170,8 @@ public abstract class VersionedStompFrameHandler
       String txID = request.getHeader(Stomp.Headers.TRANSACTION);
       if (txID == null)
       {
-         response = new HornetQStompException("transaction header is mandatory to COMMIT a transaction").getFrame();
+         HornetQStompException error = BUNDLE.needTxIDHeader();
+         response = error.getFrame();
          return response;
       }
 
@@ -218,7 +222,8 @@ public abstract class VersionedStompFrameHandler
       }
       catch (Exception e)
       {
-         response = new HornetQStompException("Error handling send", e).getFrame();
+         HornetQStompException error = BUNDLE.errorHandleSend(e);
+         response = error.getFrame();
       }
 
       return response;
@@ -235,7 +240,8 @@ public abstract class VersionedStompFrameHandler
       String txID = frame.getHeader(Stomp.Headers.TRANSACTION);
       if (txID == null)
       {
-         response = new HornetQStompException("Need a transaction id to begin").getFrame();
+         HornetQStompException error = BUNDLE.beginTxNoID();
+         response = error.getFrame();
       }
       else
       {
@@ -258,7 +264,8 @@ public abstract class VersionedStompFrameHandler
 
       if (txID == null)
       {
-         response = new HornetQStompException("transaction header is mandatory to ABORT a transaction").getFrame();
+         HornetQStompException error = BUNDLE.abortTxNoID();
+         response = error.getFrame();
          return response;
       }
 
@@ -381,7 +388,7 @@ public abstract class VersionedStompFrameHandler
     */
    public void initDecoder(VersionedStompFrameHandler existingHandler)
    {
-      throw new IllegalStateException("This method should not be called");
+      throw BUNDLE.invalidCall();
    }
 
    //sends an ERROR frame back to client if possible then close the connection

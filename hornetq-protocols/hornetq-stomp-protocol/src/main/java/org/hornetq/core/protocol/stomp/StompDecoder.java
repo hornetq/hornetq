@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  * A StompDecoder
  *
@@ -411,7 +413,7 @@ public class StompDecoder
          }
          else if (workingBuffer[offset] == CR)
          {
-            if (nextChar) throw new HornetQStompException("Invalid char sequence: two consecutive CRs.");
+            if (nextChar) throw BUNDLE.invalidTwoCRs();
             nextChar = true;
          }
          else
@@ -423,7 +425,7 @@ public class StompDecoder
       
       if (nextChar)
       {
-         throw new HornetQStompException("Invalid char sequence: There is a CR not followed by an LF");
+         throw BUNDLE.badCRs();
       }
 
       if (data < 4 + offset)
@@ -615,7 +617,10 @@ public class StompDecoder
       if (workingBuffer[pos - 1] != NEW_LINE)
       {
          //give a signal to try other versions
-         throw new HornetQStompException(HornetQStompException.INVALID_EOL_V10, "Expect new line char but is " + workingBuffer[pos -1]);
+         HornetQStompException error = BUNDLE.notValidNewLine(workingBuffer[pos -1]);
+         error.setCode(HornetQStompException.INVALID_EOL_V10);
+         error.setBody(BUNDLE.unexpectedNewLine(workingBuffer[pos -1]));
+         throw error;
       }
       
       return true;
@@ -623,7 +628,10 @@ public class StompDecoder
 
    public void throwInvalid() throws HornetQStompException
    {
-      throw new HornetQStompException(HornetQStompException.INVALID_COMMAND, "Invalid STOMP frame: " + this.dumpByteArray(workingBuffer));
+      HornetQStompException error = BUNDLE.invalidCommand(this.dumpByteArray(workingBuffer));
+      error.setCode(HornetQStompException.INVALID_COMMAND);
+      error.setBody(BUNDLE.invalidFrame(this.dumpByteArray(workingBuffer)));
+      throw error;
    }
 
    public void init()

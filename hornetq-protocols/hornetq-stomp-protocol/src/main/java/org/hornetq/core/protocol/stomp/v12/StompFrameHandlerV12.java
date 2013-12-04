@@ -26,6 +26,8 @@ import org.hornetq.core.protocol.stomp.v11.StompFrameV11;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -78,7 +80,9 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
 
       if (messageID == null)
       {
-         return new HornetQStompException(connection, "No id header in ACK/NACK frame.").getFrame();
+         HornetQStompException error = BUNDLE.noIDInAck();
+         error.setHandler(connection.getFrameHandler());
+         return error.getFrame();
       }
 
       try
@@ -225,7 +229,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
                {
                   if (nextEOLChar)
                   {
-                     throw new HornetQStompException("Invalid char in parsing headers: two consecutive carriage returns");
+                     throw BUNDLE.invalidTwoCRs();
                   }
                   nextEOLChar = true;
                   break;
@@ -247,7 +251,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
                   }
                   catch (UnsupportedEncodingException e)
                   {
-                     throw new HornetQStompException("Encoding exception.", e);
+                     throw BUNDLE.encodingErrorWithCause(e);
                   }
                   holder.reset();
 

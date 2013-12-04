@@ -31,7 +31,7 @@ public class HornetQStompException extends Exception
    private int code = NONE;
    private final List<Header> headers = new ArrayList<Header>(10);
    private String body;
-   private final VersionedStompFrameHandler handler;
+   private VersionedStompFrameHandler handler;
    private boolean disconnect;
 
    public HornetQStompException(StompConnection connection, String msg)
@@ -127,5 +127,15 @@ public class HornetQStompException extends Exception
    public int getCode()
    {
       return code;
+   }
+   
+   public void setCode(int newCode)
+   {
+      code = newCode;
+   }
+
+   public void setHandler(VersionedStompFrameHandler frameHandler)
+   {
+      this.handler = frameHandler;
    }
 }

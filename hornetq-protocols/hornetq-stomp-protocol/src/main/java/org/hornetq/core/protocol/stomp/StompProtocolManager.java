@@ -50,6 +50,8 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  * StompProtocolManager
  *
@@ -107,7 +109,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          {
             return new ConnectionEntry(conn, null, System.currentTimeMillis(), ttl);
          }
-         throw new IllegalStateException("Stomp Connection TTL cannot be negative : " + ttl);
+         throw BUNDLE.negativeConnectionTTL(ttl);
       }
 
       ttl = server.getConfiguration().getConnectionTTLOverride();

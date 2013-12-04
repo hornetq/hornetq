@@ -39,6 +39,8 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.VersionLoader;
 
+import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  * A StompConnection
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -241,7 +243,7 @@ public final class StompConnection implements RemotingConnection
    {
       if (!manager.destinationExists(destination))
       {
-         throw new HornetQStompException("Destination doesn't exist: " + destination);
+         throw BUNDLE.destinationNotExist(destination);
       }
    }
 
@@ -456,7 +458,7 @@ public final class StompConnection implements RemotingConnection
          else
          {
             //not a supported version!
-            HornetQStompException error = new HornetQStompException("Stomp versions not supported: " + acceptVersion);
+            HornetQStompException error = BUNDLE.versionNotSupported(acceptVersion);
             error.addHeader("version", acceptVersion);
             error.addHeader("content-type", "text/plain");
             error.setBody("Supported protocol version are " + manager.getSupportedVersionsAsString());
@@ -480,16 +482,16 @@ public final class StompConnection implements RemotingConnection
    {
       if (host == null)
       {
-         HornetQStompException error = new HornetQStompException("Header host is null");
-         error.setBody("Cannot accept null as host");
+         HornetQStompException error = BUNDLE.nullHostHeader();
+         error.setBody(BUNDLE.hostCannotBeNull());
          throw error;
       }
 
       String localHost = manager.getVirtualHostName();
       if (!host.equals(localHost))
       {
-         HornetQStompException error = new HornetQStompException("Header host doesn't match server host");
-         error.setBody("host " + host + " doesn't match server host name");
+         HornetQStompException error = BUNDLE.hostNotMatch();
+         error.setBody(BUNDLE.hostNotMatchDetails(host));
          throw error;
       }
    }
@@ -508,13 +510,13 @@ public final class StompConnection implements RemotingConnection
       {
          if (isDestroyed())
          {
-            throw new HornetQStompException("Connection was destroyed.");
+            throw BUNDLE.connectionDestroyed();
          }
          if (!initialized)
          {
             if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
             {
-               throw new HornetQStompException("Connection hasn't been established.");
+               throw BUNDLE.connectionNotEstablished();
             }
             //decide version
             negotiateVersion(request);
@@ -575,7 +577,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Exception getting session", e);
+         throw BUNDLE.errorGetSession(e);
       }
 
       return session;
@@ -585,7 +587,7 @@ public final class StompConnection implements RemotingConnection
    {
       if (!this.valid)
       {
-         throw new HornetQStompException("Connection is not valid.");
+         throw BUNDLE.invalidConnection();
       }
    }
 
@@ -615,7 +617,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error sending message " + message, e);
+         throw BUNDLE.errorSendMessage(message, e);
       }
    }
 
@@ -637,7 +639,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error beginning a transaction: " + txID, e);
+         throw BUNDLE.errorBeginTx(txID, e);
       }
    }
 
@@ -649,7 +651,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error committing " + txID, e);
+         throw BUNDLE.errorCommitTx(txID, e);
       }
    }
 
@@ -665,7 +667,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error aborting " + txID, e);
+         throw BUNDLE.errorAbortTx(txID, e);
       }
    }
 
@@ -699,7 +701,7 @@ public final class StompConnection implements RemotingConnection
       {
          if (destination == null)
          {
-            throw new HornetQStompException("Client must set destination or id header to a SUBSCRIBE command");
+            throw BUNDLE.noDestination();
          }
          subscriptionID = "subscription/" + destination;
       }
@@ -714,7 +716,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error creating subscription " + subscriptionID, e);
+         throw BUNDLE.errorCreatSubscription(subscriptionID, e);
       }
    }
 
@@ -730,7 +732,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error unsubscripting " + subscriptionID, e);
+         throw BUNDLE.errorUnsubscrib(subscriptionID, e);
       }
    }
 
@@ -746,7 +748,7 @@ public final class StompConnection implements RemotingConnection
       }
       catch (Exception e)
       {
-         throw new HornetQStompException("Error acknowledging message " + messageID, e);
+         throw BUNDLE.errorAck(messageID, e);
       }
    }
 
