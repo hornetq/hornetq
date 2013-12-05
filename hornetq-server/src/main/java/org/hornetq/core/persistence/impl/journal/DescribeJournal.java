@@ -678,6 +678,11 @@ public final class DescribeJournal
          return buffer.toString();
       }
 
+      public Message getMsg()
+      {
+         return msg;
+      }
+
    }
 
    public static final class ReferenceDescribe
