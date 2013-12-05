@@ -13,10 +13,21 @@
 
 package org.hornetq.tests.integration.persistence;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 
@@ -32,13 +43,20 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
-import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 
 /**
  * A test of the XML export/import functionality
@@ -51,7 +69,9 @@ public class XmlImportExportTest extends ServiceTestBase
    private static final String QUEUE_NAME = "A1";
    private ServerLocator locator;
    private HornetQServer server;
+   private JMSServerManager jmsServer;
    private ClientSessionFactory factory;
+   private InVMContext namingContext;
 
    @Test
    public void testMessageProperties() throws Exception
@@ -143,7 +163,13 @@ public class XmlImportExportTest extends ServiceTestBase
    private ClientSession basicSetUp() throws Exception, HornetQException
    {
       server = createServer(true);
-      server.start();
+      server.getConfiguration().getConnectorConfigurations().put("in-vm1", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      server.getConfiguration().getConnectorConfigurations().put("in-vm2", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      jmsServer = new JMSServerManagerImpl(server);
+      addHornetQComponent(jmsServer);
+      namingContext = new InVMContext();
+      jmsServer.setContext(namingContext);
+      jmsServer.start();
       locator = createInVMNonHALocator();
       factory = createSessionFactory(locator);
       return addClientSession(factory.createSession(false, true, true));
@@ -294,6 +320,199 @@ public class XmlImportExportTest extends ServiceTestBase
       Assert.assertEquals("addressName1", queueQuery.getAddress().toString());
       Assert.assertEquals("bob", queueQuery.getFilterString().toString());
       Assert.assertEquals(Boolean.TRUE.booleanValue(), queueQuery.isDurable());
+   }
+
+   @Test
+   public void testJmsConnectionFactoryBinding() throws Exception
+   {
+      final String clientId = "myClientId";
+      final long clientFailureCheckPeriod = 1;
+      final long connectionTTl = 2;
+      final long callTimeout = 3;
+      final long callFailoverTimeout = 4;
+      final boolean cacheLargeMessagesClient = true;
+      final int minLargeMessageSize = 5;
+      final boolean compressLargeMessages = true;
+      final int consumerWindowSize = 6;
+      final int consumerMaxRate = 7;
+      final int confirmationWindowSize = 8;
+      final int producerWindowSize = 9;
+      final int producerMaxrate = 10;
+      final boolean blockOnAcknowledge = true;
+      final boolean blockOnDurableSend = false;
+      final boolean blockOnNonDurableSend = true;
+      final boolean autoGroup = true;
+      final boolean preacknowledge = true;
+      final String loadBalancingPolicyClassName = "myPolicy";
+      final int transactionBatchSize = 11;
+      final int dupsOKBatchSize = 12;
+      final boolean useGlobalPools = true;
+      final int scheduledThreadPoolMaxSize = 13;
+      final int threadPoolMaxSize = 14;
+      final long retryInterval = 15;
+      final double retryIntervalMultiplier = 10.0;
+      final long maxRetryInterval = 16;
+      final int reconnectAttempts = 17;
+      final boolean failoverOnInitialConnection = true;
+      final String groupId = "myGroupId";
+      final String name = "myFirstConnectionFactoryName";
+      final String jndi_binding1 = name + "Binding1";
+      final String jndi_binding2 = name + "Binding2";
+      final JMSFactoryType type = JMSFactoryType.CF;
+      final boolean ha = true;
+      final List connectors = Arrays.asList("in-vm1", "in-vm2");
+
+      ClientSession session = basicSetUp();
+
+      jmsServer.createConnectionFactory(name,
+            ha,
+            type,
+            connectors,
+            clientId,
+            clientFailureCheckPeriod,
+            connectionTTl,
+            callTimeout,
+            callFailoverTimeout,
+            cacheLargeMessagesClient,
+            minLargeMessageSize,
+            compressLargeMessages,
+            consumerWindowSize,
+            consumerMaxRate,
+            confirmationWindowSize,
+            producerWindowSize,
+            producerMaxrate,
+            blockOnAcknowledge,
+            blockOnDurableSend,
+            blockOnNonDurableSend,
+            autoGroup,
+            preacknowledge,
+            loadBalancingPolicyClassName,
+            transactionBatchSize,
+            dupsOKBatchSize,
+            useGlobalPools,
+            scheduledThreadPoolMaxSize,
+            threadPoolMaxSize,
+            retryInterval,
+            retryIntervalMultiplier,
+            maxRetryInterval,
+            reconnectAttempts,
+            failoverOnInitialConnection,
+            groupId,
+            jndi_binding1,
+            jndi_binding2);
+
+      jmsServer.createConnectionFactory("mySecondConnectionFactoryName", false, JMSFactoryType.CF, Arrays.asList("in-vm1", "in-vm2"), "mySecondConnectionFactoryName1", "mySecondConnectionFactoryName2");
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearDataRecreateServerDirs();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = createSessionFactory(locator);
+      session = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session);
+      xmlDataImporter.processXml();
+
+      ConnectionFactory cf1 = (ConnectionFactory) namingContext.lookup(jndi_binding1);
+      Assert.assertNotNull(cf1);
+      HornetQConnectionFactory hcf1 = (HornetQConnectionFactory) cf1;
+      Assert.assertEquals(ha, hcf1.isHA());
+      Assert.assertEquals(type.intValue(), hcf1.getFactoryType());
+      Assert.assertEquals(clientId, hcf1.getClientID());
+      Assert.assertEquals(clientFailureCheckPeriod, hcf1.getClientFailureCheckPeriod());
+      Assert.assertEquals(connectionTTl, hcf1.getConnectionTTL());
+      Assert.assertEquals(callTimeout, hcf1.getCallTimeout());
+//      Assert.assertEquals(callFailoverTimeout, hcf1.getCallFailoverTimeout());  // this value isn't currently persisted by org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl.encode()
+//      Assert.assertEquals(cacheLargeMessagesClient, hcf1.isCacheLargeMessagesClient()); // this value isn't currently supported by org.hornetq.api.jms.management.JMSServerControl.createConnectionFactory(java.lang.String, boolean, boolean, int, java.lang.String, java.lang.String, java.lang.String, long, long, long, long, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String)
+      Assert.assertEquals(minLargeMessageSize, hcf1.getMinLargeMessageSize());
+//      Assert.assertEquals(compressLargeMessages, hcf1.isCompressLargeMessage());  // this value isn't currently handled properly by org.hornetq.jms.server.impl.JMSServerManagerImpl.createConnectionFactory(java.lang.String, boolean, org.hornetq.api.jms.JMSFactoryType, java.util.List<java.lang.String>, java.lang.String, long, long, long, long, boolean, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String, java.lang.String...)()
+      Assert.assertEquals(consumerWindowSize, hcf1.getConsumerWindowSize());
+      Assert.assertEquals(consumerMaxRate, hcf1.getConsumerMaxRate());
+      Assert.assertEquals(confirmationWindowSize, hcf1.getConfirmationWindowSize());
+      Assert.assertEquals(producerWindowSize, hcf1.getProducerWindowSize());
+      Assert.assertEquals(producerMaxrate, hcf1.getProducerMaxRate());
+      Assert.assertEquals(blockOnAcknowledge, hcf1.isBlockOnAcknowledge());
+      Assert.assertEquals(blockOnDurableSend, hcf1.isBlockOnDurableSend());
+      Assert.assertEquals(blockOnNonDurableSend, hcf1.isBlockOnNonDurableSend());
+      Assert.assertEquals(autoGroup, hcf1.isAutoGroup());
+      Assert.assertEquals(preacknowledge, hcf1.isPreAcknowledge());
+      Assert.assertEquals(loadBalancingPolicyClassName, hcf1.getConnectionLoadBalancingPolicyClassName());
+      Assert.assertEquals(transactionBatchSize, hcf1.getTransactionBatchSize());
+      Assert.assertEquals(dupsOKBatchSize, hcf1.getDupsOKBatchSize());
+      Assert.assertEquals(useGlobalPools, hcf1.isUseGlobalPools());
+      Assert.assertEquals(scheduledThreadPoolMaxSize, hcf1.getScheduledThreadPoolMaxSize());
+      Assert.assertEquals(threadPoolMaxSize, hcf1.getThreadPoolMaxSize());
+      Assert.assertEquals(retryInterval, hcf1.getRetryInterval());
+      Assert.assertEquals(retryIntervalMultiplier, hcf1.getRetryIntervalMultiplier(), 0);
+      Assert.assertEquals(maxRetryInterval, hcf1.getMaxRetryInterval());
+      Assert.assertEquals(reconnectAttempts, hcf1.getReconnectAttempts());
+      Assert.assertEquals(failoverOnInitialConnection, hcf1.isFailoverOnInitialConnection());
+      Assert.assertEquals(groupId, hcf1.getGroupID());
+
+      Assert.assertNotNull(namingContext.lookup(jndi_binding2));
+      Assert.assertNotNull(namingContext.lookup("mySecondConnectionFactoryName1"));
+      Assert.assertNotNull(namingContext.lookup("mySecondConnectionFactoryName2"));
+   }
+
+   @Test
+   public void testJmsDestination() throws Exception
+   {
+      ClientSession session = basicSetUp();
+
+      jmsServer.createQueue(true, "myQueue", null, true, "myQueueJndiBinding1", "myQueueJndiBinding2");
+      jmsServer.createTopic(true, "myTopic", "myTopicJndiBinding1", "myTopicJndiBinding2");
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearDataRecreateServerDirs();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = createSessionFactory(locator);
+      session = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session);
+      xmlDataImporter.processXml();
+
+
+      Assert.assertNotNull(namingContext.lookup("myQueueJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup("myQueueJndiBinding2"));
+      Assert.assertNotNull(namingContext.lookup("myTopicJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup("myTopicJndiBinding2"));
+
+      jmsServer.createConnectionFactory("test-cf", false, JMSFactoryType.CF, Arrays.asList("in-vm1"), "test-cf");
+
+      ConnectionFactory cf = (ConnectionFactory) namingContext.lookup("test-cf");
+      Connection connection = cf.createConnection();
+      Session jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = jmsSession.createProducer((Destination) namingContext.lookup("myQueueJndiBinding1"));
+      producer.send(jmsSession.createTextMessage());
+      MessageConsumer consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myQueueJndiBinding2"));
+      connection.start();
+      Assert.assertNotNull(consumer.receive(3000));
+
+      consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myTopicJndiBinding1"));
+      producer = jmsSession.createProducer((Destination) namingContext.lookup("myTopicJndiBinding2"));
+      producer.send(jmsSession.createTextMessage());
+      Assert.assertNotNull(consumer.receive(3000));
+
+      connection.close();
    }
 
    @Test

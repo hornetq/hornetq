@@ -4,8 +4,8 @@ import org.junit.Test;
 
 import org.junit.Assert;
 import org.hornetq.api.core.client.*;
-import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
