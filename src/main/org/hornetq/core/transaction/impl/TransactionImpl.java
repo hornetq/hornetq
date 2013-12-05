@@ -15,7 +15,11 @@ package org.hornetq.core.transaction.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -24,6 +28,7 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 
@@ -66,6 +71,8 @@ public class TransactionImpl implements Transaction
    private volatile boolean containsPersistent;
 
    private int timeoutSeconds = -1;
+
+   private Map<Long, Set<Long>> consumerRefsMap = new HashMap<Long, Set<Long>>();
 
    public TransactionImpl(final StorageManager storageManager, final int timeoutSeconds)
    {
@@ -513,6 +520,7 @@ public class TransactionImpl implements Transaction
             operation.afterCommit(this);
          }
       }
+      consumerRefsMap.clear();
    }
 
    public synchronized void afterRollback()
@@ -524,6 +532,7 @@ public class TransactionImpl implements Transaction
             operation.afterRollback(this);
          }
       }
+      consumerRefsMap.clear();
    }
 
    public synchronized void beforeCommit() throws Exception
@@ -589,6 +598,41 @@ public class TransactionImpl implements Transaction
              ", nr operations = " + getOperationsCount() +
              "]@" +
              Integer.toHexString(hashCode());
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.transaction.Transaction#addRefMap(long, org.hornetq.core.server.MessageReference)
+    */
+   @Override
+   public void addRefMap(long consumerID, MessageReference ref)
+   {
+      synchronized (consumerRefsMap)
+      {
+         Set<Long> refsSet = consumerRefsMap.get(consumerID);
+         if (refsSet == null)
+         {
+            refsSet = new HashSet<Long>();
+            consumerRefsMap.put(consumerID, refsSet);
+         }
+         refsSet.add(ref.getMessage().getMessageID());
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.transaction.Transaction#isFromConsumer(long, org.hornetq.core.server.MessageReference)
+    */
+   @Override
+   public boolean isFromConsumer(long consumerId, MessageReference m)
+   {
+      synchronized (consumerRefsMap)
+      {
+         Set<Long> refsSet = consumerRefsMap.get(consumerId);
+         if (refsSet == null)
+         {
+            return false;
+         }
+         return refsSet.contains(m.getMessage().getMessageID());
+      }
    }
 
 

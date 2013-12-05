@@ -2585,7 +2585,7 @@ public class QueueImpl implements Queue
       LinkedListIterator<MessageReference> iter;
    }
 
-   private final class RefsOperation implements TransactionOperation
+   public final class RefsOperation implements TransactionOperation
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
