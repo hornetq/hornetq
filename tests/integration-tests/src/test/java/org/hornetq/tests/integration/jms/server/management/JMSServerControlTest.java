@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.jms.server.management;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.client.HornetQConnection;
+import org.hornetq.jms.client.HornetQMessageConsumer;
 import org.junit.Before;
 import org.junit.After;
 
@@ -334,7 +335,7 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          // create a consumer will create a Core queue bound to the topic address
-         MessageConsumer cons = session.createConsumer(HornetQJMSClient.createQueue(queueName));
+         HornetQMessageConsumer cons = (HornetQMessageConsumer) session.createConsumer(HornetQJMSClient.createQueue(queueName));
 
          control.destroyQueue(queueName, true);
 
@@ -342,6 +343,13 @@ public class JMSServerControlTest extends ManagementTestBase
          checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
          Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
+
+         long time = System.currentTimeMillis();
+         while(!cons.isClosed() && time + 5000 > System.currentTimeMillis())
+         {
+            Thread.sleep(100);
+         }
+         assertTrue(cons.isClosed());
 
          try
          {

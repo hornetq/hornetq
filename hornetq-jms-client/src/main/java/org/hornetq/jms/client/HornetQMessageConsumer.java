@@ -57,8 +57,6 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    private final SimpleString autoDeleteQueueName;
 
-   private boolean closed = false;
-
    // Constructors --------------------------------------------------
 
    protected HornetQMessageConsumer(final HornetQConnection connection,
@@ -151,10 +149,6 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
       {
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
-      finally
-      {
-         closed = true;
-      }
    }
 
    // QueueReceiver implementation ----------------------------------
@@ -190,6 +184,12 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
       return "HornetQMessageConsumer[" + consumer + "]";
    }
 
+   public boolean isClosed()
+   {
+      return consumer.isClosed();
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -198,7 +198,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    private void checkClosed() throws JMSException
    {
-      if (closed || session.getCoreSession().isClosed())
+      if (consumer.isClosed() || session.getCoreSession().isClosed())
       {
          throw new IllegalStateException("Consumer is closed");
       }
