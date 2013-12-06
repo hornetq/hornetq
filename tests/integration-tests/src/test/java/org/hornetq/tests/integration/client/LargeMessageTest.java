@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,6 +41,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
@@ -268,6 +271,95 @@ public class LargeMessageTest extends LargeMessageTestBase
       session.close();
 
       validateNoFilesOnLargeDir();
+   }
+
+   @Test
+   public void testDeleteOnDrop() throws Exception
+   {
+      fillAddress();
+
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+      ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
+
+      ClientSession session = addClientSession(sf.createSession(false, true, false));
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+      // Send large message which should be dropped and deleted from the filesystem
+
+      producer.send(clientFile);
+
+      validateNoFilesOnLargeDir();
+   }
+
+
+   private void fillAddress() throws Exception
+   {
+
+      final int PAGE_MAX = 100 * 1024;
+      final int PAGE_SIZE = 10 * 1024;
+      final int MESSAGE_SIZE = 1024; // 1k
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true,
+            config,
+            PAGE_SIZE,
+            PAGE_MAX,
+            new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      server.getAddressSettingsRepository().getMatch("#").setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
+
+      locator = createInVMNonHALocator();
+
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage message;
+
+      byte[] body = new byte[MESSAGE_SIZE];
+
+      ByteBuffer bb = ByteBuffer.wrap(body);
+
+      for (int j = 1; j <= MESSAGE_SIZE; j++)
+      {
+         bb.put(getSamplebyte(j));
+      }
+
+      for (int i = 0; i < 5000; i++)
+      {
+         message = session.createMessage(true);
+
+         HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+         bodyLocal.writeBytes(body);
+
+         message.putIntProperty(new SimpleString("id"), i);
+
+         producer.send(message);
+         if (i % 1000 == 0)
+         {
+            session.commit();
+         }
+      }
+      session.commit();
+      session.close();
    }
 
    @Test
@@ -1103,7 +1195,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    /**
     * @param messageSize
-    * @param msg2
+    * @param msg
     */
    private void compareString(final long messageSize, ClientMessage msg)
    {

@@ -829,6 +829,11 @@ public class PagingStoreImpl implements PagingStore
                HornetQServerLogger.LOGGER.pageStoreDropMessages(storeName);
             }
 
+            if (message.isLargeMessage())
+            {
+               ((LargeServerMessage)message).deleteFile();
+            }
+
             // Address is full, we just pretend we are paging, and drop the data
             return true;
          }
