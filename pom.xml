@@ -515,7 +515,6 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-            <module>hornetq-native</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
