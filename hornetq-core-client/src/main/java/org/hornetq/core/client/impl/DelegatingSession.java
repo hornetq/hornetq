@@ -69,6 +69,12 @@ public class DelegatingSession implements ClientSessionInternal
       }
    }
 
+
+   public ClientSessionInternal getInternalSession()
+   {
+      return session;
+   }
+
    @Override
    protected void finalize() throws Throwable
    {

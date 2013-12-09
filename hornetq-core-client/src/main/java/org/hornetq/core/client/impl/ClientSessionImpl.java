@@ -103,7 +103,7 @@ import org.hornetq.utils.XidCodecSupport;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  */
-final class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
+public final class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
    private final Map<String, String> metadata = new HashMap<String, String>();
 
@@ -2147,9 +2147,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    }
 
    /**
+    * Not part of the interface, used on tests only
     * @return
     */
-   private Set<ClientProducerInternal> cloneProducers()
+   public Set<ClientProducerInternal> cloneProducers()
    {
       Set<ClientProducerInternal> producersClone;
 
@@ -2161,9 +2162,10 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    }
 
    /**
+    * Not part of the interface, used on tests only
     * @return
     */
-   private Set<ClientConsumerInternal> cloneConsumers()
+   public Set<ClientConsumerInternal> cloneConsumers()
    {
       synchronized (consumers)
       {
