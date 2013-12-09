@@ -27,7 +27,7 @@
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>HornetQ only runs on Java 6 or later.</para>
+         <para>HornetQ only runs on Java 7 or later.</para>
       </note>
       <para>By default, HornetQ server runs with 1GiB of memory. If your computer has less memory,
          or you want to run it with more available RAM, modify the value in <literal
@@ -98,76 +98,5 @@
                files</para>
          </listitem>
       </itemizedlist>
-   </section>
-   <section id="installation.jboss.as5">
-      <title>HornetQ In JBoss Application Server 5.x</title>
-      <para>HornetQ can also be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS
-            5</ulink>. It is not currently shipped by default with the application server (it is
-         scheduled to be shipped as default JMS provider in JBoss Application Server 6.0), so you
-         will need to create new AS 5 profiles to run AS 5 with HornetQ.</para>
-      <para>To create AS 5 profiles:</para>
-      <orderedlist>
-         <listitem>
-            <para>Download JBoss AS 5</para>
-         </listitem>
-         <listitem>
-            <para>Set the environment property <literal>JBOSS_HOME</literal> to point to the
-               directory where you installed JBoss AS 5</para>
-         </listitem>
-         <listitem>
-            <para>run <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are on
-               Windows) in HornetQ <literal>config/jboss-as-5</literal> directory</para>
-         </listitem>
-      </orderedlist>
-      <para>This will create 2 new profiles in <literal>$JBOSS_HOME/server</literal>:</para>
-      <itemizedlist>
-         <listitem>
-            <para><literal>default-with-hornetq</literal> -- it corresponds to AS 5 <literal
-                  >default</literal> profile with HornetQ as its JMS provider. In this profile,
-               HornetQ is <emphasis>non-clustered</emphasis></para>
-         </listitem>
-         <listitem>
-            <para><literal>all-with-hornetq</literal> -- it corresponds to AS 5 <literal
-                  >all</literal> profile with HornetQ as its JMS provider. In this profile, HornetQ
-               is <emphasis>clustered</emphasis></para>
-         </listitem>
-      </itemizedlist>
-      <para>You can then start JBoss AS 5 using one of these profiles, e.g. :</para>
-      <programlisting>$JBOSS_HOME/bin/run.sh -c default-with-hornetq</programlisting>
-   </section>
-   <section id="installation.jboss.as4">
-      <title>HornetQ In JBoss Application Server 4.x</title>
-      <para>As in AS 4, it is not shipped by default with the application server, so you will need
-         to create new AS 4 profiles to run AS 4 with HornetQ.</para>
-      <para>To create AS 4 profiles:</para>
-      <orderedlist>
-         <listitem>
-            <para>Download JBoss AS 4</para>
-         </listitem>
-         <listitem>
-            <para>Set the environment property <literal>JBOSS_HOME</literal> to point to the
-               directory where you installed JBoss AS 4</para>
-         </listitem>
-         <listitem>
-            <para>run <literal>./build.sh</literal> (or <literal>build.bat as4</literal> if you
-                  are on Windows) in HornetQ <literal>config/jboss-as-4</literal>
-               directory</para>
-         </listitem>
-      </orderedlist>
-      <para>This will create 2 new profiles in <literal>$JBOSS_HOME/server</literal>:</para>
-      <itemizedlist>
-         <listitem>
-            <para><literal>default-with-hornetq</literal> -- it corresponds to AS 4 <literal
-                  >default</literal> profile with HornetQ as its JMS provider. In this profile,
-               HornetQ is <emphasis>non-clustered</emphasis></para>
-         </listitem>
-         <listitem>
-            <para><literal>all-with-hornetq</literal> -- it corresponds to AS 4 <literal
-                  >all</literal> profile with HornetQ as its JMS provider. In this profile, HornetQ
-               is <emphasis>clustered</emphasis></para>
-         </listitem>
-      </itemizedlist>
-      <para>You can then start JBoss AS 4 using one of these profiles:</para>
-      <programlisting>$JBOSS_HOME/bin/run.sh -c default-with-hornetq</programlisting>
    </section>
 </chapter>
