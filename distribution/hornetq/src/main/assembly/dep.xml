@@ -46,6 +46,18 @@
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
+       <moduleSet>
+           <useAllReactorProjects>true</useAllReactorProjects>
+           <includes>
+               <include>org.hornetq:hornetq-native</include>
+           </includes>
+           <binaries>
+               <includeDependencies>false</includeDependencies>
+               <outputDirectory>lib</outputDirectory>
+               <unpack>false</unpack>
+               <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+           </binaries>
+       </moduleSet>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
@@ -242,6 +254,18 @@
            <useAllReactorProjects>true</useAllReactorProjects>
            <includes>
                <include>org.hornetq:hornetq-amqp-protocol</include>
+           </includes>
+           <binaries>
+               <includeDependencies>false</includeDependencies>
+               <outputDirectory>lib</outputDirectory>
+               <unpack>false</unpack>
+               <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+           </binaries>
+       </moduleSet>
+       <moduleSet>
+           <useAllReactorProjects>true</useAllReactorProjects>
+           <includes>
+               <include>org.hornetq:hornetq-aerogear-integration</include>
            </includes>
            <binaries>
                <includeDependencies>false</includeDependencies>
