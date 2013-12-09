@@ -1316,4 +1316,12 @@ public interface HornetQServerLogger extends BasicLogger
                                ". This was most likely caused from a previous communication timeout",
       format = Message.Format.MESSAGE_FORMAT)
    void xidReplacedOnXStart(String xidOriginalToString, String xidReplacedToString);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224069, value = "Invalid cipher suite specified. Supported cipher suites are: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void invalidCipherSuite(String validSuites);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 214070, value = "Invalid protocol specified. Supported protocols are: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void invalidProtocol(String validProtocols);
 }

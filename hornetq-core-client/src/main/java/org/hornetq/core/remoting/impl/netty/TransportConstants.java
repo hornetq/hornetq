@@ -71,6 +71,10 @@ public class TransportConstants
 
    public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "trust-store-password";
 
+   public static final String ENABLED_CIPHER_SUITES_PROP_NAME = "enabled-cipher-suites";
+
+   public static final String ENABLED_PROTOCOLS_PROP_NAME = "enabled-protocols";
+
    public static final String NEED_CLIENT_AUTH_PROP_NAME = "need-client-auth";
 
    public static final String BACKLOG_PROP_NAME = "backlog";
@@ -128,6 +132,10 @@ public class TransportConstants
 
    public static final String DEFAULT_TRUSTSTORE_PASSWORD = null;
 
+   public static final String DEFAULT_ENABLED_CIPHER_SUITES = null;
+
+   public static final String DEFAULT_ENABLED_PROTOCOLS = null;
+
    public static final boolean DEFAULT_NEED_CLIENT_AUTH = false;
 
    public static final boolean DEFAULT_TCP_NODELAY = true;
@@ -184,6 +192,8 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
@@ -219,6 +229,8 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TCP_NODELAY_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME);
       allowableConnectorKeys.add(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);

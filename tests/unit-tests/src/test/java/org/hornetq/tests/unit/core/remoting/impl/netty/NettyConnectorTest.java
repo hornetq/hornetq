@@ -247,4 +247,94 @@ public class NettyConnectorTest extends UnitTestCase
       connector.close();
       Assert.assertFalse(connector.isStarted());
    }
+
+   @Test
+   public void testBadCipherSuite() throws Exception
+   {
+      BufferHandler handler = new BufferHandler()
+      {
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
+         {
+         }
+      };
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      params.put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, "myBadCipherSuite");
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(final Object connectionID, final HornetQException me)
+         {
+         }
+
+         public void connectionDestroyed(final Object connectionID)
+         {
+         }
+
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
+         {
+         }
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
+      };
+
+      NettyConnector connector = new NettyConnector(params,
+            handler,
+            listener,
+            Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool(),
+            Executors.newScheduledThreadPool(5));
+
+
+      connector.start();
+      Assert.assertTrue(connector.isStarted());
+      Assert.assertNull(connector.createConnection());
+      connector.close();
+      Assert.assertFalse(connector.isStarted());
+   }
+
+   @Test
+   public void testBadProtocol() throws Exception
+   {
+      BufferHandler handler = new BufferHandler()
+      {
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
+         {
+         }
+      };
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      params.put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "myBadProtocol");
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(final Object connectionID, final HornetQException me)
+         {
+         }
+
+         public void connectionDestroyed(final Object connectionID)
+         {
+         }
+
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
+         {
+         }
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
+      };
+
+      NettyConnector connector = new NettyConnector(params,
+            handler,
+            listener,
+            Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool(),
+            Executors.newScheduledThreadPool(5));
+
+
+      connector.start();
+      Assert.assertTrue(connector.isStarted());
+      Assert.assertNull(connector.createConnection());
+      connector.close();
+      Assert.assertFalse(connector.isStarted());
+   }
 }

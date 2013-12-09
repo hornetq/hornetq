@@ -150,6 +150,10 @@ public class NettyConnector extends AbstractConnector
 
    private final String trustStorePassword;
 
+   private final String enabledCipherSuites;
+
+   private final String enabledProtocols;
+
    private final boolean tcpNoDelay;
 
    private final int tcpSendBufferSize;
@@ -282,13 +286,23 @@ public class NettyConnector extends AbstractConnector
             configuration,
             HornetQDefaultConfiguration.getPropMaskPassword(),
             HornetQDefaultConfiguration.getPropMaskPassword());
+
+         enabledCipherSuites = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME,
+               TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES,
+               configuration);
+
+         enabledProtocols = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME,
+               TransportConstants.DEFAULT_ENABLED_PROTOCOLS,
+               configuration);
       }
       else
       {
-         keyStorePath = null;
-         keyStorePassword = null;
-         trustStorePath = null;
-         trustStorePassword = null;
+         keyStorePath = TransportConstants.DEFAULT_KEYSTORE_PATH;
+         keyStorePassword = TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+         trustStorePath = TransportConstants.DEFAULT_TRUSTSTORE_PATH;
+         trustStorePassword = TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
+         enabledCipherSuites = TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES;
+         enabledProtocols = TransportConstants.DEFAULT_ENABLED_PROTOCOLS;
       }
 
       tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
@@ -476,6 +490,41 @@ public class NettyConnector extends AbstractConnector
                   engine.setUseClientMode(true);
 
                   engine.setWantClientAuth(true);
+
+                  // setting the enabled cipher suites resets the enabled protocols so we need
+                  // to save the enabled protocols so that after the customer cipher suite is enabled
+                  // we can reset the enabled protocols if a customer protocol isn't specified
+                  String[] originalProtocols = engine.getEnabledProtocols();
+
+                  if (enabledCipherSuites != null)
+                  {
+                     try
+                     {
+                        engine.setEnabledCipherSuites(SSLSupport.parseCommaSeparatedListIntoArray(enabledCipherSuites));
+                     }
+                     catch (IllegalArgumentException e)
+                     {
+                        HornetQClientLogger.LOGGER.invalidCipherSuite(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedCipherSuites()));
+                        throw e;
+                     }
+                  }
+
+                  if (enabledProtocols != null)
+                  {
+                     try
+                     {
+                        engine.setEnabledProtocols(SSLSupport.parseCommaSeparatedListIntoArray(enabledProtocols));
+                     }
+                     catch (IllegalArgumentException e)
+                     {
+                        HornetQClientLogger.LOGGER.invalidProtocol(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedProtocols()));
+                        throw e;
+                     }
+                  }
+                  else
+                  {
+                     engine.setEnabledProtocols(originalProtocols);
+                  }
 
                   SslHandler handler = new SslHandler(engine);
 
@@ -990,7 +1039,5 @@ public class NettyConnector extends AbstractConnector
       });
 
    }
-
-
 }
 

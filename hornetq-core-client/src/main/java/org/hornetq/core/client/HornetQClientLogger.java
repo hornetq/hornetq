@@ -296,7 +296,36 @@ public interface HornetQClientLogger extends BasicLogger
    void compressedLargeMessageError(int length, int nReadBytes);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212051, value = "Unable to close consumer", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 212051,
+         value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
+         format = Message.Format.MESSAGE_FORMAT)
+   void invalidConcurrentSessionUsage(@Cause Throwable t);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212052,
+         value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
+         format = Message.Format.MESSAGE_FORMAT)
+   void packetOutOfOrder(Object obj, @Cause Throwable t);
+
+   /**
+    * Warns about usage of {@link SendAcknowledgementHandler} or JMS's {@code CompletionWindow} with
+    * confirmations disabled (confirmationWindowSize=-1).
+    */
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212053,
+         value = "CompletionListener/SendAcknowledgementHandler used with confirmationWindowSize=-1. Enable confirmationWindowSize to receive acks from server!",
+         format = Message.Format.MESSAGE_FORMAT)
+   void confirmationWindowDisabledWarning();
+
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212054,
+         value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
+         format = Message.Format.MESSAGE_FORMAT)
+   void outOfCreditOnFlowControl (String address);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212055, value = "Unable to close consumer", format = Message.Format.MESSAGE_FORMAT)
    void unableToCloseConsumer(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
@@ -383,33 +412,11 @@ public interface HornetQClientLogger extends BasicLogger
    @Message(id = 214020, value = "Exception happened while stopping Discovery BroadcastEndpoint {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorStoppingDiscoveryBroadcastEndpoint(Object endpoint, @Cause Throwable t);
 
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 214021,
-      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
-      format = Message.Format.MESSAGE_FORMAT)
-   void invalidConcurrentSessionUsage(@Cause Throwable t);
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 214021, value = "Invalid cipher suite specified. Supported cipher suites are: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void invalidCipherSuite(String validSuites);
 
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 214022,
-      value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
-      format = Message.Format.MESSAGE_FORMAT)
-   void packetOutOfOrder(Object obj, @Cause Throwable t);
-
-   /**
-    * Warns about usage of {@link SendAcknowledgementHandler} or JMS's {@code CompletionWindow} with
-    * confirmations disabled (confirmationWindowSize=-1).
-    */
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 214023,
-            value = "CompletionListener/SendAcknowledgementHandler used with confirmationWindowSize=-1. Enable confirmationWindowSize to receive acks from server!",
-            format = Message.Format.MESSAGE_FORMAT)
-   void confirmationWindowDisabledWarning();
-
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 214024,
-            value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
-            format = Message.Format.MESSAGE_FORMAT)
-   void outOfCreditOnFlowControl (String address);
-
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 214022, value = "Invalid protocol specified. Supported protocols are: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void invalidProtocol(String validProtocols);
 }
