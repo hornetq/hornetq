@@ -312,8 +312,8 @@ buffer_size = bandwidth * RTT.</programlisting>
                 additional properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>ssl-enabled</literal>. Must be <literal>true</literal> to enable
-                        SSL.</para>
+                    <para><literal>ssl-enabled</literal></para>
+                    <para>Must be <literal>true</literal> to enable SSL. Default is <literal>false</literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>key-store-path</literal></para>
@@ -374,6 +374,24 @@ buffer_size = bandwidth * RTT.</programlisting>
                         system property or the HornetQ-specific "org.hornetq.ssl.trustStorePassword" system
                         property. The HornetQ-specific system property is useful if another component on client
                         is already making use of the standard, Java system property.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>enabled-cipher-suites</literal></para>
+                    <para>Whether used on an <literal>acceptor</literal> or <literal>connector</literal> this is a
+                        comma separated list of cipher suites used for SSL communication. The default value is
+                        <literal>null</literal> which means the JVM's default will be used.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>enabled-protocols</literal></para>
+                    <para>Whether used on an <literal>acceptor</literal> or <literal>connector</literal> this is a
+                        comma separated list of protocols used for SSL communication. The default value is
+                        <literal>null</literal> which means the JVM's default will be used.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>need-client-auth</literal></para>
+                    <para>This property is only for an <literal>acceptor</literal>. It tells a client connecting to this
+                        acceptor that 2-way SSL is required. Valid values are <literal>true</literal> or
+                        <literal>false</literal>. Default is <literal>false</literal>.</para>
                 </listitem>
             </itemizedlist>
         </section>
