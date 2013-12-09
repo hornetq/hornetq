@@ -40,10 +40,20 @@
   <author>
     <firstname>Tim</firstname>
     <surname>Fox</surname>
+    <affiliation>
+      <shortaffil>Red Hat, Inc.</shortaffil>
+      <jobtitle>Core Developer</jobtitle>
+      <orgdiv>JBoss</orgdiv>
+     </affiliation>
   </author>
   <author>
     <firstname>Jeff</firstname>
     <surname>Mesnil</surname>
+    <affiliation>
+      <shortaffil>Red Hat, Inc.</shortaffil>
+      <jobtitle>Core Developer</jobtitle>
+      <orgdiv>JBoss</orgdiv>
+    </affiliation>
   </author>
   <author>
     <firstname>Howard</firstname>
@@ -58,12 +68,6 @@
   <author>
     <firstname>Francisco</firstname>
     <surname>Borges</surname>
-    <affiliation>
-      <shortaffil>Red Hat, Inc.</shortaffil>
-      <jobtitle>Core Developer</jobtitle>
-      <orgdiv>JBoss</orgdiv>
-    </affiliation>
-    <email>francisco.borges@redhat.com</email>
   </author>
   <author>
     <firstname>Justin</firstname>
