@@ -1079,6 +1079,12 @@ public class PagingStoreImpl implements PagingStore
          return Collections.emptyList();
       }
 
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
+
    }
 
    private void openNewPage() throws Exception
