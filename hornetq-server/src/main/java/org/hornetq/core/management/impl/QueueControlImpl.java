@@ -448,7 +448,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
     }
 
-    public String listDeliveringdMessagesAsJSON() throws Exception
+    public String listDeliveringMessagesAsJSON() throws Exception
     {
         checkStarted();
 

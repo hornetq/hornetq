@@ -14,6 +14,7 @@
 package org.hornetq.core.server.cluster.impl;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -222,6 +223,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       bb.putLong(messageID);
 
       return bytes;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      return Collections.emptyList();
    }
 
    private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
