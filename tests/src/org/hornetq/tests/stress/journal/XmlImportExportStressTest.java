@@ -7,8 +7,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
