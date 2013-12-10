@@ -1,11 +1,16 @@
 package org.hornetq.tests.stress.journal;
 
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.junit.Test;
 
 import org.junit.Assert;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.core.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.tools.xml.XmlDataExporter;
+import org.hornetq.tools.xml.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 

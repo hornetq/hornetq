@@ -472,8 +472,9 @@
             <module>hornetq-native</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
-            <module>hornetq-service-sar</module>
-            <module>integration/hornetq-jboss-as-integration</module>
+             <module>hornetq-service-sar</module>
+             <module>hornetq-tools</module>
+             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
@@ -494,6 +495,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+             <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -515,6 +517,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+             <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -538,6 +541,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+            <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -572,6 +576,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+            <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -601,6 +606,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
+            <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>

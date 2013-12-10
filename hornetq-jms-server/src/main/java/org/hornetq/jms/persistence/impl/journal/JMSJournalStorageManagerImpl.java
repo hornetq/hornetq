@@ -51,11 +51,11 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
 
    // Constants -----------------------------------------------------
 
-   private static final byte CF_RECORD = 1;
+   public static final byte CF_RECORD = 1;
 
-   private static final byte DESTINATION_RECORD = 2;
+   public static final byte DESTINATION_RECORD = 2;
 
-   private static final byte JNDI_RECORD = 3;
+   public static final byte JNDI_RECORD = 3;
 
    // Attributes ----------------------------------------------------
 
