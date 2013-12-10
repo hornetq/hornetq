@@ -83,6 +83,11 @@ public interface QueueControl
    long getMessagesAdded();
 
    /**
+    * Returns the timestamp of the oldest message or -1 if empty.
+    */
+   long getOldestMessageTimestamp() throws Exception;
+
+   /**
     * Returns the expiry address associated to this queue.
     */
    String getExpiryAddress();
