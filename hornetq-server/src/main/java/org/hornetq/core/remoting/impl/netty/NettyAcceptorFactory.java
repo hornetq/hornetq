@@ -32,7 +32,8 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
  */
 public class NettyAcceptorFactory implements AcceptorFactory
 {
-   public Acceptor createAcceptor(final ClusterConnection connection,
+   public Acceptor createAcceptor(final String name,
+                                  final ClusterConnection connection,
                                   final Map<String, Object> configuration,
                                   final BufferHandler handler,
                                   final ConnectionLifeCycleListener listener,
@@ -40,7 +41,7 @@ public class NettyAcceptorFactory implements AcceptorFactory
                                   final ScheduledExecutorService scheduledThreadPool,
                                   final Map<String, ProtocolManager> protocolMap)
    {
-      return new NettyAcceptor(connection, configuration, handler, listener, threadPool, scheduledThreadPool, protocolMap);
+      return new NettyAcceptor(name, connection, configuration, handler, listener, scheduledThreadPool, protocolMap);
    }
 
    public Set<String> getAllowableProperties()

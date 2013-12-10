@@ -13,6 +13,9 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import static org.hornetq.utils.Base64.encodeBytes;
+
+import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -22,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.AccessController;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +43,7 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -48,23 +54,33 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.base64.Base64;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseDecoder;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.AttributeKey;
+import io.netty.util.CharsetUtil;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -72,10 +88,10 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.remoting.AbstractConnector;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -104,6 +120,16 @@ public class NettyConnector extends AbstractConnector
    public static final String HORNETQ_TRUSTSTORE_PATH_PROP_NAME = "org.hornetq.ssl.trustStore";
    public static final String HORNETQ_TRUSTSTORE_PASSWORD_PROP_NAME = "org.hornetq.ssl.trustStorePassword";
 
+   // Constants for HTTP upgrade
+   // These constants are exposed publicly as they are used on the server-side to fetch
+   // headers from the HTTP request, compute some values and fill the HTTP response
+   public static final String MAGIC_NUMBER = "CF70DEB8-70F9-4FBA-8B4F-DFC3E723B4CD";
+   public static final String SEC_HORNETQ_REMOTING_KEY = "Sec-HornetQRemoting-Key";
+   public static final String SEC_HORNETQ_REMOTING_ACCEPT= "Sec-HornetQRemoting-Accept";
+   public static final String HORNETQ_REMOTING = "hornetq-remoting";
+
+   private static final AttributeKey<String> REMOTING_KEY = AttributeKey.valueOf(SEC_HORNETQ_REMOTING_KEY);
+
    static
    {
       // Disable resource leak detection for performance reasons by default
@@ -131,6 +157,11 @@ public class NettyConnector extends AbstractConnector
    private final long httpClientIdleScanPeriod;
 
    private final boolean httpRequiresSessionId;
+
+   // if true, after the connection, the connector will send
+   // a HTTP GET request (+ Upgrade: hornetq-remoting) that
+   // will be handled by the server's http server.
+   private final boolean httpUpgradeEnabled;
 
    private final boolean useServlet;
 
@@ -243,6 +274,10 @@ public class NettyConnector extends AbstractConnector
          httpRequiresSessionId = false;
       }
 
+      httpUpgradeEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME,
+         TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
+         configuration);
+
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
          -1,
          configuration);
@@ -334,6 +369,8 @@ public class NettyConnector extends AbstractConnector
          port +
          ", httpEnabled=" +
          httpEnabled +
+         ", httpUpgradeEnabled=" +
+         httpUpgradeEnabled +
          ", useServlet=" +
          useServlet +
          ", servletPath=" +
@@ -483,7 +520,7 @@ public class NettyConnector extends AbstractConnector
       {
           public void initChannel(Channel channel) throws Exception
           {
-              ChannelPipeline pipeline = channel.pipeline();
+              final ChannelPipeline pipeline = channel.pipeline();
               if (sslEnabled && !useServlet) {
                   SSLEngine engine = context.createSSLEngine();
 
@@ -541,6 +578,49 @@ public class NettyConnector extends AbstractConnector
                   pipeline.addLast(new HttpHandler());
               }
 
+              if (httpUpgradeEnabled)
+              {
+                 // prepare to handle a HTTP 101 response to upgrade the protocol.
+                 final HttpClientCodec httpClientCodec = new HttpClientCodec();
+                 pipeline.addLast(httpClientCodec);
+                 pipeline.addLast(new SimpleChannelInboundHandler<HttpObject>()
+                 {
+                    @Override
+                    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception
+                    {
+                       if (msg instanceof HttpResponse)
+                       {
+                          HttpResponse response = (HttpResponse) msg;
+                          if (response.getStatus().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code()
+                                && response.headers().get(HttpHeaders.Names.UPGRADE).equals(HORNETQ_REMOTING))
+                          {
+                             String accept = response.headers().get(SEC_HORNETQ_REMOTING_ACCEPT);
+                             String expectedResponse = createExpectedResponse(MAGIC_NUMBER, ctx.channel().attr(REMOTING_KEY).get());
+
+                             if (expectedResponse.equals(accept))
+                             {
+                                // remove the http handlers and flag the hornetq channel handler as active
+                                pipeline.remove(httpClientCodec);
+                                pipeline.remove(this);
+                                pipeline.get(HornetQChannelHandler.class).active = true;
+                             }
+                             else
+                             {
+                                HornetQClientLogger.LOGGER.httpHandshakeFailed(accept, expectedResponse);
+                                ctx.close();
+                             }
+                          }
+                       }
+                    }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+                    {
+                       HornetQClientLogger.LOGGER.errorCreatingNettyConnection(cause);
+                       ctx.close();
+                    }
+                 });
+              }
               pipeline.addLast(new HornetQFrameDecoder2());
 
               pipeline.addLast(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
@@ -614,24 +694,8 @@ public class NettyConnector extends AbstractConnector
          return null;
       }
 
-      SocketAddress remoteDestination;
-      if (useServlet)
-      {
-         try
-         {
-            // TODO: Fix me
-            URI uri = new URI("http", null, host, port, servletPath, null, null);
-            //bootstrap.setOption("serverName", uri.getHost());
-            //bootstrap.setOption("serverPath", uri.getRawPath());
-         }
-         catch (URISyntaxException e)
-         {
-            throw new IllegalArgumentException(e.getMessage());
-         }
-      }
-
       // HORNETQ-907 - strip off IPv6 scope-id (if necessary)
-      remoteDestination = new InetSocketAddress(host, port);
+      SocketAddress remoteDestination = new InetSocketAddress(host, port);
       InetAddress inetAddress = ((InetSocketAddress) remoteDestination).getAddress();
       if (inetAddress instanceof Inet6Address)
       {
@@ -648,6 +712,7 @@ public class NettyConnector extends AbstractConnector
             }
          }
       }
+
       HornetQClientLogger.LOGGER.debug("Remote destination: " + remoteDestination);
 
       ChannelFuture future;
@@ -702,7 +767,36 @@ public class NettyConnector extends AbstractConnector
          }
          else
          {
-            ch.pipeline().get(HornetQChannelHandler.class).active = true;
+            if (httpUpgradeEnabled)
+            {
+               // Send a HTTP GET + Upgrade request that will be handled by the http-upgrade handler.
+               try
+               {
+                  URI uri = new URI("http", null, host, port, null, null, null);
+                  HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+                  request.headers().set(HttpHeaders.Names.HOST, host);
+                  request.headers().set(HttpHeaders.Names.UPGRADE, HORNETQ_REMOTING);
+                  request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
+
+                  // Get 16 bit nonce and base 64 encode it
+                  byte[] nonce = randomBytes(16);
+                  String key = base64(nonce);
+                  request.headers().set(SEC_HORNETQ_REMOTING_KEY, key);
+                  ch.attr(REMOTING_KEY).set(key);
+
+                  // Send the HTTP request.
+                  ch.writeAndFlush(request);
+               }
+               catch (URISyntaxException e)
+               {
+                  HornetQClientLogger.LOGGER.errorCreatingNettyConnection(e);
+                  return null;
+               }
+            }
+            else
+            {
+               ch.pipeline().get(HornetQChannelHandler.class).active = true;
+            }
          }
 
          // No acceptor on a client connection
@@ -1039,5 +1133,53 @@ public class NettyConnector extends AbstractConnector
       });
 
    }
+
+   private static String base64(byte[] data)
+   {
+      ByteBuf encodedData = Unpooled.wrappedBuffer(data);
+      ByteBuf encoded = Base64.encode(encodedData);
+      String encodedString = encoded.toString(CharsetUtil.UTF_8);
+      encoded.release();
+      return encodedString;
+   }
+
+   /**
+    * Creates an arbitrary number of random bytes
+    *
+    * @param size the number of random bytes to create
+    * @return An array of random bytes
+    */
+   private static byte[] randomBytes(int size)
+   {
+      byte[] bytes = new byte[size];
+
+      for (int index = 0; index < size; index++)
+      {
+         bytes[index] = (byte) randomNumber(0, 255);
+      }
+
+      return bytes;
+   }
+
+   private static int randomNumber(int minimum, int maximum)
+   {
+      return (int) (Math.random() * maximum + minimum);
+   }
+
+   public static String createExpectedResponse(final String magicNumber, final String secretKey) throws IOException
+   {
+        try
+        {
+            final String concat = secretKey + magicNumber;
+            final MessageDigest digest = MessageDigest.getInstance("SHA1");
+
+            digest.update(concat.getBytes("UTF-8"));
+            final byte[] bytes = digest.digest();
+            return encodeBytes(bytes);
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        }
+    }
 }
 

@@ -19,6 +19,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -65,4 +66,13 @@ public interface RemotingService
     * @param backupTransportConnection
     */
    void freeze(CoreRemotingConnection rc);
+
+   /**
+    * Returns the acceptor identified by its {@code
+    *  name} or {@code null} if it does not exists.
+    *
+    * @param name the name of the acceptor
+    */
+   Acceptor getAcceptor(String name);
+
 }

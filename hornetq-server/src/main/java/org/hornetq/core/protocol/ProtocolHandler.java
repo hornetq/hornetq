@@ -101,10 +101,15 @@ public class ProtocolHandler
 
       @Override
       protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+         if (ctx.isRemoved()) {
+             return;
+         }
+
          // Will use the first five bytes to detect a protocol.
          if (in.readableBytes() < 8) {
             return;
          }
+
          final int magic1 = in.getUnsignedByte(in.readerIndex());
          final int magic2 = in.getUnsignedByte(in.readerIndex() + 1);
          if (http && isHttp(magic1, magic2))
@@ -135,6 +140,7 @@ public class ProtocolHandler
          NettyServerConnection connection = channelHandler.createConnection(ctx, protocolToUse, httpEnabled);
          protocolManagerToUse.handshake(connection, new ChannelBufferWrapper(in));
          pipeline.remove(this);
+         ctx.flush();
       }
 
       private boolean isHttp(int magic1, int magic2)

@@ -32,7 +32,8 @@ import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
  */
 public class InVMAcceptorFactory implements AcceptorFactory
 {
-   public Acceptor createAcceptor(final ClusterConnection clusterConnection,
+   public Acceptor createAcceptor(final String name,
+                                  final ClusterConnection clusterConnection,
                                   final Map<String, Object> configuration,
                                   final BufferHandler handler,
                                   final ConnectionLifeCycleListener listener,

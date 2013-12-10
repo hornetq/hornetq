@@ -44,6 +44,7 @@ import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.ResourceLeakDetector;
@@ -91,6 +92,8 @@ public class NettyAcceptor implements Acceptor
       // Disable resource leak detection for performance reasons by default
       ResourceLeakDetector.setEnabled(false);
    }
+
+   private final String name;
 
    private final ClusterConnection clusterConnection;
 
@@ -159,26 +162,17 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean directDeliver;
 
+   private final boolean httpUpgradeEnabled;
 
-   public NettyAcceptor(final Map<String, Object> configuration,
-                        final BufferHandler handler,
-                        final ConnectionLifeCycleListener listener,
-                        final Executor threadPool,
-                        final ScheduledExecutorService scheduledThreadPool,
-                        final Map<String, ProtocolManager> protocolMap)
-   {
-      this(null, configuration, handler, listener, threadPool, scheduledThreadPool, protocolMap);
-   }
-
-
-   public NettyAcceptor(final ClusterConnection clusterConnection,
+   public NettyAcceptor(final String name,
+                        final ClusterConnection clusterConnection,
                         final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
-                        final Executor threadPool,
                         final ScheduledExecutorService scheduledThreadPool,
                         final Map<String, ProtocolManager> protocolMap)
    {
+      this.name = name;
 
       this.clusterConnection = clusterConnection;
 
@@ -271,6 +265,10 @@ public class NettyAcceptor implements Acceptor
       directDeliver = ConfigurationHelper.getBooleanProperty(TransportConstants.DIRECT_DELIVER,
                                                              TransportConstants.DEFAULT_DIRECT_DELIVER,
                                                              configuration);
+
+      httpUpgradeEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME,
+                                TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
+                                configuration);
    }
 
    public synchronized void start() throws Exception
@@ -411,33 +409,49 @@ public class NettyAcceptor implements Acceptor
 
       serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels", GlobalEventExecutor.INSTANCE);
 
-      startServerChannels();
-
-      paused = false;
-
-      if (notificationService != null)
+      if (httpUpgradeEnabled)
       {
-         TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("factory"),
-                                       new SimpleString(NettyAcceptorFactory.class.getName()));
-         props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
-         props.putIntProperty(new SimpleString("port"), port);
-         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
-         notificationService.sendNotification(notification);
+         // the channel will be bound by the Web container and hand over after the HTTP Upgrade
+         // handshake is successful
+      } else {
+         startServerChannels();
+
+         paused = false;
+
+         if (notificationService != null)
+         {
+            TypedProperties props = new TypedProperties();
+            props.putSimpleStringProperty(new SimpleString("factory"),
+                                          new SimpleString(NettyAcceptorFactory.class.getName()));
+            props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
+            props.putIntProperty(new SimpleString("port"), port);
+            Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
+            notificationService.sendNotification(notification);
+         }
+
+         if (batchDelay > 0)
+         {
+            flusher = new BatchFlusher();
+
+            batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher,
+                                                                            batchDelay,
+                                                                            batchDelay,
+                                                                           TimeUnit.MILLISECONDS);
+         }
+
+         // TODO: Think about add Version back to netty
+         HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port);
       }
+   }
 
-      if (batchDelay > 0)
-      {
-         flusher = new BatchFlusher();
-
-         batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher,
-                                                                         batchDelay,
-                                                                         batchDelay,
-                                                                         TimeUnit.MILLISECONDS);
-      }
-
-      // TODO: Think about add Version back to netty
-      HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port);
+    /**
+     * Transfers the Netty channel that has been created outside of this NettyAcceptor
+     * to control it and configure it according to this NettyAcceptor setting.
+     *
+     * @param channel A Netty channel created outside this NettyAcceptor.
+     */
+   public void transfer(Channel channel) {
+      channel.pipeline().addLast(protocolHandler.getProtocolDecoder());
    }
 
    private void startServerChannels()

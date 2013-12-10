@@ -87,7 +87,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final List<Interceptor> outgoingInterceptors = new CopyOnWriteArrayList<Interceptor>();
 
-   private final Set<Acceptor> acceptors = new HashSet<Acceptor>();
+   private final Map<String, Acceptor> acceptors = new HashMap<String, Acceptor>();
 
    private final Map<Object, ConnectionEntry> connections = new ConcurrentHashMap<Object, ConnectionEntry>();
 
@@ -288,7 +288,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             ClusterConnection clusterConnection = lookupClusterConnection(info);
 
-            Acceptor acceptor = factory.createAcceptor(clusterConnection,
+            Acceptor acceptor = factory.createAcceptor(info.getName(),
+                                                       clusterConnection,
                                                        info.getParams(),
                                                        new DelegatingBufferHandler(),
                                                        this,
@@ -301,7 +302,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                acceptor.setDefaultHornetQPrincipal(defaultInvmSecurityPrincipal);
             }
 
-            acceptors.add(acceptor);
+            acceptors.put(info.getName(), acceptor);
 
             if (managementService != null)
             {
@@ -316,7 +317,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
-      for (Acceptor a : acceptors)
+      for (Acceptor a : acceptors.values())
       {
          a.start();
       }
@@ -332,7 +333,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
    {
       defaultInvmSecurityPrincipal = principal;
-      for (Acceptor acceptor : acceptors)
+      for (Acceptor acceptor : acceptors.values())
       {
          if(acceptor.isUnsecurable())
          {
@@ -347,7 +348,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          return;
       failureCheckAndFlushThread.close(false);
 
-      for (Acceptor acceptor : acceptors)
+      for (Acceptor acceptor : acceptors.values())
       {
          try
          {
@@ -393,7 +394,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failureCheckAndFlushThread.close(criticalError);
 
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
-      for (Acceptor acceptor : acceptors)
+      for (Acceptor acceptor : acceptors.values())
       {
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
@@ -423,7 +424,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          conn.disconnect(criticalError);
       }
 
-      for (Acceptor acceptor : acceptors)
+      for (Acceptor acceptor : acceptors.values())
       {
          acceptor.stop();
       }
@@ -451,6 +452,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       started = false;
 
+   }
+
+   @Override
+   public Acceptor getAcceptor(String name) {
+       return acceptors.get(name);
    }
 
    public boolean isStarted()
