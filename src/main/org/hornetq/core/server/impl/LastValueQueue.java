@@ -160,6 +160,8 @@ public class LastValueQueue extends QueueImpl
       private final SimpleString prop;
 
       private volatile MessageReference ref;
+      
+      private Long consumerId;
 
       HolderReference(final SimpleString prop, final MessageReference ref)
       {
@@ -267,6 +269,24 @@ public class LastValueQueue extends QueueImpl
       public int getMessageMemoryEstimate()
       {
          return ref.getMessage().getMemoryEstimate();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#setConsumerId(java.lang.Long)
+       */
+      @Override
+      public void setConsumerId(Long consumerID)
+      {
+         this.consumerId = consumerID;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#getConsumerId()
+       */
+      @Override
+      public Long getConsumerId()
+      {
+         return this.consumerId;
       }
    }
 }

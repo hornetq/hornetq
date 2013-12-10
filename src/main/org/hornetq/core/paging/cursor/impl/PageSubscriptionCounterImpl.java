@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -429,6 +430,15 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#getListOnConsumer(long)
+       */
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
       }
    }
 
