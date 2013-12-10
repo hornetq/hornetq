@@ -7,10 +7,20 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.jms.DeliveryMode;
+import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
+import javax.jms.Message;
 import javax.jms.MessageFormatRuntimeException;
+import javax.jms.Queue;
+import javax.jms.TextMessage;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientSessionImpl;
+import org.hornetq.core.client.impl.DelegatingSession;
+import org.hornetq.jms.client.HornetQJMSContext;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
 import org.junit.Assert;
@@ -76,6 +86,54 @@ public class JmsProducerTest extends JMSTestBase
       Assert.assertEquals(true, producer.getDisableMessageID());
       producer.setDisableMessageID(false);
       Assert.assertEquals(false, producer.getDisableMessageID());
+   }
+
+
+   @Test
+   public void multipleSendsUsingSetters() throws Exception
+   {
+      jmsServer.createQueue(true,"q1", null, true, "/queues/q1");
+      server.createQueue(SimpleString.toSimpleString("q1"), SimpleString.toSimpleString("q1"), null, true, false);
+
+      Queue q1 = context.createQueue("q1");
+
+      context.createProducer().setProperty("prop1", 1).setProperty("prop2", 2).send(q1, "Text1");
+
+      context.createProducer().setProperty("prop1", 3).setProperty("prop2", 4).send(q1, "Text2");
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         context.createProducer().send(q1, "Text" + i);
+      }
+
+      HornetQSession sessionUsed = (HornetQSession)(((HornetQJMSContext) context).getUsedSession());
+
+      ClientSessionImpl coreSession = (ClientSessionImpl)((DelegatingSession)sessionUsed.getCoreSession()).getInternalSession();
+
+      // JMSConsumer is supposed to cache the producer, each call to createProducer is supposed to always return the same producer
+      assertEquals(1, coreSession.cloneProducers().size());
+
+      JMSConsumer consumer = context.createConsumer(q1);
+
+      TextMessage text = (TextMessage)consumer.receive(5000);
+      assertNotNull(text);
+      assertEquals("Text1", text.getText());
+      assertEquals(1, text.getIntProperty("prop1"));
+      assertEquals(2, text.getIntProperty("prop2"));
+
+      text = (TextMessage)consumer.receive(5000);
+      assertNotNull(text);
+      assertEquals("Text2", text.getText());
+      assertEquals(3, text.getIntProperty("prop1"));
+      assertEquals(4, text.getIntProperty("prop2"));
+
+      for (int i = 0; i < 100; i++)
+      {
+         assertEquals("Text" + i, consumer.receiveBody(String.class, 1000));
+      }
+
+      consumer.close();
+      context.close();
    }
 
    @Test

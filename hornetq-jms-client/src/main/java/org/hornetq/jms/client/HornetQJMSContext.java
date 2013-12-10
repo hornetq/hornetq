@@ -28,6 +28,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
@@ -63,6 +64,7 @@ public class HornetQJMSContext implements JMSContext
    private final HornetQConnectionForContext connection;
    private Session session;
    private boolean autoStart = HornetQJMSContext.DEFAULT_AUTO_START;
+   private MessageProducer innerProducer;
    private boolean xa;
    private boolean closed;
 
@@ -111,11 +113,21 @@ public class HornetQJMSContext implements JMSContext
       checkSession();
       try
       {
-         return new HornetQJMSProducer(this, session.createProducer(null));
+         return new HornetQJMSProducer(this, getInnerProducer());
       } catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
+   }
+
+   private synchronized MessageProducer getInnerProducer() throws JMSException
+   {
+      if (innerProducer == null)
+      {
+         innerProducer = session.createProducer(null);
+      }
+
+      return innerProducer;
    }
 
    /**
@@ -681,6 +693,16 @@ public class HornetQJMSContext implements JMSContext
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
+   }
+
+   /**
+    * This is to be used on tests only. It's not part of the interface and it's not guaranteed to be kept
+    * on the API contract.
+    * @return
+    */
+   public Session getUsedSession()
+   {
+      return this.session;
    }
 
    private synchronized void checkAutoStart() throws JMSException

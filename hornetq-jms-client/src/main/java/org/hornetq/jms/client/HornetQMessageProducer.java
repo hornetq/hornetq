@@ -514,7 +514,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private void checkClosed() throws JMSException
    {
-      if (clientProducer.isClosed())
+      if (clientProducer.isClosed() || clientSession.isClosed())
       {
          throw new IllegalStateException("Producer is closed");
       }
