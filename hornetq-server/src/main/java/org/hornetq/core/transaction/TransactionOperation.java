@@ -54,4 +54,7 @@ public interface TransactionOperation
    void afterRollback(Transaction tx);
 
    List<MessageReference> getRelatedMessageReferences();
+
+   List<MessageReference> getListOnConsumer(long consumerID);
+
 }

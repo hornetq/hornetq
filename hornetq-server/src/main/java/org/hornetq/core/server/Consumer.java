@@ -55,7 +55,7 @@ public interface Consumer
     * Add the in-deliver mode messages to the ref-list passed as parameter
     * @param refList the placeholder for where the output messages will be placed
     */
-   void getDeliveringMessages(List<MessageReference> refList);
+   List<MessageReference>  getDeliveringMessages();
 
    String debug();
 

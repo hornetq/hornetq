@@ -70,6 +70,7 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
+import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -1666,4 +1667,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       routingContext.clear();
    }
+
+
+   @Override
+   public List<MessageReference> getInTXMessagesForConsumer(long consumerId)
+   {
+      if (this.tx != null)
+      {
+         QueueImpl.RefsOperation oper = (QueueImpl.RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+
+         if (oper == null)
+         {
+            return Collections.emptyList();
+         }
+         else
+         {
+            return oper.getListOnConsumer(consumerId);
+         }
+      }
+      else
+      {
+         return Collections.emptyList();
+      }
+   }
+
 }

@@ -67,8 +67,9 @@ public interface MessageReference
 
    void acknowledge() throws Exception;
 
-   void acknowledge(final Transaction tx) throws Exception;
+   void setConsumerId(Long consumerID);
 
+   Long getConsumerId();
 
    void handled();
 }

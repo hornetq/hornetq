@@ -12,9 +12,13 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.hornetq.api.core.client.HornetQClient;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -23,6 +27,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
@@ -311,6 +316,122 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   //https://issues.jboss.org/browse/HORNETQ-1231
+   @Test
+   public void testListDeliveringMessagesWithRASession() throws Exception
+   {
+      ServerLocator locator1 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      locator1.setBlockOnNonDurableSend(true);
+      locator1.setConsumerWindowSize(10240);
+      locator1.setAckBatchSize(0);
+      ClientSessionFactory sf = locator1.createSessionFactory();
+      final ClientSession transSession = sf.createSession(false, true, false);
+      ClientConsumer consumer = null;
+      SimpleString queue = null;
+      int numMsg = 10;
+
+      try
+      {
+         // a session from RA does this
+         transSession.addMetaData("resource-adapter", "inbound");
+         transSession.addMetaData("jms-session", "");
+
+         SimpleString address = RandomUtil.randomSimpleString();
+         queue = RandomUtil.randomSimpleString();
+
+         transSession.createQueue(address, queue, null, false);
+
+         final QueueControl queueControl = createManagementControl(address, queue);
+
+         ClientProducer producer = transSession.createProducer(address);
+
+         for (int i = 0; i < numMsg; i++)
+         {
+            ClientMessage message = transSession.createMessage(false);
+            message.putIntProperty(new SimpleString("seqno"), i);
+            producer.send(message);
+         }
+
+         consumer = transSession.createConsumer(queue);
+         transSession.start();
+
+         /**
+          * the following latches are used to make sure that
+          *
+          * 1. the first call on queueControl happens after the
+          * first message arrived at the message handler.
+          *
+          * 2. the message handler wait on the first message until
+          * the queueControl returns the right/wrong result.
+          *
+          * 3. the test exits after all messages are received.
+          *
+          */
+         final CountDownLatch latch1 = new CountDownLatch(1);
+         final CountDownLatch latch2 = new CountDownLatch(1);
+         final CountDownLatch latch3 = new CountDownLatch(10);
+
+         consumer.setMessageHandler(new MessageHandler()
+         {
+
+            @Override
+            public void onMessage(ClientMessage message)
+            {
+               try
+               {
+                  message.acknowledge();
+               }
+               catch (HornetQException e1)
+               {
+                  e1.printStackTrace();
+               }
+               latch1.countDown();
+               try
+               {
+                  latch2.await(10, TimeUnit.SECONDS);
+               }
+               catch (InterruptedException e)
+               {
+                  e.printStackTrace();
+               }
+               latch3.countDown();
+            }
+         });
+
+         latch1.await(10, TimeUnit.SECONDS);
+         //now we know the ack of the message is sent but to make sure
+         //the server has received it, we try 5 times
+         int n = 0;
+         for (int i = 0; i < 5; i++)
+         {
+            Thread.sleep(1000);
+            String jsonStr = queueControl.listDeliveringMessagesAsJSON();
+
+            n = countOccurrencesOf(jsonStr, "seqno");
+
+            if (n == numMsg)
+            {
+               break;
+            }
+         }
+
+         assertEquals(numMsg, n);
+
+         latch2.countDown();
+
+         latch3.await(10, TimeUnit.SECONDS);
+
+         transSession.commit();
+      }
+      finally
+      {
+         consumer.close();
+         transSession.deleteQueue(queue);
+         transSession.close();
+         locator1.close();
+      }
+   }
+
    @Test
    public void testListDeliveringMessages() throws Exception
    {
@@ -339,7 +460,7 @@ public class QueueControlTest extends ManagementTestBase
 
       assertEquals(1, srvqueue.getDeliveringCount());
 
-      System.out.println(queueControl.listDeliveringdMessagesAsJSON());
+      System.out.println(queueControl.listDeliveringMessagesAsJSON());
 
       Map<String, Map<String, Object>[]> deliveringMap = queueControl.listDeliveringMessages();
       assertEquals(1, deliveringMap.size());
