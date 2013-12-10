@@ -147,4 +147,15 @@ public interface ServerSession
 
    void setSessionContext(OperationContext context);
 
+   /**
+    * HornetQ RA will acknowledge a message before calling MDB if it is transactional
+    * that will cause the message to be removed from the consumer's delivering 
+    * list before the tx is finished. We need to add those acked messages when
+    * getting messages in delivery state.
+    * 
+    * @param refList : the list to add messages to.
+    * @param consumerId : the consumer
+    */
+   List<MessageReference> getInTXMessagesForConsumer(long consumerId);
+
 }

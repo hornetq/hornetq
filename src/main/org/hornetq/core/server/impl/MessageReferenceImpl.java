@@ -43,6 +43,8 @@ public class MessageReferenceImpl implements MessageReference
    private final ServerMessage message;
 
    private final Queue queue;
+   
+   private Long consumerID;
 
    // Static --------------------------------------------------------
 
@@ -170,6 +172,18 @@ public class MessageReferenceImpl implements MessageReference
    {
       return false;
    }
+   
+   
+   @Override
+   public void setConsumerId(Long consumerID)
+   {
+      this.consumerID = consumerID;
+   }
+   
+   public Long getConsumerId()
+   {
+      return this.consumerID;
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.server.MessageReference)
@@ -178,15 +192,6 @@ public class MessageReferenceImpl implements MessageReference
    {
       queue.acknowledge(this);
    }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-    */
-   public void acknowledge(Transaction tx) throws Exception
-   {
-      queue.acknowledge(tx, this);
-   }
-
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()

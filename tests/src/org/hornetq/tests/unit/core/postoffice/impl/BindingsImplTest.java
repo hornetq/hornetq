@@ -357,6 +357,26 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#addRefMap(long, org.hornetq.core.server.MessageReference)
+       */
+      @Override
+      public void addRefMap(long consumerID, MessageReference ref)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#isFromConsumer(long, org.hornetq.core.server.MessageReference)
+       */
+      @Override
+      public boolean isFromConsumer(long consumerId, MessageReference m)
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
    }
 
    class FakeMessage implements ServerMessage
