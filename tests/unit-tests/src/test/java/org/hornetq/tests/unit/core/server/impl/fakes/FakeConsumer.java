@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -159,11 +160,6 @@ public class FakeConsumer implements Consumer
    }
 
    @Override
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-   }
-
-   @Override
    public String toManagementString()
    {
       return toString();
@@ -174,5 +170,12 @@ public class FakeConsumer implements Consumer
    {
       //To change body of implemented methods use File | Settings | File Templates.
    }
+
+   public List<MessageReference>  getDeliveringMessages()
+   {
+      return Collections.emptyList();
+   }
+
+
 
 }

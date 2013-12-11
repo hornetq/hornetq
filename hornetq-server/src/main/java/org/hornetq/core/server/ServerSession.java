@@ -155,4 +155,6 @@ public interface ServerSession
                           SimpleString name,
                           boolean durable,
                           SimpleString filterString) throws Exception;
+
+    List<MessageReference> getInTXMessagesForConsumer(long consumerId);
 }

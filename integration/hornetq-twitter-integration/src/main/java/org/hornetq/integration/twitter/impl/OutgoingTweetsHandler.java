@@ -23,6 +23,7 @@ import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
 import twitter4j.http.AccessToken;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -150,10 +151,13 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
       return filter;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
    @Override
-   public void getDeliveringMessages(List<MessageReference> refList)
+   public List<MessageReference> getDeliveringMessages()
    {
-      // noop
+      return Collections.emptyList();
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
