@@ -923,9 +923,8 @@ public class QueueImpl implements Queue
 
       for (ConsumerHolder holder : consumerListClone)
       {
-         LinkedList<MessageReference> msgs = new LinkedList<MessageReference>();
-         holder.consumer.getDeliveringMessages(msgs);
-         if (msgs.size() > 0)
+         List<MessageReference> msgs = holder.consumer.getDeliveringMessages();
+         if (msgs != null && msgs.size() > 0)
          {
             mapReturn.put(holder.consumer.toManagementString(), msgs);
          }
@@ -2579,7 +2578,7 @@ public class QueueImpl implements Queue
 
    }
 
-   private final class RefsOperation extends TransactionOperationAbstract
+   public final class RefsOperation extends TransactionOperationAbstract
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
@@ -2620,6 +2619,8 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
+            ref.setConsumerId(null);
+
             if (HornetQServerLogger.LOGGER.isTraceEnabled())
             {
                HornetQServerLogger.LOGGER.trace("rolling back " + ref);
@@ -2688,10 +2689,29 @@ public class QueueImpl implements Queue
       }
 
       @Override
-      public List<MessageReference> getRelatedMessageReferences()
+      public synchronized List<MessageReference> getRelatedMessageReferences()
       {
-         return refsToAck;
+         List<MessageReference> listRet = new LinkedList<MessageReference>();
+         listRet.addAll(listRet);
+         return listRet;
       }
+
+      @Override
+      public synchronized List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         List<MessageReference> list = new LinkedList<MessageReference>();
+         for (MessageReference ref : refsToAck)
+         {
+            if (ref.getConsumerId() != null && ref.getConsumerId().equals(consumerID))
+            {
+               list.add(ref);
+            }
+         }
+
+         return list;
+      }
+
+
    }
 
    private class DelayedAddRedistributor implements Runnable

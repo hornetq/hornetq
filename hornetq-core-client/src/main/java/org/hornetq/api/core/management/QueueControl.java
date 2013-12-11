@@ -132,7 +132,7 @@ public interface QueueControl
      * @throws Exception
      */
     @Operation(desc = "list all messages being delivered per consumer using JSON form")
-    String listDeliveringdMessagesAsJSON() throws Exception;
+    String listDeliveringMessagesAsJSON() throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified filter.

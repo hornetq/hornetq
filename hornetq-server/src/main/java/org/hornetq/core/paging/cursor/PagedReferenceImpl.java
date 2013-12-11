@@ -45,6 +45,8 @@ public class PagedReferenceImpl implements PagedReference
 
    private int messageEstimate;
 
+   private Long consumerId;
+
    private final AtomicInteger deliveryCount = new AtomicInteger(0);
 
    private final PageSubscription subscription;
@@ -202,12 +204,6 @@ public class PagedReferenceImpl implements PagedReference
       subscription.ack(this);
    }
 
-   @Override
-   public void acknowledge(final Transaction tx) throws Exception
-   {
-      subscription.ackTx(tx, this);
-   }
-
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -236,6 +232,24 @@ public class PagedReferenceImpl implements PagedReference
              ", subscription=" +
              subscription +
              "]";
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#setConsumerId(java.lang.Long)
+    */
+   @Override
+   public void setConsumerId(Long consumerID)
+   {
+      this.consumerId = consumerID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#getConsumerId()
+    */
+   @Override
+   public Long getConsumerId()
+   {
+      return this.consumerId;
    }
 
 }
