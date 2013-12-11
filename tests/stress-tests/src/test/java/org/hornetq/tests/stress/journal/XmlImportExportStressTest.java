@@ -9,8 +9,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.junit.Test;
 
 import org.junit.Assert;
-import org.hornetq.tools.xml.XmlDataExporter;
-import org.hornetq.tools.xml.XmlDataImporter;
+import org.hornetq.tools.XmlDataExporter;
+import org.hornetq.tools.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 

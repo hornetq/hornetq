@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tools.xml;
+package org.hornetq.tools;
 
 
 import java.io.BufferedInputStream;
@@ -50,7 +50,7 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.utils.Base64;
 
-import static org.hornetq.tools.xml.XmlDataConstants.*;
+import static org.hornetq.tools.XmlDataConstants.*;
 
 /**
  * Read XML output from <code>org.hornetq.core.persistence.impl.journal.XmlDataExporter</code>, create a core session, and

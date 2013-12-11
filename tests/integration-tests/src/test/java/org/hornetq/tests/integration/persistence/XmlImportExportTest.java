@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.junit.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -40,8 +39,8 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
-import org.hornetq.tools.xml.XmlDataExporter;
-import org.hornetq.tools.xml.XmlDataImporter;
+import org.hornetq.tools.XmlDataExporter;
+import org.hornetq.tools.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
