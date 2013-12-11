@@ -120,7 +120,7 @@
                     >ClientSessionFactory</literal> instances. <literal>ServerLocator</literal>
                 instances are used to locate servers and create connections to them. </para>
             <para>In JMS terms think of a <literal>ServerLocator</literal> in the same way you would
-                a JMS Connection Factory</para>
+                a JMS Connection Factory.</para>
             <para><literal>ServerLocator</literal> instances are created using the <literal
                     >HornetQClient</literal> factory class.</para>
         </section>
@@ -129,7 +129,7 @@
             <para>Clients use <literal>ClientSessionFactory</literal> instances to create <literal
                     >ClientSession</literal> instances. <literal>ClientSessionFactory</literal>
                 instances are basically the connection to a server</para>
-            <para> In JMS terms think of them as JMS Connections</para>
+            <para> In JMS terms think of them as JMS Connections.</para>
             <para><literal>ClientSessionFactory</literal> instances are created using the <literal
                     >ServerLocator</literal> class.</para>
         </section>

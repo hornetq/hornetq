@@ -30,7 +30,7 @@
                 performance, clustered, asynchronous messaging system.</para>
         </listitem>
         <listitem>
-            <para>HornetQ is an example of Message Oriented Middleware (MoM) For a description of
+            <para>HornetQ is an example of Message Oriented Middleware (MoM). For a description of
                 MoMs and other messaging concepts please see the <xref linkend="messaging-concepts"
                 />.</para>
         </listitem>

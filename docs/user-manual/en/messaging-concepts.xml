@@ -81,7 +81,7 @@
                 particular message will only ever be consumed by a maximum of one of them. Senders
                 (also known as<emphasis role="italic"> producers</emphasis>) to the queue are
                 completely decoupled from receivers (also known as <emphasis role="italic"
-                    >consumers</emphasis>) of the queue - they do not know of each others
+                    >consumers</emphasis>) of the queue - they do not know of each other's
                 existence.</para>
             <para>A classic example of point to point messaging would be an order queue in a
                 company's book ordering system. Each order is represented as a message which is sent
@@ -143,7 +143,7 @@
         <para>Messaging systems typically support the sending and acknowledgement of multiple
             messages in a single local transaction. HornetQ also supports the sending and
             acknowledgement of message as part of a large global transaction - using the Java
-            mapping of XA; JTA.</para>
+            mapping of XA: JTA.</para>
     </section>
     <section>
         <title>Durability</title>
@@ -170,12 +170,12 @@
                 specification - i.e. it was created to encapsulate common functionality of the
                 already existing messaging systems that were available at the time of its
                 creation.</para>
-            <para>JMS is a very popular API and is implemented by most, messaging systems. JMS is
+            <para>JMS is a very popular API and is implemented by most messaging systems. JMS is
                 only available to clients running Java.</para>
             <para>JMS does not define a standard wire format - it only defines a programmatic API so
                 JMS clients and servers from different vendors cannot directly interoperate since
                 each will use the vendor's own internal wire protocol.</para>
-            <para>HornetQ provides a fully compliant JMS 1.1 API.</para>
+            <para>HornetQ provides a fully compliant JMS 1.1 and JMS 2.0 API.</para>
         </section>
         <section>
             <title>System specific APIs</title>
@@ -206,7 +206,7 @@
         <section>
             <title>STOMP</title>
             <para><ulink
-                    url="http://stomp.codehaus.org/"
+                    url="http://stomp.github.io/"
                     >Stomp</ulink> is a very simple text protocol for interoperating with messaging
                 systems. It defines a wire format, so theoretically any Stomp client can work with
                 any messaging system that supports Stomp. Stomp clients are available in many

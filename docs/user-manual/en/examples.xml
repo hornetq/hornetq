@@ -34,9 +34,15 @@
     <section>
         <title>JMS Examples</title>
         <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example
-            directory and type <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
-            are on Windows).</para>
+            directory and type <literal>mvn verify</literal> (For details please read the readme.html
+            in each example directory).</para>
         <para>Here's a listing of the examples with a brief description.</para>
+        <section id="examples.aerogear">
+            <title>JMS AeroGear</title>
+            <para>This example shows how you can send a message to a mobile device by leveraging 
+            AeroGears push technology which provides support for different push notification technologies
+            like Google Cloud Messaging, Apple's APNs or Mozilla's SimplePush.</para>
+        </section>
         <section id="examples.applet">
             <title>Applet</title>
             <para>This example shows you how to send and receive JMS messages from an Applet.</para>
@@ -249,10 +255,35 @@
                 for security. HornetQ can leverage JAAS to delegate user authentication and
                 authorization to existing security infrastructure.</para>
         </section>
+        <section id="examples.jms.auto-closeable">
+            <title>JMS Auto Closable</title>
+            <para>The <literal>jms-auto-closeable</literal> example shows how JMS resources, such
+            as connections, sessions and consumers, in JMS 2 can be automatically closed on error.</para>
+        </section>
+        <section id="examples.jms.completion-listener">
+            <title>JMS Completion Listener</title>
+            <para>The <literal>jms-completion-listener</literal> example shows how to send a message
+            asynchronously to HornetQ and use a CompletionListener to be notified of the Broker
+            receiving it.</para>
+        </section>
         <section id="examples.jms.jms-bridge">
             <title>JMS Bridge</title>
             <para>The <literal>jms-brige</literal> example shows how to setup a bridge
             between two standalone HornetQ servers.</para>
+        </section>
+        <section id="examples.jms.jms-context">
+            <title>JMS Context</title>
+            <para>The <literal>jms-context</literal> example shows how to send and receive a message
+            to a JMS Queue using HornetQ by using a JMS Context.</para>
+            <para>A JMSContext is part of JMS 2.0 and combines the JMS Connection and Session Objects
+            into a simple Interface.</para>
+        </section>
+        <section id="examples.jms.jms-shared-consumer">
+            <title>JMS Shared Consumer</title>
+            <para>The <literal>jms-shared-consumer</literal> example shows you how can use shared
+            consumers to share a subscription on a topic. In JMS 1.1 this was not allowed and so caused
+            a scalability issue. In JMS 2 this restriction has been lifted so you can share the load
+            across different threads and connections.</para>
         </section>
         <section id="examples.jmx">
             <title>JMX Management</title>
@@ -395,26 +426,38 @@
                 you can specify a maximum send rate at which a JMS message producer will send
                 messages.</para>
         </section>
-        <section>
+        <section id="examples.proton-qpid">
+            <title>Proton Qpid</title>
+            <para>HornetQ can be configured to accept requests from any AMQP client that supports the
+            1.0 version of the protocol. This <literal>proton-j</literal> example shows a simply 
+            qpid java 1.0 client example.</para>
+        </section>
+        <section id="examples.proton-ruby">
+            <title>Proton Ruby</title>
+            <para>HornetQ can be configured to accept requests from any AMQP client that supports the
+            1.0 version of the protocol. This example shows a simply proton ruby client
+            that sends and receives messages</para>
+        </section>
+        <section id="examples.queue">
             <title>Queue</title>
             <para>A simple example demonstrating a JMS queue.</para>
         </section>
-        <section>
+        <section id="examples.message-redistribution">
             <title>Message Redistribution</title>
             <para>The <literal>queue-message-redistribution</literal> example demonstrates message
                 redistribution between queues with the same name deployed in different nodes of a
                 cluster.</para>
         </section>
-        <section>
+        <section id="examples.queue-requestor">
             <title>Queue Requestor</title>
             <para>A simple example demonstrating a JMS queue requestor.</para>
         </section>
-        <section>
+        <section id="examples.queue-message-selector">
             <title>Queue with Message Selector</title>
             <para>The <literal>queue-selector</literal> example shows you how to selectively consume
                 messages using message selectors with queue consumers.</para>
         </section>
-        <section>
+        <section id="examples.reattach-node">
             <title>Reattach Node example</title>
             <para>The <literal>Reattach Node</literal> example shows how a client can try to reconnect to
                the same server instead of failing the connection immediately and
@@ -422,29 +465,29 @@
                retry the connection, and reattach to the server when it becomes available again across
                the network.</para>
         </section>
-        <section>
+        <section id="examples.replicated-failback">
             <title>Replicated Failback example</title>
             <para>An example showing how failback works when using replication, In this example a live server will replicate
                all its Journal to a backup server as it updates it. When the live server crashes the backup takes over
             from the live server and the client reconnects and carries on from where it left off.</para>
         </section>
-        <section>
+        <section id="examples.replicated-failback-static">
             <title>Replicated Failback static example</title>
             <para>An example showing how failback works when using replication, but this time with static connectors</para>
         </section>
-        <section>
+        <section id="examples.replicated-multiple-failover">
             <title>Replicated multiple failover example</title>
             <para>An example showing how to configure multiple backups when using replication</para>
         </section>
-        <section>
+        <section id="examples.replicated-failover-transaction">
             <title>Replicated Failover transaction example</title>
             <para>An example showing how failover works with a transaction when using replication</para>
         </section>
-        <section>
+        <section id="examples.request-reply">
             <title>Request-Reply example</title>
             <para>A simple example showing the JMS request-response pattern.</para>
         </section>
-        <section>
+        <section id="examples.rest">
             <title>Rest example</title>
             <para>An example showing how to use the HornetQ Rest API</para>
         </section>
@@ -454,7 +497,7 @@
                 message to a JMS Queue with HornetQ. Scheduled messages won't get delivered until a
                 specified time in the future.</para>
         </section>
-        <section>
+        <section id="examples.security">
             <title>Security</title>
             <para>The <literal>security</literal> example shows you how configure and use role based
                 queue security with HornetQ.</para>
@@ -470,38 +513,43 @@
 	  <title>Spring Integration</title>
 	  <para>This example shows how to use embedded JMS using HornetQ's Spring integration.</para>
 	</section>
-        <section>
+        <section id="examples.ssl-transport">
             <title>SSL Transport</title>
             <para>The <literal>ssl-enabled</literal> shows you how to configure SSL with HornetQ to
                 send and receive message.</para>
         </section>
-        <section>
+        <section id="examples.static-message-selector">
             <title>Static Message Selector</title>
             <para>The <literal>static-selector</literal> example shows you how to configure a
                 HornetQ core queue with static message selectors (filters).</para>
         </section>
-        <section>
+        <section id="examples.static-message-selector-jms">
             <title>Static Message Selector Using JMS</title>
             <para>The <literal>static-selector-jms</literal> example shows you how to configure a
                 HornetQ queue with static message selectors (filters) using JMS.</para>
         </section>
-        <section>
+        <section id="examples.stomp">
             <title>Stomp</title>
             <para>The <literal>stomp</literal> example shows you how to configure a
                 HornetQ server to send and receive Stomp messages.</para>
         </section>
-        <section>
+        <section id="examples.stomp1.1">
             <title>Stomp1.1</title>
             <para>The <literal>stomp</literal> example shows you how to configure a
                 HornetQ server to send and receive Stomp messages via a Stomp 1.1 connection.</para>
         </section>
-        <section>
+        <section id="examples.stomp1.2">
+            <title>Stomp1.2</title>
+            <para>The <literal>stomp</literal> example shows you how to configure a
+                HornetQ server to send and receive Stomp messages via a Stomp 1.2 connection.</para>
+        </section>
+        <section id="examples.stomp-web-socket">
             <title>Stomp Over Web Sockets</title>
             <para>The <literal>stomp-websockets</literal> example shows you how to configure a
                 HornetQ server to send and receive Stomp messages directly from Web browsers (provided
                 they support Web Sockets).</para>
         </section>
-        <section>
+        <section id="examples.symmetric-cluster">
             <title>Symmetric Cluster</title>
             <para>The <literal>symmetric-cluster</literal> example demonstrates a symmetric cluster
                 set-up with HornetQ.</para>
@@ -512,11 +560,11 @@
                 the same as every other node, and every node is connected to every other node in the
                 cluster.</para>
         </section>
-        <section>
+        <section id="examples.temporary-queue">
             <title>Temporary Queue</title>
             <para>A simple example demonstrating how to use a JMS temporary queue.</para>
         </section>
-        <section>
+        <section id="examples.topic">
             <title>Topic</title>
             <para>A simple example demonstrating a JMS topic.</para>
         </section>
@@ -526,12 +574,12 @@
                 subscriber with a wild-card and that subscriber will receive any messages sent to an
                 address that matches the wild card.</para>
         </section>
-        <section>
+        <section id="examples.topic-selector-1">
             <title>Topic Selector 1</title>
             <para>The <literal>topic-selector-example1</literal> example shows you how to send
                 message to a JMS Topic, and subscribe them using selectors with HornetQ.</para>
         </section>
-        <section>
+        <section id="examples.topic-selector-2">
             <title>Topic Selector 2</title>
             <para>The <literal>topic-selector-example2</literal> example shows you how to
                 selectively consume messages using message selectors with topic consumers.</para>
@@ -548,7 +596,13 @@
                 client connections can carry and continue to send and consume messages. When transacted
                 sessions are used, once and only once message delivery is guaranteed.</para>
         </section>
-        <section>
+        <section id="examples.no-transaction-failover">
+            <title>Failover Without Transactions</title>
+            <para>The <literal>stop-server-failover</literal> example demonstrates failover of the 
+            JMS connection from one node to another when the live server crashes using a JMS 
+            non-transacted session.</para>
+        </section>
+        <section id="examples.transactional-session">
             <title>Transactional Session</title>
             <para>The <literal>transactional</literal> example shows you how to use a transactional
                 Session with HornetQ.</para>
