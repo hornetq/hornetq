@@ -92,6 +92,16 @@ public class NettyConnection implements Connection
 
    // Connection implementation ----------------------------
 
+
+   /**
+    * This is exposed so users would have the option to look at any data through interceptors
+    * @return
+    */
+   public Channel getChannel()
+   {
+      return channel;
+   }
+
    public void close()
    {
       if (closed)

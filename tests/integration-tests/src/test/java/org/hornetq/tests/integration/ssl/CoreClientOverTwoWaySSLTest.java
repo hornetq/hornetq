@@ -12,6 +12,14 @@
  */
 
 package org.hornetq.tests.integration.ssl;
+import javax.net.ssl.SSLPeerUnverifiedException;
+
+import io.netty.handler.ssl.SslHandler;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -60,6 +68,31 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 
    private TransportConfiguration tc;
 
+   private class MyInterceptor implements Interceptor
+   {
+      public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.SESS_SEND)
+         {
+            try
+            {
+               if (connection.getTransportConnection() instanceof  NettyConnection)
+               {
+                  System.out.println("Passed through....");
+                  NettyConnection nettyConnection = (NettyConnection) connection.getTransportConnection();
+                  SslHandler sslHandler = (SslHandler)nettyConnection.getChannel().pipeline().get("ssl");
+                  assertNotNull(sslHandler);
+                  assertNotNull(sslHandler.engine().getSession());
+                  assertNotNull(sslHandler.engine().getSession().getPeerCertificateChain());
+               }
+            } catch (SSLPeerUnverifiedException e) {
+               Assert.fail(e.getMessage());
+            }
+         }
+         return true;
+      }
+   }
+
    @Test
    public void testTwoWaySSL() throws Exception
    {
@@ -70,6 +103,8 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, CLIENT_SIDE_KEYSTORE);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, PASSWORD);
+
+      server.getRemotingService().addIncomingInterceptor(new MyInterceptor());
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       ClientSessionFactory sf = createSessionFactory(locator);
