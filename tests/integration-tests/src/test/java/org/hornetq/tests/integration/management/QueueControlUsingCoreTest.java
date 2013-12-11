@@ -148,6 +148,16 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (String)proxy.invokeOperation("listMessageCounterHistory");
          }
 
+
+         /**
+          * Returns the first message on the queue as JSON
+          */
+         public String getFirstMessageAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("getFirstMessageAsJSON");
+         }
+
+
          public String listMessageCounterHistoryAsHTML() throws Exception
          {
             return (String)proxy.invokeOperation("listMessageCounterHistoryAsHTML");

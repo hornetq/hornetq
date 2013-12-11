@@ -516,6 +516,39 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
+   public String getFirstMessageAsJSON() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
+         queue.flushExecutor();
+         LinkedListIterator<MessageReference> iterator = queue.totalIterator();
+         try
+         {
+            // returns just the first, as it's the first only
+            if (iterator.hasNext())
+            {
+               MessageReference ref = iterator.next();
+               Message message = ref.getMessage();
+               messages.add(message.toMap());
+            }
+            return toJSON(messages.toArray(new Map[1])).toString();
+         }
+         finally
+         {
+            iterator.close();
+         }
+      }
+      finally
+      {
+         blockOnIO();
+      }
+
+   }
+
    public long countMessages(final String filterStr) throws Exception
    {
       checkStarted();

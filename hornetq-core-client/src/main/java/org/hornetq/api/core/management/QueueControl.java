@@ -82,6 +82,11 @@ public interface QueueControl
    long getMessagesAdded();
 
    /**
+    * Returns the first message on the queue as JSON
+    */
+   String getFirstMessageAsJSON() throws Exception;
+
+   /**
     * Returns the expiry address associated to this queue.
     */
    String getExpiryAddress();
