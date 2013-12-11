@@ -11,13 +11,10 @@
      <p>This example shows you how to configure HornetQ to send and receive Stomp messages from modern web browser using Web Sockets.</p>
 
      <p>The example will start a HornetQ server configured with Stomp over Web Sockets and JMS. Web browsers clients and
-       Java application will exchange message using a JMS Topic.</p>
-     <para>To enable Stomp over Web Sockets, the server must have a <code>NettyAcceptorFactory</code> configured with a <code>protocol</code>
-       parameter set to <code>stomp_ws</code>:</para>
+       Java application will exchange message using a JMS Topic.</p></para>
      <pre class="prettyprint">
 &lt;acceptor name="stomp-websocket">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="stomp_ws"/>
    &lt;param key="port" value="61614"/>
 &lt;/acceptor></pre>
      

@@ -22,6 +22,11 @@
          <groupId>org.jboss.spec.javax.jms</groupId>
          <artifactId>jboss-jms-api_2.0_spec</artifactId>
       </dependency>
+       <dependency>
+           <groupId>org.jboss.jbossts.jts</groupId>
+           <artifactId>jbossjts-jacorb</artifactId>
+           <version>4.17.4.Final</version>
+       </dependency>
    </dependencies>
 
       <build>
