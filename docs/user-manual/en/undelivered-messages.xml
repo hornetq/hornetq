@@ -89,7 +89,7 @@
          attempts, the message is removed from the queue and send instead to a dead letter address. </para>
       <para>Any such messages can then be diverted to queue(s) where they can later be perused by
          the system administrator for action to be taken.</para>
-      <para>HornetQ's addresses can be assigned a dead letter address. Once the messages have be
+      <para>HornetQ's addresses can be assigned a dead letter address. Once the messages have been
          unsuccessfully delivered for a given number of attempts, they are removed from the queue
          and sent to the dead letter address. These <emphasis>dead letter</emphasis> messages can
          later be consumed for further inspection.</para>
