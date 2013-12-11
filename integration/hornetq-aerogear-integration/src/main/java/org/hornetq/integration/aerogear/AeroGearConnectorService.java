@@ -21,6 +21,7 @@ import org.jboss.aerogear.unifiedpush.message.UnifiedMessage;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -349,6 +350,13 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
          }
       }
    }
+
+
+   public List<MessageReference>  getDeliveringMessages()
+   {
+      return Collections.emptyList();
+   }
+
    @Override
    public void proceedDeliver(MessageReference reference) throws Exception
    {
@@ -359,11 +367,6 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    public Filter getFilter()
    {
       return filter;
-   }
-
-   @Override
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
    }
 
    @Override
