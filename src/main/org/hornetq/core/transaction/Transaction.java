@@ -14,11 +14,11 @@
 package org.hornetq.core.transaction;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.server.MessageReference;
 
 /**
  * A HornetQ internal transaction
@@ -96,5 +96,20 @@ public interface Transaction
    {
       ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY
    }
+
+   /**
+    * Used to remember the comsumer from which this ref
+    * is acked.
+    * @param consumerID
+    * @param ref
+    */
+   void addRefMap(long consumerID, MessageReference ref);
+
+   /**
+    * @param consumerId
+    * @param m
+    * @return true if the message is from the consumer
+    */
+   boolean isFromConsumer(long consumerId, MessageReference m);
 
 }

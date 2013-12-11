@@ -160,19 +160,20 @@ public class FakeConsumer implements Consumer
 
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Consumer#getDeliveringMessages(java.util.List)
-    */
-   @Override
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-   }
-
-   /* (non-Javadoc)
     * @see org.hornetq.core.server.Consumer#toManagementString()
     */
    @Override
    public String toManagementString()
    {
       return toString();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      return null;
    }
 }

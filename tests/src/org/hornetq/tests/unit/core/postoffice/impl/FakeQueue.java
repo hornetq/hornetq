@@ -782,5 +782,4 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return false;
    }
-
 }
