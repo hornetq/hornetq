@@ -39,7 +39,7 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
-import org.jboss.netty.util.CharsetUtil;
+import io.netty.util.CharsetUtil;
 
 /**
  * A simple JMS example showing how to administer un-finished transactions.
