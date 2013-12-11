@@ -306,9 +306,9 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          }
 
          @Override
-         public String listDeliveringdMessagesAsJSON() throws Exception
+         public String listDeliveringMessagesAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listDeliveringdMessagesAsJSON");
+            return (String)proxy.invokeOperation("listDeliveringMessagesAsJSON");
          }
       };
    }

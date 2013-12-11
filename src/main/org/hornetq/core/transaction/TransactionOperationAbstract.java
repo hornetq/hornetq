@@ -73,6 +73,12 @@ public abstract class TransactionOperationAbstract implements TransactionOperati
    {
       return Collections.emptyList();
    }
+   
+   
+   public List<MessageReference> getListOnConsumer(long consumerID)
+   {
+      return Collections.emptyList();
+   }
 
 
 

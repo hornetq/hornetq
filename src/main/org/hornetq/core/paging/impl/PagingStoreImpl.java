@@ -1070,6 +1070,12 @@ public class PagingStoreImpl implements TestSupportPageStore
          return Collections.emptyList();
       }
 
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
+
    }
 
    private void openNewPage() throws Exception
