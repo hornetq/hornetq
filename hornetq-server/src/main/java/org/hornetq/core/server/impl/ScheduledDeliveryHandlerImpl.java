@@ -13,11 +13,14 @@
 package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +37,7 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author Tom Monk - provided patching on using TreeSet
  */
 public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 {
@@ -43,7 +47,9 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private final Object lockDelivery = new Object();
 
-   private final LinkedList<MessageReference> scheduledReferences = new LinkedList<MessageReference>();
+   // This contains RefSchedules which are delegates to the real references
+   // just adding some information to keep it in order accordingly to the initial operations
+   private final TreeSet<RefScheduled> scheduledReferences = new TreeSet<>(new MessageReferenceComparator());
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
    {
@@ -61,27 +67,23 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             HornetQServerLogger.LOGGER.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
          }
 
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref.getScheduledDeliveryTime());
+         addInPlace(deliveryTime, ref, tail);
 
-         synchronized (scheduledReferences)
-         {
-            if (tail)
-            {
-               // We do the opposite what the parameter says as the Runnable will always add it to the head
-               scheduledReferences.addFirst(ref);
-            }
-            else
-            {
-               // We do the opposite what the parameter says as the Runnable will always add it to the head
-               scheduledReferences.add(ref);
-            }
-         }
-
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable();
          scheduleDelivery(runnable, deliveryTime);
 
          return true;
       }
       return false;
+   }
+
+
+   public void addInPlace(final long deliveryTime, final MessageReference ref, final boolean tail)
+   {
+      synchronized (scheduledReferences)
+      {
+         scheduledReferences.add(new RefScheduled(ref, tail));
+      }
    }
 
    public int getScheduledCount()
@@ -94,11 +96,14 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    public List<MessageReference> getScheduledReferences()
    {
-      List<MessageReference> refs = new ArrayList<MessageReference>();
+      List<MessageReference> refs = new LinkedList<MessageReference>();
 
       synchronized (scheduledReferences)
       {
-         refs.addAll(scheduledReferences);
+         for (RefScheduled ref: scheduledReferences)
+         {
+            refs.add(ref.getRef());
+         }
       }
       return refs;
    }
@@ -109,11 +114,11 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       synchronized (scheduledReferences)
       {
-         Iterator<MessageReference> iter = scheduledReferences.iterator();
+         Iterator<RefScheduled> iter = scheduledReferences.iterator();
 
          while (iter.hasNext())
          {
-            MessageReference ref = iter.next();
+            MessageReference ref = iter.next().getRef();
             if (filter == null || filter.match(ref.getMessage()))
             {
                iter.remove();
@@ -128,10 +133,10 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    {
       synchronized (scheduledReferences)
       {
-         Iterator<MessageReference> iter = scheduledReferences.iterator();
+         Iterator<RefScheduled> iter = scheduledReferences.iterator();
          while (iter.hasNext())
          {
-            MessageReference ref = iter.next();
+            MessageReference ref = iter.next().getRef();
             if (ref.getMessage().getMessageID() == id)
             {
                iter.remove();
@@ -159,11 +164,8 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private class ScheduledDeliveryRunnable implements Runnable
    {
-      private final long scheduledTime;
-
-      public ScheduledDeliveryRunnable(final long scheduledTime)
+      public ScheduledDeliveryRunnable()
       {
-         this.scheduledTime = scheduledTime;
       }
 
       public void run()
@@ -175,26 +177,29 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             synchronized (scheduledReferences)
             {
 
-               Iterator<MessageReference> iter = scheduledReferences.iterator();
+               Iterator<RefScheduled> iter = scheduledReferences.iterator();
                while (iter.hasNext())
                {
-                  MessageReference reference = iter.next();
-                  if (reference.getScheduledDeliveryTime() <= this.scheduledTime)
+                  MessageReference reference = iter.next().getRef();
+                  if (reference.getScheduledDeliveryTime() > System.currentTimeMillis())
                   {
-                     iter.remove();
-
-                     reference.setScheduledDeliveryTime(0);
-
-                     LinkedList<MessageReference> references = refs.get(reference.getQueue());
-
-                     if (references == null)
-                     {
-                        references = new LinkedList<MessageReference>();
-                        refs.put(reference.getQueue(), references);
-                     }
-
-                     references.add(reference);
+                     // We will delivery as long as there are messages to be delivered
+                     break;
                   }
+
+                  iter.remove();
+
+                  reference.setScheduledDeliveryTime(0);
+
+                  LinkedList<MessageReference> references = refs.get(reference.getQueue());
+
+                  if (references == null)
+                  {
+                     references = new LinkedList<MessageReference>();
+                     refs.put(reference.getQueue(), references);
+                  }
+
+                  references.add(reference);
                }
             }
 
@@ -208,4 +213,72 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          }
       }
    }
+
+
+   // We need a treeset ordered, but we need to order tail operations as well.
+   // So, this will serve as a delegate to the object
+   class RefScheduled
+   {
+      private final MessageReference ref;
+      private final boolean tail;
+
+      RefScheduled(MessageReference ref, boolean tail)
+      {
+         this.ref = ref;
+         this.tail = tail;
+      }
+
+      public MessageReference getRef()
+      {
+         return ref;
+      }
+
+      public boolean isTail()
+      {
+         return tail;
+      }
+
+   }
+
+   static class MessageReferenceComparator implements Comparator<RefScheduled>
+   {
+      public int compare(RefScheduled ref1, RefScheduled ref2)
+      {
+         long diff = ref1.getRef().getScheduledDeliveryTime() - ref2.getRef().getScheduledDeliveryTime();
+
+         if (diff < 0L)
+         {
+            return -1;
+         }
+         if (diff > 0L)
+         {
+            return 1;
+         }
+
+
+         // Even if ref1 and ref2 have the same delivery time, we only want to return 0 if they are identical
+         if (ref1 == ref2)
+         {
+            return 0;
+         }
+         else
+         {
+
+            if (ref1.isTail() && !ref2.isTail())
+            {
+               return 1;
+            }
+            else
+            if (!ref1.isTail() && ref2.isTail())
+            {
+               return -1;
+            }
+            else
+            {
+               return 1;
+            }
+         }
+      }
+   }
+
 }
