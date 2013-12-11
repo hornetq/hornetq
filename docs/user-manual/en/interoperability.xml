@@ -32,12 +32,12 @@
         <section id="stomp.native">
           <title>Native Stomp support</title>
           <para>HornetQ provides native support for Stomp. To be able to send and receive Stomp messages,
-            you must configure a <literal>NettyAcceptor</literal> with a <literal>protocol</literal>
-            parameter set to <literal>stomp</literal>:</para>
+            you must configure a <literal>NettyAcceptor</literal> with a <literal>protocols</literal>
+            parameter set to have <literal>stomp</literal>:</para>
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol"  value="STOMP"/>
+   &lt;param key="protocols"  value="STOMP"/>
    &lt;param key="port"  value="61613"/>
 &lt;/acceptor></programlisting>
           <para>With this configuration, HornetQ will accept Stomp connections on 
@@ -91,7 +91,7 @@
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol"  value="STOMP"/>
+   &lt;param key="protocols"  value="STOMP"/>
    &lt;param key="port"  value="61613"/>
    &lt;param key="connection-ttl"  value="20000"/>
 &lt;/acceptor></programlisting>
@@ -157,7 +157,7 @@ destination:jms.topic.stocks
 <programlisting>
 &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="STOMP"/>
+   &lt;param key="protocols" value="STOMP"/>
    &lt;param key="port" value="61613"/>
    &lt;param key="stomp-enable-message-id" value="true"/>
 &lt;/acceptor></programlisting>
@@ -179,7 +179,7 @@ hq-message-id : STOMP12345</programlisting>
 <programlisting>
    &lt;acceptor name="stomp-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="STOMP"/>
+   &lt;param key="protocols" value="STOMP"/>
    &lt;param key="port" value="61613"/>
    &lt;param key="stomp-min-large-message-size" value="10240"/>
 &lt;/acceptor></programlisting>
@@ -204,7 +204,7 @@ hq-message-id : STOMP12345</programlisting>
          <programlisting>
 &lt;acceptor name="stomp-ws-acceptor">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-   &lt;param key="protocol" value="STOMP_WS"/>
+   &lt;param key="protocols" value="STOMP_WS"/>
    &lt;param key="port" value="61614"/>
 &lt;/acceptor></programlisting>
          <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on 
@@ -240,7 +240,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
     </section>
     <section>
         <title>REST</title>
-        <para>REST support coming soon!</para>
+        <para>Please see <xref linkend="rest"/></para>
     </section>
     <section>
         <title>AMQP</title>
@@ -249,7 +249,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <programlisting>
 &lt;acceptor name="stomp-acceptor">
 &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-&lt;param key="protocol"  value="AMQP"/>
+&lt;param key="protocols"  value="AMQP"/>
 &lt;param key="port"  value="5672"/>
 &lt;/acceptor>
         </programlisting>

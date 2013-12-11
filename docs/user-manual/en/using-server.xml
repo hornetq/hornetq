@@ -161,10 +161,6 @@
                     handlers used by the Java logger. For more information on configuring logging,
                     please see <xref linkend="logging"/>.</para>
             </listitem>
-            <listitem>
-                <para><literal>log4j.xml</literal> This is the Log4j configuration if the Log4j
-                    handler is configured.</para>
-            </listitem>
         </itemizedlist>
         <note>
             <para>The property <literal>file-deployment-enabled</literal> in the <literal
@@ -177,8 +173,8 @@
         <programlisting>
 &lt;connector name="netty">
    &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
-   &lt;param key="host" value="${hornetq.remoting.netty.host:localhost}" type="String"/>
-   &lt;param key="port" value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+   &lt;param key="host" value="${hornetq.remoting.netty.host:localhost}"/>
+   &lt;param key="port" value="${hornetq.remoting.netty.port:5445}"/>
 &lt;/connector></programlisting>
         <para>Here you can see we have replaced 2 values with system properties <literal
                 >hornetq.remoting.netty.host</literal> and <literal
