@@ -114,8 +114,10 @@ public class NettyConnectorWithHTTPUpgradeTest extends UnitTestCase {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception
+    {
         stopWebServer();
+        super.tearDown();
     }
 
     @Test
