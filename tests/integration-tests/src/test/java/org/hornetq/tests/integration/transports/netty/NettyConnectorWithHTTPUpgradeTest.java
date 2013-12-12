@@ -32,6 +32,7 @@ import static org.hornetq.core.remoting.impl.netty.NettyConnector.createExpected
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelHandlerContext;
@@ -182,6 +183,9 @@ public class NettyConnectorWithHTTPUpgradeTest extends UnitTestCase {
                                 {
                                     HttpRequest request = (HttpRequest) msg;
 
+                                    for (Map.Entry<String,String> entry : request.headers()) {
+                                        System.out.println(entry);
+                                    }
                                     String upgrade = request.headers().get(UPGRADE);
                                     String secretKey = request.headers().get(SEC_HORNETQ_REMOTING_KEY);
 
