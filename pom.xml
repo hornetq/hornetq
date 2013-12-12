@@ -33,7 +33,7 @@
     </prerequisites>
 
    <properties>
-      <netty.version>4.0.12.Final</netty.version>
+      <netty.version>4.0.13.Final</netty.version>
       <hornetq.version.versionName>Andromedian Fly</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>4</hornetq.version.minorVersion>
