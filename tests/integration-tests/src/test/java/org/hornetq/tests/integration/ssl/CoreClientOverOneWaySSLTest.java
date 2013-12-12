@@ -217,7 +217,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       }
    }
 
-   //@Test (Justin please check this test)
+   @Test
    public void disabled_testOneWaySSLWithGoodClientCipherSuite() throws Exception
    {
       createCustomSslServer();
@@ -227,13 +227,13 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
       tc.getParams().put(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME, getSuitableCipherSuite());
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1.2");
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       ClientSessionFactory sf = null;
       try
       {
          sf = createSessionFactory(locator);
-         Assert.assertTrue(true); // FIX ME.. this is doing nothing
       }
       catch (HornetQNotConnectedException e)
       {
@@ -255,7 +255,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       Assert.assertEquals(text, m.getBodyBuffer().readString());
    }
 
-   //@Test (Justin please check this test)
+   @Test
    public void disabled_testOneWaySSLWithGoodServerCipherSuite() throws Exception
    {
       createCustomSslServer(getSuitableCipherSuite(), null);
@@ -264,13 +264,13 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, CLIENT_SIDE_TRUSTSTORE);
       tc.getParams().put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, PASSWORD);
+      tc.getParams().put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1.2");
 
       ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(tc));
       ClientSessionFactory sf = null;
       try
       {
          sf = createSessionFactory(locator);
-         Assert.assertTrue(true); // FIX ME.. this is doing nothing
       }
       catch (HornetQNotConnectedException e)
       {
@@ -373,8 +373,12 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
 
       String[] suites = getEnabledCipherSuites();
 
-      // the certs are generated using Java keytool using RSA and not ECDSA but the JVM prefers ECDSA over RSA so we have
-      // to look through the cipher suites until we find one that's suitable for us
+      // The certs are generated using Java keytool using RSA and not ECDSA but the JVM prefers ECDSA over RSA so we have
+      // to look through the cipher suites until we find one that's suitable for us.
+      // If the JVM running this test is version 7 from Oracle then this cipher suite will will almost certainly require
+      // TLSv1.2 (which is not enabled on the client by default).
+      // See http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider for the
+      // preferred cipher suites.
       for (int i = 0; i < suites.length; i++)
       {
          String suite = suites[i];
