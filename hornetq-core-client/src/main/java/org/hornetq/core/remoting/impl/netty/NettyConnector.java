@@ -784,6 +784,8 @@ public class NettyConnector extends AbstractConnector
                   request.headers().set(SEC_HORNETQ_REMOTING_KEY, key);
                   ch.attr(REMOTING_KEY).set(key);
 
+                  HornetQClientLogger.LOGGER.debugf("Sending HTTP request %s", request);
+
                   // Send the HTTP request.
                   ch.writeAndFlush(request);
                }
