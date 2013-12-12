@@ -18,6 +18,7 @@
 package org.hornetq.tests.integration.stomp;
 
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
+import org.junit.After;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -65,6 +66,14 @@ public class ExtraStompTest extends StompTestBase
       autoCreateServer = false;
       super.setUp();
    }
+
+   @Override
+   @After
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
 
    @Test
    public void testConnectionTTL() throws Exception
