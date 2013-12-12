@@ -11,11 +11,12 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.persistence.impl.journal;
+package org.hornetq.tools;
 
 import java.io.File;
 
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 
 /**
@@ -25,7 +26,7 @@ import org.hornetq.core.server.impl.FileLockNodeManager;
  *
  * <pre>
  * cd hornetq-server
- * mvn -q exec:java -Dexec.args="/foo/hornetq/bindings /foo/hornetq/journal" -Dexec.mainClass="org.hornetq.core.persistence.impl.journal.PrintData"
+ * mvn -q exec:java -Dexec.args="/foo/hornetq/bindings /foo/hornetq/journal" -Dexec.mainClass="org.hornetq.tools.PrintData"
  * </pre>
  * @author clebertsuconic
  */
@@ -36,9 +37,9 @@ public class PrintData // NO_UCD (unused code)
    {
       if (arg.length != 2)
       {
-         System.err.println("Standalone Usage:\n java -cp hornetq-core.jar <bindings directory> <message directory>");
+         System.err.println("Standalone Usage:\n java -cp hornetq-tools.jar org.hornetq.tools.PrintData <bindings directory> <message directory>");
          System.err.println("\nMaven Usage:\n  cd hornetq-server && "
-                  + "mvn -q exec:java -Dexec.args=\"/foo/hornetq/bindings /foo/hornetq/journal\" -Dexec.mainClass=\"org.hornetq.core.persistence.impl.journal.PrintData\"");
+                  + "mvn -q exec:java -Dexec.args=\"/foo/hornetq/bindings /foo/hornetq/journal\" -Dexec.mainClass=\"org.hornetq.tools.PrintData\"");
          System.exit(-1);
       }
 

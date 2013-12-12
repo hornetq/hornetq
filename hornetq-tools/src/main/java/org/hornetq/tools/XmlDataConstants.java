@@ -11,11 +11,11 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tools.xml;
+package org.hornetq.tools;
 
 /**
- * The constants shared by <code>org.hornetq.tools.xml.XmlDataImporter</code> and
- * <code>org.hornetq.tools.xml.XmlDataExporter</code>.
+ * The constants shared by <code>org.hornetq.tools.XmlDataImporter</code> and
+ * <code>org.hornetq.tools.XmlDataExporter</code>.
  *
  * @author Justin Bertram
  */

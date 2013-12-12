@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tools.xml;
+package org.hornetq.tools;
 
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
