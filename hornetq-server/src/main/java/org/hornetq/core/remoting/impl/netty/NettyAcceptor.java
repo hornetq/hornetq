@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +43,6 @@ import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.ResourceLeakDetector;
@@ -440,7 +438,7 @@ public class NettyAcceptor implements Acceptor
          }
 
          // TODO: Think about add Version back to netty
-         HornetQServerLogger.LOGGER.startedNettyAcceptor("Netty-4.0.9.Final", host, port);
+         HornetQServerLogger.LOGGER.startedNettyAcceptor(TransportConstants.NETTY_VERSION, host, port);
       }
    }
 

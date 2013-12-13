@@ -634,7 +634,7 @@ public class NettyConnector extends AbstractConnector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-       HornetQClientLogger.LOGGER.debug("Started Netty Connector version "); // + Version.ID);
+       HornetQClientLogger.LOGGER.debug("Started Netty Connector version " + TransportConstants.NETTY_VERSION);
    }
 
    public synchronized void close()
