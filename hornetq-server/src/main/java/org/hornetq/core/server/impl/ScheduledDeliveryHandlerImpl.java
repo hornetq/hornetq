@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,6 +46,10 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private final Object lockDelivery = new Object();
 
+
+   // This is synchronized through lockDelivery
+   private final HashMap<Long, Runnable> runnables = new HashMap<>();
+
    // This contains RefSchedules which are delegates to the real references
    // just adding some information to keep it in order accordingly to the initial operations
    private final TreeSet<RefScheduled> scheduledReferences = new TreeSet<>(new MessageReferenceComparator());
@@ -69,8 +72,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
          addInPlace(deliveryTime, ref, tail);
 
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable();
-         scheduleDelivery(runnable, deliveryTime);
+         scheduleDelivery(deliveryTime);
 
          return true;
       }
@@ -148,24 +150,35 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return null;
    }
 
-   private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
+   private void scheduleDelivery(final long deliveryTime)
    {
-      long now = System.currentTimeMillis();
 
-      long delay = deliveryTime - now;
-
-      if (delay < 0)
+      synchronized (lockDelivery)
       {
-         delay = 0;
-      }
+         if (!runnables.containsKey(deliveryTime))
+         {
+            long now = System.currentTimeMillis();
+            ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
 
-      scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+            long delay = deliveryTime - now;
+
+            if (delay < 0)
+            {
+               delay = 0;
+            }
+
+            runnables.put(deliveryTime, runnable);
+            scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+         }
+      }
    }
 
    private class ScheduledDeliveryRunnable implements Runnable
    {
-      public ScheduledDeliveryRunnable()
+      long deliveryTime;
+      public ScheduledDeliveryRunnable(final long deliveryTime)
       {
+         this.deliveryTime = deliveryTime;
       }
 
       public void run()
@@ -174,6 +187,8 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
          synchronized (lockDelivery)
          {
+            runnables.remove(deliveryTime);
+
             synchronized (scheduledReferences)
             {
 
@@ -199,7 +214,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
                      refs.put(reference.getQueue(), references);
                   }
 
-                  references.add(reference);
+                  references.addFirst(reference);
                }
             }
 
@@ -270,6 +285,10 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             }
             else
             if (!ref1.isTail() && ref2.isTail())
+            {
+               return -1;
+            }
+            if (!ref1.isTail() && !ref2.isTail())
             {
                return -1;
             }

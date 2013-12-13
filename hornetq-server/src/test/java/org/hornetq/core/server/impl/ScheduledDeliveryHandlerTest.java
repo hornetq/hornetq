@@ -62,8 +62,6 @@ public class ScheduledDeliveryHandlerTest extends Assert
          {
             boolean tail = RandomUtil.randomBoolean();
 
-            //System.out.println("addMessage(handler, " + nextMessage + ", " + nextScheduledTime + "," + tail + ");");
-
             addMessage(handler, nextMessage++, nextScheduledTime, tail);
          }
       }
@@ -113,6 +111,30 @@ public class ScheduledDeliveryHandlerTest extends Assert
       debugList(true, handler, 5);
 
    }
+
+   @Test
+    public void testScheduleWithAddHeads() throws Exception
+    {
+       ScheduledDeliveryHandlerImpl handler = new ScheduledDeliveryHandlerImpl(null);
+
+
+       addMessage(handler, 0, 1, true);
+       addMessage(handler, 1, 2, true);
+       addMessage(handler, 2, 3, true);
+       addMessage(handler, 3, 3, true);
+       addMessage(handler, 4, 4, true);
+
+
+       addMessage(handler, 10, 5, false);
+       addMessage(handler, 9, 5, false);
+       addMessage(handler, 8, 5, false);
+       addMessage(handler, 7, 5, false);
+       addMessage(handler, 6, 5, false);
+       addMessage(handler, 5, 5, false);
+
+       validateSequence(handler);
+
+    }
 
 
    @Test
@@ -174,10 +196,8 @@ public class ScheduledDeliveryHandlerTest extends Assert
 
       long lastTime = -1;
 
-      //System.out.println(":::::::::::::::::::::::::::");
       for (MessageReference ref : refs)
       {
-        // System.out.println("Time: " + ref.getScheduledDeliveryTime());
          assertFalse(messages.contains(ref.getMessage().getMessageID()));
          messages.add(ref.getMessage().getMessageID());
 
@@ -199,7 +219,6 @@ public class ScheduledDeliveryHandlerTest extends Assert
       {
          assertTrue(messages.contains(Long.valueOf(i)));
       }
-      System.out.println("");
    }
 
    class FakeMessage implements ServerMessage
