@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -583,43 +584,7 @@ public class NettyConnector extends AbstractConnector
                  // prepare to handle a HTTP 101 response to upgrade the protocol.
                  final HttpClientCodec httpClientCodec = new HttpClientCodec();
                  pipeline.addLast(httpClientCodec);
-                 pipeline.addLast(new SimpleChannelInboundHandler<HttpObject>()
-                 {
-                    @Override
-                    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception
-                    {
-                       if (msg instanceof HttpResponse)
-                       {
-                          HttpResponse response = (HttpResponse) msg;
-                          if (response.getStatus().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code()
-                                && response.headers().get(HttpHeaders.Names.UPGRADE).equals(HORNETQ_REMOTING))
-                          {
-                             String accept = response.headers().get(SEC_HORNETQ_REMOTING_ACCEPT);
-                             String expectedResponse = createExpectedResponse(MAGIC_NUMBER, ctx.channel().attr(REMOTING_KEY).get());
-
-                             if (expectedResponse.equals(accept))
-                             {
-                                // remove the http handlers and flag the hornetq channel handler as active
-                                pipeline.remove(httpClientCodec);
-                                pipeline.remove(this);
-                                pipeline.get(HornetQChannelHandler.class).active = true;
-                             }
-                             else
-                             {
-                                HornetQClientLogger.LOGGER.httpHandshakeFailed(accept, expectedResponse);
-                                ctx.close();
-                             }
-                          }
-                       }
-                    }
-
-                    @Override
-                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-                    {
-                       HornetQClientLogger.LOGGER.errorCreatingNettyConnection(cause);
-                       ctx.close();
-                    }
-                 });
+                 pipeline.addLast("http-upgrade", new HttpUpgradeHandler(pipeline, httpClientCodec));
               }
               pipeline.addLast(new HornetQFrameDecoder2());
 
@@ -772,6 +737,8 @@ public class NettyConnector extends AbstractConnector
                // Send a HTTP GET + Upgrade request that will be handled by the http-upgrade handler.
                try
                {
+                  //get this first incase it removes itself
+                  HttpUpgradeHandler httpUpgradeHandler = (HttpUpgradeHandler) ch.pipeline().get("http-upgrade");
                   URI uri = new URI("http", null, host, port, null, null, null);
                   HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
                   request.headers().set(HttpHeaders.Names.HOST, host);
@@ -788,6 +755,11 @@ public class NettyConnector extends AbstractConnector
 
                   // Send the HTTP request.
                   ch.writeAndFlush(request);
+
+                  if(!httpUpgradeHandler.awaitHandshake())
+                  {
+                     return null;
+                  }
                }
                catch (URISyntaxException e)
                {
@@ -837,6 +809,73 @@ public class NettyConnector extends AbstractConnector
                                   final ConnectionLifeCycleListener listener)
       {
          super(group, handler, listener);
+      }
+   }
+
+   private static class HttpUpgradeHandler extends SimpleChannelInboundHandler<HttpObject>
+   {
+      private final ChannelPipeline pipeline;
+      private final HttpClientCodec httpClientCodec;
+      private final CountDownLatch latch = new CountDownLatch(1);
+      private boolean handshakeComplete = false;
+
+      public HttpUpgradeHandler(ChannelPipeline pipeline, HttpClientCodec httpClientCodec)
+      {
+         this.pipeline = pipeline;
+         this.httpClientCodec = httpClientCodec;
+      }
+
+      @Override
+      public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception
+      {
+         if (msg instanceof HttpResponse)
+         {
+            HttpResponse response = (HttpResponse) msg;
+            if (response.getStatus().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code()
+                  && response.headers().get(HttpHeaders.Names.UPGRADE).equals(HORNETQ_REMOTING))
+            {
+               String accept = response.headers().get(SEC_HORNETQ_REMOTING_ACCEPT);
+               String expectedResponse = createExpectedResponse(MAGIC_NUMBER, ctx.channel().attr(REMOTING_KEY).get());
+
+               if (expectedResponse.equals(accept))
+               {
+                  // remove the http handlers and flag the hornetq channel handler as active
+                  pipeline.remove(httpClientCodec);
+                  pipeline.remove(this);
+                  handshakeComplete = true;
+                  pipeline.get(HornetQChannelHandler.class).active = true;
+               }
+               else
+               {
+                  HornetQClientLogger.LOGGER.httpHandshakeFailed(accept, expectedResponse);
+                  ctx.close();
+               }
+            }
+            latch.countDown();
+         }
+      }
+
+      @Override
+      public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+      {
+         HornetQClientLogger.LOGGER.errorCreatingNettyConnection(cause);
+         ctx.close();
+      }
+
+      public boolean awaitHandshake()
+      {
+         try
+         {
+            if(!latch.await(30000, TimeUnit.MILLISECONDS))
+            {
+               return false;
+            }
+         }
+         catch (InterruptedException e)
+         {
+            return false;
+         }
+         return handshakeComplete;
       }
    }
 
