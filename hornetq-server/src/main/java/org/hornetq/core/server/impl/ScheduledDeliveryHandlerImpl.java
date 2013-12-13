@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
+import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * Handles scheduling deliveries to a queue at the correct time.
@@ -47,8 +49,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private final Object lockDelivery = new Object();
 
 
-   // This is synchronized through lockDelivery
-   private final HashMap<Long, Runnable> runnables = new HashMap<>();
+   private final Map<Long, Runnable> runnables = new ConcurrentHashMap<>();
 
    // This contains RefSchedules which are delegates to the real references
    // just adding some information to keep it in order accordingly to the initial operations
@@ -153,23 +154,20 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private void scheduleDelivery(final long deliveryTime)
    {
 
-      synchronized (lockDelivery)
+      if (!runnables.containsKey(deliveryTime))
       {
-         if (!runnables.containsKey(deliveryTime))
+         long now = System.currentTimeMillis();
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
+
+         long delay = deliveryTime - now;
+
+         if (delay < 0)
          {
-            long now = System.currentTimeMillis();
-            ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
-
-            long delay = deliveryTime - now;
-
-            if (delay < 0)
-            {
-               delay = 0;
-            }
-
-            runnables.put(deliveryTime, runnable);
-            scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+            delay = 0;
          }
+
+         runnables.put(deliveryTime, runnable);
+         scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
       }
    }
 
