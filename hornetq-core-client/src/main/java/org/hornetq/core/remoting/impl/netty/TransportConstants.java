@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.netty.util.Version;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 
@@ -80,6 +81,8 @@ public class TransportConstants
    public static final String NEED_CLIENT_AUTH_PROP_NAME = "need-client-auth";
 
    public static final String BACKLOG_PROP_NAME = "backlog";
+
+   public static final String NETTY_VERSION;
 
    /**
     * Disable Nagle's algorithm.<br/>
@@ -247,6 +250,18 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.NETTY_CONNECT_TIMEOUT);
 
       ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
+
+      String version;
+      Version v = Version.identify().get("netty-transport");
+      if (v == null)
+      {
+         version = "unknown";
+      }
+      else
+      {
+         version = v.artifactVersion();
+      }
+      NETTY_VERSION = version;
    }
 
 }
