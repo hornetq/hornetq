@@ -1077,7 +1077,6 @@ public class QueueImpl implements Queue
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
-      decDelivering();
       if (checkRedelivery(reference, timeBase, false))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference, false))
@@ -1086,6 +1085,10 @@ public class QueueImpl implements Queue
          }
 
          resetAllIterators();
+      }
+      else
+      {
+      	decDelivering();
       }
    }
 
