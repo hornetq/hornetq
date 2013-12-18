@@ -102,8 +102,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private final Topology topology;
 
-   //needs to be serializable
-   private final String topologyArrayGuard = new String();
+   //needs to be serializable and not final for retrocompatibility
+   private String topologyArrayGuard = new String();
 
    private volatile Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
@@ -180,11 +180,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private int initialMessagePacketSize;
 
-   /**
-    * As the class is Serializable, the guard field must be of a serializable type in order to be
-    * final.
-    */
-   private final String stateGuard = new String();
+   //needs to be serializable and not final for retrocompatibility
+   private String stateGuard = new String();
    private transient STATE state;
    private transient CountDownLatch latch;
 
@@ -1788,9 +1785,18 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
    {
       is.defaultReadObject();
+      if(stateGuard == null)
+      {
+          stateGuard = new String();
+      }
+      if(topologyArrayGuard == null)
+      {
+          topologyArrayGuard = new String();
+      }
       //is transient so need to create, for compatibility issues
       packetDecoder = ClientPacketDecoder.INSTANCE;
    }
+
    private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
