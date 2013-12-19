@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.bridge;
+import org.hornetq.core.server.Queue;
 import org.junit.Before;
 import org.junit.After;
 
@@ -407,7 +408,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          forwardingConnection.fail(new HornetQNotConnectedException());
          
          final ManagementService managementService = server0.getManagementService();
-         QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName0);
+         QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
          Assert.assertEquals(0, coreQueueControl.getDeliveringCount());
 
          final int numMessages = NUM_MESSAGES;
@@ -686,6 +687,79 @@ public class BridgeReconnectTest extends BridgeTestBase
          {
             fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
          }
+         closeServers();
+
+      assertNoMoreConnections();
+   }
+
+    @Test
+    public void testDeliveringCountOnBridgeConnectionFailure() throws Exception
+    {
+        server0 = createHornetQServer(0, isNetty(), server0Params);
+
+        TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
+
+        server0.getConfiguration().setConnectorConfigurations(connectors);
+
+        BridgeConfiguration bridgeConfiguration = createBridgeConfig();
+
+        List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+        bridgeConfigs.add(bridgeConfiguration);
+        server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+        CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName, null, true);
+        List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+        queueConfigs0.add(queueConfig0);
+        server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+        CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName, null, true);
+        List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
+        queueConfigs1.add(queueConfig1);
+        server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+        startServers();
+
+        locator = addServerLocator(HornetQClient.createServerLocatorWithHA(server0tc, server1tc));
+        ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
+        session0 = csf0.createSession(false, true, true);
+
+        ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
+        session1 = csf1.createSession(false, true, true);
+
+        ClientProducer prod0 = session0.createProducer(testAddress);
+
+        session1.start();
+
+        Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
+        RemotingConnection forwardingConnection = getForwardingConnection(bridge);
+        InVMConnector.failOnCreateConnection = true;
+        InVMConnector.numberOfFailures = reconnectAttempts - 1;
+        //forwardingConnection.fail(new HornetQNotConnectedException());
+
+        final int numMessages = NUM_MESSAGES;
+
+        SimpleString propKey = new SimpleString("propkey");
+
+        final Queue queue = (Queue) server0.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+
+        System.out.println("DeliveringCount: " + queue.getDeliveringCount());
+
+        for (int i = 0; i < numMessages; i++)
+        {
+            ClientMessage message = session0.createMessage(false);
+            message.putIntProperty(propKey, i);
+
+            prod0.send(message);
+
+            if(i == 50){
+                forwardingConnection.fail(new HornetQException(HornetQExceptionType.UNBLOCKED));
+            }
+        }
+
+        System.out.println("Check.. DeliveringCount: " + queue.getDeliveringCount());
+        Assert.assertEquals("Delivering count of a source queue should be zero on connection failure",
+                0, queue.getDeliveringCount());
+
          closeServers();
 
       assertNoMoreConnections();
