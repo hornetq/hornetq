@@ -1218,6 +1218,13 @@
                             <entry>false</entry>
                         </row>
                         <row>
+                            <entry id="configuration.connection-factory.avoid-large-messages">
+                               <link linkend="large.message.configuring">connection-factory.avoid-large-messages</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>If compress large messages and send them as regular messages if possible</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
                             <entry id="configuration.connection-factory.min-large-message-size">
                                <link linkend="large-messages.core.config">connection-factory.min-large-message-size</link></entry>
                             <entry>Integer</entry>

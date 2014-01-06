@@ -889,7 +889,7 @@ public abstract class MessageImpl implements MessageInternal
 
    // Private -------------------------------------------------------
 
-   private TypedProperties getProperties()
+   public TypedProperties getProperties()
    {
       return properties;
    }
