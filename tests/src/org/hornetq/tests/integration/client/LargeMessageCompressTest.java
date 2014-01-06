@@ -16,6 +16,10 @@ package org.hornetq.tests.integration.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.Assert;
 
@@ -27,6 +31,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -41,6 +46,10 @@ import org.hornetq.tests.util.RandomUtil;
 public class LargeMessageCompressTest extends LargeMessageTest
 {
    // Constructors --------------------------------------------------
+   public LargeMessageCompressTest()
+   {
+      isCompressedTest = true;
+   }
 
    protected boolean isNetty()
    {
@@ -282,7 +291,100 @@ public class LargeMessageCompressTest extends LargeMessageTest
       }
    }
 
+   // This test will send 1 Gig of spaces. There shouldn't be enough memory to uncompress the file in memory
+   // but this will make sure we can work through compressed channels on saving it to stream
+   public void testHugeStreamingSpacesCompressed() throws Exception
+   {
+      final long messageSize = 1024l * 1024l * 1024l;
 
+      System.out.println("Message size = " + messageSize);
+
+      HornetQServer server = createServer(true, isNetty());
+
+      server.start();
+
+      // big enough to hold the whole message compressed on a single message (about 1M on our tests)
+      locator.setMinLargeMessageSize( 100 * 1024 * 1024);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, false, false);
+
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS);
+
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+      ClientMessage clientMessage = session.createMessage(true);
+
+      clientMessage.setBodyInputStream(new InputStream()
+      {
+         private long count;
+
+         private boolean closed = false;
+
+         @Override
+         public void close() throws IOException
+         {
+            super.close();
+            closed = true;
+         }
+
+         @Override
+         public int read() throws IOException
+         {
+            if (closed)
+            {
+               throw new IOException("Stream was closed");
+            }
+
+            if (count++ < messageSize)
+            {
+               return ' ';
+            }
+            else
+            {
+               return -1;
+            }
+         }
+      });
+
+      producer.send(clientMessage);
+
+      session.commit();
+
+      // this is to make sure the message was sent as a regular message (not taking a file on server)
+      validateNoFilesOnLargeDir();
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+      ClientMessage msg1 = consumer.receive(1000);
+      Assert.assertNotNull(msg1);
+
+      final AtomicLong numberOfSpaces = new AtomicLong();
+
+      msg1.saveToOutputStream(new OutputStream()
+      {
+         public void write(int content)
+         {
+            if (content == ' ')
+            {
+               numberOfSpaces.incrementAndGet();
+            }
+         }
+      });
+
+
+      assertEquals(messageSize, numberOfSpaces.get());
+
+      msg1.acknowledge();
+
+      session.commit();
+
+      session.close();
+      
+      server.stop();
+   }
 
    public void testLargeMessageCompressionRestartAndCheckSize() throws Exception
    {

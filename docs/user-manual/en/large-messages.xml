@@ -103,6 +103,39 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
         </section>
     </section>
     <section>
+        <title>Compressed Large Messages</title>
+           <para>
+           You can choose to send large messages in compressed form using <literal>
+           compress-large-messages</literal> attributes.
+           </para>
+   <section>
+        <title><literal>compress-large-messages</literal></title>
+        <para>If you specify the boolean property <literal>compress-large-messages</literal> on
+           the <literal>server locator</literal> or <literal>ConnectionFactory</literal> as true, The
+           system will use the ZIP algorithm to compress the message body as the message is
+           transfered to the server's side. Notice that there's no special treatment at the
+           server's side, all the compressing and uncompressing is done at the client.</para>
+           <para>If the compressed size of a large message is below <literal>
+           min-large-message-size</literal>, it is sent to server as regular messages. This means
+           that the message won't be written into the server's large-message
+           data directory, thus reducing the disk I/O.</para>
+    </section>
+    <section>
+         <para>If you use JMS, you can achieve large messages compression by configuring your 
+           connection factories. For example,</para>
+<programlisting>...
+&lt;connection-factory name="ConnectionFactory">
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty"/>
+   &lt;/connectors>
+...
+   &lt;compress-large-messages>true&lt;/compress-large-messages>
+&lt;/connection-factory>
+...</programlisting>
+    </section>
+
+    </section>
+    <section>
         <title>Streaming large messages</title>
         <para>HornetQ supports setting the body of messages using input and output streams (<literal
                 >java.lang.io</literal>)</para>
