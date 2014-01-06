@@ -866,7 +866,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          clMessage.setFlowControlSize(message.getPacketSize());
 
-         consumer.handleMessage(clMessage);
+         consumer.handleMessage(message);
       }
    }
 

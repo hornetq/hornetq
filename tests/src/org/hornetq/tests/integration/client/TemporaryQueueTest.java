@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientProducerCreditsImpl;
 import org.hornetq.core.client.impl.ClientProducerImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
@@ -637,7 +636,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       ClientConsumer newConsumer = newConsumerSession.createConsumer("Q2");
       newConsumerSession.start();
 
-      int toReceive = TOTAL_MSG - msgs.get() - 1;
+      int toReceive = TOTAL_MSG - msgs.get();
 
       for (ServerSession sessionIterator: server.getSessions())
       {
