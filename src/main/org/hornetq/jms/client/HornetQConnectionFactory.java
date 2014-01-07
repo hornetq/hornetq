@@ -544,9 +544,9 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return serverLocator.isCompressLargeMessage();
    }
 
-   public void setCompressLargeMessage(boolean compress)
+   public void setCompressLargeMessage(boolean avoidLargeMessages)
    {
-      serverLocator.setCompressLargeMessage(compress);
+      serverLocator.setCompressLargeMessage(avoidLargeMessages);
    }
 
    public void close()

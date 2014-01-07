@@ -259,16 +259,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       this.minLargeMessageSize = minLargeMessageSize;
    }
 
-   public boolean isCompressLargeMessages()
-   {
-      return compressLargeMessage;
-   }
-
-   public void setCompressLargeMessages(final boolean compress)
-   {
-      this.compressLargeMessage = compress;
-   }
-
    public int getConsumerWindowSize()
    {
       return consumerWindowSize;
@@ -803,6 +793,18 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public JMSFactoryType getFactoryType()
    {
       return factoryType;
+   }
+
+   @Override
+   public void setCompressLargeMessages(boolean compressLargeMessage)
+   {
+      this.compressLargeMessage = compressLargeMessage;
+   }
+
+   @Override
+   public boolean isCompressLargeMessages()
+   {
+      return this.compressLargeMessage;
    }
 
    // Public --------------------------------------------------------
