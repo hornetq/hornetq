@@ -543,6 +543,106 @@ public class XmlImportExportTest extends ServiceTestBase
       server.stop();
    }
 
+   public void testPagedLargeMessage() throws Exception
+   {
+      final String MY_ADDRESS = "myAddress";
+      final String MY_QUEUE = "myQueue";
+
+      HornetQServer server = createServer(true);
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(10 * 1024);
+      defaultSetting.setMaxSizeBytes(20 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.start();
+
+      ServerLocator locator = createInVMNonHALocator();
+      // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
+      // page mode and we could only guarantee that by setting it to synchronous
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession(false, true, true);
+
+      session.createQueue(MY_ADDRESS, MY_QUEUE, true);
+
+      ClientProducer producer = session.createProducer(MY_ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeBytes(new byte[1024]);
+
+      for (int i = 0; i < 200; i++)
+      {
+         producer.send(message);
+      }
+
+      LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager) server.getStorageManager());
+
+      fileMessage.setMessageID(1005);
+      fileMessage.setDurable(true);
+
+      for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+      {
+         fileMessage.addBytes(new byte[]{UnitTestCase.getSamplebyte(i)});
+      }
+
+      fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+      fileMessage.releaseResources();
+
+      producer.send(fileMessage);
+
+      fileMessage.deleteFile();
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      //System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearData();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
+      session = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session);
+      xmlDataImporter.processXml();
+
+      ClientConsumer consumer = session.createConsumer(MY_QUEUE);
+
+      session.start();
+
+      for (int i = 0; i < 200; i++)
+      {
+         message = consumer.receive(CONSUMER_TIMEOUT);
+
+         Assert.assertNotNull(message);
+      }
+
+      ClientMessage msg = consumer.receive(CONSUMER_TIMEOUT);
+
+      Assert.assertNotNull(msg);
+
+      Assert.assertEquals(2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, msg.getBodySize());
+
+      for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+      {
+         Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
+      }
+
+
+      session.close();
+      locator.close();
+      server.stop();
+   }
+
    public void testTransactional() throws Exception
    {
       final String QUEUE_NAME = "A1";

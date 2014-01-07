@@ -123,7 +123,7 @@ public final class XmlDataExporter
 
    private final Map<Pair<PersistedType, String>, PersistedJNDI> jmsJNDI = new ConcurrentHashMap<Pair<PersistedType, String>, PersistedJNDI>();
 
-
+   
    long messagesPrinted = 0L;
 
    long bindingsPrinted = 0L;
@@ -397,7 +397,7 @@ public final class XmlDataExporter
             PersistedConnectionFactory cf = new PersistedConnectionFactory();
             cf.decode(buffer);
             cf.setId(id);
-            log.info("Found JMS connection factory: " + cf.getName());
+            log.debug("Found JMS connection factory: " + cf.getName());
             jmsConnectionFactories.put(cf.getName(), cf);
          }
          else if(rec == JMSJournalStorageManagerImpl.DESTINATION_RECORD)
@@ -405,7 +405,7 @@ public final class XmlDataExporter
             PersistedDestination destination = new PersistedDestination();
             destination.decode(buffer);
             destination.setId(id);
-            log.info("Found JMS destination: " + destination.getName());
+            log.debug("Found JMS destination: " + destination.getName());
             jmsDestinations.put(new Pair<PersistedType, String>(destination.getType(), destination.getName()), destination);
          }
          else if (rec == JMSJournalStorageManagerImpl.JNDI_RECORD)
@@ -419,7 +419,7 @@ public final class XmlDataExporter
             {
                builder.append(binding + " ");
             }
-            log.info("Found JMS JNDI binding data for " + jndi.getType() + " " + jndi.getName() + ": " + builder.toString());
+            log.debug("Found JMS JNDI binding data for " + jndi.getType() + " " + jndi.getName() + ": " + builder.toString());
             jmsJNDI.put(key, jndi);
          }
          else
@@ -775,11 +775,10 @@ public final class XmlDataExporter
                return executor;
             }
          };
-         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(config.getPagingDirectory(), 1000l, scheduled, executorFactory, false, null);
+         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(config.getPagingDirectory(), 1000l, scheduled, executorFactory, true, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
-         StorageManager sm = new NullStorageManager();
-         PagingManager manager = new PagingManagerImpl(pageStoreFactory, sm, addressSettingsRepository);
+         PagingManager manager = new PagingManagerImpl(pageStoreFactory, storageManager, addressSettingsRepository);
 
          manager.start();
 
@@ -802,14 +801,15 @@ public final class XmlDataExporter
                log.debug("Reading page " + pageId);
                Page page = pageStore.createPage(pageId);
                page.open();
-               List<PagedMessage> messages = page.read(sm);
+               List<PagedMessage> messages = page.read(storageManager);
                page.close();
 
                int messageId = 0;
 
                for (PagedMessage message : messages)
                {
-                  message.initMessage(sm);
+                  message.initMessage(storageManager);
+                  log.debug("Inspecting paged message: " + message.getMessage().getMessageID());
                   long queueIDs[] = message.getQueueIDs();
                   List<String> queueNames = new ArrayList<String>();
                   for (long queueID : queueIDs)
@@ -850,6 +850,7 @@ public final class XmlDataExporter
 
    private void printSingleMessageAsXML(ServerMessage message, List<String> queues) throws XMLStreamException
    {
+      log.debug("Exporting message: " + message.getMessageID());
       xmlWriter.writeStartElement(XmlDataConstants.MESSAGES_CHILD);
       printMessageAttributes(message);
       printMessageProperties(message);
