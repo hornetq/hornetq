@@ -38,6 +38,8 @@ public class MessageReferenceImpl implements MessageReference
 
    private final Queue queue;
 
+   private Long consumerID;
+
    // Static --------------------------------------------------------
 
    private static final int memoryOffset;
@@ -170,9 +172,16 @@ public class MessageReferenceImpl implements MessageReference
       queue.acknowledge(this);
    }
 
-   public void acknowledge(Transaction tx) throws Exception
+   @Override
+   public void setConsumerId(Long consumerID)
    {
-      queue.acknowledge(tx, this);
+      this.consumerID = consumerID;
+   }
+
+   @Override
+   public Long getConsumerId()
+   {
+      return this.consumerID;
    }
 
    public int getMessageMemoryEstimate()

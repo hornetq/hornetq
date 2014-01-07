@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.cluster.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -296,4 +297,14 @@ public class Redistributor implements Consumer
          }
       }
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      return Collections.emptyList();
+   }
+
 }

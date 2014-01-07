@@ -237,12 +237,20 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return this.session.getName();
    }
 
-   public void getDeliveringMessages(List<MessageReference> refList)
+   public List<MessageReference> getDeliveringMessages()
    {
+      List<MessageReference> refs = new LinkedList<MessageReference>();
       synchronized(lock)
       {
-         refList.addAll(deliveringRefs);
+         List<MessageReference> refsOnConsumer = session.getInTXMessagesForConsumer(this.id);
+         if (refsOnConsumer != null)
+         {
+            refs.addAll(refsOnConsumer);
+         }
+         refs.addAll(deliveringRefs);
       }
+
+      return refs;
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
@@ -313,6 +321,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
 
             ref.handled();
+
+            ref.setConsumerId(this.id);
 
             ref.incrementDeliveryCount();
 

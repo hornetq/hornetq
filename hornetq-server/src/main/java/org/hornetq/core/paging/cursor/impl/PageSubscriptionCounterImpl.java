@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
@@ -242,6 +243,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    {
       this.persistent = persistent;
    }
+
 
    /** This method should always be called from a single threaded executor */
    protected void cleanup()

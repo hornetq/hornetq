@@ -145,4 +145,6 @@ public interface ServerSession
    long getCreationTime();
 
    OperationContext getSessionContext();
+
+    List<MessageReference> getInTXMessagesForConsumer(long consumerId);
 }
