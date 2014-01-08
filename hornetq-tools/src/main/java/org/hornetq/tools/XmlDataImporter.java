@@ -80,6 +80,8 @@ public final class XmlDataImporter
 
    private final ClientSession session;
 
+   private boolean applicationServerCompatibility = false;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -96,7 +98,54 @@ public final class XmlDataImporter
     */
    public XmlDataImporter(InputStream inputStream, ClientSession session) throws Exception
    {
-      this(inputStream, session, null);
+      this(inputStream, session, null, false);
+   }
+   /**
+    * This is the normal constructor for programmatic access to the
+    * <code>org.hornetq.core.persistence.impl.journal.XmlDataImporter</code> if the session passed
+    * in uses auto-commit for sends.
+    * <p>
+    * If the session needs to be transactional then use the constructor which takes 2 sessions.
+    * @param inputStream the stream from which to read the XML for import
+    * @param session used for sending messages, must use auto-commit for sends
+    * @param applicationServerCompatibility whether or not the JNDI entries for JMS connection factories and
+    *                                       destinations should be compatible with JBoss AS 7.x, EAP 6.x,
+    *                                       Wildfly, etc. which requires different bindings for local and remote
+    *                                       clients
+    * @throws Exception
+    */
+   public XmlDataImporter(InputStream inputStream, ClientSession session, boolean applicationServerCompatibility) throws Exception
+   {
+      this(inputStream, session, null, applicationServerCompatibility);
+   }
+
+   /**
+    * This is the constructor to use if you wish to import all messages transactionally.
+    * <p>
+    * Pass in a session which doesn't use auto-commit for sends, and one that does (for management
+    * operations necessary during import).
+    * @param inputStream the stream from which to read the XML for import
+    * @param session used for sending messages, doesn't need to auto-commit sends
+    * @param managementSession used for management queries, must use auto-commit for sends
+    * @param applicationServerCompatibility whether or not the JNDI entries for JMS connection factories and
+    *                                       destinations should be compatible with JBoss AS 7.x, EAP 6.x,
+    *                                       Wildfly, etc. which requires different bindings for local and remote
+    *                                       clients
+    */
+   public XmlDataImporter(InputStream inputStream, ClientSession session, ClientSession managementSession, boolean applicationServerCompatibility) throws Exception
+   {
+      reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+      this.session = session;
+      if (managementSession != null)
+      {
+         this.managementSession = managementSession;
+      }
+      else
+      {
+         this.managementSession = session;
+      }
+      localSession = false;
+      this.applicationServerCompatibility = applicationServerCompatibility;
    }
 
    /**
@@ -110,20 +159,10 @@ public final class XmlDataImporter
     */
    public XmlDataImporter(InputStream inputStream, ClientSession session, ClientSession managementSession) throws Exception
    {
-      reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
-      this.session = session;
-      if (managementSession != null)
-      {
-         this.managementSession = managementSession;
-      }
-      else
-      {
-         this.managementSession = session;
-      }
-      localSession = false;
+      this(inputStream, session, managementSession, false);
    }
 
-   public XmlDataImporter(InputStream inputStream, String host, String port, boolean transactional) throws Exception
+   public XmlDataImporter(InputStream inputStream, String host, String port, boolean transactional, boolean applicationServerCompatibility) throws Exception
    {
       reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
       HashMap<String, Object> connectionParams = new HashMap<>();
@@ -137,11 +176,12 @@ public final class XmlDataImporter
       session = sf.createSession(false, !transactional, true);
       managementSession = sf.createSession(false, true, true);
       localSession = true;
+      this.applicationServerCompatibility = applicationServerCompatibility;
    }
 
-   public XmlDataImporter(String inputFile, String host, String port, boolean transactional) throws Exception
+   public XmlDataImporter(String inputFile, String host, String port, boolean transactional, boolean applicationServerCompatibility) throws Exception
    {
-      this(new FileInputStream(inputFile), host, port, transactional);
+      this(new FileInputStream(inputFile), host, port, transactional, applicationServerCompatibility);
    }
 
    // Public --------------------------------------------------------
@@ -150,13 +190,13 @@ public final class XmlDataImporter
    {
       if (arg.length < 3)
       {
-         System.out.println("Use: java -cp hornetq-core.jar " + XmlDataImporter.class + " <inputFile> <host> <port> [<transactional>]");
+         System.out.println("Use: java -cp hornetq-core.jar " + XmlDataImporter.class + " <inputFile> <host> <port> <transactional> <application-server-compatibility>");
          System.exit(-1);
       }
 
       try
       {
-         XmlDataImporter xmlDataImporter = new XmlDataImporter(arg[0], arg[1], arg[2], (arg.length > 3 && Boolean.parseBoolean(arg[3])));
+         XmlDataImporter xmlDataImporter = new XmlDataImporter(arg[0], arg[1], arg[2], Boolean.parseBoolean(arg[3]), Boolean.parseBoolean(arg[4]));
          xmlDataImporter.processXml();
       }
       catch (Exception e)
@@ -960,8 +1000,13 @@ public final class XmlDataImporter
             case XMLStreamConstants.START_ELEMENT:
                if (JMS_JNDI_ENTRY.equals(reader.getLocalName()))
                {
-                  entry.append(reader.getElementText()).append(", ");
-                  HornetQServerLogger.LOGGER.debug("JMS destination entry: " + entry.toString());
+                  String elementText = reader.getElementText();
+                  entry.append(elementText).append(", ");
+                  if (applicationServerCompatibility)
+                  {
+                     entry.append(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX).append(elementText).append(", ");
+                  }
+                  HornetQServerLogger.LOGGER.debug("JMS admin object JNDI entry: " + entry.toString());
                }
                break;
             case XMLStreamConstants.END_ELEMENT:
@@ -995,7 +1040,6 @@ public final class XmlDataImporter
                if (JMS_CONNECTION_FACTORY_CONNECTOR.equals(reader.getLocalName()))
                {
                   entry.append(reader.getElementText()).append(", ");
-                  HornetQServerLogger.LOGGER.debug("JMS destination entry: " + entry.toString());
                }
                break;
             case XMLStreamConstants.END_ELEMENT:

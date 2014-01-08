@@ -39,6 +39,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
+import org.hornetq.tools.XmlDataConstants;
 import org.hornetq.tools.XmlDataExporter;
 import org.hornetq.tools.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
@@ -504,6 +505,58 @@ public class XmlImportExportTest extends ServiceTestBase
 
       consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myTopicJndiBinding1"));
       producer = jmsSession.createProducer((Destination) namingContext.lookup("myTopicJndiBinding2"));
+      producer.send(jmsSession.createTextMessage());
+      Assert.assertNotNull(consumer.receive(3000));
+
+      connection.close();
+   }
+
+   @Test
+   public void testJmsDestinationWithAppServerCompatibility() throws Exception
+   {
+      ClientSession session = basicSetUp();
+
+      jmsServer.createQueue(true, "myQueue", null, true, "myQueueJndiBinding1", "myQueueJndiBinding2");
+      jmsServer.createTopic(true, "myTopic", "myTopicJndiBinding1", "myTopicJndiBinding2");
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearDataRecreateServerDirs();
+      session = basicSetUp();
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session, true);
+      xmlDataImporter.processXml();
+
+      Assert.assertNotNull(namingContext.lookup("myQueueJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myQueueJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup("myQueueJndiBinding2"));
+      Assert.assertNotNull(namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myQueueJndiBinding2"));
+      Assert.assertNotNull(namingContext.lookup("myTopicJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myTopicJndiBinding1"));
+      Assert.assertNotNull(namingContext.lookup("myTopicJndiBinding2"));
+      Assert.assertNotNull(namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myTopicJndiBinding2"));
+
+      jmsServer.createConnectionFactory("test-cf", false, JMSFactoryType.CF, Arrays.asList("in-vm1"), "test-cf");
+
+      ConnectionFactory cf = (ConnectionFactory) namingContext.lookup("test-cf");
+      Connection connection = cf.createConnection();
+      Session jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = jmsSession.createProducer((Destination) namingContext.lookup("myQueueJndiBinding1"));
+      producer.send(jmsSession.createTextMessage());
+      MessageConsumer consumer = jmsSession.createConsumer((Destination) namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myQueueJndiBinding1"));
+      connection.start();
+      Assert.assertNotNull(consumer.receive(3000));
+
+      consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myTopicJndiBinding1"));
+      producer = jmsSession.createProducer((Destination) namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myTopicJndiBinding1"));
       producer.send(jmsSession.createTextMessage());
       Assert.assertNotNull(consumer.receive(3000));
 
