@@ -59,7 +59,7 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       finishSyncAndFailover();
       final int target = getNumberOfMessages() / 2;
       long timeout = System.currentTimeMillis() + 5000;
-      while (getAllMessageFileIds(dir).size() != target && System.currentTimeMillis() > timeout)
+      while (getAllMessageFileIds(dir).size() != target && System.currentTimeMillis() < timeout)
       {
          Thread.sleep(50);
       }
