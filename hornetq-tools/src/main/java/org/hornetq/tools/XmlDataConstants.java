@@ -19,7 +19,7 @@ package org.hornetq.tools;
  *
  * @author Justin Bertram
  */
-final class XmlDataConstants
+public final class XmlDataConstants
 {
    private XmlDataConstants()
    {
@@ -115,4 +115,6 @@ final class XmlDataConstants
 
    static final String JMS_JNDI_ENTRIES = "entries";
    static final String JMS_JNDI_ENTRY = "entry";
+
+   public static final String JNDI_COMPATIBILITY_PREFIX = "java:jboss/exported/";
 }
