@@ -126,4 +126,15 @@ public class DeflaterReader extends InputStream
       return read;
    }
 
+   public void closeStream() throws IOException
+   {
+      super.close();
+      input.close();
+   }
+
+   public long getTotalSize()
+   {
+      return bytesRead.get();
+   }
+
 }

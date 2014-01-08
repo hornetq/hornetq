@@ -61,6 +61,16 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
       this.consumerID = consumerID;
    }
 
+   public SessionReceiveContinuationMessage(final long consumerID,
+                                            final byte[] body,
+                                            final boolean continues,
+                                            final boolean requiresResponse,
+                                            final int packetSize)
+   {
+      this(consumerID, body, continues, requiresResponse);
+      this.size = packetSize;
+   }
+
    /**
     * @return the consumerID
     */

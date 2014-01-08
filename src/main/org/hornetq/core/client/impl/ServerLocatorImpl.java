@@ -1168,12 +1168,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return compressLargeMessage;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.api.core.client.ServerLocator#setCompressLargeMessage(boolean)
-    */
-   public void setCompressLargeMessage(boolean compress)
+   public void setCompressLargeMessage(boolean avoid)
    {
-      this.compressLargeMessage = compress;
+      this.compressLargeMessage = avoid;
    }
 
    private void checkWrite()

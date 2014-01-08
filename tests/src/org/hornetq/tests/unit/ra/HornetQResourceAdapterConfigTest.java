@@ -334,12 +334,12 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-value>true</config-property-value>" +
          "      </config-property>" +
          "      <config-property>" +
-         "         <description>some desk</description>" +
+         "         <description>Whether the resource adapter compress large messages and send them as regular when possible</description>" +
          "         <config-property-name>CompressLargeMessage</config-property-name>" +
          "         <config-property-type>boolean</config-property-type>" +
-         "         <config-property-value>true</config-property-value>" +
-         "      </config-property>" +
-         "      <config-property>" +
+         "         <config-property-value>false</config-property-value>" +
+         "      </config-property>\n"+
+         "      <config-property>\n" +
          "         <description>some desk</description>" +
          "         <config-property-name>MaxRetryInterval</config-property-name>" +
          "         <config-property-type>long</config-property-type>" +
