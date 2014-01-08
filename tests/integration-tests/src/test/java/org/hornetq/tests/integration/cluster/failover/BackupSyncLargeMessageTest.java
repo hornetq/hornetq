@@ -58,11 +58,10 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       receiveMsgsInRange(0, getNumberOfMessages() / 2);
       finishSyncAndFailover();
       final int target = getNumberOfMessages() / 2;
-      int j = 0;
-      while (getAllMessageFileIds(dir).size() != target && j < 20)
+      long timeout = System.currentTimeMillis() + 5000;
+      while (getAllMessageFileIds(dir).size() != target && System.currentTimeMillis() < timeout)
       {
          Thread.sleep(50);
-         j++;
       }
       assertEquals("we really ought to delete these after delivery", target, getAllMessageFileIds(dir).size());
    }
