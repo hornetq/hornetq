@@ -229,4 +229,19 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
 
    }
 
+   public void retrieveExistingData(ClientMessageImpl clMessage)
+   {
+      this.messageID = clMessage.getMessageID();
+      this.address = clMessage.getAddress();
+      this.setUserID(clMessage.getUserID());
+
+      this.type = clMessage.getType();
+      this.durable = clMessage.isDurable();
+      this.setExpiration(clMessage.getExpiration());
+      this.timestamp = clMessage.getTimestamp();
+      this.priority = clMessage.getPriority();
+      this.properties = clMessage.getProperties();
+      this.largeMessageSize = clMessage.getLongProperty(HDR_LARGE_BODY_SIZE);
+   }
+
 }

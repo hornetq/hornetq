@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -417,8 +418,17 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
          t.start();
 
-         // This will block
-         producer.send(message);
+         try
+         {
+            // This will block
+            for (int i = 0 ; i < 10; i++)
+            {
+               producer.send(message);
+            }
+         }
+         catch (HornetQException expected)
+         {
+         }
 
          Assert.assertTrue(closed.get());
 

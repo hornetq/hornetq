@@ -74,7 +74,7 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
 
    boolean isCompressLargeMessages();
 
-   void setCompressLargeMessages(boolean compress);
+   void setCompressLargeMessages(boolean avoidLargeMessages);
 
    int getConsumerWindowSize();
 
