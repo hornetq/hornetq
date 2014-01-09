@@ -843,7 +843,12 @@ public final class XmlDataExporter
 
                      if (!acked)
                      {
-                        queueNames.add(queueBindings.get(queueID).getQueueName().toString());
+                        PersistentQueueBindingEncoding queueBinding = queueBindings.get(queueID);
+                        if (queueBinding != null)
+                        {
+                           SimpleString queueName = queueBinding.getQueueName();
+                           queueNames.add(queueName.toString());
+                        }
                      }
                   }
 
