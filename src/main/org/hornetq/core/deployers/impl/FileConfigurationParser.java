@@ -745,6 +745,10 @@ public class FileConfigurationParser
                else if (FileConfigurationParser.MANAGE_NAME.equals(type))
                {
                   manageRoles.add(role.trim());
+               } 
+               else 
+               {
+                   FileConfigurationParser.log.warn(String.format("Wrong configuration for role, {0} is not a valid permission", type));
                }
                if (!allRoles.contains(role.trim()))
                {
