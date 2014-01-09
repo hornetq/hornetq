@@ -791,9 +791,8 @@ public final class XmlDataExporter
                return executor;
             }
          };
-         final StorageManager sm = new NullStorageManager();
          PagingStoreFactory pageStoreFactory =
-               new PagingStoreFactoryNIO(sm, config.getPagingDirectory(), 1000l, scheduled, executorFactory, false,
+               new PagingStoreFactoryNIO(storageManager, config.getPagingDirectory(), 1000l, scheduled, executorFactory, true,
                      null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
@@ -820,14 +819,14 @@ public final class XmlDataExporter
                HornetQServerLogger.LOGGER.debug("Reading page " + pageId);
                Page page = pageStore.createPage(pageId);
                page.open();
-               List<PagedMessage> messages = page.read(sm);
+               List<PagedMessage> messages = page.read(storageManager);
                page.close();
 
                int messageId = 0;
 
                for (PagedMessage message : messages)
                {
-                  message.initMessage(sm);
+                  message.initMessage(storageManager);
                   long queueIDs[] = message.getQueueIDs();
                   List<String> queueNames = new ArrayList<String>();
                   for (long queueID : queueIDs)
