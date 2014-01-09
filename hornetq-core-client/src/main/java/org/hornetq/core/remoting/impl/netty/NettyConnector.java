@@ -745,6 +745,14 @@ public class NettyConnector extends AbstractConnector
                   request.headers().set(HttpHeaders.Names.UPGRADE, HORNETQ_REMOTING);
                   request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
 
+                  final String endpoint = ConfigurationHelper.getStringProperty(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME,
+                     null,
+                     configuration);
+                  if (endpoint != null)
+                  {
+                     request.headers().set(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, endpoint);
+                  }
+
                   // Get 16 bit nonce and base 64 encode it
                   byte[] nonce = randomBytes(16);
                   String key = base64(nonce);
