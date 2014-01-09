@@ -123,7 +123,7 @@ public final class XmlDataExporter
 
    private final Map<Pair<PersistedType, String>, PersistedJNDI> jmsJNDI = new ConcurrentHashMap<Pair<PersistedType, String>, PersistedJNDI>();
 
-   
+
    long messagesPrinted = 0L;
 
    long bindingsPrinted = 0L;
@@ -826,7 +826,12 @@ public final class XmlDataExporter
 
                      if (!acked)
                      {
-                        queueNames.add(queueBindings.get(queueID).getQueueName().toString());
+                        PersistentQueueBindingEncoding queueBinding = queueBindings.get(queueID);
+                        if (queueBinding != null)
+                        {
+                           SimpleString queueName = queueBinding.getQueueName();
+                           queueNames.add(queueName.toString());
+                        }
                      }
                   }
 

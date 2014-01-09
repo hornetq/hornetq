@@ -473,6 +473,80 @@ public class XmlImportExportTest extends ServiceTestBase
       server.stop();
    }
 
+   public void testPagedMessageWithMissingBinding() throws Exception
+   {
+      final String MY_ADDRESS = "myAddress";
+      final String MY_QUEUE = "myQueue";
+      final String MY_QUEUE2 = "myQueue2";
+
+      HornetQServer server = createServer(true);
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(10 * 1024);
+      defaultSetting.setMaxSizeBytes(20 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.start();
+
+      ServerLocator locator = createInVMNonHALocator();
+      // Making it synchronous, just because we want to stop sending messages as soon as the page-store becomes in
+      // page mode and we could only guarantee that by setting it to synchronous
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession(false, true, true);
+
+      session.createQueue(MY_ADDRESS, MY_QUEUE, true);
+      session.createQueue(MY_ADDRESS, MY_QUEUE2, true);
+
+      ClientProducer producer = session.createProducer(MY_ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeBytes(new byte[1024]);
+
+      for (int i = 0; i < 200; i++)
+      {
+         producer.send(message);
+      }
+
+      session.deleteQueue(MY_QUEUE2);
+
+      session.close();
+      locator.close();
+      server.stop();
+
+      ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+      XmlDataExporter xmlDataExporter = new XmlDataExporter(xmlOutputStream, getBindingsDir(), getJournalDir(), getPageDir(), getLargeMessagesDir());
+      xmlDataExporter.writeXMLData();
+      System.out.print(new String(xmlOutputStream.toByteArray()));
+
+      clearData();
+      server.start();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
+      session = factory.createSession(false, true, true);
+
+      ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlOutputStream.toByteArray());
+      XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session);
+      xmlDataImporter.processXml();
+
+      ClientConsumer consumer = session.createConsumer(MY_QUEUE);
+
+      session.start();
+
+      for (int i = 0; i < 200; i++)
+      {
+         message = consumer.receive(CONSUMER_TIMEOUT);
+
+         Assert.assertNotNull(message);
+      }
+
+      session.close();
+      locator.close();
+      server.stop();
+   }
+
    public void testPaging() throws Exception
    {
       final String MY_ADDRESS = "myAddress";
