@@ -61,28 +61,12 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public class PrintPages // NO_UCD (unused code)
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   public static void main(final String arg[])
+   public static void printPages(String pageDirectory, String messagesDirectory)
    {
-      if (arg.length != 2)
-      {
-         System.err.println("Usage: PrintPages <page folder> <journal folder>");
-         System.exit(-1);
-      }
       try
       {
 
-         PageCursorsInfo cursorACKs = PrintPages.loadCursorACKs(arg[1]);
+         PageCursorsInfo cursorACKs = PrintPages.loadCursorACKs(messagesDirectory);
 
          Set<Long> pgTXs = cursorACKs.getPgTXs();
 
@@ -98,7 +82,7 @@ public class PrintPages // NO_UCD (unused code)
          };
          final StorageManager sm = new NullStorageManager();
          PagingStoreFactory pageStoreFactory =
-                  new PagingStoreFactoryNIO(sm, arg[0], 1000l, scheduled, execfactory, false, null);
+                  new PagingStoreFactoryNIO(sm, pageDirectory, 1000l, scheduled, execfactory, false, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
          PagingManager manager = new PagingManagerImpl(pageStoreFactory, addressSettingsRepository);

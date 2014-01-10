@@ -174,27 +174,6 @@ public final class XmlDataExporter
                handler);
    }
 
-   // Public --------------------------------------------------------
-
-   public static void main(String arg[])
-   {
-      if (arg.length < 4)
-      {
-         System.out.println("Use: java -cp hornetq-core.jar <bindings directory> <message directory> <page directory> <large-message directory>");
-         System.exit(-1);
-      }
-
-      try
-      {
-         XmlDataExporter xmlDataExporter = new XmlDataExporter(System.out, arg[0], arg[1], arg[2], arg[3]);
-         xmlDataExporter.writeXMLData();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
    public void writeXMLData() throws Exception
    {
       long start = System.currentTimeMillis();
