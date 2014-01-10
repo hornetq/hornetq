@@ -757,6 +757,10 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                {
                   manageRoles.add(role.trim());
                }
+               else
+               {
+                   HornetQServerLogger.LOGGER.rolePermissionConfigurationError(type);
+               }
                if (!allRoles.contains(role.trim()))
                {
                   allRoles.add(role.trim());
