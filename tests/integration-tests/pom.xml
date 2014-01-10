@@ -154,6 +154,10 @@
            <artifactId>jboss-javaee</artifactId>
            <version>5.0.0.GA</version>
        </dependency>
+      <dependency>
+         <groupId>org.jboss.jbossts.jts</groupId>
+         <artifactId>jbossjts-jacorb</artifactId>
+      </dependency>
    </dependencies>
 
    <build>
