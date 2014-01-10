@@ -33,23 +33,15 @@ import org.hornetq.core.server.impl.FileLockNodeManager;
 public class PrintData // NO_UCD (unused code)
 {
 
-   public static void main(String arg[])
+   protected static void printData(String bindingsDirectory, String messagesDirectory)
    {
-      if (arg.length != 2)
-      {
-         System.err.println("Standalone Usage:\n java -cp hornetq-tools.jar org.hornetq.tools.PrintData <bindings directory> <message directory>");
-         System.err.println("\nMaven Usage:\n  cd hornetq-server && "
-                  + "mvn -q exec:java -Dexec.args=\"/foo/hornetq/bindings /foo/hornetq/journal\" -Dexec.mainClass=\"org.hornetq.tools.PrintData\"");
-         System.exit(-1);
-      }
-
-      File serverLockFile = new File(arg[1], "server.lock");
+      File serverLockFile = new File(messagesDirectory, "server.lock");
 
       if (serverLockFile.isFile())
       {
          try
          {
-            FileLockNodeManager fileLock = new FileLockNodeManager(arg[1], false);
+            FileLockNodeManager fileLock = new FileLockNodeManager(messagesDirectory, false);
             fileLock.start();
             System.out.println("********************************************");
             System.out.println("Server's ID=" + fileLock.getNodeId().toString());
@@ -68,7 +60,7 @@ public class PrintData // NO_UCD (unused code)
 
       try
       {
-         DescribeJournal.describeBindingsJournal(arg[0]);
+         DescribeJournal.describeBindingsJournal(bindingsDirectory);
       }
       catch (Exception e)
       {
@@ -81,7 +73,7 @@ public class PrintData // NO_UCD (unused code)
 
       try
       {
-         DescribeJournal.describeMessagesJournal(arg[1]);
+         DescribeJournal.describeMessagesJournal(messagesDirectory);
       }
       catch (Exception e)
       {

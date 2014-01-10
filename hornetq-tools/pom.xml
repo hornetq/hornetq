@@ -13,21 +13,39 @@
    <name>HornetQ Tools</name>
 
    <dependencies>
-       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.hornetq</groupId>
-           <artifactId>hornetq-server</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>org.hornetq</groupId>
-           <artifactId>hornetq-jms-server</artifactId>
-           <version>${project.version}</version>
-       </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-server</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jms-server</artifactId>
+         <version>${project.version}</version>
+      </dependency>
    </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+               <archive>
+                  <manifest>
+                     <mainClass>org.hornetq.tools.Main</mainClass>
+                  </manifest>
+               </archive>
+               <descriptorRefs>
+                  <descriptorRef>jar-with-dependencies</descriptorRef>
+               </descriptorRefs>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 
    <profiles>
       <profile>

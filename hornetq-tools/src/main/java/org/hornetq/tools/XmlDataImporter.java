@@ -186,25 +186,6 @@ public final class XmlDataImporter
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
-   {
-      if (arg.length < 3)
-      {
-         System.out.println("Use: java -cp hornetq-core.jar " + XmlDataImporter.class + " <inputFile> <host> <port> <transactional> <application-server-compatibility>");
-         System.exit(-1);
-      }
-
-      try
-      {
-         XmlDataImporter xmlDataImporter = new XmlDataImporter(arg[0], arg[1], arg[2], Boolean.parseBoolean(arg[3]), Boolean.parseBoolean(arg[4]));
-         xmlDataImporter.processXml();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
    public void processXml() throws Exception
    {
       try
