@@ -1051,6 +1051,11 @@ public interface HornetQServerLogger extends BasicLogger
                ". This was most likely caused from a previous communication timeout",
          format = Message.Format.MESSAGE_FORMAT)
    void xidReplacedOnXStart(String xidOriginalToString, String xidReplacedToString);
+   
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222177, value = "Wrong configuration for role, {0} is not a valid permission",
+            format = Message.Format.MESSAGE_FORMAT)
+   void rolePermissionConfigurationError(String permission);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
