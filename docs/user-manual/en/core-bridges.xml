@@ -62,6 +62,7 @@
    &lt;retry-interval>1000&lt;/retry-interval>
    &lt;ha>true&lt;/ha>
    &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
+   &lt;initial-connect-attempts>-1&lt;/initial-connect-attempts>
    &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
    &lt;failover-on-server-shutdown>false&lt;/failover-on-server-shutdown>
    &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
@@ -146,6 +147,12 @@
                     subsequent reconnection attempts.</para>
                 <para>The default value is <literal>1.0</literal> meaning each reconnect attempt is
                     spaced at equal intervals.</para>
+            </listitem>
+            <listitem>
+                <para><literal>initial-connect-attempts</literal>. This optional parameter determines the
+                    total number of initial connect attempts the bridge will make before giving up and
+                    shutting down. A value of <literal>-1</literal> signifies an unlimited number of
+                    attempts. The default value is <literal>-1</literal>.</para>
             </listitem>
             <listitem>
                 <para><literal>reconnect-attempts</literal>. This optional parameter determines the

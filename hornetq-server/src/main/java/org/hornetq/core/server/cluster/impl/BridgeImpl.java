@@ -151,6 +151,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private boolean keepConnecting = true;
 
    public BridgeImpl(final ServerLocatorInternal serverLocator,
+                     final int initialConnectAttempts,
                      final int reconnectAttempts,
                      final int reconnectAttemptsSameNode,
                      final long retryInterval,
@@ -172,7 +173,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.reconnectAttempts = reconnectAttempts;
 
-      this.reconnectAttemptsInUse = -1;
+      this.reconnectAttemptsInUse = initialConnectAttempts;
 
       this.reconnectAttemptsSameNode = reconnectAttemptsSameNode;
 

@@ -1992,7 +1992,7 @@ name, address, connectorFrom.getName(),
             retryInterval,
             HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
             HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
-            reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
+            -1, reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
             1024, pairs, false,
             HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
             HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());

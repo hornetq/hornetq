@@ -123,6 +123,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                            1000,
                                                                            HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                            1d,
+                                                                           -1,
                                                                            0,
                                                                            0,
                                                                            true,

@@ -46,6 +46,8 @@ public final class BridgeConfiguration implements Serializable
 
    private double retryIntervalMultiplier = HornetQClient.DEFAULT_RETRY_INTERVAL;
 
+   private int initialConnectAttempts = -1;
+
    private int reconnectAttempts = -1;
 
    private int reconnectAttemptsOnSameNode = 10;
@@ -89,6 +91,7 @@ public final class BridgeConfiguration implements Serializable
                               final long retryInterval,
                               final long maxRetryInterval,
                               final double retryIntervalMultiplier,
+                              final int initialConnectAttempts,
                               final int reconnectAttempts,
                               final int reconnectAttemptsOnSameNode,
                               final boolean useDuplicateDetection,
@@ -106,6 +109,7 @@ public final class BridgeConfiguration implements Serializable
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
       this.reconnectAttemptsOnSameNode = reconnectAttemptsOnSameNode;
       this.useDuplicateDetection = useDuplicateDetection;
@@ -131,6 +135,7 @@ public final class BridgeConfiguration implements Serializable
                               final long retryInterval,
                               final long maxRetryInterval,
                               final double retryIntervalMultiplier,
+                              final int initialConnectAttempts,
                               final int reconnectAttempts,
                               final int reconnectAttemptsOnSameNode,
                               final boolean useDuplicateDetection,
@@ -148,6 +153,7 @@ public final class BridgeConfiguration implements Serializable
       this.minLargeMessageSize = minLargeMessageSize;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
       this.reconnectAttemptsOnSameNode = reconnectAttemptsOnSameNode;
       this.useDuplicateDetection = useDuplicateDetection;
@@ -319,6 +325,19 @@ public final class BridgeConfiguration implements Serializable
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
 
+   public int getInitialConnectAttempts()
+   {
+      return initialConnectAttempts;
+   }
+
+   /**
+    * @param initialConnectAttempts the initialConnectAttempts to set
+    */
+   public void setInitialConnectAttempts(final int initialConnectAttempts)
+   {
+      this.initialConnectAttempts = initialConnectAttempts;
+   }
+
    public int getReconnectAttempts()
    {
       return reconnectAttempts;
@@ -448,6 +467,7 @@ public final class BridgeConfiguration implements Serializable
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       result = prime * result + ((password == null) ? 0 : password.hashCode());
       result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+      result = prime * result + initialConnectAttempts;
       result = prime * result + reconnectAttempts;
       result = prime * result + (int)(retryInterval ^ (retryInterval >>> 32));
       long temp;
@@ -525,6 +545,8 @@ public final class BridgeConfiguration implements Serializable
             return false;
       }
       else if (!queueName.equals(other.queueName))
+         return false;
+      if (initialConnectAttempts != other.initialConnectAttempts)
          return false;
       if (reconnectAttempts != other.reconnectAttempts)
          return false;

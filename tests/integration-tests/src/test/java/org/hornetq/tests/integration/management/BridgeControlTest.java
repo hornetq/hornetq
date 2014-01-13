@@ -163,6 +163,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              RandomUtil.randomDouble(),
                                              RandomUtil.randomPositiveInt(),
                                              RandomUtil.randomPositiveInt(),
+                                             RandomUtil.randomPositiveInt(),
                                              RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
                                              connectors,

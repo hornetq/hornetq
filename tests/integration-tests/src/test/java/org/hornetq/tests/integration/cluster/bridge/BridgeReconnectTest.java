@@ -276,7 +276,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                      HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                      HornetQClient.DEFAULT_CONNECTION_TTL, retryInterval,
                                      HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, retryIntervalMultiplier,
-                                     reconnectAttempts, 0, true, confirmationWindowSize, staticConnectors, false,
+                                     -1, reconnectAttempts, 0, true, confirmationWindowSize, staticConnectors, false,
                                      HornetQDefaultConfiguration.getDefaultClusterUser(), CLUSTER_PASSWORD);
    }
 
@@ -469,6 +469,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         retryInterval,
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
+                                                                        -1,
                                                                         reconnectAttempts,
                                                                         0,
                                                                         true,

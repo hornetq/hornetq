@@ -1092,6 +1092,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       long maxRetryInterval = getLong(e, "max-retry-interval", HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(), Validators.GT_ZERO);
 
+      int initialConnectAttempts = getInteger(e, "initial-connect-attempts", HornetQDefaultConfiguration.getDefaultClusterInitialConnectAttempts(), Validators.MINUS_ONE_OR_GE_ZERO);
+
       int reconnectAttempts = getInteger(e, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultClusterReconnectAttempts(), Validators.MINUS_ONE_OR_GE_ZERO);
 
 
@@ -1138,7 +1140,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                   new ClusterConnectionConfiguration(name, address, connectorName,
                                                      minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                                                      retryInterval, retryIntervalMultiplier, maxRetryInterval,
-                                                     reconnectAttempts, callTimeout, callFailoverTimeout,
+                                                     initialConnectAttempts, reconnectAttempts, callTimeout, callFailoverTimeout,
                                                      duplicateDetection, forwardWhenNoConsumers, maxHops,
                                                      confirmationWindowSize,
                                                      staticConnectorNames,
@@ -1155,6 +1157,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                      retryInterval,
                                                      retryIntervalMultiplier,
                                                      maxRetryInterval,
+                                                     initialConnectAttempts,
                                                      reconnectAttempts,
                                                      callTimeout,
                                                      callFailoverTimeout,
@@ -1221,9 +1224,13 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                getDouble(brNode, "retry-interval-multiplier", HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                          Validators.GT_ZERO);
 
+      int initialConnectAttempts =
+         getInteger(brNode, "initial-connect-attempts", HornetQDefaultConfiguration.getDefaultBridgeInitialConnectAttempts(),
+                    Validators.MINUS_ONE_OR_GE_ZERO);
+
       int reconnectAttempts =
-               getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts(),
-                          Validators.MINUS_ONE_OR_GE_ZERO);
+         getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts(),
+                    Validators.MINUS_ONE_OR_GE_ZERO);
 
       int reconnectAttemptsSameNode =
                getInteger(brNode, "reconnect-attempts-same-node", HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
@@ -1306,6 +1313,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                           retryInterval,
                                           maxRetryInterval,
                                           retryIntervalMultiplier,
+                                          initialConnectAttempts,
                                           reconnectAttempts,
                                           reconnectAttemptsSameNode,
                                           useDuplicateDetection,
@@ -1328,6 +1336,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                           retryInterval,
                                           maxRetryInterval,
                                           retryIntervalMultiplier,
+                                          initialConnectAttempts,
                                           reconnectAttempts,
                                           reconnectAttemptsSameNode,
                                           useDuplicateDetection,
