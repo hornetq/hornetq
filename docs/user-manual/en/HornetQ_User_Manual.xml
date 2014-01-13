@@ -67,6 +67,7 @@
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="aerogear-integration.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="intercepting-operations.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="interoperability.xml"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="tools.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="perf-tuning.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="configuration-index.xml"/>
 </book>
