@@ -21,7 +21,7 @@ public class Main
       {
          if (arg.length != 5)
          {
-            System.out.println(USAGE + " " + EXPORT + " <bindings-directory> <message-directory> <page-directory> <large-message-directory>");
+            System.out.println(USAGE + " " + EXPORT + " <bindings-directory> <journal-directory> <paging-directory> <large-messages-directory>");
             System.exit(-1);
          }
          else
@@ -47,7 +47,7 @@ public class Main
       {
          if (arg.length != 3)
          {
-            System.err.println(USAGE + " " + PRINT_DATA + " <bindings-directory> <message-directory>");
+            System.err.println(USAGE + " " + PRINT_DATA + " <bindings-directory> <journal-directory>");
             System.exit(-1);
          }
 
@@ -57,7 +57,7 @@ public class Main
       {
          if (arg.length != 3)
          {
-            System.err.println(USAGE + " " + PRINT_PAGES + " <page-directory> <message-directory>");
+            System.err.println(USAGE + " " + PRINT_PAGES + " <paging-directory> <journal-directory>");
             System.exit(-1);
          }
 
