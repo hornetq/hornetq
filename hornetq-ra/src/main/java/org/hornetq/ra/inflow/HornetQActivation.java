@@ -782,6 +782,11 @@ public class HornetQActivation
          {
             setup();
          }
+         catch(MisConfiguredMDBException e)
+         {
+            HornetQRALogger.LOGGER.misconfiguredMdb(e);
+            deliveryActive.set(false);
+         }
          catch (Throwable t)
          {
             handleFailure(t);
