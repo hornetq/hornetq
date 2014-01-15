@@ -104,11 +104,9 @@ public class HornetQMessageHandler implements MessageHandler
       SimpleString selectorString = selector == null || selector.trim().equals("") ? null : new SimpleString(selector);
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
-         String subscriptionName = spec.getSubscriptionName();
-         String clientID = spec.getClientID();
-
-         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
-                                                                                                            subscriptionName));
+         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true,
+                                                                                                            spec.getClientID(),
+                                                                                                            spec.getSubscriptionName()));
 
          QueueQuery subResponse = session.queueQuery(queueName);
 
