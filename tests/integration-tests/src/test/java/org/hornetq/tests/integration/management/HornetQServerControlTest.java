@@ -746,6 +746,7 @@ public class HornetQServerControlTest extends ManagementTestBase
                                  null, // filterString
                                  HornetQClient.DEFAULT_RETRY_INTERVAL,
                                  HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                 HornetQClient.INITIAL_CONNECT_ATTEMPTS,
                                  HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
                                   false, // duplicateDetection
                                  1, // confirmationWindowSize

@@ -1021,6 +1021,12 @@
         </xsd:annotation>
       </xsd:element>
 
+      <xsd:element name="initial-connect-attempts" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:field_name="DEFAULT_BRIDGE_INITIAL_CONNECT_ATTEMPTS">
+          <xsd:documentation>maximum number of initial connection attempts, -1 means 'no limits'</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
       <xsd:element name="reconnect-attempts" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:field_name="DEFAULT_BRIDGE_RECONNECT_ATTEMPTS">
           <xsd:documentation>maximum number of retry attempts, -1 means 'no limits'</xsd:documentation>
@@ -1160,6 +1166,12 @@
       <xsd:element name="max-retry-interval" type="xsd:long" default="2000" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:field_name="DEFAULT_CLUSTER_MAX_RETRY_INTERVAL">
           <xsd:documentation>Maximum value for retry-interval</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+      <xsd:element name="initial-connect-attempts" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:field_name="DEFAULT_CLUSTER_INITIAL_CONNECT_ATTEMPTS">
+          <xsd:documentation>How many attempts should be made to connect initially</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 

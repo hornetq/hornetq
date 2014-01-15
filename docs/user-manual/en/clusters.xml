@@ -578,6 +578,7 @@ ClientSession session = factory.createSession();</programlisting>
       &lt;retry-interval>500&lt;/retry-interval>
       &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
       &lt;max-retry-interval>5000&lt;/max-retry-interval>
+      &lt;initial-connect-attempts>-1&lt;/initial-connect-attempts>
       &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
       &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
       &lt;forward-when-no-consumers>false&lt;/forward-when-no-consumers>
@@ -657,8 +658,14 @@ ClientSession session = factory.createSession();</programlisting>
                    Default is 2000.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>reconnect-attempts</literal>.The number of times the system will
-                        try to connect a node on the cluster. If the max-retry is achieved this node will
+                    <para><literal>initial-connect-attempts</literal>. The number of times the system will
+                        try to connect a node in the cluster initially. If the max-retry is achieved this
+                        node will be considered permanently down and the system will not route messages
+                        to this node. Default is -1 (infinite retries).</para>
+                </listitem>
+                <listitem>
+                    <para><literal>reconnect-attempts</literal>. The number of times the system will
+                        try to reconnect to a node in the cluster. If the max-retry is achieved this node will
                         be considered permanently down and the system will stop routing messages to this
                         node. Default is -1 (infinite retries).</para>
                 </listitem>

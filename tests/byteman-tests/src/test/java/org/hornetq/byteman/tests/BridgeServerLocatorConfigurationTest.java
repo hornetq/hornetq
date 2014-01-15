@@ -90,7 +90,7 @@ public class BridgeServerLocatorConfigurationTest extends ServiceTestBase
                   new BridgeConfiguration(BRIDGE_NAME, queueName0, forwardAddress, null, null,
                                           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, BRIDGE_TTL, 1000,
-                                          HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, 1d, 0, 0, true, 1024,
+                                          HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, 1d, -1, 0, 0, true, 1024,
                                           staticConnectors, false, HornetQDefaultConfiguration.getDefaultClusterUser(),
                                           HornetQDefaultConfiguration.getDefaultClusterPassword());
 

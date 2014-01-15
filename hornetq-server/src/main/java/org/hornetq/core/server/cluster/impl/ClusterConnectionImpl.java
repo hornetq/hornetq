@@ -107,6 +107,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final long maxRetryInterval;
 
+   private final int initialConnectAttempts;
+
    private final int reconnectAttempts;
 
    private final boolean useDuplicateDetection;
@@ -176,6 +178,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
                                 final long maxRetryInterval,
+                                final int initialConnectAttempts,
                                 final int reconnectAttempts,
                                 final long callTimeout,
                                 final long callFailoverTimeout,
@@ -212,6 +215,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
       this.maxRetryInterval = maxRetryInterval;
+
+      this.initialConnectAttempts = initialConnectAttempts;
 
       this.reconnectAttempts = reconnectAttempts;
 
@@ -285,6 +290,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
                                 final long maxRetryInterval,
+                                final int initialConnectAttempts,
                                 final int reconnectAttempts,
                                 final long callTimeout,
                                 final long callFailoverTimeout,
@@ -323,6 +329,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       this.maxRetryInterval = maxRetryInterval;
 
       this.minLargeMessageSize = minLargeMessageSize;
+
+      this.initialConnectAttempts = initialConnectAttempts;
 
       this.reconnectAttempts = reconnectAttempts;
 
@@ -879,6 +887,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                    manager,
                                                                    targetLocator,
                                                                    serverLocator,
+                                                                   initialConnectAttempts,
                                                                    reconnectAttempts,
                                                                    retryInterval,
                                                                    retryIntervalMultiplier,

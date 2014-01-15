@@ -75,6 +75,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    public ClusterConnectionBridge(final ClusterConnection clusterConnection, final ClusterManager clusterManager,
                                   final ServerLocatorInternal targetLocator,
                                   final ServerLocatorInternal discoveryLocator,
+                                  final int initialConnectAttempts,
                                   final int reconnectAttempts,
                                   final long retryInterval,
                                   final double retryMultiplier,
@@ -99,6 +100,7 @@ public class ClusterConnectionBridge extends BridgeImpl
                                   final TransportConfiguration connector)
    {
       super(targetLocator,
+            initialConnectAttempts,
             reconnectAttempts,
             0, // reconnectAttemptsOnSameNode means nothing on the clustering bridge since we always try the same
             retryInterval,

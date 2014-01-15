@@ -46,6 +46,8 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private long maxRetryInterval;
 
+   private int initialConnectAttempts;
+
    private int reconnectAttempts;
 
    private long callTimeout;
@@ -92,6 +94,7 @@ public final class ClusterConnectionConfiguration implements Serializable
          retryInterval,
          HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
          HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterInitialConnectAttempts(),
          HornetQDefaultConfiguration.getDefaultClusterReconnectAttempts(),
          HornetQClient.DEFAULT_CALL_TIMEOUT,
          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
@@ -115,6 +118,7 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final long retryInterval,
                                          final double retryIntervalMultiplier,
                                          final long maxRetryInterval,
+                                         final int initialConnectAttempts,
                                          final int reconnectAttempts,
                                          final long callTimeout,
                                          final long callFailoverTimeout,
@@ -137,6 +141,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;
+      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
       if (staticConnectors != null)
       {
@@ -179,6 +184,7 @@ public final class ClusterConnectionConfiguration implements Serializable
          retryInterval,
          HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
          HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterInitialConnectAttempts(),
          HornetQDefaultConfiguration.getDefaultClusterReconnectAttempts(),
          HornetQClient.DEFAULT_CALL_TIMEOUT,
          HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
@@ -201,6 +207,7 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final long retryInterval,
                                          final double retryIntervalMultiplier,
                                          final long maxRetryInterval,
+                                         final int initialConnectAttempts,
                                          final int reconnectAttempts,
                                          final long callTimeout,
                                          final long callFailoverTimeout,
@@ -220,6 +227,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;
+      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
       this.callTimeout = callTimeout;
       this.callFailoverTimeout = callFailoverTimeout;
@@ -275,6 +283,14 @@ public final class ClusterConnectionConfiguration implements Serializable
    public long getMaxRetryInterval()
    {
       return maxRetryInterval;
+   }
+
+   /**
+    * @return the initialConnectAttempts
+    */
+   public int getInitialConnectAttempts()
+   {
+      return initialConnectAttempts;
    }
 
    /**
@@ -398,6 +414,14 @@ public final class ClusterConnectionConfiguration implements Serializable
    }
 
    /**
+    * @param initialConnectAttempts the reconnectAttempts to set
+    */
+   public void setInitialConnectAttempts(int initialConnectAttempts)
+   {
+      this.initialConnectAttempts = initialConnectAttempts;
+   }
+
+   /**
     * @param reconnectAttempts the reconnectAttempts to set
     */
    public void setReconnectAttempts(int reconnectAttempts)
@@ -472,6 +496,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       result = prime * result + (int)(maxRetryInterval ^ (maxRetryInterval >>> 32));
       result = prime * result + minLargeMessageSize;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + initialConnectAttempts;
       result = prime * result + reconnectAttempts;
       result = prime * result + (int)(retryInterval ^ (retryInterval >>> 32));
       long temp;
@@ -544,6 +569,8 @@ public final class ClusterConnectionConfiguration implements Serializable
             return false;
       }
       else if (!name.equals(other.name))
+         return false;
+      if (initialConnectAttempts != other.initialConnectAttempts)
          return false;
       if (reconnectAttempts != other.reconnectAttempts)
          return false;

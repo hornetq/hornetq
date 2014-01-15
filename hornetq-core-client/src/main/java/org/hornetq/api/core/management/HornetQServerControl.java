@@ -585,6 +585,7 @@ public interface HornetQServerControl
                      @Parameter(name="transformerClassName", desc="Class name of the bridge transformer") String transformerClassName,
                      @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
                      @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
+                     @Parameter(name="initialConnectAttempts", desc="Number of initial connection attempts") int initialConnectAttempts,
                      @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
                      @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
                      @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,

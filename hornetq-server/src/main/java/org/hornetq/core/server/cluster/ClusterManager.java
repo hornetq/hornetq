@@ -550,6 +550,7 @@ public final class ClusterManager implements HornetQComponent
       clusterLocators.add(serverLocator);
 
       Bridge bridge = new BridgeImpl(serverLocator,
+                                     config.getInitialConnectAttempts(),
                                      config.getReconnectAttempts(),
                                      config.getReconnectAttemptsOnSameNode(),
                                      config.getRetryInterval(),
@@ -728,6 +729,7 @@ public final class ClusterManager implements HornetQComponent
                                                        config.getRetryInterval(),
                                                        config.getRetryIntervalMultiplier(),
                                                        config.getMaxRetryInterval(),
+                                                       config.getInitialConnectAttempts(),
                                                        config.getReconnectAttempts(),
                                                        config.getCallTimeout(),
                                                        config.getCallFailoverTimeout(),
@@ -767,6 +769,7 @@ public final class ClusterManager implements HornetQComponent
                                                        config.getRetryInterval(),
                                                        config.getRetryIntervalMultiplier(),
                                                        config.getMaxRetryInterval(),
+                                                       config.getInitialConnectAttempts(),
                                                        config.getReconnectAttempts(),
                                                        config.getCallTimeout(),
                                                        config.getCallFailoverTimeout(),
