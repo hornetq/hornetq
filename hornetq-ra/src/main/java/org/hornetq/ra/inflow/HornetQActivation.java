@@ -786,6 +786,7 @@ public class HornetQActivation
          {
             HornetQRALogger.LOGGER.misconfiguredMdb(e);
             deliveryActive.set(false);
+            teardown();
          }
          catch (Throwable t)
          {
