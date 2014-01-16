@@ -114,6 +114,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     null,
                                     mapDups,
+                                    null,
                                     null);
 
          Assert.assertEquals(0, mapDups.size());
@@ -137,6 +138,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     null,
                                     mapDups,
+                                    null,
                                     null);
 
          Assert.assertEquals(1, mapDups.size());
@@ -167,6 +169,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new HashMap<Long, Queue>(),
                                     null,
                                     mapDups,
+                                    null,
                                     null);
 
          Assert.assertEquals(1, mapDups.size());

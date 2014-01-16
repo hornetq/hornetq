@@ -30,6 +30,7 @@ import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_B
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SECURITY_RECORD;
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME;
 import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_PENDING_COUNTER;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -70,6 +71,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdat
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PendingLargeMessageEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.RefEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ScheduledDeliveryEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountPendingImpl;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -608,6 +610,14 @@ public final class DescribeJournal
 
             encoding.decode(buffer);
 
+            return encoding;
+         }
+
+         case PAGE_CURSOR_PENDING_COUNTER:
+         {
+            PageCountPendingImpl encoding = new PageCountPendingImpl();
+            encoding.decode(buffer);
+            encoding.setID(info.id);
             return encoding;
          }
 
