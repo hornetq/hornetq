@@ -1,4 +1,5 @@
 package org.hornetq.tests.integration.cluster.failover;
+import org.hornetq.core.server.Queue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -85,6 +86,15 @@ public class BackupSyncJournalTest extends FailoverTestBase
          messageJournal.forceMoveNextFile();
          sendMessages(session, producer, n_msgs);
       }
+      Queue queue = liveServer.getServer().locateQueue(ADDRESS);
+      PagingStore store = queue.getPageSubscription().getPagingStore();
+
+      // in case of paging I must close the current page otherwise we will get a pending counter
+      // what would make the verification on similar journal to fail after the recovery
+      if (store.isPaging())
+      {
+         store.forceAnotherPage();
+      }
       backupServer.start();
 
       // Deliver messages with Backup in-sync
@@ -93,11 +103,26 @@ public class BackupSyncJournalTest extends FailoverTestBase
       final JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       sendMessages(session, producer, n_msgs);
 
+      // in case of paging I must close the current page otherwise we will get a pending counter
+      // what would make the verification on similar journal to fail after the recovery
+      if (store.isPaging())
+      {
+         store.forceAnotherPage();
+      }
+
       // Deliver messages with Backup up-to-date
       syncDelay.deliverUpToDateMsg();
       waitForRemoteBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, n_msgs);
+
+
+      // in case of paging I must close the current page otherwise we will get a pending counter
+      // what would make the verification on similar journal to fail after the recovery
+      if (store.isPaging())
+      {
+         store.forceAnotherPage();
+      }
 
       Set<Pair<Long, Integer>> liveIds = getFileIds(messageJournal);
       int size = messageJournal.getFileSize();

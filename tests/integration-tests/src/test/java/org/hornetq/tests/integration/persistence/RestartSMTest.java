@@ -100,7 +100,7 @@ public class RestartSMTest extends ServiceTestBase
 
          Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null);
+         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null, null);
 
          journal.stop();
 
@@ -110,7 +110,7 @@ public class RestartSMTest extends ServiceTestBase
 
          queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null);
+         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null, null);
 
          queueBindingInfos = new ArrayList<QueueBindingInfo>();
 

@@ -258,9 +258,9 @@ public class IncompatibleVersionTest extends ServiceTestBase
          {
             locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
             sf = locator.createSessionFactory();
-         ClientSession session = sf.createSession(false, true, true);
-         log.info("### client: connected. server incrementingVersion = " + session.getVersion());
-         session.close();
+            ClientSession session = sf.createSession(false, true, true);
+            log.info("### client: connected. server incrementingVersion = " + session.getVersion());
+            session.close();
          }
          finally
          {

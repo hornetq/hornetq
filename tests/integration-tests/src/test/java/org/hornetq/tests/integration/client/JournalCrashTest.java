@@ -205,7 +205,7 @@ public class JournalCrashTest extends ServiceTestBase
    {
       System.err.println("running external process...");
       Process process = SpawnedVMSupport.spawnVM(this.getClass().getCanonicalName(),
-                                                 "-Xms128m -Xmx128m ",
+                                                 "-Xms128m", "-Xmx128m",
                                                  new String[] {},
                                                  true,
                                                  true,

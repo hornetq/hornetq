@@ -15,12 +15,16 @@ package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.transaction.Transaction;
@@ -55,7 +59,16 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    private final AtomicLong value = new AtomicLong(0);
 
+   private final AtomicLong pendingValue = new AtomicLong(0);
+
    private final LinkedList<Long> incrementRecords = new LinkedList<Long>();
+
+
+   // We are storing pending counters for non transactional writes on page
+   // we will recount a page case we still see pending records
+   // as soon as we close a page we remove these records replacing by a regular page increment record
+   // A Map per pageID, each page will have a set of IDs, with the increment on each one
+   private final Map<Long, Pair<Long, AtomicInteger>> pendingCounters = new HashMap<Long, Pair<Long, AtomicInteger>>();
 
    private LinkedList<Pair<Long, Integer>> loadList;
 
@@ -83,8 +96,79 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    @Override
    public long getValue()
    {
-      return value.get();
+      return value.get() + pendingValue.get();
    }
+
+
+   /**
+    * This is used only on non transactional paging
+    * @param page
+    * @param increment
+    * @param context
+    * @throws Exception
+    */
+   @Override
+   public synchronized void pendingCounter(Page page, int increment) throws Exception
+   {
+      if (!persistent)
+      {
+         return; // nothing to be done
+      }
+
+      Pair<Long, AtomicInteger> pendingInfo = pendingCounters.get((long)page.getPageId());
+      if (pendingInfo == null)
+      {
+         // We have to make sure this is sync here
+         // not syncing this to disk may cause the page files to be out of sync on pages.
+         // we can't afford the case where a page file is written without a record here
+         long id = storage.storePendingCounter(this.subscriptionID, page.getPageId(), increment);
+         pendingInfo = new Pair<Long, AtomicInteger>(id, new AtomicInteger(1));
+         pendingCounters.put((long)page.getPageId(), pendingInfo);
+      }
+      else
+      {
+         pendingInfo.getB().addAndGet(increment);
+      }
+
+      pendingValue.addAndGet(increment);
+
+      page.addPendingCounter(this);
+   }
+
+   /**
+    * Cleanup temporary page counters on non transactional paged messages
+    * @param pageID
+    */
+   public void cleanupNonTXCounters(final long pageID) throws Exception
+   {
+      Pair<Long, AtomicInteger> pendingInfo;
+      synchronized (this)
+      {
+         pendingInfo = pendingCounters.remove(pageID);
+      }
+
+      if (pendingInfo != null)
+      {
+         final AtomicInteger valueCleaned = pendingInfo.getB();
+         Transaction tx = new TransactionImpl(storage);
+         storage.deletePendingPageCounter(tx.getID(), pendingInfo.getA());
+
+         // To apply the increment of the value just being cleaned
+         increment(tx, valueCleaned.get());
+
+         tx.addOperation(new TransactionOperationAbstract()
+         {
+            @Override
+            public void afterCommit(Transaction tx)
+            {
+               pendingValue.addAndGet(-valueCleaned.get());
+            }
+         });
+
+         tx.commit();
+      }
+   }
+
 
    @Override
    public void increment(Transaction tx, int add) throws Exception
@@ -107,22 +191,22 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          {
             tx.setContainsPersistent();
             long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
-            applyIncrement(tx, id, add);
+            applyIncrementOnTX(tx, id, add);
          }
          else
          {
-            applyIncrement(tx, -1, add);
+            applyIncrementOnTX(tx, -1, add);
          }
       }
    }
 
    /**
-    * This method will install the prepared TXs
+    * This method will install the TXs
     * @param tx
     * @param recordID1
     * @param add
     */
-   public void applyIncrement(Transaction tx, long recordID1, int add)
+   public void applyIncrementOnTX(Transaction tx, long recordID1, int add)
    {
       CounterOperations oper = (CounterOperations)tx.getProperty(TransactionPropertyIndexes.PAGE_COUNT_INC);
 
@@ -172,23 +256,23 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       storage.readLock();
       try
       {
-      synchronized (this)
-      {
-      for (Long record : incrementRecords)
-      {
-         storage.deleteIncrementRecord(tx.getID(), record.longValue());
-         tx.setContainsPersistent();
-      }
+         synchronized (this)
+         {
+            for (Long record : incrementRecords)
+            {
+               storage.deleteIncrementRecord(tx.getID(), record.longValue());
+               tx.setContainsPersistent();
+            }
 
-      if (recordID >= 0)
-      {
-         storage.deletePageCounter(tx.getID(), this.recordID);
-         tx.setContainsPersistent();
-      }
+            if (recordID >= 0)
+            {
+               storage.deletePageCounter(tx.getID(), this.recordID);
+               tx.setContainsPersistent();
+            }
 
-      recordID = -1;
-      value.set(0);
-      incrementRecords.clear();
+            recordID = -1;
+            value.set(0);
+            incrementRecords.clear();
          }
       }
       finally
@@ -227,7 +311,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-   public void addInc(long id, int variance)
+   public synchronized void addInc(long id, int variance)
    {
       value.addAndGet(variance);
 

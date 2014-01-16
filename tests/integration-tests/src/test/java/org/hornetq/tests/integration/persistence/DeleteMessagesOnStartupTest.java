@@ -63,7 +63,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
-      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null);
+      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null, null);
 
       assertEquals(98, deletedMessage.size());
 

@@ -992,6 +992,11 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 222166, value = "Error stopping naming server", format = Message.Format.MESSAGE_FORMAT)
    void unableToStopNamingServer(@Cause Exception e);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222178, value = "Error during recovery of page counters",
+            format = Message.Format.MESSAGE_FORMAT)
+   void errorRecoveringPageCounter(@Cause Throwable error);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
    void initializationError(@Cause Throwable e);
