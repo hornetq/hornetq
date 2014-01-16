@@ -832,6 +832,43 @@
                <failOnError>false</failOnError>
             </configuration>
          </plugin>
+
+         <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+               <basedir>${basedir}</basedir>
+               <header>etc/license-header.txt</header>
+               <properties>
+                  <copyrightYear>2005-2014</copyrightYear>
+               </properties>
+               <quiet>false</quiet>
+               <failIfMissing>true</failIfMissing>
+               <includes>
+                  <include>**/*.java</include>
+               </includes>
+               <excludes>
+                  <!--exclude>src/test/**</exclude-->
+                  <exclude>**/filter/impl/Identifier.java</exclude>
+                  <exclude>**/filter/impl/Operator.java</exclude>
+                  <exclude>**/filter/impl/RegExp.java</exclude>
+                  <exclude>**/utils/UUID*.java</exclude>
+               </excludes>
+               <useDefaultExcludes>true</useDefaultExcludes>
+               <strictCheck>true</strictCheck>
+               <mapping>
+                  <java>SLASHSTAR_STYLE</java>
+               </mapping>
+            </configuration>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
 
