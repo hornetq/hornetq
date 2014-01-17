@@ -11,6 +11,11 @@
 
     <artifactId>hornetq-protocols</artifactId>
     <packaging>pom</packaging>
+
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
+
     <modules>
         <module>hornetq-amqp-protocol</module>
         <module>hornetq-stomp-protocol</module>

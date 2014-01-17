@@ -12,6 +12,10 @@
    <artifactId>hornetq-tests-pom</artifactId>
    <packaging>pom</packaging>
 
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <build>
       <plugins>
          <plugin>
