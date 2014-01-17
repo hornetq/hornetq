@@ -104,7 +104,7 @@ public class NettySecurityClientTest extends UnitTestCase
 
       // spawn a JVM that creates a client withor without a security manager which sends and receives a test message
       Process p = SpawnedVMSupport.spawnVM(SimpleClient.class.getName(),
-                                           "-Xms512m -Xmx512m ",
+                                           "-Xms512m", "-Xmx512m",
                                            vmargs,
                                            false,
                                            true,

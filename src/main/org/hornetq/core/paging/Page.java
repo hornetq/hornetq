@@ -16,6 +16,7 @@ package org.hornetq.core.paging;
 import java.util.List;
 
 import org.hornetq.core.paging.cursor.LivePageCache;
+import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
 
 /**
@@ -47,4 +48,6 @@ public interface Page
    boolean isLive();
 
    boolean delete(PagedMessage[] messages) throws Exception;
+   
+   void addPendingCounter(PageSubscriptionCounter pageSubscriptionCounter);
 }

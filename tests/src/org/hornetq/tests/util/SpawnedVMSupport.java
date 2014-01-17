@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2005-2014 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -10,7 +10,6 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.tests.util;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -19,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -28,26 +28,13 @@ import java.util.concurrent.TimeoutException;
 
 import junit.framework.Assert;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert Suconic</a>
- *
- * @version <tt>$Revision$</tt>
- *
  */
-public class SpawnedVMSupport
+public final class SpawnedVMSupport
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SpawnedVMSupport.class);
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
    public static Process spawnVM(final String className, final String... args) throws Exception
    {
       return SpawnedVMSupport.spawnVM(className, new String[0], true, args);
@@ -68,71 +55,55 @@ public class SpawnedVMSupport
                                  final boolean logOutput,
                                  final String... args) throws Exception
    {
-      return SpawnedVMSupport.spawnVM(className, "-Xms512m -Xmx512m ", vmargs, logOutput, false, args);
+      return SpawnedVMSupport.spawnVM(className, "-Xms512m", "-Xmx512m", vmargs, logOutput, true, args);
    }
 
+
    public static Process spawnVM(final String className,
-                                 final String memoryArgs,
+                                 final String memoryArg1,
+                                 final String memoryArg2,
                                  final String[] vmargs,
                                  final boolean logOutput,
                                  final boolean logErrorOutput,
                                  final String... args) throws Exception
    {
-      StringBuffer sb = new StringBuffer();
+      ProcessBuilder builder = new ProcessBuilder();
+      builder.command("java", memoryArg1, memoryArg2, "-cp", System.getProperty("java.class.path"));
 
-      sb.append("java").append(' ');
+      List<String> commandList = builder.command();
 
-      sb.append(memoryArgs);
-
-      for (String vmarg : vmargs)
+      if (vmargs != null)
       {
-         sb.append(vmarg).append(' ');
+         for (String arg: vmargs)
+         {
+            commandList.add(arg);
+         }
       }
 
-      String classPath = System.getProperty("java.class.path");
+      commandList.add("-Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir", "./tmp"));
+      commandList.add("-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin"));
 
-      String osName = System.getProperty("os.name");
-      osName = (osName != null) ? osName.toLowerCase() : "";
-      boolean isWindows = osName.contains("win");
-      if (isWindows)
-      {
-         sb.append("-cp").append(" \"").append(classPath).append("\" ");
-      }
-      else
-      {
-         sb.append("-cp").append(" ").append(classPath).append(" ");
-      }
-
-      sb.append("-Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir", "./tmp")).append(" ");
-
-      sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
 
       String loggingConfigFile = System.getProperty("java.util.logging.config.file");
+
       if (loggingConfigFile != null)
       {
-         sb.append(" -Djava.util.logging.config.file=" + loggingConfigFile + " ");
+         commandList.add("-Djava.util.logging.config.file=" + loggingConfigFile + " ");
       }
+
       String loggingPlugin = System.getProperty("org.jboss.logging.Logger.pluginClass");
       if (loggingPlugin != null)
       {
-         sb.append(" -Dorg.jboss.logging.Logger.pluginClass=" + loggingPlugin + " ");
+         commandList.add("-Dorg.jboss.logging.Logger.pluginClass=" + loggingPlugin + " ");
       }
 
-      // sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
-      sb.append(className).append(' ');
-
-      for (String arg : args)
+      commandList.add(className);
+      for (String arg: args)
       {
-         sb.append(arg).append(' ');
+         commandList.add(arg);
       }
 
-      String commandLine = sb.toString();
-
-      SpawnedVMSupport.log.trace("command line: " + commandLine);
-
-      Process process = Runtime.getRuntime().exec(commandLine);
-
-      SpawnedVMSupport.log.trace("process: " + process);
+      Process process = builder.start();
 
       if (logOutput)
       {
@@ -146,6 +117,8 @@ public class SpawnedVMSupport
       errorLogger.start();
 
       return process;
+
+
    }
 
    /**
@@ -238,17 +211,4 @@ public class SpawnedVMSupport
          }
       }
    }
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
