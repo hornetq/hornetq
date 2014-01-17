@@ -11,6 +11,10 @@
    <packaging>jar</packaging>
    <name>HornetQ Unit Tests</name>
 
+   <properties>
+      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
          <groupId>org.hornetq</groupId>

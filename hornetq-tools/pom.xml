@@ -29,6 +29,10 @@
       </dependency>
    </dependencies>
 
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <build>
       <plugins>
          <plugin>
