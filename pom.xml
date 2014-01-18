@@ -61,6 +61,7 @@
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
       <hornetq.basedir>${project.basedir}</hornetq.basedir>
+      <skipLicenseCheck>false</skipLicenseCheck>
    </properties>
 
    <scm>
@@ -839,6 +840,7 @@
             <artifactId>license-maven-plugin</artifactId>
             <version>2.5</version>
             <configuration>
+               <skip>${skipLicenseCheck}</skip>
                <basedir>${hornetq.basedir}</basedir>
                <header>etc/license-header.txt</header>
                <properties>

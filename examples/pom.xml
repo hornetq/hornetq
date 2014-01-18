@@ -13,6 +13,10 @@
    <packaging>pom</packaging>
    <name>HornetQ Examples</name>
 
+   <properties>
+      <skipLicenseCheck>true</skipLicenseCheck>
+   </properties>
+
    <modules>
       <module>core</module>
       <module>jms</module>
