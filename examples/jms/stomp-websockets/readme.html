@@ -22,7 +22,7 @@
 
      <p><i>To run the example, simply type <code>mvn verify</code> from this directory</i></p>
 
-    <p>To subscribe to the topic from your web browser, open the <a href="chat/index.html">Chat Example</a> from another tab. 
+    <p>To subscribe to the topic from your web browser, open the <a href="chat/index.html">Chat Example</a> or the <a href="aerogear-chat/aerogear-index.html">JBoss AeroGear STOMP notifier Chat Example</a> from another tab.
       The chat example is preconfigured to connect to the HornetQ server with the URL <code>ws://localhost:61614/stomp</code> and subscribe to the JMS Topic (through its core address
       <code>jms.topic.chat</code>).
     </p>
@@ -30,9 +30,8 @@
     <p>If you run again the Java application (with <code>./build.sh</code>), the web clients will also receive its message</p>
     
     <h2>Documentation</h2>
-    
     <p>A JavaScript library is used on the browser side to be able to use Stomp Over Web Sockets (please see its <a href="http://jmesnil.net/stomp-websocket/doc/">documentation</a>
-      for a complete description).
-
+      for a complete description).</p>
+    <p>The <a href="aerogear-chat/aerogear-index.html">JBoss AeroGear STOMP notifier Chat Example</a> is using the AeroGear Notifier which is a collection of adapters that provide a unified or similar API for interacting with different messaging services and protocols. The STOMP adapter is used for communicating with STOMP over WebSockets. See more at: <a href="http://aerogear.org/docs/specs/aerogear-js/">JBoss aerogear-js</a> </p>
   </body>
 </html>
