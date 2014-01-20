@@ -199,6 +199,11 @@ class StompSession implements SessionCallback
       long id = Long.parseLong(messageID);
       Pair<Long, Integer> pair = messagesToAck.remove(id);
 
+      if (pair == null)
+      {
+         throw new StompException("failed to ack because no message with id: " + id);
+      }
+
       if (pair != null)
       {
          long consumerID = pair.getA();
