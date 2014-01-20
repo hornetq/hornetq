@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
@@ -18,23 +18,23 @@
 
    <dependencies>
       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging-processor</artifactId>
-       </dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
+      </dependency>
 
-       <!--
-           JBoss Logging
-       -->
-       <dependency>
+      <!--
+          JBoss Logging
+      -->
+      <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
-       </dependency>
-       <dependency>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.logmanager</groupId>
          <artifactId>jboss-logmanager</artifactId>
          <scope>test</scope>
-        </dependency>
-        <dependency>
+      </dependency>
+      <dependency>
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-commons</artifactId>
          <version>${project.version}</version>

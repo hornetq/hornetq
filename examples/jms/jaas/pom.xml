@@ -34,7 +34,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -53,9 +53,9 @@
                         <config implementation="org.hornetq.jms.example.ExampleConfiguration">
                            <loginModuleName>org.hornetq.jms.example.ExampleLoginModule</loginModuleName>
                            <options>
-                                <user>jboss</user>
-                                <pass>redhat</pass>
-                                <role>guest</role>
+                              <user>jboss</user>
+                              <pass>redhat</pass>
+                              <role>guest</role>
                            </options>
                         </config>
                      </securityManager>

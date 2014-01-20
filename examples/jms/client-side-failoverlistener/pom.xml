@@ -24,7 +24,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -71,7 +71,7 @@
                      </systemProperties>
                   </configuration>
                </execution>
-              
+
                <execution>
                   <id>runClient</id>
                   <goals>

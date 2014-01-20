@@ -5,11 +5,11 @@
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
    <version>2.5.0-SNAPSHOT</version>
-    <modules>
-        <module>hornetq-protocols</module>
-    </modules>
+   <modules>
+      <module>hornetq-protocols</module>
+   </modules>
 
-    <name>HornetQ Parent</name>
+   <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
    <description>
       Putting the buzz in messaging
@@ -28,9 +28,9 @@
       </license>
    </licenses>
 
-    <prerequisites>
-       <maven>3.0.0</maven>
-    </prerequisites>
+   <prerequisites>
+      <maven>3.0.0</maven>
+   </prerequisites>
 
    <properties>
       <netty.version>4.0.13.Final</netty.version>
@@ -59,7 +59,11 @@
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
+      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager
+         -Dlogging.configuration=file:${user.dir}/tests/config/logging.properties
+         -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost
+         -Djava.net.preferIPv4Stack=true
+      </hornetq-surefire-argline>
       <hornetq.basedir>${project.basedir}</hornetq.basedir>
       <skipLicenseCheck>false</skipLicenseCheck>
    </properties>
@@ -135,28 +139,28 @@
       <dependencies>
          <!--
             JBoss Tools
-        -->
-        <dependency>
+         -->
+         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <version>1.0.0.Final</version>
             <scope>provided</scope>
-        </dependency>
+         </dependency>
 
-        <!--
-            JBoss Logging
-        -->
-        <dependency>
+         <!--
+             JBoss Logging
+         -->
+         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
             <version>3.1.0.GA</version>
-        </dependency>
+         </dependency>
 
-        <dependency>
+         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
             <version>1.2.2.GA</version>
-        </dependency>
+         </dependency>
 
          <dependency>
             <groupId>net.java.dev.javacc</groupId>
@@ -171,19 +175,19 @@
          </dependency>
 
 
-          <!-- needed to provide JMS injection-->
-          <dependency>
-              <groupId>javax.enterprise</groupId>
-              <artifactId>cdi-api</artifactId>
-              <version>1.0-SP4</version>
-          </dependency>
-          <dependency>
-              <groupId>javax.inject</groupId>
-              <artifactId>javax.inject</artifactId>
-              <version>1</version>
-          </dependency>
+         <!-- needed to provide JMS injection-->
+         <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.0-SP4</version>
+         </dependency>
+         <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+         </dependency>
 
-          <!-- needed to compile JavaEE examples-->
+         <!-- needed to compile JavaEE examples-->
          <dependency>
             <groupId>org.jboss.javaee</groupId>
             <artifactId>jboss-ejb-api</artifactId>
@@ -248,9 +252,9 @@
             </exclusions>
          </dependency>
          <dependency>
-             <groupId>org.jgroups</groupId>
-             <artifactId>jgroups</artifactId>
-             <version>3.3.4.Final</version>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+            <version>3.3.4.Final</version>
          </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
@@ -305,19 +309,19 @@
          <!---->
 
          <dependency>
-             <groupId>org.apache.qpid</groupId>
-             <artifactId>proton-api</artifactId>
-             <version>0.5</version>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>proton-api</artifactId>
+            <version>0.5</version>
          </dependency>
          <dependency>
-             <groupId>org.apache.qpid</groupId>
-             <artifactId>proton-j-impl</artifactId>
-             <version>0.5</version>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>proton-j-impl</artifactId>
+            <version>0.5</version>
          </dependency>
          <dependency>
-             <groupId>org.apache.qpid</groupId>
-             <artifactId>proton-jms</artifactId>
-             <version>0.5</version>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>proton-jms</artifactId>
+            <version>0.5</version>
          </dependency>
          <!--needed to compile the spring support-->
          <dependency>
@@ -361,11 +365,11 @@
             <artifactId>resteasy-atom-provider</artifactId>
             <version>${resteasy.version}</version>
          </dependency>
-          <dependency>
-              <groupId>org.jboss.resteasy</groupId>
-              <artifactId>tjws</artifactId>
-              <version>${resteasy.version}</version>
-          </dependency>
+         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>tjws</artifactId>
+            <version>${resteasy.version}</version>
+         </dependency>
          <!-- needed to compile the tests -->
          <dependency>
             <groupId>junit</groupId>
@@ -474,9 +478,9 @@
             <module>hornetq-native</module>
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
-             <module>hornetq-service-sar</module>
-             <module>hornetq-tools</module>
-             <module>integration/hornetq-jboss-as-integration</module>
+            <module>hornetq-service-sar</module>
+            <module>hornetq-tools</module>
+            <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
@@ -497,7 +501,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-             <module>hornetq-tools</module>
+            <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -519,7 +523,7 @@
             <module>hornetq-ra</module>
             <module>hornetq-rest</module>
             <module>hornetq-service-sar</module>
-             <module>hornetq-tools</module>
+            <module>hornetq-tools</module>
             <module>integration/hornetq-jboss-as-integration</module>
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
@@ -638,21 +642,21 @@
                   </execution>
                </executions>
             </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.1</version>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-clean-plugin</artifactId>
-            <version>2.5</version>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9</version>
-         </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <version>3.1</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-clean-plugin</artifactId>
+               <version>2.5</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>2.9</version>
+            </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-rar-plugin</artifactId>
@@ -731,7 +735,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-pmd-plugin</artifactId>
-	       <version>3.0.1</version>
+               <version>3.0.1</version>
                <configuration>
                   <linkXref>true</linkXref>
                   <sourceEncoding>utf-8</sourceEncoding>
@@ -740,14 +744,14 @@
                </configuration>
             </plugin>
             <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>build-helper-maven-plugin</artifactId>
-              <version>1.8</version>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>build-helper-maven-plugin</artifactId>
+               <version>1.8</version>
             </plugin>
             <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>xml-maven-plugin</artifactId>
-              <version>1.0</version>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>xml-maven-plugin</artifactId>
+               <version>1.0</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
@@ -766,12 +770,12 @@
                <artifactId>maven-resources-plugin</artifactId>
                <version>2.6</version>
             </plugin>
-         <!-- Many examples use it -->
-         <plugin>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-maven-plugin</artifactId>
-            <version>1.2.0</version>
-         </plugin>
+            <!-- Many examples use it -->
+            <plugin>
+               <groupId>org.hornetq</groupId>
+               <artifactId>hornetq-maven-plugin</artifactId>
+               <version>1.2.0</version>
+            </plugin>
          </plugins>
       </pluginManagement>
 
@@ -827,8 +831,8 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
-              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
-              <findbugsXmlOutput>true</findbugsXmlOutput>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <findbugsXmlOutput>true</findbugsXmlOutput>
                <xmlOutput>true</xmlOutput>
                <effort>Max</effort>
                <failOnError>false</failOnError>
@@ -902,9 +906,9 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
-              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
-              <effort>Max</effort>
-              <failOnError>false</failOnError>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <effort>Max</effort>
+               <failOnError>false</failOnError>
             </configuration>
          </plugin>
          <plugin>

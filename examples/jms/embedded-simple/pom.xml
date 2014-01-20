@@ -34,7 +34,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
