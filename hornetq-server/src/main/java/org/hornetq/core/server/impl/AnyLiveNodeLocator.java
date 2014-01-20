@@ -35,14 +35,16 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
 {
    private final Lock lock = new ReentrantLock();
    private final Condition condition = lock.newCondition();
+   private final HornetQServerImpl server;
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> untriedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
    Map<String, Pair<TransportConfiguration, TransportConfiguration>> triedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
 
    private String nodeID;
 
-   public AnyLiveNodeLocator(QuorumManager quorumManager)
+   public AnyLiveNodeLocator(QuorumManager quorumManager, HornetQServerImpl server)
    {
       super(quorumManager);
+      this.server = server;
    }
 
    @Override
@@ -78,8 +80,11 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
          lock.lock();
          Pair<TransportConfiguration, TransportConfiguration> connector =
                   new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
-         untriedConnectors.put(topologyMember.getNodeId(), connector);
-         condition.signal();
+         if(server.checkLiveIsNotColocated(topologyMember.getNodeId()))
+         {
+            untriedConnectors.put(topologyMember.getNodeId(), connector);
+            condition.signal();
+         }
       }
       finally
       {

@@ -626,6 +626,66 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
 
       config.setConnectorServiceConfigurations(configs);
+
+      NodeList bsNodes = e.getElementsByTagName("backup-server");
+
+      for (int i = 0; i < bsNodes.getLength(); i++)
+      {
+         Element bsNode = (Element)bsNodes.item(i);
+
+         parseBackupServers(bsNode, config);
+      }
+   }
+
+   private void parseBackupServers(Element e, Configuration config) throws Exception
+   {
+      String name = e.getAttribute("name");
+      String a = e.getAttribute("port-offset");;
+      int portOffset = a != null && a.length() > 0?Integer.valueOf(a):100;
+      String inheritAttr = e.getAttribute("inherit-configuration");
+      boolean inheritConfiguration = inheritAttr != null && inheritAttr.length() > 0?Boolean.valueOf(inheritAttr):true;
+      Configuration backupConfiguration = inheritConfiguration? config.copy():new ConfigurationImpl();
+      backupConfiguration.setName(name);
+      Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
+      for (TransportConfiguration acceptor : acceptors)
+      {
+         updatebackupParams(name, portOffset, acceptor.getParams());
+      }
+      Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
+      for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
+      {
+         updatebackupParams(name, portOffset, entry.getValue().getParams());
+      }
+      backupConfiguration.setJournalDirectory(backupConfiguration.getJournalDirectory() + "/" + name);
+      backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + "/" + name);
+      backupConfiguration.setPagingDirectory(backupConfiguration.getPagingDirectory() + "/" + name);
+      backupConfiguration.setLargeMessagesDirectory(backupConfiguration.getLargeMessagesDirectory() + "/" + name);
+      backupConfiguration.setBackup(true);
+      NodeList confList = e.getElementsByTagName("configuration");
+      if(confList.getLength() > 0)
+      {
+         parseMainConfig((Element) confList.item(0), backupConfiguration);
+      }
+      config.getBackupServerConfigurations().add(backupConfiguration);
+   }
+
+   private void updatebackupParams(String name, int portOffset, Map<String, Object> params)
+   {
+      if(params != null)
+      {
+         Object port = params.get("port");
+         if(port != null)
+         {
+            Integer integer = Integer.valueOf(port.toString());
+            integer+=portOffset;
+            params.put("port", integer.toString());
+         }
+         Object serverId = params.get("server-id");
+         if(serverId != null)
+         {
+            params.put("server-id", serverId.toString() + "(" + name + ")");
+         }
+      }
    }
 
    /**

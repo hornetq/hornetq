@@ -268,6 +268,10 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221043, value = "Adding protocol support {0}", format = Message.Format.MESSAGE_FORMAT)
    void addingProtocolSupport(String protocolKey);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221044, value = "Backup Server has recovered journal to live server, restarting as backup", format = Message.Format.MESSAGE_FORMAT)
+   void backupServerRecovered();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
          format = Message.Format.MESSAGE_FORMAT)

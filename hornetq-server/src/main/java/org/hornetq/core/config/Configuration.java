@@ -953,4 +953,8 @@ public interface Configuration extends Serializable
     * @return the number of backup journals to keep after failback has occurred
     */
    int getMaxSavedReplicatedJournalsSize();
+
+   Set<Configuration> getBackupServerConfigurations();
+
+   Configuration copy() throws Exception;
 }

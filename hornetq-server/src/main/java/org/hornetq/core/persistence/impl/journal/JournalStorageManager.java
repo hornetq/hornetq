@@ -108,6 +108,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
+import org.hornetq.core.server.impl.JournalLoader;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -1515,11 +1516,11 @@ public class JournalStorageManager implements StorageManager
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                                     final PagingManager pagingManager,
                                                     final ResourceManager resourceManager,
-                                                    final Map<Long, Queue> queues,
                                                     Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
                                                     final Set<Pair<Long, Long>> pendingLargeMessages,
-                                                    List<PageCountPending> pendingNonTXPageCounter) throws Exception
+                                                    List<PageCountPending> pendingNonTXPageCounter,
+                                                    final JournalLoader journalLoader) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -1880,68 +1881,17 @@ public class JournalStorageManager implements StorageManager
          records.clear();
          records = null;
 
-         for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry : queueMap.entrySet())
-         {
-            long queueID = entry.getKey();
-
-            Map<Long, AddMessageRecord> queueRecords = entry.getValue();
-
-            Queue queue = queues.get(queueID);
-
-            if (queue == null)
-            {
-               if (queueRecords.values().size() != 0)
-               {
-                  HornetQServerLogger.LOGGER.journalCannotFindQueueForMessage(queueID);
-               }
-
-               continue;
-            }
-
-            // Redistribution could install a Redistributor while we are still loading records, what will be an issue with
-            // prepared ACKs
-            // We make sure te Queue is paused before we reroute values.
-            queue.pause();
-
-            Collection<AddMessageRecord> valueRecords = queueRecords.values();
-
-            long currentTime = System.currentTimeMillis();
-
-            for (AddMessageRecord record : valueRecords)
-            {
-               long scheduledDeliveryTime = record.scheduledDeliveryTime;
-
-               if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
-               {
-                  scheduledDeliveryTime = 0;
-                  record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-               }
-
-               if (scheduledDeliveryTime != 0)
-               {
-                  record.message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
-               }
-
-               MessageReference ref = postOffice.reroute(record.message, queue, null);
-
-               ref.setDeliveryCount(record.deliveryCount);
-
-               if (scheduledDeliveryTime != 0)
-               {
-                  record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-               }
-            }
-         }
+         journalLoader.handleAddMessage(queueMap);
 
          loadPreparedTransactions(postOffice,
             pagingManager,
             resourceManager,
-            queues,
             queueInfos,
             preparedTransactions,
             duplicateIDMap,
             pageSubscriptions,
-            pendingLargeMessages);
+            pendingLargeMessages,
+            journalLoader);
 
          for (PageSubscription sub : pageSubscriptions.values())
          {
@@ -1957,21 +1907,7 @@ public class JournalStorageManager implements StorageManager
             }
          }
 
-         for (ServerMessage msg : messages.values())
-         {
-            if (msg.getRefCount() == 0)
-            {
-               HornetQServerLogger.LOGGER.journalUnreferencedMessage(msg.getMessageID());
-               try
-               {
-                  deleteMessage(msg.getMessageID());
-               }
-               catch (Exception ignored)
-               {
-                  HornetQServerLogger.LOGGER.journalErrorDeletingMessage(ignored, msg.getMessageID());
-               }
-            }
-         }
+         journalLoader.handleNoMessageReferences(messages);
 
          // To recover positions on Iterators
          if (pagingManager != null)
@@ -1986,15 +1922,7 @@ public class JournalStorageManager implements StorageManager
             messageJournal.perfBlast(perfBlastPages);
          }
 
-         for (Queue queue : queues.values())
-         {
-            queue.resume();
-         }
-
-         if (System.getProperty("org.hornetq.opt.directblast") != null)
-         {
-            messageJournal.runDirectJournalBlast();
-         }
+         journalLoader.postLoad(messageJournal);
          journalLoaded = true;
          return info;
       }
@@ -2611,12 +2539,11 @@ public class JournalStorageManager implements StorageManager
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final PagingManager pagingManager,
                                          final ResourceManager resourceManager,
-                                         final Map<Long, Queue> queues,
                                          final Map<Long, QueueBindingInfo> queueInfos,
                                          final List<PreparedTransactionInfo> preparedTransactions,
                                          final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
                                          final Map<Long, PageSubscription> pageSubscriptions,
-                                         final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+                                         final Set<Pair<Long, Long>> pendingLargeMessages, JournalLoader journalLoader) throws Exception
    {
       // recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
@@ -2669,23 +2596,14 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.decode(buff);
 
-                  Queue queue = queues.get(encoding.queueID);
+                  ServerMessage message = messages.get(messageID);
 
-                  if (queue == null)
+                  if (message == null)
                   {
-                     HornetQServerLogger.LOGGER.journalMessageInPreparedTX(encoding.queueID);
+                     throw new IllegalStateException("Cannot find message with id " + messageID);
                   }
-                  else
-                  {
-                     ServerMessage message = messages.get(messageID);
 
-                     if (message == null)
-                     {
-                        throw new IllegalStateException("Cannot find message with id " + messageID);
-                     }
-
-                     postOffice.reroute(message, queue, tx);
-                  }
+                  journalLoader.handlePreparedSendMessage(message, tx, encoding.queueID);
 
                   break;
                }
@@ -2697,23 +2615,7 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.decode(buff);
 
-                  Queue queue = queues.get(encoding.queueID);
-
-                  if (queue == null)
-                  {
-                     throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
-                  }
-
-                  MessageReference removed = queue.removeReferenceWithID(messageID);
-
-                  if (removed == null)
-                  {
-                     HornetQServerLogger.LOGGER.journalErrorRemovingRef(messageID);
-                  }
-                  else
-                  {
-                     referencesToAck.add(removed);
-                  }
+                  journalLoader.handlePreparedAcknowledge(messageID, referencesToAck, encoding.queueID);
 
                   break;
                }
@@ -2853,14 +2755,7 @@ public class JournalStorageManager implements StorageManager
 
          }
 
-         for (MessageReference ack : referencesToAck)
-         {
-            ack.getQueue().reacknowledge(tx, ack);
-         }
-
-         tx.setState(Transaction.State.PREPARED);
-
-         resourceManager.putTransaction(xid, tx);
+         journalLoader.handlePreparedTransaction(tx, referencesToAck, xid, resourceManager);
       }
    }
 
@@ -3734,20 +3629,6 @@ public class JournalStorageManager implements StorageManager
          value = buffer.readInt();
       }
 
-   }
-
-   private static final class AddMessageRecord
-   {
-      public AddMessageRecord(final ServerMessage message)
-      {
-         this.message = message;
-      }
-
-      final ServerMessage message;
-
-      long scheduledDeliveryTime;
-
-      int deliveryCount;
    }
 
    public static class CursorAckRecordEncoding implements EncodingSupport

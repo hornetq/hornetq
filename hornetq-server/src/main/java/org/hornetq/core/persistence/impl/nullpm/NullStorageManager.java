@@ -51,6 +51,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
+import org.hornetq.core.server.impl.JournalLoader;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
@@ -311,11 +312,11 @@ public class NullStorageManager implements StorageManager
    @Override
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice, final PagingManager pagingManager,
                                                     final ResourceManager resourceManager,
-                                                    final Map<Long, Queue> queues,
                                                     final Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
                                                     final Set<Pair<Long, Long>> pendingLargeMessages,
-                                                    List<PageCountPending> pendingNonTXPageCounter) throws Exception
+                                                    List<PageCountPending> pendingNonTXPageCounter,
+                                                    final JournalLoader journalLoader) throws Exception
    {
       return new JournalLoadInformation();
    }

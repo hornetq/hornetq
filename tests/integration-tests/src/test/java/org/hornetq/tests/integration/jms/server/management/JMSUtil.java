@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +28,11 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
+import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+import org.hornetq.jms.client.HornetQJMSContext;
 import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
@@ -269,5 +276,65 @@ public class JMSUtil
          throw new IllegalStateException("timed out waiting for topology");
       }
       return conn;
+   }
+
+   public static void waitForFailoverTopology(final int timeToWait, final HornetQServer backupServer, final HornetQServer... liveServers) throws Exception
+   {
+      long start = System.currentTimeMillis();
+
+      final int waitMillis = 2000;
+      final int sleepTime = 50;
+      int nWaits = 0;
+      while ((backupServer.getClusterManager() == null || backupServer.getClusterManager().getClusterConnections().size() != 1) && nWaits++ < waitMillis / sleepTime)
+      {
+         Thread.sleep(sleepTime);
+      }
+      Set<ClusterConnection> ccs = backupServer.getClusterManager().getClusterConnections();
+
+      if (ccs.size() != 1)
+      {
+         throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
+      }
+
+      boolean exists = false;
+
+      for (HornetQServer liveServer : liveServers)
+      {
+         ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
+         Topology topology = clusterConnection.getTopology();
+         TransportConfiguration nodeConnector=
+               liveServer.getClusterManager().getClusterConnections().iterator().next().getConnector();
+         do
+         {
+            Collection<TopologyMemberImpl> members = topology.getMembers();
+            for (TopologyMemberImpl member : members)
+            {
+               if(member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
+               {
+                  exists = true;
+                  break;
+               }
+            }
+            if(exists)
+            {
+               break;
+            }
+            Thread.sleep(10);
+         }
+         while (System.currentTimeMillis() - start < timeToWait);
+         if(!exists)
+         {
+            String msg = "Timed out waiting for cluster topology of " + backupServer +
+                  " (received " +
+                  topology.getMembers().size() +
+                  ") topology = " +
+                  topology +
+                  ")";
+
+            //logTopologyDiagram();
+
+            throw new Exception(msg);
+         }
+      }
    }
 }
