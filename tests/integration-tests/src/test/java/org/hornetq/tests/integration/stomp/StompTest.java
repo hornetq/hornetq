@@ -31,7 +31,6 @@ import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 
 import org.junit.Assert;
-
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 
@@ -1347,4 +1346,30 @@ public class StompTest extends StompTestBase
       frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
       sendFrame(frame);
    }
+
+   @Test
+   //stomp should return an ERROR when acking a non-existent message
+   public void testUnexpectedAck() throws Exception
+   {
+
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+
+      frame = receiveFrame(100000);
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+      String messageID = "888888";
+      frame = "ACK\n" + "message-id:" + messageID + "\n" + "\n" + Stomp.NULL;
+      sendFrame(frame);
+
+      frame = receiveFrame(100000);
+      assertNotNull(frame);
+
+      System.out.println("received frame: " + frame);
+      assertTrue(frame.startsWith("ERROR"));
+
+      frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
+      sendFrame(frame);
+   }
+
 }
