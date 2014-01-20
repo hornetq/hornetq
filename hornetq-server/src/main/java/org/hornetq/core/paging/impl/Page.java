@@ -16,6 +16,7 @@ package org.hornetq.core.paging.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -25,10 +26,12 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
+import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -71,11 +74,16 @@ public final class Page implements Comparable<Page>
 
    private final SimpleString storeName;
 
+   /**
+    * A list of subscriptions containing pending counters (with non tx adds) on this page
+    */
+   private Set<PageSubscriptionCounter> pendingCounters;
+
    public Page(final SimpleString storeName,
-                   final StorageManager storageManager,
-                   final SequentialFileFactory factory,
-                   final SequentialFile file,
-                   final int pageId) throws Exception
+               final StorageManager storageManager,
+               final SequentialFileFactory factory,
+               final SequentialFile file,
+               final int pageId) throws Exception
    {
       this.pageId = pageId;
       this.file = file;
@@ -136,7 +144,7 @@ public final class Page implements Comparable<Page>
                   int messageSize = fileBuffer.readInt();
                   int oldPos = fileBuffer.readerIndex();
                   if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() &&
-                           fileBuffer.getByte(oldPos + messageSize) == Page.END_BYTE)
+                     fileBuffer.getByte(oldPos + messageSize) == Page.END_BYTE)
                   {
                      PagedMessage msg = new PagedMessageImpl();
                      msg.decode(fileBuffer);
@@ -243,6 +251,15 @@ public final class Page implements Comparable<Page>
          pageCache = null;
       }
       file.close();
+
+      Set<PageSubscriptionCounter> counters = getPendingCounters();
+      if (counters != null)
+      {
+         for (PageSubscriptionCounter counter : counters)
+         {
+            counter.cleanupNonTXCounters(this.getPageId());
+         }
+      }
    }
 
    public boolean isLive()
@@ -374,5 +391,30 @@ public final class Page implements Comparable<Page>
    public SequentialFile getFile()
    {
       return file;
+   }
+
+   /**
+    * This will indicate a page that will need to be called on cleanup when the page has been closed and confirmed
+    * @param pageSubscriptionCounter
+    */
+   public void addPendingCounter(PageSubscriptionCounter pageSubscriptionCounter)
+   {
+      Set<PageSubscriptionCounter> counter = getOrCreatePendingCounters();
+      pendingCounters.add(pageSubscriptionCounter);
+   }
+
+   private synchronized Set<PageSubscriptionCounter> getPendingCounters()
+   {
+      return pendingCounters;
+   }
+
+   private synchronized Set<PageSubscriptionCounter> getOrCreatePendingCounters()
+   {
+      if (pendingCounters == null )
+      {
+         pendingCounters = new ConcurrentHashSet<PageSubscriptionCounter>();
+      }
+
+      return pendingCounters;
    }
 }

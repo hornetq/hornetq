@@ -263,6 +263,26 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return configuration;
    }
 
+   public static final ConfigurationImpl createBasicConfig(final String testDir, final int serverID)
+   {
+      ConfigurationImpl configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalFileSize(100 * 1024);
+
+      configuration.setJournalType(getDefaultJournalType());
+
+      configuration.setJournalDirectory(getJournalDir(testDir, serverID, false));
+      configuration.setBindingsDirectory(getBindingsDir(testDir, serverID, false));
+      configuration.setPagingDirectory(getPageDir(testDir, serverID, false));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(testDir, serverID, false));
+
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
+      return configuration;
+   }
+
    protected Configuration
             createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
@@ -693,14 +713,19 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return getJournalDir(getTestDir());
    }
 
-   protected String getJournalDir(final String testDir1)
+   protected static String getJournalDir(final String testDir1)
    {
       return testDir1 + "/journal";
    }
 
    protected String getJournalDir(final int index, final boolean backup)
    {
-      return getJournalDir(getTestDir()) + directoryNameSuffix(index, backup);
+      return getJournalDir(getTestDir(), index, backup);
+   }
+
+   protected static String getJournalDir(final String testDir, final int index, final boolean backup)
+   {
+      return getJournalDir(testDir) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -724,7 +749,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     */
    protected String getBindingsDir(final int index, final boolean backup)
    {
-      return getBindingsDir(getTestDir()) + directoryNameSuffix(index, backup);
+      return getBindingsDir(getTestDir(), index, backup);
+   }
+
+   protected static String getBindingsDir(final String testDir, final int index, final boolean backup)
+   {
+      return getBindingsDir(testDir) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -745,7 +775,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected String getPageDir(final int index, final boolean backup)
    {
-      return getPageDir(getTestDir()) + directoryNameSuffix(index, backup);
+      return getPageDir(getTestDir(), index, backup);
+   }
+
+   protected static String getPageDir(final String testDir, final int index, final boolean backup)
+   {
+      return getPageDir(testDir) + directoryNameSuffix(index, backup);
    }
 
    /**
@@ -766,7 +801,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected String getLargeMessagesDir(final int index, final boolean backup)
    {
-      return getLargeMessagesDir(getTestDir()) + directoryNameSuffix(index, backup);
+      return getLargeMessagesDir(getTestDir(), index, backup);
+   }
+
+   protected static String getLargeMessagesDir(final String testDir, final int index, final boolean backup)
+   {
+      return getLargeMessagesDir(testDir) + directoryNameSuffix(index, backup);
    }
 
    private static String directoryNameSuffix(int index, boolean backup)

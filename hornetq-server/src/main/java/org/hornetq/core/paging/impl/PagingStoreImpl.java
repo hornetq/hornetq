@@ -905,6 +905,11 @@ public class PagingStoreImpl implements PagingStore
                installPageTransaction(tx, listCtx);
             }
 
+            // the apply counter will make sure we write a record on journal
+            // especially on the case for non transactional sends and paging
+            // doing this will give us a possibility of recovering the page counters
+            applyPageCounters(tx, getCurrentPage(), listCtx);
+
             currentPage.write(pagedMessage);
 
             if (tx == null && syncNonTransactional)
@@ -957,7 +962,6 @@ public class PagingStoreImpl implements PagingStore
 
       for (org.hornetq.core.server.Queue q : durableQueues)
       {
-         q.getPageSubscription().getCounter().increment(tx, 1);
          q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }
@@ -969,6 +973,39 @@ public class PagingStoreImpl implements PagingStore
          ids[i++] = q.getID();
       }
       return ids;
+   }
+
+   /**
+    * This is done to prevent non tx to get out of sync in case of failures
+    * @param tx
+    * @param page
+    * @param ctx
+    * @throws Exception
+    */
+   private void applyPageCounters(Transaction tx, Page page, RouteContextList ctx) throws Exception
+   {
+      List<org.hornetq.core.server.Queue> durableQueues = ctx.getDurableQueues();
+      List<org.hornetq.core.server.Queue> nonDurableQueues = ctx.getNonDurableQueues();
+      for (org.hornetq.core.server.Queue q : durableQueues)
+      {
+         if (tx == null)
+         {
+            // non transactional writes need an intermediate place
+            // to avoid the counter getting out of sync
+            q.getPageSubscription().getCounter().pendingCounter(page, 1);
+         }
+         else
+         {
+            // null tx is treated through pending counters
+            q.getPageSubscription().getCounter().increment(tx, 1);
+         }
+      }
+
+      for (org.hornetq.core.server.Queue q : nonDurableQueues)
+      {
+         q.getPageSubscription().getCounter().increment(tx, 1);
+      }
+
    }
 
    private void installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception

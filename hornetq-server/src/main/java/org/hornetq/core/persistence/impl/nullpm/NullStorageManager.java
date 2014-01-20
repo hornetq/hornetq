@@ -26,6 +26,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
@@ -41,6 +42,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -313,7 +315,8 @@ public class NullStorageManager implements StorageManager
                                                     final Map<Long, Queue> queues,
                                                     final Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                    final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+                                                    final Set<Pair<Long, Long>> pendingLargeMessages,
+                                                    List<PageCountPending> pendingNonTXPageCounter) throws Exception
    {
       return new JournalLoadInformation();
    }
@@ -483,12 +486,22 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
+   public long storePendingCounter(long queueID, long pageID, int inc) throws Exception
+   {
+      return -1;
+   }
+
+   @Override
    public void deleteIncrementRecord(final long txID, final long recordID) throws Exception
    {
    }
 
    @Override
    public void deletePageCounter(final long txID, final long recordID) throws Exception
+   {
+   }
+
+   public void deletePendingPageCounter(long txID, long recordID) throws Exception
    {
    }
 

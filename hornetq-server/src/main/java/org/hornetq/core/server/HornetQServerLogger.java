@@ -1011,6 +1011,11 @@ public interface HornetQServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void groupingQueueRemoved(int size, SimpleString clusterName);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222178, value = "Error during recovery of page counters",
+            format = Message.Format.MESSAGE_FORMAT)
+   void errorRecoveringPageCounter(@Cause Throwable error);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
    void initializationError(@Cause Throwable e);

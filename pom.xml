@@ -36,7 +36,7 @@
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>13</hornetq.version.microVersion>
-      <hornetq.version.incrementingVersion>123</hornetq.version.incrementingVersion>
+      <hornetq.version.incrementingVersion>123,122</hornetq.version.incrementingVersion>
       <hornetq.version.versionSuffix>Final</hornetq.version.versionSuffix>
       <hornetq.version.versionTag>HornetQ_2_3_13_Final</hornetq.version.versionTag>
       <HornetQ-Version>

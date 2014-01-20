@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging.cursor;
 
+import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.transaction.Transaction;
 
 /**
@@ -33,7 +35,7 @@ public interface PageSubscriptionCounter
 
    void loadInc(final long recordInd, final int add);
 
-   void applyIncrement(Transaction tx, long recordID, int add);
+   void applyIncrementOnTX(Transaction tx, long recordID, int add);
 
    /** This will process the reload */
    void processReload();
@@ -48,8 +50,12 @@ public interface PageSubscriptionCounter
    // used when deleting the counter
    void delete() throws Exception;
 
+   void pendingCounter(Page page, int increment) throws Exception;
+
    // used when leaving page mode, so the counters are deleted in batches
    // for each queue on the address
    void delete(Transaction tx) throws Exception;
+
+   void cleanupNonTXCounters(final long pageID) throws Exception;
 
 }
