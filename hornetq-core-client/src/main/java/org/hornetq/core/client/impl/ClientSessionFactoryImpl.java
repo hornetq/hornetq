@@ -764,8 +764,41 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
       }
    }
-
+   
    private ClientSession createSessionInternal(final String username,
+                                               final String password,
+                                               final boolean xa,
+                                               final boolean autoCommitSends,
+                                               final boolean autoCommitAcks,
+                                               final boolean preAcknowledge,
+                                               final int ackBatchSize) throws HornetQException
+   {
+       for(Version clientVersion : VersionLoader.getClientVersions())
+       {
+           try
+           {
+               return createSessionInternal(clientVersion, 
+                                            username, 
+                                            password, 
+                                            xa, 
+                                            autoCommitSends, 
+                                            autoCommitAcks, 
+                                            preAcknowledge, 
+                                            ackBatchSize);
+           } catch(HornetQException e)
+           {
+               if (e.getType() != HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+               {
+                   throw e;
+               }
+           }
+       }
+       connection.destroy();
+       throw new HornetQException(HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
+   }
+
+   private ClientSession createSessionInternal(final Version clientVersion, 
+                                               final String username,
                                                final String password,
                                                final boolean xa,
                                                final boolean autoCommitSends,
@@ -782,8 +815,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          boolean retry = false;
          do
          {
-            Version clientVersion = VersionLoader.getVersion();
-
             Lock lock = null;
 
             try
@@ -840,11 +871,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                }
                catch (HornetQException e)
                {
-                  if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
-                  {
-                     connection.destroy();
-                  }
-
                   if (exitLoop)
                      throw e;
 
