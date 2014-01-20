@@ -24,7 +24,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -93,11 +93,11 @@
                   <artifactId>hornetq-jms-server</artifactId>
                   <version>${project.version}</version>
                </dependency>
-                <dependency>
-                    <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-stomp-protocol</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+               <dependency>
+                  <groupId>org.hornetq</groupId>
+                  <artifactId>hornetq-stomp-protocol</artifactId>
+                  <version>${project.version}</version>
+               </dependency>
                <dependency>
                   <groupId>io.netty</groupId>
                   <artifactId>netty-all</artifactId>

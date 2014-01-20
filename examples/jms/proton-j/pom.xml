@@ -18,14 +18,14 @@
          <artifactId>hornetq-jms-examples-common</artifactId>
          <version>${project.version}</version>
       </dependency>
-       <dependency>
-           <groupId>org.apache.qpid</groupId>
-           <artifactId>qpid-amqp-1-0-client</artifactId>
-           <version>0.22</version>
-       </dependency>
+      <dependency>
+         <groupId>org.apache.qpid</groupId>
+         <artifactId>qpid-amqp-1-0-client</artifactId>
+         <version>0.22</version>
+      </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -90,11 +90,11 @@
                   <artifactId>hornetq-jms-server</artifactId>
                   <version>${project.version}</version>
                </dependency>
-                <dependency>
-                    <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-amqp-protocol</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+               <dependency>
+                  <groupId>org.hornetq</groupId>
+                  <artifactId>hornetq-amqp-protocol</artifactId>
+                  <version>${project.version}</version>
+               </dependency>
                <dependency>
                   <groupId>io.netty</groupId>
                   <artifactId>netty-all</artifactId>

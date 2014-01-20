@@ -22,14 +22,14 @@
          <groupId>org.jboss.spec.javax.jms</groupId>
          <artifactId>jboss-jms-api_2.0_spec</artifactId>
       </dependency>
-       <dependency>
-           <groupId>org.jboss.jbossts.jts</groupId>
-           <artifactId>jbossjts-jacorb</artifactId>
-           <version>4.17.4.Final</version>
-       </dependency>
+      <dependency>
+         <groupId>org.jboss.jbossts.jts</groupId>
+         <artifactId>jbossjts-jacorb</artifactId>
+         <version>4.17.4.Final</version>
+      </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -45,20 +45,20 @@
                      <fork>true</fork>
                      <systemProperties>
                         <property>
-                          <name>com.sun.management.jmxremote</name>
-                          <value></value>
+                           <name>com.sun.management.jmxremote</name>
+                           <value></value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.port</name>
-                          <value>3001</value>
+                           <name>com.sun.management.jmxremote.port</name>
+                           <value>3001</value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.ssl</name>
-                          <value>false</value>
+                           <name>com.sun.management.jmxremote.ssl</name>
+                           <value>false</value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.authenticate</name>
-                          <value>false</value>
+                           <name>com.sun.management.jmxremote.authenticate</name>
+                           <value>false</value>
                         </property>
                         <property>
                            <name>build.directory</name>

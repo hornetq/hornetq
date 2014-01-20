@@ -19,22 +19,22 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-jms-server</artifactId>
-          <version>${project.version}</version>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jms-server</artifactId>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-jboss-as-integration</artifactId>
-          <version>${project.version}</version>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jboss-as-integration</artifactId>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss</groupId>
-          <artifactId>jboss-transaction-spi</artifactId>
+         <groupId>org.jboss</groupId>
+         <artifactId>jboss-transaction-spi</artifactId>
       </dependency>
       <dependency>
-          <groupId>org.jboss.jbossts.jts</groupId>
-          <artifactId>jbossjts-jacorb</artifactId>
+         <groupId>org.jboss.jbossts.jts</groupId>
+         <artifactId>jbossjts-jacorb</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss.spec.javax.jms</groupId>
@@ -42,7 +42,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>

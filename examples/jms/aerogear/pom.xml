@@ -30,7 +30,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -51,14 +51,14 @@
                            <name>endpoint</name>
                            <value>${endpoint}</value>
                         </property>
-                         <property>
+                        <property>
                            <name>applicationid</name>
                            <value>${applicationid}</value>
-                         </property>
-                         <property>
+                        </property>
+                        <property>
                            <name>mastersecret</name>
                            <value>${mastersecret}</value>
-                         </property>
+                        </property>
                      </systemProperties>
                   </configuration>
                </execution>
@@ -107,11 +107,11 @@
                   <artifactId>hornetq-jms-server</artifactId>
                   <version>${project.version}</version>
                </dependency>
-                <dependency>
-                    <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-aerogear-integration</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+               <dependency>
+                  <groupId>org.hornetq</groupId>
+                  <artifactId>hornetq-aerogear-integration</artifactId>
+                  <version>${project.version}</version>
+               </dependency>
                <dependency>
                   <groupId>io.netty</groupId>
                   <artifactId>netty-all</artifactId>

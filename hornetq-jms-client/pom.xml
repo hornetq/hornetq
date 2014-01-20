@@ -27,16 +27,16 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.spec.javax.jms</groupId>
-          <artifactId>jboss-jms-api_2.0_spec</artifactId>
+         <groupId>org.jboss.spec.javax.jms</groupId>
+         <artifactId>jboss-jms-api_2.0_spec</artifactId>
       </dependency>
       <dependency>
-          <groupId>javax.inject</groupId>
-          <artifactId>javax.inject</artifactId>
+         <groupId>javax.inject</groupId>
+         <artifactId>javax.inject</artifactId>
       </dependency>
    </dependencies>
 
-      <profiles>
+   <profiles>
       <profile>
          <id>release</id>
          <build>

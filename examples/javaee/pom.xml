@@ -123,40 +123,42 @@
 
       <plugins>
 
-      <!--
-          A build of target/jbossas which is shared by all modules.
-          Modules and bundles are not copied as they are read-only (see surefire props).
-      -->
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <executions combine.children="append">
-              <!-- Copy the AS into current_submodule/target/jbossas . This is executed recursively in submodules. -->
-              <execution>
+         <!--
+             A build of target/jbossas which is shared by all modules.
+             Modules and bundles are not copied as they are read-only (see surefire props).
+         -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions combine.children="append">
+               <!-- Copy the AS into current_submodule/target/jbossas . This is executed recursively in submodules. -->
+               <execution>
                   <id>as-node-0</id>
                   <inherited>true</inherited>
                   <phase>generate-test-resources</phase>
-                  <goals><goal>copy-resources</goal></goals>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
                   <configuration>
-                      <outputDirectory>${basedir}/target/jbossas-node0</outputDirectory>
-                      <overwrite>true</overwrite>
-                      <resources>
-                          <resource>
-                              <directory>${jboss.home}</directory>
-                              <excludes>
-                                  <exclude>standalone/data</exclude>
-                                  <exclude>standalone/log</exclude>
-                                  <exclude>standalone/tmp</exclude>
-                              </excludes>
-                          </resource>
-                         <resource>
-                            <directory>${basedir}/server</directory>
-                         </resource>
-                      </resources>
+                     <outputDirectory>${basedir}/target/jbossas-node0</outputDirectory>
+                     <overwrite>true</overwrite>
+                     <resources>
+                        <resource>
+                           <directory>${jboss.home}</directory>
+                           <excludes>
+                              <exclude>standalone/data</exclude>
+                              <exclude>standalone/log</exclude>
+                              <exclude>standalone/tmp</exclude>
+                           </excludes>
+                        </resource>
+                        <resource>
+                           <directory>${basedir}/server</directory>
+                        </resource>
+                     </resources>
                   </configuration>
-              </execution>
-          </executions>
-      </plugin>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>

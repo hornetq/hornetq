@@ -38,8 +38,8 @@
                   <configuration>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server0</hornetqConfigurationDir>
                      <systemProperties>
-                         <!-- this is to make sure the example will run fine on any box. 
-                              you may tweak this to any property you like. More information on the JGroups docs  -->
+                        <!-- this is to make sure the example will run fine on any box.
+                             you may tweak this to any property you like. More information on the JGroups docs  -->
                         <property>
                            <name>jgroups.bind_addr</name>
                            <value>::1</value>

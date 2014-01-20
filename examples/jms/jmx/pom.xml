@@ -34,7 +34,7 @@
       </dependency>
    </dependencies>
 
-      <build>
+   <build>
       <plugins>
          <plugin>
             <groupId>org.hornetq</groupId>
@@ -54,20 +54,20 @@
                            <value>${basedir}/target/</value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote</name>
-                          <value></value>
+                           <name>com.sun.management.jmxremote</name>
+                           <value></value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.port</name>
-                          <value>3000</value>
+                           <name>com.sun.management.jmxremote.port</name>
+                           <value>3000</value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.ssl</name>
-                          <value>false</value>
+                           <name>com.sun.management.jmxremote.ssl</name>
+                           <value>false</value>
                         </property>
                         <property>
-                          <name>com.sun.management.jmxremote.authenticate</name>
-                          <value>false</value>
+                           <name>com.sun.management.jmxremote.authenticate</name>
+                           <value>false</value>
                         </property>
                      </systemProperties>
                   </configuration>
