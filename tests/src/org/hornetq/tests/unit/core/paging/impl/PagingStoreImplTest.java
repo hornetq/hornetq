@@ -14,6 +14,7 @@
 package org.hornetq.tests.unit.core.paging.impl;
 
 import junit.framework.Assert;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
@@ -35,6 +36,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
@@ -58,6 +60,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
 
 import javax.transaction.xa.Xid;
+
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.*;
@@ -1762,6 +1765,43 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.postoffice.PostOffice, org.hornetq.core.paging.PagingManager, org.hornetq.core.transaction.ResourceManager, java.util.Map, java.util.Map, java.util.Map, java.util.Set, java.util.List)
+       */
+      @Override
+      public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
+                                                       PagingManager pagingManager,
+                                                       ResourceManager resourceManager,
+                                                       Map<Long, Queue> queues,
+                                                       Map<Long, QueueBindingInfo> queueInfos,
+                                                       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                       Set<Pair<Long, Long>> pendingLargeMessages,
+                                                       List<PageCountPending> pendingNonTXPageCounter) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePendingCounter(long, long, int)
+       */
+      @Override
+      public long storePendingCounter(long queueID, long pageID, int inc) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePendingPageCounter(long, long)
+       */
+      @Override
+      public void deletePendingPageCounter(long txID, long recordID) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
       }
 
     }

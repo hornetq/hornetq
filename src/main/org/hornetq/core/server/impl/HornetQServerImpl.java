@@ -23,6 +23,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
@@ -62,8 +64,12 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
+import org.hornetq.core.paging.Page;
+import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -71,6 +77,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -1728,13 +1735,16 @@ public class HornetQServerImpl implements HornetQServer
 
       HashSet<Pair<Long, Long>> pendingLargeMessages = new HashSet<Pair<Long, Long>>();
 
+      List<PageCountPending> pendingNonTXPageCounter = new LinkedList<PageCountPending>();
+
       journalInfo[1] = storageManager.loadMessageJournal(postOffice,
                                                          pagingManager,
                                                          resourceManager,
                                                          queues,
                                                          queueBindingInfosMap,
                                                          duplicateIDMap,
-                                                         pendingLargeMessages);
+                                                         pendingLargeMessages,
+                                                         pendingNonTXPageCounter);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
@@ -1758,7 +1768,185 @@ public class HornetQServerImpl implements HornetQServer
          msg.deleteFile();
       }
 
+      if (pendingNonTXPageCounter.size() != 0)
+      {
+         try
+         {
+            recoverPendingPageCounters(queues, pendingNonTXPageCounter);
+         }
+         catch (Throwable e)
+         {
+            log.warn("Error during recovery of page counters", e);
+         }
+      }
+
       return journalInfo;
+   }
+
+   /**
+    * This method will recover the counters after failures making sure the page counter doesn't get out of sync
+    * @param queues
+    * @param pendingNonTXPageCounter
+    * @throws Exception
+    */
+   private void recoverPendingPageCounters(Map<Long, Queue> queues, List<PageCountPending> pendingNonTXPageCounter) throws Exception
+   {
+      // We need a structure of the following
+      // Address -> PageID -> QueueID -> List<PageCountPending>
+      // The following loop will sort the records according to the hierarchy we need
+
+      Transaction txRecoverCounter = new TransactionImpl(storageManager);
+
+      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = generateMapsOnPendingCount(queues, pendingNonTXPageCounter, txRecoverCounter);
+
+      for (SimpleString address : perAddressMap.keySet())
+      {
+         PagingStore store = pagingManager.getPageStore(address);
+         Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
+
+         // We have already generated this before, so it can't be null
+         assert(perPageMap != null);
+
+         for (Long pageId : perPageMap.keySet())
+         {
+            Map<Long, List<PageCountPending>> perQueue = perPageMap.get(pageId);
+
+            // This can't be true!
+            assert (perQueue != null);
+
+            if (store.checkPage(pageId.intValue()))
+            {
+               // on this case we need to recalculate the records
+               Page pg = store.createPage(pageId.intValue());
+               pg.open();
+
+               List<PagedMessage> pgMessages = pg.read(storageManager);
+               Map<Long, AtomicInteger> countsPerQueueOnPage = new HashMap<Long, AtomicInteger>();
+
+               for (PagedMessage pgd : pgMessages)
+               {
+                  if (pgd.getTransactionID() <= 0)
+                  {
+                     for (long q : pgd.getQueueIDs())
+                     {
+                        AtomicInteger countQ = countsPerQueueOnPage.get(q);
+                        if (countQ == null)
+                        {
+                           countQ = new AtomicInteger(0);
+                           countsPerQueueOnPage.put(q, countQ);
+                        }
+                        countQ.incrementAndGet();
+                     }
+                  }
+               }
+
+               for (Entry<Long, List<PageCountPending>> entry : perQueue.entrySet())
+               {
+                  for (PageCountPending record : entry.getValue())
+                  {
+                     log.debug("Deleting pg tempCount " + record.getID());
+                     storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
+                  }
+
+                  PageSubscriptionCounter counter = store.getCursorProvier().getSubscription(entry.getKey()).getCounter();
+
+                  AtomicInteger value = countsPerQueueOnPage.get(entry.getKey());
+
+                  if (value == null)
+                  {
+                     log.debug("Page " + entry.getKey() + " wasn't open, so we will just ignore");
+                  }
+                  else
+                  {
+                     log.debug("Replacing counter " + value.get());
+                     counter.increment(txRecoverCounter, value.get());
+                  }
+               }
+            }
+            else
+            {
+               // on this case the page file didn't exist, we just remove all the records since the page is already gone
+               log.debug("Page " + pageId + " didn't exist on address " + address + ", so we are just removing records");
+               for (List<PageCountPending> records: perQueue.values())
+               {
+                  for (PageCountPending record: records)
+                  {
+                     log.debug("Removing pending page counter " + record.getID());
+                     storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
+                     txRecoverCounter.setContainsPersistent();
+                  }
+               }
+            }
+         }
+      }
+
+      txRecoverCounter.commit();
+   }
+
+   /**
+    * 
+    * This generates a map for use on the recalculation and recovery of pending maps after reloading it
+    * @param queues
+    * @param pendingNonTXPageCounter
+    * @param txRecoverCounter
+    * @return
+    * @throws Exception
+    */
+   private Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>
+           generateMapsOnPendingCount(Map<Long, Queue> queues, List<PageCountPending>
+                 pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
+   {
+      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString,Map<Long, Map<Long, List<PageCountPending>>>>();
+      for (PageCountPending pgCount : pendingNonTXPageCounter)
+      {
+         long queueID = pgCount.getQueueID();
+         long pageID = pgCount.getPageID();
+
+         // We first figure what Queue is based on the queue id
+         Queue queue = queues.get(queueID);
+
+         if (queue == null)
+         {
+            log.debug("removing pending page counter id = " + pgCount.getID() + " as queueID=" + pgCount.getID() + " no longer exists");
+            // this means the queue doesn't exist any longer, we will remove it from the storage
+            storageManager.deletePendingPageCounter(txRecoverCounter.getID(), pgCount.getID());
+            txRecoverCounter.setContainsPersistent();
+            continue;
+         }
+
+         // Level 1 on the structure, per address
+         SimpleString address = queue.getAddress();
+
+         Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
+
+         if (perPageMap == null)
+         {
+            perPageMap = new HashMap();
+            perAddressMap.put(address, perPageMap);
+         }
+
+
+         Map<Long, List<PageCountPending>> perQueueMap = perPageMap.get(pageID);
+
+         if (perQueueMap == null)
+         {
+            perQueueMap = new HashMap();
+            perPageMap.put(pageID, perQueueMap);
+         }
+
+         List<PageCountPending> pendingCounters = perQueueMap.get(queueID);
+
+         if (pendingCounters == null)
+         {
+            pendingCounters = new LinkedList<PageCountPending>();
+            perQueueMap.put(queueID, pendingCounters);
+         }
+
+         pendingCounters.add(pgCount);
+
+         perQueueMap.put(queueID, pendingCounters);
+      }
+      return perAddressMap;
    }
 
    /**

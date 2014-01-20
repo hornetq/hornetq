@@ -28,6 +28,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -40,6 +41,7 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
 import javax.transaction.xa.Xid;
+
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
@@ -306,12 +308,14 @@ public class NullStorageManager implements StorageManager
    }
 
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
-                                                    final PagingManager pagingManager,
-                                                    final ResourceManager resourceManager,
-                                                    final Map<Long, Queue> queues,
-                                                    Map<Long, QueueBindingInfo> queueInfos,
-                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                    Set<Pair<Long, Long>> pendingLM) throws Exception
+                                             final PagingManager pagingManager,
+                                             final ResourceManager resourceManager,
+                                             final Map<Long, Queue> queues,
+                                             Map<Long, QueueBindingInfo> queueInfos,
+                                             final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                             final Set<Pair<Long, Long>> pendingLargeMessages,
+                                             List<PageCountPending> pendingNonTXPageCounter
+                                             ) throws Exception
    {
       return new JournalLoadInformation();
    }
@@ -651,6 +655,23 @@ public class NullStorageManager implements StorageManager
     * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledge(long)
     */
    public void deleteCursorAcknowledge(long ackID) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePendingCounter(long, long, int)
+    */
+   @Override
+   public long storePendingCounter(long queueID, long pageID, int inc) throws Exception
+   {
+      return 0;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deletePendingPageCounter(long, long)
+    */
+   @Override
+   public void deletePendingPageCounter(long txID, long recordID) throws Exception
    {
    }
 
