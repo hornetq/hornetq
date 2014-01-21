@@ -181,18 +181,6 @@
                   <goals>
                      <goal>test-jar</goal>
                   </goals>
-
-                  <configuration>
-                     <systemProperties>
-                        <!-- This is to make sure that any test using JGroups
-                             e.g org.hornetq.tests.integration.discovery.DiscoveryTest
-                             will use a valid address regardless of the settings you have -->
-                        <property>
-                           <name>jgroups.bind_addr</name>
-                           <value>::1</value>
-                        </property>
-                     </systemProperties>
-                  </configuration>
                </execution>
             </executions>
          </plugin>
