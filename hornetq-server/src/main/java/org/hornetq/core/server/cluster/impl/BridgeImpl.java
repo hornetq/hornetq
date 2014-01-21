@@ -173,9 +173,53 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final StorageManager storageManager)
    {
 
+      this(serverLocator,
+           reconnectAttempts,
+           -1,
+           reconnectAttemptsSameNode,
+           retryInterval,
+           retryMultiplier,
+           maxRetryInterval,
+           nodeUUID,
+           name,
+           queue,
+           executor,
+           filter,
+           forwardingAddress,
+           scheduledExecutor,
+           transformer,
+           useDuplicateDetection,
+           user,
+           password,
+           activated,
+           storageManager);
+   }
+
+   public BridgeImpl(final ServerLocatorInternal serverLocator,
+                     final int reconnectAttempts,
+                     final int initialConnectAttempts,
+                     final int reconnectAttemptsSameNode,
+                     final long retryInterval,
+                     final double retryMultiplier,
+                     final long maxRetryInterval,
+                     final UUID nodeUUID,
+                     final SimpleString name,
+                     final Queue queue,
+                     final Executor executor,
+                     final Filter filter,
+                     final SimpleString forwardingAddress,
+                     final ScheduledExecutorService scheduledExecutor,
+                     final Transformer transformer,
+                     final boolean useDuplicateDetection,
+                     final String user,
+                     final String password,
+                     final boolean activated,
+                     final StorageManager storageManager)
+   {
+
       this.reconnectAttempts = reconnectAttempts;
 
-      this.reconnectAttemptsInUse = -1;
+      this.reconnectAttemptsInUse = initialConnectAttempts;
 
       this.reconnectAttemptsSameNode = reconnectAttemptsSameNode;
 
