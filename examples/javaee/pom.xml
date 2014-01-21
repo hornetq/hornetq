@@ -130,7 +130,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-resources-plugin</artifactId>
-            <executions combine.children="append">
+            <executions>
                <!-- Copy the AS into current_submodule/target/jbossas . This is executed recursively in submodules. -->
                <execution>
                   <id>as-node-0</id>

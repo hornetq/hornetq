@@ -737,7 +737,7 @@
                <artifactId>maven-pmd-plugin</artifactId>
                <version>3.0.1</version>
                <configuration>
-                  <linkXref>true</linkXref>
+                  <linkXRef>true</linkXRef>
                   <sourceEncoding>utf-8</sourceEncoding>
                   <minimumTokens>100</minimumTokens>
                   <targetJdk>1.5</targetJdk>
@@ -822,7 +822,7 @@
             <version>2.10</version>
             <configuration>
                <configLocation>${user.dir}/etc/checkstyle.xml</configLocation>
-               <failOnError>false</failOnError>
+               <failsOnError>false</failsOnError>
             </configuration>
          </plugin>
 
@@ -886,6 +886,7 @@
             <artifactId>cobertura-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
+               <check/>
                <formats>
                   <format>html</format>
                   <format>xml</format>
@@ -898,7 +899,7 @@
             <version>2.10</version>
             <configuration>
                <configLocation>${user.dir}/checkstyle.xml</configLocation>
-               <failOnError>false</failOnError>
+               <failsOnError>false</failsOnError>
             </configuration>
          </plugin>
          <plugin>
