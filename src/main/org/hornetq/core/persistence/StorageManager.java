@@ -32,6 +32,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
@@ -222,7 +223,9 @@ public interface StorageManager extends HornetQComponent
                                              final Map<Long, Queue> queues,
                                              Map<Long, QueueBindingInfo> queueInfos,
                                              final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                             final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception;
+                                             final Set<Pair<Long, Long>> pendingLargeMessages,
+                                             List<PageCountPending> pendingNonTXPageCounter
+                                             ) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
 
@@ -258,9 +261,13 @@ public interface StorageManager extends HornetQComponent
     */
    long storePageCounter(long txID, long queueID, long value) throws Exception;
 
+   long storePendingCounter(long queueID, long pageID, int inc) throws Exception;
+
    void deleteIncrementRecord(long txID, long recordID) throws Exception;
 
    void deletePageCounter(long txID, long recordID) throws Exception;
+
+   void deletePendingPageCounter(long txID, long recordID) throws Exception;
 
    /**
     * @return the ID with the increment record

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Red Hat, Inc.
+ * Copyright 2005-2014 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -10,23 +10,26 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
+import org.hornetq.core.paging.Page;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 
@@ -34,12 +37,9 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
  * This class will encapsulate the persistent counters for the PagingSubscription
  *
  * @author clebertsuconic
- *
- *
  */
 public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 {
-
    // Constants -----------------------------------------------------
    static final Logger log = Logger.getLogger(PageSubscriptionCounterImpl.class);
 
@@ -64,7 +64,16 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    private final AtomicLong value = new AtomicLong(0);
 
+   private final AtomicLong pendingValue = new AtomicLong(0);
+
    private final LinkedList<Long> incrementRecords = new LinkedList<Long>();
+
+
+   // We are storing pending counters for non transactional writes on page
+   // we will recount a page case we still see pending records
+   // as soon as we close a page we remove these records replacing by a regular page increment record
+   // A Map per pageID, each page will have a set of IDs, with the increment on each one
+   private final Map<Long, Pair<Long, AtomicInteger>> pendingCounters = new HashMap<Long, Pair<Long, AtomicInteger>>();
 
    private LinkedList<Pair<Long, Integer>> loadList;
 
@@ -75,12 +84,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          cleanup();
       }
    };
-
-   // protected LinkedList
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public PageSubscriptionCounterImpl(final StorageManager storage,
                                       final PageSubscription subscription,
@@ -100,12 +103,81 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public long getValue()
    {
-      return value.get();
+      return value.get() + pendingValue.get();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#increment(org.hornetq.core.transaction.Transaction, int)
+
+   /**
+    * This is used only on non transactional paging
+    * @param page
+    * @param increment
+    * @param context
+    * @throws Exception
     */
+   @Override
+   public synchronized void pendingCounter(Page page, int increment) throws Exception
+   {
+      if (!persistent)
+      {
+         return; // nothing to be done
+      }
+
+      Pair<Long, AtomicInteger> pendingInfo = pendingCounters.get((long)page.getPageId());
+      if (pendingInfo == null)
+      {
+         // We have to make sure this is sync here
+         // not syncing this to disk may cause the page files to be out of sync on pages.
+         // we can't afford the case where a page file is written without a record here
+         long id = storage.storePendingCounter(this.subscriptionID, page.getPageId(), increment);
+         pendingInfo = new Pair<Long, AtomicInteger>(id, new AtomicInteger(1));
+         pendingCounters.put((long)page.getPageId(), pendingInfo);
+      }
+      else
+      {
+         pendingInfo.getB().addAndGet(increment);
+      }
+
+      pendingValue.addAndGet(increment);
+
+      page.addPendingCounter(this);
+   }
+
+   /**
+    * Cleanup temporary page counters on non transactional paged messages
+    * @param pageID
+    */
+   public void cleanupNonTXCounters(final long pageID) throws Exception
+   {
+      Pair<Long, AtomicInteger> pendingInfo;
+      synchronized (this)
+      {
+         pendingInfo = pendingCounters.remove(pageID);
+      }
+
+      if (pendingInfo != null)
+      {
+         final AtomicInteger valueCleaned = pendingInfo.getB();
+         Transaction tx = new TransactionImpl(storage);
+         storage.deletePendingPageCounter(tx.getID(), pendingInfo.getA());
+
+         // To apply the increment of the value just being cleaned
+         increment(tx, valueCleaned.get());
+
+         tx.addOperation(new TransactionOperationAbstract()
+         {
+            @Override
+            public void afterCommit(Transaction tx)
+            {
+               pendingValue.addAndGet(-valueCleaned.get());
+            }
+         });
+
+         tx.commit();
+      }
+   }
+
+
+   @Override
    public void increment(Transaction tx, int add) throws Exception
    {
       if (tx == null)
@@ -126,22 +198,22 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          {
             tx.setContainsPersistent();
             long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
-            applyIncrement(tx, id, add);
+            applyIncrementOnTX(tx, id, add);
          }
          else
          {
-            applyIncrement(tx, -1, add);
+            applyIncrementOnTX(tx, -1, add);
          }
       }
    }
 
    /**
-    * This method will install the prepared TXs
+    * This method will install the TXs
     * @param tx
-    * @param recordID
+    * @param recordID1
     * @param add
     */
-   public void applyIncrement(Transaction tx, long recordID, int add)
+   public void applyIncrementOnTX(Transaction tx, long recordID1, int add)
    {
       CounterOperations oper = (CounterOperations)tx.getProperty(TransactionPropertyIndexes.PAGE_COUNT_INC);
 
@@ -152,31 +224,20 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          tx.addOperation(oper);
       }
 
-      oper.operations.add(new ItemOper(this, recordID, add));
+      oper.operations.add(new ItemOper(this, recordID1, add));
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#loadValue(long, long)
-    */
-   public synchronized void loadValue(final long recordID, final long value)
+   public synchronized void loadValue(final long recordID1, final long value1)
    {
       if (this.subscription != null)
       {
          // it could be null on testcases... which is ok
          this.subscription.notEmpty();
       }
-      
-      this.value.set(value);
-      this.recordID = recordID;
-      if (value < 0)
-      {
-         log.warn("loading negative pageCounter=" + this.toString());
-      }
+      this.value.set(value1);
+      this.recordID = recordID1;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#incrementProcessed(long, int)
-    */
    public synchronized void incrementProcessed(long id, int add)
    {
       addInc(id, add);
@@ -198,27 +259,24 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    public synchronized void delete(Transaction tx) throws Exception
    {
-      for (Long record : incrementRecords)
-      {
-         storage.deleteIncrementRecord(tx.getID(), record.longValue());
-         tx.setContainsPersistent();
-      }
+         for (Long record : incrementRecords)
+         {
+            storage.deleteIncrementRecord(tx.getID(), record.longValue());
+            tx.setContainsPersistent();
+         }
 
-      if (recordID >= 0)
-      {
-         storage.deletePageCounter(tx.getID(), this.recordID);
-         tx.setContainsPersistent();
-      }
+         if (recordID >= 0)
+         {
+            storage.deletePageCounter(tx.getID(), this.recordID);
+            tx.setContainsPersistent();
+         }
 
-      recordID = -1;
-      value.set(0);
-      incrementRecords.clear();
+         recordID = -1;
+         value.set(0);
+         incrementRecords.clear();
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#loadInc(long, int)
-    */
    public void loadInc(long id, int add)
    {
       if (loadList == null)
@@ -229,9 +287,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       loadList.add(new Pair<Long, Integer>(id, add));
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#processReload()
-    */
    public void processReload()
    {
       if (loadList != null)
@@ -252,18 +307,9 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#addInc(long, int)
-    */
-   public void addInc(long id, int variance)
+   public synchronized void addInc(long id, int variance)
    {
       value.addAndGet(variance);
-      
-      if (variance < 0 && value.get() < 0)
-      {
-         log.warn("Page Counter on subscription is negative, " + this.toString(), new Exception ("trace"));
-      }
 
       if (id >= 0)
       {
@@ -277,7 +323,8 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       this.persistent = persistent;
    }
 
-   /** This method sould alwas be called from a single threaded executor */
+
+   /** This method should always be called from a single threaded executor */
    protected void cleanup()
    {
       ArrayList<Long> deleteList;
@@ -301,9 +348,9 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
       try
       {
-         for (Long value : deleteList)
+         for (Long value1 : deleteList)
          {
-            storage.deleteIncrementRecord(txCleanup, value);
+            storage.deleteIncrementRecord(txCleanup, value1);
          }
 
          if (recordID >= 0)
@@ -319,7 +366,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          }
 
          storage.commit(txCleanup);
-     }
+      }
       catch (Exception e)
       {
          newRecordID = recordID;
@@ -339,24 +386,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-   // Public --------------------------------------------------------
-   @Override
-   public String toString()
-   {
-      return "PageSubscriptionCounterImpl [address = " + subscription.getPagingStore().getAddress() + ", queue=" + subscription.getQueue().getName() +
-              ", value = " + value.get() + "]";
-   }
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   static class ItemOper
+   private static class ItemOper
    {
 
       public ItemOper(PageSubscriptionCounterImpl counter, long id, int add)
@@ -373,34 +403,11 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       int ammount;
    }
 
-   static class CounterOperations implements TransactionOperation
+   private static class CounterOperations extends TransactionOperationAbstract implements TransactionOperation
    {
       LinkedList<ItemOper> operations = new LinkedList<ItemOper>();
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforePrepare(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
-       */
-      public void afterPrepare(Transaction tx)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforeCommit(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
-       */
+      @Override
       public void afterCommit(Transaction tx)
       {
          for (ItemOper oper : operations)
@@ -408,28 +415,5 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
             oper.counter.incrementProcessed(oper.id, oper.ammount);
          }
       }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeRollback(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforeRollback(Transaction tx) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#afterRollback(org.hornetq.core.transaction.Transaction)
-       */
-      public void afterRollback(Transaction tx)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
-       */
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
-      }
    }
-
 }

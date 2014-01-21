@@ -21,6 +21,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -77,6 +78,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator.IDCounterEncoding;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
@@ -161,6 +163,9 @@ public class JournalStorageManager implements StorageManager
    public static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
    public static final byte PAGE_CURSOR_COMPLETE = 42;
+   
+   public static final byte PAGE_CURSOR_PENDING_COUNTER = 43;
+
 
    private final Semaphore pageMaxConcurrentIO;
 
@@ -925,7 +930,8 @@ public class JournalStorageManager implements StorageManager
                                                     final Map<Long, Queue> queues,
                                                     Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                                    final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
+                                                    final Set<Pair<Long, Long>> pendingLargeMessages,
+                                                    List<PageCountPending> pendingNonTXPageCounter) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -1256,6 +1262,21 @@ public class JournalStorageManager implements StorageManager
                break;
              }
 
+            case PAGE_CURSOR_PENDING_COUNTER:
+            {
+
+               PageCountPendingImpl pendingCountEncoding = new PageCountPendingImpl();
+               pendingCountEncoding.decode(buff);
+               pendingCountEncoding.setID(record.id);
+
+               // This can be null on testcases not interested on this outcome
+               if (pendingNonTXPageCounter != null)
+               {
+                  pendingNonTXPageCounter.add(pendingCountEncoding);
+               }
+               break;
+            }
+
             default:
             {
                throw new IllegalStateException("Invalid record type " + recordType);
@@ -1499,7 +1520,18 @@ public class JournalStorageManager implements StorageManager
       return recordID;
    }
 
-   /* (non-Javadoc)
+   @Override
+   public long storePendingCounter(final long queueID, final long pageID, final int inc) throws Exception
+   {
+      final long recordID = idGenerator.generateID();
+      PageCountPendingImpl pendingInc = new PageCountPendingImpl(queueID, pageID, inc);
+      // We must guarantee the record sync before we actually write on the page otherwise we may get out of sync
+      // on the counter
+      messageJournal.appendAddRecord(recordID, PAGE_CURSOR_PENDING_COUNTER, pendingInc, true);
+      return recordID;
+   }
+
+    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
     */
    public void deleteIncrementRecord(long txID, long recordID) throws Exception
@@ -1543,6 +1575,12 @@ public class JournalStorageManager implements StorageManager
                                                     1);
 
       describeJournal(messagesFF, messagesJournal);
+   }
+
+
+   public void deletePendingPageCounter(long txID, long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, recordID);
    }
 
    public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
@@ -2037,7 +2075,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (sub != null)
                   {
-                     sub.getCounter().applyIncrement(tx, record.id, encoding.value);
+                     sub.getCounter().applyIncrementOnTX(tx, record.id, encoding.value);
                      sub.notEmpty();
                   }
                   else
@@ -2887,7 +2925,13 @@ public class JournalStorageManager implements StorageManager
 
       public List<MessageReference> getRelatedMessageReferences()
       {
-         return null;
+         return Collections.emptyList();
+      }
+
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
       }
 
    }
@@ -2947,6 +2991,76 @@ public class JournalStorageManager implements StorageManager
 
    }
 
+   protected static final class PageCountPendingImpl implements EncodingSupport, PageCountPending
+   {
+
+      @Override
+      public String toString()
+      {
+         return "PageCountPending [queueID=" + queueID + ", pageID=" + pageID + "]";
+      }
+
+      PageCountPendingImpl()
+      {
+
+      }
+
+      PageCountPendingImpl(long queueID, long pageID, int inc)
+      {
+         this.queueID = queueID;
+         this.pageID = pageID;
+      }
+
+      long id;
+
+      long queueID;
+
+      long pageID;
+
+
+      public void setID(long id)
+      {
+         this.id = id;
+      }
+
+      public long getID()
+      {
+         return id;
+      }
+
+      public long getQueueID()
+      {
+         return queueID;
+      }
+
+      public long getPageID()
+      {
+         return pageID;
+      }
+
+      @Override
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG * 2;
+      }
+
+      @Override
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeLong(pageID);
+      }
+
+      @Override
+      public void decode(HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         pageID = buffer.readLong();
+      }
+
+   }
+
+   
    private static final class PageCountRecordInc implements EncodingSupport
    {
 
@@ -3279,6 +3393,14 @@ public class JournalStorageManager implements StorageManager
 
             encoding.decode(buffer);
 
+            return encoding;
+         }
+
+         case PAGE_CURSOR_PENDING_COUNTER:
+         {
+            PageCountPendingImpl encoding = new PageCountPendingImpl();
+            encoding.decode(buffer);
+            encoding.setID(info.id);
             return encoding;
          }
 
@@ -3878,8 +4000,15 @@ public class JournalStorageManager implements StorageManager
        */
       public List<MessageReference> getRelatedMessageReferences()
       {
-         return null;
+         return Collections.emptyList();
       }
+      
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
+
 
    }
 
