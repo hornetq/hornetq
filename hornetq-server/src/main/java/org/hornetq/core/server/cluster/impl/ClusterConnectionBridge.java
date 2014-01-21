@@ -101,6 +101,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    {
       super(targetLocator,
             reconnectAttempts,
+            reconnectAttempts,  // we want the initialConnectAttempts to be the same as reconnectAttempts
             0, // reconnectAttemptsOnSameNode means nothing on the clustering bridge since we always try the same
             retryInterval,
             retryMultiplier,
