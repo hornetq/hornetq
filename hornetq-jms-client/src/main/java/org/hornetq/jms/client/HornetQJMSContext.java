@@ -92,6 +92,11 @@ public class HornetQJMSContext implements JMSContext
       return this;
    }
 
+   public Session getSession()
+   {
+      return session;
+   }
+
    public XAResource getXAResource()
    {
       checkSession();

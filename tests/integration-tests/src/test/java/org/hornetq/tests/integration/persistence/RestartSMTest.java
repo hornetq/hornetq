@@ -25,6 +25,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakeJournalLoader;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
@@ -90,7 +91,7 @@ public class RestartSMTest extends ServiceTestBase
 
          Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null, null);
+         journal.loadMessageJournal(postOffice, null, null, null, null, null, null, new FakeJournalLoader());
 
          journal.stop();
 
@@ -100,7 +101,7 @@ public class RestartSMTest extends ServiceTestBase
 
          queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(postOffice, null, null, queues, null, null, null, null);
+         journal.loadMessageJournal(postOffice, null, null, null, null, null, null, new FakeJournalLoader());
 
          queueBindingInfos = new ArrayList<QueueBindingInfo>();
 

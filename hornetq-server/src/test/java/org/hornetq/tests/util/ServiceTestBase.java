@@ -604,6 +604,63 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+   protected HornetQServer createColocatedInVMFailoverServer(final boolean realFiles,
+                                                    final Configuration configuration,
+                                                    NodeManager liveNodeManager,
+                                                    NodeManager backupNodeManager,
+                                                    final int id)
+   {
+      return createColocatedInVMFailoverServer(realFiles,
+            configuration,
+            -1,
+            -1,
+            new HashMap<String, AddressSettings>(),
+            liveNodeManager,
+            backupNodeManager,
+            id);
+   }
+
+   protected HornetQServer createColocatedInVMFailoverServer(final boolean realFiles,
+                                                    final Configuration configuration,
+                                                    final int pageSize,
+                                                    final int maxAddressSize,
+                                                    final Map<String, AddressSettings> settings,
+                                                    NodeManager liveNodeManager,
+                                                    NodeManager backupNodeManager,
+                                                    final int id)
+   {
+      HornetQServer server;
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
+      configuration.setPersistenceEnabled(realFiles);
+      server = new ColocatedHornetQServer(configuration,
+            ManagementFactory.getPlatformMBeanServer(),
+            securityManager,
+            liveNodeManager,
+            backupNodeManager);
+
+      try
+      {
+         server.setIdentity("Server " + id);
+
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
+
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxAddressSize);
+
+         server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
+         return server;
+      }
+      finally
+      {
+         addServer(server);
+      }
+   }
+
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final HornetQSecurityManager securityManager)

@@ -48,6 +48,7 @@ import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.server.impl.JournalLoader;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.IDGenerator;
@@ -245,11 +246,11 @@ public interface StorageManager extends HornetQComponent
    JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                              final PagingManager pagingManager,
                                              final ResourceManager resourceManager,
-                                             final Map<Long, Queue> queues,
                                              Map<Long, QueueBindingInfo> queueInfos,
                                              final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
                                              final Set<Pair<Long, Long>> pendingLargeMessages,
-                                             List<PageCountPending> pendingNonTXPageCounter
+                                             List<PageCountPending> pendingNonTXPageCounter,
+                                             final JournalLoader journalLoader
                                              ) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;

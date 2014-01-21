@@ -12,6 +12,10 @@
  */
 package org.hornetq.core.config.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -215,6 +219,8 @@ public class ConfigurationImpl implements Configuration
    private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
 
    private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
+
+   private Set<Configuration> backupServerConfigurations = new HashSet<>();
 
    // Public -------------------------------------------------------------------------
 
@@ -1451,4 +1457,18 @@ public class ConfigurationImpl implements Configuration
       return true;
    }
 
+   public Configuration copy() throws Exception
+   {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream os = new ObjectOutputStream(bos);
+      os.writeObject(this);
+      ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+      return (Configuration) ois.readObject();
+   }
+
+   @Override
+   public Set<Configuration> getBackupServerConfigurations()
+   {
+      return backupServerConfigurations;
+   }
 }

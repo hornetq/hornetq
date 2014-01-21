@@ -127,6 +127,11 @@ public class FileLockNodeManager extends NodeManager
          }
 
          liveLock = lock(FileLockNodeManager.LIVE_LOCK_POS);
+         if(interrupted)
+         {
+            interrupted = false;
+            throw new InterruptedException("Lock was interrupted");
+         }
          state = getState();
          if (state == FileLockNodeManager.PAUSED)
          {

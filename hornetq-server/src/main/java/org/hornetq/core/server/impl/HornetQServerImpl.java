@@ -101,7 +101,6 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
@@ -143,7 +142,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.group.GroupingHandler;
-import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.group.impl.LocalGroupingHandler;
 import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
@@ -309,6 +307,10 @@ public class HornetQServerImpl implements HornetQServer
    private final Object failbackCheckerGuard = new Object();
    private boolean cancelFailBackChecker;
 
+   private final HornetQServer parentServer;
+
+   private Map<String, HornetQServer> backupServers = new HashMap<>();
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -320,6 +322,11 @@ public class HornetQServerImpl implements HornetQServer
    public HornetQServerImpl(final Configuration configuration)
    {
       this(configuration, null, null);
+   }
+
+   public HornetQServerImpl(final Configuration configuration, HornetQServer parentServer)
+   {
+      this(configuration, null, null, parentServer);
    }
 
    public HornetQServerImpl(final Configuration configuration, final MBeanServer mbeanServer)
@@ -335,6 +342,14 @@ public class HornetQServerImpl implements HornetQServer
    public HornetQServerImpl(Configuration configuration,
                             MBeanServer mbeanServer,
                             final HornetQSecurityManager securityManager)
+   {
+      this(configuration, mbeanServer, securityManager, null);
+   }
+
+   public HornetQServerImpl(Configuration configuration,
+                            MBeanServer mbeanServer,
+                            final HornetQSecurityManager securityManager,
+                            final HornetQServer parentServer)
    {
       if (configuration == null)
       {
@@ -364,6 +379,8 @@ public class HornetQServerImpl implements HornetQServer
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
 
       securityRepository.setDefault(new HashSet<Role>());
+
+      this.parentServer = parentServer;
 
    }
 
@@ -562,6 +579,11 @@ public class HornetQServerImpl implements HornetQServer
     */
    private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError, boolean failingBack) throws Exception
    {
+      for (HornetQServer hornetQServer : backupServers.values())
+      {
+         hornetQServer.stop();
+      }
+      backupServers.clear();
       if (!failingBack)
       {
          synchronized (failbackCheckerGuard)
@@ -742,6 +764,18 @@ public class HornetQServerImpl implements HornetQServer
       else
       {
          HornetQServerLogger.LOGGER.serverStopped(getVersion().getFullVersion(), tempNodeID);
+      }
+   }
+
+   public boolean checkLiveIsNotColocated(String nodeId)
+   {
+      if(parentServer == null)
+      {
+         return true;
+      }
+      else
+      {
+         return !parentServer.getNodeID().toString().equals(nodeId);
       }
    }
 
@@ -1707,6 +1741,32 @@ public class HornetQServerImpl implements HornetQServer
 
       // We can only do this after everything is started otherwise we may get nasty races with expired messages
       postOffice.startExpiryScanner();
+
+
+      //now start any backup servers
+      startBackupServers(configuration, backupServers);
+   }
+
+   protected void startBackupServers(Configuration configuration, Map<String, HornetQServer> backupServers)
+   {
+      Set<Configuration> backupServerConfigurations = configuration.getBackupServerConfigurations();
+      for (Configuration backupServerConfiguration : backupServerConfigurations)
+      {
+         HornetQServer backup = new HornetQServerImpl(backupServerConfiguration, null, securityManager, this);
+         backupServers.put(backupServerConfiguration.getName(), backup);
+      }
+
+      for (HornetQServer hornetQServer : backupServers.values())
+      {
+         try
+         {
+            hornetQServer.start();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
    }
 
    private void deploySecurityFromConfiguration()
@@ -1739,87 +1799,31 @@ public class HornetQServerImpl implements HornetQServer
 
    private JournalLoadInformation[] loadJournals() throws Exception
    {
+      JournalLoader journalLoader = new PostOfficeJournalLoader(postOffice,
+                                                                pagingManager,
+                                                                storageManager,
+                                                                queueFactory,
+                                                                nodeManager,
+                                                                managementService,
+                                                                groupingHandler,
+                                                                configuration);
+
       JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
 
-      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+      List<QueueBindingInfo> queueBindingInfos = new ArrayList();
 
-      List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
+      List<GroupingInfo> groupingInfos = new ArrayList();
 
       journalInfo[0] = storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
 
       recoverStoredConfigs();
 
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
-      Map<Long, QueueBindingInfo> queueBindingInfosMap = new HashMap<Long, QueueBindingInfo>();
+      Map<Long, QueueBindingInfo> queueBindingInfosMap = new HashMap();
 
-      // Used to rename the queue in case there's a duplication
-      int duplicateID = 0;
-      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
-      {
-         queueBindingInfosMap.put(queueBindingInfo.getId(), queueBindingInfo);
 
-         Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
+      journalLoader.initQueues(queueBindingInfosMap, queueBindingInfos);
 
-         boolean isTopicIdentification =
-                  filter != null && filter.getFilterString() != null &&
-                           filter.getFilterString().toString().equals(GENERIC_IGNORED_FILTER);
-
-         if (postOffice.getBinding(queueBindingInfo.getQueueName()) != null)
-         {
-
-            if (isTopicIdentification)
-            {
-               long tx = storageManager.generateUniqueID();
-               storageManager.deleteQueueBinding(tx, queueBindingInfo.getId());
-               storageManager.commitBindings(tx);
-               continue;
-            }
-            else
-            {
-
-               SimpleString newName = queueBindingInfo.getQueueName().concat("-" + (duplicateID++));
-               HornetQServerLogger.LOGGER.queueDuplicatedRenaming(queueBindingInfo.getQueueName().toString(), newName.toString());
-               queueBindingInfo.replaceQueueName(newName);
-            }
-         }
-
-         PageSubscription subscription = null;
-
-         if (!isTopicIdentification)
-         {
-            subscription = pagingManager.getPageStore(queueBindingInfo.getAddress())
-               .getCursorProvider()
-               .createSubscription(queueBindingInfo.getId(), filter, true);
-         }
-
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-            queueBindingInfo.getAddress(),
-            queueBindingInfo.getQueueName(),
-            filter,
-            subscription,
-            true,
-            false);
-
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
-
-         queues.put(queueBindingInfo.getId(), queue);
-
-         postOffice.addBinding(binding);
-
-         managementService.registerAddress(queueBindingInfo.getAddress());
-         managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
-
-      }
-
-      for (GroupingInfo groupingInfo : groupingInfos)
-      {
-         if (groupingHandler != null)
-         {
-            groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(),
-               groupingInfo.getGroupId(),
-               groupingInfo.getClusterName()));
-         }
-      }
+      journalLoader.handleGroupingBindings(groupingInfos);
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
@@ -1830,24 +1834,13 @@ public class HornetQServerImpl implements HornetQServer
       journalInfo[1] = storageManager.loadMessageJournal(postOffice,
          pagingManager,
          resourceManager,
-         queues,
          queueBindingInfosMap,
          duplicateIDMap,
          pendingLargeMessages,
-         pendingNonTXPageCounter);
-
-
-      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
-      {
-         SimpleString address = entry.getKey();
-
-         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
-
-         if (configuration.isPersistIDCache())
-         {
-            cache.load(entry.getValue());
-         }
-      }
+         pendingNonTXPageCounter,
+         journalLoader);
+      
+      journalLoader.handleDuplicateIds(duplicateIDMap);
 
       for (Pair<Long, Long> msgToDelete : pendingLargeMessages)
       {
@@ -1863,7 +1856,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          try
          {
-            recoverPendingPageCounters(queues, pendingNonTXPageCounter);
+            journalLoader.recoverPendingPageCounters(pendingNonTXPageCounter);
          }
          catch (Throwable e)
          {
@@ -1871,174 +1864,11 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
+      journalLoader.cleanUp();
+
       return journalInfo;
    }
 
-   /**
-    * This method will recover the counters after failures making sure the page counter doesn't get out of sync
-    * @param queues
-    * @param pendingNonTXPageCounter
-    * @throws Exception
-    */
-   private void recoverPendingPageCounters(Map<Long, Queue> queues, List<PageCountPending> pendingNonTXPageCounter) throws Exception
-   {
-      // We need a structure of the following
-      // Address -> PageID -> QueueID -> List<PageCountPending>
-      // The following loop will sort the records according to the hierarchy we need
-
-      Transaction txRecoverCounter = new TransactionImpl(storageManager);
-
-      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = generateMapsOnPendingCount(queues, pendingNonTXPageCounter, txRecoverCounter);
-
-      for (SimpleString address : perAddressMap.keySet())
-      {
-         PagingStore store = pagingManager.getPageStore(address);
-         Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
-
-         // We have already generated this before, so it can't be null
-         assert(perPageMap != null);
-
-         for (Long pageId : perPageMap.keySet())
-         {
-            Map<Long, List<PageCountPending>> perQueue = perPageMap.get(pageId);
-
-            // This can't be true!
-            assert (perQueue != null);
-
-            if (store.checkPageFileExists(pageId.intValue()))
-            {
-               // on this case we need to recalculate the records
-               Page pg = store.createPage(pageId.intValue());
-               pg.open();
-
-               List<PagedMessage> pgMessages = pg.read(storageManager);
-               Map<Long, AtomicInteger> countsPerQueueOnPage = new HashMap<Long, AtomicInteger>();
-
-               for (PagedMessage pgd : pgMessages)
-               {
-                  if (pgd.getTransactionID() <= 0)
-                  {
-                     for (long q : pgd.getQueueIDs())
-                     {
-                        AtomicInteger countQ = countsPerQueueOnPage.get(q);
-                        if (countQ == null)
-                        {
-                           countQ = new AtomicInteger(0);
-                           countsPerQueueOnPage.put(q, countQ);
-                        }
-                        countQ.incrementAndGet();
-                     }
-                  }
-               }
-
-               for (Entry<Long, List<PageCountPending>> entry : perQueue.entrySet())
-               {
-                  for (PageCountPending record : entry.getValue())
-                  {
-                     HornetQServerLogger.LOGGER.debug("Deleting pg tempCount " + record.getID());
-                     storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
-                  }
-
-                  PageSubscriptionCounter counter = store.getCursorProvider().getSubscription(entry.getKey()).getCounter();
-
-                  AtomicInteger value = countsPerQueueOnPage.get(entry.getKey());
-
-                  if (value == null)
-                  {
-                     HornetQServerLogger.LOGGER.debug("Page " + entry.getKey() + " wasn't open, so we will just ignore");
-                  }
-                  else
-                  {
-                     HornetQServerLogger.LOGGER.debug("Replacing counter " + value.get());
-                     counter.increment(txRecoverCounter, value.get());
-                  }
-               }
-            }
-            else
-            {
-               // on this case the page file didn't exist, we just remove all the records since the page is already gone
-               HornetQServerLogger.LOGGER.debug("Page " + pageId + " didn't exist on address " + address + ", so we are just removing records");
-               for (List<PageCountPending> records: perQueue.values())
-               {
-                  for (PageCountPending record: records)
-                  {
-                     HornetQServerLogger.LOGGER.debug("Removing pending page counter " + record.getID());
-                     storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
-                     txRecoverCounter.setContainsPersistent();
-                  }
-               }
-            }
-         }
-      }
-
-      txRecoverCounter.commit();
-   }
-
-   /**
-    * 
-    * This generates a map for use on the recalculation and recovery of pending maps after reloading it
-    * @param queues
-    * @param pendingNonTXPageCounter
-    * @param txRecoverCounter
-    * @return
-    * @throws Exception
-    */
-   private Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>
-           generateMapsOnPendingCount(Map<Long, Queue> queues, List<PageCountPending>
-                 pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
-   {
-      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString,Map<Long, Map<Long, List<PageCountPending>>>>();
-      for (PageCountPending pgCount : pendingNonTXPageCounter)
-      {
-         long queueID = pgCount.getQueueID();
-         long pageID = pgCount.getPageID();
-
-         // We first figure what Queue is based on the queue id
-         Queue queue = queues.get(queueID);
-
-         if (queue == null)
-         {
-            HornetQServerLogger.LOGGER.debug("removing pending page counter id = " + pgCount.getID() + " as queueID=" + pgCount.getID() + " no longer exists");
-            // this means the queue doesn't exist any longer, we will remove it from the storage
-            storageManager.deletePendingPageCounter(txRecoverCounter.getID(), pgCount.getID());
-            txRecoverCounter.setContainsPersistent();
-            continue;
-         }
-
-         // Level 1 on the structure, per address
-         SimpleString address = queue.getAddress();
-
-         Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
-
-         if (perPageMap == null)
-         {
-            perPageMap = new HashMap();
-            perAddressMap.put(address, perPageMap);
-         }
-
-
-         Map<Long, List<PageCountPending>> perQueueMap = perPageMap.get(pageID);
-
-         if (perQueueMap == null)
-         {
-            perQueueMap = new HashMap();
-            perPageMap.put(pageID, perQueueMap);
-         }
-
-         List<PageCountPending> pendingCounters = perQueueMap.get(queueID);
-
-         if (pendingCounters == null)
-         {
-            pendingCounters = new LinkedList<PageCountPending>();
-            perQueueMap.put(queueID, pendingCounters);
-         }
-
-         pendingCounters.add(pgCount);
-
-         perQueueMap.put(queueID, pendingCounters);
-      }
-      return perAddressMap;
-   }
 
    /**
     * @throws Exception
@@ -2581,7 +2411,7 @@ public class HornetQServerImpl implements HornetQServer
 
             //use a Node Locator to connect to the cluster
             LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null?
-                  new AnyLiveNodeLocator(quorumManager):
+                  new AnyLiveNodeLocator(quorumManager, HornetQServerImpl.this):
                   new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
             serverLocator0.addClusterTopologyListener(nodeLocator);
             do

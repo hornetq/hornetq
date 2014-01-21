@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.postoffice.impl;
+import org.hornetq.core.server.impl.PostOfficeJournalLoader;
 import org.junit.Before;
 import org.junit.After;
 
@@ -108,14 +109,15 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
+         FakePagingManager pagingManager = new FakePagingManager();
          journal.loadMessageJournal(postOffice,
-                                    new FakePagingManager(),
+               pagingManager,
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
-                                    new HashMap<Long, Queue>(),
                                     null,
                                     mapDups,
                                     null,
-                                    null);
+               null,
+                                    new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(0, mapDups.size());
 
@@ -133,13 +135,13 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
-                                    new FakePagingManager(),
-                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
-                                    new HashMap<Long, Queue>(),
-                                    null,
-                                    mapDups,
-                                    null,
-                                    null);
+               pagingManager,
+               new ResourceManagerImpl(0, 0, scheduledThreadPool),
+               null,
+               mapDups,
+               null, 
+               null,
+               new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(1, mapDups.size());
 
@@ -164,13 +166,13 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
-                                    new FakePagingManager(),
-                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
-                                    new HashMap<Long, Queue>(),
-                                    null,
-                                    mapDups,
-                                    null,
-                                    null);
+               pagingManager,
+               new ResourceManagerImpl(0, 0, scheduledThreadPool),
+               null,
+               mapDups,
+               null, 
+               null,
+               new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(1, mapDups.size());
 

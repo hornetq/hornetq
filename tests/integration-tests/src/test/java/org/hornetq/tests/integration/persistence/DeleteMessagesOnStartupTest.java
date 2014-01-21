@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.persistence;
 
+import org.hornetq.core.server.impl.PostOfficeJournalLoader;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakeJournalLoader;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -65,7 +67,9 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
-      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null, null);
+      FakePostOffice postOffice = new FakePostOffice();
+
+      journal.loadMessageJournal(postOffice, null, null, null, null, null, null, new PostOfficeJournalLoader(postOffice,null, journal, null, null, null, null, null, queues));
 
       assertEquals(98, deletedMessage.size());
 

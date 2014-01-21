@@ -23,6 +23,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakeJournalLoader;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
@@ -109,7 +110,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
 
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null, null);
+      journal.loadMessageJournal(new FakePostOffice(), null, null, null, null, null, null, new FakeJournalLoader());
    }
 
    /**

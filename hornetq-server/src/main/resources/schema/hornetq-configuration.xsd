@@ -3,8 +3,9 @@
   attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:hornetq"
   version="1.0">
 
-  <xsd:element name="configuration" hq:schema="hornetq-configuration">
-    <xsd:complexType>
+  <xsd:element name="configuration" type="configurationType" hq:schema="hornetq-configuration"/>
+
+    <xsd:complexType name="configurationType">
       <xsd:all>
         <xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
@@ -797,9 +798,16 @@
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
+
+        <xsd:element name="backup-servers" maxOccurs="1" minOccurs="0">
+          <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="backup-server" type="backup-serverType" maxOccurs="unbounded" minOccurs="0"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
       </xsd:all>
     </xsd:complexType>
-  </xsd:element>
 
   <xsd:element name="local-bind-address" type="xsd:string">
     <xsd:annotation hq:default="wildcard IP address chosen by the kernel">
@@ -1501,4 +1509,32 @@
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>
+
+  <xsd:complexType name="backup-serverType">
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="configuration" type="configurationType">
+        <xsd:annotation>
+          <xsd:documentation>The configuration to override</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    <xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>name of the backup server, this will be used to identify the backup server and also appended to
+        the journal directories if not supplied.</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="port-offset" type="xsd:integer" use="optional" default="100">
+      <xsd:annotation>
+        <xsd:documentation>the port offset use to adjust the connector and acceptor ports</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="inherit-configuration" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+
 </xsd:schema>
