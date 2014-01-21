@@ -606,32 +606,6 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    }
 
    @Test
-   public void testNulSubscriptionName() throws Exception
-   {
-      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
-      MyBootstrapContext ctx = new MyBootstrapContext();
-      qResourceAdapter.start(ctx);
-
-      HornetQActivationSpec spec = new HornetQActivationSpec();
-      spec.setResourceAdapter(qResourceAdapter);
-      spec.setUseJNDI(false);
-      spec.setDestinationType("javax.jms.Topic");
-      spec.setDestination("mdbTopic");
-      spec.setSubscriptionDurability("Durable");
-      spec.setClientID("id-1");
-      spec.setSetupAttempts(1);
-      spec.setShareSubscriptions(true);
-      spec.setMaxSession(1);
-
-
-      CountDownLatch latch = new CountDownLatch(5);
-      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
-      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
-      qResourceAdapter.endpointActivation(endpointFactory, spec);
-      assertEquals(0,server.getSessions().size());
-   }
-
-   @Test
    public void testSelectorNotChangedWithTopic() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();

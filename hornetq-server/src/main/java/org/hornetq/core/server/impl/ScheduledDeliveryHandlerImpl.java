@@ -46,8 +46,6 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private final ScheduledExecutorService scheduledExecutor;
 
-   private final Object lockDelivery = new Object();
-
 
    private final Map<Long, Runnable> runnables = new ConcurrentHashMap<>();
 
@@ -153,18 +151,21 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private void scheduleDelivery(final long deliveryTime)
    {
+      final long now = System.currentTimeMillis();
 
+      final long delay = deliveryTime - now;
+
+      if (delay < 0)
+      {
+         // if delay == 0 we will avoid races between adding the scheduler and finishing it
+         // like what we used to do
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
+         scheduledExecutor.schedule(runnable, 0, TimeUnit.MILLISECONDS);
+      }
+      else
       if (!runnables.containsKey(deliveryTime))
       {
-         long now = System.currentTimeMillis();
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
-
-         long delay = deliveryTime - now;
-
-         if (delay < 0)
-         {
-            delay = 0;
-         }
 
          runnables.put(deliveryTime, runnable);
          scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
@@ -183,47 +184,44 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       {
          HashMap<Queue, LinkedList<MessageReference>> refs = new HashMap<Queue, LinkedList<MessageReference>>();
 
-         synchronized (lockDelivery)
+         runnables.remove(deliveryTime);
+
+         synchronized (scheduledReferences)
          {
-            runnables.remove(deliveryTime);
 
-            synchronized (scheduledReferences)
+            Iterator<RefScheduled> iter = scheduledReferences.iterator();
+            while (iter.hasNext())
             {
-
-               Iterator<RefScheduled> iter = scheduledReferences.iterator();
-               while (iter.hasNext())
+               MessageReference reference = iter.next().getRef();
+               if (reference.getScheduledDeliveryTime() > System.currentTimeMillis())
                {
-                  MessageReference reference = iter.next().getRef();
-                  if (reference.getScheduledDeliveryTime() > System.currentTimeMillis())
-                  {
-                     // We will delivery as long as there are messages to be delivered
-                     break;
-                  }
-
-                  iter.remove();
-
-                  reference.setScheduledDeliveryTime(0);
-
-                  LinkedList<MessageReference> references = refs.get(reference.getQueue());
-
-                  if (references == null)
-                  {
-                     references = new LinkedList<MessageReference>();
-                     refs.put(reference.getQueue(), references);
-                  }
-
-                  references.addFirst(reference);
+                  // We will delivery as long as there are messages to be delivered
+                  break;
                }
-            }
 
-            for (Map.Entry<Queue, LinkedList<MessageReference>> entry : refs.entrySet())
-            {
-               entry.getKey().addHead(entry.getValue());
-            }
+               iter.remove();
 
-            // Just to speed up GC
-            refs.clear();
+               reference.setScheduledDeliveryTime(0);
+
+               LinkedList<MessageReference> references = refs.get(reference.getQueue());
+
+               if (references == null)
+               {
+                  references = new LinkedList<MessageReference>();
+                  refs.put(reference.getQueue(), references);
+               }
+
+               references.addFirst(reference);
+            }
          }
+
+         for (Map.Entry<Queue, LinkedList<MessageReference>> entry : refs.entrySet())
+         {
+            entry.getKey().addHead(entry.getValue());
+         }
+
+         // Just to speed up GC
+         refs.clear();
       }
    }
 
