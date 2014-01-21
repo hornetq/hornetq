@@ -20,7 +20,6 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.junit.Assert;
@@ -39,7 +38,7 @@ public class MessageProducerTest extends JMSTestBase
    {
       super.setUp();
       conn = cf.createConnection();
-   };
+   }
 
    @Test
    public void testNoDefaultDestination() throws JMSException
@@ -66,7 +65,7 @@ public class MessageProducerTest extends JMSTestBase
    }
 
    @Test
-   public void testHasDefaultDestination() throws NamingException, Exception
+   public void testHasDefaultDestination() throws Exception
    {
       Session session = conn.createSession();
       try
@@ -88,7 +87,7 @@ public class MessageProducerTest extends JMSTestBase
          {
             producer.send(queue, m);
             Assert.fail("tck7 requires an UnsupportedOperationException "
-                     + "even if the destination is the same as the default one");
+                           + "even if the destination is the same as the default one");
          }
          catch (UnsupportedOperationException cause)
          {

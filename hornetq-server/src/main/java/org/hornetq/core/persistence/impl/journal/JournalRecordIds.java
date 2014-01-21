@@ -15,8 +15,6 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
-import org.hornetq.utils.IDGenerator;
-
 /**
  * These record IDs definitions are meant to be public.
  * <p>
@@ -35,7 +33,7 @@ public final class JournalRecordIds
 
    /**
     * Records storing the current recordID number.
-    * @see IDGenerator
+    * @see org.hornetq.utils.IDGenerator
     * @see BatchingIDGenerator
     */
    public static final byte ID_COUNTER_RECORD = 24;

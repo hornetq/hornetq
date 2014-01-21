@@ -26,7 +26,11 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.integration.jboss.HornetQJBossLogger;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.jboss.security.*;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)

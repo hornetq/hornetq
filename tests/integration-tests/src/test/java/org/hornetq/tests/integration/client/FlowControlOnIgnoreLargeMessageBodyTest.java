@@ -339,7 +339,7 @@ public class FlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                                                   cf,
                                                   FlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT);
 
-         LoadConsumer consumers[] = new LoadConsumer[CONSUMERS_COUNT];
+         LoadConsumer[] consumers = new LoadConsumer[CONSUMERS_COUNT];
 
          CountDownLatch latch = new CountDownLatch(CONSUMERS_COUNT);
 

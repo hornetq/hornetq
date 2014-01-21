@@ -12,13 +12,9 @@
  */
 package org.hornetq.tests.unit.core.deployers.impl;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Map;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
@@ -26,13 +22,13 @@ import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager.DeployInfo;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A FileDeploymentManagerTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class FileDeploymentManagerTest extends UnitTestCase
 {
@@ -397,7 +393,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       public String[] getConfigFileNames()
       {
-         return new String[] { file };
+         return new String[]{file};
       }
 
       @Override

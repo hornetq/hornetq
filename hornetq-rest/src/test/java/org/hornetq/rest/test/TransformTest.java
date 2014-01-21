@@ -11,15 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
 
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
@@ -34,6 +30,8 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

@@ -29,7 +29,6 @@ import org.hornetq.core.server.ServerMessage;
 import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameEventListener
@@ -49,7 +48,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
 
    @Override
    public StompFrame createMessageFrame(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount) throws Exception
+                                        StompSubscription subscription, int deliveryCount) throws Exception
    {
       StompFrame frame = super.createMessageFrame(serverMessage, subscription, deliveryCount);
 
@@ -106,7 +105,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
          //1.2 allow '\r\n'
          eolLen = 2;
       }
-      
+
       @Override
       public void init()
       {
@@ -144,7 +143,8 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
       @Override
       protected boolean parseHeaders() throws HornetQStompException
       {
-         outer: while (true)
+      outer:
+         while (true)
          {
             byte b = workingBuffer[pos++];
 
@@ -295,7 +295,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
          }
          return true;
       }
-      
+
       protected StompFrame parseBody() throws HornetQStompException
       {
          byte[] content = null;
@@ -358,8 +358,8 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
                if (workingBuffer[pos] == NEW_LINE) pos++;
 
                if (data > pos)
-                 // More data still in the buffer from the next packet
-                 System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
+                  // More data still in the buffer from the next packet
+                  System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
             }
 
             data = data - pos;

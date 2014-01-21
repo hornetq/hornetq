@@ -12,10 +12,6 @@
  */
 package org.hornetq.jms.client;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.Map.Entry;
-
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.Destination;
@@ -28,6 +24,14 @@ import javax.jms.MessageFormatRuntimeException;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQPropertyConversionException;
 import org.hornetq.api.core.SimpleString;
@@ -38,6 +42,7 @@ import org.hornetq.utils.TypedProperties;
  * {@link #setDisableMessageTimestamp(boolean)} calls their equivalent at the
  * {@link MessageProducer}. IF the user is using the producer in async mode, this may lead to races.
  * We allow/tolerate this because these are just optional optimizations.
+ *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 public final class HornetQJMSProducer implements JMSProducer
@@ -111,6 +116,7 @@ public final class HornetQJMSProducer implements JMSProducer
 
    /**
     * Sets all properties we carry onto the message.
+    *
     * @param message
     * @throws JMSException
     */
@@ -144,43 +150,43 @@ public final class HornetQJMSProducer implements JMSProducer
                final Object v = entry.getValue();
                if (v instanceof String)
                {
-                  message.setString(name, (String)v);
+                  message.setString(name, (String) v);
                }
                else if (v instanceof Long)
                {
-                  message.setLong(name, (Long)v);
+                  message.setLong(name, (Long) v);
                }
                else if (v instanceof Double)
                {
-                  message.setDouble(name, (Double)v);
+                  message.setDouble(name, (Double) v);
                }
                else if (v instanceof Integer)
                {
-                  message.setInt(name, (Integer)v);
+                  message.setInt(name, (Integer) v);
                }
                else if (v instanceof Character)
                {
-                  message.setChar(name, (Character)v);
+                  message.setChar(name, (Character) v);
                }
                else if (v instanceof Short)
                {
-                  message.setShort(name, (Short)v);
+                  message.setShort(name, (Short) v);
                }
                else if (v instanceof Boolean)
                {
-                  message.setBoolean(name, (Boolean)v);
+                  message.setBoolean(name, (Boolean) v);
                }
                else if (v instanceof Float)
                {
-                  message.setFloat(name, (Float)v);
+                  message.setFloat(name, (Float) v);
                }
                else if (v instanceof Byte)
                {
-                  message.setByte(name, (Byte)v);
+                  message.setByte(name, (Byte) v);
                }
                else if (v instanceof byte[])
                {
-                  byte[] array = (byte[])v;
+                  byte[] array = (byte[]) v;
                   message.setBytes(name, array, 0, array.length);
                }
                else
@@ -346,7 +352,7 @@ public final class HornetQJMSProducer implements JMSProducer
    {
       try
       {
-         producer.setTimeToLive(timeToLive );
+         producer.setTimeToLive(timeToLive);
          return this;
       }
       catch (JMSException e)
@@ -379,7 +385,7 @@ public final class HornetQJMSProducer implements JMSProducer
    {
       try
       {
-         producer.setDeliveryDelay(deliveryDelay );
+         producer.setDeliveryDelay(deliveryDelay);
          return this;
       }
       catch (JMSException e)
@@ -530,7 +536,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getBooleanProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -547,7 +553,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getByteProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -560,7 +566,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getShortProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -573,7 +579,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getIntProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -586,7 +592,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getLongProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -599,7 +605,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getFloatProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -612,7 +618,7 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          return properties.getDoubleProperty(new SimpleString(name));
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -628,7 +634,7 @@ public final class HornetQJMSProducer implements JMSProducer
             return null;
          return prop.toString();
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -645,13 +651,13 @@ public final class HornetQJMSProducer implements JMSProducer
       {
          SimpleString key = new SimpleString(name);
          Object property = properties.getProperty(key);
-         if(stringPropertyNames.contains(key))
+         if (stringPropertyNames.contains(key))
          {
             property = property.toString();
          }
          return property;
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -674,7 +680,7 @@ public final class HornetQJMSProducer implements JMSProducer
          }
          return propNames;
       }
-      catch(HornetQPropertyConversionException ce)
+      catch (HornetQPropertyConversionException ce)
       {
          throw new MessageFormatRuntimeException(ce.getMessage());
       }
@@ -742,11 +748,11 @@ public final class HornetQJMSProducer implements JMSProducer
 
    private void checkName(String name)
    {
-      if(name == null)
+      if (name == null)
       {
          throw HornetQJMSClientBundle.BUNDLE.nameCannotBeNull();
       }
-      if(name.equals(""))
+      if (name.equals(""))
       {
          throw HornetQJMSClientBundle.BUNDLE.nameCannotBeEmpty();
       }

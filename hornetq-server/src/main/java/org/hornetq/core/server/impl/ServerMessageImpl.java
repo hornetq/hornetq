@@ -27,13 +27,11 @@ import org.hornetq.utils.MemorySize;
 import org.hornetq.utils.TypedProperties;
 
 /**
- *
  * A ServerMessageImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
@@ -121,9 +119,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public int incrementRefCount() throws Exception
    {
-       int count = refCount.incrementAndGet();
+      int count = refCount.incrementAndGet();
 
-       if (pagingStore != null)
+      if (pagingStore != null)
       {
          if (count == 1)
          {
@@ -314,8 +312,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public String toString()
    {
       return "ServerMessage[messageID=" + messageID + ",durable=" + isDurable() + ",userID=" + getUserID() + ",priority=" + this.getPriority() + ", bodySize=" + this.getBodyBufferCopy().capacity() +
-          ",expiration=" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : 0) +
-          ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
+         ",expiration=" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : 0) +
+         ", durable=" + durable + ", address=" + getAddress() + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
 
    // FIXME - this is stuff that is only used in large messages
@@ -348,11 +346,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       {
          if (duplicateID instanceof SimpleString)
          {
-            return ((SimpleString)duplicateID).getData();
+            return ((SimpleString) duplicateID).getData();
          }
          else
          {
-            return (byte[])duplicateID;
+            return (byte[]) duplicateID;
          }
       }
    }

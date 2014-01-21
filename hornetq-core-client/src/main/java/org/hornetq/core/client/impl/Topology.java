@@ -143,7 +143,7 @@ public final class Topology implements Serializable
    }
 
    /** This is called by the server when the node is activated from backup state. It will always succeed */
-   public final TopologyMemberImpl updateBackup(final TopologyMemberImpl memberInput)
+   public TopologyMemberImpl updateBackup(final TopologyMemberImpl memberInput)
    {
       final String nodeId = memberInput.getNodeId();
       if (HornetQClientLogger.LOGGER.isTraceEnabled())

@@ -12,12 +12,6 @@
  */
 package org.hornetq.tests.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSConsumer;
@@ -30,7 +24,11 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -46,6 +44,7 @@ import org.junit.Before;
 
 /**
  * A JMSBaseTest
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class JMSTestBase extends ServiceTestBase
@@ -96,34 +95,32 @@ public class JMSTestBase extends ServiceTestBase
 
    /**
     * @throws Exception
-    * @throws NamingException
     */
-   protected Queue createQueue(final String queueName) throws Exception, NamingException
+   protected Queue createQueue(final String queueName) throws Exception
    {
       return createQueue(false, queueName);
    }
 
-   protected Topic createTopic(final String topicName) throws Exception, NamingException
+   protected Topic createTopic(final String topicName) throws Exception
    {
       return createTopic(false, topicName);
    }
 
    /**
     * @throws Exception
-    * @throws NamingException
     */
-   protected Queue createQueue(final boolean storeConfig, final String queueName) throws Exception, NamingException
+   protected Queue createQueue(final boolean storeConfig, final String queueName) throws Exception
    {
       jmsServer.createQueue(storeConfig, queueName, null, true, "/jms/" + queueName);
 
-      return (Queue)namingContext.lookup("/jms/" + queueName);
+      return (Queue) namingContext.lookup("/jms/" + queueName);
    }
 
-   protected Topic createTopic(final boolean storeConfig, final String topicName) throws Exception, NamingException
+   protected Topic createTopic(final boolean storeConfig, final String topicName) throws Exception
    {
       jmsServer.createTopic(storeConfig, topicName, "/jms/" + topicName);
 
-      return (Topic)namingContext.lookup("/jms/" + topicName);
+      return (Topic) namingContext.lookup("/jms/" + topicName);
    }
 
    @Override
@@ -224,7 +221,7 @@ public class JMSTestBase extends ServiceTestBase
 
       createCF(connectorConfigs, "/cf");
 
-      cf = (ConnectionFactory)namingContext.lookup("/cf");
+      cf = (ConnectionFactory) namingContext.lookup("/cf");
    }
 
    /**
@@ -232,9 +229,8 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void
-            createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings)
-                                                                                                       throws Exception
+   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings)
+      throws Exception
    {
       final int retryInterval = 1000;
       final double retryIntervalMultiplier = 1.0;
@@ -243,8 +239,7 @@ public class JMSTestBase extends ServiceTestBase
       final boolean ha = false;
       List<String> connectorNames = registerConnectors(server, connectorConfigs);
 
-      ConnectionFactoryConfiguration configuration =
-               new ConnectionFactoryConfigurationImpl(name.getMethodName(), ha, connectorNames);
+      ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name.getMethodName(), ha, connectorNames);
       configuration.setRetryInterval(retryInterval);
       configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
       configuration.setCallTimeout(callTimeout);
@@ -255,6 +250,7 @@ public class JMSTestBase extends ServiceTestBase
 
    /**
     * Allows test-cases to set their own options to the {@link ConnectionFactoryConfiguration}
+    *
     * @param configuration
     */
    protected void testCaseCfExtraConfig(ConnectionFactoryConfiguration configuration)

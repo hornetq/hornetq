@@ -62,10 +62,8 @@ import org.hornetq.utils.UUID;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author Clebert Suconic
- *
- * Created 12 Nov 2008 11:37:35
- *
- *
+ *         <p/>
+ *         Created 12 Nov 2008 11:37:35
  */
 
 public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowledgementHandler
@@ -120,7 +118,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final long maxRetryInterval;
 
-   /** Used when there's a scheduled reconnection */
+   /**
+    * Used when there's a scheduled reconnection
+    */
    protected ScheduledFuture<?> futureScheduledReconnection;
 
    protected volatile ClientSessionInternal session;
@@ -207,7 +207,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.password = password;
    }
 
-   public final static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
+   public static final byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
    {
       byte[] bytes = new byte[24];
 
@@ -309,7 +309,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void getDeliveringMessages(List<MessageReference> refList)
    {
-      synchronized(this)
+      synchronized (this)
       {
          refList.addAll(refs);
       }
@@ -341,7 +341,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                try
                {
                   session.cleanUp(false);
-               } catch (Exception dontcare)
+               }
+               catch (Exception dontcare)
                {
                   HornetQServerLogger.LOGGER.debug(dontcare.getMessage(), dontcare);
                }
@@ -356,8 +357,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return session != null;
    }
 
-   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
-    *  This method is intended to expose this executor to the ClusterManager */
+   /**
+    * The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
+    * This method is intended to expose this executor to the ClusterManager
+    */
    public Executor getExecutor()
    {
       return executor;
@@ -559,7 +562,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             return HandleStatus.BUSY;
          }
 
-         if (deliveringLargeMessage )
+         if (deliveringLargeMessage)
          {
             return HandleStatus.BUSY;
          }
@@ -594,7 +597,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             if (message.isLargeMessage())
             {
                deliveringLargeMessage = true;
-               deliverLargeMessage(dest, ref, (LargeServerMessage)message);
+               deliverLargeMessage(dest, ref, (LargeServerMessage) message);
                return HandleStatus.HANDLED;
             }
             else
@@ -623,7 +626,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       HornetQServerLogger.LOGGER.bridgeConnectionFailed(me, failedOver);
 
-      synchronized(connectionGuard)
+      synchronized (connectionGuard)
       {
          keepConnecting = true;
       }
@@ -737,6 +740,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    /**
     * for use in tests mainly
+    *
     * @return
     */
    public TopologyMember getTargetNodeFromTopology()
@@ -817,7 +821,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       else
       {
          serverLocator.resetToInitialConnectors();
-         csf = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
+         csf = (ClientSessionFactoryInternal) serverLocator.createSessionFactory();
       }
 
       // null here means the targetNodeIS is not available yet
@@ -835,7 +839,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       TopologyMember nodeUse = targetNode;
       if (targetNodeIdUse != null && nodeUse != null)
       {
-         TransportConfiguration configs[] = new TransportConfiguration[2]; // live and backup
+         TransportConfiguration[] configs = new TransportConfiguration[2]; // live and backup
          int numberOfConfigs = 0;
 
          if (nodeUse.getLive() != null)
@@ -850,15 +854,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          if (numberOfConfigs > 0)
          {
             // It will bounce between all the available configs
-            int nodeTry = (retryCount-1) % numberOfConfigs;
+            int nodeTry = (retryCount - 1) % numberOfConfigs;
 
-            return (ClientSessionFactoryInternal)serverLocator.createSessionFactory(configs[nodeTry]);
+            return (ClientSessionFactoryInternal) serverLocator.createSessionFactory(configs[nodeTry]);
          }
       }
 
       return null;
    }
-
 
 
    protected void setSessionFactory(ClientSessionFactoryInternal sfi)
@@ -895,7 +898,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                   return;
                }
                // Session is pre-acknowledge
-               session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
+               session = (ClientSessionInternal) csf.createSession(user, password, false, true, true, true, 1);
             }
 
             if (forwardingAddress != null)
@@ -1008,7 +1011,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          return;
       }
 
-      long timeout = (long)(this.retryInterval * Math.pow(this.retryMultiplier, retryCount));
+      long timeout = (long) (this.retryInterval * Math.pow(this.retryMultiplier, retryCount));
       if (timeout == 0)
       {
          timeout = this.retryInterval;
@@ -1156,7 +1159,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                csf.cleanup();
             }
 
-            synchronized(connectionGuard)
+            synchronized (connectionGuard)
             {
                keepConnecting = true;
             }
@@ -1218,7 +1221,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       public void nodeUP(TopologyMember member, boolean last)
       {
          ClientSessionInternal sessionToUse = session;
-         RemotingConnection connectionToUse = sessionToUse != null? sessionToUse.getConnection(): null;
+         RemotingConnection connectionToUse = sessionToUse != null ? sessionToUse.getConnection() : null;
 
          if (member != null && BridgeImpl.this.targetNodeID != null && BridgeImpl.this.targetNodeID.equals(member.getNodeId()))
          {

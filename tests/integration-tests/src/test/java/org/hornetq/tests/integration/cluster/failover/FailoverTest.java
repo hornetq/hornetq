@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.failover;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,10 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
@@ -54,7 +54,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * A FailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -85,8 +84,7 @@ public class FailoverTest extends FailoverTestBase
       return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
    }
 
-   protected ClientSession
-            createSession(ClientSessionFactory sf1, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
+   protected ClientSession createSession(ClientSessionFactory sf1, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
    {
       return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks));
    }
@@ -113,9 +111,9 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
-      ((InVMNodeManager)nodeManager).failoverPause = 500;
+      ((InVMNodeManager) nodeManager).failoverPause = 500;
 
-      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       final ClientSession session = createSession(sf1, true, true);
 
@@ -196,9 +194,9 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
       locator.setAckBatchSize(0);
-      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+      ((InVMNodeManager) nodeManager).failoverPause = 5000L;
 
-      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       final ClientSession session = createSession(sf1, true, true);
 
@@ -231,9 +229,10 @@ public class FailoverTest extends FailoverTestBase
             try
             {
                log.debug("acking message = id = " + message.getMessageID() + ", counter = " +
-                     message.getIntProperty("counter"));
+                            message.getIntProperty("counter"));
                message.acknowledge();
-            } catch (HornetQException e)
+            }
+            catch (HornetQException e)
             {
                e.printStackTrace();
                return;
@@ -270,9 +269,9 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
       locator.setAckBatchSize(0);
-      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+      ((InVMNodeManager) nodeManager).failoverPause = 5000L;
 
-      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       final ClientSession session = createSession(sf1, true, true);
 
@@ -311,8 +310,8 @@ public class FailoverTest extends FailoverTestBase
                   try
                   {
                      log.info("acking message = id = " + message.getMessageID() +
-                        ", counter = " +
-                        message.getIntProperty("counter"));
+                                 ", counter = " +
+                                 message.getIntProperty("counter"));
                      message.acknowledge();
                   }
                   catch (HornetQException e)
@@ -356,7 +355,7 @@ public class FailoverTest extends FailoverTestBase
                   }
                   return msg;
                }
-               catch(HornetQObjectClosedException oce)
+               catch (HornetQObjectClosedException oce)
                {
                   throw new RuntimeException(oce);
                }
@@ -388,9 +387,9 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
-      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+      ((InVMNodeManager) nodeManager).failoverPause = 5000L;
 
-      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       final ClientSession session = createSession(sf1, true, false, false);
 
@@ -443,9 +442,9 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
-      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+      ((InVMNodeManager) nodeManager).failoverPause = 5000L;
 
-      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      ClientSessionFactoryInternal sf1 = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       final ClientSession session = createSession(sf1, true, false, false);
 
@@ -489,6 +488,7 @@ public class FailoverTest extends FailoverTestBase
 
    /**
     * see http://jira.jboss.org/browse/HORNETQ-522
+    *
     * @throws Exception
     */
    @Test
@@ -554,7 +554,7 @@ public class FailoverTest extends FailoverTestBase
 
    private void createClientSessionFactory() throws Exception
    {
-      sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      sf = (ClientSessionFactoryInternal) createSessionFactory(locator);
    }
 
    @Test
@@ -589,6 +589,7 @@ public class FailoverTest extends FailoverTestBase
 
    /**
     * Basic fail-back test.
+    *
     * @throws Exception
     */
    @Test
@@ -634,7 +635,7 @@ public class FailoverTest extends FailoverTestBase
       liveServer.start();
       assertTrue("live initialized...", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
 
-      sf = (ClientSessionFactoryInternal)createSessionFactory(locator);
+      sf = (ClientSessionFactoryInternal) createSessionFactory(locator);
 
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
@@ -704,10 +705,8 @@ public class FailoverTest extends FailoverTestBase
    /**
     * @param doFailBack
     * @throws Exception
-    * @throws HornetQException
-    * @throws InterruptedException
     */
-   private void simpleReplication(boolean doFailBack) throws Exception, HornetQException, InterruptedException
+   private void simpleReplication(boolean doFailBack) throws Exception
    {
       locator.setFailoverOnInitialConnection(true);
       createSessionFactory();
@@ -822,7 +821,7 @@ public class FailoverTest extends FailoverTestBase
          session.commit();
          fail("session must have rolled back on failover");
       }
-      catch(HornetQTransactionRolledBackException trbe)
+      catch (HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -854,9 +853,8 @@ public class FailoverTest extends FailoverTestBase
    /**
     * @return
     * @throws Exception
-    * @throws HornetQException
     */
-   private ClientSession createSessionAndQueue() throws Exception, HornetQException
+   private ClientSession createSessionAndQueue() throws Exception
    {
       ClientSession session = createSession(sf, false, false);
 
@@ -917,7 +915,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQTransactionRolledBackException trbe)
+      catch (HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -962,7 +960,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQTransactionRolledBackException trbe)
+      catch (HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -1098,7 +1096,7 @@ public class FailoverTest extends FailoverTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQTransactionRolledBackException trbe)
+      catch (HornetQTransactionRolledBackException trbe)
       {
          //ok
       }
@@ -1297,7 +1295,6 @@ public class FailoverTest extends FailoverTestBase
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
 
-
       session.start(xid, XAResource.TMNOFLAGS);
 
       sendMessagesSomeDurable(session, producer);
@@ -1338,7 +1335,6 @@ public class FailoverTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-
 
 
       session.start(xid, XAResource.TMNOFLAGS);
@@ -1711,7 +1707,7 @@ public class FailoverTest extends FailoverTestBase
       // During failover non-persistent messages may disappear but in certain cases they may survive.
       // For that reason the test is validating all the messages but being permissive with non-persistent messages
       // The test will just ack any non-persistent message, however when arriving it must be in order
-      ClientMessage repeatMessage=null;
+      ClientMessage repeatMessage = null;
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message;
@@ -1957,7 +1953,7 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
-            catch(HornetQTransactionRolledBackException trbe)
+            catch (HornetQTransactionRolledBackException trbe)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -1974,7 +1970,7 @@ public class FailoverTest extends FailoverTestBase
                   throw new RuntimeException(e2);
                }
             }
-            catch(HornetQTransactionOutcomeUnknownException toue)
+            catch (HornetQTransactionOutcomeUnknownException toue)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -2047,7 +2043,7 @@ public class FailoverTest extends FailoverTestBase
          session2.commit();
          fail("expecting DUPLICATE_ID_REJECTED exception");
       }
-      catch(HornetQDuplicateIdException dide)
+      catch (HornetQDuplicateIdException dide)
       {
          //ok
       }
@@ -2081,9 +2077,8 @@ public class FailoverTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
 
-
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-      sendMessages(session, producer,NUM_MESSAGES);
+      sendMessages(session, producer, NUM_MESSAGES);
 
       class Committer extends Thread
       {
@@ -2098,7 +2093,7 @@ public class FailoverTest extends FailoverTestBase
 
                session.commit();
             }
-            catch(HornetQTransactionRolledBackException trbe)
+            catch (HornetQTransactionRolledBackException trbe)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -2114,7 +2109,7 @@ public class FailoverTest extends FailoverTestBase
                {
                }
             }
-            catch(HornetQTransactionOutcomeUnknownException toue)
+            catch (HornetQTransactionOutcomeUnknownException toue)
             {
                // Ok - now we retry the commit after removing the interceptor
 
@@ -2156,7 +2151,7 @@ public class FailoverTest extends FailoverTestBase
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
 
       // We now try and resend the messages since we get a transaction rolled back exception
-      sendMessages(session2, producer,NUM_MESSAGES);
+      sendMessages(session2, producer, NUM_MESSAGES);
 
       session2.commit();
 
@@ -2386,10 +2381,10 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-            false,
-            0,
-            System.currentTimeMillis(),
-            (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte) 1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);

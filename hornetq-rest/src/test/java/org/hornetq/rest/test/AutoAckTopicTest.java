@@ -12,18 +12,16 @@
  */
 package org.hornetq.rest.test;
 
+import org.hornetq.rest.topic.TopicDeployment;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.spi.Link;
-import org.hornetq.rest.topic.TopicDeployment;
+import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class AutoAckTopicTest extends MessageTestBase
 {
@@ -37,7 +35,7 @@ public class AutoAckTopicTest extends MessageTestBase
       deployment.setName(testName);
       manager.getTopicManager().deploy(deployment);
 
-      ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
+      ClientRequest request = new ClientRequest(TestPortProvider.generateURL("/topics/" + testName));
 
       ClientResponse<?> response = request.head();
       response.releaseConnection();
@@ -46,7 +44,7 @@ public class AutoAckTopicTest extends MessageTestBase
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
 
-     ClientResponse<?> res = subscriptions.request().post();
+      ClientResponse<?> res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocationLink();
@@ -114,7 +112,7 @@ public class AutoAckTopicTest extends MessageTestBase
       manager.getTopicManager().deploy(deployment);
 
       // Create a consumer
-      ClientRequest request = new ClientRequest(generateURL("/topics/" + testName));
+      ClientRequest request = new ClientRequest(TestPortProvider.generateURL("/topics/" + testName));
       ClientResponse<?> response = request.head();
       response.releaseConnection();
       Assert.assertEquals(200, response.getStatus());
@@ -156,7 +154,7 @@ public class AutoAckTopicTest extends MessageTestBase
       private boolean isFinished = false;
       private boolean failed = false;
 
-      public NewPullSubscriber(String url) 
+      public NewPullSubscriber(String url)
       {
          this.url = url;
       }
@@ -171,9 +169,9 @@ public class AutoAckTopicTest extends MessageTestBase
          return failed;
       }
 
-      public void run() 
+      public void run()
       {
-         try 
+         try
          {
             isFinished = false;
             ClientRequest request = new ClientRequest(url);
@@ -182,8 +180,8 @@ public class AutoAckTopicTest extends MessageTestBase
             System.out.println("NPS response: " + response.getStatus());
             Assert.assertEquals(201, response.getStatus());
             isFinished = true;
-         } 
-         catch(Exception e) 
+         }
+         catch (Exception e)
          {
             System.out.println("Exception " + e);
             failed = true;
@@ -194,39 +192,39 @@ public class AutoAckTopicTest extends MessageTestBase
    private class AcceptWaitListener implements Runnable
    {
       private final int acceptWaitTime = 8;
-      private String url;      
+      private String url;
       private boolean isFinished = false;
       private boolean failed = false;
 
       public AcceptWaitListener(String url)
       {
-            this.url = url;
+         this.url = url;
       }
 
       public boolean isFinished()
       {
-            return this.isFinished;
+         return this.isFinished;
       }
 
       public boolean isFailed()
       {
-            return this.failed;
+         return this.failed;
       }
 
-      public void run() 
+      public void run()
       {
-            try 
-            {
-                  ClientRequest req = new ClientRequest(url);
-                  req.header("Accept-Wait", acceptWaitTime);
-                  ClientResponse<?> response = req.post();
-                  response.releaseConnection();
-                  isFinished = true;
-            } 
-            catch(Exception e) 
-            {
-                  failed = true;
-            }
+         try
+         {
+            ClientRequest req = new ClientRequest(url);
+            req.header("Accept-Wait", acceptWaitTime);
+            ClientResponse<?> response = req.post();
+            response.releaseConnection();
+            isFinished = true;
+         }
+         catch (Exception e)
+         {
+            failed = true;
+         }
       }
    }
 }

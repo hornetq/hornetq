@@ -54,7 +54,7 @@ public interface PageSubscription
    /** Used as a delegate method to {@link PagingStore#isPaging()} */
    boolean isPaging();
 
-   public LinkedListIterator<PagedReference> iterator();
+   LinkedListIterator<PagedReference> iterator();
 
    // To be called when the cursor is closed for good. Most likely when the queue is deleted
    void destroy() throws Exception;

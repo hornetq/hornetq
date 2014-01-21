@@ -13,6 +13,11 @@
 
 package org.hornetq.core.protocol.proton;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.qpid.proton.amqp.transaction.Coordinator;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Receiver;
@@ -29,11 +34,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -94,16 +94,16 @@ public class ProtonSession implements SessionCallback
          try
          {
             serverSession = server.createSession(name,
-                  connection.getLogin(),
-                  connection.getPasscode(),
-                  HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                  connection,
-                  !transacted,
-                  !transacted,
-                  false,
-                  false,
-                  null,
-                  this);
+                                                 connection.getLogin(),
+                                                 connection.getPasscode(),
+                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                 connection,
+                                                 !transacted,
+                                                 !transacted,
+                                                 false,
+                                                 false,
+                                                 null,
+                                                 this);
          }
          catch (Exception e)
          {
@@ -167,7 +167,7 @@ public class ProtonSession implements SessionCallback
    public void disconnect(long consumerId, String queueName)
    {
       ProtonConsumer protonConsumer = consumers.remove(consumerId);
-      if(protonConsumer != null)
+      if (protonConsumer != null)
       {
          try
          {
@@ -241,7 +241,7 @@ public class ProtonSession implements SessionCallback
       synchronized (tagCache)
       {
          byte[] bytes;
-         if(tagCache.size() > 0)
+         if (tagCache.size() > 0)
          {
             bytes = tagCache.remove(0);
          }
@@ -257,7 +257,7 @@ public class ProtonSession implements SessionCallback
    {
       synchronized (tagCache)
       {
-         if(tagCache.size() < tagCacheSize)
+         if (tagCache.size() < tagCacheSize)
          {
             tagCache.add(tag);
          }
@@ -266,7 +266,7 @@ public class ProtonSession implements SessionCallback
 
    public void close()
    {
-      if(closed)
+      if (closed)
       {
          return;
       }

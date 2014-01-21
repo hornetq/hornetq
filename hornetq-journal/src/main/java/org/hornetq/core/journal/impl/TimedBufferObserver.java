@@ -37,12 +37,12 @@ public interface TimedBufferObserver
 
    // Public --------------------------------------------------------
 
-   public void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOAsyncTask> callbacks);
+   void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOAsyncTask> callbacks);
 
    /** Return the number of remaining bytes that still fit on the observer (file) */
-   public int getRemainingBytes();
+   int getRemainingBytes();
 
-   public ByteBuffer newBuffer(int size, int limit);
+   ByteBuffer newBuffer(int size, int limit);
 
    // Package protected ---------------------------------------------
 

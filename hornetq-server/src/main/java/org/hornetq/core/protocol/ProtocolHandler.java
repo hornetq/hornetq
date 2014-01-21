@@ -12,6 +12,12 @@
  */
 package org.hornetq.core.protocol;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,12 +39,6 @@ import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.utils.ConfigurationHelper;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class ProtocolHandler
 {
@@ -70,7 +70,7 @@ public class ProtocolHandler
 
    public void close()
    {
-      if(httpKeepAliveRunnable != null)
+      if (httpKeepAliveRunnable != null)
       {
          httpKeepAliveRunnable.close();
       }
@@ -91,12 +91,12 @@ public class ProtocolHandler
       @Override
       public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
       {
-         if(msg instanceof DefaultFullHttpRequest)
+         if (msg instanceof DefaultFullHttpRequest)
          {
             DefaultFullHttpRequest request = (DefaultFullHttpRequest) msg;
             HttpHeaders headers = request.headers();
             String upgrade = headers.get("upgrade");
-            if(upgrade != null && upgrade.equalsIgnoreCase("websocket"))
+            if (upgrade != null && upgrade.equalsIgnoreCase("websocket"))
             {
                ctx.pipeline().addLast("websocket-handler", new WebSocketServerHandler());
                ctx.pipeline().addLast(new ProtocolDecoder(false, false));
@@ -112,13 +112,16 @@ public class ProtocolHandler
       }
 
       @Override
-      protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-         if (ctx.isRemoved()) {
-             return;
+      protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
+      {
+         if (ctx.isRemoved())
+         {
+            return;
          }
 
          // Will use the first five bytes to detect a protocol.
-         if (in.readableBytes() < 8) {
+         if (in.readableBytes() < 8)
+         {
             return;
          }
 
@@ -133,14 +136,14 @@ public class ProtocolHandler
          for (String protocol : protocolMap.keySet())
          {
             ProtocolManager protocolManager = protocolMap.get(protocol);
-            if(protocolManager.isProtocol(in.copy(0, 8).array()))
+            if (protocolManager.isProtocol(in.copy(0, 8).array()))
             {
                protocolToUse = protocol;
                break;
             }
          }
          //if we get here we assume we use the core protocol as we match nothing else
-         if(protocolToUse == null)
+         if (protocolToUse == null)
          {
             protocolToUse = HornetQClient.DEFAULT_CORE_PROTOCOL;
          }
@@ -158,15 +161,15 @@ public class ProtocolHandler
       private boolean isHttp(int magic1, int magic2)
       {
          return
-               magic1 == 'G' && magic2 == 'E' || // GET
-                     magic1 == 'P' && magic2 == 'O' || // POST
-                     magic1 == 'P' && magic2 == 'U' || // PUT
-                     magic1 == 'H' && magic2 == 'E' || // HEAD
-                     magic1 == 'O' && magic2 == 'P' || // OPTIONS
-                     magic1 == 'P' && magic2 == 'A' || // PATCH
-                     magic1 == 'D' && magic2 == 'E' || // DELETE
-                     magic1 == 'T' && magic2 == 'R'; // TRACE
-                     //magic1 == 'C' && magic2 == 'O'; // CONNECT
+            magic1 == 'G' && magic2 == 'E' || // GET
+               magic1 == 'P' && magic2 == 'O' || // POST
+               magic1 == 'P' && magic2 == 'U' || // PUT
+               magic1 == 'H' && magic2 == 'E' || // HEAD
+               magic1 == 'O' && magic2 == 'P' || // OPTIONS
+               magic1 == 'P' && magic2 == 'A' || // PATCH
+               magic1 == 'D' && magic2 == 'E' || // DELETE
+               magic1 == 'T' && magic2 == 'R'; // TRACE
+         //magic1 == 'C' && magic2 == 'O'; // CONNECT
       }
 
       private void switchToHttp(ChannelHandlerContext ctx)
@@ -179,18 +182,18 @@ public class ProtocolHandler
          if (httpKeepAliveRunnable == null)
          {
             long httpServerScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME,
-                  TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD,
-                  configuration);
+                                                                            TransportConstants.DEFAULT_HTTP_SERVER_SCAN_PERIOD,
+                                                                            configuration);
             httpKeepAliveRunnable = new HttpKeepAliveRunnable();
             Future<?> future = scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable,
-                  httpServerScanPeriod,
-                  httpServerScanPeriod,
-                  TimeUnit.MILLISECONDS);
+                                                                       httpServerScanPeriod,
+                                                                       httpServerScanPeriod,
+                                                                       TimeUnit.MILLISECONDS);
             httpKeepAliveRunnable.setFuture(future);
          }
          long httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME,
-               TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
-               configuration);
+                                                                     TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
+                                                                     configuration);
          HttpAcceptorHandler httpHandler = new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime, ctx.channel());
          ctx.pipeline().addLast("http-handler", httpHandler);
          p.addLast(new ProtocolDecoder(false, true));

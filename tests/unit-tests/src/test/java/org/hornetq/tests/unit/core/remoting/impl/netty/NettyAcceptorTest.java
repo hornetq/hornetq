@@ -11,20 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
-import org.hornetq.core.protocol.ProtocolHandler;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
@@ -36,13 +28,15 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A NettyAcceptorTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class NettyAcceptorTest extends UnitTestCase
 {
@@ -111,7 +105,7 @@ public class NettyAcceptorTest extends UnitTestCase
                                                  handler,
                                                  listener,
                                                  pool2,
-            null);
+                                                 null);
 
       addHornetQComponent(acceptor);
       acceptor.start();

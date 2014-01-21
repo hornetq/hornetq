@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -34,6 +29,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessagePriorityTest
@@ -76,7 +74,7 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(session, Integer.toString(i));
-         m.setPriority((byte)i);
+         m.setPriority((byte) i);
          producer.send(m);
       }
 
@@ -119,7 +117,7 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(session, Integer.toString(i));
-         m.setPriority((byte)i);
+         m.setPriority((byte) i);
          producer.send(m);
       }
 
@@ -159,28 +157,28 @@ public class MessagePriorityTest extends UnitTestCase
       // 3 3
       // 1 9
       messages[0] = createTextMessage(session, "a");
-      messages[0].setPriority((byte)0);
+      messages[0].setPriority((byte) 0);
       messages[1] = createTextMessage(session, "b");
-      messages[1].setPriority((byte)0);
+      messages[1].setPriority((byte) 0);
       messages[2] = createTextMessage(session, "c");
-      messages[2].setPriority((byte)0);
+      messages[2].setPriority((byte) 0);
 
       messages[3] = createTextMessage(session, "d");
-      messages[3].setPriority((byte)7);
+      messages[3].setPriority((byte) 7);
       messages[4] = createTextMessage(session, "e");
-      messages[4].setPriority((byte)7);
+      messages[4].setPriority((byte) 7);
       messages[5] = createTextMessage(session, "f");
-      messages[5].setPriority((byte)7);
+      messages[5].setPriority((byte) 7);
 
       messages[6] = createTextMessage(session, "g");
-      messages[6].setPriority((byte)3);
+      messages[6].setPriority((byte) 3);
       messages[7] = createTextMessage(session, "h");
-      messages[7].setPriority((byte)3);
+      messages[7].setPriority((byte) 3);
       messages[8] = createTextMessage(session, "i");
-      messages[8].setPriority((byte)3);
+      messages[8].setPriority((byte) 3);
 
       messages[9] = createTextMessage(session, "j");
-      messages[9].setPriority((byte)9);
+      messages[9].setPriority((byte) 9);
 
       for (int i = 0; i < 10; i++)
       {
@@ -192,19 +190,19 @@ public class MessagePriorityTest extends UnitTestCase
       session.start();
 
       // 1 message with priority 9
-      MessagePriorityTest.expectMessage((byte)9, "j", consumer);
+      MessagePriorityTest.expectMessage((byte) 9, "j", consumer);
       // 3 messages with priority 7
-      MessagePriorityTest.expectMessage((byte)7, "d", consumer);
-      MessagePriorityTest.expectMessage((byte)7, "e", consumer);
-      MessagePriorityTest.expectMessage((byte)7, "f", consumer);
+      MessagePriorityTest.expectMessage((byte) 7, "d", consumer);
+      MessagePriorityTest.expectMessage((byte) 7, "e", consumer);
+      MessagePriorityTest.expectMessage((byte) 7, "f", consumer);
       // 3 messages with priority 3
-      MessagePriorityTest.expectMessage((byte)3, "g", consumer);
-      MessagePriorityTest.expectMessage((byte)3, "h", consumer);
-      MessagePriorityTest.expectMessage((byte)3, "i", consumer);
+      MessagePriorityTest.expectMessage((byte) 3, "g", consumer);
+      MessagePriorityTest.expectMessage((byte) 3, "h", consumer);
+      MessagePriorityTest.expectMessage((byte) 3, "i", consumer);
       // 3 messages with priority 0
-      MessagePriorityTest.expectMessage((byte)0, "a", consumer);
-      MessagePriorityTest.expectMessage((byte)0, "b", consumer);
-      MessagePriorityTest.expectMessage((byte)0, "c", consumer);
+      MessagePriorityTest.expectMessage((byte) 0, "a", consumer);
+      MessagePriorityTest.expectMessage((byte) 0, "b", consumer);
+      MessagePriorityTest.expectMessage((byte) 0, "c", consumer);
 
       consumer.close();
       session.deleteQueue(queue);
@@ -229,7 +227,7 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 0; i < 10; i++)
       {
          ClientMessage m = createTextMessage(session, Integer.toString(i));
-         m.setPriority((byte)i);
+         m.setPriority((byte) i);
          producer.send(m);
       }
 
@@ -284,18 +282,18 @@ public class MessagePriorityTest extends UnitTestCase
 
       ClientProducer producer = session.createProducer(address);
 
-      for (int i = 0 ; i < 777; i++)
+      for (int i = 0; i < 777; i++)
       {
          ClientMessage msg = session.createMessage(true);
-         msg.setPriority((byte)5);
+         msg.setPriority((byte) 5);
          msg.putBooleanProperty("fast", false);
          producer.send(msg);
       }
 
-      for (int i = 0 ; i < 333; i++)
+      for (int i = 0; i < 333; i++)
       {
          ClientMessage msg = session.createMessage(true);
-         msg.setPriority((byte)6);
+         msg.setPriority((byte) 6);
          msg.putBooleanProperty("fast", true);
          producer.send(msg);
       }
@@ -305,7 +303,7 @@ public class MessagePriorityTest extends UnitTestCase
       session.start();
 
 
-      for (int i = 0 ; i < 333; i++)
+      for (int i = 0; i < 333; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -313,7 +311,7 @@ public class MessagePriorityTest extends UnitTestCase
          assertTrue(msg.getBooleanProperty("fast"));
       }
 
-      for (int i = 0 ; i < 777; i++)
+      for (int i = 0; i < 777; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -345,8 +343,8 @@ public class MessagePriorityTest extends UnitTestCase
       server = addServer(HornetQServers.newHornetQServer(config, false));
       server.start();
       locator =
-               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
+         addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            ServiceTestBase.INVM_CONNECTOR_FACTORY)));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       sf = createSessionFactory(locator);

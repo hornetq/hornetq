@@ -431,7 +431,7 @@ public class SimpleStringTest extends Assert
             }
          }
 
-         T x[] = new T[nThreads];
+         T[] x = new T[nThreads];
          for (int i = 0; i < nThreads; i++)
          {
             x[i] = new T();

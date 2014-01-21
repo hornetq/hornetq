@@ -32,13 +32,13 @@ public class TimeAndCounterIDGenerator implements IDGenerator
     */
    private static final int BITS_TO_MOVE = 20;
 
-   public static final long MASK_TIME = 0x7fffffffff0l;
+   public static final long MASK_TIME = 0x7fffffffff0L;
 
    // 44 bits of time and 20 bits of counter
 
-   public static final long ID_MASK = 0xffffffl;
+   public static final long ID_MASK = 0xffffffL;
 
-   private static final long TIME_ID_MASK = 0x7fffffffff000000l;
+   private static final long TIME_ID_MASK = 0x7fffffffff000000L;
 
    // Attributes ----------------------------------------------------
 

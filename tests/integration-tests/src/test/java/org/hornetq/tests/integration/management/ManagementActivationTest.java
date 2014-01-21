@@ -11,10 +11,13 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.NameNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
@@ -23,13 +26,9 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.TransportConfigurationUtils;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.NameNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Validates if a JMS management operations will wait until the server is activated.  If the server is not active
@@ -84,7 +83,7 @@ public class ManagementActivationTest extends FailoverTestBase
       List<String> connectorNames = new ArrayList<String>();
       connectorNames.add(connectorName);
 
-      ConnectionFactoryConfiguration config =  new ConnectionFactoryConfigurationImpl("test", false, connectorNames, "/myConnectionFactory");
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("test", false, connectorNames, "/myConnectionFactory");
       backupJmsServer.createConnectionFactory(true, config, "/myConnectionFactory");
 
       boolean exception = false;
@@ -228,7 +227,7 @@ public class ManagementActivationTest extends FailoverTestBase
    {
 
       // This test was deadlocking one in 10, so running it a couple times to make sure that won't happen any longer
-      for (int testrun = 0 ; testrun < 50; testrun++)
+      for (int testrun = 0; testrun < 50; testrun++)
       {
          boolean exception = false;
          try

@@ -31,8 +31,6 @@ import org.hornetq.spi.core.remoting.ReadyListener;
  * A CoreSessionCallback
  *
  * @author Tim Fox
- *
- *
  */
 public final class CoreSessionCallback implements SessionCallback
 {
@@ -116,7 +114,7 @@ public final class CoreSessionCallback implements SessionCallback
    @Override
    public void disconnect(long consumerId, String queueName)
    {
-      if(channel.supports(PacketImpl.DISCONNECT_CONSUMER))
+      if (channel.supports(PacketImpl.DISCONNECT_CONSUMER))
       {
          channel.send(new DisconnectConsumerMessage(consumerId));
       }

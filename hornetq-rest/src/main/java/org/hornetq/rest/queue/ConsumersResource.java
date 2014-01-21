@@ -12,11 +12,6 @@
  */
 package org.hornetq.rest.queue;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.util.TimeoutTask;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -32,6 +27,11 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.util.TimeoutTask;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -97,7 +97,7 @@ public class ConsumersResource implements TimeoutTask.Callback
       if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
       {
          HornetQRestLogger.LOGGER.shutdownRestConsumer(consumer.getId());
-         if(autoShutdown)
+         if (autoShutdown)
          {
             shutdown(consumer);
          }
@@ -118,7 +118,7 @@ public class ConsumersResource implements TimeoutTask.Callback
 
    private void shutdown(QueueConsumer consumer)
    {
-      synchronized(consumer)
+      synchronized (consumer)
       {
          consumer.shutdown();
          queueConsumers.remove(consumer.getId());
@@ -193,7 +193,7 @@ public class ConsumersResource implements TimeoutTask.Callback
    }
 
    public QueueConsumer createConsumer(String selector)
-           throws HornetQException
+      throws HornetQException
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new QueueConsumer(sessionFactory, destination, genId, serviceManager, selector);
@@ -202,7 +202,7 @@ public class ConsumersResource implements TimeoutTask.Callback
    }
 
    public QueueConsumer createAcknowledgedConsumer(String selector)
-           throws HornetQException
+      throws HornetQException
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new AcknowledgedQueueConsumer(sessionFactory, destination, genId, serviceManager, selector);
@@ -258,9 +258,9 @@ public class ConsumersResource implements TimeoutTask.Callback
 
    @Path("attributes-{attributes}/{consumer-id}")
    public QueueConsumer findConsumer(
-           @PathParam("attributes") int attributes,
-           @PathParam("consumer-id") String consumerId,
-           @Context UriInfo uriInfo) throws Exception
+      @PathParam("attributes") int attributes,
+      @PathParam("consumer-id") String consumerId,
+      @Context UriInfo uriInfo) throws Exception
    {
       QueueConsumer consumer = queueConsumers.get(consumerId);
       if (consumer == null)
@@ -269,8 +269,8 @@ public class ConsumersResource implements TimeoutTask.Callback
          {
 
             Response.ResponseBuilder builder = Response.status(Response.Status.GONE)
-                    .entity("Cannot reconnect to selector-based consumer.  You must recreate the consumer session.")
-                    .type("text/plain");
+               .entity("Cannot reconnect to selector-based consumer.  You must recreate the consumer session.")
+               .type("text/plain");
             UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             uriBuilder.path(uriInfo.getMatchedURIs().get(1));
             serviceManager.getLinkStrategy().setLinkHeader(builder, "pull-consumers", "pull-consumers", uriBuilder.build().toString(), null);
@@ -312,8 +312,8 @@ public class ConsumersResource implements TimeoutTask.Callback
    @Path("attributes-{attributes}/{consumer-id}")
    @DELETE
    public void closeSession(
-           @PathParam("consumer-id") String consumerId,
-           @Context UriInfo uriInfo)
+      @PathParam("consumer-id") String consumerId,
+      @Context UriInfo uriInfo)
    {
       HornetQRestLogger.LOGGER.debug("Handling DELETE request for \"" + uriInfo.getPath() + "\"");
 
@@ -321,8 +321,8 @@ public class ConsumersResource implements TimeoutTask.Callback
       if (consumer == null)
       {
          throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                 .entity("Failed to match a consumer to URL" + consumerId)
-                 .type("text/plain").build());
+                                              .entity("Failed to match a consumer to URL" + consumerId)
+                                              .type("text/plain").build());
       }
       consumer.shutdown();
    }

@@ -13,12 +13,10 @@
 package org.hornetq.core.journal;
 
 /**
- *
  * A RecordInfo
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class RecordInfo
 {
@@ -35,9 +33,11 @@ public class RecordInfo
       this.compactCount = compactCount;
    }
 
-   /** How many times this record was compacted (up to 7 times)
-       After the record has reached 7 times, it will always be 7
-       As we only store up to 0x7 binary, as part of the recordID (binary 111) */
+   /**
+    * How many times this record was compacted (up to 7 times)
+    * After the record has reached 7 times, it will always be 7
+    * As we only store up to 0x7 binary, as part of the recordID (binary 111)
+    */
    public final short compactCount;
 
    public final long id;
@@ -56,17 +56,17 @@ public class RecordInfo
    @Override
    public int hashCode()
    {
-      return (int)(id >>> 32 ^ id);
+      return (int) (id >>> 32 ^ id);
    }
 
    @Override
    public boolean equals(final Object other)
    {
-     if (!(other instanceof RecordInfo))
-     {
+      if (!(other instanceof RecordInfo))
+      {
          return false;
       }
-      RecordInfo r = (RecordInfo)other;
+      RecordInfo r = (RecordInfo) other;
 
       return r.id == id;
    }
@@ -75,12 +75,12 @@ public class RecordInfo
    public String toString()
    {
       return "RecordInfo (id=" + id +
-             ", userRecordType = " +
-             userRecordType +
-             ", data.length = " +
-             data.length +
-             ", isUpdate = " +
-             isUpdate;
+         ", userRecordType = " +
+         userRecordType +
+         ", data.length = " +
+         data.length +
+         ", isUpdate = " +
+         isUpdate;
    }
 
 }

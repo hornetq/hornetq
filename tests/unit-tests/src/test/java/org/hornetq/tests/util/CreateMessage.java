@@ -31,19 +31,18 @@ public final class CreateMessage
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4);
+                                                          (byte) 4);
       message.getBodyBuffer().writeString(s);
       return message;
    }
 
-   public static
-            ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
+   public static ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
    {
       ClientMessage message = session.createMessage(HornetQBytesMessage.TYPE,
                                                     durable,
                                                     0,
                                                     System.currentTimeMillis(),
-                                                    (byte)1);
+                                                    (byte) 1);
       message.getBodyBuffer().writeBytes(b);
       return message;
    }
@@ -54,7 +53,7 @@ public final class CreateMessage
                                                     durable,
                                                     0,
                                                     System.currentTimeMillis(),
-                                                    (byte)1);
+                                                    (byte) 1);
       message.getBodyBuffer().writeString(s);
       return message;
    }

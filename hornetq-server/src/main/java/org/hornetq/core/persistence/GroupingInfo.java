@@ -20,9 +20,9 @@ import org.hornetq.api.core.SimpleString;
  */
 public interface GroupingInfo
 {
-   public SimpleString getClusterName();
+   SimpleString getClusterName();
 
-   public SimpleString getGroupId();
+   SimpleString getGroupId();
 
-   public long getId();
+   long getId();
 }

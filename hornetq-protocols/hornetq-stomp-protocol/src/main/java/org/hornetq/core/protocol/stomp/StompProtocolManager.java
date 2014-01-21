@@ -32,8 +32,8 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQMessageBundle;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.server.management.ManagementService;
@@ -70,7 +70,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    // key => connection ID, value => Stomp session
    private final Map<Object, StompSession> sessions = new HashMap<Object, StompSession>();
-   
+
    private final Set<String> destinations = new ConcurrentHashSet<String>();
 
    // Static --------------------------------------------------------
@@ -99,7 +99,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       // Note that STOMP 1.0 has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
 
-      String ttlStr = (String)acceptorUsed.getConfiguration().get("connection-ttl");
+      String ttlStr = (String) acceptorUsed.getConfiguration().get("connection-ttl");
       Long ttl = ttlStr == null ? null : Long.valueOf(ttlStr);
 
       if (ttl != null)
@@ -130,7 +130,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
-      StompConnection conn = (StompConnection)connection;
+      StompConnection conn = (StompConnection) connection;
 
       conn.setDataReceived();
 
@@ -222,7 +222,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       if (stompSession == null)
       {
          stompSession = new StompSession(connection, this, server.getStorageManager()
-                                                                 .newContext(server.getExecutorFactory().getExecutor()));
+            .newContext(server.getExecutorFactory().getExecutor()));
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -324,7 +324,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
             HornetQServerLogger.LOGGER.errorProcessingIOCallback(errorCode, errorMessage);
 
             HornetQStompException e = new HornetQStompException("Error sending reply",
-                  HornetQExceptionType.createException(errorCode, errorMessage));
+                                                                HornetQExceptionType.createException(errorCode, errorMessage));
 
             StompFrame error = e.getFrame();
             send(connection, error);
@@ -390,15 +390,15 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    // Inner classes -------------------------------------------------
 
    public void createSubscription(StompConnection connection,
-         String subscriptionID, String durableSubscriptionName,
-         String destination, String selector, String ack, boolean noLocal) throws Exception
+                                  String subscriptionID, String durableSubscriptionName,
+                                  String destination, String selector, String ack, boolean noLocal) throws Exception
    {
       StompSession stompSession = getSession(connection);
       stompSession.setNoLocal(noLocal);
       if (stompSession.containsSubscription(subscriptionID))
       {
          throw new HornetQStompException("There already is a subscription for: " + subscriptionID +
-                                  ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
+                                            ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
       long consumerID = server.getStorageManager().generateUniqueID();
       String clientID = (connection.getClientID() != null) ? connection.getClientID() : null;
@@ -412,7 +412,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    }
 
    public void unsubscribe(StompConnection connection,
-         String subscriptionID, String durableSubscriberName) throws Exception
+                           String subscriptionID, String durableSubscriberName) throws Exception
    {
       StompSession stompSession = getSession(connection);
       boolean unsubscribed = stompSession.unsubscribe(subscriptionID, durableSubscriberName);
@@ -439,7 +439,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
       // create the transacted session
       getTransactedSession(connection, txID);
    }
-   
+
    public boolean destinationExists(String destination)
    {
       return destinations.contains(destination);
@@ -469,9 +469,9 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
             }
 
             SimpleString address = props.getSimpleStringProperty(ManagementHelper.HDR_ADDRESS);
-            
+
             destinations.add(address.toString());
-            
+
             break;
          }
          default:

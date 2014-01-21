@@ -11,19 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.timing.jms.bridge.impl;
-import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.jms.management.JMSQueueControl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.lang.management.ManagementFactory;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -44,12 +31,18 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import org.junit.Assert;
+import java.lang.management.ManagementFactory;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -65,11 +58,13 @@ import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSBridgeImplTest extends UnitTestCase
 {
@@ -109,8 +104,8 @@ public class JMSBridgeImplTest extends UnitTestCase
          }
 
          public void resume(final Transaction arg0) throws InvalidTransactionException,
-                                                   IllegalStateException,
-                                                   SystemException
+            IllegalStateException,
+            SystemException
          {
          }
 
@@ -125,11 +120,11 @@ public class JMSBridgeImplTest extends UnitTestCase
          }
 
          public void commit() throws RollbackException,
-                             HeuristicMixedException,
-                             HeuristicRollbackException,
-                             SecurityException,
-                             IllegalStateException,
-                             SystemException
+            HeuristicMixedException,
+            HeuristicRollbackException,
+            SecurityException,
+            IllegalStateException,
+            SystemException
          {
          }
 
@@ -148,7 +143,7 @@ public class JMSBridgeImplTest extends UnitTestCase
             return dest;
          }
       };
-   };
+   }
 
    private static ConnectionFactoryFactory newConnectionFactoryFactory(final ConnectionFactory cf)
    {
@@ -181,7 +176,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
-                  private static final long serialVersionUID = 2834937512213001068L;
+         private static final long serialVersionUID = 2834937512213001068L;
 
          @Override
          public Connection createConnection() throws JMSException
@@ -227,7 +222,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
-                  private static final long serialVersionUID = 4657153922210359725L;
+         private static final long serialVersionUID = 4657153922210359725L;
          boolean firstTime = true;
 
          @Override
@@ -477,11 +472,11 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       sourceConn.close();
 
-      JMSQueueControl jmsQueueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(
-            ManagementFactory.getPlatformMBeanServer(),
-            ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
-            JMSQueueControl.class,
-            false);
+      JMSQueueControl jmsQueueControl = (JMSQueueControl) MBeanServerInvocationHandler.newProxyInstance(
+         ManagementFactory.getPlatformMBeanServer(),
+         ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
+         JMSQueueControl.class,
+         false);
       assertNotEquals(jmsQueueControl.getDeliveringCount(), numMessages);
 
       bridge.stop();
@@ -494,7 +489,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
       HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
-                  private static final long serialVersionUID = -8866390811966688830L;
+         private static final long serialVersionUID = -8866390811966688830L;
 
          @Override
          public Connection createConnection() throws JMSException
@@ -546,26 +541,26 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
       HornetQJMSConnectionFactory failingSourceCF =
-               new HornetQJMSConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY))
-      {
-                  private static final long serialVersionUID = 8216804886099984645L;
-         boolean firstTime = true;
-
-         @Override
-         public Connection createConnection() throws JMSException
+         new HornetQJMSConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY))
          {
-            if (firstTime)
+            private static final long serialVersionUID = 8216804886099984645L;
+            boolean firstTime = true;
+
+            @Override
+            public Connection createConnection() throws JMSException
             {
-               firstTime = false;
-               sourceConn.set(super.createConnection());
-               return sourceConn.get();
+               if (firstTime)
+               {
+                  firstTime = false;
+                  sourceConn.set(super.createConnection());
+                  return sourceConn.get();
+               }
+               else
+               {
+                  throw new JMSException("exception while retrying to connect");
+               }
             }
-            else
-            {
-               throw new JMSException("exception while retrying to connect");
-            }
-         }
-      };
+         };
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       failingSourceCF.setReconnectAttempts(0);
       failingSourceCF.setBlockOnNonDurableSend(true);

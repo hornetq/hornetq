@@ -15,10 +15,6 @@ package org.hornetq.core.paging;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.paging.impl.Page;
-import org.hornetq.core.postoffice.Address;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 

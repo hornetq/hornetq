@@ -12,9 +12,6 @@
  */
 package org.hornetq.jms.tests.stress;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -26,6 +23,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -35,7 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
  * Create 500 connections each with a consumer, consuming from a topic
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -91,76 +89,76 @@ public class ManyConnectionsStressTest extends HornetQServerTestCase
    @Test
    public void testManyConnections() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
 
-      Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
+      Topic topic = (Topic) ic.lookup("/topic/StressTestTopic");
 
       Connection[] conns = new Connection[ManyConnectionsStressTest.NUM_CONNECTIONS];
 
-         for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
-         {
-            conns[i] = addConnection(cf.createConnection());
+      for (int i = 0; i < ManyConnectionsStressTest.NUM_CONNECTIONS; i++)
+      {
+         conns[i] = addConnection(cf.createConnection());
 
-            Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            MessageConsumer cons = sess.createConsumer(topic);
+         MessageConsumer cons = sess.createConsumer(topic);
 
-            MyListener listener = new MyListener();
-
-            synchronized (listeners)
-            {
-               listeners.add(listener);
-            }
-
-            cons.setMessageListener(listener);
-
-            conns[i].start();
-
-            log.info("Created " + i);
-         }
-
-         // Thread.sleep(100 * 60 * 1000);
-
-      Connection connSend = addConnection(cf.createConnection());
-
-         Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageProducer prod = sessSend.createProducer(topic);
-
-         for (int i = 0; i < ManyConnectionsStressTest.NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sessSend.createTextMessage("message" + i);
-
-            tm.setIntProperty("count", i);
-
-            prod.send(tm);
-         }
-
-         long wait = 30000;
+         MyListener listener = new MyListener();
 
          synchronized (listeners)
          {
-            while (!listeners.isEmpty() && wait > 0)
-            {
-               long start = System.currentTimeMillis();
-               try
-               {
-                  listeners.wait(wait);
-               }
-               catch (InterruptedException e)
-               {
-                  // Ignore
-               }
-               wait -= System.currentTimeMillis() - start;
-            }
+            listeners.add(listener);
          }
 
-         if (wait <= 0)
+         cons.setMessageListener(listener);
+
+         conns[i].start();
+
+         log.info("Created " + i);
+      }
+
+      // Thread.sleep(100 * 60 * 1000);
+
+      Connection connSend = addConnection(cf.createConnection());
+
+      Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = sessSend.createProducer(topic);
+
+      for (int i = 0; i < ManyConnectionsStressTest.NUM_MESSAGES; i++)
+      {
+         TextMessage tm = sessSend.createTextMessage("message" + i);
+
+         tm.setIntProperty("count", i);
+
+         prod.send(tm);
+      }
+
+      long wait = 30000;
+
+      synchronized (listeners)
+      {
+         while (!listeners.isEmpty() && wait > 0)
          {
-            ProxyAssertSupport.fail("Timed out");
+            long start = System.currentTimeMillis();
+            try
+            {
+               listeners.wait(wait);
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+            wait -= System.currentTimeMillis() - start;
          }
+      }
 
-         ProxyAssertSupport.assertFalse(failed);
+      if (wait <= 0)
+      {
+         ProxyAssertSupport.fail("Timed out");
+      }
+
+      ProxyAssertSupport.assertFalse(failed);
    }
 
    private void finished(final MyListener listener)

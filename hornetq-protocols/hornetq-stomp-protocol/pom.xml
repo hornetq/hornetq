@@ -9,6 +9,10 @@
 
    <artifactId>hornetq-stomp-protocol</artifactId>
 
+   <properties>
+      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
          <groupId>org.jboss.logging</groupId>

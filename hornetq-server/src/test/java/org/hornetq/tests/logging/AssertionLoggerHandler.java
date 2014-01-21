@@ -13,80 +13,96 @@
 package org.hornetq.tests.logging;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
-import java.util.logging.Level;
-import java.util.Map;
-import java.util.HashMap;
 import org.junit.Assert;
 
 /**
- *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
-public class AssertionLoggerHandler extends ExtHandler {
+public class AssertionLoggerHandler extends ExtHandler
+{
 
-    private final static Map<String, ExtLogRecord> messages = new HashMap<String, ExtLogRecord>();
-    private static boolean capture = false;
+   private static final Map<String, ExtLogRecord> messages = new HashMap<String, ExtLogRecord>();
+   private static boolean capture = false;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void flush() {
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void flush()
+   {
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void close() throws SecurityException {
-    }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void close() throws SecurityException
+   {
+   }
 
-    @Override
-    protected void doPublish(final ExtLogRecord record) {
-        if (capture) {
-            messages.put(record.getFormattedMessage(), record);
-        }
-    }
+   @Override
+   protected void doPublish(final ExtLogRecord record)
+   {
+      if (capture)
+      {
+         messages.put(record.getFormattedMessage(), record);
+      }
+   }
 
-    public static void assertMessageWasLogged(String assertionMessage, String expectedMessage) {
-        if (!messages.containsKey(expectedMessage)) {
-            throw new AssertionError(assertionMessage);
-        }
-    }
+   public static void assertMessageWasLogged(String assertionMessage, String expectedMessage)
+   {
+      if (!messages.containsKey(expectedMessage))
+      {
+         throw new AssertionError(assertionMessage);
+      }
+   }
 
-    public static void assertMessageWasLogged(String message) {
-        if (!messages.containsKey(message)) {
-            throw new AssertionError(Arrays.toString(messages.keySet().toArray()));
-        }
-    }
+   public static void assertMessageWasLogged(String message)
+   {
+      if (!messages.containsKey(message))
+      {
+         throw new AssertionError(Arrays.toString(messages.keySet().toArray()));
+      }
+   }
 
-    public static void assertMessageWasLoggedWithLevel(String expectedMessage, Level expectedLevel) {
-        if (!messages.containsKey(expectedMessage)) {
-            throw new AssertionError((Arrays.toString(messages.keySet().toArray())));
-        }
-        Assert.assertEquals(expectedLevel, messages.get(expectedMessage).getLevel());
-    }
+   public static void assertMessageWasLoggedWithLevel(String expectedMessage, Level expectedLevel)
+   {
+      if (!messages.containsKey(expectedMessage))
+      {
+         throw new AssertionError((Arrays.toString(messages.keySet().toArray())));
+      }
+      Assert.assertEquals(expectedLevel, messages.get(expectedMessage).getLevel());
+   }
 
-    public static void assertMessageWasLoggedWithLevel(String assertionMessage, String expectedMessage, Level expectedLevel) {
-        if (!messages.containsKey(expectedMessage)) {
-            throw new AssertionError(assertionMessage);
-        }
-        Assert.assertEquals(assertionMessage, expectedLevel, messages.get(expectedMessage).getLevel());
-    }
+   public static void assertMessageWasLoggedWithLevel(String assertionMessage, String expectedMessage, Level expectedLevel)
+   {
+      if (!messages.containsKey(expectedMessage))
+      {
+         throw new AssertionError(assertionMessage);
+      }
+      Assert.assertEquals(assertionMessage, expectedLevel, messages.get(expectedMessage).getLevel());
+   }
 
-    public static final void clear() {
-        messages.clear();
-    }
+   public static final void clear()
+   {
+      messages.clear();
+   }
 
-    public static final void startCapture() {
-        clear();
-        capture = true;
-    }
+   public static final void startCapture()
+   {
+      clear();
+      capture = true;
+   }
 
-    public static final void stopCapture() {
-        capture = false;
-        clear();
-    }
+   public static final void stopCapture()
+   {
+      capture = false;
+      clear();
+   }
 }

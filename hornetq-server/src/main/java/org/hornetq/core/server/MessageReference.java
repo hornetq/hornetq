@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.server;
 
-import org.hornetq.core.transaction.Transaction;
 
 /**
  * A reference to a message.
@@ -21,7 +20,6 @@ import org.hornetq.core.transaction.Transaction;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 3020 $</tt>
  *
  */
 public interface MessageReference

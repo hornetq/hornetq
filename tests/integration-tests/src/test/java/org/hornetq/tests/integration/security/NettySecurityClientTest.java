@@ -11,21 +11,19 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.security;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-
-import org.junit.Assert;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A NettySecurityClientTest
@@ -71,9 +69,9 @@ public class NettySecurityClientTest extends ServiceTestBase
       if (withSecurityManager)
       {
          URL securityPolicyURL = Thread.currentThread()
-                                       .getContextClassLoader()
-                                       .getResource("restricted-security-client.policy");
-         vmargs = new String[] { "-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath() };
+            .getContextClassLoader()
+            .getResource("restricted-security-client.policy");
+         vmargs = new String[]{"-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath()};
       }
 
       // spawn a JVM that creates a client with a security manager which sends and receives a
@@ -83,7 +81,7 @@ public class NettySecurityClientTest extends ServiceTestBase
                                            vmargs,
                                            false,
                                            true,
-                                        new String[] { NETTY_CONNECTOR_FACTORY });
+                                           new String[]{NETTY_CONNECTOR_FACTORY});
 
       InputStreamReader isr = new InputStreamReader(p.getInputStream());
 

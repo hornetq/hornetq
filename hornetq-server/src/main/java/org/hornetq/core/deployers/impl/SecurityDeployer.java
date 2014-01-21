@@ -54,7 +54,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { FileConfigurationParser.SECURITY_ELEMENT_NAME };
+      return new String[]{FileConfigurationParser.SECURITY_ELEMENT_NAME};
    }
 
    @Override
@@ -65,6 +65,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * the key attribute for the element, usually 'name' but can be overridden
+    *
     * @return the key attribute
     */
    @Override
@@ -75,6 +76,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception
     */
@@ -87,6 +89,7 @@ public class SecurityDeployer extends XmlDeployer
 
    /**
     * undeploys an element
+    *
     * @param node the element to undeploy
     * @throws Exception
     */
@@ -105,6 +108,6 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "hornetq-configuration.xml", SecurityDeployer.QUEUES_XML };
+      return new String[]{"hornetq-configuration.xml", SecurityDeployer.QUEUES_XML};
    }
 }

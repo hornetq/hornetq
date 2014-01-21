@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -23,6 +21,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import java.io.Serializable;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -35,14 +34,12 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
 
 /**
- *
  * A ReferenceableTest.
- *
+ * <p/>
  * All administered objects should be referenceable and serializable as per spec 4.2
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
- *
  */
 public class ReferenceableTest extends JMSTestCase
 {
@@ -81,19 +78,19 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testReferenceCF() throws Exception
    {
-      Reference cfRef = ((Referenceable)cf).getReference();
+      Reference cfRef = ((Referenceable) cf).getReference();
 
       String factoryName = cfRef.getFactoryClassName();
 
       Class<?> factoryClass = Class.forName(factoryName);
 
-      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
+      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory) factoryClass.newInstance();
 
       Object instance = factory.getObjectInstance(cfRef, null, null, null);
 
       ProxyAssertSupport.assertTrue(instance instanceof HornetQConnectionFactory);
 
-      HornetQJMSConnectionFactory cf2 = (HornetQJMSConnectionFactory)instance;
+      HornetQJMSConnectionFactory cf2 = (HornetQJMSConnectionFactory) instance;
 
       simpleSendReceive(cf2, queue1);
    }
@@ -101,19 +98,19 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testReferenceQueue() throws Exception
    {
-      Reference queueRef = ((Referenceable)queue1).getReference();
+      Reference queueRef = ((Referenceable) queue1).getReference();
 
       String factoryName = queueRef.getFactoryClassName();
 
       Class<?> factoryClass = Class.forName(factoryName);
 
-      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
+      DestinationObjectFactory factory = (DestinationObjectFactory) factoryClass.newInstance();
 
       Object instance = factory.getObjectInstance(queueRef, null, null, null);
 
       ProxyAssertSupport.assertTrue(instance instanceof HornetQDestination);
 
-      HornetQQueue queue2 = (HornetQQueue)instance;
+      HornetQQueue queue2 = (HornetQQueue) instance;
 
       ProxyAssertSupport.assertEquals(queue1.getQueueName(), queue2.getQueueName());
 
@@ -123,19 +120,19 @@ public class ReferenceableTest extends JMSTestCase
    @Test
    public void testReferenceTopic() throws Exception
    {
-      Reference topicRef = ((Referenceable)HornetQServerTestCase.topic1).getReference();
+      Reference topicRef = ((Referenceable) HornetQServerTestCase.topic1).getReference();
 
       String factoryName = topicRef.getFactoryClassName();
 
       Class factoryClass = Class.forName(factoryName);
 
-      DestinationObjectFactory factory = (DestinationObjectFactory)factoryClass.newInstance();
+      DestinationObjectFactory factory = (DestinationObjectFactory) factoryClass.newInstance();
 
       Object instance = factory.getObjectInstance(topicRef, null, null, null);
 
       ProxyAssertSupport.assertTrue(instance instanceof HornetQDestination);
 
-      HornetQTopic topic2 = (HornetQTopic)instance;
+      HornetQTopic topic2 = (HornetQTopic) instance;
 
       ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1.getTopicName(), topic2.getTopicName());
 
@@ -146,23 +143,23 @@ public class ReferenceableTest extends JMSTestCase
    {
       Connection conn = createConnection(cf1);
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(dest);
+      MessageProducer prod = sess.createProducer(dest);
 
-         MessageConsumer cons = sess.createConsumer(dest);
+      MessageConsumer cons = sess.createConsumer(dest);
 
-         conn.start();
+      conn.start();
 
-         TextMessage tm = sess.createTextMessage("ref test");
+      TextMessage tm = sess.createTextMessage("ref test");
 
-         prod.send(tm);
+      prod.send(tm);
 
-         tm = (TextMessage)cons.receive(1000);
+      tm = (TextMessage) cons.receive(1000);
 
-         ProxyAssertSupport.assertNotNull(tm);
+      ProxyAssertSupport.assertNotNull(tm);
 
-         ProxyAssertSupport.assertEquals("ref test", tm.getText());
+      ProxyAssertSupport.assertEquals("ref test", tm.getText());
    }
 
 }

@@ -25,11 +25,10 @@ import org.hornetq.api.core.HornetQBuffers;
  *
  * @author <a href="http://hiramchirino.com">chirino</a>
  * @author Tim Fox
- *
  */
 public class StompFrame
 {
-   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
+   private static final byte[] END_OF_FRAME = new byte[]{0, '\n'};
 
    protected final String command;
 
@@ -60,7 +59,7 @@ public class StompFrame
    }
 
    public StompFrame(String command, Map<String, String> headers,
-         byte[] content)
+                     byte[] content)
    {
       this.command = command;
       this.headers = headers;
@@ -85,7 +84,7 @@ public class StompFrame
    public String toString()
    {
       return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " +
-               Arrays.toString(bytesBody);
+         Arrays.toString(bytesBody);
    }
 
    public boolean isPing()
@@ -113,7 +112,7 @@ public class StompFrame
 
          if (isPing())
          {
-            buffer.writeByte((byte)10);
+            buffer.writeByte((byte) 10);
             return buffer;
          }
 
@@ -188,7 +187,7 @@ public class StompFrame
    {
       int len = str.length();
 
-      char[] buffer = new char[2*len];
+      char[] buffer = new char[2 * len];
       int iBuffer = 0;
       for (int i = 0; i < len; i++)
       {

@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 /**
  * A SendAcknowledgementsTest
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
@@ -61,23 +63,23 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
 
       boolean failed = false;
-         try
+      try
+      {
+         session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
          {
-            session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
+            public void sendAcknowledged(Message message)
             {
-               public void sendAcknowledged(Message message)
-               {
-               }
-            });
-         }
-         catch (Throwable expected)
-         {
-            failed = true;
-         }
+            }
+         });
+      }
+      catch (Throwable expected)
+      {
+         failed = true;
+      }
 
-         assertTrue("Expected a failure on setting ACK Handler", failed);
+      assertTrue("Expected a failure on setting ACK Handler", failed);
 
-         session.createQueue(address, queueName, false);
+      session.createQueue(address, queueName, false);
    }
 
    @Test

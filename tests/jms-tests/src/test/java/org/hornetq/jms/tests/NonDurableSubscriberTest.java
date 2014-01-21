@@ -25,7 +25,6 @@ import org.junit.Test;
  * Non-durable subscriber tests.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class NonDurableSubscriberTest extends JMSTestCase
 {
@@ -49,17 +48,17 @@ public class NonDurableSubscriberTest extends JMSTestCase
    {
       TopicConnection conn = createTopicConnection();
 
-         TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         try
-         {
-            ts.createSubscriber(null);
-            ProxyAssertSupport.fail("this should fail");
-         }
-         catch (javax.jms.InvalidDestinationException e)
-         {
-            // OK
-         }
+      try
+      {
+         ts.createSubscriber(null);
+         ProxyAssertSupport.fail("this should fail");
+      }
+      catch (javax.jms.InvalidDestinationException e)
+      {
+         // OK
+      }
    }
 
    /**
@@ -69,38 +68,38 @@ public class NonDurableSubscriberTest extends JMSTestCase
    public void testNonDurableSubscriberInvalidUnsubscribe() throws Exception
    {
       TopicConnection conn = createTopicConnection();
-         conn.setClientID("clientIDxyz123");
+      conn.setClientID("clientIDxyz123");
 
-         TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         try
-         {
-            ts.unsubscribe("invalid-subscription-name");
-            ProxyAssertSupport.fail("this should fail");
-         }
-         catch (javax.jms.InvalidDestinationException e)
-         {
-            // OK
-         }
+      try
+      {
+         ts.unsubscribe("invalid-subscription-name");
+         ProxyAssertSupport.fail("this should fail");
+      }
+      catch (javax.jms.InvalidDestinationException e)
+      {
+         // OK
+      }
    }
 
    @Test
    public void testInvalidSelectorOnSubscription() throws Exception
    {
       TopicConnection c = createTopicConnection();
-         c.setClientID("something");
+      c.setClientID("something");
 
-         TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+      TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         try
-         {
-            s.createSubscriber(HornetQServerTestCase.topic1, "=TEST 'test'", false);
-            ProxyAssertSupport.fail("this should fail");
-         }
-         catch (InvalidSelectorException e)
-         {
-            // OK
-         }
+      try
+      {
+         s.createSubscriber(HornetQServerTestCase.topic1, "=TEST 'test'", false);
+         ProxyAssertSupport.fail("this should fail");
+      }
+      catch (InvalidSelectorException e)
+      {
+         // OK
+      }
    }
 
    // Package protected ---------------------------------------------

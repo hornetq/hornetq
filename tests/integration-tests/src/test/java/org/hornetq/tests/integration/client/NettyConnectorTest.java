@@ -11,12 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+
 import io.netty.bootstrap.Bootstrap;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
@@ -26,6 +22,9 @@ import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -52,16 +51,16 @@ public class NettyConnectorTest extends ServiceTestBase
       final int timeout = 23456;
       TransportConfiguration transport = new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       transport.getParams().put(TransportConstants.NETTY_CONNECT_TIMEOUT, timeout);
-      
+
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transport);
 
       ClientSessionFactoryImpl factory = (ClientSessionFactoryImpl) locator.createSessionFactory();
       NettyConnector connector = (NettyConnector) factory.getConnector();
-      
+
       Bootstrap bootstrap = connector.getBootStrap();
-      
+
       assertEquals(timeout, bootstrap.register().channel().config().getConnectTimeoutMillis());
-      
+
       factory.close();
       locator.close();
    }

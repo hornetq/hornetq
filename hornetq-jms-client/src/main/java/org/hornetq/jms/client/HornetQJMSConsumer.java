@@ -40,7 +40,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          return consumer.getMessageSelector();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -52,7 +53,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          return consumer.getMessageListener();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -64,7 +66,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          consumer.setMessageListener(new MessageListenerWrapper(listener));
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -76,7 +79,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          return context.setLastMessage(this, consumer.receive());
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -88,7 +92,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          return context.setLastMessage(this, consumer.receive(timeout));
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -100,7 +105,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          return context.setLastMessage(this, consumer.receiveNoWait());
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -112,7 +118,8 @@ public class HornetQJMSConsumer implements JMSConsumer
       try
       {
          consumer.close();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -125,7 +132,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       {
          Message message = consumer.receive();
          context.setLastMessage(HornetQJMSConsumer.this, message);
-         return message == null?null:message.getBody(c);
+         return message == null ? null : message.getBody(c);
       }
       catch (JMSException e)
       {
@@ -140,7 +147,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       {
          Message message = consumer.receive(timeout);
          context.setLastMessage(HornetQJMSConsumer.this, message);
-         return message == null?null:message.getBody(c);
+         return message == null ? null : message.getBody(c);
       }
       catch (JMSException e)
       {
@@ -155,7 +162,7 @@ public class HornetQJMSConsumer implements JMSConsumer
       {
          Message message = consumer.receiveNoWait();
          context.setLastMessage(HornetQJMSConsumer.this, message);
-         return message == null?null:message.getBody(c);
+         return message == null ? null : message.getBody(c);
       }
       catch (JMSException e)
       {

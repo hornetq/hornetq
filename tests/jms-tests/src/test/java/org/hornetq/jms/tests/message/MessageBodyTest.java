@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.message;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
 
 import javax.jms.BytesMessage;
 import javax.jms.MapMessage;
@@ -24,18 +21,18 @@ import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * A MessageBodyTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class MessageBodyTest extends MessageBodyTestCase
 {
@@ -49,7 +46,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       sm.setStringProperty("COM_SUN_JMS_TESTNAME", "xMessageEOFExceptionQTestforStreamMessage");
       queueProducer.send(sm);
 
-      StreamMessage received = (StreamMessage)queueConsumer.receive(3000);
+      StreamMessage received = (StreamMessage) queueConsumer.receive(3000);
       received.readByte();
    }
 
@@ -69,7 +66,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
       log.trace("String is length:" + myString.length());
       char myChar = 'q';
-      byte[] myBytes = new byte[] { -23, 114, -126, -12, 74, 87 };
+      byte[] myBytes = new byte[]{-23, 114, -126, -12, 74, 87};
 
       m.writeBoolean(myBool);
       m.writeByte(myByte);
@@ -226,7 +223,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       queueProducer.send(m);
 
-      BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
+      BytesMessage m2 = (BytesMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertNotNull(m2);
 
@@ -573,7 +570,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       queueProducer.send(m1);
 
-      MapMessage m2 = (MapMessage)queueConsumer.receive(2000);
+      MapMessage m2 = (MapMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertNotNull(m2);
 
@@ -1137,11 +1134,11 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       queueProducer.send(m1);
 
-      ObjectMessage m2 = (ObjectMessage)queueConsumer.receive(2000);
+      ObjectMessage m2 = (ObjectMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertNotNull(m2);
 
-      TestSerializable obj2 = (TestSerializable)m2.getObject();
+      TestSerializable obj2 = (TestSerializable) m2.getObject();
 
       ProxyAssertSupport.assertEquals(obj.str, obj2.str);
 
@@ -1153,11 +1150,11 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       obj.str = "xyz123";
 
-      ObjectMessage m4 = (ObjectMessage)queueConsumer.receive(2000);
+      ObjectMessage m4 = (ObjectMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertNotNull(m4);
 
-      TestSerializable obj3 = (TestSerializable)m4.getObject();
+      TestSerializable obj3 = (TestSerializable) m4.getObject();
 
       ProxyAssertSupport.assertEquals("abcdefg", obj3.str);
 
@@ -1174,7 +1171,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       m4.setObject(obj);
 
-      TestSerializable obj4 = (TestSerializable)m4.getObject();
+      TestSerializable obj4 = (TestSerializable) m4.getObject();
 
       ProxyAssertSupport.assertNotNull(obj4);
 
@@ -1195,7 +1192,7 @@ public class MessageBodyTest extends MessageBodyTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
       char myChar = 'q';
-      byte[] myBytes = new byte[] { -23, 114, -126, -12, 74, 87 };
+      byte[] myBytes = new byte[]{-23, 114, -126, -12, 74, 87};
 
       m.writeBoolean(myBool);
       m.writeByte(myByte);
@@ -1297,7 +1294,7 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       queueProducer.send(m);
 
-      StreamMessage m2 = (StreamMessage)queueConsumer.receive(2000);
+      StreamMessage m2 = (StreamMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myBool, m2.readBoolean());
       ProxyAssertSupport.assertEquals(myByte, m2.readByte());
@@ -1573,14 +1570,14 @@ public class MessageBodyTest extends MessageBodyTestCase
 
       queueProducer.send(m);
 
-      TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
+      TextMessage m2 = (TextMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myString, m2.getText());
 
       m = queueProducerSession.createTextMessage(myString);
       queueProducer.send(m);
 
-      m2 = (TextMessage)queueConsumer.receive(2000);
+      m2 = (TextMessage) queueConsumer.receive(2000);
 
       ProxyAssertSupport.assertEquals(myString, m2.getText());
 

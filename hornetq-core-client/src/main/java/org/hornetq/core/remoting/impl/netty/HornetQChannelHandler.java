@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
-import com.sun.corba.se.pept.protocol.ProtocolHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;

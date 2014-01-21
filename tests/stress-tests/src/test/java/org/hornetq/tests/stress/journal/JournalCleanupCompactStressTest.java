@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,13 +45,14 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SoakJournal
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalCleanupCompactStressTest extends ServiceTestBase
 {
@@ -155,7 +152,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      if (running)
                      {
                         long id = idGen.generateID();
-                        journal.appendAddRecord(id, (byte)0, new byte[] { 1, 2, 3 }, false);
+                        journal.appendAddRecord(id, (byte) 0, new byte[]{1, 2, 3}, false);
                         journal.forceMoveNextFile();
                         journal.appendDeleteRecord(id, id == 20);
                      }
@@ -206,8 +203,8 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       int NTHREADS = 5;
 
-      FastAppenderTx appenders[] = new FastAppenderTx[NTHREADS];
-      FastUpdateTx updaters[] = new FastUpdateTx[NTHREADS];
+      FastAppenderTx[] appenders = new FastAppenderTx[NTHREADS];
+      FastUpdateTx[] updaters = new FastUpdateTx[NTHREADS];
 
       for (int i = 0; i < NTHREADS; i++)
       {
@@ -230,12 +227,12 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       while (System.currentTimeMillis() < timeToEnd)
       {
          System.out.println("Append = " + numberOfRecords +
-                            ", Update = " +
-                            numberOfUpdates +
-                            ", Delete = " +
-                            numberOfDeletes +
-                            ", liveRecords = " +
-                            (numberOfRecords.get() - numberOfDeletes.get()));
+                               ", Update = " +
+                               numberOfUpdates +
+                               ", Delete = " +
+                               numberOfDeletes +
+                               ", liveRecords = " +
+                               (numberOfRecords.get() - numberOfDeletes.get()));
          Thread.sleep(TimeUnit.SECONDS.toMillis(10));
          rwLock.writeLock().lock();
          System.out.println("Restarting server");
@@ -367,20 +364,20 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
                long rollbackTXID = JournalCleanupCompactStressTest.idGen.generateID();
 
-               final long ids[] = new long[txSize];
+               final long[] ids = new long[txSize];
 
                for (int i = 0; i < txSize; i++)
                {
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
                }
 
-               journal.appendAddRecordTransactional(rollbackTXID, ids[0], (byte)0, generateRecord());
+               journal.appendAddRecordTransactional(rollbackTXID, ids[0], (byte) 0, generateRecord());
                journal.appendRollbackRecord(rollbackTXID, true);
 
                for (int i = 0; i < txSize; i++)
                {
                   long id = ids[i];
-                  journal.appendAddRecordTransactional(txID, id, (byte)0, generateRecord());
+                  journal.appendAddRecordTransactional(txID, id, (byte) 0, generateRecord());
                   maxRecords.acquire();
                }
                journal.appendCommitRecord(txID, true, ctx);
@@ -446,7 +443,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
          {
             int txSize = RandomUtil.randomMax(100);
             int txCount = 0;
-            long ids[] = new long[txSize];
+            long[] ids = new long[txSize];
 
             long txID = JournalCleanupCompactStressTest.idGen.generateID();
 
@@ -457,7 +454,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                if (id != null)
                {
                   ids[txCount++] = id;
-                  journal.appendUpdateRecordTransactional(txID, id, (byte)0, generateRecord());
+                  journal.appendUpdateRecordTransactional(txID, id, (byte) 0, generateRecord());
                }
                if (txCount == txSize || id == null)
                {
@@ -500,9 +497,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    class DeleteTask implements IOAsyncTask
    {
-      final long ids[];
+      final long[] ids;
 
-      DeleteTask(final long ids[])
+      DeleteTask(final long[] ids)
       {
          this.ids = ids;
       }
@@ -542,8 +539,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    }
 
-   /** Adds stuff to the journal, but it will take a long time to remove them.
-    *  This will cause cleanup and compacting to happen more often
+   /**
+    * Adds stuff to the journal, but it will take a long time to remove them.
+    * This will cause cleanup and compacting to happen more often
     */
    class SlowAppenderNoTX extends Thread
    {
@@ -561,14 +559,14 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
          {
             while (running)
             {
-               long ids[] = new long[5];
+               long[] ids = new long[5];
                // Append
                for (int i = 0; running & i < ids.length; i++)
                {
                   System.out.println("append slow");
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
                   maxRecords.acquire();
-                  journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
+                  journal.appendAddRecord(ids[i], (byte) 1, generateRecord(), true);
                   numberOfRecords.incrementAndGet();
 
                   rwLock.readLock().unlock();

@@ -28,7 +28,6 @@ import org.hornetq.utils.json.JSONObject;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public final class ManagementHelper
 {
@@ -83,10 +82,9 @@ public final class ManagementHelper
    /**
     * Stores a resource attribute in a message to retrieve the value from the server resource.
     *
-    * @param message message
+    * @param message      message
     * @param resourceName the name of the resource
-    * @param attribute the name of the attribute
-    *
+    * @param attribute    the name of the attribute
     * @see ResourceNames
     */
    public static void putAttribute(final Message message, final String resourceName, final String attribute)
@@ -98,27 +96,25 @@ public final class ManagementHelper
    /**
     * Stores a operation invocation in a message to invoke the corresponding operation the value from the server resource.
     *
-    * @param message  message
-    * @param resourceName the name of the resource
+    * @param message       message
+    * @param resourceName  the name of the resource
     * @param operationName the name of the operation to invoke on the resource
-    *
     * @see ResourceNames
     */
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName) throws Exception
    {
-      ManagementHelper.putOperationInvocation(message, resourceName, operationName, (Object[])null);
+      ManagementHelper.putOperationInvocation(message, resourceName, operationName, (Object[]) null);
    }
 
    /**
     * Stores a operation invocation in a  message to invoke the corresponding operation the value from the server resource.
     *
-    * @param message  message
-    * @param resourceName the name of the server resource
+    * @param message       message
+    * @param resourceName  the name of the server resource
     * @param operationName the name of the operation to invoke on the server resource
-    * @param parameters the parameters to use to invoke the server resource
-    *
+    * @param parameters    the parameters to use to invoke the server resource
     * @see ResourceNames
     */
    public static void putOperationInvocation(final Message message,
@@ -156,7 +152,7 @@ public final class ManagementHelper
       {
          if (parameter instanceof Map)
          {
-            Map<String, Object> map = (Map<String, Object>)parameter;
+            Map<String, Object> map = (Map<String, Object>) parameter;
 
             JSONObject jsonObject = new JSONObject();
 
@@ -170,7 +166,7 @@ public final class ManagementHelper
                {
                   if (val.getClass().isArray())
                   {
-                     val = ManagementHelper.toJSONArray((Object[])val);
+                     val = ManagementHelper.toJSONArray((Object[]) val);
                   }
                   else
                   {
@@ -191,7 +187,7 @@ public final class ManagementHelper
 
                if (clz.isArray())
                {
-                  Object[] innerArray = (Object[])parameter;
+                  Object[] innerArray = (Object[]) parameter;
 
                   jsonArray.put(ManagementHelper.toJSONArray(innerArray));
                }
@@ -204,7 +200,7 @@ public final class ManagementHelper
             }
             else
             {
-               jsonArray.put((Object)null);
+               jsonArray.put((Object) null);
             }
          }
       }
@@ -222,13 +218,13 @@ public final class ManagementHelper
 
          if (val instanceof JSONArray)
          {
-            Object[] inner = ManagementHelper.fromJSONArray((JSONArray)val);
+            Object[] inner = ManagementHelper.fromJSONArray((JSONArray) val);
 
             array[i] = inner;
          }
          else if (val instanceof JSONObject)
          {
-            JSONObject jsonObject = (JSONObject)val;
+            JSONObject jsonObject = (JSONObject) val;
 
             Map<String, Object> map = new HashMap<String, Object>();
 
@@ -242,23 +238,23 @@ public final class ManagementHelper
 
                if (innerVal instanceof JSONArray)
                {
-                  innerVal = ManagementHelper.fromJSONArray(((JSONArray)innerVal));
+                  innerVal = ManagementHelper.fromJSONArray(((JSONArray) innerVal));
                }
                else if (innerVal instanceof JSONObject)
                {
                   Map<String, Object> innerMap = new HashMap<String, Object>();
-                  JSONObject o = (JSONObject)innerVal;
+                  JSONObject o = (JSONObject) innerVal;
                   Iterator it = o.keys();
                   while (it.hasNext())
                   {
-                     String k = (String)it.next();
+                     String k = (String) it.next();
                      innerMap.put(k, o.get(k));
                   }
                   innerVal = innerMap;
                }
                else if (innerVal instanceof Integer)
                {
-                  innerVal = ((Integer)innerVal).longValue();
+                  innerVal = ((Integer) innerVal).longValue();
                }
 
                map.put(key, innerVal);
@@ -285,12 +281,12 @@ public final class ManagementHelper
    private static void checkType(final Object param)
    {
       if (param instanceof Integer == false && param instanceof Long == false &&
-          param instanceof Double == false &&
-          param instanceof String == false &&
-          param instanceof Boolean == false &&
-          param instanceof Map == false &&
-          param instanceof Byte == false &&
-          param instanceof Short == false)
+         param instanceof Double == false &&
+         param instanceof String == false &&
+         param instanceof Boolean == false &&
+         param instanceof Map == false &&
+         param instanceof Byte == false &&
+         param instanceof Short == false)
       {
          throw HornetQClientMessageBundle.BUNDLE.invalidManagementParam(param.getClass().getName());
       }
@@ -343,7 +339,7 @@ public final class ManagementHelper
       {
          // Result is stored in body, also encoded as JSON array of length 1
 
-         JSONArray jsonArray = ManagementHelper.toJSONArray(new Object[] { result });
+         JSONArray jsonArray = ManagementHelper.toJSONArray(new Object[]{result});
 
          resultString = jsonArray.toString();
       }
@@ -365,7 +361,7 @@ public final class ManagementHelper
    {
       SimpleString sstring = message.getBodyBuffer().readNullableSimpleString();
       String jsonString = (sstring == null) ? null : sstring.toString();
-                                           ;
+
       if (jsonString != null)
       {
          JSONArray jsonArray = new JSONArray(jsonString);
@@ -428,7 +424,7 @@ public final class ManagementHelper
 
       // create a JSON array with 1 object:
       JSONArray array = new JSONArray("[{" + str + "}]");
-      Map<String, Object> params = (Map<String, Object>)ManagementHelper.fromJSONArray(array)[0];
+      Map<String, Object> params = (Map<String, Object>) ManagementHelper.fromJSONArray(array)[0];
       return params;
    }
 

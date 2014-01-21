@@ -12,17 +12,6 @@
  */
 package org.hornetq.rest.queue;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.util.HttpMessageHelper;
-import org.hornetq.api.core.Message;
-import org.hornetq.utils.UUID;
-import org.hornetq.utils.UUIDGenerator;
-
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -38,6 +27,17 @@ import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.util.HttpMessageHelper;
+import org.hornetq.utils.UUID;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -128,7 +128,8 @@ public class PostMessage
       return internalPostWithId(dupId, durable, ttl, expiration, priority, headers, uriInfo, body);
    }
 
-   private Response internalPostWithId(String dupId, Boolean durable, Long ttl, Long expiration, Integer priority, HttpHeaders headers, UriInfo uriInfo, byte[] body) {
+   private Response internalPostWithId(String dupId, Boolean durable, Long ttl, Long expiration, Integer priority, HttpHeaders headers, UriInfo uriInfo, byte[] body)
+   {
       String matched = uriInfo.getMatchedURIs().get(1);
       UriBuilder nextBuilder = uriInfo.getBaseUriBuilder();
       String nextId = generateDupId();
@@ -147,9 +148,9 @@ public class PostMessage
       catch (Exception e)
       {
          Response error = Response.serverError()
-                 .entity("Problem posting message: " + e.getMessage())
-                 .type("text/plain")
-                 .build();
+            .entity("Problem posting message: " + e.getMessage())
+            .type("text/plain")
+            .build();
          throw new WebApplicationException(e, error);
       }
       Response.ResponseBuilder builder = Response.status(201);
@@ -226,8 +227,7 @@ public class PostMessage
       }
    }
 
-   protected void addPooled()
-           throws HornetQException
+   protected void addPooled() throws HornetQException
    {
       ClientSession session = sessionFactory.createSession();
       ClientProducer producer = session.createProducer(destination);
@@ -235,8 +235,7 @@ public class PostMessage
       pool.add(new Pooled(session, producer));
    }
 
-   protected Pooled getPooled()
-           throws InterruptedException
+   protected Pooled getPooled() throws InterruptedException
    {
       Pooled pooled = pool.poll(1, TimeUnit.SECONDS);
       if (pooled == null)
@@ -290,7 +289,7 @@ public class PostMessage
       if (priority != null)
       {
          byte p = priority.byteValue();
-         if (p >= 0 && p <=9)
+         if (p >= 0 && p <= 9)
          {
             message.setPriority(p);
          }

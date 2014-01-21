@@ -217,7 +217,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          long start = System.currentTimeMillis();
 
          int count = 0;
-         double rates[] = new double[50];
+         double[] rates = new double[50];
          for (int i = 0; i < 50; i++)
          {
             long startTrans = System.currentTimeMillis();

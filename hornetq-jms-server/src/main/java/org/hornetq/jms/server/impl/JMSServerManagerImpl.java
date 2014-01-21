@@ -12,6 +12,10 @@
  */
 package org.hornetq.jms.server.impl;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.xa.Xid;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -25,11 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -157,6 +156,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    /**
     * This constructor is used by the Application Server's integration
+    *
     * @param server
     * @param registry
     * @throws Exception
@@ -192,7 +192,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       config = configuration;
    }
 
-   /** Unused */
+   /**
+    * Unused
+    */
    @Deprecated
    public JMSServerManagerImpl(HornetQServer server, String configFilename, JMSStorageManager storageManager)
    {
@@ -217,7 +219,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return;
       }
 
-      try{
+      try
+      {
 
          jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
 
@@ -237,7 +240,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
                if (configFileName != null)
                {
-                  jmsDeployer.setConfigFileNames(new String[] { configFileName });
+                  jmsDeployer.setConfigFileNames(new String[]{configFileName});
                }
 
                jmsDeployer.start();
@@ -336,7 +339,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public void recoverJndiBindings(String name, PersistedType type)
-         throws NamingException
+      throws NamingException
    {
       List<String> bindings = unRecoveredJndi.get(name);
       if ((bindings != null) && (bindings.size() > 0))
@@ -346,19 +349,19 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          switch (type)
          {
-         case Queue:
-            mapJNDI = queueJNDI;
-            objects = queues;
-            break;
-         case Topic:
-            mapJNDI = topicJNDI;
-            objects = topics;
-            break;
-         default:
-         case ConnectionFactory:
-            mapJNDI = connectionFactoryJNDI;
-            objects = connectionFactories;
-            break;
+            case Queue:
+               mapJNDI = queueJNDI;
+               objects = queues;
+               break;
+            case Topic:
+               mapJNDI = topicJNDI;
+               objects = topics;
+               break;
+            default:
+            case ConnectionFactory:
+               mapJNDI = connectionFactoryJNDI;
+               objects = connectionFactories;
+               break;
          }
 
          Object objectToBind = objects.get(name);
@@ -444,7 +447,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     * Notice that this component has a {@link #startCalled} boolean to control its internal
     * life-cycle, but its {@link #isStarted()} returns the value of {@code server.isStarted()} and
     * not the value of {@link #startCalled}.
-    * <p>
+    * <p/>
     * This method and {@code server.start()} are interdependent in the following way:
     * <ol>
     * <li>{@link JMSServerManagerImpl#start()} is called, it sets {@code start_called=true}, and
@@ -469,8 +472,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       }
 
-        deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
-        server.registerActivateCallback(this);
+      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+      server.registerActivateCallback(this);
       /**
        * See this method's javadoc.
        * <p>
@@ -479,7 +482,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
        * start_called is NOT used at {@link JMSServerManager#isStarted()}
        */
       startCalled = true;
-        server.start();
+      server.start();
 
 
    }
@@ -937,8 +940,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       jmsManagementService.unregisterTopic(name);
 
-      AddressControl addressControl = (AddressControl)server.getManagementService()
-                                                            .getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
+      AddressControl addressControl = (AddressControl) server.getManagementService()
+         .getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
       if (addressControl != null)
       {
          for (String queueName : addressControl.getQueueNames())
@@ -1260,10 +1263,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
 
          Queue queue = server.deployQueue(SimpleString.toSimpleString(hqQueue.getAddress()),
-                            SimpleString.toSimpleString(hqQueue.getAddress()),
-                            SimpleString.toSimpleString(coreFilterString),
-                            durable,
-                            false);
+                                          SimpleString.toSimpleString(hqQueue.getAddress()),
+                                          SimpleString.toSimpleString(coreFilterString),
+                                          durable,
+                                          false);
 
          queues.put(queueName, hqQueue);
 
@@ -1315,12 +1318,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    /**
     * @param cfConfig
-    * @throws HornetQException
     * @throws Exception
     */
    private HornetQConnectionFactory internalCreateCF(final boolean persisted,
-                                                     final ConnectionFactoryConfiguration cfConfig) throws HornetQException,
-                                                                                                   Exception
+                                                     final ConnectionFactoryConfiguration cfConfig) throws Exception
    {
       checkInitialised();
 
@@ -1349,8 +1350,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (cfConfig.getDiscoveryGroupName() != null)
       {
          DiscoveryGroupConfiguration groupConfig = server.getConfiguration()
-                                                         .getDiscoveryGroupConfigurations()
-                                                         .get(cfConfig.getDiscoveryGroupName());
+            .getDiscoveryGroupConfigurations()
+            .get(cfConfig.getDiscoveryGroupName());
 
          if (groupConfig == null)
          {
@@ -1530,7 +1531,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
          {
             // sort by creation time, oldest first
-            return (int)(entry1.getValue() - entry2.getValue());
+            return (int) (entry1.getValue() - entry2.getValue());
          }
       });
 
@@ -1564,7 +1565,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
          {
             // sort by creation time, oldest first
-            return (int)(entry1.getValue() - entry2.getValue());
+            return (int) (entry1.getValue() - entry2.getValue());
          }
       });
 
@@ -1655,7 +1656,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   private void checkJNDI(final String ... jndiNames) throws NamingException
+   private void checkJNDI(final String... jndiNames) throws NamingException
    {
 
       for (String jndiName : jndiNames)
@@ -1882,8 +1883,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       Map<String, Object> params = transportConfiguration.getParams();
 
       if (transportConfiguration.getFactoryClassName().equals(NettyConnectorFactory.class.getCanonicalName()) &&
-            params.containsKey(TransportConstants.HOST_PROP_NAME) &&
-            params.get(TransportConstants.HOST_PROP_NAME).equals("0.0.0.0"))
+         params.containsKey(TransportConstants.HOST_PROP_NAME) &&
+         params.get(TransportConstants.HOST_PROP_NAME).equals("0.0.0.0"))
       {
          try
          {

@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.connection;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -65,10 +66,10 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
          jmsServer.getHornetQServer().getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
          jmsServer.createConnectionFactory("MyConnectionFactory",
-               false,
-               JMSFactoryType.CF,
-               dcConfig.getName(),
-               "/MyConnectionFactory");
+                                           false,
+                                           JMSFactoryType.CF,
+                                           dcConfig.getName(),
+                                           "/MyConnectionFactory");
       }
       catch (Exception e)
       {
@@ -88,11 +89,11 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
       // is not enough to actually serialize it so we serialize it manually
       byte[] x = serialize(cf);
       HornetQConnectionFactory y = deserialize(x, HornetQConnectionFactory.class);
-      Assert.assertEquals(null, ((UDPBroadcastGroupConfiguration)y.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getLocalBindAddress());
+      Assert.assertEquals(null, ((UDPBroadcastGroupConfiguration) y.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getLocalBindAddress());
    }
 
    private static <T extends Serializable> byte[] serialize(T obj)
-         throws IOException
+      throws IOException
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -102,7 +103,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    }
 
    private static <T extends Serializable> T deserialize(byte[] b, Class<T> cl)
-         throws IOException, ClassNotFoundException
+      throws IOException, ClassNotFoundException
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
       ObjectInputStream ois = new ObjectInputStream(bais);
@@ -117,9 +118,12 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    protected static InetAddress getLocalHost() throws UnknownHostException
    {
       InetAddress addr;
-      try {
+      try
+      {
          addr = InetAddress.getLocalHost();
-      } catch (ArrayIndexOutOfBoundsException e) {  //this is workaround for mac osx bug see AS7-3223 and JGRP-1404
+      }
+      catch (ArrayIndexOutOfBoundsException e)
+      {  //this is workaround for mac osx bug see AS7-3223 and JGRP-1404
          addr = InetAddress.getByName(null);
       }
       return addr;

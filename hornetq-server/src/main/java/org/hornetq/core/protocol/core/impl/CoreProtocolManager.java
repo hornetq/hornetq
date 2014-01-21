@@ -23,6 +23,7 @@ import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
@@ -46,22 +47,19 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
-import org.hornetq.api.core.Pair;
 
 /**
  * A CoreProtocolManager
  *
  * @author Tim Fox
- *
- *
  */
 class CoreProtocolManager implements ProtocolManager
 {
@@ -89,11 +87,11 @@ class CoreProtocolManager implements ProtocolManager
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(ServerPacketDecoder.INSTANCE,
-            connection,
-            incomingInterceptors,
-            outgoingInterceptors,
-            config.isAsyncConnectionExecutionEnabled() ? connectionExecutor : null,
-            server.getNodeID());
+                                                                   connection,
+                                                                   incomingInterceptors,
+                                                                   outgoingInterceptors,
+                                                                   config.isAsyncConnectionExecutionEnabled() ? connectionExecutor : null,
+                                                                   server.getNodeID());
 
       Channel channel1 = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
 
@@ -155,14 +153,14 @@ class CoreProtocolManager implements ProtocolManager
    public void handshake(NettyServerConnection connection, HornetQBuffer buffer)
    {
       //if we are not an old client then handshake
-      if(buffer.getByte(0) == 'H' &&
-            buffer.getByte(1) == 'O' &&
-            buffer.getByte(2) == 'R' &&
-            buffer.getByte(3) == 'N' &&
-            buffer.getByte(4) == 'E' &&
-            buffer.getByte(5) == 'T' &&
-            buffer.getByte(6) == 'Q'
-            )
+      if (buffer.getByte(0) == 'H' &&
+         buffer.getByte(1) == 'O' &&
+         buffer.getByte(2) == 'R' &&
+         buffer.getByte(3) == 'N' &&
+         buffer.getByte(4) == 'E' &&
+         buffer.getByte(5) == 'T' &&
+         buffer.getByte(6) == 'Q'
+         )
       {
          //todo add some handshaking
          buffer.readBytes(7);
@@ -184,7 +182,7 @@ class CoreProtocolManager implements ProtocolManager
       private final CoreRemotingConnection rc;
 
       public LocalChannelHandler(final Configuration config, final ConnectionEntry entry,
-             final Channel channel0, final Acceptor acceptorUsed, final CoreRemotingConnection rc)
+                                 final Channel channel0, final Acceptor acceptorUsed, final CoreRemotingConnection rc)
       {
          this.config = config;
          this.entry = entry;
@@ -197,7 +195,7 @@ class CoreProtocolManager implements ProtocolManager
       {
          if (packet.getType() == PacketImpl.PING)
          {
-            Ping ping = (Ping)packet;
+            Ping ping = (Ping) packet;
 
             if (config.getConnectionTTLOverride() == -1)
             {
@@ -210,11 +208,11 @@ class CoreProtocolManager implements ProtocolManager
          }
          else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
          {
-            SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
+            SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage) packet;
 
             if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
-               channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
+               channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2) msg).getClientVersion());
             }
 
             final ClusterTopologyListener listener = new ClusterTopologyListener()
@@ -225,8 +223,8 @@ class CoreProtocolManager implements ProtocolManager
                   try
                   {
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair =
-                              new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
-                                                                                       topologyMember.getBackup());
+                        new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                                 topologyMember.getBackup());
                      final String nodeID = topologyMember.getNodeId();
                      // Using an executor as most of the notifications on the Topology
                      // may come from a channel itself
@@ -329,7 +327,7 @@ class CoreProtocolManager implements ProtocolManager
          }
          else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
          {
-            NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
+            NodeAnnounceMessage msg = (NodeAnnounceMessage) packet;
 
             Pair<TransportConfiguration, TransportConfiguration> pair;
             if (msg.isBackup())
@@ -361,9 +359,10 @@ class CoreProtocolManager implements ProtocolManager
             {
                HornetQServerLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
             }
-         } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
+         }
+         else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
          {
-            BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
+            BackupRegistrationMessage msg = (BackupRegistrationMessage) packet;
             ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
 
             if (!config.isSecurityEnabled() || clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
@@ -373,7 +372,7 @@ class CoreProtocolManager implements ProtocolManager
                   server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
                                           msg.isFailBackRequest());
                }
-               catch(HornetQAlreadyReplicatingException are)
+               catch (HornetQAlreadyReplicatingException are)
                {
                   channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.ALREADY_REPLICATING));
                }

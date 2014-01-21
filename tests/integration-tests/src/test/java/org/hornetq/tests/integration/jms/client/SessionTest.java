@@ -24,6 +24,7 @@ import org.junit.Test;
 
 /**
  * A SessionTest
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class SessionTest extends JMSTestBase
@@ -35,16 +36,16 @@ public class SessionTest extends JMSTestBase
       Connection defaultConn = null;
       QueueConnection qConn = null;
       Connection connClientID = null;
-      HornetQConnectionFactory hqCF = (HornetQConnectionFactory)cf;
+      HornetQConnectionFactory hqCF = (HornetQConnectionFactory) cf;
       try
       {
          String clientID = "somethingElse" + name.getMethodName();
          defaultConn = cf.createConnection();
          qConn = hqCF.createQueueConnection();
-         
+
          connClientID = cf.createConnection();
          connClientID.setClientID(clientID);
-         
+
          Topic topic = createTopic("topic");
 
          QueueSession qSess = qConn.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -52,7 +53,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createDurableConsumer(topic, "mySub1");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -61,7 +62,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createDurableConsumer(topic, "mySub1", "TEST = 'test'", false);
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -70,7 +71,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createSharedConsumer(topic, "mySub1");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -79,7 +80,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createSharedConsumer(topic, "mySub1", "TEST = 'test'");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -88,7 +89,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createSharedDurableConsumer(topic, "mySub1");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -97,7 +98,7 @@ public class SessionTest extends JMSTestBase
          {
             qSess.createSharedDurableConsumer(topic, "mySub1", "TEST = 'test'");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -108,7 +109,7 @@ public class SessionTest extends JMSTestBase
          {
             defaultSess.createDurableSubscriber(topic, "mySub1");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -117,7 +118,7 @@ public class SessionTest extends JMSTestBase
          {
             defaultSess.createDurableSubscriber(topic, "mySub1", "TEST = 'test'", true);
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -126,7 +127,7 @@ public class SessionTest extends JMSTestBase
          {
             defaultSess.createDurableConsumer(topic, "mySub1");
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
@@ -135,11 +136,11 @@ public class SessionTest extends JMSTestBase
          {
             defaultSess.createDurableConsumer(topic, "mySub1", "TEST = 'test'", true);
          }
-         catch(javax.jms.IllegalStateException ex)
+         catch (javax.jms.IllegalStateException ex)
          {
             //ok expected.
          }
-      
+
       }
       finally
       {

@@ -13,6 +13,14 @@
 package org.hornetq.core.server.cluster;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -27,14 +35,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.ExecutorFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /*
 * takes care of updating the cluster with a backups transport configuration which is based on each cluster connection.
@@ -69,7 +69,7 @@ public class BackupManager implements HornetQComponent
    * */
    public synchronized void start()
    {
-      if(started) return;
+      if (started) return;
       //deploy the backup connectors using the cluster configuration
       for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
       {
@@ -94,13 +94,14 @@ public class BackupManager implements HornetQComponent
    * */
    public synchronized void stop()
    {
-      if(!started) return;
+      if (!started) return;
       for (BackupConnector backupConnector : backupConnectors)
       {
          backupConnector.close();
       }
       started = false;
    }
+
    /*
    * announce the fact that we are a backup server ready to fail over if required.
    */
@@ -128,9 +129,8 @@ public class BackupManager implements HornetQComponent
          if (dg == null) return;
 
 
-
          DiscoveryBackupConnector backupConnector = new DiscoveryBackupConnector(dg, config.getName(), connector,
-               config.getRetryInterval(), clusterManager);
+                                                                                 config.getRetryInterval(), clusterManager);
 
          backupConnectors.add(backupConnector);
       }
@@ -139,7 +139,7 @@ public class BackupManager implements HornetQComponent
          TransportConfiguration[] tcConfigs = ClusterConfigurationUtil.getTransportConfigurations(config, configuration);
 
          StaticBackupConnector backupConnector = new StaticBackupConnector(tcConfigs, config.getName(), connector,
-               config.getRetryInterval(), clusterManager);
+                                                                           config.getRetryInterval(), clusterManager);
 
          backupConnectors.add(backupConnector);
       }
@@ -166,7 +166,7 @@ public class BackupManager implements HornetQComponent
    {
       for (BackupConnector backupConnector : backupConnectors)
       {
-         if(!backupConnector.isBackupAnnounced())
+         if (!backupConnector.isBackupAnnounced())
          {
             return false;
          }
@@ -256,20 +256,22 @@ public class BackupManager implements HornetQComponent
                   if (backupSessionFactory != null)
                   {
                      backupSessionFactory.getConnection()
-                           .getChannel(0, -1)
-                           .send(new NodeAnnounceMessage(System.currentTimeMillis(),
-                                 nodeManager.getNodeId().toString(),
-                                 configuration.getBackupGroupName(),
-                                 true,
-                                 connector,
-                                 null));
+                        .getChannel(0, -1)
+                        .send(new NodeAnnounceMessage(System.currentTimeMillis(),
+                                                      nodeManager.getNodeId().toString(),
+                                                      configuration.getBackupGroupName(),
+                                                      true,
+                                                      connector,
+                                                      null));
                      HornetQServerLogger.LOGGER.backupAnnounced();
                      backupAnnounced = true;
                   }
-               } catch (RejectedExecutionException e)
+               }
+               catch (RejectedExecutionException e)
                {
                   // assumption is that the whole server is being stopped. So the exception is ignored.
-               } catch (Exception e)
+               }
+               catch (Exception e)
                {
                   if (scheduledExecutor.isShutdown())
                      return;
@@ -285,7 +287,8 @@ public class BackupManager implements HornetQComponent
                      }
 
                   }, retryInterval, TimeUnit.MILLISECONDS);
-               } finally
+               }
+               finally
                {
                   announcingBackup = false;
                }
@@ -336,7 +339,7 @@ public class BackupManager implements HornetQComponent
 
       private void closeLocator(ServerLocatorInternal backupServerLocator)
       {
-         if(backupServerLocator != null)
+         if (backupServerLocator != null)
          {
             backupServerLocator.close();
          }

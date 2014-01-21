@@ -53,9 +53,9 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    // Static --------------------------------------------------------
 
-   public static abstract interface ValueCache
+   public abstract interface ValueCache
    {
-      public abstract boolean isLive();
+      boolean isLive();
    }
 
    // Constructors --------------------------------------------------

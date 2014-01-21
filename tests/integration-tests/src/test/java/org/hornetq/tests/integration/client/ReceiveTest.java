@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -30,6 +25,9 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -59,16 +57,16 @@ public class ReceiveTest extends ServiceTestBase
    public void testBasicReceive() throws Exception
    {
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientConsumer cc = session.createConsumer(queueA);
-         session.start();
-         cp.send(sendSession.createMessage(false));
-         Assert.assertNotNull(cc.receive());
-         session.close();
-         sendSession.close();
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientSession session = cf.createSession(false, true, true);
+      session.createQueue(addressA, queueA, false);
+      ClientConsumer cc = session.createConsumer(queueA);
+      session.start();
+      cp.send(sendSession.createMessage(false));
+      Assert.assertNotNull(cc.receive());
+      session.close();
+      sendSession.close();
    }
 
    @Test
@@ -76,14 +74,14 @@ public class ReceiveTest extends ServiceTestBase
    {
 
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientConsumer cc = session.createConsumer(queueA);
-         session.start();
-         long time = System.currentTimeMillis();
-         cc.receive(1000);
-         Assert.assertTrue(System.currentTimeMillis() - time >= 1000);
-         session.close();
+      ClientSession session = cf.createSession(false, true, true);
+      session.createQueue(addressA, queueA, false);
+      ClientConsumer cc = session.createConsumer(queueA);
+      session.start();
+      long time = System.currentTimeMillis();
+      cc.receive(1000);
+      Assert.assertTrue(System.currentTimeMillis() - time >= 1000);
+      session.close();
    }
 
    @Test
@@ -91,24 +89,24 @@ public class ReceiveTest extends ServiceTestBase
    {
 
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientConsumer cc = session.createConsumer(queueA);
-         session.start();
-         session.close();
-         try
-         {
-            cc.receive();
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQObjectClosedException oce)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      ClientSession session = cf.createSession(false, true, true);
+      session.createQueue(addressA, queueA, false);
+      ClientConsumer cc = session.createConsumer(queueA);
+      session.start();
+      session.close();
+      try
+      {
+         cc.receive();
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQObjectClosedException oce)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
       session.close();
    }
 
@@ -117,57 +115,57 @@ public class ReceiveTest extends ServiceTestBase
    {
 
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientConsumer cc = session.createConsumer(queueA);
-         session.start();
-         cc.setMessageHandler(new MessageHandler()
+      ClientSession session = cf.createSession(false, true, true);
+      session.createQueue(addressA, queueA, false);
+      ClientConsumer cc = session.createConsumer(queueA);
+      session.start();
+      cc.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(final ClientMessage message)
          {
-            public void onMessage(final ClientMessage message)
-            {
-            }
-         });
-         try
-         {
-            cc.receive();
-            Assert.fail("should throw exception");
          }
-         catch(HornetQIllegalStateException ise)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
-         session.close();
+      });
+      try
+      {
+         cc.receive();
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQIllegalStateException ise)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
+      session.close();
    }
 
    @Test
    public void testReceiveImmediate() throws Exception
    {
 
-         // forces perfect round robin
-         locator.setConsumerWindowSize(1);
+      // forces perfect round robin
+      locator.setConsumerWindowSize(1);
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientConsumer cc = session.createConsumer(queueA);
-         ClientConsumer cc2 = session.createConsumer(queueA);
-         session.start();
-         cp.send(sendSession.createMessage(false));
-         cp.send(sendSession.createMessage(false));
-         cp.send(sendSession.createMessage(false));
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientSession session = cf.createSession(false, true, true);
+      session.createQueue(addressA, queueA, false);
+      ClientConsumer cc = session.createConsumer(queueA);
+      ClientConsumer cc2 = session.createConsumer(queueA);
+      session.start();
+      cp.send(sendSession.createMessage(false));
+      cp.send(sendSession.createMessage(false));
+      cp.send(sendSession.createMessage(false));
 
-         Assert.assertNotNull(cc2.receive(5000));
-         Assert.assertNotNull(cc.receive(5000));
-         if (cc.receiveImmediate() == null)
-         {
-            assertNotNull(cc2.receiveImmediate());
-         }
-         session.close();
-         sendSession.close();
+      Assert.assertNotNull(cc2.receive(5000));
+      Assert.assertNotNull(cc.receive(5000));
+      if (cc.receiveImmediate() == null)
+      {
+         assertNotNull(cc2.receiveImmediate());
+      }
+      session.close();
+      sendSession.close();
    }
 }

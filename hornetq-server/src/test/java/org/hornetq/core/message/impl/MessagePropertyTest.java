@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.core.message.impl;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -24,9 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * @author Francisco Borges
- *
  */
 public class MessagePropertyTest extends ServiceTestBase
 {
@@ -60,8 +59,8 @@ public class MessagePropertyTest extends ServiceTestBase
          ClientMessage message = session.createMessage(true);
          setBody(i, message);
          message.putIntProperty("int", i);
-         message.putShortProperty("short", (short)i);
-         message.putByteProperty("byte", (byte)i);
+         message.putShortProperty("short", (short) i);
+         message.putByteProperty("byte", (byte) i);
          message.putFloatProperty("float", floatValue(i));
          message.putStringProperty(SIMPLE_STRING_KEY, new SimpleString(Integer.toString(i)));
          message.putBytesProperty("byte[]", byteArray(i));
@@ -73,12 +72,12 @@ public class MessagePropertyTest extends ServiceTestBase
 
    private float floatValue(int i)
    {
-      return (float)(i * 1.3);
+      return (float) (i * 1.3);
    }
 
    private byte[] byteArray(int i)
    {
-      return new byte[] { (byte)i, (byte)(i / 2) };
+      return new byte[]{(byte) i, (byte) (i / 2)};
    }
 
    @Test
@@ -100,8 +99,8 @@ public class MessagePropertyTest extends ServiceTestBase
          assertNotNull("Expecting a message " + i, message);
          assertMessageBody(i, message);
          assertEquals(i, message.getIntProperty("int").intValue());
-         assertEquals((short)i, message.getShortProperty("short").shortValue());
-         assertEquals((byte)i, message.getByteProperty("byte").byteValue());
+         assertEquals((short) i, message.getShortProperty("short").shortValue());
+         assertEquals((byte) i, message.getByteProperty("byte").byteValue());
          assertEquals(floatValue(i), message.getFloatProperty("float").floatValue(), 0.001);
          assertEquals(new SimpleString(Integer.toString(i)),
                       message.getSimpleStringProperty(SIMPLE_STRING_KEY.toString()));

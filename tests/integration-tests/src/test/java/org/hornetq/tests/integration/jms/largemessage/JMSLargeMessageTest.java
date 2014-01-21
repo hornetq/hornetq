@@ -11,16 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.largemessage;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -30,18 +20,23 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@feodorov.com">Clebert Suconic</a>
  * @version <tt>$Revision: 6220 $</tt>
- *
  */
 public class JMSLargeMessageTest extends JMSTestBase
 {
@@ -105,9 +100,9 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn.start();
 
-      BytesMessage rm = (BytesMessage)cons.receive(10000);
+      BytesMessage rm = (BytesMessage) cons.receive(10000);
 
-      byte data[] = new byte[1024];
+      byte[] data = new byte[1024];
 
       System.out.println("Message = " + rm);
 
@@ -149,9 +144,9 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn.start();
 
-      BytesMessage rm = (BytesMessage)cons.receive(10000);
+      BytesMessage rm = (BytesMessage) cons.receive(10000);
 
-      byte data[] = new byte[1024];
+      byte[] data = new byte[1024];
 
       System.out.println("Message = " + rm);
 
@@ -199,7 +194,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn.start();
 
-      TextMessage rm = (TextMessage)cons.receive(10000);
+      TextMessage rm = (TextMessage) cons.receive(10000);
 
       try
       {
@@ -251,7 +246,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn.start();
 
-      BytesMessage rm = (BytesMessage)cons.receive(10000);
+      BytesMessage rm = (BytesMessage) cons.receive(10000);
       Assert.assertNotNull(rm);
 
       final AtomicLong numberOfBytes = new AtomicLong(0);
@@ -308,7 +303,7 @@ public class JMSLargeMessageTest extends JMSTestBase
       TextMessage m = session.createTextMessage();
 
       StringBuffer buffer = new StringBuffer();
-      while(buffer.length() < msgSize)
+      while (buffer.length() < msgSize)
       {
          buffer.append(UUIDGenerator.getInstance().generateStringUUID());
       }
@@ -333,7 +328,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
       conn.start();
 
-      TextMessage rm = (TextMessage)cons.receive(10000);
+      TextMessage rm = (TextMessage) cons.receive(10000);
       Assert.assertNotNull(rm);
 
       String str = rm.getText();

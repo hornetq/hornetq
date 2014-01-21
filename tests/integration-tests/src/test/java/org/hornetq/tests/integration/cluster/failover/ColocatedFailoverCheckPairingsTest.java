@@ -13,6 +13,8 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 
+import java.util.HashMap;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -28,9 +30,6 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.After;
 import org.junit.Test;
-
-import java.io.File;
-import java.util.HashMap;
 
 public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
 {
@@ -155,6 +154,6 @@ public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
    protected TestableServer createTestableServer(Configuration config, NodeManager liveNodeManager, NodeManager backupNodeManager, int id)
    {
       return new SameProcessHornetQServer(
-            createColocatedInVMFailoverServer(true, config, liveNodeManager, backupNodeManager, id));
+         createColocatedInVMFailoverServer(true, config, liveNodeManager, backupNodeManager, id));
    }
 }

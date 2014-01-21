@@ -15,14 +15,14 @@ package org.hornetq.tools;
 
 public class Main
 {
-   private final static String USAGE = "Use: java -jar " + getJarName();
-   private final static String IMPORT = "import";
-   private final static String EXPORT = "export";
-   private final static String PRINT_DATA = "print-data";
-   private final static String PRINT_PAGES = "print-pages";
-   private final static String OPTIONS =  " [" + IMPORT + "|" + EXPORT + "|" + PRINT_DATA + "|" + PRINT_PAGES + "]";
+   private static final String USAGE = "Use: java -jar " + getJarName();
+   private static final String IMPORT = "import";
+   private static final String EXPORT = "export";
+   private static final String PRINT_DATA = "print-data";
+   private static final String PRINT_PAGES = "print-pages";
+   private static final String OPTIONS =  " [" + IMPORT + "|" + EXPORT + "|" + PRINT_DATA + "|" + PRINT_PAGES + "]";
 
-   public static void main(String arg[]) throws Exception
+   public static void main(String[] arg) throws Exception
    {
       if (arg.length == 0)
       {

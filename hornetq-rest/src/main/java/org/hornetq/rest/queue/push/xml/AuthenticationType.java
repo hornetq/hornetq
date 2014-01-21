@@ -12,9 +12,8 @@
  */
 package org.hornetq.rest.queue.push.xml;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlSeeAlso;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

@@ -12,24 +12,21 @@
  */
 package org.hornetq.core.server.impl;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.Journal;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.PageCountPending;
 import org.hornetq.core.persistence.impl.journal.AddMessageRecord;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
-
-import javax.transaction.xa.Xid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
 public interface JournalLoader
 {

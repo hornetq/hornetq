@@ -14,13 +14,12 @@ package org.hornetq.jms.server.config;
 
 import java.util.List;
 
-import javax.jms.ConnectionFactory;
-
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.journal.EncodingSupport;
 
 /**
  * A ConnectionFactoryConfiguration for {@link ConnectionFactory} objects.
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface ConnectionFactoryConfiguration extends EncodingSupport

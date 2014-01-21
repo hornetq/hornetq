@@ -12,13 +12,13 @@
  */
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.junit.Test;
-
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * A SymmetricClusterWithBackupTest
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 13 Mar 2009 11:00:31
  */
 public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
@@ -450,7 +450,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         0,
-                                        new int[] { 1, 2, 3, 4 });
+                                        new int[]{1, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -458,7 +458,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         1,
-                                        new int[] { 0, 2, 3, 4 });
+                                        new int[]{0, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -466,7 +466,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         2,
-                                        new int[] { 0, 1, 3, 4 });
+                                        new int[]{0, 1, 3, 4});
 
       setupClusterConnectionWithBackups("cluster3",
                                         "queues",
@@ -474,7 +474,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         3,
-                                        new int[] { 0, 1, 2, 4 });
+                                        new int[]{0, 1, 2, 4});
 
       setupClusterConnectionWithBackups("cluster4",
                                         "queues",
@@ -482,7 +482,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         4,
-                                        new int[] { 0, 1, 2, 3 });
+                                        new int[]{0, 1, 2, 3});
 
       // The backups
 
@@ -492,7 +492,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         5,
-                                        new int[] {0, 1, 2, 3, 4 });
+                                        new int[]{0, 1, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -500,7 +500,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         6,
-                                        new int[] {0, 1, 2, 3, 4 });
+                                        new int[]{0, 1, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -508,7 +508,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         7,
-                                        new int[] { 0, 1, 2, 3, 4  });
+                                        new int[]{0, 1, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster3",
                                         "queues",
@@ -516,7 +516,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         8,
-                                        new int[] { 0, 1, 2, 3, 4  });
+                                        new int[]{0, 1, 2, 3, 4});
 
       setupClusterConnectionWithBackups("cluster4",
                                         "queues",
@@ -524,7 +524,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         9,
-                                        new int[] { 0, 1, 2, 3, 4  });
+                                        new int[]{0, 1, 2, 3, 4});
    }
 
    @Override
@@ -556,7 +556,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       getServer(8).getConfiguration().setBackup(true);
       getServer(9).getConfiguration().setBackup(true);
 
-      startServers( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+      startServers(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    }
 
    @Override

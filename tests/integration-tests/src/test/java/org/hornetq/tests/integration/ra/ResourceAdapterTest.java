@@ -12,8 +12,9 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.junit.Test;
-
+import javax.jms.Connection;
+import javax.resource.ResourceException;
+import javax.resource.spi.endpoint.MessageEndpoint;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -21,10 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-
-import javax.jms.Connection;
-import javax.resource.ResourceException;
-import javax.resource.spi.endpoint.MessageEndpoint;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -45,6 +42,7 @@ import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.unit.ra.MessageEndpointFactory;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,7 +56,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(false, false, false);
-      HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+      HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue("test");
       session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
       session.close();
 
@@ -92,7 +90,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
-      ServerLocatorImpl serverLocator = (ServerLocatorImpl)ra.getDefaultHornetQConnectionFactory().getServerLocator();
+      ServerLocatorImpl serverLocator = (ServerLocatorImpl) ra.getDefaultHornetQConnectionFactory().getServerLocator();
 
       Field f = Class.forName(ServerLocatorImpl.class.getName()).getDeclaredField("factories");
 
@@ -100,7 +98,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       f.setAccessible(true);
 
-      Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>)f.get(serverLocator);
+      Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>) f.get(serverLocator);
 
       for (int i = 0; i < 10; i++)
       {
@@ -149,9 +147,9 @@ public class ResourceAdapterTest extends HornetQRATestBase
    public void testSetters() throws Exception
    {
       Boolean b = Boolean.TRUE;
-      Long l = (long)1000;
+      Long l = (long) 1000;
       Integer i = 1000;
-      Double d = (double)1000;
+      Double d = (double) 1000;
       String className = "testConnector";
       String backupConn = "testBackupConnector";
       String testConfig = "key=val";
@@ -164,28 +162,28 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testuser = "testuser";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       testParams(b,
-         l,
-         i,
-         d,
-         className,
-         backupConn,
-         testConfig,
-         testid,
-         testBalancer,
-         testParams,
-         testaddress,
-         testpass,
-         testuser,
-         qResourceAdapter);
+                 l,
+                 i,
+                 d,
+                 className,
+                 backupConn,
+                 testConfig,
+                 testid,
+                 testBalancer,
+                 testParams,
+                 testaddress,
+                 testpass,
+                 testuser,
+                 qResourceAdapter);
    }
 
    @Test
    public void testSetters2() throws Exception
    {
       Boolean b = Boolean.FALSE;
-      Long l = (long)2000;
+      Long l = (long) 2000;
       Integer i = 2000;
-      Double d = (double)2000;
+      Double d = (double) 2000;
       String className = "testConnector2";
       String backupConn = "testBackupConnector2";
       String testConfig = "key2=val2";
@@ -198,23 +196,23 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testuser = "testuser2";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       testParams(b,
-         l,
-         i,
-         d,
-         className,
-         backupConn,
-         testConfig,
-         testid,
-         testBalancer,
-         testParams,
-         testaddress,
-         testpass,
-         testuser,
-         qResourceAdapter);
+                 l,
+                 i,
+                 d,
+                 className,
+                 backupConn,
+                 testConfig,
+                 testid,
+                 testBalancer,
+                 testParams,
+                 testaddress,
+                 testpass,
+                 testuser,
+                 qResourceAdapter);
    }
 
    private void testParams(Boolean b,
-                           Long l,
+                           Long aLong,
                            Integer i,
                            Double d,
                            String className,
@@ -234,26 +232,26 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setBlockOnAcknowledge(b);
       qResourceAdapter.setBlockOnDurableSend(b);
       qResourceAdapter.setBlockOnNonDurableSend(b);
-      qResourceAdapter.setCallTimeout(l);
-      qResourceAdapter.setClientFailureCheckPeriod(l);
+      qResourceAdapter.setCallTimeout(aLong);
+      qResourceAdapter.setClientFailureCheckPeriod(aLong);
       qResourceAdapter.setClientID(testid);
       qResourceAdapter.setConfirmationWindowSize(i);
       qResourceAdapter.setConnectionLoadBalancingPolicyClassName(testBalancer);
       qResourceAdapter.setConnectionParameters(testParams);
-      qResourceAdapter.setConnectionTTL(l);
+      qResourceAdapter.setConnectionTTL(aLong);
       qResourceAdapter.setConsumerMaxRate(i);
       qResourceAdapter.setConsumerWindowSize(i);
       qResourceAdapter.setDiscoveryAddress(testaddress);
-      qResourceAdapter.setDiscoveryInitialWaitTimeout(l);
+      qResourceAdapter.setDiscoveryInitialWaitTimeout(aLong);
       qResourceAdapter.setDiscoveryPort(i);
-      qResourceAdapter.setDiscoveryRefreshTimeout(l);
+      qResourceAdapter.setDiscoveryRefreshTimeout(aLong);
       qResourceAdapter.setDupsOKBatchSize(i);
       qResourceAdapter.setMinLargeMessageSize(i);
       qResourceAdapter.setPassword(testpass);
       qResourceAdapter.setPreAcknowledge(b);
       qResourceAdapter.setProducerMaxRate(i);
       qResourceAdapter.setReconnectAttempts(i);
-      qResourceAdapter.setRetryInterval(l);
+      qResourceAdapter.setRetryInterval(aLong);
       qResourceAdapter.setRetryIntervalMultiplier(d);
       qResourceAdapter.setScheduledThreadPoolMaxSize(i);
       qResourceAdapter.setThreadPoolMaxSize(i);
@@ -269,26 +267,26 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getBlockOnAcknowledge(), b);
       assertEquals(qResourceAdapter.getBlockOnDurableSend(), b);
       assertEquals(qResourceAdapter.getBlockOnNonDurableSend(), b);
-      assertEquals(qResourceAdapter.getCallTimeout(), l);
-      assertEquals(qResourceAdapter.getClientFailureCheckPeriod(), l);
+      assertEquals(qResourceAdapter.getCallTimeout(), aLong);
+      assertEquals(qResourceAdapter.getClientFailureCheckPeriod(), aLong);
       assertEquals(qResourceAdapter.getClientID(), testid);
       assertEquals(qResourceAdapter.getConfirmationWindowSize(), i);
       assertEquals(qResourceAdapter.getConnectionLoadBalancingPolicyClassName(), testBalancer);
       assertEquals(qResourceAdapter.getConnectionParameters(), testParams);
-      assertEquals(qResourceAdapter.getConnectionTTL(), l);
+      assertEquals(qResourceAdapter.getConnectionTTL(), aLong);
       assertEquals(qResourceAdapter.getConsumerMaxRate(), i);
       assertEquals(qResourceAdapter.getConsumerWindowSize(), i);
       assertEquals(qResourceAdapter.getDiscoveryAddress(), testaddress);
-      assertEquals(qResourceAdapter.getDiscoveryInitialWaitTimeout(), l);
+      assertEquals(qResourceAdapter.getDiscoveryInitialWaitTimeout(), aLong);
       assertEquals(qResourceAdapter.getDiscoveryPort(), i);
-      assertEquals(qResourceAdapter.getDiscoveryRefreshTimeout(), l);
+      assertEquals(qResourceAdapter.getDiscoveryRefreshTimeout(), aLong);
       assertEquals(qResourceAdapter.getDupsOKBatchSize(), i);
       assertEquals(qResourceAdapter.getMinLargeMessageSize(), i);
       assertEquals(qResourceAdapter.getPassword(), testpass);
       assertEquals(qResourceAdapter.getPreAcknowledge(), b);
       assertEquals(qResourceAdapter.getProducerMaxRate(), i);
       assertEquals(qResourceAdapter.getReconnectAttempts(), i);
-      assertEquals(qResourceAdapter.getRetryInterval(), l);
+      assertEquals(qResourceAdapter.getRetryInterval(), aLong);
       assertEquals(qResourceAdapter.getRetryIntervalMultiplier(), d);
       assertEquals(qResourceAdapter.getScheduledThreadPoolMaxSize(), i);
       assertEquals(qResourceAdapter.getThreadPoolMaxSize(), i);
@@ -307,48 +305,48 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQConnectionFactory factory = adapter.getDefaultHornetQConnectionFactory();
       long initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
-      int port = ((UDPBroadcastGroupConfiguration)factory.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getGroupPort();
+      int port = ((UDPBroadcastGroupConfiguration) factory.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getGroupPort();
 
       // defaults
-      assertEquals(10000l, refresh);
-      assertEquals(10000l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(10000L, initWait);
       assertEquals(9876, port);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryRefreshTimeout(1234l);
+      adapter.setDiscoveryRefreshTimeout(1234L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override refresh timeout
-      assertEquals(1234l, refresh);
-      assertEquals(10000l, initWait);
+      assertEquals(1234L, refresh);
+      assertEquals(10000L, initWait);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      adapter.setDiscoveryInitialWaitTimeout(9999L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override initial wait
-      assertEquals(10000l, refresh);
-      assertEquals(9999l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(9999L, initWait);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      adapter.setDiscoveryInitialWaitTimeout(9999L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override initial wait
-      assertEquals(10000l, refresh);
-      assertEquals(9999l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(9999L, initWait);
 
    }
 
@@ -440,8 +438,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setDiscoveryAddress("231.6.6.6");
       qResourceAdapter.setDiscoveryPort(1234);
-      qResourceAdapter.setDiscoveryRefreshTimeout(1l);
-      qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
+      qResourceAdapter.setDiscoveryRefreshTimeout(1L);
+      qResourceAdapter.setDiscoveryInitialWaitTimeout(1L);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
 
       qResourceAdapter.setTransactionManagerLocatorClass("");
@@ -456,8 +454,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
       assertEquals(udpDg.getGroupPort(), 1234);
-      assertEquals(dc.getRefreshTimeout(), 1l);
-      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
+      assertEquals(dc.getRefreshTimeout(), 1L);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1L);
       qResourceAdapter.stop();
    }
 
@@ -481,15 +479,15 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setSetupAttempts(0);
       spec.setDiscoveryAddress("231.6.6.6");
       spec.setDiscoveryPort(1234);
-      spec.setDiscoveryInitialWaitTimeout(1l);
-      spec.setDiscoveryRefreshTimeout(1l);
+      spec.setDiscoveryInitialWaitTimeout(1L);
+      spec.setDiscoveryRefreshTimeout(1L);
       HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
       DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
       UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
       assertEquals(udpDg.getGroupPort(), 1234);
-      assertEquals(dc.getRefreshTimeout(), 1l);
-      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
+      assertEquals(dc.getRefreshTimeout(), 1L);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1L);
       qResourceAdapter.stop();
    }
 
@@ -647,7 +645,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
 
       DefaultSensitiveStringCodec codec = new DefaultSensitiveStringCodec();
-      String mask = (String)codec.encode("helloworld");
+      String mask = (String) codec.encode("helloworld");
 
       qResourceAdapter.setUseMaskedPassword(true);
       qResourceAdapter.setPassword(mask);
@@ -663,7 +661,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      mask = (String)codec.encode("mdbpassword");
+      mask = (String) codec.encode("mdbpassword");
       spec.setPassword(mask);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(1);
@@ -693,7 +691,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       prop.put("key", "anotherkey");
       codec.init(prop);
 
-      String mask = (String)codec.encode("helloworld");
+      String mask = (String) codec.encode("helloworld");
 
       qResourceAdapter.setPassword(mask);
 
@@ -708,7 +706,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      mask = (String)codec.encode("mdbpassword");
+      mask = (String) codec.encode("mdbpassword");
       spec.setPassword(mask);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(1);
@@ -728,7 +726,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       Set<RecoveryDiscovery> discoverySet = new HashSet<RecoveryDiscovery>();
       String factClass = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
       TransportConfiguration transportConfig = new TransportConfiguration(factClass, null, "netty");
-      XARecoveryConfig config = new XARecoveryConfig(false, new TransportConfiguration[] {transportConfig},
+      XARecoveryConfig config = new XARecoveryConfig(false, new TransportConfiguration[]{transportConfig},
                                                      null, null);
 
       RecoveryDiscovery discovery1 = new RecoveryDiscovery(config);

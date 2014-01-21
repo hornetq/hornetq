@@ -12,12 +12,8 @@
  */
 package org.hornetq.tests.integration.persistence;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
@@ -28,15 +24,15 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A DeleteMessagesRestartTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created Mar 2, 2009 10:14:38 AM
- *
- *
+ *         <p/>
+ *         Created Mar 2, 2009 10:14:38 AM
  */
 public class DeleteQueueRestartTest extends ServiceTestBase
 {

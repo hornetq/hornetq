@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.cluster;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -25,13 +21,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.hornetq.tests.util.JMSClusteredTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TopicClusterTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class TopicClusterTest extends JMSClusteredTestBase
 {
@@ -80,7 +77,7 @@ public class TopicClusterTest extends JMSClusteredTestBase
 
          Topic topic1 = createTopic("t1");
 
-         Topic topic2 = (Topic)context1.lookup("topic/t1");
+         Topic topic2 = (Topic) context1.lookup("topic/t1");
 
          Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -95,19 +92,19 @@ public class TopicClusterTest extends JMSClusteredTestBase
          prod1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
 
-         for (int i = 0 ; i < 2; i++)
+         for (int i = 0; i < 2; i++)
          {
             prod1.send(session1.createTextMessage("someMessage"));
          }
 
-         TextMessage received = (TextMessage)cons2.receive(5000);
+         TextMessage received = (TextMessage) cons2.receive(5000);
 
          assertNotNull(received);
 
          assertEquals("someMessage", received.getText());
 
          cons2.close();
-       }
+      }
       finally
       {
          conn1.close();

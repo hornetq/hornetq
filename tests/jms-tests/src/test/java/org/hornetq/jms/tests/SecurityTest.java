@@ -23,17 +23,14 @@ import org.junit.Test;
 
 /**
  * Test JMS Security.
- *
+ * <p/>
  * This test must be run with the Test security config. on the server
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
- * Much of the basic idea of the tests come from SecurityUnitTestCase.java in JBossMQ by:
+ *         <p/>
+ *         Much of the basic idea of the tests come from SecurityUnitTestCase.java in JBossMQ by:
  * @author <a href="pra@tim.se">Peter Antman</a>
- *
- *
- *
  */
 public class SecurityTest extends JMSTestCase
 {
@@ -102,7 +99,7 @@ public class SecurityTest extends JMSTestCase
       {
          // Expected
       }
-         }
+   }
 
    /* Now some client id tests */
 
@@ -116,7 +113,7 @@ public class SecurityTest extends JMSTestCase
       try
       {
          HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", "preConfcf");
-         ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
+         ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          String clientID = conn.getClientID();
          ProxyAssertSupport.assertEquals("Invalid ClientID", "dilbert-id", clientID);
@@ -138,9 +135,9 @@ public class SecurityTest extends JMSTestCase
    public void testSetClientID() throws Exception
    {
       Connection conn = createConnection();
-         conn.setClientID("myID");
-         String clientID = conn.getClientID();
-         ProxyAssertSupport.assertEquals("Invalid ClientID", "myID", clientID);
+      conn.setClientID("myID");
+      String clientID = conn.getClientID();
+      ProxyAssertSupport.assertEquals("Invalid ClientID", "myID", clientID);
    }
 
    /**
@@ -153,7 +150,7 @@ public class SecurityTest extends JMSTestCase
       try
       {
          HornetQServerTestCase.deployConnectionFactory("dilbert-id", "preConfcf", "preConfcf");
-         ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
+         ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("preConfcf");
          conn = cf.createConnection("guest", "guest");
          conn.setClientID("myID");
          ProxyAssertSupport.fail();
@@ -179,7 +176,7 @@ public class SecurityTest extends JMSTestCase
    public void testSetClientIDAfterOp() throws Exception
    {
       Connection conn = createConnection();
-         conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
          conn.setClientID("myID");

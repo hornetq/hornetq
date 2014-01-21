@@ -24,12 +24,10 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
  * This class represents a paged message
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- *
  */
 public class PagedMessageImpl implements PagedMessage
 {
@@ -41,7 +39,7 @@ public class PagedMessageImpl implements PagedMessage
 
    private ServerMessage message;
 
-   private long queueIDs[];
+   private long[] queueIDs;
 
    private long transactionID = 0;
 
@@ -119,7 +117,7 @@ public class PagedMessageImpl implements PagedMessage
 
       queueIDs = new long[queueIDsSize];
 
-      for (int i = 0 ; i < queueIDsSize; i++)
+      for (int i = 0; i < queueIDsSize; i++)
       {
          queueIDs[i] = buffer.readLong();
       }
@@ -146,17 +144,17 @@ public class PagedMessageImpl implements PagedMessage
    public int getEncodeSize()
    {
       return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize() +
-             DataConstants.SIZE_INT + queueIDs.length * DataConstants.SIZE_LONG;
+         DataConstants.SIZE_INT + queueIDs.length * DataConstants.SIZE_LONG;
    }
 
    @Override
    public String toString()
    {
       return "PagedMessageImpl [queueIDs=" + Arrays.toString(queueIDs) +
-             ", transactionID=" +
-             transactionID +
-             ", message=" +
-             message +
-             "]";
+         ", transactionID=" +
+         transactionID +
+         ", message=" +
+         message +
+         "]";
    }
 }

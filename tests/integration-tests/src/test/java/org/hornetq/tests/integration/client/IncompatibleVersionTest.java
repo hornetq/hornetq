@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -44,12 +43,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
 /**
  * A IncompatibleVersionTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class IncompatibleVersionTest extends ServiceTestBase
 {
@@ -71,7 +70,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    @Override
    @Before
-   public void setUp() throws Exception
+   public void setUp () throws Exception
    {
       super.setUp();
       server = createServer(false, false);
@@ -86,7 +85,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    @Override
    @After
-   public void tearDown()
+   public void tearDown ()
    {
       connection.destroy();
 
@@ -96,54 +95,54 @@ public class IncompatibleVersionTest extends ServiceTestBase
    }
 
    @Test
-   public void testCompatibleClientVersion() throws Exception
+   public void testCompatibleClientVersion () throws Exception
    {
       doTestClientVersionCompatibility(true);
    }
 
    @Test
-   public void testIncompatibleClientVersion() throws Exception
+   public void testIncompatibleClientVersion () throws Exception
    {
       doTestClientVersionCompatibility(false);
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection1() throws Exception
+   public void testCompatibleClientVersionWithRealConnection1 () throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 1));
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection2() throws Exception
+   public void testCompatibleClientVersionWithRealConnection2 () throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 5));
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection3() throws Exception
+   public void testCompatibleClientVersionWithRealConnection3 () throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 10));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection1() throws Exception
+   public void testIncompatibleClientVersionWithRealConnection1 () throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 0));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection2() throws Exception
+   public void testIncompatibleClientVersionWithRealConnection2 () throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 4));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection3() throws Exception
+   public void testIncompatibleClientVersionWithRealConnection3 () throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 100));
    }
 
-   private void doTestClientVersionCompatibility(boolean compatible) throws Exception
+   private void doTestClientVersionCompatibility (boolean compatible) throws Exception
    {
       Channel channel1 = connection.getChannel(1, -1);
       long sessionChannelID = connection.generateChannelID();
@@ -167,7 +166,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
       if (compatible)
       {
-         CreateSessionResponseMessage packet = (CreateSessionResponseMessage)channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
+         CreateSessionResponseMessage packet = (CreateSessionResponseMessage) channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
          assertNotNull(packet);
          // 1 connection on the server
          assertEquals(1, server.getConnectionCount());
@@ -179,7 +178,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
             channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
             fail();
          }
-         catch(HornetQIncompatibleClientServerException icsv)
+         catch (HornetQIncompatibleClientServerException icsv)
          {
             //ok
          }
@@ -200,7 +199,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
    }
 
-   private boolean doTestClientVersionCompatibilityWithRealConnection(String verList, int ver) throws Exception
+   private boolean doTestClientVersionCompatibilityWithRealConnection (String verList, int ver) throws Exception
    {
       String propFileName = "compatibility-test-hornetq-version.properties";
       String serverStartedString = "IncompatibleVersionTest---server---started";
@@ -217,16 +216,16 @@ public class IncompatibleVersionTest extends ServiceTestBase
       try
       {
          serverProcess = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
-                                           new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
-                                           "server",
-                                           serverStartedString);
+                                                  new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                                                  "server",
+                                                  serverStartedString);
          Thread.sleep(2000);
 
          Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
                                                    new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                                    "client");
 
-         if(client.waitFor() == 0)
+         if (client.waitFor() == 0)
          {
             result = true;
          }
@@ -239,7 +238,10 @@ public class IncompatibleVersionTest extends ServiceTestBase
             {
                serverProcess.destroy();
             }
-            catch(Throwable t) {/* ignore */}
+            catch (Throwable t)
+            {
+               /* ignore */
+            }
          }
       }
 
@@ -248,7 +250,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    private static class ServerStarter
    {
-      public void perform(String startedString) throws Exception
+      public void perform (String startedString) throws Exception
       {
          Configuration conf = new ConfigurationImpl();
          conf.setSecurityEnabled(false);
@@ -259,9 +261,10 @@ public class IncompatibleVersionTest extends ServiceTestBase
          log.info("### server: " + startedString);
       }
    }
+
    private static class ClientStarter
    {
-      public void perform() throws Exception
+      public void perform () throws Exception
       {
          ServerLocator locator = null;
          ClientSessionFactory sf = null;
@@ -281,14 +284,14 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
    }
 
-   public static void main(String[] args) throws Exception
+   public static void main (String[] args) throws Exception
    {
-      if(args[0].equals("server"))
+      if (args[0].equals("server"))
       {
          ServerStarter ss = new ServerStarter();
          ss.perform(args[1]);
       }
-      else if(args[0].equals("client"))
+      else if (args[0].equals("client"))
       {
          ClientStarter cs = new ClientStarter();
          cs.perform();

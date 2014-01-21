@@ -27,15 +27,15 @@ public interface TestableServer extends HornetQComponent
 {
    HornetQServer getServer();
 
-   public void stop() throws Exception;
+   void stop() throws Exception;
 
-   public void setIdentity(String identity);
+   void setIdentity(String identity);
 
-   public CountDownLatch crash(ClientSession... sessions) throws Exception;
+   CountDownLatch crash(ClientSession... sessions) throws Exception;
 
-   public CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception;
+   CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception;
 
-   public boolean isActive();
+   boolean isActive();
 
    void addInterceptor(Interceptor interceptor);
 

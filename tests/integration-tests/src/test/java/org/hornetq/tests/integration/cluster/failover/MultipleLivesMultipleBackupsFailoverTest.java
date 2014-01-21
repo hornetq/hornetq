@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +27,8 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  */
@@ -39,6 +38,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
    private ServerLocator locator2;
    private ServerLocator locator;
    private final boolean sharedStore = true;
+
    @Override
    @After
    public void tearDown() throws Exception
@@ -60,11 +60,11 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       NodeManager nodeManager1 = new InVMNodeManager(!sharedStore);
       NodeManager nodeManager2 = new InVMNodeManager(!sharedStore);
       createLiveConfig(nodeManager1, 0, 3, 4, 5);
-      createBackupConfig(nodeManager1, 0, 1, true, new int[] { 0, 2 }, 3, 4, 5);
-      createBackupConfig(nodeManager1, 0, 2, true, new int[] { 0, 1 }, 3, 4, 5);
+      createBackupConfig(nodeManager1, 0, 1, true, new int[]{0, 2}, 3, 4, 5);
+      createBackupConfig(nodeManager1, 0, 2, true, new int[]{0, 1}, 3, 4, 5);
       createLiveConfig(nodeManager2, 3, 0);
-      createBackupConfig(nodeManager2, 3, 4, true, new int[] { 3, 5 }, 0, 1, 2);
-      createBackupConfig(nodeManager2, 3, 5, true, new int[] { 3, 4 }, 0, 1, 2);
+      createBackupConfig(nodeManager2, 3, 4, true, new int[]{3, 5}, 0, 1, 2);
+      createBackupConfig(nodeManager2, 3, 5, true, new int[]{3, 4}, 0, 1, 2);
 
       servers.get(0).start();
       waitForServer(servers.get(0).getServer());
@@ -93,7 +93,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 4, servers.get(0).getServer());
       ClientSession session = sendAndConsume(sf, true);
 
-      System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
+      System.out.println(((ServerLocatorInternal) locator).getTopology().describe());
       Thread.sleep(500);
       servers.get(0).crash(session);
 

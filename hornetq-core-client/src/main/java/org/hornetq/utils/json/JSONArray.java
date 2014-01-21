@@ -204,7 +204,7 @@ public class JSONArray
       myArrayList = new ArrayList<Object>();
       if (collection != null)
       {
-         Iterator<Object> iter = collection.iterator();;
+         Iterator<Object> iter = collection.iterator();
          while (iter.hasNext())
          {
             Object o = iter.next();

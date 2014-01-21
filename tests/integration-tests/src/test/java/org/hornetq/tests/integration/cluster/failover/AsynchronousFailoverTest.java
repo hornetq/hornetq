@@ -12,21 +12,17 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.HornetQTransactionRolledBackException;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.HornetQUnBlockedException;
+import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -39,15 +35,15 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A MultiThreadFailoverTest
- *
+ * <p/>
  * Test Failover where failure is prompted by another thread
  *
  * @author Tim Fox
- *
- *
  */
 public class AsynchronousFailoverTest extends FailoverTestBase
 {
@@ -177,7 +173,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                createSession.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
-               RemotingConnection conn = ((ClientSessionInternal)createSession).getConnection();
+               RemotingConnection conn = ((ClientSessionInternal) createSession).getConnection();
 
                Thread t = new Thread(runnable);
 
@@ -185,7 +181,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                t.start();
 
-               long randomDelay = (long)(2000 * Math.random());
+               long randomDelay = (long) (2000 * Math.random());
 
                AsynchronousFailoverTest.log.info("Sleeping " + randomDelay);
 
@@ -418,8 +414,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                      message.putIntProperty("counter", i);
 
                      message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("id:" + i +
-                                                                                                    ",exec:" +
-                                                                                                    executionId));
+                                                                                                       ",exec:" +
+                                                                                                       executionId));
 
                      addPayload(message);
 
@@ -436,24 +432,24 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                   retry = false;
                }
-               catch(HornetQDuplicateIdException die)
+               catch (HornetQDuplicateIdException die)
                {
                   logAndSystemOut("#test duplicate id rejected on sending");
                   break;
                }
-               catch(HornetQTransactionRolledBackException trbe)
+               catch (HornetQTransactionRolledBackException trbe)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
                   retry = true;
                }
-               catch(HornetQUnBlockedException ube)
+               catch (HornetQUnBlockedException ube)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
                   retry = true;
                }
-               catch(HornetQTransactionOutcomeUnknownException toue)
+               catch (HornetQTransactionOutcomeUnknownException toue)
                {
                   log.info("#test transaction rollback retrying on sending");
                   // OK
@@ -519,7 +515,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   {
                      session.commit();
                   }
-                  catch(HornetQTransactionRolledBackException trbe)
+                  catch (HornetQTransactionRolledBackException trbe)
                   {
                      //we know the tx has been rolled back so we just consume again
                      retry = true;
@@ -559,13 +555,13 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   int i = 0;
                   for (Integer msg : msgs)
                   {
-                     assertEquals(i++, (int)msg);
+                     assertEquals(i++, (int) msg);
                   }
 
                   retry = false;
                   blocked = false;
                }
-               catch(HornetQTransactionRolledBackException trbe)
+               catch (HornetQTransactionRolledBackException trbe)
                {
                   logAndSystemOut("Transaction rolled back with " + msgs.size(), trbe);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
@@ -574,7 +570,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   blocked = true;
                   retry = true;
                }
-               catch(HornetQTransactionOutcomeUnknownException tou)
+               catch (HornetQTransactionOutcomeUnknownException tou)
                {
                   logAndSystemOut("Transaction rolled back with " + msgs.size(), tou);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369
@@ -583,7 +579,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   blocked = true;
                   retry = true;
                }
-               catch(HornetQUnBlockedException ube)
+               catch (HornetQUnBlockedException ube)
                {
                   logAndSystemOut("Unblocked with " + msgs.size(), ube);
                   // TODO: https://jira.jboss.org/jira/browse/HORNETQ-369

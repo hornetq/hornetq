@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.stomp;
 
+import java.nio.charset.Charset;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,8 +29,6 @@ import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-
-import java.nio.charset.Charset;
 
 
 public class StompOverHttpTest extends StompTest
@@ -57,7 +57,7 @@ public class StompOverHttpTest extends StompTest
       @Override
       public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
       {
-         if(msg instanceof DefaultLastHttpContent)
+         if (msg instanceof DefaultLastHttpContent)
          {
             DefaultLastHttpContent response = (DefaultLastHttpContent) msg;
             ctx.fireChannelRead(response.content());

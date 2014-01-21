@@ -13,6 +13,8 @@
 
 package org.hornetq.core.protocol.proton;
 
+import java.util.Map;
+
 import org.apache.qpid.proton.amqp.DescribedType;
 import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.messaging.Accepted;
@@ -31,8 +33,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 
-import java.util.Map;
-
 /**
  * A this is a wrapper around a HornetQ ServerConsumer for handling outgoing messages and incoming acks via a Proton Sender
  *
@@ -40,8 +40,8 @@ import java.util.Map;
  */
 public class ProtonConsumer implements ProtonDeliveryHandler
 {
-   private final static Symbol SELECTOR = Symbol.getSymbol("jms-selector");
-   private final static Symbol COPY = Symbol.valueOf("copy");
+   private static final Symbol SELECTOR = Symbol.getSymbol("jms-selector");
+   private static final Symbol COPY = Symbol.valueOf("copy");
    private final ProtonSession protonSession;
    private final HornetQServer server;
    private final Sender sender;
@@ -117,7 +117,8 @@ public class ProtonConsumer implements ProtonDeliveryHandler
             throw HornetQAMQPProtocolMessageBundle.BUNDLE.errorCreatingTemporaryQueue(e.getMessage());
          }
          source.setAddress(queue.toString());
-      } else
+      }
+      else
       {
          //if not dynamic then we use the targets address as the address to forward the messages to, however there has to
          //be a queue bound to it so we nee to check this.
@@ -176,9 +177,9 @@ public class ProtonConsumer implements ProtonDeliveryHandler
       {
          return 0;
       }
-      if(message.containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
+      if (message.containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
       {
-         if(forcingDelivery)
+         if (forcingDelivery)
          {
             sender.drained();
          }
@@ -190,7 +191,7 @@ public class ProtonConsumer implements ProtonDeliveryHandler
          return 0;
       }
       //if we get here then a forced delivery has pushed some messages thru and we continue
-      if(forcingDelivery)
+      if (forcingDelivery)
       {
          forcingDelivery = false;
       }

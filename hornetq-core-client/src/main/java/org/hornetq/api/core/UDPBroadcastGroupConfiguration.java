@@ -26,20 +26,20 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.core.client.HornetQClientLogger;
 
 
-
 /**
  * The configuration used to determine how the server will broadcast members.
- * <p>
+ * <p/>
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 18 Nov 2008 08:44:30
  */
 public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
    private static final long serialVersionUID = 1052413739064253955L;
 
-   private transient final String localBindAddress;
+   private final transient String localBindAddress;
 
-   private transient final int localBindPort;
+   private final transient int localBindPort;
 
    private final String groupAddress;
 
@@ -58,13 +58,15 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
 
    public BroadcastEndpointFactory createBroadcastEndpointFactory()
    {
-      return new BroadcastEndpointFactory() {
+      return new BroadcastEndpointFactory()
+      {
          @Override
-         public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
+         public BroadcastEndpoint createBroadcastEndpoint() throws Exception
+         {
             return new UDPBroadcastEndpoint(groupAddress != null ? InetAddress.getByName(groupAddress) : null,
-                  groupPort,
-                  localBindAddress != null ? InetAddress.getByName(localBindAddress) : null,
-                  localBindPort);
+                                            groupPort,
+                                            localBindAddress != null ? InetAddress.getByName(localBindAddress) : null,
+                                            localBindPort);
          }
       };
    }
@@ -92,6 +94,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
    /**
     * <p> This is the member discovery implementation using direct UDP. It was extracted as a refactoring from
     * {@link org.hornetq.core.cluster.DiscoveryGroup}</p>
+    *
     * @author Tomohisa
     * @author Howard Gao
     * @author Clebert Suconic
@@ -253,10 +256,10 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
       {
          try
          {
-            String tmp=System.getProperty(key);
+            String tmp = System.getProperty(key);
             return tmp != null && tmp.trim().toLowerCase().startsWith(value);
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
             return false;
          }
@@ -283,7 +286,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
          return false;
       if (getClass() != obj.getClass())
          return false;
-      UDPBroadcastGroupConfiguration other = (UDPBroadcastGroupConfiguration)obj;
+      UDPBroadcastGroupConfiguration other = (UDPBroadcastGroupConfiguration) obj;
       if (groupAddress == null)
       {
          if (other.groupAddress != null)

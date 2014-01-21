@@ -12,15 +12,6 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
-import org.junit.Test;
-
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -32,8 +23,12 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import org.junit.Assert;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
@@ -42,13 +37,13 @@ import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A JMSBridgeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class JMSBridgeTest extends BridgeTestBase
 {
@@ -464,271 +459,271 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
-         QualityOfServiceMode qosMode = QualityOfServiceMode.AT_MOST_ONCE;
+      QualityOfServiceMode qosMode = QualityOfServiceMode.AT_MOST_ONCE;
 
-         int batchSize = 10;
+      int batchSize = 10;
 
-         int maxBatchTime = -1;
+      int maxBatchTime = -1;
 
-         String sourceUsername = null;
+      String sourceUsername = null;
 
-         String sourcePassword = null;
+      String sourcePassword = null;
 
-         String destUsername = null;
+      String destUsername = null;
 
-         String destPassword = null;
+      String destPassword = null;
 
-         String selector = null;
+      String selector = null;
 
-         long failureRetryInterval = 5000;
+      long failureRetryInterval = 5000;
 
-         int maxRetries = 10;
+      int maxRetries = 10;
 
-         String subName = null;
+      String subName = null;
 
-         String clientID = null;
+      String clientID = null;
 
-         try
-         {
+      try
+      {
          bridge =
-                  new JMSBridgeImpl(null,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       targetQueueFactory,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
-                                       false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+            new JMSBridgeImpl(null,
+                              cff1,
+                              sourceQueueFactory,
+                              targetQueueFactory,
+                              sourceUsername,
+                              sourcePassword,
+                              destUsername,
+                              destPassword,
+                              selector,
+                              failureRetryInterval,
+                              maxRetries,
+                              qosMode,
+                              batchSize,
+                              maxBatchTime,
+                              subName,
+                              clientID,
+                              false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       null,
-                                       sourceQueueFactory,
-                                       targetQueueFactory,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
- false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    null,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    failureRetryInterval,
+                                    maxRetries,
+                                    qosMode,
+                                    batchSize,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       null,
-                                       targetQueueFactory,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
- false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    null,
+                                    targetQueueFactory,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    failureRetryInterval,
+                                    maxRetries,
+                                    qosMode,
+                                    batchSize,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       null,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
-                                       false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    null,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    failureRetryInterval,
+                                    maxRetries,
+                                    qosMode,
+                                    batchSize,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       targetQueueFactory,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       -2,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
-                                       false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    -2,
+                                    maxRetries,
+                                    qosMode,
+                                    batchSize,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       targetQueueFactory,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       -1,
-                                       10,
-                                       qosMode,
-                                       batchSize,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
- false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    targetQueueFactory,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    -1,
+                                    10,
+                                    qosMode,
+                                    batchSize,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       null,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       0,
-                                       maxBatchTime,
-                                       subName,
-                                       clientID,
- false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    null,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    failureRetryInterval,
+                                    maxRetries,
+                                    qosMode,
+                                    0,
+                                    maxBatchTime,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
 
-         try
-         {
-            bridge = new JMSBridgeImpl(cff0,
-                                       cff1,
-                                       sourceQueueFactory,
-                                       null,
-                                       sourceUsername,
-                                       sourcePassword,
-                                       destUsername,
-                                       destPassword,
-                                       selector,
-                                       failureRetryInterval,
-                                       maxRetries,
-                                       qosMode,
-                                       batchSize,
-                                       -2,
-                                       subName,
-                                       clientID,
- false);
-            fail("expected exception");
-         }
-         catch (IllegalArgumentException e)
-         {
-            // Ok
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0,
+                                    cff1,
+                                    sourceQueueFactory,
+                                    null,
+                                    sourceUsername,
+                                    sourcePassword,
+                                    destUsername,
+                                    destPassword,
+                                    selector,
+                                    failureRetryInterval,
+                                    maxRetries,
+                                    qosMode,
+                                    batchSize,
+                                    -2,
+                                    subName,
+                                    clientID,
+                                    false);
+         fail("expected exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Ok
       }
       finally
       {
          stopComponent(bridge);
       }
-         }
+   }
 
    @Test
    public void testStartStopStart() throws Exception
@@ -788,7 +783,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(10000);
+            TextMessage tm = (TextMessage) cons.receive(10000);
             Assert.assertNotNull(tm);
             Assert.assertEquals("message" + i, tm.getText());
          }
@@ -885,7 +880,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(10000);
+            TextMessage tm = (TextMessage) cons.receive(10000);
 
             Assert.assertNotNull(tm);
 
@@ -935,8 +930,8 @@ public class JMSBridgeTest extends BridgeTestBase
          final int NUM_MESSAGES = 10;
 
          bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory,
-               targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
-               10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
+                                    targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
+                                    10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
          bridge.setTransactionManager(newTransactionManager());
 
          bridge.setUseMaskedPassword(true);
@@ -946,7 +941,7 @@ public class JMSBridgeTest extends BridgeTestBase
          connSource = cf0.createConnection();
 
          Session sessSend = connSource.createSession(false,
-               Session.AUTO_ACKNOWLEDGE);
+                                                     Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sessSend.createProducer(sourceQueue);
 
@@ -960,7 +955,7 @@ public class JMSBridgeTest extends BridgeTestBase
          connTarget = cf1.createConnection();
 
          Session sessRec = connTarget.createSession(false,
-               Session.AUTO_ACKNOWLEDGE);
+                                                    Session.AUTO_ACKNOWLEDGE);
 
          MessageConsumer cons = sessRec.createConsumer(targetQueue);
 
@@ -1022,8 +1017,8 @@ public class JMSBridgeTest extends BridgeTestBase
          final int NUM_MESSAGES = 10;
 
          bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory,
-               targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
-               10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
+                                    targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
+                                    10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
          bridge.setTransactionManager(newTransactionManager());
 
          bridge.setUseMaskedPassword(true);
@@ -1034,7 +1029,7 @@ public class JMSBridgeTest extends BridgeTestBase
          connSource = cf0.createConnection();
 
          Session sessSend = connSource.createSession(false,
-               Session.AUTO_ACKNOWLEDGE);
+                                                     Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sessSend.createProducer(sourceQueue);
 
@@ -1048,7 +1043,7 @@ public class JMSBridgeTest extends BridgeTestBase
          connTarget = cf1.createConnection();
 
          Session sessRec = connTarget.createSession(false,
-               Session.AUTO_ACKNOWLEDGE);
+                                                    Session.AUTO_ACKNOWLEDGE);
 
          MessageConsumer cons = sessRec.createConsumer(targetQueue);
 
@@ -1358,16 +1353,16 @@ public class JMSBridgeTest extends BridgeTestBase
             tm.setStringProperty("wib", "uhuh");
             tm.setBooleanProperty("cheese", true);
             tm.setIntProperty("Sausages", 23);
-            tm.setByteProperty("bacon", (byte)12);
+            tm.setByteProperty("bacon", (byte) 12);
             tm.setDoubleProperty("toast", 17261762.12121d);
             tm.setFloatProperty("orange", 1212.1212f);
-            tm.setLongProperty("blurg", 817217827l);
-            tm.setShortProperty("stst", (short)26363);
+            tm.setLongProperty("blurg", 817217827L);
+            tm.setShortProperty("stst", (short) 26363);
 
             //Set some JMS headers too
 
             //And also set a core props
-            ((HornetQMessage)tm).getCoreMessage().putBytesProperty("bytes", new byte[] { 1, 2, 3});
+            ((HornetQMessage) tm).getCoreMessage().putBytesProperty("bytes", new byte[]{1, 2, 3});
 
             // We add some JMSX ones too
 
@@ -1390,7 +1385,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(5000);
+            TextMessage tm = (TextMessage) cons.receive(5000);
 
             Assert.assertNotNull(tm);
 
@@ -1399,13 +1394,13 @@ public class JMSBridgeTest extends BridgeTestBase
             Assert.assertEquals("uhuh", tm.getStringProperty("wib"));
             Assert.assertTrue(tm.getBooleanProperty("cheese"));
             Assert.assertEquals(23, tm.getIntProperty("Sausages"));
-            assertEquals((byte)12, tm.getByteProperty("bacon"));
+            assertEquals((byte) 12, tm.getByteProperty("bacon"));
             assertEquals(17261762.12121d, tm.getDoubleProperty("toast"), 0.000000001);
             assertEquals(1212.1212f, tm.getFloatProperty("orange"), 0.000001);
-            assertEquals(817217827l, tm.getLongProperty("blurg"));
-            assertEquals((short)26363, tm.getShortProperty("stst"));
+            assertEquals(817217827L, tm.getLongProperty("blurg"));
+            assertEquals((short) 26363, tm.getShortProperty("stst"));
 
-            assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
+            assertEqualsByteArrays(new byte[]{1, 2, 3}, ((HornetQMessage) tm).getCoreMessage().getBytesProperty("bytes"));
 
             Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
 
@@ -1442,7 +1437,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
-               TextMessage tm = (TextMessage)cons.receive(5000);
+               TextMessage tm = (TextMessage) cons.receive(5000);
 
                Assert.assertNotNull(tm);
 
@@ -1451,13 +1446,13 @@ public class JMSBridgeTest extends BridgeTestBase
                Assert.assertEquals("uhuh", tm.getStringProperty("wib"));
                Assert.assertTrue(tm.getBooleanProperty("cheese"));
                Assert.assertEquals(23, tm.getIntProperty("Sausages"));
-               assertEquals((byte)12, tm.getByteProperty("bacon"));
+               assertEquals((byte) 12, tm.getByteProperty("bacon"));
                assertEquals(17261762.12121d, tm.getDoubleProperty("toast"), 0.000001);
                assertEquals(1212.1212f, tm.getFloatProperty("orange"), 0.0000001);
-               assertEquals(817217827l, tm.getLongProperty("blurg"));
-               assertEquals((short)26363, tm.getShortProperty("stst"));
+               assertEquals(817217827L, tm.getLongProperty("blurg"));
+               assertEquals((short) 26363, tm.getShortProperty("stst"));
 
-               assertEqualsByteArrays(new byte[] { 1,2, 3}, ((HornetQMessage)tm).getCoreMessage().getBytesProperty("bytes"));
+               assertEqualsByteArrays(new byte[]{1, 2, 3}, ((HornetQMessage) tm).getCoreMessage().getBytesProperty("bytes"));
 
                Assert.assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
 
@@ -1577,7 +1572,7 @@ public class JMSBridgeTest extends BridgeTestBase
          Assert.assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT,
                              tm.getJMSDeliveryMode());
 
-         tm = (TextMessage)cons.receive(1000);
+         tm = (TextMessage) cons.receive(1000);
 
          Assert.assertNotNull(tm);
 
@@ -1607,7 +1602,7 @@ public class JMSBridgeTest extends BridgeTestBase
          Assert.assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT,
                              tm.getJMSDeliveryMode());
 
-         tm = (TextMessage)cons.receive(1000);
+         tm = (TextMessage) cons.receive(1000);
 
          Assert.assertNotNull(tm);
 
@@ -1627,12 +1622,12 @@ public class JMSBridgeTest extends BridgeTestBase
          tm = sessSource.createTextMessage("blahmessage3");
 
          final boolean myBool = false;
-         final byte myByte = (byte)23;
+         final byte myByte = (byte) 23;
          final double myDouble = 17625765d;
          final float myFloat = 87127.23f;
          final int myInt = 123;
          final long myLong = 81728712;
-         final short myShort = (short)88;
+         final short myShort = (short) 88;
          final String myString = "ojweodewj";
          final String myJMSX = "aardvark";
 
@@ -1649,7 +1644,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          prod.send(tm);
 
-         tm = (TextMessage)cons.receive(5000);
+         tm = (TextMessage) cons.receive(5000);
 
          Assert.assertNotNull(tm);
 
@@ -1753,7 +1748,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(5000);
+            TextMessage tm = (TextMessage) cons.receive(5000);
 
             Assert.assertNotNull(tm);
 
@@ -2333,7 +2328,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          // Verify none are received
 
-         checkEmpty(localTargetQueue, 0);;
+         checkEmpty(localTargetQueue, 0);
 
          // Messages should now be receivable
 
@@ -2423,7 +2418,6 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       return newTransactionManager();
    }
-
 
 
    // Inner classes -------------------------------------------------------------------

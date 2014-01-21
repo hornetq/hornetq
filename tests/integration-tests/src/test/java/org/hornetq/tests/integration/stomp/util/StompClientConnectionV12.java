@@ -44,7 +44,7 @@ public class StompClientConnectionV12 extends AbstractStompClientConnection
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
-         if(!version.equals("1.2")) throw new IllegalStateException("incorrect version!");
+         if (!version.equals("1.2")) throw new IllegalStateException("incorrect version!");
 
          this.username = username;
          this.passcode = passcode;
@@ -78,8 +78,7 @@ public class StompClientConnectionV12 extends AbstractStompClientConnection
    }
 
    @Override
-   public void connect(String username, String passcode, String clientID)
-         throws Exception
+   public void connect(String username, String passcode, String clientID) throws Exception
    {
       ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
       frame.addHeader(ACCEPT_HEADER, "1.2");

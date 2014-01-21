@@ -12,9 +12,8 @@
  */
 package org.hornetq.api.core.management;
 
-import java.util.Map;
-
 import javax.management.MBeanOperationInfo;
+import java.util.Map;
 
 
 /**
@@ -122,21 +121,22 @@ public interface QueueControl
    @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = MBeanOperationInfo.INFO)
    String listScheduledMessagesAsJSON() throws Exception;
 
-    /**
-     * Lists all the messages being deliver per consumer.
-     * <br>
-     * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
-     */
-    @Operation(desc = "List all messages being delivered per consumer")
-    Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
+   /**
+    * Lists all the messages being deliver per consumer.
+    * <br>
+    * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
+    */
+   @Operation(desc = "List all messages being delivered per consumer")
+   Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
 
-    /**
-     * Executes a conversion of {@link #listDeliveringMessages()} to JSON
-     * @return
-     * @throws Exception
-     */
-    @Operation(desc = "list all messages being delivered per consumer using JSON form")
-    String listDeliveringMessagesAsJSON() throws Exception;
+   /**
+    * Executes a conversion of {@link #listDeliveringMessages()} to JSON
+    *
+    * @return
+    * @throws Exception
+    */
+   @Operation(desc = "list all messages being delivered per consumer using JSON form")
+   String listDeliveringMessagesAsJSON() throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified filter.
@@ -190,7 +190,7 @@ public interface QueueControl
     * @return the number of removed messages
     */
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = MBeanOperationInfo.ACTION)
-   int removeMessages(@Parameter(name= "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
+   int removeMessages(@Parameter(name = "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
                       @Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    /**
@@ -256,7 +256,7 @@ public interface QueueControl
                     @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
 
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
-   int moveMessages(@Parameter(name= "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
+   int moveMessages(@Parameter(name = "flushLimit", desc = "Limit to flush transactions during the operation to avoid OutOfMemory") int flushLimit,
                     @Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
                     @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName,
                     @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
@@ -283,7 +283,6 @@ public interface QueueControl
     * Changes the message's priority corresponding to the specified message ID to the specified priority.
     *
     * @param newPriority between 0 and 9 inclusive.
-    *
     * @return {@code true} if the message priority was changed
     */
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)
@@ -351,7 +350,7 @@ public interface QueueControl
     */
    @Operation(desc = "Inspects if the queue is paused", impact = MBeanOperationInfo.INFO)
    boolean isPaused() throws Exception;
-   
+
    /**
     * Resets the MessagesAdded property
     */

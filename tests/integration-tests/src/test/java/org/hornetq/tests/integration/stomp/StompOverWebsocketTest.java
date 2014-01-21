@@ -13,6 +13,10 @@
 package org.hornetq.tests.integration.stomp;
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,10 +36,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.util.CharsetUtil;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-
 public class StompOverWebsocketTest extends StompTest
 {
 
@@ -47,11 +47,10 @@ public class StompOverWebsocketTest extends StompTest
    {
       ch.pipeline().addLast("http-codec", new HttpClientCodec());
       ch.pipeline().addLast("aggregator", new HttpObjectAggregator(8192));
-      ch.pipeline().addLast(new WebsocketHandler(WebSocketClientHandshakerFactory.newHandshaker( new URI("ws://localhost:8080/websocket"), WebSocketVersion.V13, null, false, null)));
+      ch.pipeline().addLast(new WebsocketHandler(WebSocketClientHandshakerFactory.newHandshaker(new URI("ws://localhost:8080/websocket"), WebSocketVersion.V13, null, false, null)));
       ch.pipeline().addLast("decoder", new StringDecoder(Charset.forName("UTF-8")));
       ch.pipeline().addLast(new StompClientHandler());
    }
-
 
 
    @Override
@@ -70,43 +69,54 @@ public class StompOverWebsocketTest extends StompTest
       }
 
       @Override
-      public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+      public void handlerAdded(ChannelHandlerContext ctx) throws Exception
+      {
          handshakeFuture = ctx.newPromise();
       }
 
       @Override
-      public void channelActive(ChannelHandlerContext ctx) throws Exception {
+      public void channelActive(ChannelHandlerContext ctx) throws Exception
+      {
          handshaker.handshake(ctx.channel());
       }
 
       @Override
-      public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+      public void channelInactive(ChannelHandlerContext ctx) throws Exception
+      {
          System.out.println("WebSocket Client disconnected!");
       }
 
       @Override
-      public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+      public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
+      {
          Channel ch = ctx.channel();
-         if (!handshaker.isHandshakeComplete()) {
+         if (!handshaker.isHandshakeComplete())
+         {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
             System.out.println("WebSocket Client connected!");
             handshakeFuture.setSuccess();
             return;
          }
 
-         if (msg instanceof FullHttpResponse) {
+         if (msg instanceof FullHttpResponse)
+         {
             FullHttpResponse response = (FullHttpResponse) msg;
             throw new Exception("Unexpected FullHttpResponse (getStatus=" + response.getStatus() + ", content="
-                  + response.content().toString(CharsetUtil.UTF_8) + ')');
+                                   + response.content().toString(CharsetUtil.UTF_8) + ')');
          }
 
          WebSocketFrame frame = (WebSocketFrame) msg;
-         if (frame instanceof BinaryWebSocketFrame) {
+         if (frame instanceof BinaryWebSocketFrame)
+         {
             BinaryWebSocketFrame dataFrame = (BinaryWebSocketFrame) frame;
             super.channelRead(ctx, dataFrame.content());
-         } else if (frame instanceof PongWebSocketFrame) {
+         }
+         else if (frame instanceof PongWebSocketFrame)
+         {
             System.out.println("WebSocket Client received pong");
-         } else if (frame instanceof CloseWebSocketFrame) {
+         }
+         else if (frame instanceof CloseWebSocketFrame)
+         {
             System.out.println("WebSocket Client received closing");
             ch.close();
          }

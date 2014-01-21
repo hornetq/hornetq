@@ -11,14 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.deployers.impl;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.junit.Assert;
 
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
@@ -26,6 +21,9 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -37,41 +35,41 @@ public class SecurityDeployerTest extends UnitTestCase
    private SecurityDeployer deployer;
 
    private final String conf = "<security-setting match=\"jms.topic.testTopic\">\n" + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>\n"
-                               + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n"
-                               + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
-                               + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
-                               + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n"
-                               + "   </security-setting>";
+      + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n"
+      + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
+      + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
+      + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n"
+      + "   </security-setting>";
 
-   private final String confWithWhiteSpace1 = "<security-setting match=\"jms.topic.testTopic\">\n" +
-   "      <permission type=\"createDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n" +
-   "<permission type=\"createNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
-   + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              + "      <permission type=\"deleteDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+   private final String confWithWhiteSpace1 = "<security-setting match=\"jms.topic.testTopic\">\n"
+      + "      <permission type=\"createDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"createNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"deleteDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
 
-                                              + "      <permission type=\"consume\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              + "      <permission type=\"send\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
-                                              + "   </security-setting>";
+      + "      <permission type=\"consume\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"send\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
+      + "   </security-setting>";
 
-   private final String confWithWhiteSpace2 = "<security-setting match=\"jms.topic.testTopic\">\n" +
-   "      <permission type=\"createDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n" +
-   "<permission type=\"createNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
-   + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
-                                              + "      <permission type=\"deleteDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+   private final String confWithWhiteSpace2 = "<security-setting match=\"jms.topic.testTopic\">\n"
+      + "      <permission type=\"createDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "      <permission type=\"createNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "      <permission type=\"deleteDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
 
-                                              + "      <permission type=\"consume\" roles=\"guest , publisher , durpublisher\"/>\n"
-                                              + "      <permission type=\"send\" roles=\"guest , publisher , durpublisher\"/>\n"
-                                              + "      <permission type=\"manage\" roles=\"guest , publisher , durpublisher\"/>\n"
-                                              + "   </security-setting>";
+      + "      <permission type=\"consume\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "      <permission type=\"send\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "      <permission type=\"manage\" roles=\"guest , publisher , durpublisher\"/>\n"
+      + "   </security-setting>";
 
-   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" +
-   "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
-                                + "      <permission type=\"deleteNonDurableQueue\" roles=\"durpublisher\"/>\n"
-                                + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
-                                + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
-                                + "   </security-setting>";
+   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n"
+      + "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
+      + "      <permission type=\"deleteNonDurableQueue\" roles=\"durpublisher\"/>\n"
+      + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
+      + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
+      + "   </security-setting>";
 
    private final String noRoles = "   <securityfoo match=\"queues.testQueue\">\n" + "   </securityfoo>";
 
@@ -93,7 +91,7 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       Element e = org.hornetq.utils.XMLUtil.stringToElement(conf);
       deployer.deploy(e);
-      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       Assert.assertNotNull(roles);
       Assert.assertEquals(3, roles.size());
       for (Role role : roles)
@@ -151,7 +149,7 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       Element e = org.hornetq.utils.XMLUtil.stringToElement(confWithWhiteSpace1);
       deployer.deploy(e);
-      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       Assert.assertNotNull(roles);
       Assert.assertEquals(3, roles.size());
       for (Role role : roles)
@@ -198,7 +196,7 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(conf));
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(conf2));
-      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       Assert.assertNotNull(roles);
       Assert.assertEquals(3, roles.size());
       for (Role role : roles)
@@ -238,7 +236,7 @@ public class SecurityDeployerTest extends UnitTestCase
             Assert.fail("unexpected role");
          }
       }
-      roles = (HashSet<Role>)repository.getMatch("jms.topic.testQueue");
+      roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
       Assert.assertNotNull(roles);
       Assert.assertEquals(3, roles.size());
       for (Role role : roles)
@@ -284,7 +282,7 @@ public class SecurityDeployerTest extends UnitTestCase
    public void testNoRolesAdded() throws Exception
    {
       deployer.deploy(org.hornetq.utils.XMLUtil.stringToElement(noRoles));
-      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testQueue");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
       Assert.assertNull(roles);
    }
 
@@ -292,15 +290,15 @@ public class SecurityDeployerTest extends UnitTestCase
    public void testDeployFromConfigurationFile() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'> " + "<security-settings>"
-                   + "   <security-setting match=\"jms.topic.testTopic\">"
-                   + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
-                   + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
-                   + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
-                   + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
-                   + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
-                   + "   </security-setting>"
-                   + "</security-settings>"
-                   + "</configuration>";
+         + "   <security-setting match=\"jms.topic.testTopic\">"
+         + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
+         + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
+         + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
+         + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
+         + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
+         + "   </security-setting>"
+         + "</security-settings>"
+         + "</configuration>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
@@ -308,7 +306,7 @@ public class SecurityDeployerTest extends UnitTestCase
       Assert.assertEquals(1, securityNodes.getLength());
 
       deployer.deploy(securityNodes.item(0));
-      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       Assert.assertNotNull(roles);
       Assert.assertEquals(3, roles.size());
    }

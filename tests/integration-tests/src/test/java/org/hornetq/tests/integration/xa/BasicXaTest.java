@@ -11,14 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -97,17 +97,17 @@ public class BasicXaTest extends ServiceTestBase
 
       ClientSession session = addClientSession(factory.createSession(true, false, false));
 
-         session.createQueue("Test", "Test");
+      session.createQueue("Test", "Test");
 
-         ClientProducer prod = session.createProducer("Test");
+      ClientProducer prod = session.createProducer("Test");
 
-         prod.send(session.createMessage(true));
+      prod.send(session.createMessage(true));
 
-         session.start();
+      session.start();
 
-         ClientConsumer cons = session.createConsumer("Test");
+      ClientConsumer cons = session.createConsumer("Test");
 
-         assertNotNull("Send went through an invalid XA Session", cons.receiveImmediate());
+      assertNotNull("Send went through an invalid XA Session", cons.receiveImmediate());
    }
 
 
@@ -121,40 +121,39 @@ public class BasicXaTest extends ServiceTestBase
 
       ClientSession session = addClientSession(factory.createSession(false, true, true));
 
-         session.createQueue("Test", "Test");
+      session.createQueue("Test", "Test");
 
-         ClientProducer prod = session.createProducer("Test");
+      ClientProducer prod = session.createProducer("Test");
 
-         prod.send(session.createMessage(true));
+      prod.send(session.createMessage(true));
 
-         session.close();
+      session.close();
 
       session = addClientSession(factory.createSession(true, false, false));
 
-         session.start();
+      session.start();
 
-         ClientConsumer cons = session.createConsumer("Test");
+      ClientConsumer cons = session.createConsumer("Test");
 
-         ClientMessage msg = cons.receive(5000);
+      ClientMessage msg = cons.receive(5000);
 
-         assertNotNull(msg);
+      assertNotNull(msg);
 
-         msg.acknowledge();
+      msg.acknowledge();
 
-         session.close();
+      session.close();
 
 
       session = addClientSession(factory.createSession(false, false, false));
 
-         session.start();
+      session.start();
 
-         cons = session.createConsumer("Test");
+      cons = session.createConsumer("Test");
 
-         msg = cons.receiveImmediate();
+      msg = cons.receiveImmediate();
 
-         assertNull("Acknowledge went through invalid XA Session", msg);
+      assertNull("Acknowledge went through invalid XA Session", msg);
    }
-
 
 
    @Test
@@ -185,7 +184,6 @@ public class BasicXaTest extends ServiceTestBase
       session1.close();
       session2.close();
    }
-
 
 
    @Test
@@ -560,7 +558,7 @@ public class BasicXaTest extends ServiceTestBase
       Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);
       Assert.assertTrue(messagingService.getHornetQServerControl()
-                                        .commitPreparedTransaction(XidImpl.toBase64String(xid)));
+                           .commitPreparedTransaction(XidImpl.toBase64String(xid)));
       Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
 
       clientSession.forget(xid);
@@ -581,7 +579,7 @@ public class BasicXaTest extends ServiceTestBase
       System.out.println(preparedTransactions[0]);
 
       Assert.assertTrue(messagingService.getHornetQServerControl()
-                                        .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
+                           .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
       Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
 
       clientSession.forget(xid);
@@ -891,13 +889,13 @@ public class BasicXaTest extends ServiceTestBase
       if (heuristicCommit)
       {
          Assert.assertTrue(messagingService.getHornetQServerControl()
-                                           .commitPreparedTransaction(XidImpl.toBase64String(xid)));
+                              .commitPreparedTransaction(XidImpl.toBase64String(xid)));
          Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
       }
       else
       {
          Assert.assertTrue(messagingService.getHornetQServerControl()
-                                           .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
+                              .rollbackPreparedTransaction(XidImpl.toBase64String(xid)));
          Assert.assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
       }
       Assert.assertEquals(0, messagingService.getHornetQServerControl().listPreparedTransactions().length);

@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.server.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,8 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -40,6 +34,10 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.FutureLatch;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueTest
@@ -769,7 +767,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
 
-         ref.getMessage().setPriority((byte)i);
+         ref.getMessage().setPriority((byte) i);
 
          refs.add(ref);
 
@@ -917,7 +915,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(2, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -953,7 +951,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(3, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -1248,7 +1246,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(6, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(2, consumer.getReferences().size());
 
@@ -1305,7 +1303,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(messageReference, consumer.getReferences().get(1));
       Assert.assertEquals(messageReference2, consumer.getReferences().get(2));
    }
-   
+
    @Test
    public void testMessagesAdded() throws Exception
    {
@@ -1379,6 +1377,7 @@ public class QueueImplTest extends UnitTestCase
 
    /**
     * Test the paused and resumed states with async deliveries.
+    *
     * @throws Exception
     */
    @Test
@@ -1434,8 +1433,7 @@ public class QueueImplTest extends UnitTestCase
       // resuming work
       queue.resume();
 
-      awaitExecution();;
-
+      awaitExecution();
       // after resuming the delivery begins.
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
       Assert.assertEquals(numMessages, queue.getMessageCount());
@@ -1446,6 +1444,7 @@ public class QueueImplTest extends UnitTestCase
 
    /**
     * Test the paused and resumed states with direct deliveries.
+    *
     * @throws Exception
     */
 
@@ -1494,7 +1493,7 @@ public class QueueImplTest extends UnitTestCase
       queue.resume();
 
 
-      awaitExecution();;
+      awaitExecution();
 
       // resuming delivery of messages
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
@@ -1502,7 +1501,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(numMessages, queue.getDeliveringCount());
 
    }
-   
+
    @Test
    public void testResetMessagesAdded() throws Exception
    {

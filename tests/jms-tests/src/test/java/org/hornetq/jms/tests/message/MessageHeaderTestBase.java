@@ -58,18 +58,18 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    public static void configureMessage(final HornetQMessage m) throws JMSException
    {
       m.setJMSMessageID("ID:messageID777");
-      m.setJMSTimestamp(123456789l);
+      m.setJMSTimestamp(123456789L);
       m.setJMSCorrelationID("correlationID777");
       m.setJMSReplyTo(HornetQJMSClient.createQueue("ReplyToQueue"));
       m.setJMSDestination(HornetQJMSClient.createQueue("DestinationQueue"));
       m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-      m.setJMSExpiration(987654321l);
+      m.setJMSExpiration(987654321L);
       m.setJMSPriority(9);
       m.setBooleanProperty("booleanProperty", true);
       m.setByteProperty("byteProperty", (byte)2);
       m.setShortProperty("shortProperty", (short)3);
       m.setIntProperty("intProperty", 4);
-      m.setLongProperty("longProperty", 5l);
+      m.setLongProperty("longProperty", 5L);
       m.setFloatProperty("floatProperty", 6);
       m.setDoubleProperty("doubleProperty", 7);
       m.setStringProperty("stringPoperty", "someString");

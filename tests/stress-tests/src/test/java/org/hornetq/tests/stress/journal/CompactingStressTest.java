@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -414,7 +413,7 @@ public class CompactingStressTest extends ServiceTestBase
       }
    }
 
-   private void setupServer(final JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);

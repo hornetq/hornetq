@@ -15,11 +15,8 @@ package org.hornetq.spi.core.remoting;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.core.protocol.ProtocolHandler;
-import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 
@@ -36,7 +33,6 @@ public interface AcceptorFactory
 {
    /**
     * Create a new instance of an Acceptor.
-    *
     *
     * @param name                the name of the acceptor
     * @param configuration       the configuration

@@ -13,6 +13,9 @@
 
 package org.hornetq.core.protocol.proton;
 
+import java.nio.ByteBuffer;
+import java.util.EnumSet;
+
 import io.netty.channel.ChannelPipeline;
 import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
@@ -49,9 +52,6 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.UUIDGenerator;
-
-import java.nio.ByteBuffer;
-import java.util.EnumSet;
 
 /**
  * A proton protocol manager, basically reads the Proton Input and maps proton resources to HornetQ resources
@@ -138,7 +138,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
       synchronized (connection.getDeliveryLock())
       {
          int count;
-         byte data[] = new byte[1024];
+         byte[] data = new byte[1024];
          //todo an optimisation here would be to only use the buffer if we need more that one recv
          while ((count = receiver.recv(data, 0, data.length)) > 0)
          {
@@ -201,7 +201,8 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
                {
                   delivery.settle();
                   ((LinkImpl) sender).addCredit(1);
-               } else
+               }
+               else
                {
                   sender.advance();
                }
@@ -251,7 +252,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    {
       String name = UUIDGenerator.getInstance().generateStringUUID();
       return new ProtonSession(name, protonConnection, this, server.getStorageManager()
-            .newContext(server.getExecutorFactory().getExecutor()), server, protonTransport);
+         .newContext(server.getExecutorFactory().getExecutor()), server, protonTransport);
    }
 
    void handleActiveLink(Link link) throws HornetQAMQPException
@@ -265,7 +266,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    public void handleTransaction(Receiver receiver, HornetQBuffer buffer, Delivery delivery, ProtonSession protonSession) throws HornetQAMQPIllegalStateException
    {
       int count;
-      byte data[] = new byte[1024];
+      byte[] data = new byte[1024];
       //todo an optimisation here would be to only use the buffer if we need more that one recv
       while ((count = receiver.recv(data, 0, data.length)) > 0)
       {

@@ -12,14 +12,11 @@
  */
 package org.hornetq.tests.util;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -29,6 +26,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.junit.Assert;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 /**
@@ -79,7 +78,7 @@ public final class SpawnedVMSupport
 
       if (vmargs != null)
       {
-         for (String arg: vmargs)
+         for (String arg : vmargs)
          {
             commandList.add(arg);
          }
@@ -103,7 +102,7 @@ public final class SpawnedVMSupport
       }
 
       commandList.add(className);
-      for (String arg: args)
+      for (String arg : args)
       {
          commandList.add(arg);
       }
@@ -144,8 +143,8 @@ public final class SpawnedVMSupport
     * the process is destroyed before the method returns.
     */
    public static void assertProcessExits(final boolean sameValue, final int value, final Process p) throws InterruptedException,
-                                                                                                   ExecutionException,
-                                                                                                   TimeoutException
+      ExecutionException,
+      TimeoutException
    {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       Future<Integer> future = executor.submit(new Callable<Integer>()

@@ -11,16 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -36,15 +32,15 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessageRedistributionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 10 Feb 2009 18:41:57
- *
- *
+ *         <p/>
+ *         Created 10 Feb 2009 18:41:57
  */
 public class MessageRedistributionTest extends ClusterTestBase
 {
@@ -70,6 +66,7 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       return false;
    }
+
    //https://issues.jboss.org/browse/HORNETQ-1061
    @Test
    public void testRedistributionWithMessageGroups() throws Exception
@@ -80,9 +77,9 @@ public class MessageRedistributionTest extends ClusterTestBase
 
 
       getServer(0).getConfiguration().setGroupingHandlerConfiguration(
-            new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.LOCAL, new SimpleString("queues")));
+         new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.LOCAL, new SimpleString("queues")));
       getServer(1).getConfiguration().setGroupingHandlerConfiguration(
-            new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.REMOTE, new SimpleString("queues")));
+         new GroupingHandlerConfiguration(new SimpleString("handler"), GroupingHandlerConfiguration.TYPE.REMOTE, new SimpleString("queues")));
 
       startServers(0, 1);
 
@@ -91,7 +88,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       this.
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
 
       addConsumer(1, 1, "queue0", null);
@@ -114,7 +111,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
 
       //consume half of the grouped messages from node 1
-      for(int i = 0; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          ClientMessage message = getConsumer(1).receive(1000);
          assertNotNull(message);
@@ -123,7 +120,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       }
 
       //now consume the non grouped messages from node 1 where they are pinned
-      for(int i = 0; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          ClientMessage message = getConsumer(0).receive(5000);
          assertNotNull("" + i, message);
@@ -141,10 +138,10 @@ public class MessageRedistributionTest extends ClusterTestBase
       removeConsumer(1);
 
       //consume the non grouped messages
-      for(int i = 0; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          ClientMessage message = getConsumer(0).receive(5000);
-         if(message == null)
+         if (message == null)
          {
             System.out.println();
          }
@@ -161,7 +158,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       addConsumer(1, 1, "queue0", null);
 
       //now we see the grouped messages are still on the same node
-      for(int i = 0; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          ClientMessage message = getConsumer(1).receive(1000);
          assertNotNull(message);
@@ -281,7 +278,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       final int NUMBER_OF_MESSAGES = 1000;
 
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0; i < 1000; i++)
       {
          producer0.send(sess0.createMessage(true).putIntProperty("count", i));
       }
@@ -303,7 +300,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       // closing consumer1... it shouldn't redistribute anything as the other nodes don't have such queues
       consumer1.close();
       Thread.sleep(500); // wait some time giving time to redistribution break something
-                         // (it shouldn't redistribute anything here since there are no queues on the other nodes)
+      // (it shouldn't redistribute anything here since there are no queues on the other nodes)
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -1115,7 +1112,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       session1.start();
 
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage msg = session0.createMessage(true);
          msg.putIntProperty("i", i);

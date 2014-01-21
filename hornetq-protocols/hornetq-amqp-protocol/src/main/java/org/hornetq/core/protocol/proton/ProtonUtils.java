@@ -13,6 +13,13 @@
 
 package org.hornetq.core.protocol.proton;
 
+import java.nio.ByteBuffer;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.qpid.proton.amqp.Binary;
 import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.UnsignedByte;
@@ -37,13 +44,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.TypedProperties;
-
-import java.nio.ByteBuffer;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static org.hornetq.api.core.Message.TEXT_TYPE;
 
@@ -153,9 +153,9 @@ public class ProtonUtils
                message.getBodyBuffer().writeBytes(binary.getArray());
             }
          }
-         else if(section instanceof Data)
+         else if (section instanceof Data)
          {
-            message.getBodyBuffer().writeBytes(((Data)section).getValue().getArray());
+            message.getBodyBuffer().writeBytes(((Data) section).getValue().getArray());
          }
 
          return message;
@@ -220,7 +220,7 @@ public class ProtonUtils
 
       private static void populateProperties(Properties amqpProperties, TypedProperties properties, ServerMessageImpl message)
       {
-         if(amqpProperties == null)
+         if (amqpProperties == null)
          {
             return;
          }
@@ -386,14 +386,14 @@ public class ProtonUtils
       private static DeliveryAnnotations populateDeliveryAnnotations(ServerMessage message)
       {
          HashMap actualValues = new HashMap();
-         DeliveryAnnotations deliveryAnnotations =  new DeliveryAnnotations(actualValues);
+         DeliveryAnnotations deliveryAnnotations = new DeliveryAnnotations(actualValues);
          for (SimpleString name : message.getPropertyNames())
          {
             String sName = name.toString();
-            if(sName.startsWith(DELIVERY_ANNOTATIONS))
+            if (sName.startsWith(DELIVERY_ANNOTATIONS))
             {
                Object val = message.getTypedProperties().getProperty(name);
-               if(val instanceof SimpleString)
+               if (val instanceof SimpleString)
                {
                   actualValues.put(sName.subSequence(sName.indexOf(DELIVERY_ANNOTATIONS), sName.length()), val.toString());
                }
@@ -404,20 +404,20 @@ public class ProtonUtils
             }
          }
          //this is a proton jms thing, if not null it creates wrong type of message
-         return actualValues.size() >0?deliveryAnnotations:null;
+         return actualValues.size() > 0 ? deliveryAnnotations : null;
       }
 
       private static MessageAnnotations populateMessageAnnotations(ServerMessage message)
       {
          HashMap actualValues = new HashMap();
-         MessageAnnotations messageAnnotations =  new MessageAnnotations(actualValues);
+         MessageAnnotations messageAnnotations = new MessageAnnotations(actualValues);
          for (SimpleString name : message.getPropertyNames())
          {
             String sName = name.toString();
-            if(sName.startsWith(MESSAGE_ANNOTATIONS))
+            if (sName.startsWith(MESSAGE_ANNOTATIONS))
             {
                Object val = message.getTypedProperties().getProperty(name);
-               if(val instanceof SimpleString)
+               if (val instanceof SimpleString)
                {
                   actualValues.put(sName.subSequence(sName.indexOf(MESSAGE_ANNOTATIONS), sName.length()), val.toString());
                }
@@ -503,9 +503,9 @@ public class ProtonUtils
       {
          String s = name.toString();
          if (SPECIAL_PROPS.contains(s) ||
-               s.startsWith(MESSAGE_ANNOTATIONS) ||
-               s.startsWith(DELIVERY_ANNOTATIONS) ||
-               s.startsWith(FOOTER_VALUES))
+            s.startsWith(MESSAGE_ANNOTATIONS) ||
+            s.startsWith(DELIVERY_ANNOTATIONS) ||
+            s.startsWith(FOOTER_VALUES))
          {
             return;
          }
@@ -522,14 +522,14 @@ public class ProtonUtils
       private static Footer populateFooter(ServerMessage message)
       {
          HashMap actualValues = new HashMap();
-         Footer footer =  new Footer(actualValues);
+         Footer footer = new Footer(actualValues);
          for (SimpleString name : message.getPropertyNames())
          {
             String sName = name.toString();
-            if(sName.startsWith(FOOTER_VALUES))
+            if (sName.startsWith(FOOTER_VALUES))
             {
                Object val = message.getTypedProperties().getProperty(name);
-               if(val instanceof SimpleString)
+               if (val instanceof SimpleString)
                {
                   actualValues.put(sName.subSequence(sName.indexOf(FOOTER_VALUES), sName.length()), val.toString());
                }

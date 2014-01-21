@@ -11,15 +11,15 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -59,16 +59,14 @@ import org.junit.Test;
  * A LargeMessageTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created 29-Sep-08 4:04:10 PM
- *
- *
+ *         <p/>
+ *         Created 29-Sep-08 4:04:10 PM
  */
 public class InterruptedLargeMessageTest extends LargeMessageTestBase
 {
    // Constants -----------------------------------------------------
 
-   final static int RECEIVE_WAIT_TIME = 60000;
+   static final int RECEIVE_WAIT_TIME = 60000;
 
    private final int LARGE_MESSAGE_SIZE = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 3;
 
@@ -126,7 +124,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (ServerSession srvSession : server.getSessions())
       {
-         ((ServerSessionImpl)srvSession).clearLargeMessage();
+         ((ServerSessionImpl) srvSession).clearLargeMessage();
       }
 
       server.stop(false);
@@ -380,8 +378,8 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
 
       server.getConfiguration()
-       .getIncomingInterceptorClassNames()
-       .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
+         .getIncomingInterceptorClassNames()
+         .add(LargeMessageTestInterceptorIgnoreLastPacket.class.getName());
 
       server.start();
 
@@ -511,17 +509,17 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
                                Executor executor)
          {
             super(id,
-               address,
-               name,
-               filter,
-               pageSubscription,
-               durable,
-               temporary,
-               scheduledExecutor,
-               postOffice,
-               storageManager,
-               addressSettingsRepository,
-               executor);
+                  address,
+                  name,
+                  filter,
+                  pageSubscription,
+                  durable,
+                  temporary,
+                  scheduledExecutor,
+                  postOffice,
+                  storageManager,
+                  addressSettingsRepository,
+                  executor);
          }
 
          @Override
@@ -567,17 +565,17 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          {
 
             return new NoPostACKQueue(persistenceID,
-               address,
-               name,
-               filter,
-               pageSubscription,
-               durable,
-               temporary,
-               scheduledExecutor,
-               postOffice,
-               storageManager,
-               addressSettingsRepository,
-               execFactory.getExecutor());
+                                      address,
+                                      name,
+                                      filter,
+                                      pageSubscription,
+                                      durable,
+                                      temporary,
+                                      scheduledExecutor,
+                                      postOffice,
+                                      storageManager,
+                                      addressSettingsRepository,
+                                      execFactory.getExecutor());
          }
 
          /* (non-Javadoc)
@@ -599,11 +597,11 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       QueueFactory original = server.getQueueFactory();
 
-      ((HornetQServerImpl)server).replaceQueueFactory(new NoPostACKQueueFactory(server.getStorageManager(),
-         server.getPostOffice(),
-         server.getScheduledPool(),
-         server.getAddressSettingsRepository(),
-         server.getExecutorFactory()));
+      ((HornetQServerImpl) server).replaceQueueFactory(new NoPostACKQueueFactory(server.getStorageManager(),
+                                                                                 server.getPostOffice(),
+                                                                                 server.getScheduledPool(),
+                                                                                 server.getAddressSettingsRepository(),
+                                                                                 server.getExecutorFactory()));
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -647,7 +645,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          session.commit();
       }
 
-      ((HornetQServerImpl)server).replaceQueueFactory(original);
+      ((HornetQServerImpl) server).replaceQueueFactory(original);
       server.stop(false);
       server.start();
 
@@ -716,7 +714,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          session.commit();
       }
 
-      ((HornetQServerImpl)server).replaceQueueFactory(original);
+      ((HornetQServerImpl) server).replaceQueueFactory(original);
       server.stop(false);
       server.start();
 
@@ -753,7 +751,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       {
          if (packet instanceof SessionContinuationMessage)
          {
-            SessionContinuationMessage msg = (SessionContinuationMessage)packet;
+            SessionContinuationMessage msg = (SessionContinuationMessage) packet;
             if (!msg.isContinues() && intMessages)
             {
                System.out.println("Ignored a message");

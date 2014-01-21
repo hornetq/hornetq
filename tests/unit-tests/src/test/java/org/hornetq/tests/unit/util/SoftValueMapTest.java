@@ -12,17 +12,14 @@
  */
 package org.hornetq.tests.unit.util;
 
-import org.junit.Test;
-
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SoftValueHashMap;
+import org.junit.Test;
 
 /**
  * A SoftValueMapTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class SoftValueMapTest extends UnitTestCase
 {
@@ -44,7 +41,7 @@ public class SoftValueMapTest extends UnitTestCase
       long maxMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory();
 
       // each buffer will be 1/10th of the maxMemory
-      int bufferSize = (int)(maxMemory / 100);
+      int bufferSize = (int) (maxMemory / 100);
 
       SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(100);
 
@@ -70,7 +67,7 @@ public class SoftValueMapTest extends UnitTestCase
 
       SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(200);
 
-      for (long i = 0 ; i < 100; i++)
+      for (long i = 0; i < 100; i++)
       {
          Value v = new Value(new byte[1]);
          v.setLive(true);
@@ -83,9 +80,9 @@ public class SoftValueMapTest extends UnitTestCase
          softCache.put(i, v);
       }
 
-      assertNotNull(softCache.get(100l));
+      assertNotNull(softCache.get(100L));
 
-      softCache.put(300l, new Value(new byte[1]));
+      softCache.put(300L, new Value(new byte[1]));
 
       // these are live, so they shouldn't go
 
@@ -95,10 +92,10 @@ public class SoftValueMapTest extends UnitTestCase
       }
 
       // this was accessed, so it shouldn't go
-      assertNotNull(softCache.get(100l));
+      assertNotNull(softCache.get(100L));
 
       // this is the next one, so it should go
-      assertNull(softCache.get(101l));
+      assertNull(softCache.get(101L));
 
       System.out.println("SoftCache.size " + softCache.size());
 
@@ -121,7 +118,6 @@ public class SoftValueMapTest extends UnitTestCase
       assertNull(softCache.get(3));
       assertEquals(two, softCache.get(2));
       assertEquals(one, softCache.get(1));
-
 
 
    }
@@ -150,7 +146,6 @@ public class SoftValueMapTest extends UnitTestCase
          this.live = live;
       }
    }
-
 
 
    // Package protected ---------------------------------------------

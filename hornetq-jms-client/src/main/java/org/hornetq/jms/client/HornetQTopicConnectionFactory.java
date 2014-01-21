@@ -23,7 +23,6 @@ import org.hornetq.api.jms.JMSFactoryType;
  * A class that represents a TopicConnectionFactory.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class HornetQTopicConnectionFactory extends HornetQConnectionFactory implements TopicConnectionFactory
 {
@@ -43,13 +42,12 @@ public class HornetQTopicConnectionFactory extends HornetQConnectionFactory impl
    public HornetQTopicConnectionFactory(ServerLocator serverLocator)
    {
       super(serverLocator);
-    }
+   }
 
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQTopicConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

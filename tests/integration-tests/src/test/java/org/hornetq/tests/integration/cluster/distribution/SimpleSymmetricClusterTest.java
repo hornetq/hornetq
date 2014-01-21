@@ -11,19 +11,16 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SimpleSymmetricClusterTest
  *
  * @author clebert
- *
- *
  */
 public class SimpleSymmetricClusterTest extends ClusterTestBase
 {
@@ -106,7 +103,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       log.info("");
 
 
-
       stopServers(0, 1, 2, 3, 4, 5);
 
    }
@@ -182,9 +178,10 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
    }
 
    static int loopNumber;
+
    public void _testLoop() throws Throwable
    {
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          loopNumber = i;
          log.info("#test " + i);
@@ -193,8 +190,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
          setUp();
       }
    }
-
-
 
 
    @Test
@@ -218,7 +213,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       startServers(0, 1, 2, 3, 4);
 
-      for (int i = 0 ; i <= 4; i++)
+      for (int i = 0; i <= 4; i++)
       {
          waitForTopology(servers[i], 5);
       }
@@ -230,12 +225,12 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
          setupSessionFactory(i, isNetty());
       }
 
-      for (int i = 0 ; i <= 4; i++)
+      for (int i = 0; i <= 4; i++)
       {
          createQueue(i, "queues.testaddress", "queue0", null, false);
       }
 
-      for (int i = 0 ; i <= 4; i++)
+      for (int i = 0; i <= 4; i++)
       {
          addConsumer(i, i, "queue0", null);
       }
@@ -326,8 +321,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobin(33, 0, 1, 2);
 
 
-
-
    }
 
 
@@ -393,8 +386,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 2, 2, false);
 
       verifyReceiveRoundRobin(100, -1, -1, 2);
-
-
 
 
    }

@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -24,13 +22,13 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import java.io.Serializable;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class TopicTest extends JMSTestCase
 {
@@ -52,15 +50,15 @@ public class TopicTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
-         MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
-         conn.start();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
+      MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
+      conn.start();
 
-         p.send(s.createTextMessage("payload"));
-         TextMessage m = (TextMessage)c.receive();
+      p.send(s.createTextMessage("payload"));
+      TextMessage m = (TextMessage) c.receive();
 
-         ProxyAssertSupport.assertEquals("payload", m.getText());
+      ProxyAssertSupport.assertEquals("payload", m.getText());
    }
 
    @Test
@@ -68,21 +66,21 @@ public class TopicTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
-         MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
-         conn.start();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = s.createProducer(HornetQServerTestCase.topic1);
+      MessageConsumer c = s.createConsumer(HornetQServerTestCase.topic1);
+      conn.start();
 
-         p.send(s.createTextMessage("payload"));
-         TextMessage m = (TextMessage)c.receive();
+      p.send(s.createTextMessage("payload"));
+      TextMessage m = (TextMessage) c.receive();
 
-         ProxyAssertSupport.assertEquals("payload", m.getText());
+      ProxyAssertSupport.assertEquals("payload", m.getText());
    }
 
    @Test
    public void testTopicName() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/Topic1");
+      Topic topic = (Topic) ic.lookup("/topic/Topic1");
       ProxyAssertSupport.assertEquals("Topic1", topic.getTopicName());
    }
 
@@ -94,50 +92,50 @@ public class TopicTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sSend.createProducer(HornetQServerTestCase.topic1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      MessageProducer prod = sSend.createProducer(HornetQServerTestCase.topic1);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer c1 = s1.createConsumer(HornetQServerTestCase.topic1);
-         MessageConsumer c2 = s2.createConsumer(HornetQServerTestCase.topic1);
-         MessageConsumer c3 = s3.createConsumer(HornetQServerTestCase.topic1);
+      MessageConsumer c1 = s1.createConsumer(HornetQServerTestCase.topic1);
+      MessageConsumer c2 = s2.createConsumer(HornetQServerTestCase.topic1);
+      MessageConsumer c3 = s3.createConsumer(HornetQServerTestCase.topic1);
 
-         final int numMessages = 500;
+      final int numMessages = 500;
 
-         TestListener l1 = new TestListener(numMessages);
-         TestListener l2 = new TestListener(numMessages);
-         TestListener l3 = new TestListener(numMessages);
+      TestListener l1 = new TestListener(numMessages);
+      TestListener l2 = new TestListener(numMessages);
+      TestListener l3 = new TestListener(numMessages);
 
-         c1.setMessageListener(l1);
-         c2.setMessageListener(l2);
-         c3.setMessageListener(l3);
+      c1.setMessageListener(l1);
+      c2.setMessageListener(l2);
+      c3.setMessageListener(l3);
 
-         conn.start();
+      conn.start();
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            byte[] blah = new byte[10000];
-            String str = new String(blah);
+      for (int i = 0; i < numMessages; i++)
+      {
+         byte[] blah = new byte[10000];
+         String str = new String(blah);
 
-            Wibble2 w = new Wibble2();
-            w.s = str;
-            ObjectMessage om = sSend.createObjectMessage(w);
+         Wibble2 w = new Wibble2();
+         w.s = str;
+         ObjectMessage om = sSend.createObjectMessage(w);
 
-            prod.send(om);
-         }
+         prod.send(om);
+      }
 
-         l1.waitForMessages();
-         l2.waitForMessages();
-         l3.waitForMessages();
+      l1.waitForMessages();
+      l2.waitForMessages();
+      l3.waitForMessages();
 
-         ProxyAssertSupport.assertFalse(l1.failed);
-         ProxyAssertSupport.assertFalse(l2.failed);
-         ProxyAssertSupport.assertFalse(l3.failed);
+      ProxyAssertSupport.assertFalse(l1.failed);
+      ProxyAssertSupport.assertFalse(l2.failed);
+      ProxyAssertSupport.assertFalse(l3.failed);
    }
 
    // Package protected ---------------------------------------------
@@ -170,11 +168,11 @@ public class TopicTest extends JMSTestCase
 
       public synchronized void onMessage(final Message m)
       {
-         ObjectMessage om = (ObjectMessage)m;
+         ObjectMessage om = (ObjectMessage) m;
 
          try
          {
-            Wibble2 w = (Wibble2)om.getObject();
+            Wibble2 w = (Wibble2) om.getObject();
          }
          catch (Exception e)
          {

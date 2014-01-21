@@ -11,16 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ssl;
-import org.hornetq.core.remoting.impl.ssl.SSLSupport;
-import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.junit.Before;
 
-import org.junit.Test;
-
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
@@ -37,18 +32,18 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision: 3716 $</tt>
- *
  */
 public class CoreClientOverOneWaySSLTest extends ServiceTestBase
 {
@@ -392,7 +387,8 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
       return result;
    }
 
-   public static String[] getEnabledCipherSuites() throws Exception {
+   public static String[] getEnabledCipherSuites() throws Exception
+   {
       SSLContext context = SSLSupport.createContext(SERVER_SIDE_KEYSTORE, PASSWORD, CLIENT_SIDE_TRUSTSTORE, PASSWORD);
       SSLEngine engine = context.createSSLEngine();
       return engine.getEnabledCipherSuites();
@@ -410,7 +406,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
          createSessionFactory(locator);
          Assert.fail();
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }
@@ -434,7 +430,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
          ClientSessionFactory sf = createSessionFactory(locator);
          Assert.fail();
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }
@@ -458,7 +454,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
          ClientSessionFactory sf = createSessionFactory(locator);
          Assert.fail();
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }
@@ -482,11 +478,11 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
          createSessionFactory(locator);
          fail("expecting exception");
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }
-      catch(HornetQConnectionTimedOutException ctoe)
+      catch (HornetQConnectionTimedOutException ctoe)
       {
          //ok
       }

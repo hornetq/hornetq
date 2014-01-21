@@ -11,8 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -23,6 +21,8 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A HornetQServerControlUsingCoreTest
@@ -105,17 +105,17 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public boolean isSharedStore()
          {
-            return (Boolean)proxy.retrieveAttributeValue("sharedStore");
+            return (Boolean) proxy.retrieveAttributeValue("sharedStore");
          }
 
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
+            return (Boolean) proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
          }
 
          public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("commitPreparedTransaction", transactionAsBase64);
+            return (Boolean) proxy.invokeOperation("commitPreparedTransaction", transactionAsBase64);
          }
 
          public void createQueue(final String address, final String name) throws Exception
@@ -160,272 +160,272 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String getBindingsDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("bindingsDirectory");
+            return (String) proxy.retrieveAttributeValue("bindingsDirectory");
          }
 
          public int getConnectionCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("connectionCount");
+            return (Integer) proxy.retrieveAttributeValue("connectionCount");
          }
 
          public long getConnectionTTLOverride()
          {
-            return (Long)proxy.retrieveAttributeValue("connectionTTLOverride", Long.class);
+            return (Long) proxy.retrieveAttributeValue("connectionTTLOverride", Long.class);
          }
 
          public Object[] getConnectors() throws Exception
          {
-            return (Object[])proxy.retrieveAttributeValue("connectors");
+            return (Object[]) proxy.retrieveAttributeValue("connectors");
          }
 
          public String getConnectorsAsJSON() throws Exception
          {
-            return (String)proxy.retrieveAttributeValue("connectorsAsJSON");
+            return (String) proxy.retrieveAttributeValue("connectorsAsJSON");
          }
 
          public String[] getAddressNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("addressNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("addressNames"));
          }
 
          public String[] getQueueNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("queueNames"));
          }
 
          public int getIDCacheSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("IDCacheSize");
+            return (Integer) proxy.retrieveAttributeValue("IDCacheSize");
          }
 
          public String[] getInterceptorClassNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
          }
 
          public String[] getIncomingInterceptorClassNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("incomingInterceptorClassNames"));
          }
 
          public String[] getOutgoingInterceptorClassNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("outgoingInterceptorClassNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("outgoingInterceptorClassNames"));
          }
 
          public String getJournalDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("journalDirectory");
+            return (String) proxy.retrieveAttributeValue("journalDirectory");
          }
 
          public int getJournalFileSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("journalFileSize");
+            return (Integer) proxy.retrieveAttributeValue("journalFileSize");
          }
 
          public int getJournalMaxIO()
          {
-            return (Integer)proxy.retrieveAttributeValue("journalMaxIO");
+            return (Integer) proxy.retrieveAttributeValue("journalMaxIO");
          }
 
          public int getJournalMinFiles()
          {
-            return (Integer)proxy.retrieveAttributeValue("journalMinFiles");
+            return (Integer) proxy.retrieveAttributeValue("journalMinFiles");
          }
 
          public String getJournalType()
          {
-            return (String)proxy.retrieveAttributeValue("journalType");
+            return (String) proxy.retrieveAttributeValue("journalType");
          }
 
          public String getLargeMessagesDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("largeMessagesDirectory");
+            return (String) proxy.retrieveAttributeValue("largeMessagesDirectory");
          }
 
          public String getManagementAddress()
          {
-            return (String)proxy.retrieveAttributeValue("managementAddress");
+            return (String) proxy.retrieveAttributeValue("managementAddress");
          }
 
          public String getManagementNotificationAddress()
          {
-            return (String)proxy.retrieveAttributeValue("managementNotificationAddress");
+            return (String) proxy.retrieveAttributeValue("managementNotificationAddress");
          }
 
          public int getMessageCounterMaxDayCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("messageCounterMaxDayCount");
+            return (Integer) proxy.retrieveAttributeValue("messageCounterMaxDayCount");
          }
 
          public long getMessageCounterSamplePeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("messageCounterSamplePeriod", Long.class);
+            return (Long) proxy.retrieveAttributeValue("messageCounterSamplePeriod", Long.class);
          }
 
          public long getMessageExpiryScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("messageExpiryScanPeriod", Long.class);
+            return (Long) proxy.retrieveAttributeValue("messageExpiryScanPeriod", Long.class);
          }
 
          public long getMessageExpiryThreadPriority()
          {
-            return (Long)proxy.retrieveAttributeValue("messageExpiryThreadPriority", Long.class);
+            return (Long) proxy.retrieveAttributeValue("messageExpiryThreadPriority", Long.class);
          }
 
          public String getPagingDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("pagingDirectory");
+            return (String) proxy.retrieveAttributeValue("pagingDirectory");
          }
 
          public int getScheduledThreadPoolMaxSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("scheduledThreadPoolMaxSize");
+            return (Integer) proxy.retrieveAttributeValue("scheduledThreadPoolMaxSize");
          }
 
          public int getThreadPoolMaxSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("threadPoolMaxSize");
+            return (Integer) proxy.retrieveAttributeValue("threadPoolMaxSize");
          }
 
          public long getSecurityInvalidationInterval()
          {
-            return (Long)proxy.retrieveAttributeValue("securityInvalidationInterval", Long.class);
+            return (Long) proxy.retrieveAttributeValue("securityInvalidationInterval", Long.class);
          }
 
          public long getTransactionTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("transactionTimeout", Long.class);
+            return (Long) proxy.retrieveAttributeValue("transactionTimeout", Long.class);
          }
 
          public long getTransactionTimeoutScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("transactionTimeoutScanPeriod", Long.class);
+            return (Long) proxy.retrieveAttributeValue("transactionTimeoutScanPeriod", Long.class);
          }
 
          public String getVersion()
          {
-            return (String)proxy.retrieveAttributeValue("version");
+            return (String) proxy.retrieveAttributeValue("version");
          }
 
          public boolean isBackup()
          {
-            return (Boolean)proxy.retrieveAttributeValue("backup");
+            return (Boolean) proxy.retrieveAttributeValue("backup");
          }
 
          public boolean isClustered()
          {
-            return (Boolean)proxy.retrieveAttributeValue("clustered");
+            return (Boolean) proxy.retrieveAttributeValue("clustered");
          }
 
          public boolean isCreateBindingsDir()
          {
-            return (Boolean)proxy.retrieveAttributeValue("createBindingsDir");
+            return (Boolean) proxy.retrieveAttributeValue("createBindingsDir");
          }
 
          public boolean isCreateJournalDir()
          {
-            return (Boolean)proxy.retrieveAttributeValue("createJournalDir");
+            return (Boolean) proxy.retrieveAttributeValue("createJournalDir");
          }
 
          public boolean isJournalSyncNonTransactional()
          {
-            return (Boolean)proxy.retrieveAttributeValue("journalSyncNonTransactional");
+            return (Boolean) proxy.retrieveAttributeValue("journalSyncNonTransactional");
          }
 
          public boolean isJournalSyncTransactional()
          {
-            return (Boolean)proxy.retrieveAttributeValue("journalSyncTransactional");
+            return (Boolean) proxy.retrieveAttributeValue("journalSyncTransactional");
          }
 
-         public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)  throws Exception
+         public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown) throws Exception
          {
             proxy.invokeOperation("setFailoverOnServerShutdown", failoverOnServerShutdown);
          }
 
          public boolean isFailoverOnServerShutdown()
          {
-            return  (Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown");
+            return (Boolean) proxy.retrieveAttributeValue("failoverOnServerShutdown");
          }
 
          public boolean isMessageCounterEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("messageCounterEnabled");
+            return (Boolean) proxy.retrieveAttributeValue("messageCounterEnabled");
          }
 
          public boolean isPersistDeliveryCountBeforeDelivery()
          {
-            return (Boolean)proxy.retrieveAttributeValue("persistDeliveryCountBeforeDelivery");
+            return (Boolean) proxy.retrieveAttributeValue("persistDeliveryCountBeforeDelivery");
          }
 
          public boolean isAsyncConnectionExecutionEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("asyncConnectionExecutionEnabled");
+            return (Boolean) proxy.retrieveAttributeValue("asyncConnectionExecutionEnabled");
          }
 
          public boolean isPersistIDCache()
          {
-            return (Boolean)proxy.retrieveAttributeValue("persistIDCache");
+            return (Boolean) proxy.retrieveAttributeValue("persistIDCache");
          }
 
          public boolean isSecurityEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("securityEnabled");
+            return (Boolean) proxy.retrieveAttributeValue("securityEnabled");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("started");
+            return (Boolean) proxy.retrieveAttributeValue("started");
          }
 
          public boolean isWildcardRoutingEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("wildcardRoutingEnabled");
+            return (Boolean) proxy.retrieveAttributeValue("wildcardRoutingEnabled");
          }
 
          public String[] listConnectionIDs() throws Exception
          {
-            return (String[])proxy.invokeOperation("listConnectionIDs");
+            return (String[]) proxy.invokeOperation("listConnectionIDs");
          }
 
          public String[] listPreparedTransactions() throws Exception
          {
-            return (String[])proxy.invokeOperation("listPreparedTransactions");
+            return (String[]) proxy.invokeOperation("listPreparedTransactions");
          }
 
          public String listPreparedTransactionDetailsAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsJSON");
+            return (String) proxy.invokeOperation("listPreparedTransactionDetailsAsJSON");
          }
 
          public String listPreparedTransactionDetailsAsHTML() throws Exception
          {
-            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsHTML");
+            return (String) proxy.invokeOperation("listPreparedTransactionDetailsAsHTML");
          }
 
          public String[] listHeuristicCommittedTransactions() throws Exception
          {
-            return (String[])proxy.invokeOperation("listHeuristicCommittedTransactions");
+            return (String[]) proxy.invokeOperation("listHeuristicCommittedTransactions");
          }
 
          public String[] listHeuristicRolledBackTransactions() throws Exception
          {
-            return (String[])proxy.invokeOperation("listHeuristicRolledBackTransactions");
+            return (String[]) proxy.invokeOperation("listHeuristicRolledBackTransactions");
          }
 
          public String[] listRemoteAddresses() throws Exception
          {
-            return (String[])proxy.invokeOperation("listRemoteAddresses");
+            return (String[]) proxy.invokeOperation("listRemoteAddresses");
          }
 
          public String[] listRemoteAddresses(final String ipAddress) throws Exception
          {
-            return (String[])proxy.invokeOperation("listRemoteAddresses", ipAddress);
+            return (String[]) proxy.invokeOperation("listRemoteAddresses", ipAddress);
          }
 
          public String[] listSessions(final String connectionID) throws Exception
          {
-            return (String[])proxy.invokeOperation("listSessions", connectionID);
+            return (String[]) proxy.invokeOperation("listSessions", connectionID);
          }
 
          public void resetAllMessageCounterHistories() throws Exception
@@ -440,7 +440,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("rollbackPreparedTransaction", transactionAsBase64);
+            return (Boolean) proxy.invokeOperation("rollbackPreparedTransaction", transactionAsBase64);
          }
 
          public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
@@ -460,27 +460,27 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public int getJournalBufferSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalBufferSize");
+            return (Integer) proxy.retrieveAttributeValue("JournalBufferSize");
          }
 
          public int getJournalBufferTimeout()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalBufferTimeout");
+            return (Integer) proxy.retrieveAttributeValue("JournalBufferTimeout");
          }
 
          public int getJournalCompactMinFiles()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalCompactMinFiles");
+            return (Integer) proxy.retrieveAttributeValue("JournalCompactMinFiles");
          }
 
          public int getJournalCompactPercentage()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalCompactPercentage");
+            return (Integer) proxy.retrieveAttributeValue("JournalCompactPercentage");
          }
 
          public boolean isPersistenceEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("PersistenceEnabled");
+            return (Boolean) proxy.retrieveAttributeValue("PersistenceEnabled");
          }
 
          public void addSecuritySettings(String addressMatch,
@@ -510,12 +510,12 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public Object[] getRoles(String addressMatch) throws Exception
          {
-            return (Object[])proxy.invokeOperation("getRoles", addressMatch);
+            return (Object[]) proxy.invokeOperation("getRoles", addressMatch);
          }
 
          public String getRolesAsJSON(String addressMatch) throws Exception
          {
-            return (String)proxy.invokeOperation("getRolesAsJSON", addressMatch);
+            return (String) proxy.invokeOperation("getRolesAsJSON", addressMatch);
          }
 
          public void addAddressSettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch,
@@ -526,10 +526,10 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                         @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts,
                                         @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes,
                                         @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes,
-                                        @Parameter(desc = "the max number of pages in the soft memory cache", name="pageMaxCacheSize") int pageMaxCacheSize,
+                                        @Parameter(desc = "the max number of pages in the soft memory cache", name = "pageMaxCacheSize") int pageMaxCacheSize,
                                         @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay,
-                                        @Parameter(desc = "the redelivery delay multiplier", name="redeliveryMultiplier") double redeliveryMultiplier,
-                                        @Parameter(desc = "the maximum redelivery delay", name="maxRedeliveryDelay") long maxRedeliveryDelay,
+                                        @Parameter(desc = "the redelivery delay multiplier", name = "redeliveryMultiplier") double redeliveryMultiplier,
+                                        @Parameter(desc = "the maximum redelivery delay", name = "maxRedeliveryDelay") long maxRedeliveryDelay,
                                         @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
                                         @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
                                         @Parameter(desc = "the policy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
@@ -582,7 +582,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String[] getBridgeNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("bridgeNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("bridgeNames"));
          }
 
          public void destroyBridge(String name) throws Exception
@@ -598,17 +598,17 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String getLiveConnectorName() throws Exception
          {
-            return (String)proxy.retrieveAttributeValue("liveConnectorName");
+            return (String) proxy.retrieveAttributeValue("liveConnectorName");
          }
 
          public String getAddressSettingsAsJSON(String addressMatch) throws Exception
          {
-            return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
+            return (String) proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
          }
 
          public String[] getDivertNames()
          {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("divertNames"));
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[]) proxy.retrieveAttributeValue("divertNames"));
          }
 
          public void createBridge(String name,
@@ -652,7 +652,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String listProducersInfoAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listProducersInfoAsJSON");
+            return (String) proxy.invokeOperation("listProducersInfoAsJSON");
          }
       };
    }

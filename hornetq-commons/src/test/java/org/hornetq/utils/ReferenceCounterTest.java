@@ -56,21 +56,21 @@ public class ReferenceCounterTest extends Assert
       executor.shutdown();
    }
 
-    @Test
-    public void testReferenceValidExecutorUsed() throws Exception
-    {
-       ExecutorService executor = Executors.newSingleThreadExecutor();
-       LatchRunner runner = new LatchRunner();
-       ReferenceCounterUtil counter = new ReferenceCounterUtil(runner, executor);
-       counter.increment();
-       counter.decrement();
+   @Test
+   public void testReferenceValidExecutorUsed() throws Exception
+   {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      LatchRunner runner = new LatchRunner();
+      ReferenceCounterUtil counter = new ReferenceCounterUtil(runner, executor);
+      counter.increment();
+      counter.decrement();
 
-       runner.latch.await(5, TimeUnit.SECONDS);
+      runner.latch.await(5, TimeUnit.SECONDS);
 
-       assertNotSame(runner.lastThreadUsed, Thread.currentThread());
+      assertNotSame(runner.lastThreadUsed, Thread.currentThread());
 
-       executor.shutdown();
-    }
+      executor.shutdown();
+   }
 
    public void internalTestReferenceNoExecutor(Executor executor) throws Exception
    {
@@ -87,9 +87,9 @@ public class ReferenceCounterTest extends Assert
          ref = new ReferenceCounterUtil(runner, executor);
       }
 
-      Thread t[] = new Thread[100];
+      Thread[] t = new Thread[100];
 
-      for (int i = 0 ; i < t.length; i++)
+      for (int i = 0; i < t.length; i++)
       {
          t[i] = new Thread()
          {
@@ -106,7 +106,7 @@ public class ReferenceCounterTest extends Assert
          tx.join();
       }
 
-      for (int i = 0 ; i < t.length; i++)
+      for (int i = 0; i < t.length; i++)
       {
          t[i] = new Thread()
          {

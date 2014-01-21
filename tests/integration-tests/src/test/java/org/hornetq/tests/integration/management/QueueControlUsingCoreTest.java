@@ -11,8 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.hornetq.api.core.management.Parameter;
-import org.junit.Before;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,12 +21,12 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
+import org.junit.Before;
 
 /**
  * A QueueControlTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class QueueControlUsingCoreTest extends QueueControlTest
 {
@@ -45,69 +43,69 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
+            return (Boolean) proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
 
          public int changeMessagesPriority(final String filter, final int newPriority) throws Exception
          {
-            return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
+            return (Integer) proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
          }
 
          public long countMessages(final String filter) throws Exception
          {
-            return ((Number)proxy.invokeOperation("countMessages", filter)).longValue();
+            return ((Number) proxy.invokeOperation("countMessages", filter)).longValue();
          }
 
          public boolean expireMessage(final long messageID) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("expireMessage", messageID);
+            return (Boolean) proxy.invokeOperation("expireMessage", messageID);
          }
 
          public int expireMessages(final String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("expireMessages", filter);
+            return (Integer) proxy.invokeOperation("expireMessages", filter);
          }
 
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("address");
+            return (String) proxy.retrieveAttributeValue("address");
          }
 
          public int getConsumerCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("consumerCount");
+            return (Integer) proxy.retrieveAttributeValue("consumerCount");
          }
 
          public String getDeadLetterAddress()
          {
-            return (String)proxy.retrieveAttributeValue("deadLetterAddress");
+            return (String) proxy.retrieveAttributeValue("deadLetterAddress");
          }
 
          public int getDeliveringCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("deliveringCount");
+            return (Integer) proxy.retrieveAttributeValue("deliveringCount");
          }
 
          public String getExpiryAddress()
          {
-            return (String)proxy.retrieveAttributeValue("expiryAddress");
+            return (String) proxy.retrieveAttributeValue("expiryAddress");
          }
 
          public String getFilter()
          {
-            return (String)proxy.retrieveAttributeValue("filter");
+            return (String) proxy.retrieveAttributeValue("filter");
          }
 
          public long getMessageCount()
          {
-            return ((Number)proxy.retrieveAttributeValue("messageCount")).longValue();
+            return ((Number) proxy.retrieveAttributeValue("messageCount")).longValue();
          }
 
          public long getMessagesAdded()
          {
-            return (Integer)proxy.retrieveAttributeValue("messagesAdded");
+            return (Integer) proxy.retrieveAttributeValue("messagesAdded");
          }
-         
+
          public void resetMessagesAdded() throws Exception
          {
             proxy.invokeOperation("resetMessagesAdded");
@@ -115,42 +113,42 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("name");
+            return (String) proxy.retrieveAttributeValue("name");
          }
 
          public long getID()
          {
-            return (Long)proxy.retrieveAttributeValue("ID");
+            return (Long) proxy.retrieveAttributeValue("ID");
          }
 
          public long getScheduledCount()
          {
-            return (Long)proxy.retrieveAttributeValue("scheduledCount", Long.class);
+            return (Long) proxy.retrieveAttributeValue("scheduledCount", Long.class);
          }
 
          public boolean isDurable()
          {
-            return (Boolean)proxy.retrieveAttributeValue("durable");
+            return (Boolean) proxy.retrieveAttributeValue("durable");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)proxy.retrieveAttributeValue("temporary");
+            return (Boolean) proxy.retrieveAttributeValue("temporary");
          }
 
          public String listMessageCounter() throws Exception
          {
-            return (String)proxy.invokeOperation("listMessageCounter");
+            return (String) proxy.invokeOperation("listMessageCounter");
          }
 
          public String listMessageCounterAsHTML() throws Exception
          {
-            return (String)proxy.invokeOperation("listMessageCounterAsHTML");
+            return (String) proxy.invokeOperation("listMessageCounterAsHTML");
          }
 
          public String listMessageCounterHistory() throws Exception
          {
-            return (String)proxy.invokeOperation("listMessageCounterHistory");
+            return (String) proxy.invokeOperation("listMessageCounterHistory");
          }
 
 
@@ -159,50 +157,50 @@ public class QueueControlUsingCoreTest extends QueueControlTest
           */
          public String getFirstMessageAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("getFirstMessageAsJSON");
+            return (String) proxy.invokeOperation("getFirstMessageAsJSON");
          }
 
 
          public String listMessageCounterHistoryAsHTML() throws Exception
          {
-            return (String)proxy.invokeOperation("listMessageCounterHistoryAsHTML");
+            return (String) proxy.invokeOperation("listMessageCounterHistoryAsHTML");
          }
 
          public Map<String, Object>[] listMessages(final String filter) throws Exception
          {
-            Object[] res = (Object[])proxy.invokeOperation("listMessages", filter);
+            Object[] res = (Object[]) proxy.invokeOperation("listMessages", filter);
             Map<String, Object>[] results = new Map[res.length];
             for (int i = 0; i < res.length; i++)
             {
-               results[i] = (Map<String, Object>)res[i];
+               results[i] = (Map<String, Object>) res[i];
             }
             return results;
          }
 
          public String listMessagesAsJSON(final String filter) throws Exception
          {
-            return (String)proxy.invokeOperation("listMessagesAsJSON", filter);
+            return (String) proxy.invokeOperation("listMessagesAsJSON", filter);
          }
 
          public Map<String, Object>[] listScheduledMessages() throws Exception
          {
-            Object[] res = (Object[])proxy.invokeOperation("listScheduledMessages");
+            Object[] res = (Object[]) proxy.invokeOperation("listScheduledMessages");
             Map<String, Object>[] results = new Map[res.length];
             for (int i = 0; i < res.length; i++)
             {
-               results[i] = (Map<String, Object>)res[i];
+               results[i] = (Map<String, Object>) res[i];
             }
             return results;
          }
 
          public String listScheduledMessagesAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listScheduledMessagesAsJSON");
+            return (String) proxy.invokeOperation("listScheduledMessagesAsJSON");
          }
 
          public int moveMessages(final String filter, final String otherQueueName) throws Exception
          {
-            return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
+            return (Integer) proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
 
@@ -213,37 +211,37 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             String otherQueueName,
             boolean rejectDuplicates) throws Exception
          {
-            return (Integer)proxy.invokeOperation("moveMessages", flushLimit, filter, otherQueueName, rejectDuplicates);
+            return (Integer) proxy.invokeOperation("moveMessages", flushLimit, filter, otherQueueName, rejectDuplicates);
          }
 
          public int moveMessages(final String filter, final String otherQueueName, final boolean rejectDuplicates) throws Exception
          {
-            return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName, rejectDuplicates);
+            return (Integer) proxy.invokeOperation("moveMessages", filter, otherQueueName, rejectDuplicates);
          }
 
          public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
+            return (Boolean) proxy.invokeOperation("moveMessage", messageID, otherQueueName);
          }
 
          public boolean moveMessage(final long messageID, final String otherQueueName, final boolean rejectDuplicates) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName, rejectDuplicates);
+            return (Boolean) proxy.invokeOperation("moveMessage", messageID, otherQueueName, rejectDuplicates);
          }
 
          public int removeMessages(final String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("removeMessages", filter);
+            return (Integer) proxy.invokeOperation("removeMessages", filter);
          }
 
          public int removeMessages(final int limit, final String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("removeMessages", limit, filter);
+            return (Integer) proxy.invokeOperation("removeMessages", limit, filter);
          }
 
          public boolean removeMessage(final long messageID) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("removeMessage", messageID);
+            return (Boolean) proxy.invokeOperation("removeMessage", messageID);
          }
 
          public void resetMessageCounter() throws Exception
@@ -253,12 +251,12 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
          {
-            return (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
+            return (Boolean) proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
          }
 
          public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
          {
-            return (Integer)proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
+            return (Integer) proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
          }
 
          public void setDeadLetterAddress(final String deadLetterAddress) throws Exception
@@ -283,12 +281,12 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public boolean isPaused() throws Exception
          {
-            return (Boolean)proxy.invokeOperation("isPaused");
+            return (Boolean) proxy.invokeOperation("isPaused");
          }
 
          public String listConsumersAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listConsumersAsJSON");
+            return (String) proxy.invokeOperation("listConsumersAsJSON");
          }
 
          public Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception
@@ -297,20 +295,20 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             // however that's just to convert stuff for the test class, so I
             // am not going to spend a lot more time on it (Clebert)
             @SuppressWarnings("rawtypes")
-            Map res = (Map)proxy.invokeOperation("listDeliveringMessages");
+            Map res = (Map) proxy.invokeOperation("listDeliveringMessages");
 
             @SuppressWarnings("rawtypes")
             Map response = new HashMap();
 
-            for (Object key: res.keySet())
+            for (Object key : res.keySet())
             {
-               Object[] value = (Object[])res.get(key);
+               Object[] value = (Object[]) res.get(key);
 
 
                Map<String, Object>[] results = new Map[value.length];
                for (int i = 0; i < value.length; i++)
                {
-                  results[i] = (Map<String, Object>)value[i];
+                  results[i] = (Map<String, Object>) value[i];
                }
 
                response.put(key, results);
@@ -322,7 +320,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          @Override
          public String listDeliveringMessagesAsJSON() throws Exception
          {
-            return (String)proxy.invokeOperation("listDeliveringMessagesAsJSON");
+            return (String) proxy.invokeOperation("listDeliveringMessagesAsJSON");
          }
       };
    }

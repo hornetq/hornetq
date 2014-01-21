@@ -40,7 +40,6 @@ import org.hornetq.utils.TypedProperties;
  * A InVMAcceptor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public final class InVMAcceptor implements Acceptor
 {
@@ -261,7 +260,7 @@ public final class InVMAcceptor implements Acceptor
 
       public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
-         if (connections.putIfAbsent((String)connection.getID(), connection) != null)
+         if (connections.putIfAbsent((String) connection.getID(), connection) != null)
          {
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }
@@ -271,20 +270,20 @@ public final class InVMAcceptor implements Acceptor
 
       public void connectionDestroyed(final Object connectionID)
       {
-         InVMConnection connection = (InVMConnection)connections.remove(connectionID);
+         InVMConnection connection = (InVMConnection) connections.remove(connectionID);
 
          if (connection != null)
          {
 
             listener.connectionDestroyed(connectionID);
 
-              // Execute on different thread after all the packets are sent, to avoid deadlocks
+            // Execute on different thread after all the packets are sent, to avoid deadlocks
             connection.getExecutor().execute(new Runnable()
             {
                public void run()
                {
-                 // Remove on the other side too
-                   connector.disconnect((String)connectionID);
+                  // Remove on the other side too
+                  connector.disconnect((String) connectionID);
                }
             });
          }

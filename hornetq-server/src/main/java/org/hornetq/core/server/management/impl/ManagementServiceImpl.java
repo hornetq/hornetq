@@ -12,6 +12,12 @@
  */
 package org.hornetq.core.server.management.impl;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import javax.management.StandardMBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -22,13 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -167,8 +166,8 @@ public class ManagementServiceImpl implements ManagementService
       this.storageManager = storageManager;
    }
 
-   public HornetQServerControlImpl
-            registerServer(final PostOffice postOffice, final StorageManager storageManager1,
+   public HornetQServerControlImpl registerServer(final PostOffice postOffice,
+                                                  final StorageManager storageManager1,
                                                   final Configuration configuration,
                                                   final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                                   final HierarchicalRepository<Set<Role>> securityRepository,
@@ -197,7 +196,7 @@ public class ManagementServiceImpl implements ManagementService
                                                             remotingService,
                                                             messagingServer,
                                                             messageCounterManager,
- storageManager1,
+                                                            storageManager1,
                                                             broadcaster);
       ObjectName objectName = objectNameBuilder.getHornetQServerObjectName();
       registerInJMX(objectName, messagingServerControl);
@@ -427,7 +426,7 @@ public class ManagementServiceImpl implements ManagementService
             String exceptionMessage = e.getMessage();
             if (e instanceof InvocationTargetException)
             {
-               exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
+               exceptionMessage = ((InvocationTargetException) e).getTargetException().getMessage();
             }
             if (e != null)
             {
@@ -456,7 +455,7 @@ public class ManagementServiceImpl implements ManagementService
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
                {
-                  exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
+                  exceptionMessage = ((InvocationTargetException) e).getTargetException().getMessage();
                }
                if (e != null)
                {
@@ -523,7 +522,7 @@ public class ManagementServiceImpl implements ManagementService
    // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
    // will throw an exception if the MBean has already been unregistered
    public void unregisterFromJMX(final ObjectName objectName) throws MBeanRegistrationException,
-                                                             InstanceNotFoundException
+      InstanceNotFoundException
    {
       if (!jmxManagementEnabled)
       {
@@ -660,9 +659,9 @@ public class ManagementServiceImpl implements ManagementService
    {
       if (isTrace)
       {
-         HornetQServerLogger.LOGGER.trace("Sending Notification = "  + notification +
-                   ", notificationEnabled=" + notificationsEnabled +
-                   " messagingServerControl=" + messagingServerControl);
+         HornetQServerLogger.LOGGER.trace("Sending Notification = " + notification +
+                                             ", notificationEnabled=" + notificationsEnabled +
+                                             " messagingServerControl=" + messagingServerControl);
       }
       if (messagingServerControl != null && notificationsEnabled)
       {
@@ -694,10 +693,10 @@ public class ManagementServiceImpl implements ManagementService
                // https://jira.jboss.org/jira/browse/HORNETQ-317
                if (messagingServer == null || !messagingServer.isActive())
                {
-                 if (HornetQServerLogger.LOGGER.isDebugEnabled())
-                 {
-                    HornetQServerLogger.LOGGER.debug("ignoring message " + notification + " as the server is not initialized");
-                 }
+                  if (HornetQServerLogger.LOGGER.isDebugEnabled())
+                  {
+                     HornetQServerLogger.LOGGER.debug("ignoring message " + notification + " as the server is not initialized");
+                  }
                   return;
                }
 
@@ -720,14 +719,14 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                notificationMessage.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
-                                                  new SimpleString(notification.getType().toString()));
+                                                     new SimpleString(notification.getType().toString()));
 
                notificationMessage.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
                if (notification.getUID() != null)
                {
                   notificationMessage.putStringProperty(new SimpleString("foobar"),
-                                                     new SimpleString(notification.getUID()));
+                                                        new SimpleString(notification.getUID()));
                }
 
                postOffice.route(notificationMessage, false);
@@ -805,17 +804,17 @@ public class ManagementServiceImpl implements ManagementService
                   continue;
                }
                if (paramTypes[i].isAssignableFrom(params[i].getClass()) || paramTypes[i] == Long.TYPE &&
-                   params[i].getClass() == Integer.class ||
-                   paramTypes[i] == Double.TYPE &&
-                   params[i].getClass() == Integer.class ||
-                   paramTypes[i] == Long.TYPE &&
-                   params[i].getClass() == Long.class ||
-                   paramTypes[i] == Double.TYPE &&
-                   params[i].getClass() == Double.class ||
-                   paramTypes[i] == Integer.TYPE &&
-                   params[i].getClass() == Integer.class ||
-                   paramTypes[i] == Boolean.TYPE &&
-                   params[i].getClass() == Boolean.class)
+                  params[i].getClass() == Integer.class ||
+                  paramTypes[i] == Double.TYPE &&
+                     params[i].getClass() == Integer.class ||
+                  paramTypes[i] == Long.TYPE &&
+                     params[i].getClass() == Long.class ||
+                  paramTypes[i] == Double.TYPE &&
+                     params[i].getClass() == Double.class ||
+                  paramTypes[i] == Integer.TYPE &&
+                     params[i].getClass() == Integer.class ||
+                  paramTypes[i] == Boolean.TYPE &&
+                     params[i].getClass() == Boolean.class)
                {
                   // parameter match
                }

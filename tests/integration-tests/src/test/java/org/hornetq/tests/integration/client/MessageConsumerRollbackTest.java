@@ -11,19 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.JMSException;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -35,13 +28,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessageConsumerRollbackTest
  *
  * @author clebert
- *
- *
  */
 public class MessageConsumerRollbackTest extends ServiceTestBase
 {
@@ -121,11 +115,11 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
       sendMessages(numberOfMessages, session);
 
       AtomicInteger count = new AtomicInteger(0);
-      CountDownLatch commitLatch = new CountDownLatch (numberOfMessages);
+      CountDownLatch commitLatch = new CountDownLatch(numberOfMessages);
 
       LocalConsumer[] consumers = new LocalConsumer[numberOfConsumers];
 
-      for (int i = 0 ; i < numberOfConsumers; i++)
+      for (int i = 0; i < numberOfConsumers; i++)
       {
          consumers[i] = new LocalConsumer(count, commitLatch);
          consumers[i].start();
@@ -147,7 +141,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
       HashSet<Integer> values = new HashSet<Integer>();
 
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage msg = consumer.receive(1000);
          assertNotNull(msg);
@@ -160,7 +154,7 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
 
       assertNull(consumer.receiveImmediate());
 
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          assertTrue(values.contains(i));
       }
@@ -174,13 +168,9 @@ public class MessageConsumerRollbackTest extends ServiceTestBase
    /**
     * @param numberOfMessages
     * @param session
-    * @throws HornetQException
-    * @throws JMSException
     * @throws Exception
     */
-   private void sendMessages(int numberOfMessages, ClientSession session) throws HornetQException,
-                                                                         JMSException,
-                                                                         Exception
+   private void sendMessages(int numberOfMessages, ClientSession session) throws Exception
    {
       ClientProducer producer = session.createProducer(inQueue);
 

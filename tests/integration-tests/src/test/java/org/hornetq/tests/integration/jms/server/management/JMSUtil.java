@@ -12,11 +12,6 @@
  */
 package org.hornetq.tests.integration.jms.server.management;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -27,13 +22,10 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
-
-import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMemberImpl;
-import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
-import org.hornetq.jms.client.HornetQJMSContext;
-import org.junit.Assert;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -42,14 +34,19 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.Assert;
 
 /**
  * A JMSUtil
@@ -69,8 +66,8 @@ public class JMSUtil
 
    public static Connection createConnection(final String connectorFactory) throws JMSException
    {
-      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                      new TransportConfiguration(connectorFactory));
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                       new TransportConfiguration(connectorFactory));
 
       cf.setBlockOnNonDurableSend(true);
       cf.setBlockOnDurableSend(true);
@@ -83,8 +80,8 @@ public class JMSUtil
                                                  final long connectionTTL,
                                                  final long clientFailureCheckPeriod) throws JMSException
    {
-      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                      new TransportConfiguration(connectorFactory));
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                       new TransportConfiguration(connectorFactory));
 
       cf.setBlockOnNonDurableSend(true);
       cf.setBlockOnDurableSend(true);
@@ -129,8 +126,8 @@ public class JMSUtil
 
    public static String[] sendMessages(final Destination destination, final int messagesToSend) throws Exception
    {
-      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                       new TransportConfiguration(InVMConnectorFactory.class.getName()));
       return JMSUtil.sendMessages(cf, destination, messagesToSend);
    }
 
@@ -268,7 +265,7 @@ public class JMSUtil
 
       locator.addClusterTopologyListener(new FailoverTestBase.LatchClusterTopologyListener(countDownLatch));
 
-      conn = (HornetQConnection)factory.createConnection();
+      conn = (HornetQConnection) factory.createConnection();
 
       boolean ok = countDownLatch.await(timeout, TimeUnit.SECONDS);
       if (!ok)
@@ -302,34 +299,34 @@ public class JMSUtil
       {
          ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
          Topology topology = clusterConnection.getTopology();
-         TransportConfiguration nodeConnector=
-               liveServer.getClusterManager().getClusterConnections().iterator().next().getConnector();
+         TransportConfiguration nodeConnector =
+            liveServer.getClusterManager().getClusterConnections().iterator().next().getConnector();
          do
          {
             Collection<TopologyMemberImpl> members = topology.getMembers();
             for (TopologyMemberImpl member : members)
             {
-               if(member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
+               if (member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
                {
                   exists = true;
                   break;
                }
             }
-            if(exists)
+            if (exists)
             {
                break;
             }
             Thread.sleep(10);
          }
          while (System.currentTimeMillis() - start < timeToWait);
-         if(!exists)
+         if (!exists)
          {
             String msg = "Timed out waiting for cluster topology of " + backupServer +
-                  " (received " +
-                  topology.getMembers().size() +
-                  ") topology = " +
-                  topology +
-                  ")";
+               " (received " +
+               topology.getMembers().size() +
+               ") topology = " +
+               topology +
+               ")";
 
             //logTopologyDiagram();
 

@@ -46,11 +46,11 @@ public class StompFrameFactoryV12 implements StompFrameFactory
    public void printByteHeader(String headers)
    {
       StringBuffer buffer = new StringBuffer();
-      
+
       for (int i = 0; i < headers.length(); i++)
       {
          char c = headers.charAt(i);
-         buffer.append((byte)c + " ");
+         buffer.append((byte) c + " ");
       }
       System.out.println("header in byte : " + buffer.toString());
    }

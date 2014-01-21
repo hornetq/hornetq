@@ -19,12 +19,10 @@ import org.hornetq.core.server.MessageReference;
  * A PagedReference
  *
  * @author clebert
- *
- *
  */
 public interface PagedReference extends MessageReference
 {
-     PagePosition getPosition();
+   PagePosition getPosition();
 
-     PagedMessage getPagedMessage();
+   PagedMessage getPagedMessage();
 }

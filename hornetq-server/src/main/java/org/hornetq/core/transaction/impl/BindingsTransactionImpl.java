@@ -18,8 +18,6 @@ import org.hornetq.core.persistence.StorageManager;
  * A BindingsTransactionImpl
  *
  * @author clebertsuconic
- *
- *
  */
 public class BindingsTransactionImpl extends TransactionImpl
 {
@@ -28,7 +26,7 @@ public class BindingsTransactionImpl extends TransactionImpl
    {
       super(storage, 0);
    }
- 
+
    /**
     * @throws Exception
     */
@@ -40,7 +38,7 @@ public class BindingsTransactionImpl extends TransactionImpl
          setState(State.COMMITTED);
       }
    }
-   
+
    protected void doRollback() throws Exception
    {
       if (isContainsPersistent())
@@ -49,5 +47,5 @@ public class BindingsTransactionImpl extends TransactionImpl
          setState(State.ROLLEDBACK);
       }
    }
-   
+
 }

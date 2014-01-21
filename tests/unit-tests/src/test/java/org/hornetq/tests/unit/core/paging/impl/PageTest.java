@@ -12,13 +12,9 @@
  */
 package org.hornetq.tests.unit.core.paging.impl;
 
-import org.junit.Test;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -33,11 +29,11 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class PageTest extends UnitTestCase
 {
@@ -71,14 +67,18 @@ public class PageTest extends UnitTestCase
       testAdd(new FakeSequentialFileFactory(1, false), 10);
    }
 
-   /** Validate if everything we add is recovered */
+   /**
+    * Validate if everything we add is recovered
+    */
    @Test
    public void testDamagedPage() throws Exception
    {
       testDamagedPage(new FakeSequentialFileFactory(1, false), 100);
    }
 
-   /** Validate if everything we add is recovered */
+   /**
+    * Validate if everything we add is recovered
+    */
    protected void testAdd(final SequentialFileFactory factory, final int numberOfElements) throws Exception
    {
 
@@ -114,10 +114,10 @@ public class PageTest extends UnitTestCase
          Assert.assertEquals(simpleDestination, msgs.get(i).getMessage().getAddress());
 
          UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
-                                                                                        .getMessage()
-                                                                                        .getBodyBuffer()
-                                                                                        .toByteBuffer()
-                                                                                        .array());
+            .getMessage()
+            .getBodyBuffer()
+            .toByteBuffer()
+            .array());
       }
 
       impl.delete(null);
@@ -158,11 +158,11 @@ public class PageTest extends UnitTestCase
       // Damage data... position the file on the middle between points A and B
       file.position(positionA + (positionB - positionA) / 2);
 
-      ByteBuffer buffer = ByteBuffer.allocate((int)(positionB - file.position()));
+      ByteBuffer buffer = ByteBuffer.allocate((int) (positionB - file.position()));
 
       for (int i = 0; i < buffer.capacity(); i++)
       {
-         buffer.put((byte)'Z');
+         buffer.put((byte) 'Z');
       }
 
       buffer.rewind();
@@ -186,10 +186,10 @@ public class PageTest extends UnitTestCase
          Assert.assertEquals(simpleDestination, msgs.get(i).getMessage().getAddress());
 
          UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
-                                                                                        .getMessage()
-                                                                                        .getBodyBuffer()
-                                                                                        .toByteBuffer()
-                                                                                        .array());
+            .getMessage()
+            .getBodyBuffer()
+            .toByteBuffer()
+            .array());
       }
 
       impl.delete(null);
@@ -208,7 +208,7 @@ public class PageTest extends UnitTestCase
     * @throws Exception
     */
    protected ArrayList<HornetQBuffer> addPageElements(final SimpleString simpleDestination,
- final Page page,
+                                                      final Page page,
                                                       final int numberOfElements) throws Exception
    {
       ArrayList<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
@@ -221,14 +221,14 @@ public class PageTest extends UnitTestCase
 
          for (int j = 0; j < 10; j++)
          {
-            msg.getBodyBuffer().writeByte((byte)'b');
+            msg.getBodyBuffer().writeByte((byte) 'b');
          }
 
          buffers.add(msg.getBodyBuffer());
 
          msg.setAddress(simpleDestination);
 
-         page.write(new PagedMessageImpl(msg, new long [0]));
+         page.write(new PagedMessageImpl(msg, new long[0]));
 
          Assert.assertEquals(initialNumberOfMessages + i + 1, page.getNumberOfMessages());
       }

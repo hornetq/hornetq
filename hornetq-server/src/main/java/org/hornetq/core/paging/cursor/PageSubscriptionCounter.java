@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.paging.cursor;
 
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.transaction.Transaction;
 

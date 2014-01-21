@@ -62,7 +62,7 @@ public final class HornetQXAConnection extends HornetQConnection implements XATo
    }
 
    @Override
-   protected final boolean isXA()
+   protected boolean isXA()
    {
       return true;
    }

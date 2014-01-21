@@ -11,8 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
 
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -20,10 +20,8 @@ import org.junit.Test;
  * A ClusteredRequestResponseTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 3 Feb 2009 09:10:43
- *
- *
+ *         <p/>
+ *         Created 3 Feb 2009 09:10:43
  */
 public class ClusteredRequestResponseTest extends ClusterTestBase
 {
@@ -49,7 +47,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
 
       startServers(0, 1, 2, 3, 4);
 
-      for (int i = 0 ; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          waitForTopology(servers[i], 5);
       }
@@ -99,7 +97,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
 
       startServers(0, 1, 2, 3, 4);
 
-      for (int i = 0 ; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          waitForTopology(servers[i], 5);
       }

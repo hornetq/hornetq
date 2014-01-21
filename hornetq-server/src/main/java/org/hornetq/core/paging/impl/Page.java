@@ -34,9 +34,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public final class Page implements Comparable<Page>
 {
@@ -46,9 +44,9 @@ public final class Page implements Comparable<Page>
 
    public static final int SIZE_RECORD = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_BYTE;
 
-   private static final byte START_BYTE = (byte)'{';
+   private static final byte START_BYTE = (byte) '{';
 
-   private static final byte END_BYTE = (byte)'}';
+   private static final byte END_BYTE = (byte) '}';
 
    // Attributes ----------------------------------------------------
 
@@ -115,9 +113,9 @@ public final class Page implements Comparable<Page>
 
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
-      size.set((int)file.size());
+      size.set((int) file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer directBuffer = storage.allocateDirectBuffer((int)file.size());
+      ByteBuffer directBuffer = storage.allocateDirectBuffer((int) file.size());
       HornetQBuffer fileBuffer = null;
       try
       {
@@ -178,7 +176,8 @@ public final class Page implements Comparable<Page>
       }
       finally
       {
-         if (fileBuffer != null) {
+         if (fileBuffer != null)
+         {
             fileBuffer.byteBuf().unwrap().release();
          }
          storage.freeDirectBuffer(directBuffer);
@@ -236,7 +235,7 @@ public final class Page implements Comparable<Page>
       {
          file.open();
       }
-      size.set((int)file.size());
+      size.set((int) file.size());
       file.position(0);
    }
 
@@ -287,7 +286,7 @@ public final class Page implements Comparable<Page>
          {
             if (msg.getMessage().isLargeMessage())
             {
-               LargeServerMessage lmsg = (LargeServerMessage)msg.getMessage();
+               LargeServerMessage lmsg = (LargeServerMessage) msg.getMessage();
 
                // Remember, cannot call delete directly here
                // Because the large-message may be linked to another message
@@ -374,7 +373,7 @@ public final class Page implements Comparable<Page>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      Page other = (Page)obj;
+      Page other = (Page) obj;
       if (pageId != other.pageId)
          return false;
       return true;
@@ -397,6 +396,7 @@ public final class Page implements Comparable<Page>
 
    /**
     * This will indicate a page that will need to be called on cleanup when the page has been closed and confirmed
+    *
     * @param pageSubscriptionCounter
     */
    public void addPendingCounter(PageSubscriptionCounter pageSubscriptionCounter)
@@ -412,7 +412,7 @@ public final class Page implements Comparable<Page>
 
    private synchronized Set<PageSubscriptionCounter> getOrCreatePendingCounters()
    {
-      if (pendingCounters == null )
+      if (pendingCounters == null)
       {
          pendingCounters = new ConcurrentHashSet<PageSubscriptionCounter>();
       }

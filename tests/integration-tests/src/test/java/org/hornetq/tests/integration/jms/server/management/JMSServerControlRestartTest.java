@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server.management;
+
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -46,8 +47,6 @@ import org.junit.Test;
  * A JMSServerControlRestartTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSServerControlRestartTest extends ManagementTestBase
 {
@@ -70,7 +69,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, binding);
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -84,7 +83,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
       o = UnitTestCase.checkBinding(context, binding);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
@@ -112,7 +111,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, binding);
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -126,7 +125,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
       o = UnitTestCase.checkBinding(context, binding);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
@@ -145,7 +144,8 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       serverManager.start();
    }
 
-   private JMSServerManager createJMSServer() throws Exception {
+   private JMSServerManager createJMSServer() throws Exception
+   {
       Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);

@@ -43,6 +43,7 @@ import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.UUIDGenerator;
 
 import static org.hornetq.core.protocol.stomp.HornetQStompProtocolMessageBundle.BUNDLE;
+
 /**
  * A StompSession
  *
@@ -73,8 +74,8 @@ public class StompSession implements SessionCallback
       this.manager = manager;
       this.sessionContext = sessionContext;
       this.consumerCredits = ConfigurationHelper.getIntProperty(TransportConstants.STOMP_CONSUMERS_CREDIT,
-                                                               TransportConstants.STOMP_DEFAULT_CONSUMERS_CREDIT,
-                                                               connection.getAcceptorUsed().getConfiguration());
+                                                                TransportConstants.STOMP_DEFAULT_CONSUMERS_CREDIT,
+                                                                connection.getAcceptorUsed().getConfiguration());
    }
 
    void setServerSession(ServerSession session)
@@ -107,13 +108,13 @@ public class StompSession implements SessionCallback
          {
             newServerMessage = serverMessage.copy();
 
-            largeMessage = (LargeServerMessageImpl)serverMessage;
+            largeMessage = (LargeServerMessageImpl) serverMessage;
             BodyEncoder encoder = largeMessage.getBodyEncoder();
             encoder.open();
-            int bodySize = (int)encoder.getLargeBodySize();
+            int bodySize = (int) encoder.getLargeBodySize();
 
             //large message doesn't have a body.
-            ((ServerMessageImpl)newServerMessage).createBody(bodySize);
+            ((ServerMessageImpl) newServerMessage).createBody(bodySize);
             encoder.encode(newServerMessage.getBodyBuffer(), bodySize);
             encoder.close();
          }
@@ -125,12 +126,12 @@ public class StompSession implements SessionCallback
             int bytesToRead = qbuff.writerIndex() - MessageImpl.BODY_OFFSET;
             Inflater inflater = new Inflater();
             inflater.setInput(qbuff.readBytes(bytesToRead).toByteBuffer().array());
-            
-            
+
+
             //get the real size of large message
             long sizeBody = newServerMessage.getLongProperty(Message.HDR_LARGE_BODY_SIZE);
 
-            byte[] data = new byte[(int)sizeBody];
+            byte[] data = new byte[(int) sizeBody];
             inflater.inflate(data);
             inflater.end();
             qbuff.resetReaderIndex();
@@ -294,11 +295,11 @@ public class StompSession implements SessionCallback
             queue = UUIDGenerator.getInstance().generateSimpleStringUUID();
             session.createQueue(SimpleString.toSimpleString(destination), queue, SimpleString.toSimpleString(selector), true, false);
          }
-        ((ServerSessionImpl)session).createConsumer(consumerID, queue, null, false, false, receiveCredits);
-      } 
-      else 
+         ((ServerSessionImpl) session).createConsumer(consumerID, queue, null, false, false, receiveCredits);
+      }
+      else
       {
-        ((ServerSessionImpl)session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false, receiveCredits);
+         ((ServerSessionImpl) session).createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false, false, receiveCredits);
       }
 
       StompSubscription subscription = new StompSubscription(subscriptionID, ack);
@@ -320,13 +321,17 @@ public class StompSession implements SessionCallback
             iterator.remove();
             session.closeConsumer(consumerID);
             SimpleString queueName;
-            if (durableSubscriptionName != null && durableSubscriptionName.trim().length() != 0) {
-                queueName = SimpleString.toSimpleString(id + "." + durableSubscriptionName);
-            } else {
-                queueName = SimpleString.toSimpleString(id);
+            if (durableSubscriptionName != null && durableSubscriptionName.trim().length() != 0)
+            {
+               queueName = SimpleString.toSimpleString(id + "." + durableSubscriptionName);
+            }
+            else
+            {
+               queueName = SimpleString.toSimpleString(id);
             }
             QueueQueryResult query = session.executeQueueQuery(queueName);
-            if (query.isExists()) {
+            if (query.isExists())
+            {
                session.deleteQueue(queueName);
             }
             return true;
@@ -371,13 +376,13 @@ public class StompSession implements SessionCallback
    }
 
    public void sendInternal(ServerMessageImpl message, boolean direct)
-         throws Exception
+      throws Exception
    {
       session.send(message, direct);
    }
 
    public void sendInternalLarge(ServerMessageImpl message, boolean direct)
-         throws Exception
+      throws Exception
    {
       int headerSize = message.getHeadersAndPropertiesEncodeSize();
       if (headerSize >= connection.getMinLargeMessageSize())
@@ -385,15 +390,15 @@ public class StompSession implements SessionCallback
          throw BUNDLE.headerTooBig();
       }
 
-      StorageManager storageManager = ((ServerSessionImpl)session).getStorageManager();
+      StorageManager storageManager = ((ServerSessionImpl) session).getStorageManager();
       long id = storageManager.generateUniqueID();
       LargeServerMessage largeMessage = storageManager.createLargeMessage(id, message);
-      
+
       byte[] bytes = new byte[message.getBodyBuffer().writerIndex() - MessageImpl.BODY_OFFSET];
       message.getBodyBuffer().readBytes(bytes);
-      
+
       largeMessage.addBytes(bytes);
-      
+
       largeMessage.releaseResources();
 
       largeMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, bytes.length);

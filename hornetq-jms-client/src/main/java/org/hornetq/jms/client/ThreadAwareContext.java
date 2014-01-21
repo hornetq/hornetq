@@ -14,7 +14,6 @@ package org.hornetq.jms.client;
 
 import org.hornetq.utils.ConcurrentHashSet;
 
-import javax.jms.*;
 import javax.jms.IllegalStateException;
 import java.util.Set;
 

@@ -67,18 +67,18 @@ public interface ManagementService extends NotificationService, HornetQComponent
 
    void setStorageManager(StorageManager storageManager);
 
-   HornetQServerControlImpl registerServer(PostOffice postOffice,
-                                           StorageManager storageManager,
-                                           Configuration configuration,
-                                           HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                           HierarchicalRepository<Set<Role>> securityRepository,
-                                           ResourceManager resourceManager,
-                                           RemotingService remotingService,
-                                           HornetQServer messagingServer,
-                                           QueueFactory queueFactory,
-                                           ScheduledExecutorService scheduledThreadPool,
+   HornetQServerControlImpl registerServer(final PostOffice postOffice,
+                                           final StorageManager storageManager,
+                                           final Configuration configuration,
+                                           final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                           final HierarchicalRepository<Set<Role>> securityRepository,
+                                           final ResourceManager resourceManager,
+                                           final RemotingService remotingService,
+                                           final HornetQServer messagingServer,
+                                           final QueueFactory queueFactory,
+                                           final ScheduledExecutorService scheduledThreadPool,
                                            final PagingManager pagingManager,
-                                           boolean backup) throws Exception;
+                                           final boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;
 

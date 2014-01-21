@@ -11,8 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -22,13 +20,13 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A DivertControlUsingCoreTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class DivertControlUsingCoreTest extends DivertControlTest
 {
@@ -59,37 +57,37 @@ public class DivertControlUsingCoreTest extends DivertControlTest
 
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("address");
+            return (String) proxy.retrieveAttributeValue("address");
          }
 
          public String getFilter()
          {
-            return (String)proxy.retrieveAttributeValue("filter");
+            return (String) proxy.retrieveAttributeValue("filter");
          }
 
          public String getForwardingAddress()
          {
-            return (String)proxy.retrieveAttributeValue("forwardingAddress");
+            return (String) proxy.retrieveAttributeValue("forwardingAddress");
          }
 
          public String getRoutingName()
          {
-            return (String)proxy.retrieveAttributeValue("routingName");
+            return (String) proxy.retrieveAttributeValue("routingName");
          }
 
          public String getTransformerClassName()
          {
-            return (String)proxy.retrieveAttributeValue("transformerClassName");
+            return (String) proxy.retrieveAttributeValue("transformerClassName");
          }
 
          public String getUniqueName()
          {
-            return (String)proxy.retrieveAttributeValue("uniqueName");
+            return (String) proxy.retrieveAttributeValue("uniqueName");
          }
 
          public boolean isExclusive()
          {
-            return (Boolean)proxy.retrieveAttributeValue("exclusive");
+            return (Boolean) proxy.retrieveAttributeValue("exclusive");
          }
 
       };
@@ -120,7 +118,7 @@ public class DivertControlUsingCoreTest extends DivertControlTest
          session.close();
       }
 
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }

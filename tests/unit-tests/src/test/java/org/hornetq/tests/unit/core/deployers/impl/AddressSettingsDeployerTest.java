@@ -108,8 +108,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
-      Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
-      Assert.assertEquals(2387273767666l, as.getPageSizeBytes());
+      Assert.assertEquals(18238172365765L, as.getMaxSizeBytes());
+      Assert.assertEquals(2387273767666L, as.getPageSizeBytes());
       Assert.assertEquals(AddressFullMessagePolicy.DROP, as.getAddressFullMessagePolicy());
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());

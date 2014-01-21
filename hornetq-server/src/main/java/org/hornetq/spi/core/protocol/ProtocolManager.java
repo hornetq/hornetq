@@ -18,20 +18,16 @@ import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 
-import java.util.Map;
-
 /**
  * A ProtocolManager
  *
  * @author Tim Fox
- *
- *
  */
 public interface ProtocolManager
 {
    ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection);
 
-   public void removeHandler(final String name);
+   void removeHandler(final String name);
 
    void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
 

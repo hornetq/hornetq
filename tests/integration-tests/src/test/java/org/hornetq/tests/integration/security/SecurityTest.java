@@ -11,16 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.security;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.IOException;
-import java.security.acl.Group;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -31,11 +21,16 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.io.IOException;
+import java.security.acl.Group;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQSecurityException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -52,6 +47,9 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
 import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.security.SimpleGroup;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -124,7 +122,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession(false, true, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -148,7 +146,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
          Assert.fail("should not throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -219,7 +217,7 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -271,7 +269,7 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -323,7 +321,7 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -375,7 +373,7 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -476,7 +474,7 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -508,7 +506,7 @@ public class SecurityTest extends ServiceTestBase
       cp.send(session.createMessage(false));
       session.close();
 
-      Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+      Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
       Assert.assertEquals(0, binding.getMessageCount());
    }
 
@@ -569,7 +567,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -614,7 +612,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -671,7 +669,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -693,7 +691,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -744,7 +742,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -854,7 +852,7 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -887,7 +885,7 @@ public class SecurityTest extends ServiceTestBase
       cp.send(session.createMessage(false));
       session.close();
 
-      Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+      Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
       Assert.assertEquals(0, binding.getMessageCount());
 
    }
@@ -960,7 +958,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession(false, true, true);
          Assert.fail("should not throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1030,7 +1028,7 @@ public class SecurityTest extends ServiceTestBase
          factory.createSession(false, true, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1045,7 +1043,7 @@ public class SecurityTest extends ServiceTestBase
          billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1169,7 +1167,7 @@ public class SecurityTest extends ServiceTestBase
          factory.createSession(false, true, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1184,7 +1182,7 @@ public class SecurityTest extends ServiceTestBase
          billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1341,7 +1339,7 @@ public class SecurityTest extends ServiceTestBase
          connection.createConsumer(queue);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1380,11 +1378,11 @@ public class SecurityTest extends ServiceTestBase
 
       public boolean login() throws LoginException
       {
-         boolean authenticated = (Boolean)options.get("authenticated");
+         boolean authenticated = (Boolean) options.get("authenticated");
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
+            roles.addMember(new JAASSecurityManager.SimplePrincipal((String) options.get("role")));
             subject.getPrincipals().add(roles);
          }
          return authenticated;
@@ -1420,7 +1418,7 @@ public class SecurityTest extends ServiceTestBase
          AppConfigurationEntry entry =
             new AppConfigurationEntry(loginModuleName, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                                       options);
-         return new AppConfigurationEntry[] { entry };
+         return new AppConfigurationEntry[]{entry};
       }
 
       @Override

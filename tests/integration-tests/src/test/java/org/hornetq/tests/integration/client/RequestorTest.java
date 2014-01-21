@@ -11,12 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -38,6 +32,10 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A ClientRequestorTest
@@ -105,7 +103,7 @@ public class RequestorTest extends ServiceTestBase
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, sessionRequest));
 
 
-      for (int i = 0 ; i < 2000; i++)
+      for (int i = 0; i < 2000; i++)
       {
          if (i % 100 == 0)
          {
@@ -209,15 +207,17 @@ public class RequestorTest extends ServiceTestBase
 
       session.close();
 
+      HornetQAction hornetQAction = new HornetQAction()
+      {
+         public void run() throws Exception
+         {
+            new ClientRequestor(session, requestAddress);
+         }
+      };
+
       UnitTestCase.expectHornetQException("ClientRequestor's session must not be closed",
                                           HornetQExceptionType.OBJECT_CLOSED,
-                                          new HornetQAction()
-                                          {
-                                             public void run() throws Exception
-                                             {
-                                                new ClientRequestor(session, requestAddress);
-                                             }
-                                          });
+                                          hornetQAction);
    }
 
    @Test
@@ -251,16 +251,16 @@ public class RequestorTest extends ServiceTestBase
 
       requestor.close();
 
-      UnitTestCase.expectHornetQException("can not send a request on a closed ClientRequestor",
-                                          HornetQExceptionType.OBJECT_CLOSED,
-                                          new HornetQAction()
-                                          {
+      HornetQAction hornetQAction = new HornetQAction()
+      {
+         public void run() throws Exception
+         {
+            requestor.request(session.createMessage(false), 500);
+         }
+      };
 
-                                             public void run() throws Exception
-                                             {
-                                                requestor.request(session.createMessage(false), 500);
-                                             }
-                                          });
+      UnitTestCase.expectHornetQException("can not send a request on a closed ClientRequestor",
+                                          HornetQExceptionType.OBJECT_CLOSED, hornetQAction);
    }
 
    @Override
@@ -309,8 +309,8 @@ public class RequestorTest extends ServiceTestBase
          try
          {
             ClientMessage reply = session.createMessage(false);
-            SimpleString replyTo = (SimpleString)request.getObjectProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
-            long value = (Long)request.getObjectProperty(key);
+            SimpleString replyTo = (SimpleString) request.getObjectProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
+            long value = (Long) request.getObjectProperty(key);
             reply.putLongProperty(key, value);
             ClientProducer replyProducer = session.createProducer(replyTo);
             replyProducer.send(reply);

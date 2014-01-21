@@ -12,16 +12,11 @@
  */
 package org.hornetq.jms.client;
 
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
-import javax.jms.IllegalStateRuntimeException;
 import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
@@ -33,6 +28,9 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -50,9 +48,10 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * HornetQ implementation of a JMS Connection.
- * <p>
+ * <p/>
  * The flat implementation of {@link TopicConnection} and {@link QueueConnection} is per design,
  * following the common usage of these as one flat API in JMS 1.1.
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -149,12 +148,14 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       creationStack = new Exception();
    }
 
-   /** This internal method serves basically the Resource Adapter.
-    *  The resource adapter plays with an XASession and a non XASession.
-    *  When there is no enlisted transaction, the EE specification mandates that the commit should
-    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
-    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
-    *  mandates createSession to return a XASession. */
+   /**
+    * This internal method serves basically the Resource Adapter.
+    * The resource adapter plays with an XASession and a non XASession.
+    * When there is no enlisted transaction, the EE specification mandates that the commit should
+    * be done as if it was a nonXA Session (i.e. SessionTransacted).
+    * For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    * mandates createSession to return a XASession.
+    */
    public Session createNonXASession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
@@ -162,12 +163,14 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
-      /** This internal method serves basically the Resource Adapter.
-    *  The resource adapter plays with an XASession and a non XASession.
-    *  When there is no enlisted transaction, the EE specification mandates that the commit should
-    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
-    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
-    *  mandates createSession to return a XASession. */
+   /**
+    * This internal method serves basically the Resource Adapter.
+    * The resource adapter plays with an XASession and a non XASession.
+    * When there is no enlisted transaction, the EE specification mandates that the commit should
+    * be done as if it was a nonXA Session (i.e. SessionTransacted).
+    * For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    * mandates createSession to return a XASession.
+    */
    public Session createNonXATopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
@@ -175,12 +178,14 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return createSessionInternal(false, transacted, acknowledgeMode, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
-      /** This internal method serves basically the Resource Adapter.
-    *  The resource adapter plays with an XASession and a non XASession.
-    *  When there is no enlisted transaction, the EE specification mandates that the commit should
-    *  be done as if it was a nonXA Session (i.e. SessionTransacted).
-    *  For that reason we have this method to force that nonXASession, since the JMS Javadoc
-    *  mandates createSession to return a XASession. */
+   /**
+    * This internal method serves basically the Resource Adapter.
+    * The resource adapter plays with an XASession and a non XASession.
+    * When there is no enlisted transaction, the EE specification mandates that the commit should
+    * be done as if it was a nonXA Session (i.e. SessionTransacted).
+    * For that reason we have this method to force that nonXASession, since the JMS Javadoc
+    * mandates createSession to return a XASession.
+    */
    public Session createNonXAQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
@@ -298,7 +303,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          ClientSession coreSession = session.getCoreSession();
          if (coreSession instanceof ClientSessionInternal)
          {
-            ClientSessionInternal internalSession = (ClientSessionInternal)coreSession;
+            ClientSessionInternal internalSession = (ClientSessionInternal) coreSession;
             internalSession.setStopSignal();
          }
       }
@@ -320,7 +325,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       started = false;
    }
 
-   public synchronized final void close() throws JMSException
+   public final synchronized void close() throws JMSException
    {
       threadAwareContext.assertNotCompletionListenerThread();
       threadAwareContext.assertNotMessageListenerThread();
@@ -378,8 +383,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    }
 
    public ConnectionConsumer
-            createConnectionConsumer(final Destination destination, final String messageSelector,
-                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   createConnectionConsumer(final Destination destination, final String messageSelector,
+                            final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
 
@@ -391,19 +396,19 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    private void checkTempQueues(Destination destination) throws JMSException
    {
-      HornetQDestination jbdest = (HornetQDestination)destination;
+      HornetQDestination jbdest = (HornetQDestination) destination;
 
       if (jbdest.isTemporary() && !containsTemporaryQueue(jbdest.getSimpleAddress()))
       {
          throw new JMSException("Can not create consumer for temporary destination " + destination +
-                  " from another JMS connection");
+                                   " from another JMS connection");
       }
    }
 
    public ConnectionConsumer
-            createDurableConnectionConsumer(final Topic topic, final String subscriptionName,
-                                            final String messageSelector, final ServerSessionPool sessionPool,
-                                            final int maxMessages) throws JMSException
+   createDurableConnectionConsumer(final Topic topic, final String subscriptionName,
+                                   final String messageSelector, final ServerSessionPool sessionPool,
+                                   final int maxMessages) throws JMSException
    {
       checkClosed();
       // As spec. section 4.11
@@ -432,7 +437,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return createSessionInternal(false, false, Session.AUTO_ACKNOWLEDGE, HornetQSession.TYPE_GENERIC_SESSION);
    }
 
-    // QueueConnection implementation ---------------------------------------------------------------
+   // QueueConnection implementation ---------------------------------------------------------------
 
    public QueueSession createQueueSession(final boolean transacted, int acknowledgeMode) throws JMSException
    {
@@ -442,7 +447,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    /**
     * I'm keeping this as static as the same check will be done within RA.
-    * This is to conform with TCK Tests where we must return ackMode exactly as they want if transacted=false */
+    * This is to conform with TCK Tests where we must return ackMode exactly as they want if transacted=false
+    */
    public static int checkAck(boolean transacted, int acknowledgeMode)
    {
       if (!transacted && acknowledgeMode == Session.SESSION_TRANSACTED)
@@ -454,8 +460,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    }
 
    public ConnectionConsumer
-            createConnectionConsumer(final Queue queue, final String messageSelector,
-                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   createConnectionConsumer(final Queue queue, final String messageSelector,
+                            final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
       checkTempQueues(queue);
@@ -471,8 +477,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    }
 
    public ConnectionConsumer
-            createConnectionConsumer(final Topic topic, final String messageSelector,
-                                     final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
+   createConnectionConsumer(final Topic topic, final String messageSelector,
+                            final ServerSessionPool sessionPool, final int maxMessages) throws JMSException
    {
       checkClosed();
       checkTempQueues(topic);
@@ -491,10 +497,11 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return null; // we offer RA
    }
 
-    // Public ---------------------------------------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    /**
     * Sets a FailureListener for the session which is notified if a failure occurs on the session.
+    *
     * @param listener the listener to add
     * @throws JMSException
     */
@@ -584,7 +591,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    }
 
    protected final HornetQSession
-            createSessionInternal(final boolean isXA, final boolean transacted, int acknowledgeMode, final int type) throws JMSException
+   createSessionInternal(final boolean isXA, final boolean transacted, int acknowledgeMode, final int type) throws JMSException
    {
       if (transacted)
       {
@@ -598,33 +605,33 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, false, false,
-                                                  sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                  transactionBatchSize);
+               sessionFactory.createSession(username, password, isXA, false, false,
+                                            sessionFactory.getServerLocator().isPreAcknowledge(),
+                                            transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, true,
-                                                  sessionFactory.getServerLocator().isPreAcknowledge(), 0);
+               sessionFactory.createSession(username, password, isXA, true, true,
+                                            sessionFactory.getServerLocator().isPreAcknowledge(), 0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, true,
-                                                  sessionFactory.getServerLocator().isPreAcknowledge(), dupsOKBatchSize);
+               sessionFactory.createSession(username, password, isXA, true, true,
+                                            sessionFactory.getServerLocator().isPreAcknowledge(), dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, false,
-                                                  sessionFactory.getServerLocator().isPreAcknowledge(),
-                                                  transactionBatchSize);
+               sessionFactory.createSession(username, password, isXA, true, false,
+                                            sessionFactory.getServerLocator().isPreAcknowledge(),
+                                            transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
          {
             session =
-                     sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
+               sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQJMSConstants.PRE_ACKNOWLEDGE)
          {
@@ -757,7 +764,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
                if (exceptionListener != null)
                {
                   final JMSException je =
-                           new JMSException(me.toString(), failedOver ? EXCEPTION_FAILOVER : EXCEPTION_DISCONNECT);
+                     new JMSException(me.toString(), failedOver ? EXCEPTION_FAILOVER : EXCEPTION_DISCONNECT);
 
                   je.initCause(me);
 

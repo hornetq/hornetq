@@ -12,11 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -30,6 +26,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -59,45 +57,45 @@ public class AutogroupIdTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-         server.start();
+      server.start();
 
-         ServerLocator locator = createInVMNonHALocator();
-         locator.setAutoGroup(true);
-         ClientSessionFactory sf = createSessionFactory(locator);
-         ClientSession session = sf.createSession(false, true, true);
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setAutoGroup(true);
+      ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false);
+      session.createQueue(groupTestQ, groupTestQ, null, false);
 
-         ClientProducer producer = session.createProducer(groupTestQ);
+      ClientProducer producer = session.createProducer(groupTestQ);
 
-         final CountDownLatch latch = new CountDownLatch(100);
+      final CountDownLatch latch = new CountDownLatch(100);
 
-         MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
-         MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
 
-         ClientConsumer consumer = session.createConsumer(groupTestQ);
-         consumer.setMessageHandler(myMessageHandler);
-         ClientConsumer consumer2 = session.createConsumer(groupTestQ);
-         consumer2.setMessageHandler(myMessageHandler2);
+      ClientConsumer consumer = session.createConsumer(groupTestQ);
+      consumer.setMessageHandler(myMessageHandler);
+      ClientConsumer consumer2 = session.createConsumer(groupTestQ);
+      consumer2.setMessageHandler(myMessageHandler2);
 
-         log.info("starting session");
+      log.info("starting session");
 
-         session.start();
+      session.start();
 
-         final int numMessages = 100;
+      final int numMessages = 100;
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            producer.send(session.createMessage(false));
-         }
+      for (int i = 0; i < numMessages; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
       waitForLatch(latch);
 
-         session.close();
+      session.close();
 
-         log.info(myMessageHandler2.messagesReceived);
+      log.info(myMessageHandler2.messagesReceived);
 
-         Assert.assertEquals(100, myMessageHandler.messagesReceived);
-         Assert.assertEquals(0, myMessageHandler2.messagesReceived);
+      Assert.assertEquals(100, myMessageHandler.messagesReceived);
+      Assert.assertEquals(0, myMessageHandler2.messagesReceived);
 
    }
 
@@ -109,51 +107,51 @@ public class AutogroupIdTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-         server.start();
+      server.start();
 
 
-         ServerLocator locator = createInVMNonHALocator();
-         locator.setAutoGroup(true);
-         ClientSessionFactory sf = createSessionFactory(locator);
-         ClientSession session = sf.createSession(false, true, true);
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setAutoGroup(true);
+      ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false);
+      session.createQueue(groupTestQ, groupTestQ, null, false);
 
-         ClientProducer producer = session.createProducer(groupTestQ);
-         ClientProducer producer2 = session.createProducer(groupTestQ);
+      ClientProducer producer = session.createProducer(groupTestQ);
+      ClientProducer producer2 = session.createProducer(groupTestQ);
 
-         final CountDownLatch latch = new CountDownLatch(200);
+      final CountDownLatch latch = new CountDownLatch(200);
 
-         MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
-         MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
-         MyMessageHandler myMessageHandler3 = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler3 = new MyMessageHandler(latch);
 
-         ClientConsumer consumer = session.createConsumer(groupTestQ);
-         consumer.setMessageHandler(myMessageHandler);
-         ClientConsumer consumer2 = session.createConsumer(groupTestQ);
-         consumer2.setMessageHandler(myMessageHandler2);
-         ClientConsumer consumer3 = session.createConsumer(groupTestQ);
-         consumer3.setMessageHandler(myMessageHandler3);
+      ClientConsumer consumer = session.createConsumer(groupTestQ);
+      consumer.setMessageHandler(myMessageHandler);
+      ClientConsumer consumer2 = session.createConsumer(groupTestQ);
+      consumer2.setMessageHandler(myMessageHandler2);
+      ClientConsumer consumer3 = session.createConsumer(groupTestQ);
+      consumer3.setMessageHandler(myMessageHandler3);
 
-         session.start();
+      session.start();
 
-         final int numMessages = 100;
+      final int numMessages = 100;
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            producer.send(session.createMessage(false));
-         }
-         for (int i = 0; i < numMessages; i++)
-         {
-            producer2.send(session.createMessage(false));
-         }
+      for (int i = 0; i < numMessages; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
+      for (int i = 0; i < numMessages; i++)
+      {
+         producer2.send(session.createMessage(false));
+      }
       waitForLatch(latch);
 
-         session.close();
+      session.close();
 
-         Assert.assertEquals(myMessageHandler.messagesReceived, 100);
-         Assert.assertEquals(myMessageHandler2.messagesReceived, 100);
-         Assert.assertEquals(myMessageHandler3.messagesReceived, 0);
+      Assert.assertEquals(myMessageHandler.messagesReceived, 100);
+      Assert.assertEquals(myMessageHandler2.messagesReceived, 100);
+      Assert.assertEquals(myMessageHandler3.messagesReceived, 0);
    }
 
    /*
@@ -164,42 +162,42 @@ public class AutogroupIdTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-         server.start();
+      server.start();
 
 
-         ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = createSessionFactory(locator);
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
-         ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false);
+      session.createQueue(groupTestQ, groupTestQ, null, false);
 
-         ClientProducer producer = session.createProducer(groupTestQ);
+      ClientProducer producer = session.createProducer(groupTestQ);
 
-         final CountDownLatch latch = new CountDownLatch(100);
+      final CountDownLatch latch = new CountDownLatch(100);
 
-         MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
-         MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler = new MyMessageHandler(latch);
+      MyMessageHandler myMessageHandler2 = new MyMessageHandler(latch);
 
-         ClientConsumer consumer = session.createConsumer(groupTestQ);
-         consumer.setMessageHandler(myMessageHandler);
-         ClientConsumer consumer2 = session.createConsumer(groupTestQ);
-         consumer2.setMessageHandler(myMessageHandler2);
+      ClientConsumer consumer = session.createConsumer(groupTestQ);
+      consumer.setMessageHandler(myMessageHandler);
+      ClientConsumer consumer2 = session.createConsumer(groupTestQ);
+      consumer2.setMessageHandler(myMessageHandler2);
 
-         session.start();
+      session.start();
 
-         final int numMessages = 100;
+      final int numMessages = 100;
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            producer.send(session.createMessage(false));
-         }
+      for (int i = 0; i < numMessages; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
       waitForLatch(latch);
 
-         session.close();
+      session.close();
 
-         Assert.assertEquals(50, myMessageHandler.messagesReceived);
-         Assert.assertEquals(50, myMessageHandler2.messagesReceived);
+      Assert.assertEquals(50, myMessageHandler.messagesReceived);
+      Assert.assertEquals(50, myMessageHandler2.messagesReceived);
 
    }
 

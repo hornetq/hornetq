@@ -25,7 +25,9 @@ public final class ReplicationPrepareMessage extends PacketImpl
 {
    private long txId;
 
-   /** 0 - BindingsImpl, 1 - MessagesJournal */
+   /**
+    * 0 - BindingsImpl, 1 - MessagesJournal
+    */
    private byte journalID;
 
    private EncodingSupport encodingData;
@@ -95,7 +97,7 @@ public final class ReplicationPrepareMessage extends PacketImpl
       result = prime * result + ((encodingData == null) ? 0 : encodingData.hashCode());
       result = prime * result + journalID;
       result = prime * result + Arrays.hashCode(recordData);
-      result = prime * result + (int)(txId ^ (txId >>> 32));
+      result = prime * result + (int) (txId ^ (txId >>> 32));
       return result;
    }
 
@@ -114,13 +116,13 @@ public final class ReplicationPrepareMessage extends PacketImpl
       {
          return false;
       }
-      ReplicationPrepareMessage other = (ReplicationPrepareMessage)obj;
+      ReplicationPrepareMessage other = (ReplicationPrepareMessage) obj;
       if (encodingData == null)
       {
          if (other.encodingData != null)
          {
             return false;
-      }
+         }
       }
       else if (!encodingData.equals(other.encodingData))
       {

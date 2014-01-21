@@ -177,9 +177,9 @@ public class PingStressTest extends ServiceTestBase
                failure = e;
             }
          }
-      };
+      }
 
-      LocalThread threads[] = new LocalThread[numberOfThreads];
+      LocalThread[] threads = new LocalThread[numberOfThreads];
 
       for (int i = 0; i < numberOfThreads; i++)
       {

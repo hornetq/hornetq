@@ -11,13 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -31,8 +24,9 @@ import javax.jms.Session;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import org.junit.Assert;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -57,14 +51,18 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.ra.MessageEndpointFactory;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
+ *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a> Created 14 nov. 2008 13:35:10
  */
 public class JMSServerControl2Test extends ManagementTestBase
 {
-     private static final long CONNECTION_TTL = 1000;
+   private static final long CONNECTION_TTL = 1000;
 
    private static final long PING_PERIOD = JMSServerControl2Test.CONNECTION_TTL / 2;
 
@@ -393,7 +391,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          }
 
 
-
          connection.start();
 
          // create a regular message consumer
@@ -402,13 +399,13 @@ public class JMSServerControl2Test extends ManagementTestBase
          TextMessage receivedMsg = null;
          for (int i = 0; i < 10; i++)
          {
-            receivedMsg = (TextMessage)consumer.receive(3000);
+            receivedMsg = (TextMessage) consumer.receive(3000);
             assertNotNull(receivedMsg);
          }
 
          assertEquals(msgSent.getJMSMessageID(), receivedMsg.getJMSMessageID());
 
-         HornetQMessage jmsMessage = (HornetQMessage)receivedMsg;
+         HornetQMessage jmsMessage = (HornetQMessage) receivedMsg;
          String lastMsgID = jmsMessage.getCoreMessage().getUserID().toString();
 
          String jsonStr = control.listConnectionsAsJSON();
@@ -532,7 +529,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          if (activation != null)
             activation.stop();
 
-         if(ra != null)
+         if (ra != null)
             ra.stop();
 
          try
@@ -621,7 +618,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          if (activation != null)
             activation.stop();
 
-         if(ra != null)
+         if (ra != null)
             ra.stop();
 
          try

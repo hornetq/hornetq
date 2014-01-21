@@ -12,12 +12,11 @@
  */
 package org.hornetq.jms.server.recovery;
 
+import javax.transaction.xa.XAResource;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -26,26 +25,26 @@ import org.jboss.tm.XAResourceRecovery;
 
 /**
  * <p>This class is used by the Resource Adapter to register RecoveryDiscovery, which is based on the {@link XARecoveryConfig}</p>
- *
+ * <p/>
  * <p>Each outbound or inboud connection will pass the configuration here through by calling the method {@link HornetQRecoveryRegistry#register(XARecoveryConfig)}</p>
- *
+ * <p/>
  * <p>Later the {@link RecoveryDiscovery} will call {@link HornetQRecoveryRegistry#nodeUp(String, Pair, String, String)}
  * so we will keep a track of nodes on the cluster
  * or nodes where this server is connected to. </p>
  *
  * @author clebertsuconic
- *
- *
  */
 public class HornetQRecoveryRegistry implements XAResourceRecovery
 {
 
-   private final static HornetQRecoveryRegistry theInstance = new HornetQRecoveryRegistry();
+   private static final HornetQRecoveryRegistry theInstance = new HornetQRecoveryRegistry();
 
    private final ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery> configSet = new ConcurrentHashMap<XARecoveryConfig, RecoveryDiscovery>();
 
-   /** The list by server id and resource adapter wrapper, what will actually be calling recovery.
-    * This will be returned by getXAResources*/
+   /**
+    * The list by server id and resource adapter wrapper, what will actually be calling recovery.
+    * This will be returned by getXAResources
+    */
    private final ConcurrentHashMap<String, HornetQXAResourceWrapper> recoveries = new ConcurrentHashMap<String, HornetQXAResourceWrapper>();
 
    /**
@@ -57,7 +56,9 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
    {
    }
 
-   /** This will be called periodically by the Transaction Manager*/
+   /**
+    * This will be called periodically by the Transaction Manager
+    */
    public XAResource[] getXAResources()
    {
       try
@@ -69,8 +70,8 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
          if (HornetQJMSServerLogger.LOGGER.isDebugEnabled())
          {
-           HornetQJMSServerLogger.LOGGER.debug("\n=======================================================================================");
-           HornetQJMSServerLogger.LOGGER.debug("Returning the following list on getXAREsources:");
+            HornetQJMSServerLogger.LOGGER.debug("\n=======================================================================================");
+            HornetQJMSServerLogger.LOGGER.debug("Returning the following list on getXAREsources:");
             for (Map.Entry<String, HornetQXAResourceWrapper> entry : recoveries.entrySet())
             {
                HornetQJMSServerLogger.LOGGER.debug("server-id=" + entry.getKey() + ", value=" + entry.getValue());
@@ -83,7 +84,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
       catch (Throwable e)
       {
          HornetQJMSServerLogger.LOGGER.warn(e.getMessage(), e);
-         return new XAResource[] {};
+         return new XAResource[]{};
       }
    }
 
@@ -94,6 +95,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
    /**
     * This will be called by then resource adapters, to register a new discovery
+    *
     * @param resourceConfig
     */
    public void register(final XARecoveryConfig resourceConfig)
@@ -112,6 +114,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
    /**
     * Reference counts and deactivate a configuration
     * Notice: this won't remove the servers since a server may have previous XIDs
+    *
     * @param resourceConfig
     */
    public void unRegister(final XARecoveryConfig resourceConfig)
@@ -128,9 +131,9 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
    }
 
    /**
-   * We need to make sure that all resources are closed, we don't actually do this when a resourceConfig is closed but
-   * maybe we should.
-   */
+    * We need to make sure that all resources are closed, we don't actually do this when a resourceConfig is closed but
+    * maybe we should.
+    */
    public void stop()
    {
       for (RecoveryDiscovery recoveryDiscovery : configSet.values())
@@ -147,11 +150,12 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
 
    /**
     * in case of a failure the Discovery will register itslef to retry
+    *
     * @param failedDiscovery
     */
    public void failedDiscovery(RecoveryDiscovery failedDiscovery)
    {
-     HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
+      HornetQJMSServerLogger.LOGGER.debug("RecoveryDiscovery being set to restart:" + failedDiscovery);
       synchronized (failedDiscoverySet)
       {
          failedDiscoverySet.add(failedDiscovery);
@@ -217,7 +221,7 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
                {
                   try
                   {
-                    HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
+                     HornetQJMSServerLogger.LOGGER.debug("Retrying discovery " + discovery);
                      discovery.start(true);
                   }
                   catch (Throwable e)
@@ -240,9 +244,9 @@ public class HornetQRecoveryRegistry implements XAResourceRecovery
    {
       if (networkConfiguration.getB() != null)
       {
-         return new TransportConfiguration[] { networkConfiguration.getA(), networkConfiguration.getB() };
+         return new TransportConfiguration[]{networkConfiguration.getA(), networkConfiguration.getB()};
       }
-      return new TransportConfiguration[] { networkConfiguration.getA() };
+      return new TransportConfiguration[]{networkConfiguration.getA()};
    }
 
 }

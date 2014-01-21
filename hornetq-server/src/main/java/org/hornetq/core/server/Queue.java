@@ -25,13 +25,11 @@ import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.ReferenceCounter;
 
 /**
- *
  * A Queue
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public interface Queue extends Bindable
 {
@@ -88,7 +86,9 @@ public interface Queue extends Bindable
 
    void deliverAsync();
 
-   /** This method will make sure that any pending message (including paged message) will be delivered  */
+   /**
+    * This method will make sure that any pending message (including paged message) will be delivered
+    */
    void forceDelivery();
 
    void deleteQueue() throws Exception;
@@ -100,6 +100,7 @@ public interface Queue extends Bindable
    /**
     * It will wait for up to 10 seconds for a flush on the executors and return the number of messages added.
     * if the executor is busy for any reason (say an unbehaved consumer) we will just return the current value.
+    *
     * @return
     */
    long getMessageCount();
@@ -107,12 +108,15 @@ public interface Queue extends Bindable
    /**
     * This method will return the messages added after waiting some time on the flush executors.
     * If the executor couldn't be flushed within the timeout we will just return the current value without any warn
+    *
     * @param timeout Time to wait for current executors to finish in milliseconds.
     * @return
     */
    long getMessageCount(long timeout);
 
-   /** Return the current message count without waiting for scheduled executors to finish */
+   /**
+    * Return the current message count without waiting for scheduled executors to finish
+    */
    long getInstantMessageCount();
 
    int getDeliveringCount();
@@ -126,6 +130,7 @@ public interface Queue extends Bindable
    /**
     * Return a Map consisting of consumer.toString and its messages
     * Delivering message is a property of the consumer, this method will aggregate the results per Server's consumer object
+    *
     * @return
     */
    Map<String, List<MessageReference>> getDeliveringMessages();
@@ -133,6 +138,7 @@ public interface Queue extends Bindable
    /**
     * It will wait for up to 10 seconds for a flush on the executors and return the number of messages added.
     * if the executor is busy for any reason (say an unbehaved consumer) we will just return the current value.
+    *
     * @return
     */
    long getMessagesAdded();
@@ -140,6 +146,7 @@ public interface Queue extends Bindable
    /**
     * This method will return the messages added after waiting some time on the flush executors.
     * If the executor couldn't be flushed within the timeout we will just return the current value without any warn
+    *
     * @param timeout Time to wait for current executors to finish in milliseconds.
     * @return
     */
@@ -199,7 +206,7 @@ public interface Queue extends Bindable
    boolean checkRedelivery(MessageReference ref, long timeBase, boolean ignoreRedeliveryDelay) throws Exception;
 
    LinkedListIterator<MessageReference> iterator();
-   
+
    LinkedListIterator<MessageReference> totalIterator();
 
    void setExpiryAddress(SimpleString expiryAddress);
@@ -237,11 +244,12 @@ public interface Queue extends Bindable
 
    /**
     * We can't send stuff to DLQ on queues used on clustered-bridge-communication
+    *
     * @return
     */
    boolean isInternalQueue();
 
    void setInternalQueue(boolean internalQueue);
-   
+
    void resetMessagesAdded();
 }

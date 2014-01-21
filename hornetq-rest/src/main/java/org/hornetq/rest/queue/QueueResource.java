@@ -12,23 +12,21 @@
  */
 package org.hornetq.rest.queue;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.queue.push.PushConsumerResource;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.queue.push.PushConsumerResource;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -59,11 +57,11 @@ public class QueueResource extends DestinationResource
 
       StringBuilder msg = new StringBuilder();
       msg.append("<queue>")
-              .append("<name>").append(destination).append("</name>")
-              .append("<atom:link rel=\"create\" href=\"").append(createSenderLink(uriInfo)).append("\"/>")
-              .append("<atom:link rel=\"create-with-id\" href=\"").append(createSenderWithIdLink(uriInfo)).append("\"/>")
-              .append("<atom:link rel=\"pull-consumers\" href=\"").append(createConsumersLink(uriInfo)).append("\"/>")
-              .append("<atom:link rel=\"push-consumers\" href=\"").append(createPushConsumersLink(uriInfo)).append("\"/>")
+         .append("<name>").append(destination).append("</name>")
+         .append("<atom:link rel=\"create\" href=\"").append(createSenderLink(uriInfo)).append("\"/>")
+         .append("<atom:link rel=\"create-with-id\" href=\"").append(createSenderWithIdLink(uriInfo)).append("\"/>")
+         .append("<atom:link rel=\"pull-consumers\" href=\"").append(createConsumersLink(uriInfo)).append("\"/>")
+         .append("<atom:link rel=\"push-consumers\" href=\"").append(createPushConsumersLink(uriInfo)).append("\"/>")
 
          .append("</queue>");
 
@@ -198,7 +196,13 @@ public class QueueResource extends DestinationResource
       }
       finally
       {
-         try { session.close(); } catch (Exception ignored) {}
+         try
+         {
+            session.close();
+         }
+         catch (Exception ignored)
+         {
+         }
       }
    }
 

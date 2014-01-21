@@ -68,9 +68,8 @@ import org.hornetq.utils.ReusableLatch;
 
 /**
  * Implementation of a Queue
- *
+ * <p/>
  * Completely non blocking between adding to queue and delivering to consumers.
- *
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -89,9 +88,10 @@ public class QueueImpl implements Queue
 
    public static final int CHECK_QUEUE_SIZE_PERIOD = 100;
 
-   /** If The system gets slow for any reason, this is the maximum time an Delivery or
-       or depage executor should be hanging on
-   */
+   /**
+    * If The system gets slow for any reason, this is the maximum time an Delivery or
+    * or depage executor should be hanging on
+    */
    public static final int DELIVERY_TIMEOUT = 1000;
 
    private static final int FLUSH_TIMEOUT = 10000;
@@ -196,11 +196,11 @@ public class QueueImpl implements Queue
 
    private final ReusableLatch deliveriesInTransit = new ReusableLatch(0);
 
-    /**
-     * This is to avoid multi-thread races on calculating direct delivery,
-     * to guarantee ordering will be always be correct
-     */
-    private final Object directDeliveryGuard = new Object();
+   /**
+    * This is to avoid multi-thread races on calculating direct delivery,
+    * to guarantee ordering will be always be correct
+    */
+   private final Object directDeliveryGuard = new Object();
 
    public String debug()
    {
@@ -240,7 +240,6 @@ public class QueueImpl implements Queue
       {
          out.println("No permanent references on queue");
       }
-
 
 
       System.out.println(str.toString());
@@ -426,7 +425,7 @@ public class QueueImpl implements Queue
    public synchronized void addHead(final List<MessageReference> refs)
    {
       flushDeliveriesInTransit();
-      for (MessageReference ref: refs)
+      for (MessageReference ref : refs)
       {
          addHead(ref);
       }
@@ -467,31 +466,31 @@ public class QueueImpl implements Queue
       }
 
       synchronized (directDeliveryGuard)
-       {
-          // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
-          // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
-          // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
-          if (!directDeliver &&
-              direct &&
-             System.currentTimeMillis() - lastDirectDeliveryCheck > CHECK_QUEUE_SIZE_PERIOD)
-          {
-             lastDirectDeliveryCheck = System.currentTimeMillis();
+      {
+         // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
+         // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
+         // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
+         if (!directDeliver &&
+            direct &&
+            System.currentTimeMillis() - lastDirectDeliveryCheck > CHECK_QUEUE_SIZE_PERIOD)
+         {
+            lastDirectDeliveryCheck = System.currentTimeMillis();
 
-             if (intermediateMessageReferences.isEmpty() &&
-                 messageReferences.isEmpty() &&
-                 !pageIterator.hasNext() &&
-                 !pageSubscription.isPaging())
-             {
-                // We must block on the executor to ensure any async deliveries have completed or we might get out of order
-                // deliveries
-                if (flushExecutor() && flushDeliveriesInTransit())
-                {
-                   // Go into direct delivery mode
-                   directDeliver = true;
-                }
-             }
-          }
-       }
+            if (intermediateMessageReferences.isEmpty() &&
+               messageReferences.isEmpty() &&
+               !pageIterator.hasNext() &&
+               !pageSubscription.isPaging())
+            {
+               // We must block on the executor to ensure any async deliveries have completed or we might get out of order
+               // deliveries
+               if (flushExecutor() && flushDeliveriesInTransit())
+               {
+                  // Go into direct delivery mode
+                  directDeliver = true;
+               }
+            }
+         }
+      }
 
       if (direct && directDeliver && deliveriesInTransit.getCount() == 0 && deliverDirect(ref))
       {
@@ -681,15 +680,18 @@ public class QueueImpl implements Queue
       {
          consumersChanged = true;
 
-          for (ConsumerHolder holder : consumerList) {
-              if (holder.consumer == consumer) {
-                  if (holder.iter != null) {
-                      holder.iter.close();
-                  }
-                  consumerList.remove(holder);
-                  break;
-              }
-          }
+         for (ConsumerHolder holder : consumerList)
+         {
+            if (holder.consumer == consumer)
+            {
+               if (holder.iter != null)
+               {
+                  holder.iter.close();
+               }
+               consumerList.remove(holder);
+               break;
+            }
+         }
 
          if (pos > 0 && pos >= consumerList.size())
          {
@@ -717,7 +719,7 @@ public class QueueImpl implements Queue
          // Since that's a simple HashMap there's no Iterator's support with a remove operation
          if (groupsToRemove != null)
          {
-            for (SimpleString groupID: groupsToRemove)
+            for (SimpleString groupID : groupsToRemove)
             {
                groups.remove(groupID);
             }
@@ -929,8 +931,8 @@ public class QueueImpl implements Queue
             // messageReferences will have depaged messages which we need to discount from the counter as they are
             // counted on the pageSubscription as well
             return messageReferences.size() + getScheduledCount() +
-                   deliveringCount.get() +
-                   pageSubscription.getMessageCount();
+               deliveringCount.get() +
+               pageSubscription.getMessageCount();
          }
          else
          {
@@ -999,7 +1001,7 @@ public class QueueImpl implements Queue
    {
       if (ref.isPaged())
       {
-         pageSubscription.ackTx(tx, (PagedReference)ref);
+         pageSubscription.ackTx(tx, (PagedReference) ref);
 
          getRefsOperation(tx).addAck(ref);
       }
@@ -1035,16 +1037,16 @@ public class QueueImpl implements Queue
       incDelivering();
    }
 
-   private final RefsOperation getRefsOperation(final Transaction tx)
+   private RefsOperation getRefsOperation(final Transaction tx)
    {
       return getRefsOperation(tx, false);
    }
 
-   private final RefsOperation getRefsOperation(final Transaction tx, boolean ignoreRedlieveryCheck)
+   private RefsOperation getRefsOperation(final Transaction tx, boolean ignoreRedlieveryCheck)
    {
       synchronized (tx)
       {
-         RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+         RefsOperation oper = (RefsOperation) tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
 
          if (oper == null)
          {
@@ -1087,7 +1089,7 @@ public class QueueImpl implements Queue
       }
       else
       {
-      	decDelivering();
+         decDelivering();
       }
    }
 
@@ -1142,7 +1144,7 @@ public class QueueImpl implements Queue
       {
          return messagesAdded;
       }
-    }
+   }
 
 
    public int deleteAllReferences() throws Exception
@@ -1275,7 +1277,6 @@ public class QueueImpl implements Queue
             tx.commit();
             tx = null;
          }
-
 
 
          if (filter != null && !queueDestroyed && pageSubscription != null)
@@ -1796,7 +1797,7 @@ public class QueueImpl implements Queue
       }
       if (!(other instanceof QueueImpl)) return false;
 
-      QueueImpl qother = (QueueImpl)other;
+      QueueImpl qother = (QueueImpl) other;
 
       return name.equals(qother.name);
    }
@@ -1823,6 +1824,7 @@ public class QueueImpl implements Queue
     * The caller of this method requires synchronized on the queue.
     * I'm not going to add synchronized to this method just for a precaution,
     * as I'm not 100% sure this won't cause any extra runtime.
+    *
     * @param ref
     */
    private void internalAddHead(final MessageReference ref)
@@ -1925,11 +1927,11 @@ public class QueueImpl implements Queue
 
                size = consumerList.size();
 
-               endPos = pos -1;
+               endPos = pos - 1;
 
                if (endPos < 0)
                {
-                  endPos = size -1;
+                  endPos = size - 1;
                   noDelivery = 0;
                }
             }
@@ -2058,10 +2060,10 @@ public class QueueImpl implements Queue
             }
          }
 
-          if (handledconsumer != null)
-          {
-              proceedDeliver(handledconsumer, ref);
-          }
+         if (handledconsumer != null)
+         {
+            proceedDeliver(handledconsumer, ref);
+         }
       }
 
       if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
@@ -2153,21 +2155,21 @@ public class QueueImpl implements Queue
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
             HornetQServerLogger.LOGGER.debug("Queue Memory Size after depage on queue=" + this.getName() +
-                      " is " +
-                      queueMemorySize.get() +
-                      " with maxSize = " +
-                      maxSize +
-                      ". Depaged " +
-                      depaged +
-                      " messages, pendingDelivery=" +  messageReferences.size() + ", intermediateMessageReferences= " + intermediateMessageReferences.size() +
-                      ", queueDelivering=" + deliveringCount.get());
+                                                " is " +
+                                                queueMemorySize.get() +
+                                                " with maxSize = " +
+                                                maxSize +
+                                                ". Depaged " +
+                                                depaged +
+                                                " messages, pendingDelivery=" + messageReferences.size() + ", intermediateMessageReferences= " + intermediateMessageReferences.size() +
+                                                ", queueDelivering=" + deliveringCount.get());
 
          }
       }
 
       deliverAsync();
 
-      if (depaged>0 && scheduleExpiry)
+      if (depaged > 0 && scheduleExpiry)
       {
          // This will just call an executor
          expireReferences();
@@ -2225,7 +2227,7 @@ public class QueueImpl implements Queue
       {
          if (isTrace)
          {
-            HornetQServerLogger.LOGGER.trace("Sending reference " + reference + " to DLA = " + addressSettings.getDeadLetterAddress() +  " since ref.getDeliveryCount=" + reference.getDeliveryCount() + "and maxDeliveries=" + maxDeliveries + " from queue=" + this.getName());
+            HornetQServerLogger.LOGGER.trace("Sending reference " + reference + " to DLA = " + addressSettings.getDeadLetterAddress() + " since ref.getDeliveryCount=" + reference.getDeliveryCount() + "and maxDeliveries=" + maxDeliveries + " from queue=" + this.getName());
          }
          sendToDeadLetterAddress(reference, addressSettings.getDeadLetterAddress());
 
@@ -2257,7 +2259,9 @@ public class QueueImpl implements Queue
       }
    }
 
-   /** Used on testing only **/
+   /**
+    * Used on testing only *
+    */
    public int getNumberOfReferences()
    {
       return messageReferences.size();
@@ -2328,7 +2332,7 @@ public class QueueImpl implements Queue
       sendToDeadLetterAddress(ref, addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress());
    }
 
-   private void sendToDeadLetterAddress(final MessageReference ref, final  SimpleString deadLetterAddress) throws Exception
+   private void sendToDeadLetterAddress(final MessageReference ref, final SimpleString deadLetterAddress) throws Exception
    {
       if (deadLetterAddress != null)
       {
@@ -2549,7 +2553,7 @@ public class QueueImpl implements Queue
    // Protected as testcases may change this behaviour
    protected void postAcknowledge(final MessageReference ref)
    {
-      QueueImpl queue = (QueueImpl)ref.getQueue();
+      QueueImpl queue = (QueueImpl) ref.getQueue();
 
       queue.decDelivering();
 
@@ -2609,7 +2613,8 @@ public class QueueImpl implements Queue
       addHead(refs);
    }
 
-   private long calculateRedeliveryDelay(final AddressSettings addressSettings, final int deliveryCount) {
+   private long calculateRedeliveryDelay(final AddressSettings addressSettings, final int deliveryCount)
+   {
       long redeliveryDelay = addressSettings.getRedeliveryDelay();
       long maxRedeliveryDelay = addressSettings.getMaxRedeliveryDelay();
       double redeliveryMultiplier = addressSettings.getRedeliveryMultiplier();
@@ -2627,7 +2632,7 @@ public class QueueImpl implements Queue
 
    public synchronized void resetMessagesAdded()
    {
-	  messagesAdded = 0;
+      messagesAdded = 0;
    }
 
 
@@ -2705,7 +2710,7 @@ public class QueueImpl implements Queue
                   {
                      toCancel = new LinkedList<MessageReference>();
 
-                     queueMap.put((QueueImpl)ref.getQueue(), toCancel);
+                     queueMap.put((QueueImpl) ref.getQueue(), toCancel);
                   }
 
                   toCancel.addFirst(ref);
@@ -2821,7 +2826,7 @@ public class QueueImpl implements Queue
             // an asynchronous delivery
             synchronized (QueueImpl.this.deliverRunner)
             {
-                deliver();
+               deliver();
             }
          }
          catch (Exception e)

@@ -23,7 +23,6 @@ import org.hornetq.api.jms.JMSFactoryType;
  * A class that represents a XATopicConnectionFactory.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class HornetQXATopicConnectionFactory extends HornetQConnectionFactory implements XATopicConnectionFactory
 {
@@ -43,12 +42,11 @@ public class HornetQXATopicConnectionFactory extends HornetQConnectionFactory im
    public HornetQXATopicConnectionFactory(final ServerLocator serverLocator)
    {
       super(serverLocator);
-  }
+   }
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQXATopicConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

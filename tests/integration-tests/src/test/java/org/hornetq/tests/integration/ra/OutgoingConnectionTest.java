@@ -13,7 +13,6 @@
 package org.hornetq.tests.integration.ra;
 
 import javax.jms.Connection;
-import javax.jms.IllegalStateException;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
@@ -135,10 +134,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    {
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
 
-      try(ClientSessionFactory sf = locator.createSessionFactory();
-          ClientSession session = sf.createSession();
-          ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
-          JMSContext jmsctx = qraConnectionFactory.createContext();
+      try (ClientSessionFactory sf = locator.createSessionFactory();
+           ClientSession session = sf.createSession();
+           ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
+           JMSContext jmsctx = qraConnectionFactory.createContext();
       )
       {
          session.start();
@@ -158,10 +157,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
    public void testSimpleSendNoXAJMS1() throws Exception
    {
       Queue q = HornetQJMSClient.createQueue(MDBQUEUE);
-      try(ClientSessionFactory sf = locator.createSessionFactory();
-          ClientSession session = sf.createSession();
-          ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
-          Connection conn = qraConnectionFactory.createConnection();
+      try (ClientSessionFactory sf = locator.createSessionFactory();
+           ClientSession session = sf.createSession();
+           ClientConsumer consVerify = session.createConsumer("jms.queue." + MDBQUEUE);
+           Connection conn = qraConnectionFactory.createConnection();
       )
       {
          Session jmsSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -220,7 +219,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
 
-      Connection conn  = null;
+      Connection conn = null;
       try
       {
          conn = qraConnectionFactory.createConnection("IDont", "Exist");
@@ -357,7 +356,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
       QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
+      ManagedConnection mc = ((HornetQRASession) session).getManagedConnection();
       queueConnection.close();
       mc.destroy();
 
@@ -440,14 +439,14 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
    public void testQueuSessionAckMode(boolean inTx) throws Exception
    {
-      if(inTx)
+      if (inTx)
       {
          DummyTransactionManager.tm.tx = new DummyTransaction();
       }
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
 
       Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      if(inTx)
+      if (inTx)
       {
          assertEquals(Session.SESSION_TRANSACTED, s.getAcknowledgeMode());
       }
@@ -458,7 +457,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       s.close();
 
       s = queueConnection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      if(inTx)
+      if (inTx)
       {
          assertEquals(Session.SESSION_TRANSACTED, s.getAcknowledgeMode());
       }
@@ -473,7 +472,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       try
       {
          s = queueConnection.createSession(false, Session.SESSION_TRANSACTED);
-         if(inTx)
+         if (inTx)
          {
             assertEquals(s.getAcknowledgeMode(), Session.SESSION_TRANSACTED);
          }
@@ -485,16 +484,16 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
       catch (JMSException e)
       {
-         if(inTx)
+         if (inTx)
          {
             fail("shouldn't throw exception " + e);
          }
       }
-      
+
       try
       {
          s = queueConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         if(inTx)
+         if (inTx)
          {
             assertEquals(s.getAcknowledgeMode(), Session.SESSION_TRANSACTED);
          }
@@ -505,11 +504,11 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       }
       catch (JMSException e)
       {
-         if(inTx)
+         if (inTx)
          {
             fail("shouldn't throw exception " + e);
          }
       }
-      
+
    }
 }

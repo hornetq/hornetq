@@ -12,19 +12,18 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.io.Serializable;
-import java.util.Hashtable;
-
 import javax.jms.Session;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
+import java.io.Serializable;
+import java.util.Hashtable;
 
 import org.hornetq.ra.ConnectionFactoryProperties;
 import org.hornetq.ra.HornetQRALogger;
-import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.HornetQRaUtils;
+import org.hornetq.ra.HornetQResourceAdapter;
 
 /**
  * The activation spec
@@ -41,35 +40,53 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    private static final int DEFAULT_MAX_SESSION = 15;
 
-   /** Whether trace is enabled */
+   /**
+    * Whether trace is enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
    public String strConnectorClassName;
 
    public String strConnectionParameters;
 
-   /** The resource adapter */
+   /**
+    * The resource adapter
+    */
    private HornetQResourceAdapter ra;
 
-   /** The connection factory lookup */
+   /**
+    * The connection factory lookup
+    */
    private String connectionFactoryLookup;
 
-   /** The destination */
+   /**
+    * The destination
+    */
    private String destination;
 
-   /** The destination type */
+   /**
+    * The destination type
+    */
    private String destinationType;
 
-   /** The message selector */
+   /**
+    * The message selector
+    */
    private String messageSelector;
 
-   /** The acknowledgement mode */
+   /**
+    * The acknowledgement mode
+    */
    private int acknowledgeMode;
 
-   /** The subscription durability */
+   /**
+    * The subscription durability
+    */
    private boolean subscriptionDurability;
 
-   /** The subscription name */
+   /**
+    * The subscription name
+    */
    private String subscriptionName;
 
    /**
@@ -77,16 +94,24 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    private boolean shareSubscriptions;
 
-   /** The user */
+   /**
+    * The user
+    */
    private String user;
 
-   /** The password */
+   /**
+    * The password
+    */
    private String password;
 
-   /** The maximum number of sessions */
+   /**
+    * The maximum number of sessions
+    */
    private Integer maxSession;
 
-   /** Transaction timeout */
+   /**
+    * Transaction timeout
+    */
    private Integer transactionTimeout;
 
    private Boolean useJNDI = true;
@@ -129,6 +154,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the resource adapter
+    *
     * @return The resource adapter
     */
    public ResourceAdapter getResourceAdapter()
@@ -146,7 +172,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public boolean isUseJNDI()
    {
-      if(useJNDI == null)
+      if (useJNDI == null)
       {
          return ra.isUseJNDI();
       }
@@ -162,12 +188,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    }
 
    /**
-    *
     * @return return the jndi params to use
     */
    public String getJndiParams()
    {
-      if(jndiParams == null)
+      if (jndiParams == null)
       {
          return ra.getJndiParams();
       }
@@ -180,9 +205,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       parsedJndiParams = HornetQRaUtils.parseHashtableConfig(jndiParams);
    }
 
-   public Hashtable<?,?> getParsedJndiParams()
+   public Hashtable<?, ?> getParsedJndiParams()
    {
-      if(parsedJndiParams == null)
+      if (parsedJndiParams == null)
       {
          return ra.getParsedJndiParams();
       }
@@ -191,8 +216,9 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the resource adapter
+    *
     * @param ra The resource adapter
-    * @exception ResourceException Thrown if incorrect resource adapter
+    * @throws ResourceException Thrown if incorrect resource adapter
     */
    public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
@@ -206,11 +232,12 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
          throw new ResourceException("Resource adapter is " + ra);
       }
 
-      this.ra = (HornetQResourceAdapter)ra;
+      this.ra = (HornetQResourceAdapter) ra;
    }
 
    /**
     * Get the connection factory lookup
+    *
     * @return The value
     */
    public String getConnectionFactoryLookup()
@@ -225,6 +252,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the connection factory lookup
+    *
     * @param value The value
     */
    public void setConnectionFactoryLookup(final String value)
@@ -239,6 +267,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the destination
+    *
     * @return The value
     */
    public String getDestination()
@@ -253,6 +282,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the destination
+    *
     * @param value The value
     */
    public void setDestination(final String value)
@@ -267,6 +297,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the destination lookup
+    *
     * @return The value
     */
    public String getDestinationLookup()
@@ -276,6 +307,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the destination
+    *
     * @param value The value
     */
    public void setDestinationLookup(final String value)
@@ -286,6 +318,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the destination type
+    *
     * @return The value
     */
    public String getDestinationType()
@@ -300,6 +333,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the destination type
+    *
     * @param value The value
     */
    public void setDestinationType(final String value)
@@ -314,6 +348,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the message selector
+    *
     * @return The value
     */
    public String getMessageSelector()
@@ -328,6 +363,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the message selector
+    *
     * @param value The value
     */
    public void setMessageSelector(final String value)
@@ -342,6 +378,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the acknowledge mode
+    *
     * @return The value
     */
    public String getAcknowledgeMode()
@@ -363,6 +400,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the acknowledge mode
+    *
     * @param value The value
     */
    public void setAcknowledgeMode(final String value)
@@ -401,6 +439,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the subscription durability
+    *
     * @return The value
     */
    public String getSubscriptionDurability()
@@ -422,6 +461,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the subscription durability
+    *
     * @param value The value
     */
    public void setSubscriptionDurability(final String value)
@@ -436,6 +476,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the status of subscription durability
+    *
     * @return The value
     */
    public boolean isSubscriptionDurable()
@@ -450,6 +491,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the subscription name
+    *
     * @return The value
     */
    public String getSubscriptionName()
@@ -464,6 +506,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the subscription name
+    *
     * @param value The value
     */
    public void setSubscriptionName(final String value)
@@ -475,7 +518,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
       subscriptionName = value;
    }
-
 
 
    /**
@@ -498,7 +540,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
       if (HornetQActivationSpec.trace)
       {
-         HornetQRALogger.LOGGER.trace("setShareSubscriptions(" +  shareSubscriptions + ")");
+         HornetQRALogger.LOGGER.trace("setShareSubscriptions(" + shareSubscriptions + ")");
       }
 
       this.shareSubscriptions = shareSubscriptions;
@@ -506,6 +548,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the user
+    *
     * @return The value
     */
    public String getUser()
@@ -527,6 +570,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the user
+    *
     * @param value The value
     */
    public void setUser(final String value)
@@ -541,6 +585,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the password
+    *
     * @return The value
     */
    public String getPassword()
@@ -567,6 +612,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the password
+    *
     * @param value The value
     */
    public void setPassword(final String value) throws Exception
@@ -581,6 +627,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the number of max session
+    *
     * @return The value
     */
    public Integer getMaxSession()
@@ -600,6 +647,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the number of max session
+    *
     * @param value The value
     */
    public void setMaxSession(final Integer value)
@@ -614,6 +662,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get the transaction timeout
+    *
     * @return The value
     */
    public Integer getTransactionTimeout()
@@ -628,6 +677,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Set the transaction timeout
+    *
     * @param value The value
     */
    public void setTransactionTimeout(final Integer value)
@@ -713,7 +763,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Validate
-    * @exception InvalidPropertyException Thrown if a validation exception occurs
+    *
+    * @throws InvalidPropertyException Thrown if a validation exception occurs
     */
    public void validate() throws InvalidPropertyException
    {
@@ -761,6 +812,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    /**
     * Get a string representation
+    *
     * @return The value
     */
    @Override
@@ -824,7 +876,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    {
    }
 
-    /**
+   /**
     * @param keepAliveMillis the keepAliveMillis to set
     */
    public void setKeepAliveMillis(long keepAliveMillis)

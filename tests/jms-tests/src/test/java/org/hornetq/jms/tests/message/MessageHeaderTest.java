@@ -12,12 +12,6 @@
  */
 package org.hornetq.jms.tests.message;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -32,6 +26,11 @@ import javax.jms.TextMessage;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -55,10 +54,8 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class MessageHeaderTest extends MessageHeaderTestBase
 {
@@ -312,7 +309,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       Enumeration en = m2.getPropertyNames();
       while (en.hasMoreElements())
       {
-         String propName = (String)en.nextElement();
+         String propName = (String) en.nextElement();
 
          propNames.add(propName);
       }
@@ -797,7 +794,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
       HornetQMessage jbossMessage = HornetQMessage.createMessage(clientMessage, session);
@@ -817,7 +814,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -836,14 +833,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
 
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
       for (int i = 0; i < 20; i++)
       {
-         foreignBytesMessage.writeByte((byte)i);
+         foreignBytesMessage.writeByte((byte) i);
       }
 
       HornetQBytesMessage copy = new HornetQBytesMessage(foreignBytesMessage, session);
@@ -861,7 +858,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
@@ -880,7 +877,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -898,14 +895,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
 
       StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
-      foreignStreamMessage.writeByte((byte)1);
-      foreignStreamMessage.writeByte((byte)2);
-      foreignStreamMessage.writeByte((byte)3);
+      foreignStreamMessage.writeByte((byte) 1);
+      foreignStreamMessage.writeByte((byte) 2);
+      foreignStreamMessage.writeByte((byte) 3);
 
       HornetQStreamMessage copy = new HornetQStreamMessage(foreignStreamMessage, session);
 
@@ -919,7 +916,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),
-                                                          (byte)4,
+                                                          (byte) 4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
@@ -946,7 +943,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       Message receivedMessage = queueConsumer.receive(2000);
 
-      MessageHeaderTestBase.ensureEquivalent(receivedMessage, (HornetQMessage)message);
+      MessageHeaderTestBase.ensureEquivalent(receivedMessage, (HornetQMessage) message);
    }
 
    // Package protected ---------------------------------------------
@@ -984,7 +981,6 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
 
-
       public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
       {
          // TODO Auto-generated method stub
@@ -1016,7 +1012,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       @Override
-      public void createSharedQueue( SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
+      public void createSharedQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
       {
       }
 
@@ -1288,10 +1284,10 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public ClientMessage createMessage(final byte type,
-                                               final boolean durable,
-                                               final long expiration,
-                                               final long timestamp,
-                                               final byte priority)
+                                         final boolean durable,
+                                         final long expiration,
+                                         final long timestamp,
+                                         final byte priority)
       {
          return message;
       }
@@ -1319,8 +1315,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public void addFailoverListener(FailoverEventListener listener)
-     {
-     }
+      {
+      }
 
       public boolean removeFailureListener(final FailureListener listener)
       {
@@ -1329,7 +1325,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public boolean removeFailoverListener(FailoverEventListener listener)
       {
-       return false;
+         return false;
       }
 
       public int getVersion()

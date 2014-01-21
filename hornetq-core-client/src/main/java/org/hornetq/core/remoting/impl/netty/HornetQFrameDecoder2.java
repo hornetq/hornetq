@@ -22,18 +22,18 @@ import org.hornetq.utils.DataConstants;
  *
  * @author <a href="tlee@redhat.com">Trustin Lee</a>
  * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
- *
  * @version $Revision: 7839 $, $Date: 2009-08-21 02:26:39 +0900 (2009-08-21, 금) $
  */
 public class HornetQFrameDecoder2 extends LengthFieldBasedFrameDecoder
 {
-    public HornetQFrameDecoder2()
-    {
-       super(Integer.MAX_VALUE, 0, DataConstants.SIZE_INT);
-    }
+   public HornetQFrameDecoder2()
+   {
+      super(Integer.MAX_VALUE, 0, DataConstants.SIZE_INT);
+   }
 
-    @Override
-    protected ByteBuf extractFrame(ChannelHandlerContext ctx, ByteBuf buffer, int index, int length) {
-        return super.extractFrame(ctx, buffer, index, length).skipBytes(DataConstants.SIZE_INT);
-    }
+   @Override
+   protected ByteBuf extractFrame(ChannelHandlerContext ctx, ByteBuf buffer, int index, int length)
+   {
+      return super.extractFrame(ctx, buffer, index, length).skipBytes(DataConstants.SIZE_INT);
+   }
 }

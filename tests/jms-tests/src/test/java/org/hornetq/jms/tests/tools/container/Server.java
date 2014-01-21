@@ -12,12 +12,11 @@
  */
 package org.hornetq.jms.tests.tools.container;
 
+import javax.naming.InitialContext;
 import java.rmi.Remote;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
-import javax.naming.InitialContext;
 
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -28,7 +27,6 @@ import org.hornetq.jms.server.JMSServerManager;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2868 $</tt>
- *
  */
 public interface Server extends Remote
 {
@@ -36,13 +34,13 @@ public interface Server extends Remote
 
    /**
     * @param attrOverrides - server attribute overrides that will take precedence over values
-    *        read from configuration files.
+    *                      read from configuration files.
     */
    void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearDatabase) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already
-    *         when the method was invoked.
+    * when the method was invoked.
     */
    boolean stop() throws Exception;
 
@@ -71,6 +69,7 @@ public interface Server extends Remote
     * Only for in-VM use!
     */
    // MessageStore getMessageStore() throws Exception;
+
    /**
     * Only for in-VM use!
     */
@@ -127,42 +126,43 @@ public interface Server extends Remote
     * directory).
     */
    // void undeployDestination(boolean isQueue, String name) throws Exception;
+
    /**
     * Destroys a programatically created destination.
     */
    // boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
-   public void deployConnectionFactory(String clientId,
-                                       String objectName,
-                                       int prefetchSize,
-                                       int defaultTempQueueFullSize,
-                                       int defaultTempQueuePageSize,
-                                       int defaultTempQueueDownCacheSize,
-                                       boolean supportsFailover,
-                                       boolean supportsLoadBalancing,
-                                       int dupsOkBatchSize,
-                                       boolean blockOnAcknowledge,
-                                       final String ... jndiBindings) throws Exception;
+   void deployConnectionFactory(String clientId,
+                                String objectName,
+                                int prefetchSize,
+                                int defaultTempQueueFullSize,
+                                int defaultTempQueuePageSize,
+                                int defaultTempQueueDownCacheSize,
+                                boolean supportsFailover,
+                                boolean supportsLoadBalancing,
+                                int dupsOkBatchSize,
+                                boolean blockOnAcknowledge,
+                                final String... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 int prefetchSize,
                                 int defaultTempQueueFullSize,
                                 int defaultTempQueuePageSize,
                                 int defaultTempQueueDownCacheSize,
-                                final String ... jndiBindings) throws Exception;
+                                final String... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 boolean supportsFailover,
                                 boolean supportsLoadBalancing,
-                                final String ... jndiBindings) throws Exception;
+                                final String... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String clientID, String objectName,
-                                       final String ... jndiBindings) throws Exception;
+                                final String... jndiBindings) throws Exception;
 
-   void deployConnectionFactory(String objectName,  int prefetchSize,
-                                       final String ... jndiBindings) throws Exception;
+   void deployConnectionFactory(String objectName, int prefetchSize,
+                                final String... jndiBindings) throws Exception;
 
    void deployConnectionFactory(String objectName,
-                                       final String ... jndiBindings) throws Exception;
+                                final String... jndiBindings) throws Exception;
 
    void undeployConnectionFactory(String objectName) throws Exception;
 

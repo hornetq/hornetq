@@ -103,7 +103,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public AddressFullMessagePolicy getAddressFullMessagePolicy()
    {
       return addressFullMessagePolicy != null ? addressFullMessagePolicy
-                                             : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+         : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
    }
 
    public void setAddressFullMessagePolicy(final AddressFullMessagePolicy addressFullMessagePolicy)
@@ -154,7 +154,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public int getMessageCounterHistoryDayLimit()
    {
       return messageCounterHistoryDayLimit != null ? messageCounterHistoryDayLimit
-                                                  : AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+         : AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
    }
 
    public void setMessageCounterHistoryDayLimit(final int messageCounterHistoryDayLimit)
@@ -246,6 +246,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    /**
     * merge 2 objects in to 1
+    *
     * @param merged
     */
    public void merge(final AddressSettings merged)
@@ -282,7 +283,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       {
          redeliveryMultiplier = merged.redeliveryMultiplier;
       }
-      if(maxRedeliveryDelay == null)
+      if (maxRedeliveryDelay == null)
       {
          maxRedeliveryDelay = merged.maxRedeliveryDelay;
       }
@@ -362,28 +363,28 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    {
 
       return BufferHelper.sizeOfNullableSimpleString(addressFullMessagePolicy != null ? addressFullMessagePolicy.toString()
-                                                                                     : null) + BufferHelper.sizeOfNullableLong(maxSizeBytes) +
-             BufferHelper.sizeOfNullableLong(pageSizeBytes) +
-             BufferHelper.sizeOfNullableInteger(pageMaxCache) +
-             BufferHelper.sizeOfNullableBoolean(dropMessagesWhenFull) +
-             BufferHelper.sizeOfNullableInteger(maxDeliveryAttempts) +
-             BufferHelper.sizeOfNullableInteger(messageCounterHistoryDayLimit) +
-             BufferHelper.sizeOfNullableLong(redeliveryDelay) +
-             BufferHelper.sizeOfNullableDouble(redeliveryMultiplier) +
-             BufferHelper.sizeOfNullableLong(maxRedeliveryDelay) +
-             SimpleString.sizeofNullableString(deadLetterAddress) +
-             SimpleString.sizeofNullableString(expiryAddress) +
-             BufferHelper.sizeOfNullableLong(expiryDelay) +
-             BufferHelper.sizeOfNullableBoolean(lastValueQueue) +
-             BufferHelper.sizeOfNullableLong(redistributionDelay) +
-             BufferHelper.sizeOfNullableBoolean(sendToDLAOnNoRoute);
+                                                        : null) + BufferHelper.sizeOfNullableLong(maxSizeBytes) +
+         BufferHelper.sizeOfNullableLong(pageSizeBytes) +
+         BufferHelper.sizeOfNullableInteger(pageMaxCache) +
+         BufferHelper.sizeOfNullableBoolean(dropMessagesWhenFull) +
+         BufferHelper.sizeOfNullableInteger(maxDeliveryAttempts) +
+         BufferHelper.sizeOfNullableInteger(messageCounterHistoryDayLimit) +
+         BufferHelper.sizeOfNullableLong(redeliveryDelay) +
+         BufferHelper.sizeOfNullableDouble(redeliveryMultiplier) +
+         BufferHelper.sizeOfNullableLong(maxRedeliveryDelay) +
+         SimpleString.sizeofNullableString(deadLetterAddress) +
+         SimpleString.sizeofNullableString(expiryAddress) +
+         BufferHelper.sizeOfNullableLong(expiryDelay) +
+         BufferHelper.sizeOfNullableBoolean(lastValueQueue) +
+         BufferHelper.sizeOfNullableLong(redistributionDelay) +
+         BufferHelper.sizeOfNullableBoolean(sendToDLAOnNoRoute);
    }
 
    @Override
    public void encode(HornetQBuffer buffer)
    {
       buffer.writeNullableSimpleString(addressFullMessagePolicy != null ? new SimpleString(addressFullMessagePolicy.toString())
-                                                                       : null);
+                                          : null);
 
       BufferHelper.writeNullableLong(buffer, maxSizeBytes);
 
@@ -433,7 +434,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       result = prime * result + ((maxDeliveryAttempts == null) ? 0 : maxDeliveryAttempts.hashCode());
       result = prime * result + ((maxSizeBytes == null) ? 0 : maxSizeBytes.hashCode());
       result = prime * result +
-               ((messageCounterHistoryDayLimit == null) ? 0 : messageCounterHistoryDayLimit.hashCode());
+         ((messageCounterHistoryDayLimit == null) ? 0 : messageCounterHistoryDayLimit.hashCode());
       result = prime * result + ((pageSizeBytes == null) ? 0 : pageSizeBytes.hashCode());
       result = prime * result + ((pageMaxCache == null) ? 0 : pageMaxCache.hashCode());
       result = prime * result + ((redeliveryDelay == null) ? 0 : redeliveryDelay.hashCode());
@@ -456,7 +457,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
          return false;
       if (getClass() != obj.getClass())
          return false;
-      AddressSettings other = (AddressSettings)obj;
+      AddressSettings other = (AddressSettings) obj;
       if (addressFullMessagePolicy == null)
       {
          if (other.addressFullMessagePolicy != null)
@@ -579,36 +580,36 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public String toString()
    {
       return "AddressSettings [addressFullMessagePolicy=" + addressFullMessagePolicy +
-             ", deadLetterAddress=" +
-             deadLetterAddress +
-             ", dropMessagesWhenFull=" +
-             dropMessagesWhenFull +
-             ", expiryAddress=" +
-             expiryAddress +
-             ", expiryDelay=" +
-             expiryDelay +
-             ", lastValueQueue=" +
-             lastValueQueue +
-             ", maxDeliveryAttempts=" +
-             maxDeliveryAttempts +
-             ", maxSizeBytes=" +
-             maxSizeBytes +
-             ", messageCounterHistoryDayLimit=" +
-             messageCounterHistoryDayLimit +
-             ", pageSizeBytes=" +
-             pageSizeBytes +
-             ", pageMaxCache=" +
-             pageMaxCache +
-             ", redeliveryDelay=" +
-             redeliveryDelay +
-             ", redeliveryMultiplier=" +
-            redeliveryMultiplier +
-             ", maxRedeliveryDelay=" +
-            maxRedeliveryDelay +
-             ", redistributionDelay=" +
-             redistributionDelay +
-             ", sendToDLAOnNoRoute=" +
-             sendToDLAOnNoRoute +
-             "]";
+         ", deadLetterAddress=" +
+         deadLetterAddress +
+         ", dropMessagesWhenFull=" +
+         dropMessagesWhenFull +
+         ", expiryAddress=" +
+         expiryAddress +
+         ", expiryDelay=" +
+         expiryDelay +
+         ", lastValueQueue=" +
+         lastValueQueue +
+         ", maxDeliveryAttempts=" +
+         maxDeliveryAttempts +
+         ", maxSizeBytes=" +
+         maxSizeBytes +
+         ", messageCounterHistoryDayLimit=" +
+         messageCounterHistoryDayLimit +
+         ", pageSizeBytes=" +
+         pageSizeBytes +
+         ", pageMaxCache=" +
+         pageMaxCache +
+         ", redeliveryDelay=" +
+         redeliveryDelay +
+         ", redeliveryMultiplier=" +
+         redeliveryMultiplier +
+         ", maxRedeliveryDelay=" +
+         maxRedeliveryDelay +
+         ", redistributionDelay=" +
+         redistributionDelay +
+         ", sendToDLAOnNoRoute=" +
+         sendToDLAOnNoRoute +
+         "]";
    }
 }

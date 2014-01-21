@@ -12,8 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +24,16 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -80,13 +80,13 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
       backupServers = new ArrayList<TestableServer>();
       backupConfigs = new ArrayList<Configuration>();
       liveConfigs = new ArrayList<Configuration>();
-      for(int i = 0; i < getLiveServerCount(); i++)
+      for (int i = 0; i < getLiveServerCount(); i++)
       {
          Configuration configuration = createDefaultConfig(useNetty());
          configuration.getAcceptorConfigurations().clear();
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true, i));
          configuration.setSharedStore(isSharedStore());
-         if(!isSharedStore())
+         if (!isSharedStore())
          {
             configuration.setBindingsDirectory(getBindingsDir(i, false));
             configuration.setJournalDirectory(getJournalDir(i, false));
@@ -98,7 +98,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
             //todo
          }
          configuration.setFailbackDelay(1000);
-         if(getNodeGroupName() != null)
+         if (getNodeGroupName() != null)
          {
             configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
          }
@@ -109,13 +109,13 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          hornetQServer.setIdentity("Live-" + i);
          liveServers.add(hornetQServer);
       }
-      for(int i = 0; i < getBackupServerCount(); i++)
+      for (int i = 0; i < getBackupServerCount(); i++)
       {
          Configuration configuration = createDefaultConfig(useNetty());
          configuration.getAcceptorConfigurations().clear();
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false, i));
          configuration.setSharedStore(isSharedStore());
-         if(!isSharedStore())
+         if (!isSharedStore())
          {
             configuration.setBindingsDirectory(getBindingsDir(i, true));
             configuration.setJournalDirectory(getJournalDir(i, true));
@@ -128,7 +128,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          }
          configuration.setBackup(true);
          configuration.setFailbackDelay(1000);
-         if(getNodeGroupName() != null)
+         if (getNodeGroupName() != null)
          {
             configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
          }
@@ -181,13 +181,13 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live, int node)
    {
       TransportConfiguration transportConfiguration;
-      if(useNetty())
+      if (useNetty())
       {
-          transportConfiguration = TransportConfigurationUtils.getNettyAcceptor(live, node, (live?"live-":"backup-") + node);
+         transportConfiguration = TransportConfigurationUtils.getNettyAcceptor(live, node, (live ? "live-" : "backup-") + node);
       }
       else
       {
-         transportConfiguration = TransportConfigurationUtils.getInVMAcceptor(live, node, (live?"live-":"backup-") + node);
+         transportConfiguration = TransportConfigurationUtils.getInVMAcceptor(live, node, (live ? "live-" : "backup-") + node);
       }
       return transportConfiguration;
    }
@@ -195,13 +195,13 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live, int node)
    {
       TransportConfiguration transportConfiguration;
-      if(useNetty())
+      if (useNetty())
       {
-          transportConfiguration = TransportConfigurationUtils.getNettyConnector(live, node, (live?"live-":"backup-") + node);
+         transportConfiguration = TransportConfigurationUtils.getNettyConnector(live, node, (live ? "live-" : "backup-") + node);
       }
       else
       {
-         transportConfiguration = TransportConfigurationUtils.getInVMConnector(live, node, (live?"live-":"backup-") + node);
+         transportConfiguration = TransportConfigurationUtils.getInVMConnector(live, node, (live ? "live-" : "backup-") + node);
       }
       return transportConfiguration;
    }
@@ -225,6 +225,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
       addServerLocator(locator);
       return (ServerLocatorInternal) locator;
    }
+
    protected ClientSession createSession(ClientSessionFactory sf,
                                          boolean autoCommitSends,
                                          boolean autoCommitAcks,
@@ -264,7 +265,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
       do
       {
 
-          if (q.getMessageCount() >= messageCount)
+         if (q.getMessageCount() >= messageCount)
          {
             return;
          }

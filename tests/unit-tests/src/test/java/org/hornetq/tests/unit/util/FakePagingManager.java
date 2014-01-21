@@ -93,7 +93,7 @@ public final class FakePagingManager implements PagingManager
    }
 
    public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection)
-            throws Exception
+      throws Exception
    {
       return false;
    }

@@ -16,14 +16,12 @@ package org.hornetq.core.protocol.proton;
 import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.messaging.Rejected;
 import org.apache.qpid.proton.amqp.messaging.Target;
-import org.apache.qpid.proton.amqp.transaction.Coordinator;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Delivery;
 import org.apache.qpid.proton.engine.Receiver;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.QueueQueryResult;
 
 /**

@@ -11,8 +11,12 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
-import org.junit.After;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -35,12 +39,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
@@ -129,7 +127,7 @@ public class PersistentPushTopicConsumerTest
          Link pushSubscription = response.getLocationLink();
          response.releaseConnection();
 
-        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+         ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
@@ -201,7 +199,7 @@ public class PersistentPushTopicConsumerTest
          startup();
          deployTopic(testName);
 
-        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+         ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
@@ -247,7 +245,7 @@ public class PersistentPushTopicConsumerTest
    }
 
    private void deployTopic(String topicName)
-         throws Exception
+      throws Exception
    {
       TopicDeployment deployment = new TopicDeployment();
       deployment.setDuplicatesAllowed(true);

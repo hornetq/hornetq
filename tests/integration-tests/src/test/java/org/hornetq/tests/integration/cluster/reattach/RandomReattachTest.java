@@ -1553,7 +1553,7 @@ public class RandomReattachTest extends UnitTestCase
       abstract void run(final ClientSessionFactory sf) throws Exception;
    }
 
-   static abstract class AssertionCheckMessageHandler implements MessageHandler
+   abstract static class AssertionCheckMessageHandler implements MessageHandler
    {
 
 

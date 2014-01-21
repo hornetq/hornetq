@@ -18,7 +18,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;

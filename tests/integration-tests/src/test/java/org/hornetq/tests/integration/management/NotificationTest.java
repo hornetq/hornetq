@@ -11,22 +11,17 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
-import static org.hornetq.api.core.management.NotificationType.BINDING_ADDED;
-import static org.hornetq.api.core.management.NotificationType.BINDING_REMOVED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
-
-import org.junit.Assert;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
@@ -36,12 +31,20 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.hornetq.api.core.management.NotificationType.BINDING_ADDED;
+import static org.hornetq.api.core.management.NotificationType.BINDING_REMOVED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 /**
  * A NotificationTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class NotificationTest extends UnitTestCase
 {
@@ -80,9 +83,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(BINDING_ADDED.toString(),
                           notifications[0].getObjectProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Assert.assertEquals(queue.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ROUTING_NAME)
-                                                            .toString());
+         .toString());
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
-                                                              .toString());
+         .toString());
 
       session.deleteQueue(queue);
    }
@@ -97,8 +100,8 @@ public class NotificationTest extends UnitTestCase
       System.out.println(queue);
       notifConsumer.close();
       notifConsumer = session.createConsumer(notifQueue.toString(), ManagementHelper.HDR_ROUTING_NAME + "= '" +
-                                                                    queue +
-                                                                    "'");
+         queue +
+         "'");
       NotificationTest.flush(notifConsumer);
 
       session.createQueue(address, queue, durable);
@@ -107,9 +110,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(BINDING_ADDED.toString(),
                           notifications[0].getObjectProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Assert.assertEquals(queue.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ROUTING_NAME)
-                                                            .toString());
+         .toString());
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
-                                                              .toString());
+         .toString());
 
       session.deleteQueue(queue);
    }
@@ -124,8 +127,8 @@ public class NotificationTest extends UnitTestCase
       System.out.println(queue);
       notifConsumer.close();
       notifConsumer = session.createConsumer(notifQueue.toString(), ManagementHelper.HDR_ROUTING_NAME + " <> '" +
-                                                                    queue +
-                                                                    "'");
+         queue +
+         "'");
       NotificationTest.flush(notifConsumer);
 
       session.createQueue(address, queue, durable);
@@ -152,9 +155,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(BINDING_REMOVED.toString(),
                           notifications[0].getObjectProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Assert.assertEquals(queue.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ROUTING_NAME)
-                                                            .toString());
+         .toString());
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
-                                                              .toString());
+         .toString());
    }
 
    @Test
@@ -162,12 +165,12 @@ public class NotificationTest extends UnitTestCase
    {
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession mySession = sf.createSession("myUser",
-            "myPassword",
-            false,
-            true,
-            true,
-            locator.isPreAcknowledge(),
-            locator.getAckBatchSize());
+                                                 "myPassword",
+                                                 false,
+                                                 true,
+                                                 true,
+                                                 locator.isPreAcknowledge(),
+                                                 locator.getAckBatchSize());
 
       mySession.start();
 
@@ -186,9 +189,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(CONSUMER_CREATED.toString(),
                           notifications[0].getObjectProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Assert.assertEquals(queue.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ROUTING_NAME)
-                                                            .toString());
+         .toString());
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
-                                                              .toString());
+         .toString());
       Assert.assertEquals(1, notifications[0].getObjectProperty(ManagementHelper.HDR_CONSUMER_COUNT));
       Assert.assertEquals(SimpleString.toSimpleString("myUser"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_USER));
       Assert.assertEquals(SimpleString.toSimpleString("invm:0"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS));
@@ -203,12 +206,12 @@ public class NotificationTest extends UnitTestCase
    {
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession mySession = sf.createSession("myUser",
-            "myPassword",
-            false,
-            true,
-            true,
-            locator.isPreAcknowledge(),
-            locator.getAckBatchSize());
+                                                 "myPassword",
+                                                 false,
+                                                 true,
+                                                 true,
+                                                 locator.isPreAcknowledge(),
+                                                 locator.getAckBatchSize());
 
       mySession.start();
 
@@ -228,9 +231,9 @@ public class NotificationTest extends UnitTestCase
       Assert.assertEquals(CONSUMER_CLOSED.toString(),
                           notifications[0].getObjectProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Assert.assertEquals(queue.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ROUTING_NAME)
-                                                            .toString());
+         .toString());
       Assert.assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS)
-                                                              .toString());
+         .toString());
       Assert.assertEquals(0, notifications[0].getObjectProperty(ManagementHelper.HDR_CONSUMER_COUNT));
       Assert.assertEquals(SimpleString.toSimpleString("myUser"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_USER));
       Assert.assertEquals(SimpleString.toSimpleString("invm:0"), notifications[0].getSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS));
@@ -278,7 +281,7 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(notifQueue);
       session.close();
 
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }

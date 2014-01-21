@@ -153,7 +153,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       //i know there is only 1
       HornetQServerLogger.LOGGER.addingProtocolSupport(coreProtocolManagerFactory.getProtocols()[0]);
       this.protocolMap.put(coreProtocolManagerFactory.getProtocols()[0],
-            coreProtocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
+                           coreProtocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
 
       if (config.isResolveProtocols())
       {
@@ -172,7 +172,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
-      if(protocolManagerFactories != null)
+      if (protocolManagerFactories != null)
       {
          for (ProtocolManagerFactory protocolManagerFactory : protocolManagerFactories)
          {
@@ -210,8 +210,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads-" + server.toString() +
-                                                        "-" +
-                                                        System.identityHashCode(this), false, tccl);
+                                                           "-" +
+                                                           System.identityHashCode(this), false, tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 
@@ -223,14 +223,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             Class<?> clazz = loader.loadClass(info.getFactoryClassName());
 
-            AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
+            AcceptorFactory factory = (AcceptorFactory) clazz.newInstance();
 
             // Check valid properties
 
             if (info.getParams() != null)
             {
                Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), info.getParams()
-                                                                                                         .keySet());
+                  .keySet());
 
                if (!invalid.isEmpty())
                {
@@ -243,14 +243,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             Map<String, ProtocolManager> supportedProtocols = new ConcurrentHashMap();
 
             String protocol = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOL_PROP_NAME, null,
-                  info.getParams());
+                                                                    info.getParams());
 
-            if(protocol != null)
+            if (protocol != null)
             {
                HornetQServerLogger.LOGGER.warnDeprecatedProtocol();
                ProtocolManager protocolManager = protocolMap.get(protocol);
 
-               if(protocolManager == null)
+               if (protocolManager == null)
                {
                   throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(protocol);
                }
@@ -261,19 +261,19 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             }
 
             String protocols = ConfigurationHelper.getStringProperty(TransportConstants.PROTOCOLS_PROP_NAME, null,
-                  info.getParams());
+                                                                     info.getParams());
 
-            if(protocols != null)
+            if (protocols != null)
             {
                String[] actualProtocols = protocols.split(",");
 
-               if(actualProtocols != null)
+               if (actualProtocols != null)
                {
                   for (String actualProtocol : actualProtocols)
                   {
                      ProtocolManager protocolManager = protocolMap.get(actualProtocol);
 
-                     if(protocolManager == null)
+                     if (protocolManager == null)
                      {
                         throw HornetQMessageBundle.BUNDLE.noProtocolManagerFound(actualProtocol);
                      }
@@ -294,9 +294,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        this,
                                                        threadPool,
                                                        scheduledThreadPool,
-                                                       supportedProtocols.isEmpty()?protocolMap:supportedProtocols);
+                                                       supportedProtocols.isEmpty() ? protocolMap : supportedProtocols);
 
-            if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
+            if (defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
             {
                acceptor.setDefaultHornetQPrincipal(defaultInvmSecurityPrincipal);
             }
@@ -334,7 +334,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       defaultInvmSecurityPrincipal = principal;
       for (Acceptor acceptor : acceptors.values())
       {
-         if(acceptor.isUnsecurable())
+         if (acceptor.isUnsecurable())
          {
             acceptor.setDefaultHornetQPrincipal(principal);
          }
@@ -454,8 +454,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    @Override
-   public Acceptor getAcceptor(String name) {
-       return acceptors.get(name);
+   public Acceptor getAcceptor(String name)
+   {
+      return acceptors.get(name);
    }
 
    public boolean isStarted()
@@ -604,7 +605,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private ClusterConnection lookupClusterConnection(TransportConfiguration acceptorConfig)
    {
-      String clusterConnectionName = (String)acceptorConfig.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
+      String clusterConnectionName = (String) acceptorConfig.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
 
       ClusterConnection clusterConnection = null;
       if (clusterConnectionName != null)

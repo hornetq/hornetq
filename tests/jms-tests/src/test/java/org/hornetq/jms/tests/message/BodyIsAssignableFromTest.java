@@ -12,18 +12,17 @@
  */
 package org.hornetq.jms.tests.message;
 
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageFormatException;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -96,7 +95,7 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
             Assert.assertTrue("correct type " + c, c.isInstance(receivedBody));
             if (body.getClass().isAssignableFrom(byte[].class))
             {
-               Arrays.equals((byte[])body, (byte[])receivedBody);
+               Arrays.equals((byte[]) body, (byte[]) receivedBody);
             }
             else
             {
@@ -126,16 +125,17 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
    private Object createBodySendAndReceive(JmsMessageType type) throws JMSException
    {
       Object res = null;
-      Message msg=null;
-      switch (type){
+      Message msg = null;
+      switch (type)
+      {
          case BYTE:
             BytesMessage mByte = queueProducerSession.createBytesMessage();
             final int size = 20;
             byte[] resByte = new byte[size];
             for (int i = 0; i < size; i++)
             {
-               resByte[i] = (byte)i;
-               mByte.writeByte((byte)i);
+               resByte[i] = (byte) i;
+               mByte.writeByte((byte) i);
             }
             msg = mByte;
             res = resByte;
@@ -165,7 +165,7 @@ public class BodyIsAssignableFromTest extends MessageBodyTestCase
             break;
          default:
             Assert.fail("no default...");
-       }
+      }
       Assert.assertNotNull(msg);
       msg.setStringProperty("type", type.toString());
       queueProducer.send(msg);

@@ -28,7 +28,7 @@ import org.hornetq.spi.core.protocol.ProtocolManagerFactory;
  */
 public class StompProtocolManagerFactory implements ProtocolManagerFactory
 {
-   public final static String STOMP_PROTOCOL_NAME = "STOMP";
+   public static final String STOMP_PROTOCOL_NAME = "STOMP";
 
    private static String[] SUPPORTED_PROTOCOLS = {STOMP_PROTOCOL_NAME};
 

@@ -12,9 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -22,13 +19,14 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class QueueTest extends JMSTestCase
 {
@@ -51,7 +49,7 @@ public class QueueTest extends JMSTestCase
          conn.start();
 
          p.send(s.createTextMessage("payload"));
-         TextMessage m = (TextMessage)c.receive();
+         TextMessage m = (TextMessage) c.receive();
 
          ProxyAssertSupport.assertEquals("payload", m.getText());
       }
@@ -70,49 +68,49 @@ public class QueueTest extends JMSTestCase
    {
       Connection conn = null;
 
-      byte[] bytes = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 123, 55, 0, 12, -100, -11 };
-         conn = createConnection();
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      byte[] bytes = new byte[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 123, 55, 0, 12, -100, -11};
+      conn = createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         for (int i = 0; i < 1; i++)
-         {
-            BytesMessage bm = sess.createBytesMessage();
+      for (int i = 0; i < 1; i++)
+      {
+         BytesMessage bm = sess.createBytesMessage();
 
-            bm.writeBytes(bytes);
+         bm.writeBytes(bytes);
 
-            prod.send(bm);
-         }
+         prod.send(bm);
+      }
 
-         conn.close();
+      conn.close();
 
-         stop();
+      stop();
 
-         startNoDelete();
+      startNoDelete();
 
-         // HornetQ server restart implies new ConnectionFactory lookup
-         deployAndLookupAdministeredObjects();
+      // HornetQ server restart implies new ConnectionFactory lookup
+      deployAndLookupAdministeredObjects();
 
-         conn = createConnection();
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         conn.start();
+      conn = createConnection();
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
       MessageConsumer cons = sess.createConsumer(queue1);
-         for (int i = 0; i < 1; i++)
+      for (int i = 0; i < 1; i++)
+      {
+         BytesMessage bm = (BytesMessage) cons.receive(3000);
+
+         ProxyAssertSupport.assertNotNull(bm);
+
+         byte[] bytes2 = new byte[bytes.length];
+
+         bm.readBytes(bytes2);
+
+         for (int j = 0; j < bytes.length; j++)
          {
-            BytesMessage bm = (BytesMessage)cons.receive(3000);
-
-            ProxyAssertSupport.assertNotNull(bm);
-
-            byte[] bytes2 = new byte[bytes.length];
-
-            bm.readBytes(bytes2);
-
-            for (int j = 0; j < bytes.length; j++)
-            {
-               ProxyAssertSupport.assertEquals(bytes[j], bytes2[j]);
-            }
+            ProxyAssertSupport.assertEquals(bytes[j], bytes2[j]);
          }
+      }
    }
 
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
@@ -160,7 +158,7 @@ public class QueueTest extends JMSTestCase
 
             for (int i = 0; i < 20; i++)
             {
-               TextMessage txt = (TextMessage)c2.receive(5000);
+               TextMessage txt = (TextMessage) c2.receive(5000);
                ProxyAssertSupport.assertNotNull(txt);
                texts.add(txt.getText());
             }
@@ -193,36 +191,36 @@ public class QueueTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer p = s.createProducer(queue1);
       MessageConsumer c = s.createConsumer(queue1);
-         conn.start();
+      conn.start();
 
-         for (int i = 0; i < 500; i++)
-         {
-            p.send(s.createTextMessage("payload " + i));
-         }
+      for (int i = 0; i < 500; i++)
+      {
+         p.send(s.createTextMessage("payload " + i));
+      }
 
-         conn.close();
+      conn.close();
 
-         stop();
+      stop();
 
-         startNoDelete();
+      startNoDelete();
 
-         deployAndLookupAdministeredObjects();
+      deployAndLookupAdministeredObjects();
 
-         conn = createConnection();
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn = createConnection();
+      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       p = s.createProducer(queue1);
       c = s.createConsumer(queue1);
-         conn.start();
+      conn.start();
 
-         for (int i = 0; i < 500; i++)
-         {
-            TextMessage message = (TextMessage)c.receive(3000);
-            ProxyAssertSupport.assertNotNull(message);
-            ProxyAssertSupport.assertNotNull(message.getJMSDestination());
-         }
+      for (int i = 0; i < 500; i++)
+      {
+         TextMessage message = (TextMessage) c.receive(3000);
+         ProxyAssertSupport.assertNotNull(message);
+         ProxyAssertSupport.assertNotNull(message.getJMSDestination());
+      }
    }
 
    @Test

@@ -42,10 +42,8 @@ import org.hornetq.core.server.group.impl.Response;
  * A BindingsImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ *         <p/>
  *         Created 11 Dec 2008 08:34:33
- *
- *
  */
 public final class BindingsImpl implements Bindings
 {
@@ -314,7 +312,7 @@ public final class BindingsImpl implements Bindings
 
    /**
     * This code has a race on the assigned value to routing names.
-    * <p>
+    * <p/>
     * This is not that much of an issue because<br/>
     * Say you have the same queue name bound into two servers. The routing will load balance between
     * these two servers. This will eventually send more messages to one server than the other
@@ -455,7 +453,7 @@ public final class BindingsImpl implements Bindings
          {
             // ok let's find the next binding to propose
             Binding theBinding = getNextBinding(message, routingName, bindings);
-            if(theBinding == null)
+            if (theBinding == null)
             {
                continue;
             }
@@ -566,7 +564,7 @@ public final class BindingsImpl implements Bindings
          out.println("EMPTY!");
       }
 
-      for (Binding binding: exclusiveBindings)
+      for (Binding binding : exclusiveBindings)
       {
          out.println(binding);
       }
@@ -580,7 +578,7 @@ public final class BindingsImpl implements Bindings
 
    private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+      byte[] ids = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
 
       ByteBuffer buff = ByteBuffer.wrap(ids);
 
@@ -601,7 +599,7 @@ public final class BindingsImpl implements Bindings
       }
    }
 
-   private final int incrementPos(int pos, final int length)
+   private int incrementPos(int pos, final int length)
    {
       pos++;
 

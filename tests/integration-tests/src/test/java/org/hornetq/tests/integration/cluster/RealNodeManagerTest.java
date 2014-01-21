@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,13 +39,14 @@ public class RealNodeManagerTest extends NodeManagerTest
       assertEqualsByteArrays(id1.asBytes(), nodeManager.getUUID().asBytes());
       nodeManager.stop();
    }
+
    @Override
    public void performWork(NodeManagerAction... actions) throws Exception
    {
       List<Process> processes = new ArrayList<Process>();
       for (NodeManagerAction action : actions)
       {
-         Process p = SpawnedVMSupport.spawnVM(NodeManagerAction.class.getName(),"-Xms512m", "-Xmx512m", new String[0], true, true,action.getWork());
+         Process p = SpawnedVMSupport.spawnVM(NodeManagerAction.class.getName(), "-Xms512m", "-Xmx512m", new String[0], true, true, action.getWork());
          processes.add(p);
       }
       for (Process process : processes)
@@ -53,7 +55,7 @@ public class RealNodeManagerTest extends NodeManagerTest
       }
       for (Process process : processes)
       {
-         if(process.exitValue() == 9)
+         if (process.exitValue() == 9)
          {
             fail("failed see output");
          }

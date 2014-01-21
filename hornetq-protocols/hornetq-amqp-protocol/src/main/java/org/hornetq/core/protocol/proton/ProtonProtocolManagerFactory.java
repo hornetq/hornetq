@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class ProtonProtocolManagerFactory implements ProtocolManagerFactory
 {
-   private final static String AMQP_PROTOCOL_NAME = "AMQP";
+   private static final String AMQP_PROTOCOL_NAME = "AMQP";
 
    private static String[] SUPPORTED_PROTOCOLS = {AMQP_PROTOCOL_NAME};
 

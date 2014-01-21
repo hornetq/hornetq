@@ -29,7 +29,7 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
          QueueConnectionFactory
 {
 
-   private final static long serialVersionUID = -2810634789345348326L;
+   private static final long serialVersionUID = -2810634789345348326L;
 
    /**
     *
@@ -49,8 +49,7 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQJMSConnectionFactory(boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

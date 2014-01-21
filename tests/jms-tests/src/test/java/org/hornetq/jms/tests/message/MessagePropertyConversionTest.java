@@ -11,7 +11,17 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.message;
-import javax.jms.*;
+
+import javax.jms.Connection;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.JMSProducer;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageFormatRuntimeException;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.jms.tests.HornetQServerTestCase;
@@ -23,6 +33,7 @@ import org.junit.Test;
 
 /**
  * Testing of message property conversion. See {@link javax.jms.Message} for details
+ *
  * @author <a href="mailto:afu@novell.com">Alex Fu</a>
  */
 public class MessagePropertyConversionTest extends HornetQServerTestCase
@@ -128,7 +139,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       }
       try
       {
-         producer.setProperty(null, 1l);
+         producer.setProperty(null, 1L);
          ProxyAssertSupport.fail("expected IllegalArgumentException");
       }
       catch (IllegalArgumentException e)
@@ -228,7 +239,8 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
       catch (MessageFormatRuntimeException me)
       {
          //pass
-      } catch (Exception ee)
+      }
+      catch (Exception ee)
       {
          ProxyAssertSupport.fail("Caught unexpected exception: " + ee);
       }
@@ -819,6 +831,7 @@ public class MessagePropertyConversionTest extends HornetQServerTestCase
          ProxyAssertSupport.fail("conversion from string to double failed");
       }
    }
+
    @Test
    public void testResetToNull() throws JMSException
    {

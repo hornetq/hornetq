@@ -12,26 +12,26 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import java.util.Map;
+
 import io.netty.channel.Channel;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-
-import java.util.Map;
 
 /**
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  */
 public class NettyServerConnection extends NettyConnection
 {
-    public NettyServerConnection(Map<String, Object> configuration, Channel channel, ConnectionLifeCycleListener listener, boolean batchingEnabled, boolean directDeliver)
-    {
-       super(configuration, channel, listener, batchingEnabled, directDeliver);
-    }
+   public NettyServerConnection(Map<String, Object> configuration, Channel channel, ConnectionLifeCycleListener listener, boolean batchingEnabled, boolean directDeliver)
+   {
+      super(configuration, channel, listener, batchingEnabled, directDeliver);
+   }
 
-    @Override
-    public HornetQBuffer createBuffer(int size)
-    {
-        return new ChannelBufferWrapper(channel.alloc().directBuffer(size), true);
-    }
+   @Override
+   public HornetQBuffer createBuffer(int size)
+   {
+      return new ChannelBufferWrapper(channel.alloc().directBuffer(size), true);
+   }
 }

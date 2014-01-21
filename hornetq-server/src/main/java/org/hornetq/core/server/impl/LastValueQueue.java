@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -34,7 +33,7 @@ import org.hornetq.core.transaction.Transaction;
 
 /**
  * A queue that will discard messages if a newer message with the same
- * {@link MessageImpl#HDR_LAST_VALUE_NAME} property value. In other words it only retains the last
+ * {@link org.hornetq.core.message.impl.MessageImpl#HDR_LAST_VALUE_NAME} property value. In other words it only retains the last
  * value
  * <p>
  * This is useful for example, for stock prices, where you're only interested in the latest value

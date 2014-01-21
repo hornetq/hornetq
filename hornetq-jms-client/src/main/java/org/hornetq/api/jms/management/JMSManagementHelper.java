@@ -16,7 +16,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.jms.client.HornetQMessage;
 
 /**
@@ -45,7 +44,7 @@ public class JMSManagementHelper
     * @param attribute the name of the attribute
     * @throws JMSException if an exception occurs while putting the information in the message
     *
-    * @see ResourceNames
+    * @see org.hornetq.api.core.management.ResourceNames
     */
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException
    {
@@ -60,7 +59,7 @@ public class JMSManagementHelper
     * @param operationName the name of the operation to invoke on the resource
     * @throws JMSException if an exception occurs while putting the information in the message
     *
-    * @see ResourceNames
+    * @see org.hornetq.api.core.management.ResourceNames
     */
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
@@ -96,7 +95,7 @@ public class JMSManagementHelper
     * @param parameters the parameters to use to invoke the server resource
     * @throws JMSException if an exception occurs while putting the information in the message
     *
-    * @see ResourceNames
+    * @see org.hornetq.api.core.management.ResourceNames
     */
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,

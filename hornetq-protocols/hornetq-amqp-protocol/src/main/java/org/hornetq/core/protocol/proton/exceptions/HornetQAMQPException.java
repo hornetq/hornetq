@@ -23,7 +23,7 @@ import org.hornetq.api.core.HornetQException;
 public class HornetQAMQPException extends HornetQException
 {
 
-   private final static String ERROR_PREFIX = "amqp:";
+   private static final String ERROR_PREFIX = "amqp:";
 
    public Symbol getAmqpError()
    {

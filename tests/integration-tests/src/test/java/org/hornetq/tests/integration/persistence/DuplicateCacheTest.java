@@ -12,16 +12,16 @@
  */
 package org.hornetq.tests.integration.persistence;
 
-import org.junit.Test;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.Test;
 
 /**
  * A DuplicateCacheTest
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class DuplicateCacheTest extends StorageManagerTestBase
@@ -36,9 +36,9 @@ public class DuplicateCacheTest extends StorageManagerTestBase
 
       TransactionImpl tx = new TransactionImpl(journal);
 
-      for (int i = 0 ; i < 5000; i++)
+      for (int i = 0; i < 5000; i++)
       {
-         byte [] bytes = RandomUtil.randomBytes();
+         byte[] bytes = RandomUtil.randomBytes();
 
          cache.addToCache(bytes, tx);
       }
@@ -47,9 +47,9 @@ public class DuplicateCacheTest extends StorageManagerTestBase
 
       tx = new TransactionImpl(journal);
 
-      for (int i = 0 ; i < 5000; i++)
+      for (int i = 0; i < 5000; i++)
       {
-         byte [] bytes = RandomUtil.randomBytes();
+         byte[] bytes = RandomUtil.randomBytes();
 
          cache.addToCache(bytes, tx);
       }
@@ -82,18 +82,18 @@ public class DuplicateCacheTest extends StorageManagerTestBase
 
       TransactionImpl tx = new TransactionImpl(journal);
 
-      for (int i = 0 ; i < 5000; i++)
+      for (int i = 0; i < 5000; i++)
       {
-         byte [] bytes = RandomUtil.randomBytes();
+         byte[] bytes = RandomUtil.randomBytes();
 
          cache.addToCache(bytes, tx);
       }
 
       tx.commit();
 
-      for (int i = 0 ; i < 5000; i++)
+      for (int i = 0; i < 5000; i++)
       {
-         byte [] bytes = RandomUtil.randomBytes();
+         byte[] bytes = RandomUtil.randomBytes();
 
          cache.addToCache(bytes, null);
       }

@@ -11,14 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jms.BytesMessage;
 import javax.jms.MapMessage;
@@ -29,8 +21,9 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -38,13 +31,15 @@ import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Receive Messages and resend them, like the bridge would do
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReSendMessageTest extends JMSTestBase
 {
@@ -65,37 +60,37 @@ public class ReSendMessageTest extends JMSTestBase
    public void testResendWithLargeMessage() throws Exception
    {
       conn = cf.createConnection();
-         conn.start();
+      conn.start();
 
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         ArrayList<Message> msgs = new ArrayList<Message>();
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      ArrayList<Message> msgs = new ArrayList<Message>();
 
-         for (int i = 0; i < 10; i++)
-         {
-            BytesMessage bm = sess.createBytesMessage();
-            bm.setObjectProperty(HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM,
-                                 UnitTestCase.createFakeLargeStream(2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
-            msgs.add(bm);
+      for (int i = 0; i < 10; i++)
+      {
+         BytesMessage bm = sess.createBytesMessage();
+         bm.setObjectProperty(HornetQJMSConstants.JMS_HORNETQ_INPUT_STREAM,
+                              UnitTestCase.createFakeLargeStream(2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
+         msgs.add(bm);
 
-            MapMessage mm = sess.createMapMessage();
-            mm.setBoolean("boolean", true);
-            mm.setByte("byte", (byte)3);
-            mm.setBytes("bytes", new byte[] { (byte)3, (byte)4, (byte)5 });
-            mm.setChar("char", (char)6);
-            mm.setDouble("double", 7.0);
-            mm.setFloat("float", 8.0f);
-            mm.setInt("int", 9);
-            mm.setLong("long", 10l);
-            mm.setObject("object", new String("this is an object"));
-            mm.setShort("short", (short)11);
-            mm.setString("string", "this is a string");
+         MapMessage mm = sess.createMapMessage();
+         mm.setBoolean("boolean", true);
+         mm.setByte("byte", (byte) 3);
+         mm.setBytes("bytes", new byte[]{(byte) 3, (byte) 4, (byte) 5});
+         mm.setChar("char", (char) 6);
+         mm.setDouble("double", 7.0);
+         mm.setFloat("float", 8.0f);
+         mm.setInt("int", 9);
+         mm.setLong("long", 10L);
+         mm.setObject("object", new String("this is an object"));
+         mm.setShort("short", (short) 11);
+         mm.setString("string", "this is a string");
 
-            msgs.add(mm);
-            msgs.add(sess.createTextMessage("hello" + i));
-            msgs.add(sess.createObjectMessage(new SomeSerializable("hello" + i)));
-         }
+         msgs.add(mm);
+         msgs.add(sess.createTextMessage("hello" + i));
+         msgs.add(sess.createObjectMessage(new SomeSerializable("hello" + i)));
+      }
 
-         internalTestResend(msgs, sess);
+      internalTestResend(msgs, sess);
    }
 
    @Test
@@ -104,31 +99,31 @@ public class ReSendMessageTest extends JMSTestBase
       conn = cf.createConnection();
       conn.start();
 
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         ArrayList<Message> msgs = new ArrayList<Message>();
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      ArrayList<Message> msgs = new ArrayList<Message>();
 
-         for (int i = 0; i < 1; i++)
-         {
-            MapMessage mm = sess.createMapMessage();
-            mm.setBoolean("boolean", true);
-            mm.setByte("byte", (byte)3);
-            mm.setBytes("bytes", new byte[] { (byte)3, (byte)4, (byte)5 });
-            mm.setChar("char", (char)6);
-            mm.setDouble("double", 7.0);
-            mm.setFloat("float", 8.0f);
-            mm.setInt("int", 9);
-            mm.setLong("long", 10l);
-            mm.setObject("object", new String("this is an object"));
-            mm.setShort("short", (short)11);
-            mm.setString("string", "this is a string");
+      for (int i = 0; i < 1; i++)
+      {
+         MapMessage mm = sess.createMapMessage();
+         mm.setBoolean("boolean", true);
+         mm.setByte("byte", (byte) 3);
+         mm.setBytes("bytes", new byte[]{(byte) 3, (byte) 4, (byte) 5});
+         mm.setChar("char", (char) 6);
+         mm.setDouble("double", 7.0);
+         mm.setFloat("float", 8.0f);
+         mm.setInt("int", 9);
+         mm.setLong("long", 10L);
+         mm.setObject("object", new String("this is an object"));
+         mm.setShort("short", (short) 11);
+         mm.setString("string", "this is a string");
 
-            msgs.add(mm);
+         msgs.add(mm);
 
-            MapMessage emptyMap = sess.createMapMessage();
-            msgs.add(emptyMap);
-         }
+         MapMessage emptyMap = sess.createMapMessage();
+         msgs.add(emptyMap);
+      }
 
-         internalTestResend(msgs, sess);
+      internalTestResend(msgs, sess);
    }
 
    public void internalTestResend(final ArrayList<Message> msgs, final Session sess) throws Exception
@@ -167,7 +162,7 @@ public class ReSendMessageTest extends JMSTestBase
 
          if (copiedMessage instanceof BytesMessage)
          {
-            BytesMessage copiedBytes = (BytesMessage)copiedMessage;
+            BytesMessage copiedBytes = (BytesMessage) copiedMessage;
 
             for (int i = 0; i < copiedBytes.getBodyLength(); i++)
             {
@@ -176,8 +171,8 @@ public class ReSendMessageTest extends JMSTestBase
          }
          else if (copiedMessage instanceof MapMessage)
          {
-            MapMessage copiedMap = (MapMessage)copiedMessage;
-            MapMessage originalMap = (MapMessage)originalMessage;
+            MapMessage copiedMap = (MapMessage) copiedMessage;
+            MapMessage originalMap = (MapMessage) originalMessage;
             if (originalMap.getString("str") != null)
             {
                Assert.assertEquals(originalMap.getString("str"), copiedMap.getString("str"));
@@ -197,14 +192,14 @@ public class ReSendMessageTest extends JMSTestBase
          }
          else if (copiedMessage instanceof ObjectMessage)
          {
-            Assert.assertNotSame(((ObjectMessage)originalMessage).getObject(),
-                                 ((ObjectMessage)copiedMessage).getObject());
-            Assert.assertEquals(((ObjectMessage)originalMessage).getObject(),
-                                ((ObjectMessage)copiedMessage).getObject());
+            Assert.assertNotSame(((ObjectMessage) originalMessage).getObject(),
+                                 ((ObjectMessage) copiedMessage).getObject());
+            Assert.assertEquals(((ObjectMessage) originalMessage).getObject(),
+                                ((ObjectMessage) copiedMessage).getObject());
          }
          else if (copiedMessage instanceof TextMessage)
          {
-            Assert.assertEquals(((TextMessage)originalMessage).getText(), ((TextMessage)copiedMessage).getText());
+            Assert.assertEquals(((TextMessage) originalMessage).getText(), ((TextMessage) copiedMessage).getText());
          }
       }
 
@@ -240,7 +235,7 @@ public class ReSendMessageTest extends JMSTestBase
          {
             return false;
          }
-         SomeSerializable other = (SomeSerializable)obj;
+         SomeSerializable other = (SomeSerializable) obj;
          if (txt == null)
          {
             if (other.txt != null)
@@ -266,7 +261,7 @@ public class ReSendMessageTest extends JMSTestBase
    // Protected -----------------------------------------------------
    @Override
    protected void createCF(final List<TransportConfiguration> connectorConfigs,
-                           final String ... jndiBindings) throws Exception
+                           final String... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;

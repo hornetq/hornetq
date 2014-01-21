@@ -15,9 +15,7 @@ package org.hornetq.tests.integration.stomp.util;
 import java.io.IOException;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class StompClientConnectionV11 extends AbstractStompClientConnection
 {
@@ -42,7 +40,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
-         assert(version.equals("1.1"));
+         assert (version.equals("1.1"));
 
          this.username = username;
          this.passcode = passcode;
@@ -73,7 +71,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
-         assert(version.equals("1.1"));
+         assert (version.equals("1.1"));
 
          this.username = username;
          this.passcode = passcode;
@@ -101,7 +99,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
       if (response.getCommand().equals(CONNECTED_COMMAND))
       {
          String version = response.getHeader(VERSION_HEADER);
-         assert(version.equals("1.1"));
+         assert (version.equals("1.1"));
 
          this.username = username;
          this.passcode = passcode;

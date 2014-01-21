@@ -12,9 +12,8 @@
  */
 package org.hornetq.api.core.client;
 
-import java.util.List;
-
 import javax.transaction.xa.XAResource;
+import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -44,7 +43,7 @@ public interface ClientSession extends XAResource, AutoCloseable
       /**
        * Returns the names of the queues bound to the binding.
        */
-      public List<SimpleString> getQueueNames();
+      List<SimpleString> getQueueNames();
    }
 
    /**
@@ -137,7 +136,7 @@ public interface ClientSession extends XAResource, AutoCloseable
     *
     * @param listener the listener to add
     */
-   void addFailoverListener(FailoverEventListener listener) ;
+   void addFailoverListener(FailoverEventListener listener);
 
    /**
     * Removes a FailoverEventListener to the session.
@@ -160,33 +159,34 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>non-temporary</em> queue.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param durable whether the queue is durable or not
+    * @param durable   whether the queue is durable or not
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException;
 
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
-    *
+    * <p/>
     * Notice: you will get an exception if the address or the filter doesn't match to an already existent queue
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param durable if the queue is durable
+    * @param durable   if the queue is durable
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createSharedQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException;
 
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
-    *
+    * <p/>
     * Notice: you will get an exception if the address or the filter doesn't match to an already existent queue
-    * @param address the queue will be bound to this address
+    *
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filter whether the queue is durable or not
-    * @param durable if the queue is durable
+    * @param filter    whether the queue is durable or not
+    * @param durable   if the queue is durable
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createSharedQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable) throws HornetQException;
@@ -194,9 +194,9 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>non-temporary</em> queue.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param durable whether the queue is durable or not
+    * @param durable   whether the queue is durable or not
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createQueue(String address, String queueName, boolean durable) throws HornetQException;
@@ -204,7 +204,7 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>non-temporary</em> queue <em>non-durable</em> queue.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
@@ -213,7 +213,7 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>non-temporary</em> queue <em>non-durable</em> queue.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
@@ -221,10 +221,11 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a <em>non-temporary</em> queue.
-    * @param address the queue will be bound to this address
+    *
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filter only messages which match this filter will be put in the queue
-    * @param durable whether the queue is durable or not
+    * @param filter    only messages which match this filter will be put in the queue
+    * @param durable   whether the queue is durable or not
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable) throws HornetQException;
@@ -232,17 +233,18 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>non-temporary</em>queue.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param durable whether the queue is durable or not
-    * @param filter only messages which match this filter will be put in the queue
+    * @param durable   whether the queue is durable or not
+    * @param filter    only messages which match this filter will be put in the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createQueue(String address, String queueName, String filter, boolean durable) throws HornetQException;
 
    /**
     * Creates a <em>temporary</em> queue.
-    * @param address the queue will be bound to this address
+    *
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
@@ -250,7 +252,8 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a <em>temporary</em> queue.
-    * @param address the queue will be bound to this address
+    *
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
@@ -259,9 +262,9 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>temporary</em> queue with a filter.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filter only messages which match this filter will be put in the queue
+    * @param filter    only messages which match this filter will be put in the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException;
@@ -269,9 +272,9 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a <em>temporary</em> queue with a filter.
     *
-    * @param address the queue will be bound to this address
+    * @param address   the queue will be bound to this address
     * @param queueName the name of the queue
-    * @param filter only messages which match this filter will be put in the queue
+    * @param filter    only messages which match this filter will be put in the queue
     * @throws HornetQException in an exception occurs while creating the queue
     */
    void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException;
@@ -316,7 +319,7 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Creates a ClientConsumer to consume messages matching the filter from the queue with the given name.
     *
     * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    * @param filter    only messages which match this filter will be consumed
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
     */
@@ -326,7 +329,7 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Creates a ClientConsumer to consume messages matching the filter from the queue with the given name.
     *
     * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    * @param filter    only messages which match this filter will be consumed
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
     */
@@ -334,15 +337,16 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
+    *
+    * @param queueName  name of the queue to consume messages from
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -351,15 +355,16 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
+    *
+    * @param queueName  name of the queue to consume messages from
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -369,16 +374,17 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    *
+    * @param queueName  name of the queue to consume messages from
+    * @param filter     only messages which match this filter will be consumed
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -388,16 +394,17 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    *
+    * @param queueName  name of the queue to consume messages from
+    * @param filter     only messages which match this filter will be consumed
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -407,18 +414,19 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    *
+    * @param queueName  name of the queue to consume messages from
+    * @param filter     only messages which match this filter will be consumed
     * @param windowSize the consumer window size
-    * @param maxRate the maximum rate to consume messages
+    * @param maxRate    the maximum rate to consume messages
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -432,18 +440,19 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p>
+    * <p/>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
-    * @param queueName name of the queue to consume messages from
-    * @param filter only messages which match this filter will be consumed
+    *
+    * @param queueName  name of the queue to consume messages from
+    * @param filter     only messages which match this filter will be consumed
     * @param windowSize the consumer window size
-    * @param maxRate the maximum rate to consume messages
+    * @param maxRate    the maximum rate to consume messages
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
     * @throws HornetQException if an exception occurs while creating the ClientConsumer
@@ -457,7 +466,6 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Address must be specified every time a message is sent
     *
     * @return a ClientProducer
-    *
     * @see ClientProducer#send(SimpleString, org.hornetq.api.core.Message)
     */
    ClientProducer createProducer() throws HornetQException;
@@ -484,7 +492,7 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Creates a producer which sends messages to the given address
     *
     * @param address the address to send messages to
-    * @param rate the producer rate
+    * @param rate    the producer rate
     * @return a ClientProducer
     * @throws HornetQException if an exception occurs while creating the ClientProducer
     */
@@ -503,7 +511,7 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientMessage.
     *
-    * @param type type of the message
+    * @param type    type of the message
     * @param durable whether the created message is durable or not
     * @return a ClientMessage
     */
@@ -512,11 +520,11 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientMessage.
     *
-    * @param type type of the message
-    * @param durable whether the created message is durable or not
+    * @param type       type of the message
+    * @param durable    whether the created message is durable or not
     * @param expiration the message expiration
-    * @param timestamp the message timestamp
-    * @param priority the message priority (between 0 and 9 inclusive)
+    * @param timestamp  the message timestamp
+    * @param priority   the message priority (between 0 and 9 inclusive)
     * @return a ClientMessage
     */
    ClientMessage createMessage(byte type, boolean durable, long expiration, long timestamp, byte priority);
@@ -528,7 +536,6 @@ public interface ClientSession extends XAResource, AutoCloseable
     *
     * @param queueName the name of the queue to query
     * @return a QueueQuery containing information on the given queue
-    *
     * @throws HornetQException if an exception occurs while querying the queue
     */
    QueueQuery queueQuery(SimpleString queueName) throws HornetQException;
@@ -538,7 +545,6 @@ public interface ClientSession extends XAResource, AutoCloseable
     *
     * @param address the address of the biding to query
     * @return a BindingQuery containing information on the binding attached to the given address
-    *
     * @throws HornetQException if an exception occurs while querying the binding
     */
    BindingQuery bindingQuery(SimpleString address) throws HornetQException;
@@ -577,7 +583,6 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Rolls back the current transaction.
     *
     * @param considerLastMessageAsDelivered the first message on deliveringMessage Buffer is considered as delivered
-    *
     * @throws HornetQException if an exception occurs while rolling back the transaction
     */
    void rollback(boolean considerLastMessageAsDelivered) throws HornetQException;
@@ -621,6 +626,7 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Attach any metadata to the session.
+    *
     * @throws HornetQException
     */
    void addMetaData(String key, String data) throws HornetQException;

@@ -12,10 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.CompletionListener;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -27,6 +23,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
@@ -37,7 +36,6 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class MessageProducerTest extends JMSTestCase
 {
@@ -46,25 +44,25 @@ public class MessageProducerTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = sess.createProducer(queue1);
+      MessageProducer p = sess.createProducer(queue1);
 
-         MessageConsumer c = sess.createConsumer(queue1);
+      MessageConsumer c = sess.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         Message foreign = new SimpleJMSMessage(new SimpleDestination());
+      Message foreign = new SimpleJMSMessage(new SimpleDestination());
 
-         foreign.setJMSDestination(new SimpleDestination());
+      foreign.setJMSDestination(new SimpleDestination());
 
-         // the producer destination should override the foreign destination and the send should succeed
+      // the producer destination should override the foreign destination and the send should succeed
 
-         p.send(foreign);
+      p.send(foreign);
 
-         Message m = c.receive(1000);
+      Message m = c.receive(1000);
 
-         ProxyAssertSupport.assertNotNull(m);
+      ProxyAssertSupport.assertNotNull(m);
    }
 
    private static class SimpleDestination implements Destination, Serializable
@@ -108,7 +106,7 @@ public class MessageProducerTest extends JMSTestCase
          TextMessage m = ps.createTextMessage("test");
          p.send(m);
 
-         TextMessage r = (TextMessage)c.receive(3000);
+         TextMessage r = (TextMessage) c.receive(3000);
 
          ProxyAssertSupport.assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
          ProxyAssertSupport.assertEquals("test", r.getText());
@@ -160,7 +158,7 @@ public class MessageProducerTest extends JMSTestCase
 
          ts.commit();
 
-         TextMessage r = (TextMessage)c.receive();
+         TextMessage r = (TextMessage) c.receive();
 
          ProxyAssertSupport.assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
          ProxyAssertSupport.assertEquals("test", r.getText());
@@ -244,7 +242,7 @@ public class MessageProducerTest extends JMSTestCase
 
          t.start();
 
-         TextMessage m2 = (TextMessage)c.receive(5000);
+         TextMessage m2 = (TextMessage) c.receive(5000);
 
          if (sender.ex != null)
          {
@@ -265,8 +263,8 @@ public class MessageProducerTest extends JMSTestCase
    }
 
    /**
-    *  Test sending via anonymous producer
-    * */
+    * Test sending via anonymous producer
+    */
    @Test
    public void testSendDestination() throws Exception
    {
@@ -331,7 +329,7 @@ public class MessageProducerTest extends JMSTestCase
          Message m = new SimpleJMSTextMessage("something");
          p.send(m);
 
-         TextMessage rec = (TextMessage)c.receive(3000);
+         TextMessage rec = (TextMessage) c.receive(3000);
 
          ProxyAssertSupport.assertEquals("something", rec.getText());
 
@@ -506,7 +504,7 @@ public class MessageProducerTest extends JMSTestCase
 
          Message m = c.receive(3000);
 
-         ProxyAssertSupport.assertEquals(0l, m.getJMSTimestamp());
+         ProxyAssertSupport.assertEquals(0L, m.getJMSTimestamp());
 
          p.setDisableMessageTimestamp(false);
          ProxyAssertSupport.assertFalse(p.getDisableMessageTimestamp());
@@ -714,26 +712,26 @@ public class MessageProducerTest extends JMSTestCase
    public void testDefaultTimeToLive() throws Exception
    {
       Connection pconn = createConnection();
-         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
       MessageProducer qp = ps.createProducer(queue1);
 
-         ProxyAssertSupport.assertEquals(0l, tp.getTimeToLive());
-         ProxyAssertSupport.assertEquals(0l, qp.getTimeToLive());
+      ProxyAssertSupport.assertEquals(0L, tp.getTimeToLive());
+      ProxyAssertSupport.assertEquals(0L, qp.getTimeToLive());
    }
 
    @Test
    public void testSetTimeToLive() throws Exception
    {
       Connection pconn = createConnection();
-         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
-         p.setTimeToLive(100l);
-         ProxyAssertSupport.assertEquals(100l, p.getTimeToLive());
+      p.setTimeToLive(100L);
+      ProxyAssertSupport.assertEquals(100L, p.getTimeToLive());
 
-         p.setTimeToLive(0l);
-         ProxyAssertSupport.assertEquals(0l, p.getTimeToLive());
+      p.setTimeToLive(0L);
+      ProxyAssertSupport.assertEquals(0L, p.getTimeToLive());
    }
 
    @Test
@@ -741,20 +739,20 @@ public class MessageProducerTest extends JMSTestCase
    {
       Connection pconn = createConnection();
 
-         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
+      Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
-         p.close();
+      p.close();
 
-         try
-         {
-            p.setTimeToLive(100l);
-            ProxyAssertSupport.fail("should throw exception");
-         }
-         catch (javax.jms.IllegalStateException e)
-         {
-            // OK
-         }
+      try
+      {
+         p.setTimeToLive(100L);
+         ProxyAssertSupport.fail("should throw exception");
+      }
+      catch (javax.jms.IllegalStateException e)
+      {
+         // OK
+      }
    }
 
    @Test
@@ -770,7 +768,7 @@ public class MessageProducerTest extends JMSTestCase
 
 
       p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
-            Message.DEFAULT_PRIORITY, 0L, listener);
+             Message.DEFAULT_PRIORITY, 0L, listener);
 
       ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
@@ -792,7 +790,7 @@ public class MessageProducerTest extends JMSTestCase
 
 
       p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
-            Message.DEFAULT_PRIORITY, 0L, listener);
+             Message.DEFAULT_PRIORITY, 0L, listener);
 
       ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
@@ -814,7 +812,7 @@ public class MessageProducerTest extends JMSTestCase
 
 
       p.send(ps.createMessage(), DeliveryMode.NON_PERSISTENT,
-            Message.DEFAULT_PRIORITY, 0L, listener);
+             Message.DEFAULT_PRIORITY, 0L, listener);
 
       ProxyAssertSupport.assertTrue(latch.await(5, TimeUnit.SECONDS));
 

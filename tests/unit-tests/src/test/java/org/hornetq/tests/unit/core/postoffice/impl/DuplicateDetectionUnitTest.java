@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.postoffice.impl;
-import org.hornetq.core.server.impl.PostOfficeJournalLoader;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +18,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.Pair;
@@ -35,7 +28,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
-import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.impl.PostOfficeJournalLoader;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.unit.util.FakePagingManager;
@@ -43,13 +36,15 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A DuplicateDetectionUnitTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class DuplicateDetectionUnitTest extends ServiceTestBase
 {
@@ -111,12 +106,12 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          FakePagingManager pagingManager = new FakePagingManager();
          journal.loadMessageJournal(postOffice,
-               pagingManager,
+                                    pagingManager,
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     null,
                                     mapDups,
                                     null,
-               null,
+                                    null,
                                     new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(0, mapDups.size());
@@ -135,13 +130,13 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
-               pagingManager,
-               new ResourceManagerImpl(0, 0, scheduledThreadPool),
-               null,
-               mapDups,
-               null, 
-               null,
-               new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
+                                    pagingManager,
+                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
+                                    null,
+                                    mapDups,
+                                    null,
+                                    null,
+                                    new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(1, mapDups.size());
 
@@ -166,13 +161,13 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
-               pagingManager,
-               new ResourceManagerImpl(0, 0, scheduledThreadPool),
-               null,
-               mapDups,
-               null, 
-               null,
-               new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
+                                    pagingManager,
+                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
+                                    null,
+                                    mapDups,
+                                    null,
+                                    null,
+                                    new PostOfficeJournalLoader(postOffice, pagingManager, null, null, null, null, null, null));
 
          Assert.assertEquals(1, mapDups.size());
 

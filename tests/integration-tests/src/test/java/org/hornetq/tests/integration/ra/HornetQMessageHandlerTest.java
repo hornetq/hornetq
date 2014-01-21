@@ -12,14 +12,9 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.junit.Test;
-
-import java.util.Map;
+import javax.jms.Message;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.jms.Message;
-import javax.resource.spi.ActivationSpec;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -35,6 +30,7 @@ import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -98,15 +94,15 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setReconnectAttempts(-1);
-      qResourceAdapter.setCallTimeout(500l);
+      qResourceAdapter.setCallTimeout(500L);
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setRetryInterval(500l);
+      qResourceAdapter.setRetryInterval(500L);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       // This is just to register a listener
       final CountDownLatch failedLatch = new CountDownLatch(1);
-      ClientSessionFactoryInternal factoryListener = (ClientSessionFactoryInternal)qResourceAdapter.getDefaultHornetQConnectionFactory().getServerLocator().createSessionFactory();
+      ClientSessionFactoryInternal factoryListener = (ClientSessionFactoryInternal) qResourceAdapter.getDefaultHornetQConnectionFactory().getServerLocator().createSessionFactory();
       factoryListener.addFailureListener(new SessionFailureListener()
       {
 
@@ -585,7 +581,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeString("" + i);
@@ -669,7 +665,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       @Override
       public void onMessage(Message message)
       {
-         if(throwException)
+         if (throwException)
          {
             throwException = false;
             throw new IllegalStateException("boo!");

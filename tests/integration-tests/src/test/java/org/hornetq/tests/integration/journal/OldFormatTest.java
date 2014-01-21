@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.journal;
+
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.journal.RecordInfo;
@@ -26,8 +27,6 @@ import org.junit.Test;
  * A OldFormatTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class OldFormatTest extends JournalImplTestBase
 {
@@ -56,7 +55,7 @@ public class OldFormatTest extends JournalImplTestBase
 
       byte[] record = new byte[1];
 
-      for (long i = 0 ; i < 10; i++)
+      for (long i = 0; i < 10; i++)
       {
          add(buffer, 1, i, record);
 
@@ -96,13 +95,13 @@ public class OldFormatTest extends JournalImplTestBase
 
       buffer.putInt(record.length);
 
-      buffer.put((byte)0);
+      buffer.put((byte) 0);
 
       buffer.put(record);
 
       buffer.putInt(buffer.position() - pos + DataConstants.SIZE_INT);
 
-      records.add(new RecordInfo(id, (byte)0, record, false, (short)0));
+      records.add(new RecordInfo(id, (byte) 0, record, false, (short) 0));
    }
 
    private void update(ByteBuffer buffer, int fileID, long id, byte[] record)
@@ -117,13 +116,13 @@ public class OldFormatTest extends JournalImplTestBase
 
       buffer.putInt(record.length);
 
-      buffer.put((byte)0);
+      buffer.put((byte) 0);
 
       buffer.put(record);
 
       buffer.putInt(buffer.position() - pos + DataConstants.SIZE_INT);
 
-      records.add(new RecordInfo(id, (byte)0, record, true, (short)0));
+      records.add(new RecordInfo(id, (byte) 0, record, true, (short) 0));
 
    }
 

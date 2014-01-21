@@ -346,10 +346,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   if (binding != null)
                   {
                      // We have a local queue
-                     Queue queue = (Queue)binding.getBindable();
+                     Queue queue = (Queue) binding.getBindable();
 
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                                 .toString());
+                                                                                             .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
@@ -416,10 +416,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                         throw new IllegalStateException("No queue " + queueName);
                      }
 
-                     Queue queue = (Queue)binding.getBindable();
+                     Queue queue = (Queue) binding.getBindable();
 
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                                 .toString());
+                                                                                             .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
@@ -571,7 +571,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void route(final ServerMessage message, final boolean direct) throws Exception
    {
-      route(message, (Transaction)null, direct);
+      route(message, (Transaction) null, direct);
    }
 
    public void route(final ServerMessage message, final Transaction tx, final boolean direct) throws Exception
@@ -633,11 +633,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-        // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
-        if (HornetQServerLogger.LOGGER.isDebugEnabled())
-        {
-           HornetQServerLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
-        }
+         // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+         {
+            HornetQServerLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
+         }
       }
 
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
@@ -686,7 +686,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (message.isLargeMessage())
             {
-               ((LargeServerMessage)message).deleteFile();
+               ((LargeServerMessage) message).deleteFile();
             }
          }
       }
@@ -770,7 +770,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (routed)
          {
-            return new Pair<RoutingContext, ServerMessage> (context, copyRedistribute);
+            return new Pair<RoutingContext, ServerMessage>(context, copyRedistribute);
          }
       }
 
@@ -818,7 +818,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          HornetQServerLogger.LOGGER.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
       }
 
-      Queue queue = (Queue)binding.getBindable();
+      Queue queue = (Queue) binding.getBindable();
 
       // Need to lock to make sure all queue info and notifications are in the correct order with no gaps
       synchronized (notificationLock)
@@ -922,11 +922,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          for (SimpleString removal : valuesToRemove)
          {
-           message.removeProperty(removal);
+            message.removeProperty(removal);
          }
       }
    }
-
 
 
    private void setPagingStore(final ServerMessage message) throws Exception
@@ -1111,7 +1110,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     */
    private void confirmLargeMessageSend(Transaction tx, final ServerMessage message) throws Exception
    {
-      LargeServerMessage largeServerMessage = (LargeServerMessage)message;
+      LargeServerMessage largeServerMessage = (LargeServerMessage) message;
       if (largeServerMessage.getPendingRecordID() >= 0)
       {
          if (tx == null)
@@ -1129,6 +1128,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    /**
     * This will kick a delivery async on the queue, so the queue may have a chance to depage messages
+    *
     * @param tx
     * @param entry
     */
@@ -1136,7 +1136,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       if (tx != null)
       {
-         PageDelivery delivery = (PageDelivery)tx.getProperty(TransactionPropertyIndexes.PAGE_DELIVERY);
+         PageDelivery delivery = (PageDelivery) tx.getProperty(TransactionPropertyIndexes.PAGE_DELIVERY);
          if (delivery == null)
          {
             delivery = new PageDelivery();
@@ -1188,7 +1188,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       if (bridgeDup != null)
       {
          // if the message is being sent from the bridge, we just ignore the duplicate id, and use the internal one
-         byte[] bridgeDupBytes = (byte[])bridgeDup;
+         byte[] bridgeDupBytes = (byte[]) bridgeDup;
 
          DuplicateIDCache cacheBridge = getDuplicateIDCache(BRIDGE_CACHE_STR.concat(message.getAddress()));
 
@@ -1280,7 +1280,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   /** The expiry scanner can't be started until the whole server has been started other wise you may get races */
+   /**
+    * The expiry scanner can't be started until the whole server has been started other wise you may get races
+    */
    public synchronized void startExpiryScanner()
    {
       if (reaperPeriod > 0)
@@ -1347,7 +1349,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                if (binding.getType() == BindingType.LOCAL_QUEUE)
                {
-                  Queue queue = (Queue)binding.getBindable();
+                  Queue queue = (Queue) binding.getBindable();
 
                   queues.add(queue);
                }

@@ -61,7 +61,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       }
    };
 
-   private static final long NUMBER_OF_MESSAGES = 210000l;
+   private static final long NUMBER_OF_MESSAGES = 210000L;
 
    private static final int NUMBER_OF_FILES_ON_JOURNAL = 6;
 

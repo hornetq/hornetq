@@ -15,7 +15,6 @@ package org.hornetq.core.client;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
