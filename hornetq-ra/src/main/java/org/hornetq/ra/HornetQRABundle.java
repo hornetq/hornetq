@@ -67,7 +67,4 @@ public interface HornetQRABundle
 
    @Message(id = 159008, value = "Invalid Session Mode CLIENT_ACKNOWLEDGE", format = Message.Format.MESSAGE_FORMAT)
    JMSException invalidClientAcknowledgeMode();
-
-   @Message(id = 159009, value = "subscription name must be supplied when subscription is durable", format = Message.Format.MESSAGE_FORMAT)
-   MisConfiguredMDBException nullSubscriptionName();
 }

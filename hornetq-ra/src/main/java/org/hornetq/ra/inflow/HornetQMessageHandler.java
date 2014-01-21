@@ -33,7 +33,6 @@ import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.ra.HornetQRABundle;
 import org.hornetq.ra.HornetQRALogger;
 
 /**
@@ -104,10 +103,6 @@ public class HornetQMessageHandler implements MessageHandler
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
          String subscriptionName = spec.getSubscriptionName();
-         if(subscriptionName == null || subscriptionName.equals(""))
-         {
-            throw HornetQRABundle.BUNDLE.nullSubscriptionName();
-         }
          String clientID = spec.getClientID();
 
          SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, clientID,
