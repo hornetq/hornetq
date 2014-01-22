@@ -24,7 +24,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.tests.util.SpawnedVMSupport;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +53,7 @@ public class PageCountSyncOnNonTXTest extends ServiceTestBase
    {
       String QUEUE_NAME = "myQueue";
 
-      process = SpawnedVMSupport.spawnVM(PageCountSyncServer.class.getName(), getTestDir(), "" + timeToRun);
+      process = PageCountSyncServer.spawnVM(getTestDir(), timeToRun);
 
       ServerLocator locator = createNettyNonHALocator();
 
