@@ -296,6 +296,19 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return configuration;
    }
 
+   public static final ConfigurationImpl createBasicConfigNoDataFolder()
+   {
+      ConfigurationImpl configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+
+      configuration.setJournalType(getDefaultJournalType());
+
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
+      return configuration;
+   }
+
    protected Configuration
    createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
