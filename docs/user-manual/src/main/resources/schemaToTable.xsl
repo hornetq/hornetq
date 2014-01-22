@@ -62,7 +62,7 @@
 
     <!-- main 'for-each' for "hornetq-configuration.xsd". Notice the attribute matching at the
          select which ensures this only matches "hornetq-configuration.xsd". -->
-    <xsl:for-each-group select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']/xsd:complexType/xsd:all/xsd:element"
+      <xsl:for-each-group select="xsd:schema/xsd:element[@hq:schema='hornetq-configuration']"
                         group-by="@name">
       <!-- the manual reference should list options in sorted order.
            Notice that this is only OK because the first level of options is "xsd:all".
@@ -259,11 +259,15 @@ We handle the following situations (differently):
                   <entry/> <!-- complexTypes have no 'default' value. -->
                 </row>
 
+                        <!-- backup-servers is a recursive type, which I need to take it out otherwise
+                             there would be an infinite recursive loop -->
+                        <xsl:if test="fn:not(@name='backup-servers')">
                 <!-- Process child nodes -->
                 <xsl:apply-templates select="xsd:complexType">
                   <xsl:with-param name="prefix" select="concat($prefix,@name,'.')"/>
                   <xsl:with-param name="linkend" select="$linkend"/>
                 </xsl:apply-templates>
+                        </xsl:if>
               </xsl:when>
 
               <!-- simpleType. Normally string restrictions: A|B|C -->
