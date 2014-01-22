@@ -12,6 +12,10 @@
    <packaging>pom</packaging>
    <name>HornetQ Distribution</name>
 
+   <properties>
+      <skipLicenseCheck>true</skipLicenseCheck>
+   </properties>
+
    <dependencies>
        <dependency>
            <groupId>org.jboss.spec.javax.jms</groupId>
