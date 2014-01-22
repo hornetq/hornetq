@@ -47,7 +47,7 @@ testing the release for AS7
 
 If everything is ok then release by:
 
-1. Upload the binaries and docs to jboss.org (instructions can be found at https://docspace.corp.redhat.com/docs/DOC-49555)
+1. Upload the binaries and docs to jboss.org (instructions can be found at https://mojo.redhat.com/docs/DOC-81955)
 2. go to https://www.jboss.org/author/.magnolia/pages/adminCentral.html and update the download/docs pages and add a release announcement if needed.
 3. when you are happy activate the changes
 4. go to nexus and release the maven artifacts from the staging repository
