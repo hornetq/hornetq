@@ -242,6 +242,32 @@
                 <programlisting>
 &lt;check-for-live-server>true&lt;/check-for-live-server></programlisting>
             </section>
+        <section id="ha.colocated">
+            <title>Colocated Backup Servers</title>
+            <para>It is also possible when running standalone to colocate backup servers in the same
+                JVM as another live server.The colocated backup will become a backup for another live
+                server in the cluster but not the one it shares the vm with. To configure a colocated
+                backup server simply add the following to the <literal>hornetq-configuration.xml</literal> file</para>
+            <programlisting>
+&lt;backup-servers>
+    &lt;backup-server name="backup2" inherit-configuration="true" port-offset="1000">
+        &lt;configuration>
+            &lt;bindings-directory>target/server1/data/messaging/bindings&lt;/bindings-directory>
+            &lt;journal-directory>target/server1/data/messaging/journal&lt;/journal-directory>
+            &lt;large-messages-directory>target/server1/data/messaging/largemessages&lt;/large-messages-directory>
+            &lt;paging-directory>target/server1/data/messaging/paging&lt;/paging-directory>
+        &lt;/configuration>
+    &lt;/backup-server>
+&lt;/backup-servers>
+            </programlisting>
+            <para> you will notice 3 attributes on the <literal>backup-server</literal>, <literal>name</literal>
+                which is a unique name used to identify the backup server, <literal>inherit-configuration</literal>
+            which if set to true means the server will inherit the configuration of its parent server
+            and <literal>port-offset</literal> which is what the port for any netty connectors or
+            acceptors will be increased by if the configuration is inherited.</para>
+            <para>it is also possible to configure the backup server in the normal way, in this example you will
+            notice we have changed the journal directories.</para>
+        </section>
     </section>
     <section id="failover">
         <title>Failover Modes</title>
