@@ -648,7 +648,9 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
-         group.shutdown();
+         // Shutdown the EventLoopGroup if no new task was added for 100ms or if
+         // 3000ms elapsed.
+         group.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
       }
       channelClazz = null;
 
@@ -1163,7 +1165,9 @@ public class NettyConnector extends AbstractConnector
    {
       if (nioEventLoopGroup != null)
       {
-         nioEventLoopGroup.shutdown();
+         // Shutdown the EventLoopGroup if no new task was added for 100ms or if
+         // 3000ms elapsed.
+         nioEventLoopGroup.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
          nioEventLoopGroup = null;
       }
    }
@@ -1182,10 +1186,15 @@ public class NettyConnector extends AbstractConnector
 
    public static void clearThreadPools()
    {
-      if (nioEventLoopGroup != null)
+      synchronized (nioWorkerPoolGuard)
       {
-         nioEventLoopGroup.shutdown();
-         nioEventLoopGroup = null;
+         if (nioEventLoopGroup != null)
+         {
+            // Shutdown the EventLoopGroup if no new task was added for 100ms or if
+            // 3000ms elapsed.
+            nioEventLoopGroup.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
+            nioEventLoopGroup = null;
+         }
       }
    }
 
