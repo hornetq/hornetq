@@ -157,7 +157,6 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       if (delay < 0)
       {
          // if delay == 0 we will avoid races between adding the scheduler and finishing it
-         // like what we used to do
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
          scheduledExecutor.schedule(runnable, 0, TimeUnit.MILLISECONDS);
       }

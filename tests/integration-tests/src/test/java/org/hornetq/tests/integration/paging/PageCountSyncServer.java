@@ -20,6 +20,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.SpawnedVMSupport;
 
 /**
  * This is a sub process of the test {@link org.hornetq.tests.integration.paging.PageCountSyncOnNonTXTest}
@@ -30,6 +31,10 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 public class PageCountSyncServer
 {
+   public static Process spawnVM(final String testDir, final long timeToRun) throws Exception
+   {
+      return SpawnedVMSupport.spawnVM(PageCountSyncServer.class.getName(), testDir, "" + timeToRun);
+   }
 
    public void perform(final String folder, final long timeToRun) throws Exception
    {
