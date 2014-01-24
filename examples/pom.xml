@@ -15,6 +15,7 @@
 
    <properties>
       <skipLicenseCheck>true</skipLicenseCheck>
+      <skipStyleCheck>true</skipStyleCheck>
    </properties>
 
    <modules>

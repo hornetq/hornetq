@@ -28,13 +28,13 @@
 
    <properties>
       <skipLicenseCheck>true</skipLicenseCheck>
+      <skipStyleCheck>true</skipStyleCheck>
    </properties>
 
    <modules>
       <module>user-manual</module>
       <module>quickstart-guide</module>
    </modules>
-
 
    <build>
       <plugins>
