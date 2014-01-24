@@ -19,15 +19,14 @@ import java.util.zip.Inflater;
 
 /**
  * A InflaterWriter
- *
+ * <p/>
  * This class takes an OutputStream. Compressed bytes
  * can directly be written into this class. The class will
  * decompress the bytes and write them to the output stream.
- *
+ * <p/>
  * Not for concurrent use.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class InflaterWriter extends OutputStream
 {
@@ -64,7 +63,7 @@ public class InflaterWriter extends OutputStream
          }
          catch (DataFormatException e)
          {
-            IOException ie = new IOException ("Error decompressing data");
+            IOException ie = new IOException("Error decompressing data");
             ie.initCause(e);
             throw ie;
          }
@@ -89,7 +88,7 @@ public class InflaterWriter extends OutputStream
          }
          catch (DataFormatException e)
          {
-            IOException io = new IOException (e.getMessage());
+            IOException io = new IOException(e.getMessage());
             io.initCause(e);
             throw io;
          }
