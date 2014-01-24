@@ -30,19 +30,17 @@ public interface ClientSessionFactory extends AutoCloseable
     * Creates a session with XA transaction semantics.
     *
     * @return a ClientSession with XA transaction semantics
-    *
     * @throws HornetQException if an exception occurs while creating the session
     */
    ClientSession createXASession() throws HornetQException;
 
    /**
     * Creates a <em>transacted</em> session.
-    *
+    * <p/>
     * It is up to the client to commit when sending and acknowledging messages.
-
+    *
     * @return a transacted ClientSession
     * @throws HornetQException if an exception occurs while creating the session
-    *
     * @see ClientSession#commit()
     */
    ClientSession createTransactedSession() throws HornetQException;
@@ -53,7 +51,7 @@ public interface ClientSessionFactory extends AutoCloseable
     * Message sends and acknowledgements are automatically committed by the session. <em>This does not
     * mean that messages are automatically acknowledged</em>, only that when messages are acknowledged,
     * the session will automatically commit the transaction containing the acknowledgements.
-
+    *
     * @return a non-transacted ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -63,7 +61,7 @@ public interface ClientSessionFactory extends AutoCloseable
     * Creates a session.
     *
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
-    * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
+    * @param autoCommitAcks  <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
     * @return a ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -73,8 +71,8 @@ public interface ClientSessionFactory extends AutoCloseable
     * Creates a session.
     *
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
-    * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
-    * @param ackBatchSize the batch size of the acknowledgements
+    * @param autoCommitAcks  <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
+    * @param ackBatchSize    the batch size of the acknowledgements
     * @return a ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -83,9 +81,9 @@ public interface ClientSessionFactory extends AutoCloseable
    /**
     * Creates a session.
     *
-    * @param xa whether the session support XA transaction semantic or not
+    * @param xa              whether the session support XA transaction semantic or not
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
-    * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
+    * @param autoCommitAcks  <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
     * @return a ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -93,15 +91,15 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Creates a session.
-    *
+    * <p/>
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
     *
-    * @param xa whether the session support XA transaction semantic or not
+    * @param xa              whether the session support XA transaction semantic or not
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
-    * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
-    * @param preAcknowledge <code>true</code> to pre-acknowledge messages on the server, <code>false</code> to let the client acknowledge the messages
+    * @param autoCommitAcks  <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
+    * @param preAcknowledge  <code>true</code> to pre-acknowledge messages on the server, <code>false</code> to let the client acknowledge the messages
     * @return a ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -109,17 +107,17 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Creates an <em>authenticated</em> session.
-    *
+    * <p/>
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
     *
-    * @param username the user name
-    * @param password the user password
-    * @param xa whether the session support XA transaction semantic or not
+    * @param username        the user name
+    * @param password        the user password
+    * @param xa              whether the session support XA transaction semantic or not
     * @param autoCommitSends <code>true</code> to automatically commit message sends, <code>false</code> to commit manually
-    * @param autoCommitAcks <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
-    * @param preAcknowledge <code>true</code> to pre-acknowledge messages on the server, <code>false</code> to let the client acknowledge the messages
+    * @param autoCommitAcks  <code>true</code> to automatically commit message acknowledgement, <code>false</code> to commit manually
+    * @param preAcknowledge  <code>true</code> to pre-acknowledge messages on the server, <code>false</code> to let the client acknowledge the messages
     * @return a ClientSession
     * @throws HornetQException if an exception occurs while creating the session
     */
@@ -146,7 +144,7 @@ public interface ClientSessionFactory extends AutoCloseable
     *
     * @param listener the listener to add
     */
-   void addFailoverListener(FailoverEventListener listener) ;
+   void addFailoverListener(FailoverEventListener listener);
 
    /**
     * Removes a FailoverEventListener to the session.
@@ -168,6 +166,7 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Returns the code connection used by this session factory.
+    *
     * @return the core connection
     */
    CoreRemotingConnection getConnection();

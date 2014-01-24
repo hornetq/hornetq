@@ -19,7 +19,6 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;

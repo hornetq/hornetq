@@ -12,26 +12,23 @@
  */
 package org.hornetq.jms.tests;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import java.io.Serializable;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
 
 /**
  * A MessageWithReadResolveTest
- *
+ * <p/>
  * See http://jira.jboss.com/jira/browse/JBMESSAGING-442
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class MessageWithReadResolveTest extends JMSTestCase
 {
@@ -51,37 +48,37 @@ public class MessageWithReadResolveTest extends JMSTestCase
    @Test
    public void testSendReceiveMessage() throws Exception
    {
-      Connection  conn =  createConnection();
+      Connection conn = createConnection();
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer prod = sess.createProducer(queue1);
 
-         // Make persistent to make sure message gets serialized
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      // Make persistent to make sure message gets serialized
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       MessageConsumer cons = sess.createConsumer(queue1);
 
-         TestMessage tm = new TestMessage(123, false);
+      TestMessage tm = new TestMessage(123, false);
 
-         ObjectMessage om = sess.createObjectMessage();
+      ObjectMessage om = sess.createObjectMessage();
 
-         om.setObject(tm);
+      om.setObject(tm);
 
-         conn.start();
+      conn.start();
 
-         prod.send(om);
+      prod.send(om);
 
-         ObjectMessage om2 = (ObjectMessage)cons.receive(1000);
+      ObjectMessage om2 = (ObjectMessage) cons.receive(1000);
 
-         ProxyAssertSupport.assertNotNull(om2);
+      ProxyAssertSupport.assertNotNull(om2);
 
-         TestMessage tm2 = (TestMessage)om2.getObject();
+      TestMessage tm2 = (TestMessage) om2.getObject();
 
-         ProxyAssertSupport.assertEquals(123, tm2.getID());
+      ProxyAssertSupport.assertEquals(123, tm2.getID());
 
-         conn.close();
-         }
+      conn.close();
+   }
 
    // Package protected ---------------------------------------------
 

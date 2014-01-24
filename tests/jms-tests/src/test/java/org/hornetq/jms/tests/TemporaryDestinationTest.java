@@ -29,7 +29,6 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class TemporaryDestinationTest extends JMSTestCase
 {
@@ -70,7 +69,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          producer.send(m);
 
-         TextMessage m2 = (TextMessage)consumer.receive(2000);
+         TextMessage m2 = (TextMessage) consumer.receive(2000);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -126,7 +125,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          producer.send(m);
 
-         TextMessage m2 = (TextMessage)consumer.receive(2000);
+         TextMessage m2 = (TextMessage) consumer.receive(2000);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -283,7 +282,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 
          producer.send(m);
 
-         TextMessage m2 = (TextMessage)consumer.receive(2000);
+         TextMessage m2 = (TextMessage) consumer.receive(2000);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -355,7 +354,7 @@ public class TemporaryDestinationTest extends JMSTestCase
          }, "Producer");
          t.start();
 
-         TextMessage m2 = (TextMessage)consumer.receive(3000);
+         TextMessage m2 = (TextMessage) consumer.receive(3000);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -412,20 +411,20 @@ public class TemporaryDestinationTest extends JMSTestCase
    {
       Connection producerConnection = createConnection();
 
-         Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-         String topicName = tempTopic.getTopicName();
+      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+      String topicName = tempTopic.getTopicName();
 
-         try
-         {
-            ic.lookup("/topic/" + topicName);
-            ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
-         }
-         catch (NamingException e)
-         {
-            // Expected
-         }
+      try
+      {
+         ic.lookup("/topic/" + topicName);
+         ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
+      }
+      catch (NamingException e)
+      {
+         // Expected
+      }
    }
 
    @Test
@@ -433,20 +432,20 @@ public class TemporaryDestinationTest extends JMSTestCase
    {
       Connection producerConnection = createConnection();
 
-         Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-         String queueName = tempQueue.getQueueName();
+      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+      String queueName = tempQueue.getQueueName();
 
-         try
-         {
-            ic.lookup("/queue/" + queueName);
-            ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
-         }
-         catch (NamingException e)
-         {
-            // Expected
-         }
+      try
+      {
+         ic.lookup("/queue/" + queueName);
+         ProxyAssertSupport.fail("The temporary queue should not be bound to JNDI");
+      }
+      catch (NamingException e)
+      {
+         // Expected
+      }
    }
 
    /**

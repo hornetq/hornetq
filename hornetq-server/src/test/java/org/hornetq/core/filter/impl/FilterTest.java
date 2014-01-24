@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.core.filter.impl;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -25,6 +20,9 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SilentTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the compliance with the HornetQ Filter syntax.
@@ -130,7 +128,7 @@ public class FilterTest extends SilentTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         message.setPriority((byte)i);
+         message.setPriority((byte) i);
 
          if (i == 3)
          {
@@ -724,7 +722,7 @@ public class FilterTest extends SilentTestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(HornetQInvalidFilterExpressionException ife)
+      catch (HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }
@@ -741,7 +739,7 @@ public class FilterTest extends SilentTestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(HornetQInvalidFilterExpressionException ife)
+      catch (HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }

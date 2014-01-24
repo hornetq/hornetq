@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +25,8 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * User: andy
@@ -72,11 +71,11 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testMultipleConnectorSingleServerConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
-            createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
+         createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
       );
       ClientSessionFactoryInternal csf = locator.connect();
       assertNotNull(csf);
@@ -88,11 +87,11 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testMultipleConnectorSingleServerConnectReconnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
-            createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
+         createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
       );
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal csf = locator.connect();
@@ -105,25 +104,25 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testMultipleConnectorSingleServerNoConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
-            createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(4, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(5, isNetty()))
+         createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(4, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(5, isNetty()))
       );
       ClientSessionFactoryInternal csf = null;
       try
       {
          csf = locator.connect();
       }
-      catch(HornetQNotConnectedException nce)
+      catch (HornetQNotConnectedException nce)
       {
          //ok
       }
       catch (Exception e)
       {
          assertTrue(e instanceof HornetQException);
-         fail("Invalid Exception type:" + ((HornetQException)e).getType());
+         fail("Invalid Exception type:" + ((HornetQException) e).getType());
       }
       assertNull(csf);
       locator.close();
@@ -133,11 +132,11 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testMultipleConnectorSingleServerNoConnectAttemptReconnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(
-            createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(4, isNetty())),
-            createTransportConfiguration(isNetty(), false, generateParams(5, isNetty()))
+         createTransportConfiguration(isNetty(), false, generateParams(1, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(2, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(4, isNetty())),
+         createTransportConfiguration(isNetty(), false, generateParams(5, isNetty()))
       );
       locator.setReconnectAttempts(-1);
       CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -162,6 +161,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       ClientSessionFactory csf = null;
       CountDownLatch latch;
       Exception e;
+
       public Connector(ServerLocatorInternal locator, CountDownLatch latch)
       {
          this.locator = locator;

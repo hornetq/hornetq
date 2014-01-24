@@ -11,14 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -27,8 +19,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.Context;
-
-import org.junit.Assert;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -56,17 +49,19 @@ import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
- *
+ * <p/>
  * on this testContaining WithRealData will use real data on the journals
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 14 nov. 2008 13:35:10
- *
- *
+ *         <p/>
+ *         Created 14 nov. 2008 13:35:10
  */
 public class JMSQueueControlTest extends ManagementTestBase
 {
@@ -198,7 +193,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
          System.out.println(it.next());
       }
-      String messageID = (String)data[0].get("JMSMessageID");
+      String messageID = (String) data[0].get("JMSMessageID");
 
       queueControl.removeMessage(messageID.toString());
 
@@ -295,8 +290,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] data = queueControl.listMessages(null);
       // retrieve the first message info
-      String messageID = (String)data[0].get("JMSMessageID");
-      int currentPriority = ((Number)data[0].get("JMSPriority")).intValue();
+      String messageID = (String) data[0].get("JMSMessageID");
+      int currentPriority = ((Number) data[0].get("JMSPriority")).intValue();
       int newPriority = 9;
 
       Assert.assertTrue(newPriority != currentPriority);
@@ -316,7 +311,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    @Test
    public void testChangeMessagePriorityWithInvalidPriority() throws Exception
    {
-      byte invalidPriority = (byte)23;
+      byte invalidPriority = (byte) 23;
 
       JMSQueueControl queueControl = createManagementControl();
 
@@ -460,7 +455,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       JMSQueueControl queueControl = createManagementControl();
       String expiryQueueName = RandomUtil.randomString();
-      HornetQQueue expiryQueue = (HornetQQueue)HornetQJMSClient.createQueue(expiryQueueName);
+      HornetQQueue expiryQueue = (HornetQQueue) HornetQJMSClient.createQueue(expiryQueueName);
       serverManager.createQueue(false, expiryQueueName, null, true, expiryQueueName);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
@@ -597,7 +592,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String deadLetterQueue = RandomUtil.randomString();
       serverManager.createQueue(false, deadLetterQueue, null, true, deadLetterQueue);
-      HornetQQueue dlq = (HornetQQueue)HornetQJMSClient.createQueue(deadLetterQueue);
+      HornetQQueue dlq = (HornetQQueue) HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -660,7 +655,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String deadLetterQueue = RandomUtil.randomString();
       serverManager.createQueue(false, deadLetterQueue, null, true, deadLetterQueue);
-      HornetQQueue dlq = (HornetQQueue)HornetQJMSClient.createQueue(deadLetterQueue);
+      HornetQQueue dlq = (HornetQQueue) HornetQJMSClient.createQueue(deadLetterQueue);
 
       Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -703,7 +698,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       // send on queue
       JMSUtil.sendMessages(queue, 2);
@@ -752,7 +747,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -788,7 +783,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
@@ -812,7 +807,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       ServerLocator locator = createInVMNonHALocator();
 
@@ -839,7 +834,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       session.commit();
 
       JMSQueueControl queueControl = createManagementControl();
-      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue) otherQueue,
                                                                                         mbeanServer);
 
       Assert.assertEquals(10, queueControl.getMessageCount());
@@ -891,7 +886,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       ServerLocator locator = createInVMNonHALocator();
 
@@ -902,7 +897,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientProducer prod1 = session.createProducer(queue.getAddress());
       ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
 
-      String [] ids = new String[10];
+      String[] ids = new String[10];
 
       for (int i = 0; i < 10; i++)
       {
@@ -925,12 +920,12 @@ public class JMSQueueControlTest extends ManagementTestBase
       session.commit();
 
       JMSQueueControl queueControl = createManagementControl();
-      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue) otherQueue,
                                                                                         mbeanServer);
 
       Assert.assertEquals(10, queueControl.getMessageCount());
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          queueControl.moveMessage(ids[i], otherQueueName, true);
       }
@@ -977,7 +972,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = RandomUtil.randomString();
 
       serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
-      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination) HornetQJMSClient.createQueue(otherQueueName);
 
       ServerLocator locator = createInVMNonHALocator();
 
@@ -996,7 +991,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       prod2.send(msg);
 
       JMSQueueControl queueControl = createManagementControl();
-      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue) otherQueue,
                                                                                         mbeanServer);
 
       Assert.assertEquals(1, queueControl.getMessageCount());
@@ -1073,7 +1068,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
 
-      HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
+      HornetQQueue pagedQueue = (HornetQQueue) context.lookup("/queue/pagedTest");
 
 
       ServerLocator locator = createInVMNonHALocator();
@@ -1087,7 +1082,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientMessage msg = session.createMessage(true);
 
       msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          prod.send(msg);
       }
@@ -1095,7 +1090,6 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSQueueControl control = createManagementControl(pagedQueue);
 
       assertEquals(100, control.removeMessages("     "));
-
 
 
       session.start();
@@ -1123,7 +1117,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
 
-      HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
+      HornetQQueue pagedQueue = (HornetQQueue) context.lookup("/queue/pagedTest");
 
 
       ServerLocator locator = createInVMNonHALocator();
@@ -1133,7 +1127,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientSession session = sf.createSession(true, true);
 
       ClientProducer prod = session.createProducer(pagedQueue.getAddress());
-      for (int i = 0 ; i < 200; i++)
+      for (int i = 0; i < 200; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
@@ -1150,8 +1144,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
 
 
-
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = consumer.receive(1000);
          assertNotNull(msg);
@@ -1214,6 +1207,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    /**
     * on this testContaining WithRealData will use real data on the journals
+    *
     * @throws Exception
     */
    @Test
@@ -1221,7 +1215,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String testQueueName = "testQueueAddJndi";
       serverManager.createQueue(true, testQueueName, null, true, testQueueName);
-      HornetQQueue testQueue = (HornetQQueue)HornetQJMSClient.createQueue(testQueueName);
+      HornetQQueue testQueue = (HornetQQueue) HornetQJMSClient.createQueue(testQueueName);
 
       JMSQueueControl queueControl = createManagementControl(testQueue);
       String[] bindings = queueControl.getJNDIBindings();
@@ -1249,7 +1243,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.start();
 
-      testQueue = (HornetQQueue)HornetQJMSClient.createQueue(testQueueName);
+      testQueue = (HornetQQueue) HornetQJMSClient.createQueue(testQueueName);
 
       queueControl = createManagementControl(testQueue);
 
@@ -1290,7 +1284,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       queueName = RandomUtil.randomString();
       serverManager.createQueue(false, queueName, null, true, queueName);
-      queue = (HornetQQueue)HornetQJMSClient.createQueue(queueName);
+      queue = (HornetQQueue) HornetQJMSClient.createQueue(queueName);
    }
 
    @Override
@@ -1326,7 +1320,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    private Connection createConnection() throws JMSException
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       cf.setBlockOnDurableSend(true);
 

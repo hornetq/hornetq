@@ -29,9 +29,6 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
@@ -45,23 +42,32 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  */
 public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactory
 {
-   /** Serial version UID */
+   /**
+    * Serial version UID
+    */
    static final long serialVersionUID = 7981708919479859360L;
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** The managed connection factory */
+   /**
+    * The managed connection factory
+    */
    private final HornetQRAManagedConnectionFactory mcf;
 
-   /** The connection manager */
+   /**
+    * The connection manager
+    */
    private ConnectionManager cm;
 
-   /** Naming reference */
+   /**
+    * Naming reference
+    */
    private Reference reference;
 
    /**
     * Constructor
+    *
     * @param mcf The managed connection factory
-    * @param cm The connection manager
+    * @param cm  The connection manager
     */
    public HornetQRAConnectionFactoryImpl(final HornetQRAManagedConnectionFactory mcf, final ConnectionManager cm)
    {
@@ -94,6 +100,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Set the reference
+    *
     * @param reference The reference
     */
    public void setReference(final Reference reference)
@@ -108,6 +115,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Get the reference
+    *
     * @return The reference
     */
    public Reference getReference()
@@ -137,8 +145,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a queue connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public QueueConnection createQueueConnection() throws JMSException
    {
@@ -162,10 +171,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a queue connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public QueueConnection createQueueConnection(final String userName, final String password) throws JMSException
    {
@@ -193,8 +203,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a topic connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public TopicConnection createTopicConnection() throws JMSException
    {
@@ -218,10 +229,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a topic connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public TopicConnection createTopicConnection(final String userName, final String password) throws JMSException
    {
@@ -248,8 +260,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public Connection createConnection() throws JMSException
    {
@@ -270,10 +283,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public Connection createConnection(final String userName, final String password) throws JMSException
    {
@@ -298,8 +312,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA queue connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XAQueueConnection createXAQueueConnection() throws JMSException
    {
@@ -323,10 +338,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA  queue connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XAQueueConnection createXAQueueConnection(final String userName, final String password) throws JMSException
    {
@@ -353,8 +369,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA topic connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XATopicConnection createXATopicConnection() throws JMSException
    {
@@ -378,10 +395,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA topic connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XATopicConnection createXATopicConnection(final String userName, final String password) throws JMSException
    {
@@ -408,8 +426,9 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA connection
+    *
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XAConnection createXAConnection() throws JMSException
    {
@@ -430,10 +449,11 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
 
    /**
     * Create a XA connection
+    *
     * @param userName The user name
     * @param password The password
     * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * @throws JMSException Thrown if the operation fails
     */
    public XAConnection createXAConnection(final String userName, final String password) throws JMSException
    {
@@ -539,7 +559,7 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
    @Override
    public HornetQConnectionFactory getDefaultFactory() throws ResourceException
    {
-      return ((HornetQResourceAdapter)mcf.getResourceAdapter()).getDefaultHornetQConnectionFactory();
+      return ((HornetQResourceAdapter) mcf.getResourceAdapter()).getDefaultHornetQConnectionFactory();
    }
 
    @Override

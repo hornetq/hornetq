@@ -12,10 +12,6 @@
  */
 package org.hornetq.tests.integration.largemessage;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -29,13 +25,13 @@ import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A ServerLargeMessageTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ServerLargeMessageTest extends ServiceTestBase
 {
@@ -66,13 +62,13 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
       try
       {
-         LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
+         LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager) server.getStorageManager());
 
          fileMessage.setMessageID(1005);
 
          for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
          {
-            fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
+            fileMessage.addBytes(new byte[]{UnitTestCase.getSamplebyte(i)});
          }
          // The server would be doing this
          fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);

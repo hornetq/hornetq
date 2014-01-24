@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.failover;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -95,23 +96,22 @@ public abstract class FailoverTestBase extends ServiceTestBase
          backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
          if (startBackupServer)
          {
-          backupServer.start();
-          waitForRemoteBackupSynchronization(backupServer.getServer());
+            backupServer.start();
+            waitForRemoteBackupSynchronization(backupServer.getServer());
          }
       }
    }
 
    protected TestableServer createTestableServer(Configuration config)
    {
-      return new SameProcessHornetQServer(
-                                          createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
    }
 
    /**
     * Large message version of {@link #setBody(int, ClientMessage)}.
+    *
     * @param i
     * @param message
-    * @param size
     */
    protected static void setLargeMessageBody(final int i, final ClientMessage message)
    {
@@ -127,6 +127,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    /**
     * Large message version of {@link #assertMessageBody(int, ClientMessage)}.
+    *
     * @param i
     * @param message
     */
@@ -253,14 +254,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    protected final ClientSessionFactoryInternal
-            createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-           throws Exception
+   createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
+      throws Exception
    {
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
       locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
       addSessionFactory(sf);
 
       assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
@@ -269,13 +270,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    /**
     * Waits for backup to be in the "started" state and to finish synchronization with its live.
+    *
     * @param sessionFactory
     * @param seconds
     * @throws Exception
     */
    protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
    {
-      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
+      final HornetQServerImpl actualServer = (HornetQServerImpl) backupServer.getServer();
       if (actualServer.getConfiguration().isSharedStore())
       {
          waitForServer(actualServer);
@@ -292,10 +294,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
-         ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
       locator.setRetryInterval(50);
       addServerLocator(locator);
-         return (ServerLocatorInternal) locator;
+      return (ServerLocatorInternal) locator;
    }
 
 

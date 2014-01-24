@@ -35,7 +35,8 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.MessageLogger;
 
 @MessageLogger(projectCode = "HQ")
-public interface HornetQToolsLogger extends BasicLogger {
+public interface HornetQToolsLogger extends BasicLogger
+{
    /**
     * The default logger.
     */

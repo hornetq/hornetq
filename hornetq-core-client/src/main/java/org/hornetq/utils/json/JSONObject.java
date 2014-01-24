@@ -113,7 +113,7 @@ public class JSONObject
        * @return     NULL.
        */
       @Override
-      protected final Object clone()
+      protected Object clone()
       {
          return this;
       }
@@ -128,6 +128,13 @@ public class JSONObject
       public boolean equals(final Object object)
       {
          return object == null || object == this;
+      }
+
+      @Override
+      public int hashCode()
+      {
+         // TODO
+         return 0;
       }
 
       /**
@@ -450,7 +457,7 @@ public class JSONObject
     * @param names An array of strings, the names of the fields to be obtained
     * from the object.
     */
-   public JSONObject(final Object object, final String names[])
+   public JSONObject(final Object object, final String[] names)
    {
       this();
       Class c = object.getClass();
@@ -548,7 +555,7 @@ public class JSONObject
     * @param  d A double.
     * @return A String.
     */
-   static public String doubleToString(final double d)
+   public static String doubleToString(final double d)
    {
       if (Double.isInfinite(d) || Double.isNaN(d))
       {
@@ -823,7 +830,7 @@ public class JSONObject
     * @return A String.
     * @throws JSONException If n is a non-finite number.
     */
-   static public String numberToString(final Number n) throws JSONException
+   public static String numberToString(final Number n) throws JSONException
    {
       if (n == null)
       {
@@ -1310,7 +1317,7 @@ public class JSONObject
     * @param s A String.
     * @return A simple JSON value.
     */
-   static public Object stringToValue(final String s)
+   public static Object stringToValue(final String s)
    {
       if (s.equals(""))
       {

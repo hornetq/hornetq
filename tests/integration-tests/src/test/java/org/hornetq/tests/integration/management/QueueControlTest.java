@@ -11,18 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.hornetq.api.core.client.HornetQClient;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -33,6 +26,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DayCounterInfo;
@@ -42,17 +36,20 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class QueueControlTest extends ManagementTestBase
 {
@@ -237,8 +234,6 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
-   
 
    @Test
    public void testGetMessageCount() throws Exception
@@ -488,7 +483,7 @@ public class QueueControlTest extends ManagementTestBase
 
       System.out.println(queueControl.listDeliveringMessagesAsJSON());
 
-      Map<String, Map<String, Object>[]> deliveringMap = queueControl.listDeliveringMessages();
+      Map<String, Map<String, Object> []> deliveringMap = queueControl.listDeliveringMessages();
       assertEquals(1, deliveringMap.size());
       //Map<String, Object[]> msgs = deliveringMap.get(key)
 
@@ -518,7 +513,7 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
       Assert.assertEquals(1, messages.length);
-      Assert.assertEquals(intValue, ((Number)messages[0].get("key")).intValue());
+      Assert.assertEquals(intValue, ((Number) messages[0].get("key")).intValue());
 
       Thread.sleep(delay + 500);
 
@@ -916,7 +911,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       boolean moved = queueControl.moveMessage(messageID, otherQueue.toString());
       Assert.assertTrue(moved);
@@ -949,7 +944,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       // moved all messages to unknown queue
       try
@@ -1132,7 +1127,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       // delete 1st message
       boolean deleted = queueControl.removeMessage(messageID);
@@ -1156,7 +1151,7 @@ public class QueueControlTest extends ManagementTestBase
 
       // send messages on queue
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
 
          ClientMessage msg = session.createMessage(false);
@@ -1179,8 +1174,8 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(50, messages.length);
-      assertEquals(50, ((Number)messages[0].get("count")).intValue());
-      long messageID = (Long)messages[0].get("messageID");
+      assertEquals(50, ((Number) messages[0].get("count")).intValue());
+      long messageID = (Long) messages[0].get("messageID");
 
       // delete 1st message
       boolean deleted = queueControl.removeMessage(messageID);
@@ -1241,14 +1236,14 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = session.createMessage(false);
          msg.putStringProperty(key, SimpleString.toSimpleString(matchingValue));
          producer.send(msg);
       }
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage msg = session.createMessage(false);
          msg.putStringProperty(key, SimpleString.toSimpleString(nonMatchingValue));
@@ -1347,7 +1342,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       queueControl.setExpiryAddress(expiryAddress.toString());
       boolean expired = queueControl.expireMessage(messageID);
@@ -1386,7 +1381,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       queueControl.setDeadLetterAddress(deadLetterAddress.toString());
 
@@ -1409,8 +1404,8 @@ public class QueueControlTest extends ManagementTestBase
    @Test
    public void testChangeMessagePriority() throws Exception
    {
-      byte originalPriority = (byte)1;
-      byte newPriority = (byte)8;
+      byte originalPriority = (byte) 1;
+      byte newPriority = (byte) 8;
 
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -1428,7 +1423,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       boolean priorityChanged = queueControl.changeMessagePriority(messageID, newPriority);
       Assert.assertTrue(priorityChanged);
@@ -1445,7 +1440,7 @@ public class QueueControlTest extends ManagementTestBase
    @Test
    public void testChangeMessagePriorityWithInvalidValue() throws Exception
    {
-      byte invalidPriority = (byte)23;
+      byte invalidPriority = (byte) 23;
 
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -1462,7 +1457,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listMessages(null);
       Assert.assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("messageID");
+      long messageID = (Long) messages[0].get("messageID");
 
       try
       {
@@ -1759,11 +1754,11 @@ public class QueueControlTest extends ManagementTestBase
 
       assertEquals(NUMBER_OF_MSGS, q1Control.moveMessages(null, "q2"));
 
-      long messageIDs[] = new long[NUMBER_OF_MSGS];
+      long[] messageIDs = new long[NUMBER_OF_MSGS];
 
       consumer = session.createConsumer("q2", true);
 
-      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -1774,7 +1769,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumer.close();
 
-      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
       {
          q2Control.moveMessage(messageIDs[i], "q1");
       }
@@ -1826,7 +1821,7 @@ public class QueueControlTest extends ManagementTestBase
          e.printStackTrace();
       }
    }
-   
+
    @Test
    public void testResetMessagesAdded() throws Exception
    {
@@ -1847,9 +1842,9 @@ public class QueueControlTest extends ManagementTestBase
       ManagementTestBase.consumeMessages(2, session, queue);
 
       Assert.assertEquals(2, queueControl.getMessagesAdded());
-      
+
       queueControl.resetMessagesAdded();
-      
+
       Assert.assertEquals(0, queueControl.getMessagesAdded());
 
       session.deleteQueue(queue);

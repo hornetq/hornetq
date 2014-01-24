@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.security;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.hornetq.core.security.CheckType.CONSUME;
@@ -20,10 +21,7 @@ import static org.hornetq.core.security.CheckType.CREATE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.DELETE_NON_DURABLE_QUEUE;
 import static org.hornetq.core.security.CheckType.SEND;
-import org.junit.Assert;
 
-
-import org.hornetq.core.security.Role;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

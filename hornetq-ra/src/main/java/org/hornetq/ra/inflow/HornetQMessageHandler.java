@@ -12,9 +12,6 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.util.UUID;
-
-import javax.jms.InvalidClientIDException;
 import javax.jms.MessageListener;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
@@ -22,6 +19,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
+import java.util.UUID;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -127,18 +125,18 @@ public class HornetQMessageHandler implements MessageHandler
                else if (HornetQRALogger.LOGGER.isDebugEnabled())
                {
                   HornetQRALogger.LOGGER.debug("the mdb on destination " + queueName + " already had " +
-                     subResponse.getConsumerCount() +
-                     " consumers but the MDB is configured to share subscriptions, so no exceptions are thrown");
+                                                  subResponse.getConsumerCount() +
+                                                  " consumers but the MDB is configured to share subscriptions, so no exceptions are thrown");
                }
             }
 
             SimpleString oldFilterString = subResponse.getFilterString();
 
             boolean selectorChanged = selector == null && oldFilterString != null ||
-                                      oldFilterString == null &&
-                                      selector != null ||
-                                      (oldFilterString != null && selector != null && !oldFilterString.toString()
-                                                                                                      .equals(selector));
+               oldFilterString == null &&
+                  selector != null ||
+               (oldFilterString != null && selector != null && !oldFilterString.toString()
+                  .equals(selector));
 
             SimpleString oldTopicName = subResponse.getAddress();
 
@@ -153,7 +151,7 @@ public class HornetQMessageHandler implements MessageHandler
                session.createQueue(activation.getAddress(), queueName, selectorString, true);
             }
          }
-         consumer = (ClientConsumerInternal)session.createConsumer(queueName, null, false);
+         consumer = (ClientConsumerInternal) session.createConsumer(queueName, null, false);
       }
       else
       {
@@ -182,7 +180,7 @@ public class HornetQMessageHandler implements MessageHandler
          {
             tempQueueName = activation.getAddress();
          }
-         consumer = (ClientConsumerInternal)session.createConsumer(tempQueueName, selectorString);
+         consumer = (ClientConsumerInternal) session.createConsumer(tempQueueName, selectorString);
       }
 
       // Create the endpoint, if we are transacted pass the session so it is enlisted, unless using Local TX
@@ -318,7 +316,7 @@ public class HornetQMessageHandler implements MessageHandler
             message.acknowledge();
          }
 
-         ((MessageListener)endpoint).onMessage(msg);
+         ((MessageListener) endpoint).onMessage(msg);
 
          if (!transacted)
          {

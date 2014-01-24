@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.AccessController;
@@ -23,9 +25,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -57,8 +56,8 @@ import org.hornetq.core.protocol.ProtocolHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -187,11 +186,11 @@ public class NettyAcceptor implements Acceptor
                                                               -1,
                                                               configuration);
       backlog = ConfigurationHelper.getIntProperty(TransportConstants.BACKLOG_PROP_NAME,
-            -1,
-            configuration);
+                                                   -1,
+                                                   configuration);
       useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
-            TransportConstants.DEFAULT_USE_INVM,
-            configuration);
+                                                       TransportConstants.DEFAULT_USE_INVM,
+                                                       configuration);
 
       this.protocolHandler = new ProtocolHandler(protocolMap, this, configuration, scheduledThreadPool);
 
@@ -207,18 +206,18 @@ public class NettyAcceptor implements Acceptor
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-                                                                  TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                  configuration,
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                    TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                    configuration,
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword());
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
                                                                 configuration);
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
-                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
-                                                                    configuration,
-                                                                    HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                    HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                      TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                      configuration,
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword());
 
          enabledCipherSuites = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME,
                                                                      TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES,
@@ -226,7 +225,7 @@ public class NettyAcceptor implements Acceptor
 
          enabledProtocols = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME,
                                                                   TransportConstants.DEFAULT_ENABLED_PROTOCOLS,
-                                                                    configuration);
+                                                                  configuration);
 
          needClientAuth = ConfigurationHelper.getBooleanProperty(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME,
                                                                  TransportConstants.DEFAULT_NEED_CLIENT_AUTH,
@@ -264,8 +263,8 @@ public class NettyAcceptor implements Acceptor
                                                              configuration);
 
       httpUpgradeEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME,
-                                TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
-                                configuration);
+                                                                  TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
+                                                                  configuration);
    }
 
    public synchronized void start() throws Exception
@@ -309,13 +308,13 @@ public class NettyAcceptor implements Acceptor
          {
             if (keyStorePath == null)
                throw new IllegalArgumentException("If \"" + TransportConstants.SSL_ENABLED_PROP_NAME +
-                       "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
+                                                     "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
             context = SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
          }
          catch (Exception e)
          {
             IllegalStateException ise = new IllegalStateException("Unable to create NettyAcceptor for " + host +
-                                                                  ":" + port);
+                                                                     ":" + port);
             ise.initCause(e);
             throw ise;
          }
@@ -410,7 +409,9 @@ public class NettyAcceptor implements Acceptor
       {
          // the channel will be bound by the Web container and hand over after the HTTP Upgrade
          // handshake is successful
-      } else {
+      }
+      else
+      {
          startServerChannels();
 
          paused = false;
@@ -433,7 +434,7 @@ public class NettyAcceptor implements Acceptor
             batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher,
                                                                             batchDelay,
                                                                             batchDelay,
-                                                                           TimeUnit.MILLISECONDS);
+                                                                            TimeUnit.MILLISECONDS);
          }
 
          // TODO: Think about add Version back to netty
@@ -441,13 +442,14 @@ public class NettyAcceptor implements Acceptor
       }
    }
 
-    /**
-     * Transfers the Netty channel that has been created outside of this NettyAcceptor
-     * to control it and configure it according to this NettyAcceptor setting.
-     *
-     * @param channel A Netty channel created outside this NettyAcceptor.
-     */
-   public void transfer(Channel channel) {
+   /**
+    * Transfers the Netty channel that has been created outside of this NettyAcceptor
+    * to control it and configure it according to this NettyAcceptor setting.
+    *
+    * @param channel A Netty channel created outside this NettyAcceptor.
+    */
+   public void transfer(Channel channel)
+   {
       channel.pipeline().addLast(protocolHandler.getProtocolDecoder());
    }
 
@@ -593,6 +595,7 @@ public class NettyAcceptor implements Acceptor
 
    /**
     * not allowed
+    *
     * @param defaultHornetQPrincipal
     */
    public void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal)
@@ -602,6 +605,7 @@ public class NettyAcceptor implements Acceptor
 
    /**
     * only InVM acceptors should allow this
+    *
     * @return
     */
    public boolean isUnsecurable()
@@ -671,7 +675,7 @@ public class NettyAcceptor implements Acceptor
    {
       public void connectionCreated(final HornetQComponent component, final Connection connection, final String protocol)
       {
-         if (connections.putIfAbsent(connection.getID(), (NettyServerConnection)connection) != null)
+         if (connections.putIfAbsent(connection.getID(), (NettyServerConnection) connection) != null)
          {
             throw HornetQMessageBundle.BUNDLE.connectionExists(connection.getID());
          }

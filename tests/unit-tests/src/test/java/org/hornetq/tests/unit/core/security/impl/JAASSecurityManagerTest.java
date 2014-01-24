@@ -11,11 +11,16 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.security.impl;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
@@ -25,28 +30,20 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.spi.LoginModule;
-
-import org.junit.Assert;
-
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.spi.core.security.JAASSecurityManager;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.security.SimpleGroup;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * tests the JAASSecurityManager
  *
- *@author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class JAASSecurityManagerTest extends UnitTestCase
 {
@@ -168,7 +165,7 @@ public class JAASSecurityManagerTest extends UnitTestCase
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
+            roles.addMember(new JAASSecurityManager.SimplePrincipal((String) options.get("role")));
             subject.getPrincipals().add(roles);
          }
          return authenticated;
@@ -204,7 +201,7 @@ public class JAASSecurityManagerTest extends UnitTestCase
          AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                                  LoginModuleControlFlag.REQUIRED,
                                                                  options);
-         return new AppConfigurationEntry[] { entry };
+         return new AppConfigurationEntry[]{entry};
       }
 
       @Override

@@ -42,8 +42,6 @@ import org.hornetq.utils.IDGenerator;
  * A JournalJMSStorageManagerImpl
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public final class JMSJournalStorageManagerImpl implements JMSStorageManager
 {
@@ -79,7 +77,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
    // Constructors --------------------------------------------------
    public JMSJournalStorageManagerImpl(final IDGenerator idGenerator,
                                        final Configuration config,
-                                final ReplicationManager replicator)
+                                       final ReplicationManager replicator)
    {
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
@@ -99,17 +97,17 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
       SequentialFileFactory bindingsJMS = new NIOSequentialFileFactory(journalDir);
 
       Journal localJMS = new JournalImpl(1024 * 1024,
-                                              2,
-                                              config.getJournalCompactMinFiles(),
-                                              config.getJournalCompactPercentage(),
-                                              bindingsJMS,
-                                              "hornetq-jms",
-                                              "jms",
-                                              1);
+                                         2,
+                                         config.getJournalCompactMinFiles(),
+                                         config.getJournalCompactPercentage(),
+                                         bindingsJMS,
+                                         "hornetq-jms",
+                                         "jms",
+                                         1);
 
       if (replicator != null)
       {
-         jmsJournal = new ReplicatedJournal((byte)2, localJMS, replicator);
+         jmsJournal = new ReplicatedJournal((byte) 2, localJMS, replicator);
       }
       else
       {
@@ -175,7 +173,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
       return list;
    }
 
-   public void addJNDI(PersistedType type, String name, String ... address) throws Exception
+   public void addJNDI(PersistedType type, String name, String... address) throws Exception
    {
       Pair<PersistedType, String> key = new Pair<PersistedType, String>(type, name);
 
@@ -256,7 +254,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
    public void deleteDestination(final PersistedType type, final String name) throws Exception
    {
       PersistedDestination destination = destinations.remove(new Pair<PersistedType, String>(type, name));
-      if(destination != null)
+      if (destination != null)
       {
          jmsJournal.appendDeleteRecord(destination.getId(), false);
       }
@@ -312,7 +310,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
             cf.setId(id);
             mapFactories.put(cf.getName(), cf);
          }
-         else if(rec == DESTINATION_RECORD)
+         else if (rec == DESTINATION_RECORD)
          {
             PersistedDestination destination = new PersistedDestination();
             destination.decode(buffer);
@@ -362,7 +360,6 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
          }
       }
    }
-
 
 
    // Inner classes -------------------------------------------------

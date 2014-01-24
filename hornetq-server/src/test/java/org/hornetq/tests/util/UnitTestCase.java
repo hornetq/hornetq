@@ -11,6 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.util;
+
+import javax.naming.Context;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -44,10 +48,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.naming.Context;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -112,11 +112,12 @@ import org.junit.rules.TestName;
 
 /**
  * Helper base class for our unit tests.
- * <p>
+ * <p/>
  * See {@code org.hornetq.tests.util.ServiceTestBase} for a test case with server set-up.
- * @see ServiceTestBase
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
+ * @see ServiceTestBase
  */
 public abstract class UnitTestCase extends CoreUnitTestCase
 {
@@ -143,6 +144,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    private static final String OS_TYPE = System.getProperty("os.name").toLowerCase();
    private static final int DEFAULT_UDP_PORT;
+
    static
    {
       Random random = new Random();
@@ -211,18 +213,18 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    }
 
    protected static final void basicClusterConnectionConfig(Configuration mainConfig,
-                                                                                      String connectorName,
-                                                                                      List<String> connectors)
+                                                            String connectorName,
+                                                            List<String> connectors)
    {
       ClusterConnectionConfiguration ccc =
-               new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, true, 1, 1, connectors,
-                                                  false);
+         new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, true, 1, 1, connectors,
+                                            false);
       mainConfig.getClusterConfigurations().add(ccc);
    }
 
    protected Configuration createDefaultConfig(final int index,
-                                                      final Map<String, Object> params,
-                                                      final String... acceptors)
+                                               final Map<String, Object> params,
+                                               final String... acceptors)
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -295,7 +297,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    }
 
    protected Configuration
-            createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
+   createDefaultConfig(final Map<String, Object> params, final String... acceptors) throws Exception
    {
       ConfigurationImpl configuration = createBasicConfig(-1);
 
@@ -400,6 +402,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    /**
     * Verifies whether weak references are released after a few GCs.
+    *
     * @param references
     * @throws InterruptedException
     */
@@ -448,12 +451,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          out.println("===============================================================================");
          out.println("Thread " + el.getKey() +
-                     " name = " +
-                     el.getKey().getName() +
-                     " id = " +
-                     el.getKey().getId() +
-                     " group = " +
-                     el.getKey().getThreadGroup());
+                        " name = " +
+                        el.getKey().getName() +
+                        " id = " +
+                        el.getKey().getId() +
+                        " group = " +
+                        el.getKey().getThreadGroup());
          out.println();
          for (StackTraceElement traceEl : el.getValue())
          {
@@ -468,7 +471,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return str.toString();
    }
 
-   /** Sends the message to both logger and System.out (for unit report) */
+   /**
+    * Sends the message to both logger and System.out (for unit report)
+    */
    public void logAndSystemOut(String message, Exception e)
    {
       HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
@@ -477,7 +482,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       e.printStackTrace(System.out);
    }
 
-   /** Sends the message to both logger and System.out (for unit report) */
+   /**
+    * Sends the message to both logger and System.out (for unit report)
+    */
    public void logAndSystemOut(String message)
    {
       HornetQServerLogger log0 = HornetQServerLogger.LOGGER;
@@ -634,7 +641,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return connectors;
    }
 
-   protected final static void checkFreePort(final int... ports)
+   protected static final void checkFreePort(final int... ports)
    {
       for (int port : ports)
       {
@@ -856,7 +863,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       catch (Exception e)
       {
          Assert.assertTrue(e instanceof HornetQException);
-         Assert.assertEquals(errorCode, ((HornetQException)e).getType());
+         Assert.assertEquals(errorCode, ((HornetQException) e).getType());
       }
    }
 
@@ -877,13 +884,13 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       catch (Exception e)
       {
          Assert.assertTrue(e instanceof XAException);
-         Assert.assertEquals(errorCode, ((XAException)e).errorCode);
+         Assert.assertEquals(errorCode, ((XAException) e).errorCode);
       }
    }
 
    public static byte getSamplebyte(final long position)
    {
-      return (byte)('a' + position % ('z' - 'a' + 1));
+      return (byte) ('a' + position % ('z' - 'a' + 1));
    }
 
    // Creates a Fake LargeStream without using a real file
@@ -922,8 +929,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    }
 
-   /** It validates a Bean (POJO) using simple setters and getters with random values.
-    *  You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them) */
+   /**
+    * It validates a Bean (POJO) using simple setters and getters with random values.
+    * You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them)
+    */
    protected void validateGettersAndSetters(final Object pojo, final String... ignoredProperties) throws Exception
    {
       HashSet<String> ignoreSet = new HashSet<String>();
@@ -935,7 +944,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
       BeanInfo info = Introspector.getBeanInfo(pojo.getClass());
 
-      PropertyDescriptor properties[] = info.getPropertyDescriptors();
+      PropertyDescriptor[] properties = info.getPropertyDescriptors();
 
       for (PropertyDescriptor prop : properties)
       {
@@ -972,8 +981,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
             System.out.println("WriteOnly property " + prop.getName() + " on " + pojo.getClass());
          }
          else if (value != null & prop.getWriteMethod() != null &&
-                  prop.getReadMethod() != null &&
-                  !ignoreSet.contains(prop.getName()))
+            prop.getReadMethod() != null &&
+            !ignoreSet.contains(prop.getName()))
          {
             System.out.println("Validating " + prop.getName() + " type = " + prop.getPropertyType());
             prop.getWriteMethod().invoke(pojo, value);
@@ -1061,85 +1070,85 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          {
             cleanupPools();
          }
-      //clean up pools before failing
-      if(!exceptions.isEmpty())
-      {
-         for (Exception exception : exceptions)
+         //clean up pools before failing
+         if (!exceptions.isEmpty())
          {
-            exception.printStackTrace();
-         }
+            for (Exception exception : exceptions)
+            {
+               exception.printStackTrace();
+            }
             fail("Client Session Factories still trying to reconnect, see above to see where created");
-      }
-      Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
-      for (Thread thread : threadMap.keySet())
-      {
-         StackTraceElement[] stack = threadMap.get(thread);
-         for (StackTraceElement stackTraceElement : stack)
+         }
+         Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
+         for (Thread thread : threadMap.keySet())
          {
-            if (stackTraceElement.getMethodName().contains("getConnectionWithRetry") && !alreadyFailedThread.contains(thread))
+            StackTraceElement[] stack = threadMap.get(thread);
+            for (StackTraceElement stackTraceElement : stack)
             {
-               alreadyFailedThread.add(thread);
-               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
-                     thread.getName() +
-                     " id = " +
-                     thread.getId() +
-                     " has running locators on test " +
-                     this.getName() +
-                     " on this following dump"));
-               fail("test '" + getName() + "' left serverlocator running, this could effect other tests");
-            }
-            else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
-            {
-               alreadyFailedThread.add(thread);
-               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
-                                             thread.getName() +
-                                             " id = " +
-                                             thread.getId() +
-                                             " is still broadcasting " +
-                                             this.getName() +
-                                             " on this following dump"));
-               fail("test left broadcastgroupimpl running, this could effect other tests");
+               if (stackTraceElement.getMethodName().contains("getConnectionWithRetry") && !alreadyFailedThread.contains(thread))
+               {
+                  alreadyFailedThread.add(thread);
+                  System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+                                                   thread.getName() +
+                                                   " id = " +
+                                                   thread.getId() +
+                                                   " has running locators on test " +
+                                                   this.getName() +
+                                                   " on this following dump"));
+                  fail("test '" + getName() + "' left serverlocator running, this could effect other tests");
+               }
+               else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
+               {
+                  alreadyFailedThread.add(thread);
+                  System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+                                                   thread.getName() +
+                                                   " id = " +
+                                                   thread.getId() +
+                                                   " is still broadcasting " +
+                                                   this.getName() +
+                                                   " on this following dump"));
+                  fail("test left broadcastgroupimpl running, this could effect other tests");
+               }
             }
          }
-      }
 
-       if (checkThread)
-      {
-          StringBuffer buffer = null;
-
-          boolean failed = true;
-
-
-         long timeout = System.currentTimeMillis() + 60000;
-         while (failed && timeout > System.currentTimeMillis())
+         if (checkThread)
          {
-            buffer = new StringBuffer();
+            StringBuffer buffer = null;
 
-            failed = checkThread(buffer);
+            boolean failed = true;
+
+
+            long timeout = System.currentTimeMillis() + 60000;
+            while (failed && timeout > System.currentTimeMillis())
+            {
+               buffer = new StringBuffer();
+
+               failed = checkThread(buffer);
+
+               if (failed)
+               {
+                  forceGC();
+                  Thread.sleep(500);
+                  log.info("There are still threads running, trying again");
+                  System.out.println(buffer);
+               }
+            }
 
             if (failed)
             {
-               forceGC();
-               Thread.sleep(500);
-               log.info("There are still threads running, trying again");
-                System.out.println(buffer);
-            }
-         }
-
-         if (failed)
-         {
                logAndSystemOut("Thread leaked on test " + this.getClass().getName() + "::" + this.getName() + "\n" +
-                        buffer);
+                                  buffer);
                logAndSystemOut("Thread leakage");
 
-            fail("Thread leaked");
-         }
+               fail("Thread leaked");
+            }
 
-      }
-      else
-      {
-         checkThread = true;
-      }
+         }
+         else
+         {
+            checkThread = true;
+         }
 
          checkFilesUsage();
       }
@@ -1157,7 +1166,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    {
       long time = System.currentTimeMillis();
       long waitUntil = time + 5000;
-      while(!ClientSessionFactoryImpl.CLOSE_RUNNABLES.isEmpty() && time < waitUntil)
+      while (!ClientSessionFactoryImpl.CLOSE_RUNNABLES.isEmpty() && time < waitUntil)
       {
          try
          {
@@ -1170,7 +1179,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          time = System.currentTimeMillis();
       }
       List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables =
-               new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
+         new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
       ArrayList<Exception> exceptions = new ArrayList<Exception>();
 
       if (!closeRunnables.isEmpty())
@@ -1193,7 +1202,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          for (ClientProducer p : clientProducers)
          {
-               assertTrue(p + " should be closed", p.isClosed());
+            assertTrue(p + " should be closed", p.isClosed());
          }
          clientProducers.clear();
       }
@@ -1253,6 +1262,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    /**
     * if it's an expected thread... we will just move along ignoring it
+    *
     * @param thread
     * @return
     */
@@ -1281,7 +1291,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
       else if (threadName.contains("globalEventExecutor"))
       {
-          return true;
+         return true;
       }
       else
       {
@@ -1397,28 +1407,28 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          if (arg instanceof Byte)
          {
-            buffer.put(((Byte)arg).byteValue());
+            buffer.put(((Byte) arg).byteValue());
          }
          else if (arg instanceof Boolean)
          {
-            Boolean b = (Boolean)arg;
-            buffer.put((byte)(b.booleanValue() ? 1 : 0));
+            Boolean b = (Boolean) arg;
+            buffer.put((byte) (b.booleanValue() ? 1 : 0));
          }
          else if (arg instanceof Integer)
          {
-            buffer.putInt(((Integer)arg).intValue());
+            buffer.putInt(((Integer) arg).intValue());
          }
          else if (arg instanceof Long)
          {
-            buffer.putLong(((Long)arg).longValue());
+            buffer.putLong(((Long) arg).longValue());
          }
          else if (arg instanceof Float)
          {
-            buffer.putFloat(((Float)arg).floatValue());
+            buffer.putFloat(((Float) arg).floatValue());
          }
          else if (arg instanceof Double)
          {
-            buffer.putDouble(((Double)arg).doubleValue());
+            buffer.putDouble(((Double) arg).doubleValue());
          }
          else
          {
@@ -1575,7 +1585,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
                                                     durable,
                                                     0,
                                                     System.currentTimeMillis(),
-                                                    (byte)4);
+                                                    (byte) 4);
       message.getBodyBuffer().writeString(s);
       return message;
    }
@@ -1620,7 +1630,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          if (binding instanceof LocalQueueBinding)
          {
-            bindingsFound.add((QueueBinding)binding);
+            bindingsFound.add((QueueBinding) binding);
          }
       }
       return bindingsFound;
@@ -1628,14 +1638,15 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    /**
     * It will inspect the journal directly and determine if there are queues on this journal,
-    * @return a Map containing the reference counts per queue
+    *
     * @param serverToInvestigate
+    * @return a Map containing the reference counts per queue
     * @throws Exception
     */
    protected Map<Long, AtomicInteger> loadQueues(HornetQServer serverToInvestigate) throws Exception
    {
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(serverToInvestigate.getConfiguration()
-                                                                                         .getJournalDirectory());
+                                                                         .getJournalDirectory());
 
       JournalImpl messagesJournal = new JournalImpl(serverToInvestigate.getConfiguration().getJournalFileSize(),
                                                     serverToInvestigate.getConfiguration().getJournalMinFiles(),
@@ -1660,7 +1671,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          Object o = DescribeJournal.newObjectEncoding(info);
          if (info.getUserRecordType() == JournalRecordIds.ADD_REF)
          {
-            ReferenceDescribe ref = (ReferenceDescribe)o;
+            ReferenceDescribe ref = (ReferenceDescribe) o;
             AtomicInteger count = messageRefCounts.get(ref.refEncoding.queueID);
             if (count == null)
             {
@@ -1693,9 +1704,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    protected final ServerLocator createNonHALocator(final boolean isNetty)
    {
       ServerLocator locatorWithoutHA =
-               isNetty
-                      ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
-                      : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         isNetty
+            ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
+            : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       return addServerLocator(locatorWithoutHA);
    }
 
@@ -1824,7 +1835,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          for (ClientConsumer cc : clientConsumers)
          {
-            if (cc == null )
+            if (cc == null)
                continue;
             assertTrue(cc.isClosed());
          }
@@ -1899,54 +1910,54 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       }
    }
 
-   public static void crashAndWaitForFailure(HornetQServer server, ClientSession ...sessions) throws Exception
-    {
-       CountDownLatch latch = new CountDownLatch(sessions.length);
-       for (ClientSession session : sessions)
-       {
-          CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch, session);
-          session.addFailureListener(listener);
-       }
+   public static void crashAndWaitForFailure(HornetQServer server, ClientSession... sessions) throws Exception
+   {
+      CountDownLatch latch = new CountDownLatch(sessions.length);
+      for (ClientSession session : sessions)
+      {
+         CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch, session);
+         session.addFailureListener(listener);
+      }
 
-       ClusterManager clusterManager = server.getClusterManager();
-       clusterManager.flushExecutor();
-       clusterManager.clear();
-       Assert.assertTrue("server should be running!", server.isStarted());
-       server.stop(true);
+      ClusterManager clusterManager = server.getClusterManager();
+      clusterManager.flushExecutor();
+      clusterManager.clear();
+      Assert.assertTrue("server should be running!", server.isStarted());
+      server.stop(true);
 
-       if (sessions.length > 0)
-       {
-          // Wait to be informed of failure
-          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
-          Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
-                   sessions.length, ok);
-       }
-    }
+      if (sessions.length > 0)
+      {
+         // Wait to be informed of failure
+         boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
+                              sessions.length, ok);
+      }
+   }
 
    public static void crashAndWaitForFailure(HornetQServer server, ServerLocator locator) throws Exception
-    {
-       ClientSessionFactory sf = locator.createSessionFactory();
-       ClientSession session = sf.createSession();
-       try
-       {
-          crashAndWaitForFailure(server, session);
-       }
-       finally
-       {
-          try
-          {
-             session.close();
-             sf.close();
-          }
-          catch (Exception ignored)
-          {
-          }
-       }
-    }
+   {
+      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession session = sf.createSession();
+      try
+      {
+         crashAndWaitForFailure(server, session);
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+            sf.close();
+         }
+         catch (Exception ignored)
+         {
+         }
+      }
+   }
 
    public interface RunnerWithEX
    {
-      public void run() throws Throwable;
+      void run() throws Throwable;
    }
 
    // This can be used to interrupt a thread if it takes more than timeoutMilliseconds
@@ -2009,16 +2020,17 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   protected static interface HornetQAction
+   protected interface HornetQAction
    {
       void run() throws Exception;
    }
 
    /**
     * Asserts that latch completes within a (rather large interval).
-    * <p>
+    * <p/>
     * Use this instead of just calling {@code latch.await()}. Otherwise your test may hang the whole
     * test run if it fails to count-down the latch.
+    *
     * @param latch
     * @throws InterruptedException
     */

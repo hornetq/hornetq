@@ -12,10 +12,6 @@
  */
 package org.hornetq.tests.integration.persistence;
 
-import org.hornetq.core.server.impl.PostOfficeJournalLoader;
-import org.hornetq.tests.unit.core.server.impl.fakes.FakeJournalLoader;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,12 +22,15 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.PostOfficeJournalLoader;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
+import org.junit.Test;
 
 /**
  * A DeleteMessagesOnStartupTest
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
@@ -48,7 +47,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       Queue theQueue = new FakeQueue(new SimpleString(""));
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
-      queues.put(100l, theQueue);
+      queues.put(100L, theQueue);
 
       ServerMessage msg = new ServerMessageImpl(1, 100);
 
@@ -69,7 +68,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       FakePostOffice postOffice = new FakePostOffice();
 
-      journal.loadMessageJournal(postOffice, null, null, null, null, null, null, new PostOfficeJournalLoader(postOffice,null, journal, null, null, null, null, null, queues));
+      journal.loadMessageJournal(postOffice, null, null, null, null, null, null, new PostOfficeJournalLoader(postOffice, null, journal, null, null, null, null, null, queues));
 
       assertEquals(98, deletedMessage.size());
 

@@ -72,9 +72,9 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { JMSServerDeployer.QUEUE_NODE_NAME,
-                           JMSServerDeployer.TOPIC_NODE_NAME,
-                           JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME };
+      return new String[]{JMSServerDeployer.QUEUE_NODE_NAME,
+         JMSServerDeployer.TOPIC_NODE_NAME,
+         JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME};
    }
 
    @Override
@@ -85,6 +85,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception
     */
@@ -97,6 +98,7 @@ public class JMSServerDeployer extends XmlDeployer
    /**
     * Creates the object to bind, this will either be a JBossConnectionFActory, HornetQQueue or
     * HornetQTopic.
+    *
     * @param node the config
     * @throws Exception
     */
@@ -118,6 +120,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    /**
     * Undeploys an element.
+    *
     * @param node the element to undeploy
     * @throws Exception
     */
@@ -144,10 +147,8 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "hornetq-jms.xml" };
+      return new String[]{"hornetq-jms.xml"};
    }
-
-
 
 
    /**

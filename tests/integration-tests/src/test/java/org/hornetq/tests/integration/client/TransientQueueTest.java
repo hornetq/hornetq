@@ -83,7 +83,7 @@ public class TransientQueueTest extends SingleServerTestBase
 
       ClientProducer producer = session.createProducer(address);
 
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0; i < 1000; i++)
       {
          ClientMessage msg = session.createMessage(false);
          producer.send(msg);
@@ -91,7 +91,7 @@ public class TransientQueueTest extends SingleServerTestBase
 
 
       ClientMessage msg;
-      for (int i = 0 ; i < 500; i++)
+      for (int i = 0; i < 500; i++)
       {
          msg = consumer1.receive(1000);
          assertNotNull(msg);
@@ -107,7 +107,7 @@ public class TransientQueueTest extends SingleServerTestBase
       assertNull(consumer2.receiveImmediate());
 
 
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0; i < 1000; i++)
       {
          msg = session.createMessage(false);
          producer.send(msg);
@@ -226,7 +226,6 @@ public class TransientQueueTest extends SingleServerTestBase
       }
 
       assertTrue(exHappened);
-
 
 
    }

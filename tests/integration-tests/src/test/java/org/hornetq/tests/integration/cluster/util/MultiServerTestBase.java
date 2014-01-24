@@ -36,11 +36,11 @@ public class MultiServerTestBase extends ServiceTestBase
 {
 
 
-   protected HornetQServer servers[];
+   protected HornetQServer[] servers;
 
-   protected HornetQServer backupServers[];
+   protected HornetQServer[] backupServers;
 
-   protected NodeManager nodeManagers[];
+   protected NodeManager[] nodeManagers;
 
    protected int getNumberOfServers()
    {

@@ -54,6 +54,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    /**
     * Add a buff to the List, or save it to the OutputStream if set
+    *
     * @param packet
     */
    public void addPacket(final SessionReceiveContinuationMessage packet)
@@ -83,7 +84,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    }
 
    /**
-    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     */
    public synchronized boolean waitCompletion(final long timeWait) throws HornetQException
@@ -111,7 +111,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
          }
          catch (Exception e)
          {
-            throw new RuntimeException (e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
          }
 
       }
@@ -131,7 +131,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new RuntimeException (e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
       }
    }
 
@@ -149,7 +149,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    }
 
    @Override
-    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
+   public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
       positioningNotSupported();
    }
@@ -311,7 +311,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    public short getUnsignedByte(final int index)
    {
-      return (short)(getByte(index) & 0xFF);
+      return (short) (getByte(index) & 0xFF);
    }
 
    public int getUnsignedShort(final int index)
@@ -367,11 +367,11 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    {
       try
       {
-         return (short)getStream().readUnsignedByte();
+         return (short) getStream().readUnsignedByte();
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -383,7 +383,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -395,7 +395,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -473,7 +473,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    public void readBytes(final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       readBytes(bytesToGet);
       dst.put(bytesToGet);
    }
@@ -483,7 +483,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
       try
       {
-         for (int i = 0 ; i < length; i++)
+         for (int i = 0; i < length; i++)
          {
             getStream().read();
          }
@@ -553,12 +553,12 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    @Override
    public char readChar()
    {
-      return (char)readShort();
+      return (char) readShort();
    }
 
    public char getChar(final int index)
    {
-      return (char)getShort(index);
+      return (char) getShort(index);
    }
 
    public double getDouble(final int index)
@@ -573,7 +573,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    public HornetQBuffer readBytes(final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       readBytes(bytesToGet);
       return HornetQBuffers.wrappedBuffer(bytesToGet);
    }
@@ -637,7 +637,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
          char[] chars = new char[len];
          for (int i = 0; i < len; i++)
          {
-            chars[i] = (char)readShort();
+            chars[i] = (char) readShort();
          }
          return new String(chars);
       }

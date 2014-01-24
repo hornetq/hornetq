@@ -35,12 +35,10 @@ import org.junit.Test;
 
 /**
  * A LargeMessageCompressTest
- *
+ * <p/>
  * Just extend the LargeMessageTest
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- *
  */
 public class LargeMessageCompressTest extends LargeMessageTest
 {
@@ -67,7 +65,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
    @Test
    public void testLargeMessageCompression() throws Exception
    {
-      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int) (3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       HornetQServer server = createServer(true, isNetty());
 
@@ -93,10 +91,10 @@ public class LargeMessageCompressTest extends LargeMessageTest
       ClientMessage msg1 = consumer.receive(1000);
       Assert.assertNotNull(msg1);
 
-      for (int i = 0 ; i < messageSize; i++)
+      for (int i = 0; i < messageSize; i++)
       {
          byte b = msg1.getBodyBuffer().readByte();
-         assertEquals("position = "  + i, getSamplebyte(i), b);
+         assertEquals("position = " + i, getSamplebyte(i), b);
       }
 
       msg1.acknowledge();
@@ -112,7 +110,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
    @Test
    public void testLargeMessageCompression2() throws Exception
    {
-      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int) (3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       HornetQServer server = createServer(true, isNetty());
 
@@ -158,10 +156,10 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       //verify
       FileInputStream input = new FileInputStream(testFile);
-      for (int i = 0 ; i < messageSize; i++)
+      for (int i = 0; i < messageSize; i++)
       {
-         byte b = (byte)input.read();
-         assertEquals("position = "  + i, getSamplebyte(i), b);
+         byte b = (byte) input.read();
+         assertEquals("position = " + i, getSamplebyte(i), b);
       }
       input.close();
       testFile.delete();
@@ -172,7 +170,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
    @Test
    public void testLargeMessageCompression3() throws Exception
    {
-      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int) (3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       HornetQServer server = createServer(true, isNetty());
 
@@ -216,10 +214,10 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       //verify
       FileInputStream input = new FileInputStream(testFile);
-      for (int i = 0 ; i < messageSize; i++)
+      for (int i = 0; i < messageSize; i++)
       {
-         byte b = (byte)input.read();
-         assertEquals("position = "  + i, getSamplebyte(i), b);
+         byte b = (byte) input.read();
+         assertEquals("position = " + i, getSamplebyte(i), b);
       }
       input.close();
 
@@ -228,13 +226,12 @@ public class LargeMessageCompressTest extends LargeMessageTest
    }
 
 
-
    // This test will send 1 Gig of spaces. There shouldn't be enough memory to uncompress the file in memory
    // but this will make sure we can work through compressed channels on saving it to stream
    @Test
    public void testHugeStreamingSpacesCompressed() throws Exception
    {
-      final long messageSize = 1024l * 1024l * 1024l;
+      final long messageSize = 1024L * 1024L * 1024L;
 
       System.out.println("Message size = " + messageSize);
 
@@ -243,7 +240,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
       server.start();
 
       // big enough to hold the whole message compressed on a single message (about 1M on our tests)
-      locator.setMinLargeMessageSize( 100 * 1024 * 1024);
+      locator.setMinLargeMessageSize(100 * 1024 * 1024);
 
       ClientSessionFactory sf = createSessionFactory(locator);
 
@@ -325,7 +322,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
    }
 
 
-
    @Test
    public void testLargeMessageCompressionRestartAndCheckSize() throws Exception
    {
@@ -344,8 +340,8 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      byte [] msgs = new byte[1024 * 1024];
-      for (int i = 0 ; i < msgs.length; i++)
+      byte[] msgs = new byte[1024 * 1024];
+      for (int i = 0; i < msgs.length; i++)
       {
          msgs[i] = RandomUtil.randomByte();
       }
@@ -398,10 +394,10 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       //verify
       FileInputStream input = new FileInputStream(testFile);
-      for (int i = 0 ; i < messageSize; i++)
+      for (int i = 0; i < messageSize; i++)
       {
-         byte b = (byte)input.read();
-         assertEquals("position = "  + i, msgs[i], b);
+         byte b = (byte) input.read();
+         assertEquals("position = " + i, msgs[i], b);
       }
       input.close();
 

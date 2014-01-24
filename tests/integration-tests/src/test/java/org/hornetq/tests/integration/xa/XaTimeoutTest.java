@@ -11,23 +11,16 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.xa;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -54,6 +47,10 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -96,8 +93,8 @@ public class XaTimeoutTest extends UnitTestCase
       messagingService.start();
       // then we create a client as normal
       locator =
-               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                                      InVMConnectorFactory.class.getName())));
+         addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            InVMConnectorFactory.class.getName())));
       sessionFactory = createSessionFactory(locator);
       clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
@@ -128,13 +125,13 @@ public class XaTimeoutTest extends UnitTestCase
       messagingService = null;
       clientSession = null;
 
-      clientProducer = null;;
+      clientProducer = null;
 
       clientConsumer = null;
 
       sessionFactory = null;
 
-      configuration = null;;
+      configuration = null;
 
       super.tearDown();
    }
@@ -410,7 +407,7 @@ public class XaTimeoutTest extends UnitTestCase
       {
          ClientSession simpleTXSession = sessionFactory.createTransactedSession();
          ClientProducer producerTX = simpleTXSession.createProducer(atestq);
-         for (int i = 0 ; i < numberOfMessages ; i++)
+         for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage m = createTextMessage(clientSession, "m-" + i);
             m.putIntProperty("msg", i);
@@ -539,7 +536,7 @@ public class XaTimeoutTest extends UnitTestCase
 
       HashSet<Integer> msgsIds = new HashSet<Integer>();
 
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage msg = clientConsumer.receive(1000);
          assertNotNull(msg);
@@ -549,20 +546,21 @@ public class XaTimeoutTest extends UnitTestCase
 
       assertNull(clientConsumer.receiveImmediate());
 
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          assertTrue(msgsIds.contains(i));
       }
 
       outProducerSession.close();
 
-    }
+   }
 
 
    /**
     * In case a timeout happens the server's object may still have the previous XID.
     * for that reason a new start call is supposed to clean it up with a log.warn
     * but it should still succeed
+    *
     * @throws Exception
     */
    @Test
@@ -637,7 +635,7 @@ public class XaTimeoutTest extends UnitTestCase
       for (int i = 0; i < clientSessions.length; i++)
       {
          clientSessions[i] = sessionFactory.createSession(true, false, false);
-         clientSessions[i].setTransactionTimeout(i < 50?2:5000);
+         clientSessions[i].setTransactionTimeout(i < 50 ? 2 : 5000);
       }
 
       ClientProducer[] clientProducers = new ClientProducer[xids.length];
@@ -669,15 +667,15 @@ public class XaTimeoutTest extends UnitTestCase
       {
          latches[i1] = new CountDownLatch(1);
          messagingService.getResourceManager()
-                      .getTransaction(xids[i1])
-                      .addOperation(new RollbackCompleteOperation(latches[i1]));
+            .getTransaction(xids[i1])
+            .addOperation(new RollbackCompleteOperation(latches[i1]));
       }
-      for (int i1 = 0;i1 < latches.length/2; i1++)
+      for (int i1 = 0; i1 < latches.length / 2; i1++)
       {
          Assert.assertTrue(latches[i1].await(5, TimeUnit.SECONDS));
       }
 
-      for (int i = 0; i < clientSessions.length/2; i++)
+      for (int i = 0; i < clientSessions.length / 2; i++)
       {
          try
          {
@@ -697,7 +695,7 @@ public class XaTimeoutTest extends UnitTestCase
          session.close();
       }
       clientSession.start();
-      for(int i = 0; i < clientSessions.length/2; i++)
+      for (int i = 0; i < clientSessions.length / 2; i++)
       {
          ClientMessage m = clientConsumer.receiveImmediate();
          Assert.assertNotNull(m);
@@ -741,7 +739,7 @@ public class XaTimeoutTest extends UnitTestCase
       locatorTimeout.setCallTimeout(300);
       ClientSessionFactory factoryTimeout = locatorTimeout.createSessionFactory();
 
-      final ClientSession sessionTimeout  = factoryTimeout.createSession(true, false, false);
+      final ClientSession sessionTimeout = factoryTimeout.createSession(true, false, false);
 
       Xid xid = newXID();
 
@@ -779,6 +777,7 @@ public class XaTimeoutTest extends UnitTestCase
       {
          this.latch = latch;
       }
+
       @Override
       public void afterRollback(final Transaction tx)
       {

@@ -25,20 +25,16 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
-
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- *
  * A XARecoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
- *
- *
  */
 public class XARecoveryTest extends JMSTestCase
 {
@@ -87,7 +83,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn1.close();
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.start();
 
@@ -125,19 +121,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons1 = sess2.createConsumer(queue2);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         TextMessage rm2 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         TextMessage rm3 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         TextMessage rm4 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -147,19 +143,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons2 = sess2.createConsumer(queue3);
 
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         TextMessage rm5 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         TextMessage rm6 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         TextMessage rm7 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         TextMessage rm8 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -175,7 +171,7 @@ public class XARecoveryTest extends JMSTestCase
          res.prepare(xid1);
          log.trace("Prepared xid " + xid1);
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -212,19 +208,19 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("created a consumer");
 
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         TextMessage rm9 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
          ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
 
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         TextMessage rm10 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm10);
          ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
 
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         TextMessage rm11 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm11);
          ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
 
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         TextMessage rm12 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm12);
          ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
 
@@ -234,19 +230,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons2 = sess1.createConsumer(queue3);
 
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         TextMessage rm13 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
          ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
 
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         TextMessage rm14 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm14);
          ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
 
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         TextMessage rm15 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm15);
          ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
 
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         TextMessage rm16 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm16);
          ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
 
@@ -320,7 +316,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.start();
 
@@ -358,19 +354,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons1 = sess2.createConsumer(queue2);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         TextMessage rm2 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         TextMessage rm3 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         TextMessage rm4 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -380,19 +376,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons2 = sess2.createConsumer(queue3);
 
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         TextMessage rm5 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         TextMessage rm6 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         TextMessage rm7 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         TextMessage rm8 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -406,7 +402,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -443,19 +439,19 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("created a consumer");
 
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         TextMessage rm9 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm9.getText());
 
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         TextMessage rm10 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm10);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm10.getText());
 
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         TextMessage rm11 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm11);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm11.getText());
 
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         TextMessage rm12 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm12);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm12.getText());
 
@@ -465,19 +461,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons2 = sess1.createConsumer(queue3);
 
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         TextMessage rm13 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm13.getText());
 
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         TextMessage rm14 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm14);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm14.getText());
 
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         TextMessage rm15 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm15);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm15.getText());
 
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         TextMessage rm16 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm16);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm16.getText());
 
@@ -571,7 +567,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.start();
 
@@ -609,19 +605,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons1 = sess2.createConsumer(queue2);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         TextMessage rm2 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         TextMessage rm3 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         TextMessage rm4 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -631,19 +627,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons2 = sess2.createConsumer(queue3);
 
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         TextMessage rm5 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         TextMessage rm6 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         TextMessage rm7 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         TextMessage rm8 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -672,7 +668,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -705,19 +701,19 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("created a consumer");
 
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         TextMessage rm9 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
          ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
 
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         TextMessage rm10 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm10);
          ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
 
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         TextMessage rm11 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm11);
          ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
 
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         TextMessage rm12 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm12);
          ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
 
@@ -727,19 +723,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons2 = sess1.createConsumer(queue3);
 
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         TextMessage rm13 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
          ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
 
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         TextMessage rm14 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm14);
          ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
 
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         TextMessage rm15 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm15);
          ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
 
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         TextMessage rm16 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm16);
          ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
 
@@ -836,7 +832,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.start();
 
@@ -874,19 +870,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons1 = sess2.createConsumer(queue2);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         TextMessage rm2 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         TextMessage rm3 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         TextMessage rm4 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -896,19 +892,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons2 = sess2.createConsumer(queue3);
 
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         TextMessage rm5 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         TextMessage rm6 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         TextMessage rm7 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         TextMessage rm8 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -936,7 +932,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -971,19 +967,19 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("created a consumer");
 
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         TextMessage rm9 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm9.getText());
 
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         TextMessage rm10 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm10);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm10.getText());
 
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         TextMessage rm11 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm11);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm11.getText());
 
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         TextMessage rm12 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm12);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm12.getText());
 
@@ -993,19 +989,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons2 = sess1.createConsumer(queue3);
 
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         TextMessage rm13 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm13.getText());
 
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         TextMessage rm14 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm14);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm14.getText());
 
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         TextMessage rm15 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm15);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm15.getText());
 
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         TextMessage rm16 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm16);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm16.getText());
 
@@ -1094,7 +1090,7 @@ public class XARecoveryTest extends JMSTestCase
          prod2.send(tm7);
          prod2.send(tm8);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.start();
 
@@ -1132,19 +1128,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons1 = sess2.createConsumer(queue2);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1000);
+         TextMessage rm2 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1000);
+         TextMessage rm3 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1000);
+         TextMessage rm4 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -1154,19 +1150,19 @@ public class XARecoveryTest extends JMSTestCase
 
          MessageConsumer cons2 = sess2.createConsumer(queue3);
 
-         TextMessage rm5 = (TextMessage)cons2.receive(1000);
+         TextMessage rm5 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)cons2.receive(1000);
+         TextMessage rm6 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)cons2.receive(1000);
+         TextMessage rm7 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)cons2.receive(1000);
+         TextMessage rm8 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -1194,19 +1190,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons1 = sess1.createConsumer(queue2);
 
-         TextMessage rm9 = (TextMessage)cons1.receive(1000);
+         TextMessage rm9 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm9);
          ProxyAssertSupport.assertEquals(tm9.getText(), rm9.getText());
 
-         TextMessage rm10 = (TextMessage)cons1.receive(1000);
+         TextMessage rm10 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm10);
          ProxyAssertSupport.assertEquals(tm10.getText(), rm10.getText());
 
-         TextMessage rm11 = (TextMessage)cons1.receive(1000);
+         TextMessage rm11 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm11);
          ProxyAssertSupport.assertEquals(tm11.getText(), rm11.getText());
 
-         TextMessage rm12 = (TextMessage)cons1.receive(1000);
+         TextMessage rm12 = (TextMessage) cons1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm12);
          ProxyAssertSupport.assertEquals(tm12.getText(), rm12.getText());
 
@@ -1216,19 +1212,19 @@ public class XARecoveryTest extends JMSTestCase
 
          cons2 = sess1.createConsumer(queue3);
 
-         TextMessage rm13 = (TextMessage)cons2.receive(1000);
+         TextMessage rm13 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm13);
          ProxyAssertSupport.assertEquals(tm13.getText(), rm13.getText());
 
-         TextMessage rm14 = (TextMessage)cons2.receive(1000);
+         TextMessage rm14 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm14);
          ProxyAssertSupport.assertEquals(tm14.getText(), rm14.getText());
 
-         TextMessage rm15 = (TextMessage)cons2.receive(1000);
+         TextMessage rm15 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm15);
          ProxyAssertSupport.assertEquals(tm15.getText(), rm15.getText());
 
-         TextMessage rm16 = (TextMessage)cons2.receive(1000);
+         TextMessage rm16 = (TextMessage) cons2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm16);
          ProxyAssertSupport.assertEquals(tm16.getText(), rm16.getText());
 
@@ -1290,7 +1286,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -1337,7 +1333,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -1363,7 +1359,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The message should now be available
 
-         TextMessage rm1 = (TextMessage)cons2.receive(1000);
+         TextMessage rm1 = (TextMessage) cons2.receive(1000);
 
          ProxyAssertSupport.assertNotNull(rm1);
 
@@ -1424,7 +1420,7 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -1485,7 +1481,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -1527,7 +1523,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The message should now be available
 
-         TextMessage rm1 = (TextMessage)cons2.receive(1000);
+         TextMessage rm1 = (TextMessage) cons2.receive(1000);
 
          ProxyAssertSupport.assertNotNull(rm1);
 
@@ -1599,7 +1595,7 @@ public class XARecoveryTest extends JMSTestCase
 
          prod.send(tm1);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          XASession sess2 = conn2.createXASession();
 
@@ -1616,7 +1612,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Consume the message
 
-         TextMessage rm1 = (TextMessage)cons.receive(1000);
+         TextMessage rm1 = (TextMessage) cons.receive(1000);
 
          ProxyAssertSupport.assertNotNull(rm1);
 
@@ -1630,7 +1626,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -1734,7 +1730,7 @@ public class XARecoveryTest extends JMSTestCase
 
          prod.send(tm1);
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          XASession sess2 = conn2.createXASession();
 
@@ -1751,7 +1747,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Consume the message
 
-         TextMessage rm1 = (TextMessage)cons.receive(1000);
+         TextMessage rm1 = (TextMessage) cons.receive(1000);
 
          ProxyAssertSupport.assertNotNull(rm1);
 
@@ -1781,7 +1777,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // Now recover
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -1905,7 +1901,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.setClientID("wib1");
 
@@ -1939,19 +1935,19 @@ public class XARecoveryTest extends JMSTestCase
 
          sub2 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
-         TextMessage rm1 = (TextMessage)sub1.receive(1000);
+         TextMessage rm1 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)sub1.receive(1000);
+         TextMessage rm2 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)sub1.receive(1000);
+         TextMessage rm3 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)sub1.receive(1000);
+         TextMessage rm4 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -1959,19 +1955,19 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         rm1 = (TextMessage)sub2.receive(1000);
+         rm1 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         rm2 = (TextMessage)sub2.receive(1000);
+         rm2 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         rm3 = (TextMessage)sub2.receive(1000);
+         rm3 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         rm4 = (TextMessage)sub2.receive(1000);
+         rm4 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -1985,7 +1981,7 @@ public class XARecoveryTest extends JMSTestCase
 
          res.prepare(xid1);
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -2024,19 +2020,19 @@ public class XARecoveryTest extends JMSTestCase
 
          sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
-         TextMessage rm5 = (TextMessage)sub1.receive(1000);
+         TextMessage rm5 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)sub1.receive(1000);
+         TextMessage rm6 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)sub1.receive(1000);
+         TextMessage rm7 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)sub1.receive(1000);
+         TextMessage rm8 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -2044,19 +2040,19 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         rm5 = (TextMessage)sub2.receive(1000);
+         rm5 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         rm6 = (TextMessage)sub2.receive(1000);
+         rm6 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         rm7 = (TextMessage)sub2.receive(1000);
+         rm7 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         rm8 = (TextMessage)sub2.receive(1000);
+         rm8 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -2162,7 +2158,7 @@ public class XARecoveryTest extends JMSTestCase
 
          // The messages should now be in both durable subs
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          conn2.setClientID("wib1");
 
@@ -2196,19 +2192,19 @@ public class XARecoveryTest extends JMSTestCase
 
          sub2 = sess2.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
-         TextMessage rm1 = (TextMessage)sub1.receive(1000);
+         TextMessage rm1 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         TextMessage rm2 = (TextMessage)sub1.receive(1000);
+         TextMessage rm2 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         TextMessage rm3 = (TextMessage)sub1.receive(1000);
+         TextMessage rm3 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         TextMessage rm4 = (TextMessage)sub1.receive(1000);
+         TextMessage rm4 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -2216,19 +2212,19 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         rm1 = (TextMessage)sub2.receive(1000);
+         rm1 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals(tm1.getText(), rm1.getText());
 
-         rm2 = (TextMessage)sub2.receive(1000);
+         rm2 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals(tm2.getText(), rm2.getText());
 
-         rm3 = (TextMessage)sub2.receive(1000);
+         rm3 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals(tm3.getText(), rm3.getText());
 
-         rm4 = (TextMessage)sub2.receive(1000);
+         rm4 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals(tm4.getText(), rm4.getText());
 
@@ -2256,7 +2252,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn3 = createXAConnection();;
+         conn3 = createXAConnection();
 
          XASession sess3 = conn3.createXASession();
 
@@ -2293,19 +2289,19 @@ public class XARecoveryTest extends JMSTestCase
 
          sub2 = sess1.createDurableSubscriber(HornetQServerTestCase.topic2, "sub2");
 
-         TextMessage rm5 = (TextMessage)sub1.receive(1000);
+         TextMessage rm5 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         TextMessage rm6 = (TextMessage)sub1.receive(1000);
+         TextMessage rm6 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         TextMessage rm7 = (TextMessage)sub1.receive(1000);
+         TextMessage rm7 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         TextMessage rm8 = (TextMessage)sub1.receive(1000);
+         TextMessage rm8 = (TextMessage) sub1.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -2313,19 +2309,19 @@ public class XARecoveryTest extends JMSTestCase
 
          ProxyAssertSupport.assertNull(m);
 
-         rm5 = (TextMessage)sub2.receive(1000);
+         rm5 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm5);
          ProxyAssertSupport.assertEquals(tm5.getText(), rm5.getText());
 
-         rm6 = (TextMessage)sub2.receive(1000);
+         rm6 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm6);
          ProxyAssertSupport.assertEquals(tm6.getText(), rm6.getText());
 
-         rm7 = (TextMessage)sub2.receive(1000);
+         rm7 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm7);
          ProxyAssertSupport.assertEquals(tm7.getText(), rm7.getText());
 
-         rm8 = (TextMessage)sub2.receive(1000);
+         rm8 = (TextMessage) sub2.receive(1000);
          ProxyAssertSupport.assertNotNull(rm8);
          ProxyAssertSupport.assertEquals(tm8.getText(), rm8.getText());
 
@@ -2404,9 +2400,9 @@ public class XARecoveryTest extends JMSTestCase
 
       try
       {
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -2479,7 +2475,7 @@ public class XARecoveryTest extends JMSTestCase
 
          deployAndLookupAdministeredObjects();
 
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2507,7 +2503,7 @@ public class XARecoveryTest extends JMSTestCase
 
          log.trace("Created conn3");
 
-         TextMessage m1 = (TextMessage)cons.receive(1000);
+         TextMessage m1 = (TextMessage) cons.receive(1000);
          ProxyAssertSupport.assertNull(m1);
 
          log.trace("committing");
@@ -2520,17 +2516,17 @@ public class XARecoveryTest extends JMSTestCase
 
          // Should now be able to receive tm1 and tm2
 
-         m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         m1 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m1);
 
          ProxyAssertSupport.assertEquals(tm1.getText(), m1.getText());
 
-         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         TextMessage m2 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertEquals(tm2.getText(), m2.getText());
 
-         TextMessage m3 = (TextMessage)cons.receive(1000);
+         TextMessage m3 = (TextMessage) cons.receive(1000);
          ProxyAssertSupport.assertNull(m3);
 
          // Now commit tx2
@@ -2539,17 +2535,17 @@ public class XARecoveryTest extends JMSTestCase
 
          // Should now be able to receive tm3 and tm4
 
-         m3 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         m3 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m3);
 
          ProxyAssertSupport.assertEquals(tm3.getText(), m3.getText());
 
-         TextMessage m4 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         TextMessage m4 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m4);
 
          ProxyAssertSupport.assertEquals(tm4.getText(), m4.getText());
 
-         TextMessage m5 = (TextMessage)cons.receive(1000);
+         TextMessage m5 = (TextMessage) cons.receive(1000);
          ProxyAssertSupport.assertNull(m5);
       }
       finally
@@ -2608,9 +2604,9 @@ public class XARecoveryTest extends JMSTestCase
       try
       {
 
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
-         conn2 = createXAConnection();;
+         conn2 = createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -2663,7 +2659,7 @@ public class XARecoveryTest extends JMSTestCase
 
          conn2.close();
 
-         conn1 = createXAConnection();;
+         conn1 = createXAConnection();
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -2688,12 +2684,12 @@ public class XARecoveryTest extends JMSTestCase
 
          Message msg = cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
-         TextMessage m1 = (TextMessage)msg;
+         TextMessage m1 = (TextMessage) msg;
          ProxyAssertSupport.assertNotNull(m1);
 
          ProxyAssertSupport.assertTrue("alpha".equals(m1.getText()) || "beta".equals(m1.getText()));
 
-         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+         TextMessage m2 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
          ProxyAssertSupport.assertNotNull(m2);
 
          ProxyAssertSupport.assertTrue("alpha".equals(m2.getText()) || "beta".equals(m2.getText()));
@@ -2758,92 +2754,92 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
-         conn1 = createXAConnection();
+      conn1 = createXAConnection();
 
-         conn2 = createXAConnection();
+      conn2 = createXAConnection();
 
-         XASession sess1 = conn1.createXASession();
+      XASession sess1 = conn1.createXASession();
 
-         XASession sess2 = conn2.createXASession();
+      XASession sess2 = conn2.createXASession();
 
-         XAResource res1 = sess1.getXAResource();
+      XAResource res1 = sess1.getXAResource();
 
-         XAResource res2 = sess2.getXAResource();
+      XAResource res2 = sess2.getXAResource();
 
-         // Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImple(new Uid("cadaver"), true, 666);
-         Xid xid2 = new XidImple(new Uid("dalidom"), true, 661); // TODO
+      // Pretend to be a transaction manager by interacting through the XAResources
+      Xid xid1 = new XidImple(new Uid("cadaver"), true, 666);
+      Xid xid2 = new XidImple(new Uid("dalidom"), true, 661); // TODO
 
-         // Send a message in each tx
+      // Send a message in each tx
 
-         res1.start(xid1, XAResource.TMNOFLAGS);
+      res1.start(xid1, XAResource.TMNOFLAGS);
 
       MessageProducer prod1 = sess1.createProducer(queue1);
 
-         TextMessage tm1 = sess1.createTextMessage("testing1");
+      TextMessage tm1 = sess1.createTextMessage("testing1");
 
-         prod1.send(tm1);
+      prod1.send(tm1);
 
-         res1.end(xid1, XAResource.TMSUCCESS);
+      res1.end(xid1, XAResource.TMSUCCESS);
 
-         res2.start(xid2, XAResource.TMNOFLAGS);
+      res2.start(xid2, XAResource.TMNOFLAGS);
 
       MessageProducer prod2 = sess2.createProducer(queue1);
 
-         TextMessage tm2 = sess2.createTextMessage("testing2");
+      TextMessage tm2 = sess2.createTextMessage("testing2");
 
-         prod2.send(tm2);
+      prod2.send(tm2);
 
-         res2.end(xid2, XAResource.TMSUCCESS);
+      res2.end(xid2, XAResource.TMSUCCESS);
 
-         // prepare both txs
+      // prepare both txs
 
-         res1.prepare(xid1);
-         res2.prepare(xid2);
+      res1.prepare(xid1);
+      res2.prepare(xid2);
 
-         // Now "crash" the server
+      // Now "crash" the server
 
-         stopServerPeer();
+      stopServerPeer();
 
-         startServerPeer();
+      startServerPeer();
 
-         deployAndLookupAdministeredObjects();
+      deployAndLookupAdministeredObjects();
 
-         conn1.close();
+      conn1.close();
 
-         conn2.close();
+      conn2.close();
 
-         conn1 = createXAConnection();;
+      conn1 = createXAConnection();
 
-         XAResource res = conn1.createXASession().getXAResource();
 
-         Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         ProxyAssertSupport.assertEquals(2, xids.length);
+      XAResource res = conn1.createXASession().getXAResource();
+      Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
+      ProxyAssertSupport.assertEquals(2, xids.length);
 
-         Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         ProxyAssertSupport.assertEquals(0, xids2.length);
+      Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
+      ProxyAssertSupport.assertEquals(0, xids2.length);
 
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
 
-         res.commit(xid1, false);
+      res.commit(xid1, false);
 
-         res.commit(xid2, false);
+      res.commit(xid2, false);
 
-         conn3 = createConnection();
+      conn3 = createConnection();
 
-         Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer cons = sessRec.createConsumer(queue1);
-         conn3.start();
+      conn3.start();
 
-         TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m1);
-         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+      TextMessage m1 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m1);
+      ProxyAssertSupport.assertEquals("testing1", m1.getText());
 
-         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m2);
+      TextMessage m2 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m2);
 
-         ProxyAssertSupport.assertEquals("testing2", m2.getText());
+      ProxyAssertSupport.assertEquals("testing2", m2.getText());
    }
 
    @Test
@@ -2855,194 +2851,198 @@ public class XARecoveryTest extends JMSTestCase
       XAConnection conn2 = null;
 
       Connection conn3 = null;
-         conn1 = createXAConnection();;
+      conn1 = createXAConnection();
 
-         conn2 = createXAConnection();;
 
-         XASession sess1 = conn1.createXASession();
+      conn2 = createXAConnection();
+      XASession sess1 = conn1.createXASession();
 
-         XASession sess2 = conn2.createXASession();
+      XASession sess2 = conn2.createXASession();
 
-         XAResource res1 = sess1.getXAResource();
+      XAResource res1 = sess1.getXAResource();
 
-         XAResource res2 = sess2.getXAResource();
+      XAResource res2 = sess2.getXAResource();
 
-         // Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
-         Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
+      // Pretend to be a transaction manager by interacting through the XAResources
+      Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
+      Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
 
-         // Send a message in each tx
+      // Send a message in each tx
 
-         res1.start(xid1, XAResource.TMNOFLAGS);
+      res1.start(xid1, XAResource.TMNOFLAGS);
 
       MessageProducer prod1 = sess1.createProducer(queue1);
 
-         TextMessage tm1 = sess1.createTextMessage("testing1");
+      TextMessage tm1 = sess1.createTextMessage("testing1");
 
-         prod1.send(tm1);
+      prod1.send(tm1);
 
-         res1.end(xid1, XAResource.TMSUCCESS);
+      res1.end(xid1, XAResource.TMSUCCESS);
 
-         res2.start(xid2, XAResource.TMNOFLAGS);
+      res2.start(xid2, XAResource.TMNOFLAGS);
 
       MessageProducer prod2 = sess2.createProducer(queue1);
 
-         TextMessage tm2 = sess2.createTextMessage("testing2");
+      TextMessage tm2 = sess2.createTextMessage("testing2");
 
-         prod2.send(tm2);
+      prod2.send(tm2);
 
-         res2.end(xid2, XAResource.TMSUCCESS);
+      res2.end(xid2, XAResource.TMSUCCESS);
 
-         // prepare both txs
+      // prepare both txs
 
-         res1.prepare(xid1);
-         res2.prepare(xid2);
+      res1.prepare(xid1);
+      res2.prepare(xid2);
 
-         // Now "crash" the server
+      // Now "crash" the server
 
-         stopServerPeer();
+      stopServerPeer();
 
-         startServerPeer();
+      startServerPeer();
 
-         deployAndLookupAdministeredObjects();
+      deployAndLookupAdministeredObjects();
 
-         conn1.close();
+      conn1.close();
 
-         conn2.close();
+      conn2.close();
 
-         conn1 = createXAConnection();;
+      conn1 = createXAConnection();
 
-         XAResource res = conn1.createXASession().getXAResource();
 
-         Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         ProxyAssertSupport.assertEquals(2, xids.length);
+      XAResource res = conn1.createXASession().getXAResource();
 
-         Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         ProxyAssertSupport.assertEquals(0, xids2.length);
+      Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
+      ProxyAssertSupport.assertEquals(2, xids.length);
 
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+      Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
+      ProxyAssertSupport.assertEquals(0, xids2.length);
 
-         res.commit(xids[0], false);
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
 
-         res.commit(xids[1], false);
+      res.commit(xids[0], false);
 
-         conn3 = createConnection();
+      res.commit(xids[1], false);
 
-         Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn3 = createConnection();
+
+      Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer cons = sessRec.createConsumer(queue1);
-         conn3.start();
+      conn3.start();
 
-         TextMessage m1 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m1);
-         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+      TextMessage m1 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m1);
+      ProxyAssertSupport.assertEquals("testing1", m1.getText());
 
-         TextMessage m2 = (TextMessage)cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m2);
+      TextMessage m2 = (TextMessage) cons.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m2);
 
-         ProxyAssertSupport.assertEquals("testing2", m2.getText());
+      ProxyAssertSupport.assertEquals("testing2", m2.getText());
    }
 
    @Test
    public void testMultiChannelRecovery() throws Exception
    {
 
-      XAConnection conn1 = createXAConnection();;
+      XAConnection conn1 = createXAConnection();
 
-      XAConnection conn2 = createXAConnection();;
 
-         XASession sess1 = conn1.createXASession();
+      XAConnection conn2 = createXAConnection();
 
-         XASession sess2 = conn2.createXASession();
 
-         XAResource res1 = sess1.getXAResource();
+      XASession sess1 = conn1.createXASession();
 
-         XAResource res2 = sess2.getXAResource();
+      XASession sess2 = conn2.createXASession();
 
-         // Pretend to be a transaction manager by interacting through the XAResources
-         Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
-         Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
+      XAResource res1 = sess1.getXAResource();
 
-         // Send a message in each tx
+      XAResource res2 = sess2.getXAResource();
 
-         res1.start(xid1, XAResource.TMNOFLAGS);
+      // Pretend to be a transaction manager by interacting through the XAResources
+      Xid xid1 = new XidImpl("bq1".getBytes(), 123, "gbtxid1".getBytes());
+      Xid xid2 = new XidImpl("bq2".getBytes(), 124, "gbtxid2".getBytes());
+
+      // Send a message in each tx
+
+      res1.start(xid1, XAResource.TMNOFLAGS);
 
       MessageProducer prod1 = sess1.createProducer(queue2);
       MessageProducer prod2 = sess1.createProducer(queue3);
 
-         TextMessage tm1 = sess1.createTextMessage("testing1");
-         TextMessage tm2 = sess1.createTextMessage("testing2");
+      TextMessage tm1 = sess1.createTextMessage("testing1");
+      TextMessage tm2 = sess1.createTextMessage("testing2");
 
-         prod1.send(tm1);
-         prod2.send(tm2);
+      prod1.send(tm1);
+      prod2.send(tm2);
 
-         res1.end(xid1, XAResource.TMSUCCESS);
+      res1.end(xid1, XAResource.TMSUCCESS);
 
-         res2.start(xid2, XAResource.TMNOFLAGS);
+      res2.start(xid2, XAResource.TMNOFLAGS);
 
       MessageProducer prod3 = sess2.createProducer(queue1);
 
-         TextMessage tm3 = sess2.createTextMessage("testing3");
+      TextMessage tm3 = sess2.createTextMessage("testing3");
 
-         prod3.send(tm3);
+      prod3.send(tm3);
 
-         res2.end(xid2, XAResource.TMSUCCESS);
+      res2.end(xid2, XAResource.TMSUCCESS);
 
-         // prepare both txs
+      // prepare both txs
 
-         res1.prepare(xid1);
-         res2.prepare(xid2);
+      res1.prepare(xid1);
+      res2.prepare(xid2);
 
-         // Now "crash" the server
+      // Now "crash" the server
 
-         stopServerPeer();
+      stopServerPeer();
 
-         startServerPeer();
+      startServerPeer();
 
-         deployAndLookupAdministeredObjects();
+      deployAndLookupAdministeredObjects();
 
-         conn1.close();
+      conn1.close();
 
-         conn2.close();
+      conn2.close();
 
-         conn1 = createXAConnection();;
+      conn1 = createXAConnection();
 
-         XAResource res = conn1.createXASession().getXAResource();
 
-         Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
-         ProxyAssertSupport.assertEquals(2, xids.length);
+      XAResource res = conn1.createXASession().getXAResource();
 
-         Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
-         ProxyAssertSupport.assertEquals(0, xids2.length);
+      Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
+      ProxyAssertSupport.assertEquals(2, xids.length);
 
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
-         ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
+      Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
+      ProxyAssertSupport.assertEquals(0, xids2.length);
 
-         res.commit(xids[0], false);
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid1) || xids[1].equals(xid1));
+      ProxyAssertSupport.assertTrue(xids[0].equals(xid2) || xids[1].equals(xid2));
 
-         res.commit(xids[1], false);
+      res.commit(xids[0], false);
+
+      res.commit(xids[1], false);
 
       Connection conn3 = createConnection();
 
-         Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons1 = sessRec.createConsumer(queue2);
       MessageConsumer cons2 = sessRec.createConsumer(queue3);
       MessageConsumer cons3 = sessRec.createConsumer(queue1);
 
-         conn3.start();
+      conn3.start();
 
-         TextMessage m1 = (TextMessage)cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m1);
-         ProxyAssertSupport.assertEquals("testing1", m1.getText());
+      TextMessage m1 = (TextMessage) cons1.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m1);
+      ProxyAssertSupport.assertEquals("testing1", m1.getText());
 
-         TextMessage m2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m2);
-         ProxyAssertSupport.assertEquals("testing2", m2.getText());
+      TextMessage m2 = (TextMessage) cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m2);
+      ProxyAssertSupport.assertEquals("testing2", m2.getText());
 
-         TextMessage m3 = (TextMessage)cons3.receive(HornetQServerTestCase.MAX_TIMEOUT);
-         ProxyAssertSupport.assertNotNull(m3);
-         ProxyAssertSupport.assertEquals("testing3", m3.getText());
+      TextMessage m3 = (TextMessage) cons3.receive(HornetQServerTestCase.MAX_TIMEOUT);
+      ProxyAssertSupport.assertNotNull(m3);
+      ProxyAssertSupport.assertEquals("testing3", m3.getText());
 
    }
 }

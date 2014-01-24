@@ -11,17 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.hornetq.core.server.impl.QueueImpl;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -39,15 +31,20 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.hornetq.tests.util.RandomUtil.randomString;
 
 /**
  * A QueueControlTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class AddressControlTest extends ManagementTestBase
 {
@@ -151,7 +148,7 @@ public class AddressControlTest extends ManagementTestBase
 
       roles = addressControl.getRoles();
       Assert.assertEquals(1, roles.length);
-      Object[] r = (Object[])roles[0];
+      Object[] r = (Object[]) roles[0];
       Assert.assertEquals(role.getName(), r[0]);
       Assert.assertEquals(CheckType.SEND.hasRole(role), r[1]);
       Assert.assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
@@ -224,8 +221,8 @@ public class AddressControlTest extends ManagementTestBase
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
       ServerLocator locator2 =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     UnitTestCase.INVM_CONNECTOR_FACTORY));
+         HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            UnitTestCase.INVM_CONNECTOR_FACTORY));
       addServerLocator(locator2);
       ClientSessionFactory sf2 = createSessionFactory(locator2);
 
@@ -233,7 +230,7 @@ public class AddressControlTest extends ManagementTestBase
       session.start();
       session.createQueue(address, address, true);
 
-      QueueImpl serverQueue = (QueueImpl)server.locateQueue(address);
+      QueueImpl serverQueue = (QueueImpl) server.locateQueue(address);
 
       ClientProducer producer = session.createProducer(address);
 
@@ -292,15 +289,14 @@ public class AddressControlTest extends ManagementTestBase
 
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
-      ServerLocator locator2 =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+         UnitTestCase.INVM_CONNECTOR_FACTORY));
       addServerLocator(locator2);
       ClientSessionFactory sf2 = createSessionFactory(locator2);
 
-         session = sf2.createSession(false, true, false);
-         session.createQueue(address, address, true);
-         Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
+      session = sf2.createSession(false, true, false);
+      session.createQueue(address, address, true);
+      Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
    }
 
    // Package protected ---------------------------------------------

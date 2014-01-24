@@ -13,6 +13,14 @@
 
 package org.hornetq.core.protocol.proton;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.apache.qpid.proton.amqp.transport.AmqpError;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.EndpointState;
@@ -32,15 +40,6 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -79,7 +78,7 @@ public class ProtonRemotingConnection implements RemotingConnection
    private boolean initialised = false;
 
    private static final byte[] VERSION_HEADER = new byte[]{
-         'A', 'M', 'Q', 'P', 0, 1, 0, 0
+      'A', 'M', 'Q', 'P', 0, 1, 0, 0
    };
    private Sasl sasl;
 
@@ -301,7 +300,7 @@ public class ProtonRemotingConnection implements RemotingConnection
          int major = buffer.readByte();
          int minor = buffer.readByte();
          int revision = buffer.readByte();
-         if(!(checkVersion(major, minor, revision) && checkProtocol(headerProt)))
+         if (!(checkVersion(major, minor, revision) && checkProtocol(headerProt)))
          {
             protonTransport.close();
             protonConnection.close();
@@ -354,7 +353,7 @@ public class ProtonRemotingConnection implements RemotingConnection
    private boolean checkProtocol(String headerProt)
    {
       boolean ok = "AMQP".equals(headerProt);
-      if(!ok)
+      if (!ok)
       {
          protonConnection.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE, "Unknown Protocol " + headerProt));
       }
@@ -363,10 +362,10 @@ public class ProtonRemotingConnection implements RemotingConnection
 
    private boolean checkVersion(int major, int minor, int revision)
    {
-      if(major < 1)
+      if (major < 1)
       {
          protonConnection.setCondition(new ErrorCondition(AmqpError.ILLEGAL_STATE,
-               "Version not supported " + major + "." + minor + "." + revision));
+                                                          "Version not supported " + major + "." + minor + "." + revision));
          return false;
       }
       return true;
@@ -377,7 +376,7 @@ public class ProtonRemotingConnection implements RemotingConnection
       synchronized (deliveryLock)
       {
          int size = 1024 * 64;
-         byte data[] = new byte[size];
+         byte[] data = new byte[size];
          boolean done = false;
          while (!done)
          {
@@ -388,7 +387,8 @@ public class ProtonRemotingConnection implements RemotingConnection
                buffer = connection.createBuffer(count);
                buffer.writeBytes(data, 0, count);
                connection.write(buffer);
-            } else
+            }
+            else
             {
                done = true;
             }
@@ -579,20 +579,20 @@ public class ProtonRemotingConnection implements RemotingConnection
    private void setUserPass(byte[] data)
    {
       String bytes = new String(data);
-      String[] credentials = bytes.split(Character.toString((char)0));
+      String[] credentials = bytes.split(Character.toString((char) 0));
       int offSet = 0;
       if (credentials.length > 0)
       {
-         if(credentials[0].length() == 0)
+         if (credentials[0].length() == 0)
          {
             offSet = 1;
          }
 
-         if(credentials.length >= offSet)
+         if (credentials.length >= offSet)
          {
             username = credentials[offSet];
          }
-         if(credentials.length >= (offSet + 1))
+         if (credentials.length >= (offSet + 1))
          {
             passcode = credentials[offSet + 1];
          }

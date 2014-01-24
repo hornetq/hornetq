@@ -54,7 +54,7 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
 
       queueProducer.setDisableMessageTimestamp(true);
       queueProducer.send(m);
-      ProxyAssertSupport.assertEquals(0l, queueConsumer.receive().getJMSTimestamp());
+      ProxyAssertSupport.assertEquals(0L, queueConsumer.receive().getJMSTimestamp());
    }
 
    // Package protected ---------------------------------------------

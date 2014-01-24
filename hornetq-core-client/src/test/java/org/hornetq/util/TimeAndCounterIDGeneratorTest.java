@@ -108,7 +108,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert
                latchAlign.countDown();
                CoreUnitTestCase.waitForLatch(latchStart);
 
-               long lastValue = 0l;
+               long lastValue = 0L;
                for (int i = 0; i < NUMBER_OF_IDS; i++)
                {
                   long value = seq.generateID();
@@ -127,7 +127,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert
             }
          }
 
-      };
+      }
 
       T1[] arrays = new T1[NUMBER_OF_THREADS];
 
@@ -163,7 +163,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert
 
       System.out.println("Current Time = " + TimeAndCounterIDGeneratorTest.hex(System.currentTimeMillis()) + " " + seq);
 
-      seq.setInternalDate(System.currentTimeMillis() + 10000l); // 10 seconds in the future
+      seq.setInternalDate(System.currentTimeMillis() + 10000L); // 10 seconds in the future
 
       seq.setInternalID(TimeAndCounterIDGenerator.ID_MASK); // 1 ID about to explode
 
@@ -179,7 +179,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert
 
       seq = new TimeAndCounterIDGenerator();
 
-      seq.setInternalDate(System.currentTimeMillis() - 10000l); // 10 seconds in the past
+      seq.setInternalDate(System.currentTimeMillis() - 10000L); // 10 seconds in the past
 
       long timeMark = seq.getInternalTimeMark();
 

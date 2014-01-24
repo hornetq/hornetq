@@ -13,7 +13,9 @@
 package org.hornetq.rest.queue.push;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;

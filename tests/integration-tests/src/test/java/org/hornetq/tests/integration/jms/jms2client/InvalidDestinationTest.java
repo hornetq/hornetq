@@ -12,12 +12,7 @@
  */
 package org.hornetq.tests.integration.jms.jms2client;
 
-import org.hornetq.tests.util.JMSTestBase;
-import org.junit.Before;
-import org.junit.Test;
-
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidDestinationRuntimeException;
@@ -30,7 +25,10 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+
+import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 public class InvalidDestinationTest extends JMSTestBase
 {
@@ -47,7 +45,7 @@ public class InvalidDestinationTest extends JMSTestBase
    }
 
    @Test
-   public void invalidDestinationRuntimeExceptionTests()  throws Exception
+   public void invalidDestinationRuntimeExceptionTests() throws Exception
    {
       JMSProducer producer = context.createProducer();
       Destination invalidDestination = null;
@@ -381,5 +379,5 @@ public class InvalidDestinationTest extends JMSTestBase
          conn.close();
       }
    }
-   
+
 }

@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.soak.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +27,14 @@ import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A ClientSoakTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ClientSoakTest extends ServiceTestBase
 {
@@ -162,7 +159,7 @@ public class ClientSoakTest extends ServiceTestBase
       Receiver rec1 = new Receiver(createSessionFactory(locator), DIVERTED_AD1.toString());
       Receiver rec2 = new Receiver(createSessionFactory(locator), DIVERTED_AD2.toString());
 
-      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[] { rec1, rec2 });
+      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[]{rec1, rec2});
 
       send.start();
       rec1.start();

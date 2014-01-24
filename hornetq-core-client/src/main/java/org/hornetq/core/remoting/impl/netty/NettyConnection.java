@@ -28,18 +28,18 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
-import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.ConcurrentHashSet;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="nmaurer@redhat.com">Norman Maurer</a>
- *
  */
 public class NettyConnection implements Connection
 {
@@ -71,10 +71,10 @@ public class NettyConnection implements Connection
    // Constructors --------------------------------------------------
 
    public NettyConnection(final Map<String, Object> configuration,
-                           final Channel channel,
-                           final ConnectionLifeCycleListener listener,
-                           boolean batchingEnabled,
-                           boolean directDeliver)
+                          final Channel channel,
+                          final ConnectionLifeCycleListener listener,
+                          boolean batchingEnabled,
+                          boolean directDeliver)
    {
       this.configuration = configuration;
 
@@ -94,6 +94,7 @@ public class NettyConnection implements Connection
 
    /**
     * This is exposed so users would have the option to look at any data through interceptors
+    *
     * @return
     */
    public Channel getChannel()
@@ -108,11 +109,11 @@ public class NettyConnection implements Connection
          return;
       }
 
-      final SslHandler sslHandler = (SslHandler)channel.pipeline().get("ssl");
+      final SslHandler sslHandler = (SslHandler) channel.pipeline().get("ssl");
       EventLoop eventLoop = channel.eventLoop();
       boolean inEventLoop = eventLoop.inEventLoop();
       //if we are in an event loop we need to close the channel after the writes have finished
-      if(!inEventLoop)
+      if (!inEventLoop)
       {
          closeSSLAndChannel(sslHandler, channel);
       }
@@ -239,19 +240,19 @@ public class NettyConnection implements Connection
             }
             else
             {
-                // create a task which will be picked up by the eventloop and trigger the write.
-                // This is mainly needed as this method is triggered by different threads for the same channel.
-                // if we not do this we may produce out of order writes.
-                final Runnable task = new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        channel.writeAndFlush(buf, promise);
-                    }
-                };
-                // execute the task on the eventloop
-                eventLoop.execute(task);
+               // create a task which will be picked up by the eventloop and trigger the write.
+               // This is mainly needed as this method is triggered by different threads for the same channel.
+               // if we not do this we may produce out of order writes.
+               final Runnable task = new Runnable()
+               {
+                  @Override
+                  public void run()
+                  {
+                     channel.writeAndFlush(buf, promise);
+                  }
+               };
+               // execute the task on the eventloop
+               eventLoop.execute(task);
             }
 
 
@@ -291,7 +292,7 @@ public class NettyConnection implements Connection
 
    public String getRemoteAddress()
    {
-      SocketAddress address =  channel.remoteAddress();
+      SocketAddress address = channel.remoteAddress();
       if (address == null)
       {
          return null;
@@ -322,7 +323,7 @@ public class NettyConnection implements Connection
 
    void fireReady(final boolean ready)
    {
-      for (ReadyListener listener: readyListeners)
+      for (ReadyListener listener : readyListeners)
       {
          listener.readyForWriting(ready);
       }

@@ -12,12 +12,9 @@
  */
 package org.hornetq.tests.stress.journal;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -27,6 +24,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Test;
 
 /**
  * Simulates the journal being updated, compacted cleared up,
@@ -34,8 +32,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  * To make sure the journal would survive at multiple restarts of the server
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalRestartStressTest extends ServiceTestBase
 {
@@ -106,15 +102,13 @@ public class JournalRestartStressTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    /**
-    * @param TIMEOUT
+    * @param sf
     * @param NMSGS
     * @throws HornetQException
     * @throws InterruptedException
     * @throws Throwable
     */
-   private void produceMessages(final ClientSessionFactory sf, final int NMSGS) throws HornetQException,
-                                                                               InterruptedException,
-                                                                               Throwable
+   private void produceMessages(final ClientSessionFactory sf, final int NMSGS) throws Throwable
    {
 
       final int TIMEOUT = 5000;
@@ -151,8 +145,8 @@ public class JournalRestartStressTest extends ServiceTestBase
                {
                   if (i % 500 == 0)
                   {
-                     double percent = (double)i / (double)NMSGS;
-                     System.out.println("msgs " + i + " of " + NMSGS + ", " + (int)(percent * 100) + "%");
+                     double percent = (double) i / (double) NMSGS;
+                     System.out.println("msgs " + i + " of " + NMSGS + ", " + (int) (percent * 100) + "%");
                      Thread.sleep(100);
                   }
 

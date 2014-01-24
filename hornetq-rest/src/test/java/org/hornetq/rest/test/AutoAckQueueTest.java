@@ -17,14 +17,12 @@ import org.hornetq.rest.util.Constants;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.spi.Link;
+import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
-
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class AutoAckQueueTest extends MessageTestBase
 {
@@ -38,7 +36,7 @@ public class AutoAckQueueTest extends MessageTestBase
       deployment.setName(testName);
       manager.getQueueManager().deploy(deployment);
 
-      ClientRequest request = new ClientRequest(generateURL("/queues/" + testName));
+      ClientRequest request = new ClientRequest(TestPortProvider.generateURL("/queues/" + testName));
 
       ClientResponse<?> response = request.head();
       response.releaseConnection();

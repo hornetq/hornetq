@@ -11,30 +11,27 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
-
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
  */
 public class ObjectMessageTest extends MessageTestBase
 {
@@ -63,7 +60,7 @@ public class ObjectMessageTest extends MessageTestBase
       {
          queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         ObjectMessage om = (ObjectMessage)message;
+         ObjectMessage om = (ObjectMessage) message;
 
          SomeObject testObject = new SomeObject(3, 7);
 
@@ -75,7 +72,7 @@ public class ObjectMessageTest extends MessageTestBase
 
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
-         ObjectMessage r = (ObjectMessage)queueCons.receive();
+         ObjectMessage r = (ObjectMessage) queueCons.receive();
 
          Object testObject2 = r.getObject();
 
@@ -83,7 +80,7 @@ public class ObjectMessageTest extends MessageTestBase
          ProxyAssertSupport.assertNotSame(testObject, testObject2);
          ProxyAssertSupport.assertNotSame(testObject.getClass(), testObject2.getClass());
          ProxyAssertSupport.assertNotSame(testObject.getClass().getClassLoader(), testObject2.getClass()
-                                                                                             .getClassLoader());
+            .getClassLoader());
          ProxyAssertSupport.assertSame(testClassLoader, testObject2.getClass().getClassLoader());
       }
       finally
@@ -98,14 +95,14 @@ public class ObjectMessageTest extends MessageTestBase
    {
       java.util.Vector<String> vectorOnMessage = new java.util.Vector<String>();
       vectorOnMessage.add("world!");
-      ((ObjectMessage)message).setObject(vectorOnMessage);
+      ((ObjectMessage) message).setObject(vectorOnMessage);
 
       queueProd.send(message);
 
-      ObjectMessage r = (ObjectMessage)queueCons.receive(5000);
+      ObjectMessage r = (ObjectMessage) queueCons.receive(5000);
       ProxyAssertSupport.assertNotNull(r);
 
-      java.util.Vector v2 = (java.util.Vector)r.getObject();
+      java.util.Vector v2 = (java.util.Vector) r.getObject();
 
       ProxyAssertSupport.assertEquals(vectorOnMessage.get(0), v2.get(0));
    }
@@ -120,7 +117,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       list.clear();
 
-      list = (ArrayList<String>)msgTest.getObject();
+      list = (ArrayList<String>) msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(1, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
@@ -131,7 +128,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       list.clear();
 
-      list = (ArrayList<String>)msgTest.getObject();
+      list = (ArrayList<String>) msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(2, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
@@ -141,21 +138,21 @@ public class ObjectMessageTest extends MessageTestBase
       list.add("hello3");
       msgTest.setObject(list);
 
-      list = (ArrayList<String>)msgTest.getObject();
+      list = (ArrayList<String>) msgTest.getObject();
       ProxyAssertSupport.assertEquals(3, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
       ProxyAssertSupport.assertEquals("hello2", list.get(1));
       ProxyAssertSupport.assertEquals("hello3", list.get(2));
 
-      list = (ArrayList<String>)msgTest.getObject();
+      list = (ArrayList<String>) msgTest.getObject();
 
       list.clear();
 
       queueProd.send(msgTest);
 
-      msgTest = (ObjectMessage)queueCons.receive(5000);
+      msgTest = (ObjectMessage) queueCons.receive(5000);
 
-      list = (ArrayList<String>)msgTest.getObject();
+      list = (ArrayList<String>) msgTest.getObject();
 
       ProxyAssertSupport.assertEquals(3, list.size());
       ProxyAssertSupport.assertEquals("hello", list.get(0));
@@ -167,11 +164,11 @@ public class ObjectMessageTest extends MessageTestBase
    @Test
    public void testReadOnEmptyObjectMessage() throws Exception
    {
-      ObjectMessage obm = (ObjectMessage)message;
+      ObjectMessage obm = (ObjectMessage) message;
       ProxyAssertSupport.assertNull(obm.getObject());
 
       queueProd.send(message);
-      ObjectMessage r = (ObjectMessage)queueCons.receive();
+      ObjectMessage r = (ObjectMessage) queueCons.receive();
 
       ProxyAssertSupport.assertNull(r.getObject());
 
@@ -184,7 +181,7 @@ public class ObjectMessageTest extends MessageTestBase
    {
       super.prepareMessage(m);
 
-      ObjectMessage om = (ObjectMessage)m;
+      ObjectMessage om = (ObjectMessage) m;
       om.setObject("this is the serializable object");
 
    }
@@ -194,7 +191,7 @@ public class ObjectMessageTest extends MessageTestBase
    {
       super.assertEquivalent(m, mode, redelivery);
 
-      ObjectMessage om = (ObjectMessage)m;
+      ObjectMessage om = (ObjectMessage) m;
       ProxyAssertSupport.assertEquals("this is the serializable object", om.getObject());
    }
 
@@ -223,7 +220,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
 
-      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[] { classLocation }, masterClassLoader);
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation}, masterClassLoader);
 
       return appClassLoader;
    }

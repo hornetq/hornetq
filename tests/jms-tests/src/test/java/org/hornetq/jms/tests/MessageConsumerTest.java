@@ -12,6 +12,26 @@
  */
 package org.hornetq.jms.tests;
 
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,8 +39,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.jms.*;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
@@ -31,7 +49,7 @@ import org.junit.Test;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *          <p/>
+ *         <p/>
  */
 public class MessageConsumerTest extends JMSTestCase
 {
@@ -66,7 +84,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(500);
+            TextMessage tm = (TextMessage) cons.receive(500);
 
             ProxyAssertSupport.assertNotNull(tm);
 
@@ -207,7 +225,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          prod.send(tm);
 
-         TextMessage tm2 = (TextMessage)cons1.receive();
+         TextMessage tm2 = (TextMessage) cons1.receive();
 
          ProxyAssertSupport.assertNotNull(tm2);
 
@@ -222,10 +240,9 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer cons2 = sessConsume2.createConsumer(queue1);
 
          // this should cancel message and cause delivery to other consumer
-         ;
          sessConsume1.close();
 
-         TextMessage tm3 = (TextMessage)cons2.receive(1000);
+         TextMessage tm3 = (TextMessage) cons2.receive(1000);
 
          ProxyAssertSupport.assertNotNull(tm3);
 
@@ -275,7 +292,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          queueProducer.send(tm);
 
-         TextMessage m = (TextMessage)queueConsumer.receive();
+         TextMessage m = (TextMessage) queueConsumer.receive();
 
          ProxyAssertSupport.assertEquals(tm.getText(), m.getText());
       }
@@ -323,7 +340,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          queueProducer.send(tm);
 
-         TextMessage m = (TextMessage)queueConsumer.receive();
+         TextMessage m = (TextMessage) queueConsumer.receive();
 
          ProxyAssertSupport.assertEquals(tm.getText(), m.getText());
       }
@@ -371,7 +388,7 @@ public class MessageConsumerTest extends JMSTestCase
          // start consumer connection after the message is submitted
          consumerConnection.start();
 
-         TextMessage m = (TextMessage)queueConsumer.receive(2000);
+         TextMessage m = (TextMessage) queueConsumer.receive(2000);
 
          ProxyAssertSupport.assertEquals(tm.getText(), m.getText());
       }
@@ -428,7 +445,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          Thread.sleep(500);
 
-         TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
+         TextMessage m = (TextMessage) queueConsumer.receiveNoWait();
 
          ProxyAssertSupport.assertEquals(tm.getText(), m.getText());
       }
@@ -483,7 +500,7 @@ public class MessageConsumerTest extends JMSTestCase
          // wait for the listener to receive the message
          l.waitForMessages();
 
-         TextMessage m = (TextMessage)l.getNextMessage();
+         TextMessage m = (TextMessage) l.getNextMessage();
 
          ProxyAssertSupport.assertEquals(tm.getText(), m.getText());
       }
@@ -616,7 +633,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons = sessReceive.createConsumer(queue1);
 
-         TextMessage m2 = (TextMessage)cons.receive(1500);
+         TextMessage m2 = (TextMessage) cons.receive(1500);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -675,7 +692,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          consumerConnection.start();
 
-         TextMessage m = (TextMessage)queueConsumer.receive(1500);
+         TextMessage m = (TextMessage) queueConsumer.receive(1500);
 
          ProxyAssertSupport.assertEquals(m.getText(), "One");
 
@@ -795,7 +812,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          consumerConnection.start();
 
-         TextMessage m = (TextMessage)queueConsumer.receive(1500);
+         TextMessage m = (TextMessage) queueConsumer.receive(1500);
 
          ProxyAssertSupport.assertEquals("One", m.getText());
 
@@ -807,7 +824,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue1);
 
-         m = (TextMessage)queueConsumer2.receive(1500);
+         m = (TextMessage) queueConsumer2.receive(1500);
 
          ProxyAssertSupport.assertNotNull(m);
 
@@ -850,7 +867,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive();
+         TextMessage rm1 = (TextMessage) cons1.receive();
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("a", rm1.getText());
 
@@ -860,11 +877,11 @@ public class MessageConsumerTest extends JMSTestCase
 
          sess.commit();
 
-         TextMessage rm2 = (TextMessage)cons2.receive(1500);
+         TextMessage rm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("b", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons2.receive(1500);
+         TextMessage rm3 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("c", rm3.getText());
 
@@ -905,7 +922,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1", rm1.getText());
 
@@ -915,11 +932,11 @@ public class MessageConsumerTest extends JMSTestCase
 
          sess.commit();
 
-         TextMessage rm2 = (TextMessage)cons2.receive(1500);
+         TextMessage rm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("hello2", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons2.receive(1500);
+         TextMessage rm3 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("hello3", rm3.getText());
 
@@ -960,7 +977,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1-a", rm1.getText());
 
@@ -970,11 +987,11 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons2 = sess.createConsumer(queue1);
 
-         TextMessage rm2 = (TextMessage)cons2.receive(1500);
+         TextMessage rm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("hello2-a", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons2.receive(1500);
+         TextMessage rm3 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("hello3-a", rm3.getText());
 
@@ -1016,7 +1033,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1", rm1.getText());
          log.trace(rm1.getJMSMessageID());
@@ -1026,14 +1043,14 @@ public class MessageConsumerTest extends JMSTestCase
          sess.rollback();
          log.trace("rolled back");
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1500);
+         TextMessage rm2 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertEquals("hello1", rm2.getText());
          log.trace(rm1.getJMSMessageID());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1500);
+         TextMessage rm3 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertEquals("hello2", rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1500);
+         TextMessage rm4 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertEquals("hello3", rm4.getText());
 
          sess.commit();
@@ -1074,7 +1091,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1", rm1.getText());
 
@@ -1088,15 +1105,15 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons2 = sess.createConsumer(queue1);
 
-         TextMessage rm2 = (TextMessage)cons2.receive(1500);
+         TextMessage rm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("hello1", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons2.receive(1500);
+         TextMessage rm3 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("hello2", rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons2.receive(1500);
+         TextMessage rm4 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals("hello3", rm4.getText());
 
@@ -1137,22 +1154,22 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1", rm1.getText());
 
          // redeliver
          sess.recover();
 
-         TextMessage rm2 = (TextMessage)cons1.receive(1500);
+         TextMessage rm2 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("hello1", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons1.receive(1500);
+         TextMessage rm3 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("hello2", rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons1.receive(1500);
+         TextMessage rm4 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals("hello3", rm4.getText());
 
@@ -1193,7 +1210,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage rm1 = (TextMessage)cons1.receive(1500);
+         TextMessage rm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNotNull(rm1);
          ProxyAssertSupport.assertEquals("hello1", rm1.getText());
 
@@ -1208,15 +1225,15 @@ public class MessageConsumerTest extends JMSTestCase
 
          log.debug("receiving ...");
 
-         TextMessage rm2 = (TextMessage)cons2.receive(1500);
+         TextMessage rm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm2);
          ProxyAssertSupport.assertEquals("hello1", rm2.getText());
 
-         TextMessage rm3 = (TextMessage)cons2.receive(1500);
+         TextMessage rm3 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm3);
          ProxyAssertSupport.assertEquals("hello2", rm3.getText());
 
-         TextMessage rm4 = (TextMessage)cons2.receive(1500);
+         TextMessage rm4 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(rm4);
          ProxyAssertSupport.assertEquals("hello3", rm4.getText());
 
@@ -1265,7 +1282,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons1 = sess.createConsumer(queue1);
 
-         TextMessage r1 = (TextMessage)cons1.receive();
+         TextMessage r1 = (TextMessage) cons1.receive();
 
          ProxyAssertSupport.assertEquals(tm1.getText(), r1.getText());
 
@@ -1273,11 +1290,11 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons2 = sess.createConsumer(queue1);
 
-         TextMessage r2 = (TextMessage)cons2.receive();
+         TextMessage r2 = (TextMessage) cons2.receive();
 
          ProxyAssertSupport.assertEquals(tm2.getText(), r2.getText());
 
-         TextMessage r3 = (TextMessage)cons2.receive();
+         TextMessage r3 = (TextMessage) cons2.receive();
 
          ProxyAssertSupport.assertEquals(tm3.getText(), r3.getText());
 
@@ -1375,7 +1392,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer cons = sessReceive.createConsumer(queue1);
 
-         TextMessage m2 = (TextMessage)cons.receive(1500);
+         TextMessage m2 = (TextMessage) cons.receive(1500);
 
          ProxyAssertSupport.assertNotNull(m2);
 
@@ -1451,7 +1468,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   for (int i = 0; i < NUM_MESSAGES; i++)
                   {
-                     TextMessage m = (TextMessage)cons.receive(5000);
+                     TextMessage m = (TextMessage) cons.receive(5000);
                      if (m == null)
                      {
                         log.error("Didn't receive all the messages");
@@ -1595,7 +1612,7 @@ public class MessageConsumerTest extends JMSTestCase
       try
       {
          consumerConnection = createConnection();
-         TopicConnection tc = (TopicConnection)consumerConnection;
+         TopicConnection tc = (TopicConnection) consumerConnection;
 
          TopicSession consumerSession = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -1635,7 +1652,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer topicConsumer = consumerSession.createConsumer(HornetQServerTestCase.topic1);
 
-         Topic t = ((TopicSubscriber)topicConsumer).getTopic();
+         Topic t = ((TopicSubscriber) topicConsumer).getTopic();
 
          ProxyAssertSupport.assertEquals(HornetQServerTestCase.topic1, t);
       }
@@ -1665,7 +1682,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          try
          {
-            ((TopicSubscriber)topicConsumer).getTopic();
+            ((TopicSubscriber) topicConsumer).getTopic();
             Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
@@ -1695,7 +1712,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
 
-         Queue q = ((QueueReceiver)queueConsumer).getQueue();
+         Queue q = ((QueueReceiver) queueConsumer).getQueue();
 
          ProxyAssertSupport.assertEquals(queue1, q);
       }
@@ -1725,7 +1742,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          try
          {
-            ((QueueReceiver)queueConsumer).getQueue();
+            ((QueueReceiver) queueConsumer).getQueue();
             Assert.fail("must throw a JMS IllegalStateException");
          }
          catch (javax.jms.IllegalStateException e)
@@ -2411,7 +2428,7 @@ public class MessageConsumerTest extends JMSTestCase
          int counter = 0;
          for (Iterator<Message> i = l.getMessages().iterator(); i.hasNext(); counter++)
          {
-            TextMessage m = (TextMessage)i.next();
+            TextMessage m = (TextMessage) i.next();
             ProxyAssertSupport.assertEquals("body" + counter, m.getText());
          }
 
@@ -2472,7 +2489,7 @@ public class MessageConsumerTest extends JMSTestCase
          int counter = 0;
          for (Iterator<Message> i = l.getMessages().iterator(); i.hasNext(); counter++)
          {
-            TextMessage m = (TextMessage)i.next();
+            TextMessage m = (TextMessage) i.next();
             ProxyAssertSupport.assertEquals("body" + counter, m.getText());
          }
 
@@ -2801,7 +2818,7 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
          consumerConnection.start();
 
-         TextMessage m = (TextMessage)queueConsumer.receive(1500);
+         TextMessage m = (TextMessage) queueConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("One", m.getText());
 
          consumerConnection.close();
@@ -2813,7 +2830,7 @@ public class MessageConsumerTest extends JMSTestCase
          queueConsumer = consumerSession.createConsumer(queue1);
          consumerConnection.start();
 
-         m = (TextMessage)queueConsumer.receive(1500);
+         m = (TextMessage) queueConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("Two", m.getText());
       }
       finally
@@ -2856,7 +2873,7 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
          consumerConnection.start();
 
-         TextMessage m = (TextMessage)queueConsumer.receive(1500);
+         TextMessage m = (TextMessage) queueConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("One", m.getText());
 
          consumerSession.commit();
@@ -2869,7 +2886,7 @@ public class MessageConsumerTest extends JMSTestCase
          queueConsumer = consumerSession.createConsumer(queue1);
          consumerConnection.start();
 
-         m = (TextMessage)queueConsumer.receive(1500);
+         m = (TextMessage) queueConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("Two", m.getText());
       }
       finally
@@ -3064,8 +3081,8 @@ public class MessageConsumerTest extends JMSTestCase
          TextMessage tm = sess3.createTextMessage("nurse!");
          prod.send(tm);
 
-         TextMessage tm1 = (TextMessage)cons1.receive(1500);
-         TextMessage tm2 = (TextMessage)cons2.receive(1500);
+         TextMessage tm1 = (TextMessage) cons1.receive(1500);
+         TextMessage tm2 = (TextMessage) cons2.receive(1500);
 
          ProxyAssertSupport.assertNotNull(tm1);
          ProxyAssertSupport.assertNotNull(tm2);
@@ -3080,12 +3097,12 @@ public class MessageConsumerTest extends JMSTestCase
 
          sess2.recover();
 
-         tm2 = (TextMessage)cons2.receive(1500);
+         tm2 = (TextMessage) cons2.receive(1500);
          ProxyAssertSupport.assertNotNull(tm2);
          ProxyAssertSupport.assertEquals("nurse!", tm2.getText());
 
          // but tm1 should not be redelivered
-         tm1 = (TextMessage)cons1.receive(1500);
+         tm1 = (TextMessage) cons1.receive(1500);
          ProxyAssertSupport.assertNull(tm1);
       }
       finally
@@ -3134,7 +3151,7 @@ public class MessageConsumerTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)cons.receive(1000);
+            TextMessage tm = (TextMessage) cons.receive(1000);
             if (tm == null)
             {
                break;
@@ -3222,19 +3239,19 @@ public class MessageConsumerTest extends JMSTestCase
 
          ProxyAssertSupport.assertEquals("aardvark", m2.getStringProperty("p1"));
 
-         BytesMessage bm2 = (BytesMessage)theConsumer.receive(1500);
+         BytesMessage bm2 = (BytesMessage) theConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("aardvark", bm2.readUTF());
 
-         MapMessage mm2 = (MapMessage)theConsumer.receive(1500);
+         MapMessage mm2 = (MapMessage) theConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("aardvark", mm2.getString("s1"));
 
-         ObjectMessage om2 = (ObjectMessage)theConsumer.receive(1500);
-         ProxyAssertSupport.assertEquals("aardvark", (String)om2.getObject());
+         ObjectMessage om2 = (ObjectMessage) theConsumer.receive(1500);
+         ProxyAssertSupport.assertEquals("aardvark", (String) om2.getObject());
 
-         StreamMessage sm2 = (StreamMessage)theConsumer.receive(1500);
+         StreamMessage sm2 = (StreamMessage) theConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("aardvark", sm2.readString());
 
-         TextMessage tm2 = (TextMessage)theConsumer.receive(1500);
+         TextMessage tm2 = (TextMessage) theConsumer.receive(1500);
          ProxyAssertSupport.assertEquals("aardvark", tm2.getText());
       }
       finally
@@ -3282,7 +3299,7 @@ public class MessageConsumerTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable.receive(1500);
+            TextMessage tm = (TextMessage) durable.receive(1500);
             if (tm == null)
             {
                break;
@@ -3356,7 +3373,7 @@ public class MessageConsumerTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable3.receive(1000);
+            TextMessage tm = (TextMessage) durable3.receive(1000);
             if (tm == null)
             {
                break;
@@ -3448,7 +3465,7 @@ public class MessageConsumerTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable.receive(1000);
+            TextMessage tm = (TextMessage) durable.receive(1000);
             if (tm == null)
             {
                break;
@@ -3466,7 +3483,7 @@ public class MessageConsumerTest extends JMSTestCase
          sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
          durable = sess4.createDurableSubscriber(HornetQServerTestCase.topic1, "mySubscription");
 
-         TextMessage tm = (TextMessage)durable.receive(1000);
+         TextMessage tm = (TextMessage) durable.receive(1000);
          ProxyAssertSupport.assertNull(tm);
          conn4.close();
 
@@ -3499,7 +3516,7 @@ public class MessageConsumerTest extends JMSTestCase
          sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
          durable = sess6.createDurableSubscriber(HornetQServerTestCase.topic1, "mySubscription");
 
-         TextMessage tm3 = (TextMessage)durable.receive(1000);
+         TextMessage tm3 = (TextMessage) durable.receive(1000);
          ProxyAssertSupport.assertNull(tm3);
 
          durable.close();
@@ -3570,7 +3587,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          for (int i = 0; i < NUM_TO_RECEIVE; i++)
          {
-            TextMessage tm = (TextMessage)durable.receive(3000);
+            TextMessage tm = (TextMessage) durable.receive(3000);
             ProxyAssertSupport.assertNotNull(tm);
          }
 
@@ -3593,7 +3610,7 @@ public class MessageConsumerTest extends JMSTestCase
          int count = 0;
          while (true)
          {
-            TextMessage tm = (TextMessage)durable2.receive(1500);
+            TextMessage tm = (TextMessage) durable2.receive(1500);
             if (tm == null)
             {
                break;
@@ -3655,7 +3672,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          for (int i = 0; i < NUM_TO_RECEIVE1; i++)
          {
-            TextMessage tm = (TextMessage)durable.receive(1500);
+            TextMessage tm = (TextMessage) durable.receive(1500);
             if (tm == null)
             {
                ProxyAssertSupport.fail();
@@ -3677,7 +3694,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          conn2.start();
 
-         TextMessage tm = (TextMessage)durable2.receive(1500);
+         TextMessage tm = (TextMessage) durable2.receive(1500);
          ProxyAssertSupport.assertNull(tm);
 
          durable2.close();
@@ -3799,7 +3816,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer cons1 = sess1.createConsumer(queue1);
-         TextMessage tm2 = (TextMessage)cons1.receive(3000);
+         TextMessage tm2 = (TextMessage) cons1.receive(3000);
 
          ProxyAssertSupport.assertNotNull(tm2);
          ProxyAssertSupport.assertEquals("testRedeliveredDifferentSessions", tm2.getText());
@@ -3809,7 +3826,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer cons2 = sess2.createConsumer(queue1);
-         TextMessage tm3 = (TextMessage)cons2.receive(3000);
+         TextMessage tm3 = (TextMessage) cons2.receive(3000);
 
          ProxyAssertSupport.assertNotNull(tm3);
          ProxyAssertSupport.assertEquals("testRedeliveredDifferentSessions", tm3.getText());
@@ -3933,30 +3950,30 @@ public class MessageConsumerTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         conn.start();
+      conn.start();
 
-         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = sess.createConsumer(queue1);
+      MessageConsumer cons = sess.createConsumer(queue1);
 
-         ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
-         cons.setMessageListener(listener);
+      cons.setMessageListener(listener);
 
-         MessageProducer prod = sessSend.createProducer(queue1);
-         TextMessage m1 = sess.createTextMessage("a");
-         TextMessage m2 = sess.createTextMessage("b");
-         TextMessage m3 = sess.createTextMessage("c");
+      MessageProducer prod = sessSend.createProducer(queue1);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
 
-         prod.send(m1);
-         prod.send(m2);
-         prod.send(m3);
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
 
-         listener.waitForMessages();
+      listener.waitForMessages();
 
-         ProxyAssertSupport.assertFalse(listener.message, listener.failed);
+      ProxyAssertSupport.assertFalse(listener.message, listener.failed);
    }
 
    @Test
@@ -3964,30 +3981,30 @@ public class MessageConsumerTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         conn.start();
+      conn.start();
 
-         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 
-         MessageConsumer cons = sess.createConsumer(queue1);
+      MessageConsumer cons = sess.createConsumer(queue1);
 
-         ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
-         cons.setMessageListener(listener);
+      cons.setMessageListener(listener);
 
-         MessageProducer prod = sessSend.createProducer(queue1);
-         TextMessage m1 = sess.createTextMessage("a");
-         TextMessage m2 = sess.createTextMessage("b");
-         TextMessage m3 = sess.createTextMessage("c");
+      MessageProducer prod = sessSend.createProducer(queue1);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
 
-         prod.send(m1);
-         prod.send(m2);
-         prod.send(m3);
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
 
-         listener.waitForMessages();
+      listener.waitForMessages();
 
-         ProxyAssertSupport.assertFalse(listener.message, listener.failed);
+      ProxyAssertSupport.assertFalse(listener.message, listener.failed);
    }
 
    @Test
@@ -3995,33 +4012,33 @@ public class MessageConsumerTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         conn.start();
+      conn.start();
 
-         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = sess.createConsumer(queue1);
+      MessageConsumer cons = sess.createConsumer(queue1);
 
-         ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
 
-         cons.setMessageListener(listener);
+      cons.setMessageListener(listener);
 
-         MessageProducer prod = sessSend.createProducer(queue1);
-         TextMessage m1 = sess.createTextMessage("a");
-         TextMessage m2 = sess.createTextMessage("b");
-         TextMessage m3 = sess.createTextMessage("c");
+      MessageProducer prod = sessSend.createProducer(queue1);
+      TextMessage m1 = sess.createTextMessage("a");
+      TextMessage m2 = sess.createTextMessage("b");
+      TextMessage m3 = sess.createTextMessage("c");
 
-         prod.send(m1);
-         prod.send(m2);
-         prod.send(m3);
+      prod.send(m1);
+      prod.send(m2);
+      prod.send(m3);
 
-         listener.waitForMessages();
+      listener.waitForMessages();
 
-         ProxyAssertSupport.assertFalse(listener.failed);
+      ProxyAssertSupport.assertFalse(listener.failed);
       conn.close();
       removeAllMessages(queue1.getQueueName(), true);
-      }
+   }
 
    @Test
    public void testExceptionMessageListener4() throws Exception
@@ -4331,12 +4348,11 @@ public class MessageConsumerTest extends JMSTestCase
 
       public void onMessage(final Message m)
       {
-         TextMessage tm = (TextMessage)m;
+         TextMessage tm = (TextMessage) m;
          count++;
 
          try
          {
-            ;
             if (count == 1)
             {
                if (!"a".equals(tm.getText()))
@@ -4452,7 +4468,7 @@ public class MessageConsumerTest extends JMSTestCase
       {
          try
          {
-            TextMessage tm = (TextMessage)m;
+            TextMessage tm = (TextMessage) m;
 
             messageOrder += tm.getText() + " ";
             if (count == 0)

@@ -12,6 +12,13 @@
  */
 package org.hornetq.utils;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -21,14 +28,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
@@ -69,7 +68,7 @@ public final class XMLUtil
       int c;
       while ((c = r.read()) != -1)
       {
-         buff.append((char)c);
+         buff.append((char) c);
       }
       return buff.toString();
    }
@@ -81,7 +80,7 @@ public final class XMLUtil
       int c;
       while ((c = r.read()) != -1)
       {
-         buff.append((char)c);
+         buff.append((char) c);
       }
 
       // Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
@@ -134,7 +133,7 @@ public final class XMLUtil
       {
          if ((textContent = XMLUtil.getTextContent(n)) != null && !"".equals(textContent))
          {
-            sb.append(textContent).append("</").append(name).append('>');;
+            sb.append(textContent).append("</").append(name).append('>');
          }
          else
          {
@@ -171,10 +170,10 @@ public final class XMLUtil
    /**
     * This metod is here because Node.getTextContent() is not available in JDK 1.4 and I would like
     * to have an uniform access to this functionality.
-    *
+    * <p/>
     * Note: if the content is another element or set of elements, it returns a string representation
-    *       of the hierarchy.
-    *
+    * of the hierarchy.
+    * <p/>
     * TODO implementation of this method is a hack. Implement it properly.
     */
    public static String getTextContent(final Node n)
@@ -207,7 +206,7 @@ public final class XMLUtil
          {
             try
             {
-               return (String)getTextContext.invoke(n, XMLUtil.EMPTY_ARRAY);
+               return (String) getTextContext.invoke(n, XMLUtil.EMPTY_ARRAY);
             }
             catch (Exception e)
             {
@@ -298,7 +297,8 @@ public final class XMLUtil
          throw HornetQClientMessageBundle.BUNDLE.nodeHaveDifferentAttNumber();
       }
 
-      outer: for (int i = 0; i < attrCount; i++)
+   outer:
+      for (int i = 0; i < attrCount; i++)
       {
          Node n = attrs.item(i);
          String name = n.getNodeName();
@@ -330,7 +330,7 @@ public final class XMLUtil
          NodeList nl = node.getChildNodes();
          NodeList nl2 = node2.getChildNodes();
 
-         short[] toFilter = new short[] { Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE };
+         short[] toFilter = new short[]{Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE};
          List<Node> nodes = XMLUtil.filter(nl, toFilter);
          List<Node> nodes2 = XMLUtil.filter(nl2, toFilter);
 
@@ -489,7 +489,8 @@ public final class XMLUtil
    {
       List<Node> nodes = new ArrayList<Node>();
 
-      outer: for (int i = 0; i < nl.getLength(); i++)
+   outer:
+      for (int i = 0; i < nl.getLength(); i++)
       {
          Node n = nl.item(i);
          short type = n.getNodeType();

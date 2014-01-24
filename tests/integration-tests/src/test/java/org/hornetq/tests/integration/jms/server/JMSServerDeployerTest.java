@@ -11,18 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.net.URI;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
-
-import org.junit.Assert;
+import java.net.URI;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -40,14 +33,16 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Element;
 
 /**
  * A JMSServerDeployerTest
  *
  * @author jmesnil
- *
- *
  */
 public class JMSServerDeployerTest extends ServiceTestBase
 {
@@ -120,15 +115,13 @@ public class JMSServerDeployerTest extends ServiceTestBase
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
-      String xml =
-
-      "<queue name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</queue>";
+      String xml = "<queue name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</queue>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
 
       deployer.deploy(rootNode);
 
-      Queue queue = (Queue)context.lookup(jndiName);
+      Queue queue = (Queue) context.lookup(jndiName);
       Assert.assertNotNull(queue);
       Assert.assertEquals(queueName, queue.getQueueName());
    }
@@ -141,13 +134,13 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       String xml =
 
-      "<topic name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</topic>";
+         "<topic name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</topic>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
 
       deployer.deploy(rootNode);
 
-      Topic topic = (Topic)context.lookup(jndiName);
+      Topic topic = (Topic) context.lookup(jndiName);
       Assert.assertNotNull(topic);
       Assert.assertEquals(topicName, topic.getTopicName());
    }
@@ -170,12 +163,12 @@ public class JMSServerDeployerTest extends ServiceTestBase
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
-      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
-                                                         "/acme/fullConfigurationConnectionFactory",
-                                                         "java:/xyz/tfullConfigurationConnectionFactory",
-                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
-      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
-      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+      String[] connectionFactoryBindings = new String[]{"/fullConfigurationConnectionFactory",
+         "/acme/fullConfigurationConnectionFactory",
+         "java:/xyz/tfullConfigurationConnectionFactory",
+         "java:/connectionfactories/acme/fullConfigurationConnectionFactory"};
+      String[] queueBindings = new String[]{"/fullConfigurationQueue", "/queue/fullConfigurationQueue"};
+      String[] topicBindings = new String[]{"/fullConfigurationTopic", "/topic/fullConfigurationTopic"};
 
       for (String binding : connectionFactoryBindings)
       {
@@ -207,7 +200,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : connectionFactoryBindings)
       {
-         HornetQConnectionFactory cf = (HornetQConnectionFactory)context.lookup(binding);
+         HornetQConnectionFactory cf = (HornetQConnectionFactory) context.lookup(binding);
          Assert.assertNotNull(cf);
          Assert.assertEquals(1234, cf.getClientFailureCheckPeriod());
          Assert.assertEquals(5678, cf.getCallTimeout());
@@ -235,14 +228,14 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : queueBindings)
       {
-         Queue queue = (Queue)context.lookup(binding);
+         Queue queue = (Queue) context.lookup(binding);
          Assert.assertNotNull(queue);
          Assert.assertEquals("fullConfigurationQueue", queue.getQueueName());
       }
 
       for (String binding : topicBindings)
       {
-         Topic topic = (Topic)context.lookup(binding);
+         Topic topic = (Topic) context.lookup(binding);
          Assert.assertNotNull(topic);
          Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
@@ -256,12 +249,12 @@ public class JMSServerDeployerTest extends ServiceTestBase
       String conf = "hornetq-jms-for-JMSServerDeployerTest2.xml";
       URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
-      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
-                                                         "/acme/fullConfigurationConnectionFactory",
-                                                         "java:/xyz/tfullConfigurationConnectionFactory",
-                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
-      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
-      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+      String[] connectionFactoryBindings = new String[]{"/fullConfigurationConnectionFactory",
+         "/acme/fullConfigurationConnectionFactory",
+         "java:/xyz/tfullConfigurationConnectionFactory",
+         "java:/connectionfactories/acme/fullConfigurationConnectionFactory"};
+      String[] queueBindings = new String[]{"/fullConfigurationQueue", "/queue/fullConfigurationQueue"};
+      String[] topicBindings = new String[]{"/fullConfigurationTopic", "/topic/fullConfigurationTopic"};
 
       for (String binding : connectionFactoryBindings)
       {
@@ -293,7 +286,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : connectionFactoryBindings)
       {
-         HornetQConnectionFactory cf = (HornetQConnectionFactory)context.lookup(binding);
+         HornetQConnectionFactory cf = (HornetQConnectionFactory) context.lookup(binding);
          Assert.assertNotNull(cf);
          Assert.assertEquals(1234, cf.getClientFailureCheckPeriod());
          Assert.assertEquals(5678, cf.getCallTimeout());
@@ -321,14 +314,14 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : queueBindings)
       {
-         Queue queue = (Queue)context.lookup(binding);
+         Queue queue = (Queue) context.lookup(binding);
          Assert.assertNotNull(queue);
          Assert.assertEquals("fullConfigurationQueue", queue.getQueueName());
       }
 
       for (String binding : topicBindings)
       {
-         Topic topic = (Topic)context.lookup(binding);
+         Topic topic = (Topic) context.lookup(binding);
          Assert.assertNotNull(topic);
          Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
@@ -351,7 +344,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup",
                                                                         5432, 5432,
                                                                         new UDPBroadcastGroupConfiguration("243.7.7.7", 12345,
-                                                                        "172.16.8.10", -1));
+                                                                                                           "172.16.8.10", -1));
       config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 

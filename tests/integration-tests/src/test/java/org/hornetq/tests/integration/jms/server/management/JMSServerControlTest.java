@@ -11,27 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server.management;
-import org.hornetq.api.core.HornetQObjectClosedException;
-import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.jms.client.HornetQConnection;
-import org.hornetq.jms.client.HornetQMessageConsumer;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -45,24 +28,31 @@ import javax.jms.XASession;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQMessageConsumer;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
@@ -76,15 +66,17 @@ import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A JMSServerControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 14 nov. 2008 13:35:10
- *
- *
+ *         <p/>
+ *         Created 14 nov. 2008 13:35:10
  */
 public class JMSServerControlTest extends ManagementTestBase
 {
@@ -118,7 +110,9 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
-   /** Number of consumers used by the test itself */
+   /**
+    * Number of consumers used by the test itself
+    */
    protected int getNumberOfConsumers()
    {
       return 0;
@@ -151,15 +145,15 @@ public class JMSServerControlTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, bindings[0]);
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       o = UnitTestCase.checkBinding(context, bindings[1]);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       o = UnitTestCase.checkBinding(context, bindings[2]);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -189,15 +183,15 @@ public class JMSServerControlTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, "first,first");
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       o = UnitTestCase.checkBinding(context, "second,second");
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       o = UnitTestCase.checkBinding(context, "third,third");
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -228,32 +222,32 @@ public class JMSServerControlTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, bindings[0]);
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       // assertEquals(((HornetQDestination)queue).get);
       Assert.assertEquals(queueName, queue.getQueueName());
       Assert.assertEquals(selector, server.getPostOffice()
-                                          .getBinding(new SimpleString("jms.queue." + queueName))
-                                          .getFilter()
-                                          .getFilterString()
-                                          .toString());
+         .getBinding(new SimpleString("jms.queue." + queueName))
+         .getFilter()
+         .getFilterString()
+         .toString());
       o = UnitTestCase.checkBinding(context, bindings[1]);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       Assert.assertEquals(selector, server.getPostOffice()
-                                          .getBinding(new SimpleString("jms.queue." + queueName))
-                                          .getFilter()
-                                          .getFilterString()
-                                          .toString());
+         .getBinding(new SimpleString("jms.queue." + queueName))
+         .getFilter()
+         .getFilterString()
+         .toString());
       o = UnitTestCase.checkBinding(context, bindings[2]);
       Assert.assertTrue(o instanceof Queue);
-      queue = (Queue)o;
+      queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
       Assert.assertEquals(selector, server.getPostOffice()
-                                          .getBinding(new SimpleString("jms.queue." + queueName))
-                                          .getFilter()
-                                          .getFilterString()
-                                          .toString());
+         .getBinding(new SimpleString("jms.queue." + queueName))
+         .getFilter()
+         .getFilterString()
+         .toString());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(queueName));
@@ -277,10 +271,10 @@ public class JMSServerControlTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, binding);
       Assert.assertTrue(o instanceof Queue);
-      Queue queue = (Queue)o;
+      Queue queue = (Queue) o;
       Assert.assertEquals(queueName, queue.getQueueName());
-      QueueBinding queueBinding = (QueueBinding)server.getPostOffice()
-                                                      .getBinding(new SimpleString("jms.queue." + queueName));
+      QueueBinding queueBinding = (QueueBinding) server.getPostOffice()
+         .getBinding(new SimpleString("jms.queue." + queueName));
       assertFalse(queueBinding.getQueue().isDurable());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
@@ -328,7 +322,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       HornetQConnectionFactory cf =
-            new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       HornetQConnection connection = (HornetQConnection) cf.createConnection();
       try
       {
@@ -344,7 +338,7 @@ public class JMSServerControlTest extends ManagementTestBase
          Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
 
          long time = System.currentTimeMillis();
-         while(!cons.isClosed() && time + 5000 > System.currentTimeMillis())
+         while (!cons.isClosed() && time + 5000 > System.currentTimeMillis())
          {
             Thread.sleep(100);
          }
@@ -362,7 +356,7 @@ public class JMSServerControlTest extends ManagementTestBase
       }
       finally
       {
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }
@@ -385,7 +379,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       HornetQConnectionFactory cf =
-            new HornetQConnectionFactory(false, new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+         new HornetQConnectionFactory(false, new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
       cf.setReconnectAttempts(-1);
       HornetQConnection connection = (HornetQConnection) cf.createConnection();
       try
@@ -413,7 +407,7 @@ public class JMSServerControlTest extends ManagementTestBase
       }
       finally
       {
-         if(connection != null)
+         if (connection != null)
          {
             connection.close();
          }
@@ -459,15 +453,15 @@ public class JMSServerControlTest extends ManagementTestBase
 
       Object o = UnitTestCase.checkBinding(context, bindings[0]);
       Assert.assertTrue(o instanceof Topic);
-      Topic topic = (Topic)o;
+      Topic topic = (Topic) o;
       Assert.assertEquals(topicName, topic.getTopicName());
       o = UnitTestCase.checkBinding(context, bindings[1]);
       Assert.assertTrue(o instanceof Topic);
-      topic = (Topic)o;
+      topic = (Topic) o;
       Assert.assertEquals(topicName, topic.getTopicName());
       o = UnitTestCase.checkBinding(context, bindings[2]);
       Assert.assertTrue(o instanceof Topic);
-      topic = (Topic)o;
+      topic = (Topic) o;
       Assert.assertEquals(topicName, topic.getTopicName());
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
@@ -491,7 +485,7 @@ public class JMSServerControlTest extends ManagementTestBase
       control.createTopic(topicName, topicJNDIBinding);
 
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
-      Topic topic = (Topic)context.lookup(topicJNDIBinding);
+      Topic topic = (Topic) context.lookup(topicJNDIBinding);
       assertNotNull(topic);
       HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
                                                                  new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -501,8 +495,8 @@ public class JMSServerControlTest extends ManagementTestBase
       session.createConsumer(topic);
 
       String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
-      AddressControl addressControl = (AddressControl)server.getManagementService()
-                                                            .getResource(ResourceNames.CORE_ADDRESS + topicAddress);
+      AddressControl addressControl = (AddressControl) server.getManagementService()
+         .getResource(ResourceNames.CORE_ADDRESS + topicAddress);
       assertNotNull(addressControl);
 
       assertTrue(addressControl.getQueueNames().length > 0);
@@ -530,10 +524,10 @@ public class JMSServerControlTest extends ManagementTestBase
       control.createTopic(topicName, topicJNDIBinding);
 
       checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
-      Topic topic = (Topic)context.lookup(topicJNDIBinding);
+      Topic topic = (Topic) context.lookup(topicJNDIBinding);
       assertNotNull(topic);
       HornetQConnectionFactory cf =
-               new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       // create a consumer will create a Core queue bound to the topic address
@@ -550,8 +544,8 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(getNumberOfConsumers(), jsonArray.length());
 
       String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
-      AddressControl addressControl = (AddressControl)server.getManagementService()
-                                                            .getResource(ResourceNames.CORE_ADDRESS + topicAddress);
+      AddressControl addressControl = (AddressControl) server.getManagementService()
+         .getResource(ResourceNames.CORE_ADDRESS + topicAddress);
       assertNotNull(addressControl);
 
       assertTrue(addressControl.getQueueNames().length > 0);
@@ -590,8 +584,8 @@ public class JMSServerControlTest extends ManagementTestBase
    public void testCreateConnectionFactory_3b() throws Exception
    {
       server.getConfiguration()
-            .getConnectorConfigurations()
-            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         .getConnectorConfigurations()
+         .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
@@ -647,7 +641,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                       "tst"); // groupID
 
 
-      HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+      HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory) context.lookup("tst");
 
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
@@ -685,7 +679,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       control = createManagementControl();
 
-      cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+      cf = (HornetQQueueConnectionFactory) context.lookup("tst");
 
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
@@ -730,7 +724,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       try
       {
-         cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+         cf = (HornetQQueueConnectionFactory) context.lookup("tst");
          fail("Failure expected");
       }
       catch (NamingException e)
@@ -750,15 +744,15 @@ public class JMSServerControlTest extends ManagementTestBase
       String cfName = "cf";
 
       server.getConfiguration()
-            .getConnectorConfigurations()
-            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         .getConnectorConfigurations()
+         .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
-      Destination dest = (Destination)context.lookup("/q");
+      XAConnectionFactory cf = (XAConnectionFactory) context.lookup("/cf");
+      Destination dest = (Destination) context.lookup("/q");
       XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
@@ -791,15 +785,15 @@ public class JMSServerControlTest extends ManagementTestBase
       String cfName = "cf";
 
       server.getConfiguration()
-            .getConnectorConfigurations()
-            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         .getConnectorConfigurations()
+         .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       control.createConnectionFactory(cfName, false, false, 3, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
-      XAConnectionFactory cf = (XAConnectionFactory)context.lookup("/cf");
-      Destination dest = (Destination)context.lookup("/q");
+      XAConnectionFactory cf = (XAConnectionFactory) context.lookup("/cf");
+      Destination dest = (Destination) context.lookup("/q");
       XAConnection conn = cf.createXAConnection();
       XASession ss = conn.createXASession();
       TextMessage m1 = ss.createTextMessage("m1");
@@ -828,7 +822,7 @@ public class JMSServerControlTest extends ManagementTestBase
       JMSServerControl control = createManagementControl();
 
       HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
-         new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                                                                 new TransportConfiguration(InVMConnectorFactory.class.getName()));
       Connection connection = cf.createConnection();
 
       connection.setClientID("someID");
@@ -945,9 +939,10 @@ public class JMSServerControlTest extends ManagementTestBase
 
    private void doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
    {
-      Object[] cfJNDIBindings = new Object[] { RandomUtil.randomString(),
-                                              RandomUtil.randomString(),
-                                              RandomUtil.randomString() };
+      Object[] cfJNDIBindings = new Object[]{
+         RandomUtil.randomString(),
+         RandomUtil.randomString(),
+         RandomUtil.randomString()};
 
       String cfName = RandomUtil.randomString();
 
@@ -964,7 +959,7 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          Object o = UnitTestCase.checkBinding(context, cfJNDIBinding.toString());
          Assert.assertTrue(o instanceof ConnectionFactory);
-         ConnectionFactory cf = (ConnectionFactory)o;
+         ConnectionFactory cf = (ConnectionFactory) o;
          Connection connection = cf.createConnection();
          connection.close();
       }

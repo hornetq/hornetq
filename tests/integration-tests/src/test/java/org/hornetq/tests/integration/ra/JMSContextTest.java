@@ -12,6 +12,12 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import javax.jms.JMSContext;
+import javax.jms.JMSRuntimeException;
+import javax.transaction.TransactionManager;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.ra.HornetQRAConnectionFactory;
@@ -22,12 +28,6 @@ import org.hornetq.ra.HornetQResourceAdapter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.jms.JMSContext;
-import javax.jms.JMSRuntimeException;
-import javax.transaction.TransactionManager;
-import java.util.HashSet;
-import java.util.Set;
 
 public class JMSContextTest extends HornetQRATestBase
 {
@@ -143,7 +143,8 @@ public class JMSContextTest extends HornetQRATestBase
 
    @Test
    public void clientAckTestActiveJTATx() throws Exception
-   {try
+   {
+      try
       {
          qraConnectionFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
          fail();

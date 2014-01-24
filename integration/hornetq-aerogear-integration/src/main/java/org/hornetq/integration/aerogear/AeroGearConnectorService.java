@@ -12,6 +12,16 @@
  */
 package org.hornetq.integration.aerogear;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
@@ -29,16 +39,6 @@ import org.jboss.aerogear.unifiedpush.JavaSender;
 import org.jboss.aerogear.unifiedpush.SenderClient;
 import org.jboss.aerogear.unifiedpush.message.MessageResponseCallback;
 import org.jboss.aerogear.unifiedpush.message.UnifiedMessage;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class AeroGearConnectorService implements ConnectorService, Consumer, MessageResponseCallback
 {
@@ -100,17 +100,17 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
       this.retryInterval = ConfigurationHelper.getIntProperty(AeroGearConstants.RETRY_INTERVAL_NAME, AeroGearConstants.DEFAULT_RETRY_INTERVAL, configuration);
       this.retryAttempts = ConfigurationHelper.getIntProperty(AeroGearConstants.RETRY_ATTEMPTS_NAME, AeroGearConstants.DEFAULT_RETRY_ATTEMPTS, configuration);
       String variantsString = ConfigurationHelper.getStringProperty(AeroGearConstants.VARIANTS_NAME, null, configuration);
-      if(variantsString != null)
+      if (variantsString != null)
       {
          variants = variantsString.split(",");
       }
       String aliasesString = ConfigurationHelper.getStringProperty(AeroGearConstants.ALIASES_NAME, null, configuration);
-      if(aliasesString != null)
+      if (aliasesString != null)
       {
          aliases = aliasesString.split(",");
       }
       String deviceTypeString = ConfigurationHelper.getStringProperty(AeroGearConstants.DEVICE_TYPE_NAME, null, configuration);
-      if(deviceTypeString != null)
+      if (deviceTypeString != null)
       {
          deviceTypes = deviceTypeString.split(",");
       }
@@ -125,24 +125,24 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    @Override
    public void start() throws Exception
    {
-      if(started)
+      if (started)
       {
          return;
       }
-      if(filterString != null)
+      if (filterString != null)
       {
          filter = FilterImpl.createFilter(filterString);
       }
 
-      if(endpoint == null || endpoint.isEmpty())
+      if (endpoint == null || endpoint.isEmpty())
       {
          throw HornetQAeroGearBundle.BUNDLE.endpointNull();
       }
-      if(applicationId == null || applicationId.isEmpty())
+      if (applicationId == null || applicationId.isEmpty())
       {
          throw HornetQAeroGearBundle.BUNDLE.applicationIdNull();
       }
-      if(applicationMasterSecret == null || applicationMasterSecret.isEmpty())
+      if (applicationMasterSecret == null || applicationMasterSecret.isEmpty())
       {
          throw HornetQAeroGearBundle.BUNDLE.masterSecretNull();
       }
@@ -153,7 +153,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
          throw HornetQAeroGearBundle.BUNDLE.noQueue(connectorName, queueName);
       }
 
-      queue = (Queue)b.getBindable();
+      queue = (Queue) b.getBindable();
 
       queue.addConsumer(this);
 
@@ -163,7 +163,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    @Override
    public void stop() throws Exception
    {
-      if(!started)
+      if (!started)
       {
          return;
       }
@@ -179,7 +179,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    @Override
    public HandleStatus handle(final MessageReference reference) throws Exception
    {
-      if(reconnecting)
+      if (reconnecting)
       {
          return HandleStatus.BUSY;
       }
@@ -195,7 +195,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
       }
 
       //we only accept if the alert is set
-      if(!message.containsProperty(AeroGearConstants.AEROGEAR_ALERT))
+      if (!message.containsProperty(AeroGearConstants.AEROGEAR_ALERT))
       {
          return HandleStatus.NO_MATCH;
       }
@@ -207,53 +207,53 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
       UnifiedMessage.Builder builder = new UnifiedMessage.Builder();
 
       builder.pushApplicationId(applicationId)
-            .masterSecret(applicationMasterSecret)
-            .alert(alert);
+         .masterSecret(applicationMasterSecret)
+         .alert(alert);
 
-      String sound = message.containsProperty(AeroGearConstants.AEROGEAR_SOUND)?message.getStringProperty(AeroGearConstants.AEROGEAR_SOUND):this.sound;
+      String sound = message.containsProperty(AeroGearConstants.AEROGEAR_SOUND) ? message.getStringProperty(AeroGearConstants.AEROGEAR_SOUND) : this.sound;
 
-      if(sound != null)
+      if (sound != null)
       {
          builder.sound(sound);
       }
 
-      String badge = message.containsProperty(AeroGearConstants.AEROGEAR_BADGE)?message.getStringProperty(AeroGearConstants.AEROGEAR_BADGE):this.badge;
+      String badge = message.containsProperty(AeroGearConstants.AEROGEAR_BADGE) ? message.getStringProperty(AeroGearConstants.AEROGEAR_BADGE) : this.badge;
 
-      if(badge != null)
+      if (badge != null)
       {
          builder.badge(badge);
       }
 
-      Integer ttl = message.containsProperty(AeroGearConstants.AEROGEAR_TTL)?message.getIntProperty(AeroGearConstants.AEROGEAR_TTL):this.ttl;
+      Integer ttl = message.containsProperty(AeroGearConstants.AEROGEAR_TTL) ? message.getIntProperty(AeroGearConstants.AEROGEAR_TTL) : this.ttl;
 
-      if(ttl != null)
+      if (ttl != null)
       {
          builder.timeToLive(ttl);
       }
 
-      String variantsString = message.containsProperty(AeroGearConstants.AEROGEAR_VARIANTS)?message.getStringProperty(AeroGearConstants.AEROGEAR_VARIANTS):null;
+      String variantsString = message.containsProperty(AeroGearConstants.AEROGEAR_VARIANTS) ? message.getStringProperty(AeroGearConstants.AEROGEAR_VARIANTS) : null;
 
-      String[] variants = variantsString != null?variantsString.split(","):this.variants;
+      String[] variants = variantsString != null ? variantsString.split(",") : this.variants;
 
-      if(variants != null)
+      if (variants != null)
       {
          builder.variants(Arrays.asList(variants));
       }
 
-      String aliasesString = message.containsProperty(AeroGearConstants.AEROGEAR_ALIASES)?message.getStringProperty(AeroGearConstants.AEROGEAR_ALIASES):null;
+      String aliasesString = message.containsProperty(AeroGearConstants.AEROGEAR_ALIASES) ? message.getStringProperty(AeroGearConstants.AEROGEAR_ALIASES) : null;
 
-      String[] aliases = aliasesString != null?aliasesString.split(","):this.aliases;
+      String[] aliases = aliasesString != null ? aliasesString.split(",") : this.aliases;
 
-      if(aliases != null)
+      if (aliases != null)
       {
          builder.aliases(Arrays.asList(aliases));
       }
 
-      String deviceTypesString = message.containsProperty(AeroGearConstants.AEROGEAR_DEVICE_TYPES)?message.getStringProperty(AeroGearConstants.AEROGEAR_DEVICE_TYPES):null;
+      String deviceTypesString = message.containsProperty(AeroGearConstants.AEROGEAR_DEVICE_TYPES) ? message.getStringProperty(AeroGearConstants.AEROGEAR_DEVICE_TYPES) : null;
 
-      String[] deviceTypes = deviceTypesString != null?deviceTypesString.split(","):this.deviceTypes;
+      String[] deviceTypes = deviceTypesString != null ? deviceTypesString.split(",") : this.deviceTypes;
 
-      if(deviceTypes != null)
+      if (deviceTypes != null)
       {
          builder.deviceType(Arrays.asList(deviceTypes));
       }
@@ -262,7 +262,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
 
       for (SimpleString propertyName : propertyNames)
       {
-         if(propertyName.toString().startsWith("AEROGEAR_") && !AeroGearConstants.ALLOWABLE_PROPERTIES.contains(propertyName))
+         if (propertyName.toString().startsWith("AEROGEAR_") && !AeroGearConstants.ALLOWABLE_PROPERTIES.contains(propertyName))
          {
             Object property = message.getTypedProperties().getProperty(propertyName);
             builder.attribute(propertyName.toString(), property.toString());
@@ -273,14 +273,14 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
 
       sender.send(unifiedMessage, this);
 
-      if(handled)
+      if (handled)
       {
          reference.acknowledge();
          return HandleStatus.HANDLED;
       }
       //if we have been stopped we must return no match as we have been removed as a consumer,
       // anything else will cause an exception
-      else if(!started)
+      else if (!started)
       {
          return HandleStatus.NO_MATCH;
       }
@@ -292,14 +292,14 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    @Override
    public void onComplete(int statusCode)
    {
-      if(statusCode != 200)
+      if (statusCode != 200)
       {
          handled = false;
-         if(statusCode == 401)
+         if (statusCode == 401)
          {
             HornetQAeroGearLogger.LOGGER.reply401();
          }
-         else if(statusCode == 404)
+         else if (statusCode == 404)
          {
             HornetQAeroGearLogger.LOGGER.reply404();
          }
@@ -350,7 +350,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
          catch (Exception e)
          {
             retryAttempt++;
-            if(retryAttempts == -1 || retryAttempt < retryAttempts)
+            if (retryAttempts == -1 || retryAttempt < retryAttempts)
             {
                scheduledThreadPool.schedule(this, retryInterval, TimeUnit.SECONDS);
             }
@@ -364,7 +364,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
    }
 
 
-   public List<MessageReference>  getDeliveringMessages()
+   public List<MessageReference> getDeliveringMessages()
    {
       return Collections.emptyList();
    }

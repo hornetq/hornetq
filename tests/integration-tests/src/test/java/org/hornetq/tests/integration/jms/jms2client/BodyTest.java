@@ -12,7 +12,13 @@
  */
 package org.hornetq.tests.integration.jms.jms2client;
 
-import javax.jms.*;
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.tests.util.JMSTestBase;
@@ -44,7 +50,7 @@ public class BodyTest extends JMSTestBase
    public void testBodyConversion() throws Throwable
    {
       try (
-        Connection  conn = cf.createConnection();
+         Connection conn = cf.createConnection();
       )
       {
 

@@ -450,7 +450,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    @Override
    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
 
       getBytes(index, bytesToGet);
 
@@ -459,7 +459,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public void getBytes(final long index, final byte[] dst, final int dstIndex, final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
 
       getBytes(index, bytesToGet);
 
@@ -469,35 +469,35 @@ public class LargeMessageControllerImpl implements LargeMessageController
    @Override
    public void getBytes(final int index, final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       getBytes(index, bytesToGet);
       dst.put(bytesToGet);
    }
 
    public void getBytes(final long index, final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       getBytes(index, bytesToGet);
       dst.put(bytesToGet);
    }
 
    public void getBytes(final int index, final OutputStream out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
    public void getBytes(final long index, final OutputStream out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
    public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       return out.write(ByteBuffer.wrap(bytesToGet));
    }
@@ -1038,7 +1038,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public HornetQBuffer readBytes(final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(readerIndex, bytesToGet);
       readerIndex += length;
       return HornetQBuffers.wrappedBuffer(bytesToGet);

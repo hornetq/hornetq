@@ -11,22 +11,20 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.StreamMessage;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A test that sends/receives stream messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class StreamMessageTest extends MessageTestBase
 {
@@ -67,7 +65,7 @@ public class StreamMessageTest extends MessageTestBase
 
       conn.start();
 
-      StreamMessage rm = (StreamMessage)queueCons.receive();
+      StreamMessage rm = (StreamMessage) queueCons.receive();
 
       ProxyAssertSupport.assertNull(rm.readString());
    }
@@ -79,18 +77,18 @@ public class StreamMessageTest extends MessageTestBase
    {
       super.prepareMessage(m);
 
-      StreamMessage sm = (StreamMessage)m;
+      StreamMessage sm = (StreamMessage) m;
 
       sm.writeBoolean(true);
-      sm.writeByte((byte)3);
-      sm.writeBytes(new byte[] { (byte)4, (byte)5, (byte)6 });
-      sm.writeChar((char)7);
+      sm.writeByte((byte) 3);
+      sm.writeBytes(new byte[]{(byte) 4, (byte) 5, (byte) 6});
+      sm.writeChar((char) 7);
       sm.writeDouble(8.0);
       sm.writeFloat(9.0f);
       sm.writeInt(10);
-      sm.writeLong(11l);
+      sm.writeLong(11L);
       sm.writeObject("this is an object");
-      sm.writeShort((short)12);
+      sm.writeShort((short) 12);
       sm.writeString("this is a String");
    }
 
@@ -99,25 +97,25 @@ public class StreamMessageTest extends MessageTestBase
    {
       super.assertEquivalent(m, mode, redelivery);
 
-      StreamMessage sm = (StreamMessage)m;
+      StreamMessage sm = (StreamMessage) m;
 
       sm.reset();
 
       ProxyAssertSupport.assertEquals(true, sm.readBoolean());
-      ProxyAssertSupport.assertEquals((byte)3, sm.readByte());
+      ProxyAssertSupport.assertEquals((byte) 3, sm.readByte());
       byte[] bytes = new byte[3];
       sm.readBytes(bytes);
-      ProxyAssertSupport.assertEquals((byte)4, bytes[0]);
-      ProxyAssertSupport.assertEquals((byte)5, bytes[1]);
-      ProxyAssertSupport.assertEquals((byte)6, bytes[2]);
+      ProxyAssertSupport.assertEquals((byte) 4, bytes[0]);
+      ProxyAssertSupport.assertEquals((byte) 5, bytes[1]);
+      ProxyAssertSupport.assertEquals((byte) 6, bytes[2]);
       ProxyAssertSupport.assertEquals(-1, sm.readBytes(bytes));
-      ProxyAssertSupport.assertEquals((char)7, sm.readChar());
+      ProxyAssertSupport.assertEquals((char) 7, sm.readChar());
       ProxyAssertSupport.assertEquals(new Double(8.0), new Double(sm.readDouble()));
       ProxyAssertSupport.assertEquals(new Float(9.0), new Float(sm.readFloat()));
       ProxyAssertSupport.assertEquals(10, sm.readInt());
-      ProxyAssertSupport.assertEquals(11l, sm.readLong());
+      ProxyAssertSupport.assertEquals(11L, sm.readLong());
       ProxyAssertSupport.assertEquals("this is an object", sm.readObject());
-      ProxyAssertSupport.assertEquals((short)12, sm.readShort());
+      ProxyAssertSupport.assertEquals((short) 12, sm.readShort());
       ProxyAssertSupport.assertEquals("this is a String", sm.readString());
    }
 

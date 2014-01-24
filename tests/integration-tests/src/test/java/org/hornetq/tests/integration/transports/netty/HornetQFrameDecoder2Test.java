@@ -12,21 +12,19 @@
  */
 package org.hornetq.tests.integration.transports.netty;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Assert;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A HornetQFrameDecoder2Test
@@ -79,7 +77,7 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
       }
 
       int cnt = 0;
-      for (ByteBuf p: packets)
+      for (ByteBuf p : packets)
       {
          decoder.writeInbound(p);
          for (;;)
@@ -104,21 +102,21 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
    {
       final EmbeddedChannel decoder = new EmbeddedChannel(new HornetQFrameDecoder2());
 
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 0 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 0 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 0 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 4 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{4}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 5 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{5}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 6 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{6}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 7 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{7}));
       Assert.assertNull(decoder.readInbound());
-      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[] { 8 }));
+      decoder.writeInbound(Unpooled.wrappedBuffer(new byte[]{8}));
 
       ByteBuf frame = (ByteBuf) decoder.readInbound();
       Assert.assertEquals(4, frame.readerIndex());

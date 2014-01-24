@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.client;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
@@ -22,7 +20,6 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.JMSSecurityException;
 import javax.jms.JMSSecurityRuntimeException;
 import javax.jms.QueueConnection;
-import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
@@ -32,6 +29,7 @@ import javax.jms.XATopicConnection;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import java.io.Serializable;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -50,7 +48,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  */
 public class HornetQConnectionFactory implements Serializable, Referenceable, ConnectionFactory, XAConnectionFactory
 {
-   private final static long serialVersionUID = -2810634789345348326L;
+   private static final long serialVersionUID = -2810634789345348326L;
 
    private final ServerLocator serverLocator;
 
@@ -139,7 +137,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       try
       {
          HornetQConnection connection =
-               createConnectionInternal(userName, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+            createConnectionInternal(userName, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
          return connection.createContext(sessionMode);
       }
       catch (JMSSecurityException e)
@@ -171,7 +169,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       }
    }
 
-    // QueueConnectionFactory implementation --------------------------------------------------------
+   // QueueConnectionFactory implementation --------------------------------------------------------
 
    public QueueConnection createQueueConnection() throws JMSException
    {
@@ -204,7 +202,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
 
    public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
-      return (XAConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return (XAConnection) createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    @Override
@@ -219,7 +217,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
       try
       {
          HornetQConnection connection =
-               createConnectionInternal(userName, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+            createConnectionInternal(userName, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
          return connection.createXAContext();
       }
       catch (JMSSecurityException e)
@@ -241,7 +239,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
 
    public XAQueueConnection createXAQueueConnection(final String username, final String password) throws JMSException
    {
-      return (XAQueueConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
+      return (XAQueueConnection) createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
    }
 
    // XATopicConnectionFactory implementation ------------------------------------------------------
@@ -253,7 +251,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
 
    public XATopicConnection createXATopicConnection(final String username, final String password) throws JMSException
    {
-      return (XATopicConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
+      return (XATopicConnection) createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
    @Override
@@ -687,34 +685,34 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
          if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
          {
             connection = new HornetQXAConnection(username,
-                                                password,
-                                                type,
-                                                clientID,
-                                                dupsOKBatchSize,
-                                                transactionBatchSize,
-                                                factory);
+                                                 password,
+                                                 type,
+                                                 clientID,
+                                                 dupsOKBatchSize,
+                                                 transactionBatchSize,
+                                                 factory);
          }
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
             connection =
-                     new HornetQXAConnection(username,
-                                                      password,
-                                                      type,
-                                                      clientID,
-                                                      dupsOKBatchSize,
-                                                      transactionBatchSize,
-                                                      factory);
+               new HornetQXAConnection(username,
+                                       password,
+                                       type,
+                                       clientID,
+                                       dupsOKBatchSize,
+                                       transactionBatchSize,
+                                       factory);
          }
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
             connection =
-                     new HornetQXAConnection(username,
-                                                      password,
-                                                      type,
-                                                      clientID,
-                                                      dupsOKBatchSize,
-                                                      transactionBatchSize,
-                                                      factory);
+               new HornetQXAConnection(username,
+                                       password,
+                                       type,
+                                       clientID,
+                                       dupsOKBatchSize,
+                                       transactionBatchSize,
+                                       factory);
          }
       }
       else
@@ -732,24 +730,24 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
             connection =
-                     new HornetQConnection(username,
-                                                    password,
-                                                    type,
-                                                    clientID,
-                                                    dupsOKBatchSize,
-                                                    transactionBatchSize,
-                                                    factory);
+               new HornetQConnection(username,
+                                     password,
+                                     type,
+                                     clientID,
+                                     dupsOKBatchSize,
+                                     transactionBatchSize,
+                                     factory);
          }
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
             connection =
-                     new HornetQConnection(username,
-                                                    password,
-                                                    type,
-                                                    clientID,
-                                                    dupsOKBatchSize,
-                                                    transactionBatchSize,
-                                                    factory);
+               new HornetQConnection(username,
+                                     password,
+                                     type,
+                                     clientID,
+                                     dupsOKBatchSize,
+                                     transactionBatchSize,
+                                     factory);
          }
       }
 
@@ -782,17 +780,17 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    public String toString()
    {
       return "HornetQConnectionFactory [serverLocator=" + serverLocator +
-             ", clientID=" +
-             clientID +
-             ", consumerWindowSize = " +
-             getConsumerWindowSize() +
-             ", dupsOKBatchSize=" +
-             dupsOKBatchSize +
-             ", transactionBatchSize=" +
-             transactionBatchSize +
-             ", readOnly=" +
-             readOnly +
-             "]";
+         ", clientID=" +
+         clientID +
+         ", consumerWindowSize = " +
+         getConsumerWindowSize() +
+         ", dupsOKBatchSize=" +
+         dupsOKBatchSize +
+         ", transactionBatchSize=" +
+         transactionBatchSize +
+         ", readOnly=" +
+         readOnly +
+         "]";
    }
 
 

@@ -57,7 +57,7 @@ public interface Transaction
 
    void addOperation(TransactionOperation sync);
 
-   public List<TransactionOperation> getAllOperations();
+   List<TransactionOperation> getAllOperations();
 
    boolean hasTimedOut(long currentTime, int defaultTimeout);
 

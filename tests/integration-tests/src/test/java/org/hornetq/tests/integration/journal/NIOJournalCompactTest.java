@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.journal;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -53,11 +54,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * A JournalImplTestBase
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class NIOJournalCompactTest extends JournalImplTestBase
 {
@@ -227,7 +226,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       setup(2, 60 * 1024, false);
 
-      final byte recordType = (byte)0;
+      final byte recordType = (byte) 0;
 
       journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO);
 
@@ -284,7 +283,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       addTx(1, 2);
 
-      prepare(1, new SimpleEncoding(10, (byte)0));
+      prepare(1, new SimpleEncoding(10, (byte) 0));
 
       finishCompact();
 
@@ -326,7 +325,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       addTx(1, 2);
 
-      prepare(1, new SimpleEncoding(10, (byte)0));
+      prepare(1, new SimpleEncoding(10, (byte) 0));
 
       stopJournal();
 
@@ -366,7 +365,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       addTx(1, 2, 3);
 
-      prepare(1, new SimpleEncoding(10, (byte)0));
+      prepare(1, new SimpleEncoding(10, (byte) 0));
 
       startCompact();
 
@@ -612,7 +611,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
             updateTx(transactionID, recordID);
             if (preXA)
             {
-               prepare(transactionID, new SimpleEncoding(10, (byte)0));
+               prepare(transactionID, new SimpleEncoding(10, (byte) 0));
             }
             transactedRecords.add(new Pair<Long, Long>(transactionID++, recordID));
          }
@@ -628,7 +627,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
             }
             else
             {
-               liveIDs.add((long)i);
+               liveIDs.add((long) i);
             }
          }
       }
@@ -719,7 +718,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
                commit(transactionID++);
             }
 
-            System.out.println("Deletes are going into " + ((JournalImpl)journal).getCurrentFile());
+            System.out.println("Deletes are going into " + ((JournalImpl) journal).getCurrentFile());
          }
       }
 
@@ -737,7 +736,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             if (postXA)
             {
-               prepare(tx.getA(), new SimpleEncoding(10, (byte)0));
+               prepare(tx.getA(), new SimpleEncoding(10, (byte) 0));
             }
             if (tx.getA() % 2 == 0)
             {
@@ -779,7 +778,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             if (postXA)
             {
-               prepare(tx.getA(), new SimpleEncoding(10, (byte)0));
+               prepare(tx.getA(), new SimpleEncoding(10, (byte) 0));
             }
             if (tx.getA() % 2 == 0)
             {
@@ -1293,7 +1292,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
       }
 
-      JournalFile files[] = journal.getDataFiles();
+      JournalFile[] files = journal.getDataFiles();
 
       stopJournal();
       createJournal();
@@ -1302,7 +1301,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files2[] = journal.getDataFiles();
+      JournalFile[] files2 = journal.getDataFiles();
 
       Assert.assertEquals(files.length, files2.length);
 
@@ -1319,7 +1318,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files3[] = journal.getDataFiles();
+      JournalFile[] files3 = journal.getDataFiles();
 
       for (JournalFile file : files3)
       {
@@ -1498,7 +1497,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1559,7 +1558,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1620,7 +1619,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1656,7 +1655,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       long tx0 = idGenerator.generateID();
       add(idGenerator.generateID());
 
-      long ids[] = new long[] { idGenerator.generateID(), idGenerator.generateID() };
+      long[] ids = new long[]{idGenerator.generateID(), idGenerator.generateID()};
 
       addTx(tx0, ids[0]);
       addTx(tx0, ids[1]);
@@ -1717,7 +1716,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
       }
 
-      JournalFile files[] = journal.getDataFiles();
+      JournalFile[] files = journal.getDataFiles();
 
       stopJournal();
       createJournal();
@@ -1726,7 +1725,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files2[] = journal.getDataFiles();
+      JournalFile[] files2 = journal.getDataFiles();
 
       Assert.assertEquals(files.length, files2.length);
 
@@ -1745,7 +1744,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files3[] = journal.getDataFiles();
+      JournalFile[] files3 = journal.getDataFiles();
 
       for (JournalFile file : files3)
       {
@@ -1795,7 +1794,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       storage.start();
       storage.loadInternalOnly();
 
-      ((JournalImpl)storage.getMessageJournal()).setAutoReclaim(false);
+      ((JournalImpl) storage.getMessageJournal()).setAutoReclaim(false);
       final LinkedList<Long> survivingMsgs = new LinkedList<Long>();
 
       Runnable producerRunnable = new Runnable()
@@ -1882,8 +1881,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
                {
                   Thread.sleep(500);
                   System.out.println("Compacting");
-                  ((JournalImpl)storage.getMessageJournal()).testCompact();
-                  ((JournalImpl)storage.getMessageJournal()).checkReclaimStatus();
+                  ((JournalImpl) storage.getMessageJournal()).testCompact();
+                  ((JournalImpl) storage.getMessageJournal()).checkReclaimStatus();
                }
             }
             catch (Throwable e)
@@ -1927,7 +1926,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       File testDir = new File(getTestDir());
 
-      File files[] = testDir.listFiles(new FilenameFilter()
+      File[] files = testDir.listFiles(new FilenameFilter()
       {
 
          public boolean accept(File dir, String name)

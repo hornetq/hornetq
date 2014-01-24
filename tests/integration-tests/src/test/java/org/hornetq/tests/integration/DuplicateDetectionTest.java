@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration;
+
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -41,10 +42,8 @@ import org.junit.Test;
  * A DuplicateDetectionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 9 Dec 2008 12:31:48
- *
- *
+ *         <p/>
+ *         Created 9 Dec 2008 12:31:48
  */
 public class DuplicateDetectionTest extends ServiceTestBase
 {
@@ -554,7 +553,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
 
-      ClientMessage message2 = createMessage(session,0);
+      ClientMessage message2 = createMessage(session, 0);
       ClientProducer producer2 = session.createProducer(queue2);
       producer2.send(message2);
 
@@ -592,7 +591,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(HornetQDuplicateIdException die)
+      catch (HornetQDuplicateIdException die)
       {
          session.rollback();
       }
@@ -1751,7 +1750,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(HornetQDuplicateIdException die)
+      catch (HornetQDuplicateIdException die)
       {
          session.rollback();
       }
@@ -1771,7 +1770,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          session.commit();
       }
-      catch(HornetQDuplicateIdException die)
+      catch (HornetQDuplicateIdException die)
       {
          session.rollback();
       }

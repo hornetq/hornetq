@@ -81,7 +81,7 @@ public final class VersionLoader
       }
 
    }
-   
+
    public static Version[] getClientVersions()
    {
       if (VersionLoader.versions == null)
@@ -102,16 +102,17 @@ public final class VersionLoader
       return VersionLoader.versions[0];
    }
 
-   public static String getClasspathString() {
+   public static String getClasspathString()
+   {
       StringBuffer classpath = new StringBuffer();
       ClassLoader applicationClassLoader = VersionImpl.class.getClassLoader();
-      URL[] urls = ((URLClassLoader)applicationClassLoader).getURLs();
-       for (URL url : urls)
+      URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
+      for (URL url : urls)
       {
-           classpath.append(url.getFile()).append("\r\n");
-       }
+         classpath.append(url.getFile()).append("\r\n");
+      }
 
-       return classpath.toString();
+      return classpath.toString();
    }
 
    private static Version[] load()
@@ -136,27 +137,27 @@ public final class VersionLoader
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
             int[] compatibleVersionArray = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.compatibleVersionList"));
             List<Version> definedVersions = new ArrayList<Version>(incrementingVersions.length);
-            for(int incrementingVersion : incrementingVersions)
+            for (int incrementingVersion : incrementingVersions)
             {
-                definedVersions.add(new VersionImpl(versionName,
-                                   majorVersion,
-                                   minorVersion,
-                                   microVersion,
-                                   incrementingVersion,
-                                   versionSuffix,
-                                   compatibleVersionArray));
+               definedVersions.add(new VersionImpl(versionName,
+                                                   majorVersion,
+                                                   minorVersion,
+                                                   microVersion,
+                                                   incrementingVersion,
+                                                   versionSuffix,
+                                                   compatibleVersionArray));
             }
             //We want the higher version to be the first
-            Collections.sort(definedVersions, new Comparator<Version>() 
+            Collections.sort(definedVersions, new Comparator<Version>()
             {
-                @Override
-                public int compare(Version version1, Version version2) 
-                {
-                    return version2.getIncrementingVersion() - version1.getIncrementingVersion();
-                }
-                
+               @Override
+               public int compare(Version version1, Version version2)
+               {
+                  return version2.getIncrementingVersion() - version1.getIncrementingVersion();
+               }
+
             });
-            return definedVersions.toArray(new Version[incrementingVersions.length]);            
+            return definedVersions.toArray(new Version[incrementingVersions.length]);
          }
          catch (IOException e)
          {
@@ -195,7 +196,10 @@ public final class VersionLoader
             // "-n" pattern
             from = 0;
             cursor++;
-            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
+            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++)
+            {
+               // do nothing
+            }
             if (cursor > 1)
             {
                to = Integer.parseInt(token.substring(1, cursor));
@@ -203,7 +207,10 @@ public final class VersionLoader
          }
          else if (Character.isDigit(firstChar))
          {
-            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
+            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++)
+            {
+               // do nothing
+            }
             from = Integer.parseInt(token.substring(0, cursor));
 
             if (cursor == token.length())

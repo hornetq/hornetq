@@ -46,7 +46,7 @@ public class ExportJournal
 
    // Public --------------------------------------------------------
 
-   public static void main(final String arg[])
+   public static void main(final String[] arg)
    {
       if (arg.length != 5)
       {

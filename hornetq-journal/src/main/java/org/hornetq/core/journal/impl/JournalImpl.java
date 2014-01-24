@@ -68,15 +68,12 @@ import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
  * <p>A circular log implementation.</p
- *
+ * <p/>
  * <p>Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class JournalImpl extends JournalBase implements TestableJournal, JournalRecordProvider
 {
@@ -85,7 +82,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    public static final int FORMAT_VERSION = 2;
 
-   private static final int COMPATIBLE_VERSIONS[] = new int[] { 1 };
+   private static final int[] COMPATIBLE_VERSIONS = new int[]{1};
 
    // Static --------------------------------------------------------
    private static final boolean trace = HornetQJournalLogger.LOGGER.isTraceEnabled();
@@ -97,12 +94,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
    // Journal
-   private static final void trace(final String message)
+   private static void trace(final String message)
    {
       HornetQJournalLogger.LOGGER.trace(message);
    }
 
-   private static final void traceRecord(final String message)
+   private static void traceRecord(final String message)
    {
       HornetQJournalLogger.LOGGER.trace(message);
    }
@@ -117,8 +114,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private static final int BASIC_SIZE = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
    public static final int SIZE_ADD_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
-                                             DataConstants.SIZE_BYTE +
-                                             DataConstants.SIZE_INT /* + record.length */;
+      DataConstants.SIZE_BYTE +
+      DataConstants.SIZE_INT /* + record.length */;
 
    // Record markers - they must be all unique
 
@@ -127,17 +124,17 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public static final byte UPDATE_RECORD = 12;
 
    public static final int SIZE_ADD_RECORD_TX = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
-                                                DataConstants.SIZE_BYTE +
-                                                DataConstants.SIZE_LONG +
-                                                DataConstants.SIZE_INT /* + record.length */;
+      DataConstants.SIZE_BYTE +
+      DataConstants.SIZE_LONG +
+      DataConstants.SIZE_INT /* + record.length */;
 
    public static final byte ADD_RECORD_TX = 13;
 
    public static final byte UPDATE_RECORD_TX = 14;
 
    public static final int SIZE_DELETE_RECORD_TX = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
-                                                   DataConstants.SIZE_LONG +
-                                                   DataConstants.SIZE_INT /* + record.length */;
+      DataConstants.SIZE_LONG +
+      DataConstants.SIZE_INT /* + record.length */;
 
    public static final byte DELETE_RECORD_TX = 15;
 
@@ -146,7 +143,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public static final byte DELETE_RECORD = 16;
 
    public static final int SIZE_COMPLETE_TRANSACTION_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
-                                                              DataConstants.SIZE_INT;
+      DataConstants.SIZE_INT;
 
    public static final int SIZE_PREPARE_RECORD = JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + DataConstants.SIZE_INT;
 
@@ -160,7 +157,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    public static final byte ROLLBACK_RECORD = 19;
 
-   protected static final byte FILL_CHARACTER = (byte)'J';
+   protected static final byte FILL_CHARACTER = (byte) 'J';
 
    // Attributes ----------------------------------------------------
 
@@ -204,7 +201,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * We don't lock the journal during the whole compacting operation. During compacting we only
     * lock it (i) when gathering the initial structure, and (ii) when replicating the structures
     * after finished compacting.
-    * <p>
+    * <p/>
     * However we need to lock it while taking and updating snapshots
     */
    private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
@@ -226,12 +223,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                       final String filePrefix,
                       final String fileExtension,
                       final int maxAIO)
-                         {
+   {
       this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0);
    }
 
 
-      public JournalImpl(final int fileSize,
+   public JournalImpl(final int fileSize,
                       final int minFiles,
                       final int compactMinFiles,
                       final int compactPercentage,
@@ -244,7 +241,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       if (fileSize % fileFactory.getAlignment() != 0)
       {
          throw new IllegalArgumentException("Invalid journal-file-size " + fileSize + ", It should be multiple of " +
-                                            fileFactory.getAlignment());
+                                               fileFactory.getAlignment());
       }
       if (minFiles < 2)
       {
@@ -341,7 +338,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       for (int i = 0; i < numIts; i++)
       {
-         appendAddRecord(i, (byte)1, record, true, task);
+         appendAddRecord(i, (byte) 1, record, true, task);
          appendDeleteRecord(i, true, task);
       }
 
@@ -363,8 +360,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return compactor;
    }
 
-   /** this method is used internally only however tools may use it to maintenance.
-    *  It won't be part of the interface as the tools should be specific to the implementation */
+   /**
+    * this method is used internally only however tools may use it to maintenance.
+    * It won't be part of the interface as the tools should be specific to the implementation
+    */
    public List<JournalFile> orderFiles() throws Exception
    {
       List<String> fileNames = fileFactory.listFiles(filesRepository.getFileExtension());
@@ -398,7 +397,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return orderedFiles;
    }
 
-   /** this method is used internally only however tools may use it to maintenance.  */
+   /**
+    * this method is used internally only however tools may use it to maintenance.
+    */
    public static int readJournalFile(final SequentialFileFactory fileFactory,
                                      final JournalFile file,
                                      final JournalReaderCallback reader) throws Exception
@@ -407,7 +408,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       ByteBuffer wholeFileBuffer = null;
       try
       {
-         final int filesize = (int)file.getFile().size();
+         final int filesize = (int) file.getFile().size();
 
          wholeFileBuffer = fileFactory.newBuffer(filesize);
 
@@ -514,7 +515,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
             byte userRecordType = 0;
 
-            byte record[] = null;
+            byte[] record = null;
 
             if (JournalImpl.isContainsBody(recordType))
             {
@@ -582,22 +583,22 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             // of the record,
             // But we avoid buffer overflows by damaged data
             if (JournalImpl.isInvalidSize(journalFileSize, pos, recordSize + variableSize +
-                                                                preparedTransactionExtraDataSize))
+               preparedTransactionExtraDataSize))
             {
                // Avoid a buffer overflow caused by damaged data... continue
                // scanning for more pendingTransactions...
                JournalImpl.trace("Record at position " + pos +
-                                 " recordType = " +
-                                 recordType +
-                                 " file:" +
-                                 file.getFile().getFileName() +
-                                 " recordSize: " +
-                                 recordSize +
-                                 " variableSize: " +
-                                 variableSize +
-                                 " preparedTransactionExtraDataSize: " +
-                                 preparedTransactionExtraDataSize +
-                                 " is corrupted and it is being ignored (II)");
+                                    " recordType = " +
+                                    recordType +
+                                    " file:" +
+                                    file.getFile().getFileName() +
+                                    " recordSize: " +
+                                    recordSize +
+                                    " variableSize: " +
+                                    variableSize +
+                                    " preparedTransactionExtraDataSize: " +
+                                    preparedTransactionExtraDataSize +
+                                    " is corrupted and it is being ignored (II)");
                // If a file has damaged pendingTransactions, we make it a dataFile, and the
                // next reclaiming will fix it
                reader.markAsDataFile(file);
@@ -609,9 +610,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             int oldPos = wholeFileBuffer.position();
 
             wholeFileBuffer.position(pos + variableSize +
-                                     recordSize +
-                                     preparedTransactionExtraDataSize -
-                                     DataConstants.SIZE_INT);
+                                        recordSize +
+                                        preparedTransactionExtraDataSize -
+                                        DataConstants.SIZE_INT);
 
             int checkSize = wholeFileBuffer.getInt();
 
@@ -622,15 +623,15 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
                JournalImpl.trace("Record at position " + pos +
-                                 " recordType = " +
-                                 recordType +
-                                 " possible transactionID = " +
-                                 transactionID +
-                                 " possible recordID = " +
-                                 recordID +
-                                 " file:" +
-                                 file.getFile().getFileName() +
-                                 " is corrupted and it is being ignored (III)");
+                                    " recordType = " +
+                                    recordType +
+                                    " possible transactionID = " +
+                                    transactionID +
+                                    " possible recordID = " +
+                                    recordID +
+                                    " file:" +
+                                    file.getFile().getFileName() +
+                                    " is corrupted and it is being ignored (III)");
 
                // If a file has damaged pendingTransactions, we make it a dataFile, and the
                // next reclaiming will fix it
@@ -689,7 +690,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                case DELETE_RECORD_TX:
                {
                   reader.onReadDeleteRecordTX(transactionID, new RecordInfo(recordID,
-                                                                            (byte)0,
+                                                                            (byte) 0,
                                                                             record,
                                                                             true,
                                                                             compactCount));
@@ -699,7 +700,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                case PREPARE_RECORD:
                {
 
-                  byte extraData[] = new byte[preparedTransactionExtraDataSize];
+                  byte[] extraData = new byte[preparedTransactionExtraDataSize];
 
                   wholeFileBuffer.get(extraData);
 
@@ -721,8 +722,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                default:
                {
                   throw new IllegalStateException("Journal " + file.getFile().getFileName() +
-                                                  " is corrupt, invalid record type " +
-                                                  recordType);
+                                                     " is corrupt, invalid record type " +
+                                                     recordType);
                }
             }
 
@@ -734,8 +735,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
                throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() +
-                                               ", pos = " +
-                                               pos);
+                                                  ", pos = " +
+                                                  pos);
             }
 
             lastDataPos = wholeFileBuffer.position();
@@ -797,10 +798,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (JournalImpl.TRACE_RECORDS)
             {
                JournalImpl.traceRecord("appendAddRecord::id=" + id +
-                                       ", userRecordType=" +
-                                       recordType +
-                                       ", usedFile = " +
-                                       usedFile);
+                                          ", userRecordType=" +
+                                          recordType +
+                                          ", usedFile = " +
+                                          usedFile);
             }
 
             records.put(id, new JournalRecord(usedFile, addRecord.getEncodeSize()));
@@ -854,10 +855,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (JournalImpl.TRACE_RECORDS)
             {
                JournalImpl.traceRecord("appendUpdateRecord::id=" + id +
-                                       ", userRecordType=" +
-                                       recordType +
-                                       ", usedFile = " +
-                                       usedFile);
+                                          ", userRecordType=" +
+                                          recordType +
+                                          ", usedFile = " +
+                                          usedFile);
             }
 
             // record== null here could only mean there is a compactor, and computing the delete should be done after
@@ -975,12 +976,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (JournalImpl.TRACE_RECORDS)
             {
                JournalImpl.traceRecord("appendAddRecordTransactional:txID=" + txID +
-                                       ",id=" +
-                                       id +
-                                       ", userRecordType=" +
-                                       recordType +
-                                       ", usedFile = " +
-                                       usedFile);
+                                          ",id=" +
+                                          id +
+                                          ", userRecordType=" +
+                                          recordType +
+                                          ", usedFile = " +
+                                          usedFile);
             }
 
             tx.addPositive(usedFile, id, addRecord.getEncodeSize());
@@ -1033,12 +1034,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (JournalImpl.TRACE_RECORDS)
             {
                JournalImpl.traceRecord("appendUpdateRecordTransactional::txID=" + txID +
-                                       ",id=" +
-                                       id +
-                                       ", userRecordType=" +
-                                       recordType +
-                                       ", usedFile = " +
-                                       usedFile);
+                                          ",id=" +
+                                          id +
+                                          ", userRecordType=" +
+                                          recordType +
+                                          ", usedFile = " +
+                                          usedFile);
             }
 
             tx.addPositive(usedFile, id, updateRecordTX.getEncodeSize());
@@ -1076,10 +1077,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             if (JournalImpl.TRACE_RECORDS)
             {
                JournalImpl.traceRecord("appendDeleteRecordTransactional::txID=" + txID +
-                                       ", id=" +
-                                       id +
-                                       ", usedFile = " +
-                                       usedFile);
+                                          ", id=" +
+                                          id +
+                                          ", usedFile = " +
+                                          usedFile);
             }
 
             tx.addNegative(usedFile, id);
@@ -1096,12 +1097,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    *
     * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction
-    *     back to a state it could be committed. </p>
-    *
+    * back to a state it could be committed. </p>
+    * <p/>
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
-    *
+    * <p/>
     * <p> This method also uses the same logic applied on {@link JournalImpl#appendCommitRecord(long, boolean)}
     *
     * @param txID
@@ -1119,12 +1119,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       journalLock.readLock().lock();
 
-     try
+      try
       {
          JournalTransaction tx = getTransactionInfo(txID);
 
          JournalInternalRecord prepareRecord =
-                  new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, txID, transactionData);
+            new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, txID, transactionData);
 
          if (callback != null)
          {
@@ -1265,26 +1265,27 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private static final class DummyLoader implements LoaderCallback
    {
       static final LoaderCallback INSTANCE = new DummyLoader();
+
       public void failedTransaction(final long transactionID, final List<RecordInfo> records,
-                                       final List<RecordInfo> recordsToDelete)
-         {
-         }
+                                    final List<RecordInfo> recordsToDelete)
+      {
+      }
 
-         public void updateRecord(final RecordInfo info)
-         {
-         }
+      public void updateRecord(final RecordInfo info)
+      {
+      }
 
-         public void deleteRecord(final long id)
-         {
-         }
+      public void deleteRecord(final long id)
+      {
+      }
 
-         public void addRecord(final RecordInfo info)
-         {
-         }
+      public void addRecord(final RecordInfo info)
+      {
+      }
 
-         public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
-         {
-         }
+      public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
+      {
+      }
    }
 
    public synchronized JournalLoadInformation loadInternalOnly() throws Exception
@@ -1299,11 +1300,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    public JournalLoadInformation load(final List<RecordInfo> committedRecords,
-                                                   final List<PreparedTransactionInfo> preparedTransactions,
-                                                   final TransactionFailureCallback failureCallback) throws Exception
+                                      final List<PreparedTransactionInfo> preparedTransactions,
+                                      final TransactionFailureCallback failureCallback) throws Exception
    {
       return load(committedRecords, preparedTransactions, failureCallback, true);
    }
+
    /**
     * @see JournalImpl#load(LoaderCallback)
     */
@@ -1445,7 +1447,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    /**
     * Note: This method can't be called from the main executor, as it will invoke other methods
     * depending on it.
-    * <p>
+    * <p/>
     * Note: only synchronized methods on journal are methods responsible for the life-cycle such as
     * stop, start records will still come as this is being executed
     */
@@ -1459,189 +1461,189 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       compactorLock.writeLock().lock();
       try
       {
-      ArrayList<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>(filesRepository.getDataFilesCount());
+         ArrayList<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>(filesRepository.getDataFilesCount());
 
          boolean previousReclaimValue = isAutoReclaim();
 
-      try
-      {
-         HornetQJournalLogger.LOGGER.debug("Starting compacting operation on journal");
-
-         onCompactStart();
-
-         // We need to guarantee that the journal is frozen for this short time
-         // We don't freeze the journal as we compact, only for the short time where we replace records
-         journalLock.writeLock().lock();
          try
          {
-            if (state != JournalState.LOADED)
+            HornetQJournalLogger.LOGGER.debug("Starting compacting operation on journal");
+
+            onCompactStart();
+
+            // We need to guarantee that the journal is frozen for this short time
+            // We don't freeze the journal as we compact, only for the short time where we replace records
+            journalLock.writeLock().lock();
+            try
             {
-               return;
+               if (state != JournalState.LOADED)
+               {
+                  return;
+               }
+
+               onCompactLockingTheJournal();
+
+               setAutoReclaim(false);
+
+               // We need to move to the next file, as we need a clear start for negatives and positives counts
+               moveNextFile(false);
+
+               // Take the snapshots and replace the structures
+
+               dataFilesToProcess.addAll(filesRepository.getDataFiles());
+
+               filesRepository.clearDataFiles();
+
+               if (dataFilesToProcess.size() == 0)
+               {
+                  trace("Finishing compacting, nothing to process");
+                  return;
+               }
+
+               compactor = new JournalCompactor(fileFactory,
+                                                this,
+                                                filesRepository,
+                                                records.keySet(),
+                                                dataFilesToProcess.get(0).getFileID());
+
+               for (Map.Entry<Long, JournalTransaction> entry : transactions.entrySet())
+               {
+                  compactor.addPendingTransaction(entry.getKey(), entry.getValue().getPositiveArray());
+                  entry.getValue().setCompacting();
+               }
+
+               // We will calculate the new records during compacting, what will take the position the records will take
+               // after compacting
+               records.clear();
+            }
+            finally
+            {
+               journalLock.writeLock().unlock();
             }
 
-            onCompactLockingTheJournal();
+            Collections.sort(dataFilesToProcess, new JournalFileComparator());
 
-            setAutoReclaim(false);
+            // This is where most of the work is done, taking most of the time of the compacting routine.
+            // Notice there are no locks while this is being done.
 
-            // We need to move to the next file, as we need a clear start for negatives and positives counts
-            moveNextFile(false);
-
-            // Take the snapshots and replace the structures
-
-            dataFilesToProcess.addAll(filesRepository.getDataFiles());
-
-            filesRepository.clearDataFiles();
-
-            if (dataFilesToProcess.size() == 0)
+            // Read the files, and use the JournalCompactor class to create the new outputFiles, and the new collections as
+            // well
+            for (final JournalFile file : dataFilesToProcess)
             {
-               trace("Finishing compacting, nothing to process");
-               return;
+               try
+               {
+                  JournalImpl.readJournalFile(fileFactory, file, compactor);
+               }
+               catch (Throwable e)
+               {
+                  HornetQJournalLogger.LOGGER.compactReadError(file);
+                  throw new Exception("Error on reading compacting for " + file, e);
+               }
             }
 
-            compactor = new JournalCompactor(fileFactory,
-                                             this,
-                                             filesRepository,
-                                             records.keySet(),
-                                             dataFilesToProcess.get(0).getFileID());
+            compactor.flush();
 
-            for (Map.Entry<Long, JournalTransaction> entry : transactions.entrySet())
+            // pointcut for tests
+            // We need to test concurrent updates on the journal, as the compacting is being performed.
+            // Usually tests will use this to hold the compacting while other structures are being updated.
+            onCompactDone();
+
+            List<JournalFile> newDatafiles = null;
+
+            JournalCompactor localCompactor = compactor;
+
+            SequentialFile controlFile = createControlFile(dataFilesToProcess, compactor.getNewDataFiles(), null);
+
+            journalLock.writeLock().lock();
+            try
             {
-               compactor.addPendingTransaction(entry.getKey(), entry.getValue().getPositiveArray());
-               entry.getValue().setCompacting();
+               // Need to clear the compactor here, or the replay commands will send commands back (infinite loop)
+               compactor = null;
+
+               onCompactLockingTheJournal();
+
+               newDatafiles = localCompactor.getNewDataFiles();
+
+               // Restore newRecords created during compacting
+               for (Map.Entry<Long, JournalRecord> newRecordEntry : localCompactor.getNewRecords().entrySet())
+               {
+                  records.put(newRecordEntry.getKey(), newRecordEntry.getValue());
+               }
+
+               // Restore compacted dataFiles
+               for (int i = newDatafiles.size() - 1; i >= 0; i--)
+               {
+                  JournalFile fileToAdd = newDatafiles.get(i);
+                  if (JournalImpl.trace)
+                  {
+                     JournalImpl.trace("Adding file " + fileToAdd + " back as datafile");
+                  }
+                  filesRepository.addDataFileOnTop(fileToAdd);
+               }
+
+               if (JournalImpl.trace)
+               {
+                  JournalImpl.trace("There are " + filesRepository.getDataFilesCount() + " datafiles Now");
+               }
+
+               // Replay pending commands (including updates, deletes and commits)
+
+               for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
+               {
+                  newTransaction.replaceRecordProvider(this);
+               }
+
+               localCompactor.replayPendingCommands();
+
+               // Merge transactions back after compacting.
+               // This has to be done after the replay pending commands, as we need to delete commits
+               // that happened during the compacting
+
+               for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
+               {
+                  if (JournalImpl.trace)
+                  {
+                     JournalImpl.trace("Merging pending transaction " + newTransaction + " after compacting the journal");
+                  }
+                  JournalTransaction liveTransaction = transactions.get(newTransaction.getId());
+                  if (liveTransaction != null)
+                  {
+                     liveTransaction.merge(newTransaction);
+                  }
+                  else
+                  {
+                     HornetQJournalLogger.LOGGER.compactMergeError(newTransaction.getId());
+                  }
+               }
+            }
+            finally
+            {
+               journalLock.writeLock().unlock();
             }
 
-            // We will calculate the new records during compacting, what will take the position the records will take
-            // after compacting
-            records.clear();
+            // At this point the journal is unlocked. We keep renaming files while the journal is already operational
+            renameFiles(dataFilesToProcess, newDatafiles);
+            deleteControlFile(controlFile);
+
+            HornetQJournalLogger.LOGGER.debug("Finished compacting on journal");
+
          }
          finally
          {
-            journalLock.writeLock().unlock();
-         }
-
-         Collections.sort(dataFilesToProcess, new JournalFileComparator());
-
-         // This is where most of the work is done, taking most of the time of the compacting routine.
-         // Notice there are no locks while this is being done.
-
-         // Read the files, and use the JournalCompactor class to create the new outputFiles, and the new collections as
-         // well
-         for (final JournalFile file : dataFilesToProcess)
-         {
-            try
+            // An Exception was probably thrown, and the compactor was not cleared
+            if (compactor != null)
             {
-               JournalImpl.readJournalFile(fileFactory, file, compactor);
-            }
-            catch (Throwable e)
-            {
-               HornetQJournalLogger.LOGGER.compactReadError(file);
-               throw new Exception("Error on reading compacting for " + file, e);
-            }
-         }
-
-         compactor.flush();
-
-         // pointcut for tests
-         // We need to test concurrent updates on the journal, as the compacting is being performed.
-         // Usually tests will use this to hold the compacting while other structures are being updated.
-         onCompactDone();
-
-         List<JournalFile> newDatafiles = null;
-
-         JournalCompactor localCompactor = compactor;
-
-         SequentialFile controlFile = createControlFile(dataFilesToProcess, compactor.getNewDataFiles(), null);
-
-         journalLock.writeLock().lock();
-         try
-         {
-            // Need to clear the compactor here, or the replay commands will send commands back (infinite loop)
-            compactor = null;
-
-            onCompactLockingTheJournal();
-
-            newDatafiles = localCompactor.getNewDataFiles();
-
-            // Restore newRecords created during compacting
-            for (Map.Entry<Long, JournalRecord> newRecordEntry : localCompactor.getNewRecords().entrySet())
-            {
-               records.put(newRecordEntry.getKey(), newRecordEntry.getValue());
-            }
-
-            // Restore compacted dataFiles
-            for (int i = newDatafiles.size() - 1; i >= 0; i--)
-            {
-               JournalFile fileToAdd = newDatafiles.get(i);
-               if (JournalImpl.trace)
+               try
                {
-                  JournalImpl.trace("Adding file " + fileToAdd + " back as datafile");
+                  compactor.flush();
                }
-               filesRepository.addDataFileOnTop(fileToAdd);
-            }
-
-            if (JournalImpl.trace)
-            {
-               JournalImpl.trace("There are " + filesRepository.getDataFilesCount() + " datafiles Now");
-            }
-
-            // Replay pending commands (including updates, deletes and commits)
-
-            for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
-            {
-               newTransaction.replaceRecordProvider(this);
-            }
-
-            localCompactor.replayPendingCommands();
-
-            // Merge transactions back after compacting.
-            // This has to be done after the replay pending commands, as we need to delete commits
-            // that happened during the compacting
-
-            for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
-            {
-               if (JournalImpl.trace)
+               catch (Throwable ignored)
                {
-                  JournalImpl.trace("Merging pending transaction " + newTransaction + " after compacting the journal");
                }
-               JournalTransaction liveTransaction = transactions.get(newTransaction.getId());
-               if (liveTransaction != null)
-               {
-                  liveTransaction.merge(newTransaction);
-               }
-               else
-               {
-                  HornetQJournalLogger.LOGGER.compactMergeError(newTransaction.getId());
-               }
+
+               compactor = null;
             }
-         }
-         finally
-         {
-            journalLock.writeLock().unlock();
-         }
-
-         // At this point the journal is unlocked. We keep renaming files while the journal is already operational
-         renameFiles(dataFilesToProcess, newDatafiles);
-         deleteControlFile(controlFile);
-
-         HornetQJournalLogger.LOGGER.debug("Finished compacting on journal");
-
-      }
-      finally
-      {
-         // An Exception was probably thrown, and the compactor was not cleared
-         if (compactor != null)
-         {
-            try
-            {
-               compactor.flush();
-            }
-            catch (Throwable ignored)
-            {
-            }
-
-            compactor = null;
-         }
-         setAutoReclaim(previousReclaimValue);
+            setAutoReclaim(previousReclaimValue);
          }
       }
       finally
@@ -1653,41 +1655,40 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    /**
     * <p>Load data accordingly to the record layouts</p>
-    *
+    * <p/>
     * <p>Basic record layout:</p>
     * <table border=1>
-    *   <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
-    *   <tr><td>RecordType</td><td>Byte (1)</td></tr>
-    *   <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>Compactor Counter</td><td>1 byte</td></tr>
-    *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
-    *   <tr><td>RecordID</td><td>Long (8 bytes)</td></tr>
-    *   <tr><td>BodySize(Add, update and delete)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>UserDefinedRecordType (If add/update only)</td><td>Byte (1)</td</tr>
-    *   <tr><td>RecordBody</td><td>Byte Array (size=BodySize)</td></tr>
-    *   <tr><td>Check Size</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
+    * <tr><td>RecordType</td><td>Byte (1)</td></tr>
+    * <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>Compactor Counter</td><td>1 byte</td></tr>
+    * <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
+    * <tr><td>RecordID</td><td>Long (8 bytes)</td></tr>
+    * <tr><td>BodySize(Add, update and delete)</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>UserDefinedRecordType (If add/update only)</td><td>Byte (1)</td</tr>
+    * <tr><td>RecordBody</td><td>Byte Array (size=BodySize)</td></tr>
+    * <tr><td>Check Size</td><td>Integer (4 bytes)</td></tr>
     * </table>
-    *
+    * <p/>
     * <p> The check-size is used to validate if the record is valid and complete </p>
-    *
+    * <p/>
     * <p>Commit/Prepare record layout:</p>
     * <table border=1>
-    *   <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
-    *   <tr><td>RecordType</td><td>Byte (1)</td></tr>
-    *   <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>Compactor Counter</td><td>1 byte</td></tr>
-    *   <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
-    *   <tr><td>ExtraDataLength (Prepares only)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>Number Of Files (N)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>ExtraDataBytes</td><td>Bytes (sized by ExtraDataLength)</td></tr>
-    *   <tr><td>* FileID(n)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>* NumberOfElements(n)</td><td>Integer (4 bytes)</td></tr>
-    *   <tr><td>CheckSize</td><td>Integer (4 bytes)</td</tr>
+    * <tr><td><b>Field Name</b></td><td><b>Size</b></td></tr>
+    * <tr><td>RecordType</td><td>Byte (1)</td></tr>
+    * <tr><td>FileID</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>Compactor Counter</td><td>1 byte</td></tr>
+    * <tr><td>TransactionID <i>(if record is transactional)</i></td><td>Long (8 bytes)</td></tr>
+    * <tr><td>ExtraDataLength (Prepares only)</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>Number Of Files (N)</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>ExtraDataBytes</td><td>Bytes (sized by ExtraDataLength)</td></tr>
+    * <tr><td>* FileID(n)</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>* NumberOfElements(n)</td><td>Integer (4 bytes)</td></tr>
+    * <tr><td>CheckSize</td><td>Integer (4 bytes)</td</tr>
     * </table>
-    *
+    * <p/>
     * <p> * FileID and NumberOfElements are the transaction summary, and they will be repeated (N)umberOfFiles times </p>
-    *
-    * */
+    */
    public JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
    {
       return load(loadManager, true, null);
@@ -1706,7 +1707,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       if (state == JournalState.STOPPED || state == JournalState.LOADED)
       {
          throw new IllegalStateException("Journal " + this + " must be in " + JournalState.STARTED + " state, was " +
-                  state);
+                                            state);
       }
       if (state == replicationSync)
       {
@@ -2114,9 +2115,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          totalLiveSize += file.getLiveSize();
       }
 
-      long totalBytes = dataFiles.length * (long)fileSize;
+      long totalBytes = dataFiles.length * (long) fileSize;
 
-      long compactMargin = (long)(totalBytes * compactPercentage);
+      long compactMargin = (long) (totalBytes * compactPercentage);
 
       boolean needCompact = totalLiveSize < compactMargin && dataFiles.length > compactMinFiles;
 
@@ -2197,16 +2198,16 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       for (JournalFile file : filesRepository.getDataFiles())
       {
          builder.append("DataFile:" + file +
-                        " posCounter = " +
-                        file.getPosCount() +
-                        " reclaimStatus = " +
-                        file.isCanReclaim() +
-                        " live size = " +
-                        file.getLiveSize() +
-                        "\n");
+                           " posCounter = " +
+                           file.getPosCount() +
+                           " reclaimStatus = " +
+                           file.isCanReclaim() +
+                           " live size = " +
+                           file.getLiveSize() +
+                           "\n");
          if (file instanceof JournalFileImpl)
          {
-            builder.append(((JournalFileImpl)file).debug());
+            builder.append(((JournalFileImpl) file).debug());
 
          }
       }
@@ -2222,7 +2223,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
          if (currentFile instanceof JournalFileImpl)
          {
-            builder.append(((JournalFileImpl)currentFile).debug());
+            builder.append(((JournalFileImpl) currentFile).debug());
          }
       }
       else
@@ -2233,8 +2234,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return builder.toString();
    }
 
-   /** Method for use on testcases.
-    *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
+   /**
+    * Method for use on testcases.
+    * It will call waitComplete on every transaction, so any assertions on the file system will be correct after this
+    */
    public void debugWait() throws InterruptedException
    {
       fileFactory.flush();
@@ -2398,59 +2401,59 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       journalLock.writeLock().lock();
       try
       {
-      lockAppend.lock();
-
-      try
-      {
-
-         setJournalState(JournalState.STOPPED);
-
-         compactorExecutor.shutdown();
-
-         if (!compactorExecutor.awaitTermination(120, TimeUnit.SECONDS))
-         {
-            HornetQJournalLogger.LOGGER.couldNotStopCompactor();
-         }
-
-         filesExecutor.shutdown();
-
-         filesRepository.setExecutor(null);
-
-         if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
-         {
-            HornetQJournalLogger.LOGGER.couldNotStopJournalExecutor();
-         }
+         lockAppend.lock();
 
          try
          {
-            for (CountDownLatch latch : latches)
+
+            setJournalState(JournalState.STOPPED);
+
+            compactorExecutor.shutdown();
+
+            if (!compactorExecutor.awaitTermination(120, TimeUnit.SECONDS))
             {
-               latch.countDown();
+               HornetQJournalLogger.LOGGER.couldNotStopCompactor();
             }
+
+            filesExecutor.shutdown();
+
+            filesRepository.setExecutor(null);
+
+            if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
+            {
+               HornetQJournalLogger.LOGGER.couldNotStopJournalExecutor();
+            }
+
+            try
+            {
+               for (CountDownLatch latch : latches)
+               {
+                  latch.countDown();
+               }
+            }
+            catch (Throwable e)
+            {
+               HornetQJournalLogger.LOGGER.warn(e.getMessage(), e);
+            }
+
+            fileFactory.deactivateBuffer();
+
+            if (currentFile != null && currentFile.getFile().isOpen())
+            {
+               currentFile.getFile().close();
+            }
+
+            filesRepository.clear();
+
+            fileFactory.stop();
+
+            currentFile = null;
          }
-         catch (Throwable e)
+         finally
          {
-            HornetQJournalLogger.LOGGER.warn(e.getMessage(), e);
+            lockAppend.unlock();
          }
-
-         fileFactory.deactivateBuffer();
-
-         if (currentFile != null && currentFile.getFile().isOpen())
-         {
-            currentFile.getFile().close();
-         }
-
-         filesRepository.clear();
-
-         fileFactory.stop();
-
-         currentFile = null;
       }
-      finally
-      {
-         lockAppend.unlock();
-      }
-   }
       finally
       {
          journalLock.writeLock().unlock();
@@ -2485,7 +2488,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       controlFile.delete();
    }
 
-   /** being protected as testcases can override this method */
+   /**
+    * being protected as testcases can override this method
+    */
    protected void renameFiles(final List<JournalFile> oldFiles, final List<JournalFile> newFiles) throws Exception
    {
 
@@ -2544,18 +2549,24 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return name;
    }
 
-   /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
+   /**
+    * This is an interception point for testcases, when the compacted files are written, before replacing the data structures
+    */
    protected void onCompactStart() throws Exception
    {
    }
 
-   /** This is an interception point for testcases, when the compacted files are written, to be called
-    *  as soon as the compactor gets a writeLock */
+   /**
+    * This is an interception point for testcases, when the compacted files are written, to be called
+    * as soon as the compactor gets a writeLock
+    */
    protected void onCompactLockingTheJournal() throws Exception
    {
    }
 
-   /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
+   /**
+    * This is an interception point for testcases, when the compacted files are written, before replacing the data structures
+    */
    protected void onCompactDone()
    {
    }
@@ -2564,13 +2575,14 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // -----------------------------------------------------------------------------
 
    /**
-    * <p>
+    * <p/>
     * Checks for holes on the transaction (a commit written but with an incomplete transaction).
-    * <p>
+    * <p/>
     * This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the
     * COMMIT-RECORD.
-    * <p>
+    * <p/>
     * For details see {@link JournalCompleteRecordTX} about how the transaction-summary is recorded.
+    *
     * @param journalTransaction
     * @param orderedFiles
     * @param numberOfRecords
@@ -2587,14 +2599,14 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private static boolean isTransaction(final byte recordType)
    {
       return recordType == JournalImpl.ADD_RECORD_TX || recordType == JournalImpl.UPDATE_RECORD_TX ||
-             recordType == JournalImpl.DELETE_RECORD_TX ||
-             JournalImpl.isCompleteTransaction(recordType);
+         recordType == JournalImpl.DELETE_RECORD_TX ||
+         JournalImpl.isCompleteTransaction(recordType);
    }
 
    private static boolean isCompleteTransaction(final byte recordType)
    {
       return recordType == JournalImpl.COMMIT_RECORD || recordType == JournalImpl.PREPARE_RECORD ||
-             recordType == JournalImpl.ROLLBACK_RECORD;
+         recordType == JournalImpl.ROLLBACK_RECORD;
    }
 
    private static boolean isContainsBody(final byte recordType)
@@ -2749,14 +2761,14 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    /**
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should
-    *           update the number of pendingTransactions on the current file
+    *                            update the number of pendingTransactions on the current file
     * @throws Exception
     */
    private JournalFile appendRecord(final JournalInternalRecord encoder,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
- final IOAsyncTask parameterCallback) throws Exception
+                                    final IOAsyncTask parameterCallback) throws Exception
    {
       checkJournalIsLoaded();
 
@@ -3061,8 +3073,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    /**
     * Returns Map with a {@link JournalFile} for all existing files.
-    * <p>
+    * <p/>
     * These are the files needed to be sent to a backup in order to synchronize it.
+    *
     * @param fileIds
     * @return map with the IDs and corresponding {@link JournalFile}s
     * @throws Exception
@@ -3112,7 +3125,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       if (currentFile != null)
       {
          if (!currentFile.getFile().isOpen())
-         currentFile.getFile().open();
+            currentFile.getFile().open();
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
       }
       else
@@ -3190,7 +3203,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /** You need to guarantee lock.acquire() before calling this method! */
+   /**
+    * You need to guarantee lock.acquire() before calling this method!
+    */
    private void moveNextFile(final boolean scheduleReclaim) throws Exception
    {
       filesRepository.closeFile(currentFile);

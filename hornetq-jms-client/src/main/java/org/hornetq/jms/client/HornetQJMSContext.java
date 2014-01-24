@@ -12,11 +12,7 @@
  */
 package org.hornetq.jms.client;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
-import javax.jms.CompletionListener;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -40,8 +36,7 @@ import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
-
-import org.hornetq.utils.ConcurrentHashSet;
+import java.io.Serializable;
 
 /**
  * HornetQ implementation of a JMSContext.
@@ -118,7 +113,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return new HornetQJMSProducer(this, getInnerProducer());
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -149,9 +145,9 @@ public class HornetQJMSContext implements JMSContext
             {
                try
                {
-                  if(xa)
+                  if (xa)
                   {
-                     session = ((XAConnection)connection).createXASession();
+                     session = ((XAConnection) connection).createXASession();
                   }
                   else
                   {
@@ -173,7 +169,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return connection.getClientID();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -198,7 +195,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return connection.getMetaData();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -210,7 +208,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return connection.getExceptionListener();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -222,7 +221,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          connection.setExceptionListener(listener);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -234,7 +234,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          connection.start();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -247,7 +248,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          connection.stop();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -293,7 +295,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createBytesMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -306,7 +309,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createMapMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -319,7 +323,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -332,7 +337,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createObjectMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -345,7 +351,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createObjectMessage(object);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -358,7 +365,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createStreamMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -371,7 +379,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createTextMessage();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -384,7 +393,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createTextMessage(text);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -397,7 +407,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.getTransacted();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -417,7 +428,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          session.commit();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -431,7 +443,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          session.rollback();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -444,7 +457,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          session.recover();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -459,7 +473,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -474,7 +489,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination, messageSelector));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -489,7 +505,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createConsumer(destination, messageSelector, noLocal));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -502,7 +519,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createQueue(queueName);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -515,7 +533,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createTopic(topicName);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -530,7 +549,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createDurableConsumer(topic, name));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -545,7 +565,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createDurableConsumer(topic, name, messageSelector, noLocal));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -560,7 +581,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedDurableConsumer(topic, name));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -575,7 +597,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedDurableConsumer(topic, name, messageSelector));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -590,7 +613,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedConsumer(topic, sharedSubscriptionName));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -605,7 +629,8 @@ public class HornetQJMSContext implements JMSContext
          HornetQJMSConsumer consumer = new HornetQJMSConsumer(this, session.createSharedConsumer(topic, sharedSubscriptionName, messageSelector));
          checkAutoStart();
          return consumer;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -620,7 +645,8 @@ public class HornetQJMSContext implements JMSContext
          QueueBrowser browser = session.createBrowser(queue);
          checkAutoStart();
          return browser;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -635,7 +661,8 @@ public class HornetQJMSContext implements JMSContext
          QueueBrowser browser = session.createBrowser(queue, messageSelector);
          checkAutoStart();
          return browser;
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -648,7 +675,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createTemporaryQueue();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -661,7 +689,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          return session.createTemporaryTopic();
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -674,7 +703,8 @@ public class HornetQJMSContext implements JMSContext
       try
       {
          session.unsubscribe(name);
-      } catch (JMSException e)
+      }
+      catch (JMSException e)
       {
          throw JmsExceptionUtils.convertToRuntimeException(e);
       }
@@ -702,6 +732,7 @@ public class HornetQJMSContext implements JMSContext
    /**
     * This is to be used on tests only. It's not part of the interface and it's not guaranteed to be kept
     * on the API contract.
+    *
     * @return
     */
    public Session getUsedSession()
@@ -719,7 +750,9 @@ public class HornetQJMSContext implements JMSContext
       }
    }
 
-   /** this is to ensure Context.acknowledge would work on ClientACK */
+   /**
+    * this is to ensure Context.acknowledge would work on ClientACK
+    */
    Message setLastMessage(final JMSConsumer consumer, final Message lastMessageReceived)
    {
       if (sessionMode == CLIENT_ACKNOWLEDGE)

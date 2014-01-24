@@ -11,7 +11,17 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
@@ -25,12 +35,6 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.jms.*;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
@@ -112,8 +116,8 @@ public class SelectorTest extends MessageTestBase
       public String toString()
       {
          return "Order{" +
-               "name='" + name + '\'' +
-               '}';
+            "name='" + name + '\'' +
+            '}';
       }
 
       @Override
@@ -269,13 +273,13 @@ public class SelectorTest extends MessageTestBase
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-subscriptions");
       System.out.println("pull: " + consumers);
       response = consumers.request().formParameter("autoAck", "true")
-            .formParameter("selector", "MyTag = '1'").post();
+         .formParameter("selector", "MyTag = '1'").post();
       response.releaseConnection();
 
       Link consumeOne = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consumeOne: " + consumeOne);
       response = consumers.request().formParameter("autoAck", "true")
-            .formParameter("selector", "MyTag = '2'").post();
+         .formParameter("selector", "MyTag = '2'").post();
       response.releaseConnection();
       Link consumeTwo = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("consumeTwo: " + consumeTwo);
@@ -316,7 +320,7 @@ public class SelectorTest extends MessageTestBase
    }
 
    private Link consumeOrder(Order order, Link consumeNext)
-         throws Exception
+      throws Exception
    {
       ClientResponse<?> response = consumeNext.request().header("Accept-Wait", "4").accept("application/xml").post(String.class);
       Assert.assertEquals(200, response.getStatus());

@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -43,14 +38,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A InterceptorTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
- *
- *
  */
 public class InterceptorTest extends ServiceTestBase
 {
@@ -81,9 +76,9 @@ public class InterceptorTest extends ServiceTestBase
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
-            SessionSendMessage p = (SessionSendMessage)packet;
+            SessionSendMessage p = (SessionSendMessage) packet;
 
-            ServerMessage sm = (ServerMessage)p.getMessage();
+            ServerMessage sm = (ServerMessage) p.getMessage();
 
             sm.putStringProperty(InterceptorTest.key, "orange");
          }
@@ -105,11 +100,10 @@ public class InterceptorTest extends ServiceTestBase
 
             System.out.println("userName = " + userName);
          }
-         else
-         if (packet.getType() == PacketImpl.SESS_SEND)
+         else if (packet.getType() == PacketImpl.SESS_SEND)
          {
             String userName = getUsername(packet, connection);
-            MessagePacket msgPacket = (MessagePacket)packet;
+            MessagePacket msgPacket = (MessagePacket) packet;
             msgPacket.getMessage().putStringProperty("userName", userName);
 
             System.out.println("userName on send = " + userName);
@@ -121,13 +115,14 @@ public class InterceptorTest extends ServiceTestBase
 
       public String getUsername(final Packet packet, final RemotingConnection connection)
       {
-         RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
+         RemotingConnectionImpl impl = (RemotingConnectionImpl) connection;
          ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
          ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
          return sessionHandler.getSession().getUsername();
       }
 
    }
+
    private class InterceptUserOnCreateConsumer implements Interceptor
    {
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
@@ -140,11 +135,10 @@ public class InterceptorTest extends ServiceTestBase
 
             System.out.println("userName = " + userName);
          }
-         else
-         if (packet.getType() == PacketImpl.SESS_SEND)
+         else if (packet.getType() == PacketImpl.SESS_SEND)
          {
             String userName = getUsername(packet, connection);
-            MessagePacket msgPacket = (MessagePacket)packet;
+            MessagePacket msgPacket = (MessagePacket) packet;
             msgPacket.getMessage().putStringProperty("userName", userName);
 
             System.out.println("userName on send = " + userName);
@@ -156,7 +150,7 @@ public class InterceptorTest extends ServiceTestBase
 
       public String getUsername(final Packet packet, final RemotingConnection connection)
       {
-         RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
+         RemotingConnectionImpl impl = (RemotingConnectionImpl) connection;
          ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
          ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
          return sessionHandler.getSession().getUsername();
@@ -170,9 +164,9 @@ public class InterceptorTest extends ServiceTestBase
       {
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
-            SessionReceiveMessage p = (SessionReceiveMessage)packet;
+            SessionReceiveMessage p = (SessionReceiveMessage) packet;
 
-            ServerMessage sm = (ServerMessage)p.getMessage();
+            ServerMessage sm = (ServerMessage) p.getMessage();
 
             sm.putStringProperty(InterceptorTest.key, "orange");
          }
@@ -220,9 +214,9 @@ public class InterceptorTest extends ServiceTestBase
       {
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
-            SessionReceiveMessage p = (SessionReceiveMessage)packet;
+            SessionReceiveMessage p = (SessionReceiveMessage) packet;
 
-            ClientMessage cm = (ClientMessage)p.getMessage();
+            ClientMessage cm = (ClientMessage) p.getMessage();
 
             cm.putStringProperty(InterceptorTest.key, "orange");
          }
@@ -238,9 +232,9 @@ public class InterceptorTest extends ServiceTestBase
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
-            SessionSendMessage p = (SessionSendMessage)packet;
+            SessionSendMessage p = (SessionSendMessage) packet;
 
-            ClientMessage cm = (ClientMessage)p.getMessage();
+            ClientMessage cm = (ClientMessage) p.getMessage();
 
             cm.putStringProperty(InterceptorTest.key, "orange");
          }
@@ -287,6 +281,7 @@ public class InterceptorTest extends ServiceTestBase
       }
 
    }
+
    /**
     * @param packet
     */
@@ -340,9 +335,9 @@ public class InterceptorTest extends ServiceTestBase
       {
          if (packet.getType() == PacketImpl.SESS_SEND)
          {
-            SessionSendMessage p = (SessionSendMessage)packet;
+            SessionSendMessage p = (SessionSendMessage) packet;
 
-            ServerMessage sm = (ServerMessage)p.getMessage();
+            ServerMessage sm = (ServerMessage) p.getMessage();
 
             sm.putIntProperty(key, num);
 
@@ -399,7 +394,7 @@ public class InterceptorTest extends ServiceTestBase
 
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
-            SessionReceiveMessage p = (SessionReceiveMessage)packet;
+            SessionReceiveMessage p = (SessionReceiveMessage) packet;
 
             Message sm = p.getMessage();
 

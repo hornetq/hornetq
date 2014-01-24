@@ -12,15 +12,10 @@
  */
 package org.hornetq.tests.unit.ra;
 
-import org.junit.Test;
-
+import javax.jms.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.jms.Connection;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -41,13 +36,13 @@ import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A ResourceAdapterTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ResourceAdapterTest extends ServiceTestBase
 {
@@ -149,22 +144,22 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setBlockOnAcknowledge(!HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
       ra.setBlockOnNonDurableSend(!HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
       ra.setBlockOnDurableSend(!HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND);
-      ra.setCallTimeout(1l);
-      ra.setClientFailureCheckPeriod(2l);
+      ra.setCallTimeout(1L);
+      ra.setClientFailureCheckPeriod(2L);
       ra.setClientID("myid");
       ra.setConnectionLoadBalancingPolicyClassName("mlbcn");
-      ra.setConnectionTTL(3l);
+      ra.setConnectionTTL(3L);
       ra.setConsumerMaxRate(4);
       ra.setConsumerWindowSize(5);
-      ra.setDiscoveryInitialWaitTimeout(6l);
-      ra.setDiscoveryRefreshTimeout(7l);
+      ra.setDiscoveryInitialWaitTimeout(6L);
+      ra.setDiscoveryRefreshTimeout(7L);
       ra.setDupsOKBatchSize(8);
       ra.setMinLargeMessageSize(10);
       ra.setPreAcknowledge(!HornetQClient.DEFAULT_PRE_ACKNOWLEDGE);
       ra.setProducerMaxRate(11);
       ra.setConfirmationWindowSize(12);
       ra.setReconnectAttempts(13);
-      ra.setRetryInterval(14l);
+      ra.setRetryInterval(14L);
       ra.setRetryIntervalMultiplier(15d);
       ra.setScheduledThreadPoolMaxSize(16);
       ra.setThreadPoolMaxSize(17);
@@ -206,22 +201,22 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setBlockOnAcknowledge(!HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
       connectionFactoryProperties.setBlockOnNonDurableSend(!HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
       connectionFactoryProperties.setBlockOnDurableSend(!HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND);
-      connectionFactoryProperties.setCallTimeout(1l);
-      connectionFactoryProperties.setClientFailureCheckPeriod(2l);
+      connectionFactoryProperties.setCallTimeout(1L);
+      connectionFactoryProperties.setClientFailureCheckPeriod(2L);
       connectionFactoryProperties.setClientID("myid");
       connectionFactoryProperties.setConnectionLoadBalancingPolicyClassName("mlbcn");
-      connectionFactoryProperties.setConnectionTTL(3l);
+      connectionFactoryProperties.setConnectionTTL(3L);
       connectionFactoryProperties.setConsumerMaxRate(4);
       connectionFactoryProperties.setConsumerWindowSize(5);
-      connectionFactoryProperties.setDiscoveryInitialWaitTimeout(6l);
-      connectionFactoryProperties.setDiscoveryRefreshTimeout(7l);
+      connectionFactoryProperties.setDiscoveryInitialWaitTimeout(6L);
+      connectionFactoryProperties.setDiscoveryRefreshTimeout(7L);
       connectionFactoryProperties.setDupsOKBatchSize(8);
       connectionFactoryProperties.setMinLargeMessageSize(10);
       connectionFactoryProperties.setPreAcknowledge(!HornetQClient.DEFAULT_PRE_ACKNOWLEDGE);
       connectionFactoryProperties.setProducerMaxRate(11);
       connectionFactoryProperties.setConfirmationWindowSize(12);
       connectionFactoryProperties.setReconnectAttempts(13);
-      connectionFactoryProperties.setRetryInterval(14l);
+      connectionFactoryProperties.setRetryInterval(14L);
       connectionFactoryProperties.setRetryIntervalMultiplier(15d);
       connectionFactoryProperties.setScheduledThreadPoolMaxSize(16);
       connectionFactoryProperties.setThreadPoolMaxSize(17);
@@ -468,7 +463,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          ServerLocator locator = createInVMNonHALocator();
          ClientSessionFactory factory = createSessionFactory(locator);
          ClientSession session = factory.createSession(false, false, false);
-         HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+         HornetQDestination queue = (HornetQDestination) HornetQJMSClient.createQueue("test");
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
          session.close();
 

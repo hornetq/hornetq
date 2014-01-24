@@ -12,8 +12,6 @@
  */
 package org.hornetq.core.server;
 
-import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.utils.SizeFormatterUtil;
 
 /**

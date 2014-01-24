@@ -11,15 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -32,6 +27,9 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -66,99 +64,99 @@ public class DeliveryOrderTest extends ServiceTestBase
    @Test
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
-         ClientSession sendSession = cf.createSession(false, false, true);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         int numMessages = 1000;
-         sendSession.createQueue(addressA, queueA, false);
-         for (int i = 0; i < numMessages; i++)
+      ClientSession sendSession = cf.createSession(false, false, true);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      int numMessages = 1000;
+      sendSession.createQueue(addressA, queueA, false);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = sendSession.createMessage(false);
+         cm.getBodyBuffer().writeInt(i);
+         cp.send(cm);
+         if (i % 10 == 0)
          {
-            ClientMessage cm = sendSession.createMessage(false);
-            cm.getBodyBuffer().writeInt(i);
-            cp.send(cm);
-            if (i % 10 == 0)
-            {
-               sendSession.commit();
-            }
             sendSession.commit();
          }
-         ClientConsumer c = sendSession.createConsumer(queueA);
-         sendSession.start();
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = c.receive(5000);
-            Assert.assertNotNull(cm);
-            Assert.assertEquals(i, cm.getBodyBuffer().readInt());
-         }
-         sendSession.close();
-         }
+         sendSession.commit();
+      }
+      ClientConsumer c = sendSession.createConsumer(queueA);
+      sendSession.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = c.receive(5000);
+         Assert.assertNotNull(cm);
+         Assert.assertEquals(i, cm.getBodyBuffer().readInt());
+      }
+      sendSession.close();
+   }
 
    @Test
    public void testReceiveDeliveryOrderOnRollback() throws Exception
    {
-         ClientSession sendSession = cf.createSession(false, true, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         int numMessages = 1000;
-         sendSession.createQueue(addressA, queueA, false);
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = sendSession.createMessage(false);
-            cm.getBodyBuffer().writeInt(i);
-            cp.send(cm);
-         }
-         ClientConsumer c = sendSession.createConsumer(queueA);
-         sendSession.start();
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = c.receive(5000);
-            Assert.assertNotNull(cm);
-            cm.acknowledge();
-            Assert.assertEquals(i, cm.getBodyBuffer().readInt());
-         }
-         sendSession.rollback();
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = c.receive(5000);
-            Assert.assertNotNull(cm);
-            cm.acknowledge();
-            Assert.assertEquals(i, cm.getBodyBuffer().readInt());
-         }
-         sendSession.close();
-         }
+      ClientSession sendSession = cf.createSession(false, true, false);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      int numMessages = 1000;
+      sendSession.createQueue(addressA, queueA, false);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = sendSession.createMessage(false);
+         cm.getBodyBuffer().writeInt(i);
+         cp.send(cm);
+      }
+      ClientConsumer c = sendSession.createConsumer(queueA);
+      sendSession.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = c.receive(5000);
+         Assert.assertNotNull(cm);
+         cm.acknowledge();
+         Assert.assertEquals(i, cm.getBodyBuffer().readInt());
+      }
+      sendSession.rollback();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = c.receive(5000);
+         Assert.assertNotNull(cm);
+         cm.acknowledge();
+         Assert.assertEquals(i, cm.getBodyBuffer().readInt());
+      }
+      sendSession.close();
+   }
 
    @Test
    public void testMultipleConsumersMessageOrder() throws Exception
    {
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession recSession = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
-         int numReceivers = 100;
-         AtomicInteger count = new AtomicInteger(0);
-         int numMessage = 10000;
-         ClientConsumer[] clientConsumers = new ClientConsumer[numReceivers];
-         Receiver[] receivers = new Receiver[numReceivers];
-         CountDownLatch latch = new CountDownLatch(numMessage);
-         for (int i = 0; i < numReceivers; i++)
-         {
-            clientConsumers[i] = recSession.createConsumer(queueA);
-            receivers[i] = new Receiver(latch);
-            clientConsumers[i].setMessageHandler(receivers[i]);
-         }
-         recSession.start();
-         ClientProducer clientProducer = sendSession.createProducer(addressA);
-         for (int i = 0; i < numMessage; i++)
-         {
-            ClientMessage cm = sendSession.createMessage(false);
-            cm.getBodyBuffer().writeInt(count.getAndIncrement());
-            clientProducer.send(cm);
-         }
-         Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
-         for (Receiver receiver : receivers)
-         {
-            Assert.assertFalse("" + receiver.lastMessage, receiver.failed);
-         }
-         sendSession.close();
-         recSession.close();
-         }
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession recSession = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      int numReceivers = 100;
+      AtomicInteger count = new AtomicInteger(0);
+      int numMessage = 10000;
+      ClientConsumer[] clientConsumers = new ClientConsumer[numReceivers];
+      Receiver[] receivers = new Receiver[numReceivers];
+      CountDownLatch latch = new CountDownLatch(numMessage);
+      for (int i = 0; i < numReceivers; i++)
+      {
+         clientConsumers[i] = recSession.createConsumer(queueA);
+         receivers[i] = new Receiver(latch);
+         clientConsumers[i].setMessageHandler(receivers[i]);
+      }
+      recSession.start();
+      ClientProducer clientProducer = sendSession.createProducer(addressA);
+      for (int i = 0; i < numMessage; i++)
+      {
+         ClientMessage cm = sendSession.createMessage(false);
+         cm.getBodyBuffer().writeInt(count.getAndIncrement());
+         clientProducer.send(cm);
+      }
+      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      for (Receiver receiver : receivers)
+      {
+         Assert.assertFalse("" + receiver.lastMessage, receiver.failed);
+      }
+      sendSession.close();
+      recSession.close();
+   }
 
    class Receiver implements MessageHandler
    {

@@ -12,13 +12,6 @@
  */
 package org.hornetq.jms.management.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.jms.JMSRuntimeException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
@@ -28,6 +21,12 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.Parameter;
@@ -42,8 +41,8 @@ import org.hornetq.core.management.impl.AbstractControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
@@ -54,8 +53,6 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class JMSServerControlImpl extends AbstractControl implements JMSServerControl, NotificationEmitter
 {
@@ -138,9 +135,9 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       {
          names[i] = values[i].toString();
       }
-      return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
-                                                                     JMSServerControl.class.getName(),
-                                                                     "Notifications emitted by a JMS Server") };
+      return new MBeanNotificationInfo[]{new MBeanNotificationInfo(names,
+                                                                   JMSServerControl.class.getName(),
+                                                                   "Notifications emitted by a JMS Server")};
    }
 
    // Constructors --------------------------------------------------
@@ -392,7 +389,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
     * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    *
     */
    public void createConnectionFactory(String name,
                                        boolean ha,
@@ -561,7 +557,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          String[] names = new String[queueControls.length];
          for (int i = 0; i < queueControls.length; i++)
          {
-            JMSQueueControl queueControl = (JMSQueueControl)queueControls[i];
+            JMSQueueControl queueControl = (JMSQueueControl) queueControls[i];
             names[i] = queueControl.getName();
          }
          return names;
@@ -584,7 +580,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          String[] names = new String[topicControls.length];
          for (int i = 0; i < topicControls.length; i++)
          {
-            TopicControl topicControl = (TopicControl)topicControls[i];
+            TopicControl topicControl = (TopicControl) topicControls[i];
             names[i] = topicControl.getName();
          }
          return names;
@@ -604,12 +600,12 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       try
       {
          Object[] cfControls = server.getHornetQServer()
-                                     .getManagementService()
-                                     .getResources(ConnectionFactoryControl.class);
+            .getManagementService()
+            .getResources(ConnectionFactoryControl.class);
          String[] names = new String[cfControls.length];
          for (int i = 0; i < cfControls.length; i++)
          {
-            ConnectionFactoryControl cfControl = (ConnectionFactoryControl)cfControls[i];
+            ConnectionFactoryControl cfControl = (ConnectionFactoryControl) cfControls[i];
             names[i] = cfControl.getName();
          }
          return names;
@@ -921,14 +917,14 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       Object[] queueControls = server.getHornetQServer().getManagementService().getResources(JMSQueueControl.class);
       for (Object queueControl2 : queueControls)
       {
-         JMSQueueControl queueControl = (JMSQueueControl)queueControl2;
+         JMSQueueControl queueControl = (JMSQueueControl) queueControl2;
          allDests.put(queueControl.getAddress(), queueControl);
       }
 
       Object[] topicControls = server.getHornetQServer().getManagementService().getResources(TopicControl.class);
       for (Object topicControl2 : topicControls)
       {
-         TopicControl topicControl = (TopicControl)topicControl2;
+         TopicControl topicControl = (TopicControl) topicControl2;
          allDests.put(topicControl.getAddress(), topicControl);
       }
 

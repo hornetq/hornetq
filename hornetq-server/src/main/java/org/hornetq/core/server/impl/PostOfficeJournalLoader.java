@@ -12,6 +12,14 @@
  */
 package org.hornetq.core.server.impl;
 
+import javax.transaction.xa.Xid;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -46,14 +54,6 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-
-import javax.transaction.xa.Xid;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PostOfficeJournalLoader implements JournalLoader
 {
@@ -114,8 +114,8 @@ public class PostOfficeJournalLoader implements JournalLoader
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
          boolean isTopicIdentification =
-               filter != null && filter.getFilterString() != null &&
-                     filter.getFilterString().toString().equals(HornetQServerImpl.GENERIC_IGNORED_FILTER);
+            filter != null && filter.getFilterString() != null &&
+               filter.getFilterString().toString().equals(HornetQServerImpl.GENERIC_IGNORED_FILTER);
 
          if (postOffice.getBinding(queueBindingInfo.getQueueName()) != null)
          {
@@ -141,17 +141,17 @@ public class PostOfficeJournalLoader implements JournalLoader
          if (!isTopicIdentification)
          {
             subscription = pagingManager.getPageStore(queueBindingInfo.getAddress())
-                  .getCursorProvider()
-                  .createSubscription(queueBindingInfo.getId(), filter, true);
+               .getCursorProvider()
+               .createSubscription(queueBindingInfo.getId(), filter, true);
          }
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-               queueBindingInfo.getAddress(),
-               queueBindingInfo.getQueueName(),
-               filter,
-               subscription,
-               true,
-               false);
+                                                queueBindingInfo.getAddress(),
+                                                queueBindingInfo.getQueueName(),
+                                                filter,
+                                                subscription,
+                                                true,
+                                                false);
 
          Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
 
@@ -248,8 +248,8 @@ public class PostOfficeJournalLoader implements JournalLoader
          if (groupingHandler != null)
          {
             groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(),
-                  groupingInfo.getGroupId(),
-                  groupingInfo.getClusterName()));
+                                                             groupingInfo.getGroupId(),
+                                                             groupingInfo.getClusterName()));
          }
       }
    }
@@ -354,7 +354,7 @@ public class PostOfficeJournalLoader implements JournalLoader
          Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
 
          // We have already generated this before, so it can't be null
-         assert(perPageMap != null);
+         assert (perPageMap != null);
 
          for (Long pageId : perPageMap.keySet())
          {
@@ -416,9 +416,9 @@ public class PostOfficeJournalLoader implements JournalLoader
             {
                // on this case the page file didn't exist, we just remove all the records since the page is already gone
                HornetQServerLogger.LOGGER.debug("Page " + pageId + " didn't exist on address " + address + ", so we are just removing records");
-               for (List<PageCountPending> records: perQueue.values())
+               for (List<PageCountPending> records : perQueue.values())
                {
-                  for (PageCountPending record: records)
+                  for (PageCountPending record : records)
                   {
                      HornetQServerLogger.LOGGER.debug("Removing pending page counter " + record.getID());
                      storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
@@ -439,8 +439,8 @@ public class PostOfficeJournalLoader implements JournalLoader
    }
 
    /**
-    *
     * This generates a map for use on the recalculation and recovery of pending maps after reloading it
+    *
     * @param queues
     * @param pendingNonTXPageCounter
     * @param txRecoverCounter
@@ -449,9 +449,9 @@ public class PostOfficeJournalLoader implements JournalLoader
     */
    private Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>
    generateMapsOnPendingCount(Map<Long, Queue> queues, List<PageCountPending>
-         pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
+      pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
    {
-      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString,Map<Long, Map<Long, List<PageCountPending>>>>();
+      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>();
       for (PageCountPending pgCount : pendingNonTXPageCounter)
       {
          long queueID = pgCount.getQueueID();

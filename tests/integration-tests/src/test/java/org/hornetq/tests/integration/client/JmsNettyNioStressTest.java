@@ -12,20 +12,15 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-
-import org.junit.Assert;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -40,26 +35,29 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * -- https://issues.jboss.org/browse/HORNETQ-746
  * Stress test using netty with NIO and many JMS clients concurrently, to try
  * and induce a deadlock.
- * <p>
+ * <p/>
  * A large number of JMS clients are started concurrently. Some produce to queue
  * 1 over one connection, others consume from queue 1 and produce to queue 2
  * over a second connection, and others consume from queue 2 over a third
  * connection.
- * <p>
+ * <p/>
  * Each operation is done in a JMS transaction, sending/consuming one message
  * per transaction.
- * <p>
+ * <p/>
  * The server is set up with netty, with only one NIO worker and 1 hornetq
  * server worker. This increases the chance for the deadlock to occur.
- * <p>
+ * <p/>
  * If the deadlock occurs, all threads will block/die. A simple transaction
  * counting strategy is used to verify that the count has reached the expected
  * value.
+ *
  * @author Carl Heymann
  */
 public class JmsNettyNioStressTest extends ServiceTestBase
@@ -217,7 +215,7 @@ public class JmsNettyNioStressTest extends ServiceTestBase
                   messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
                   for (int i = 0; i < numberOfMessages; i++)
                   {
-                     BytesMessage message = (BytesMessage)consumer.receive(5000);
+                     BytesMessage message = (BytesMessage) consumer.receive(5000);
                      if (message == null)
                      {
                         return;
@@ -269,7 +267,7 @@ public class JmsNettyNioStressTest extends ServiceTestBase
                   MessageConsumer consumer = session.createConsumer(HornetQDestination.createQueue("queue2"));
                   for (int i = 0; i < numberOfMessages; i++)
                   {
-                     BytesMessage message = (BytesMessage)consumer.receive(5000);
+                     BytesMessage message = (BytesMessage) consumer.receive(5000);
                      if (message == null)
                      {
                         return;

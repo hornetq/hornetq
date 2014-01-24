@@ -12,10 +12,13 @@
  */
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import javax.transaction.xa.Xid;
+import java.util.List;
+import java.util.Map;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.Journal;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.PageCountPending;
@@ -26,10 +29,6 @@ import org.hornetq.core.server.impl.JournalLoader;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
-import javax.transaction.xa.Xid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 public class FakeJournalLoader implements JournalLoader
 {
    @Override

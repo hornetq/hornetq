@@ -12,11 +12,6 @@
  */
 package org.hornetq.tests.integration.jms.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.InvalidClientIDException;
@@ -27,6 +22,10 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.junit.After;
@@ -35,6 +34,7 @@ import org.junit.Test;
 
 /**
  * A ConnectionTest
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class ConnectionTest extends JMSTestBase
@@ -82,13 +82,13 @@ public class ConnectionTest extends JMSTestBase
 
       sess.close();
 
-      TopicSession tpSess = ((TopicConnection)conn).createTopicSession(false, Session.SESSION_TRANSACTED);
+      TopicSession tpSess = ((TopicConnection) conn).createTopicSession(false, Session.SESSION_TRANSACTED);
 
       assertEquals(Session.AUTO_ACKNOWLEDGE, tpSess.getAcknowledgeMode());
 
       tpSess.close();
 
-      QueueSession qSess = ((QueueConnection)conn).createQueueSession(false, Session.SESSION_TRANSACTED);
+      QueueSession qSess = ((QueueConnection) conn).createQueueSession(false, Session.SESSION_TRANSACTED);
 
       assertEquals(Session.AUTO_ACKNOWLEDGE, qSess.getAcknowledgeMode());
 
@@ -113,7 +113,7 @@ public class ConnectionTest extends JMSTestBase
       //first try cf without any connection being created
       ConnectionFactory newCF = getCFThruSerialization(cf);
       testCreateConnection(newCF);
-      
+
       //now serialize a cf after a connection has been created
       //https://issues.jboss.org/browse/WFLY-327
       Connection aConn = null;

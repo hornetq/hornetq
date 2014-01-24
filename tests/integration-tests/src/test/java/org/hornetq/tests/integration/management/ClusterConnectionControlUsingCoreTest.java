@@ -11,8 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.Map;
 
@@ -24,13 +22,13 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A ClusterConnectionControlUsingCoreTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionControlTest
 {
@@ -72,57 +70,57 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
 
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("address");
+            return (String) proxy.retrieveAttributeValue("address");
          }
 
          public String getDiscoveryGroupName()
          {
-            return (String)proxy.retrieveAttributeValue("discoveryGroupName");
+            return (String) proxy.retrieveAttributeValue("discoveryGroupName");
          }
 
          public int getMaxHops()
          {
-            return (Integer)proxy.retrieveAttributeValue("maxHops");
+            return (Integer) proxy.retrieveAttributeValue("maxHops");
          }
 
          public long getRetryInterval()
          {
-            return (Long)proxy.retrieveAttributeValue("retryInterval");
+            return (Long) proxy.retrieveAttributeValue("retryInterval");
          }
 
          public String getTopology()
          {
-            return (String)proxy.retrieveAttributeValue("topology");
+            return (String) proxy.retrieveAttributeValue("topology");
          }
 
          public Map<String, String> getNodes() throws Exception
          {
-            return (Map<String, String>)proxy.retrieveAttributeValue("nodes");
+            return (Map<String, String>) proxy.retrieveAttributeValue("nodes");
          }
 
          public boolean isDuplicateDetection()
          {
-            return (Boolean)proxy.retrieveAttributeValue("duplicateDetection");
+            return (Boolean) proxy.retrieveAttributeValue("duplicateDetection");
          }
 
          public boolean isForwardWhenNoConsumers()
          {
-            return (Boolean)proxy.retrieveAttributeValue("forwardWhenNoConsumers");
+            return (Boolean) proxy.retrieveAttributeValue("forwardWhenNoConsumers");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("name");
+            return (String) proxy.retrieveAttributeValue("name");
          }
 
          public String getNodeID()
          {
-            return (String)proxy.retrieveAttributeValue("nodeID");
+            return (String) proxy.retrieveAttributeValue("nodeID");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("started");
+            return (Boolean) proxy.retrieveAttributeValue("started");
          }
 
          public void start() throws Exception
@@ -163,7 +161,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          session.close();
       }
 
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }

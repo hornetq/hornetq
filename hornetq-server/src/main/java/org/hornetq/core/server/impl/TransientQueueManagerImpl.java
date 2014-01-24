@@ -16,7 +16,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.TransientQueueManager;
 import org.hornetq.utils.ReferenceCounterUtil;
 

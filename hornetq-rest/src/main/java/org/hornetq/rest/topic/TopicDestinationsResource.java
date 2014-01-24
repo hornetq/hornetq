@@ -12,6 +12,19 @@
  */
 package org.hornetq.rest.topic;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
@@ -25,20 +38,6 @@ import org.hornetq.rest.queue.PostMessage;
 import org.hornetq.rest.queue.PostMessageDupsOk;
 import org.hornetq.rest.queue.PostMessageNoDups;
 import org.w3c.dom.Document;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -84,7 +83,13 @@ public class TopicDestinationsResource
          }
          finally
          {
-            try { session.close(); } catch (Exception ignored) {}
+            try
+            {
+               session.close();
+            }
+            catch (Exception ignored)
+            {
+            }
          }
          if (topic.getBindings() != null && topic.getBindings().length > 0 && manager.getRegistry() != null)
          {

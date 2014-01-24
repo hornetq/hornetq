@@ -16,8 +16,6 @@ package org.hornetq.tests.integration.cluster.failover;
  * A StaticClusterWithBackupFailoverTest
  *
  * @author jmesnil
- *
- *
  */
 public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailoverTestBase
 {
@@ -31,7 +29,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         0,
-                                        new int[] { 1, 2 });
+                                        new int[]{1, 2});
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -39,7 +37,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         1,
-                                        new int[] { 0, 2 });
+                                        new int[]{0, 2});
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -47,7 +45,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         2,
-                                        new int[] { 0, 1 });
+                                        new int[]{0, 1});
 
       setupClusterConnectionWithBackups("cluster0",
                                         "queues",
@@ -55,7 +53,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         3,
-                                        new int[] { 1, 2 });
+                                        new int[]{1, 2});
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -63,7 +61,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         4,
-                                        new int[] { 0, 2 });
+                                        new int[]{0, 2});
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -71,7 +69,7 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         1,
                                         isNetty(),
                                         5,
-                                        new int[] { 0, 1 });
+                                        new int[]{0, 1});
    }
 
    protected boolean isSharedStorage()

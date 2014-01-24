@@ -11,8 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.HashMap;
 

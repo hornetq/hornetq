@@ -13,15 +13,13 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**
  * A SessionSendContinuationMessage<br/>
  * Created Dec 4, 2008 12:25:14 PM
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class SessionSendContinuationMessage extends SessionContinuationMessage
@@ -31,13 +29,14 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    // Used on confirmation handling
    private MessageInternal message;
    /**
-    * In case, we are using a different handler than the one set on the {@link ClientSession}
-    * <p>
+    * In case, we are using a different handler than the one set on the {@link org.hornetq.api.core.client.ClientSession}
+    * <p/>
     * This field is only used at the client side.
-    * @see ClientSession#setSendAcknowledgementHandler(SendAcknowledgementHandler)
-    * @see ClientProducer#send(SimpleString, Message, SendAcknowledgementHandler)
+    *
+    * @see org.hornetq.api.core.client.ClientSession#setSendAcknowledgementHandler(SendAcknowledgementHandler)
+    * @see org.hornetq.api.core.client.ClientProducer#send(org.hornetq.api.core.SimpleString, org.hornetq.api.core.Message, SendAcknowledgementHandler)
     */
-   private transient final SendAcknowledgementHandler handler;
+   private final transient SendAcknowledgementHandler handler;
 
    /**
     * to be sent on the last package
@@ -133,7 +132,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
       final int prime = 31;
       int result = super.hashCode();
       result = prime * result + ((message == null) ? 0 : message.hashCode());
-      result = prime * result + (int)(messageBodySize ^ (messageBodySize >>> 32));
+      result = prime * result + (int) (messageBodySize ^ (messageBodySize >>> 32));
       result = prime * result + (requiresResponse ? 1231 : 1237);
       return result;
    }
@@ -147,7 +146,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
          return false;
       if (!(obj instanceof SessionSendContinuationMessage))
          return false;
-      SessionSendContinuationMessage other = (SessionSendContinuationMessage)obj;
+      SessionSendContinuationMessage other = (SessionSendContinuationMessage) obj;
       if (message == null)
       {
          if (other.message != null)

@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.impl.PacketImpl;

@@ -34,9 +34,10 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * A remote Grouping handler.
- * <p>
+ * <p/>
  * This will use management notifications to communicate with the node that has the Local Grouping
  * handler to make proposals.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public final class RemoteGroupingHandler implements GroupingHandler
@@ -78,7 +79,7 @@ public final class RemoteGroupingHandler implements GroupingHandler
    @Override
    public void start() throws Exception
    {
-      if(started)
+      if (started)
          return;
       started = true;
    }
@@ -155,7 +156,7 @@ public final class RemoteGroupingHandler implements GroupingHandler
    public void remove(SimpleString groupid, SimpleString clusterName, int distance) throws Exception
    {
       List<SimpleString> groups = groupMap.get(clusterName);
-      if(groups != null)
+      if (groups != null)
       {
          groups.remove(groupid);
       }
@@ -220,7 +221,7 @@ public final class RemoteGroupingHandler implements GroupingHandler
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
          SimpleString clusterName = notification.getProperties()
-                                                .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+            .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          List<SimpleString> list = groupMap.remove(clusterName);
          if (list != null)
          {

@@ -149,7 +149,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
       if (files == null)
       {
-         return Collections.<PagingStore> emptyList();
+         return Collections.<PagingStore>emptyList();
       }
       else
       {

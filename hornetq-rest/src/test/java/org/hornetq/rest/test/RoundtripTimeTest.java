@@ -12,18 +12,17 @@
  */
 package org.hornetq.rest.test;
 
+import org.hornetq.rest.queue.QueueDeployment;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.spi.Link;
-import org.hornetq.rest.queue.QueueDeployment;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class RoundtripTimeTest extends MessageTestBase
 {

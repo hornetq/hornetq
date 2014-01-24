@@ -51,8 +51,8 @@ public class BasicAuth extends AuthenticationType
    public String toString()
    {
       return "BasicAuth{" +
-              "username='" + username + '\'' +
-              ", password='" + password + '\'' +
-              '}';
+         "username='" + username + '\'' +
+         ", password='" + password + '\'' +
+         '}';
    }
 }

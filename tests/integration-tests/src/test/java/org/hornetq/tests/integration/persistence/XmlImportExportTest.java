@@ -1028,7 +1028,7 @@ public class XmlImportExportTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
       ClientMessage msg = session.createMessage(true);
-      byte bodyTst[] = new byte[10];
+      byte[] bodyTst = new byte[10];
       for (int i = 0; i < 10; i++)
       {
          bodyTst[i] = (byte)(i + 1);
@@ -1062,7 +1062,7 @@ public class XmlImportExportTest extends ServiceTestBase
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertNotNull(msg);
       assertEquals(msg.getBodySize(), bodyTst.length);
-      byte bodyRead[] = new byte[bodyTst.length];
+      byte[] bodyRead = new byte[bodyTst.length];
       msg.getBodyBuffer().readBytes(bodyRead);
       assertEqualsByteArrays(bodyTst, bodyRead);
 

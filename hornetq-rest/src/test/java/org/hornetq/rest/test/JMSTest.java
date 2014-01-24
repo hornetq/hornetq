@@ -11,24 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
-
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
-import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
-import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQJMSConnectionFactory;
-import org.hornetq.rest.HttpHeaderProperty;
-import org.hornetq.rest.Jms;
-import org.hornetq.rest.queue.QueueDeployment;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.spi.Link;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -40,6 +22,23 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.rest.HttpHeaderProperty;
+import org.hornetq.rest.Jms;
+import org.hornetq.rest.queue.QueueDeployment;
+import org.jboss.resteasy.client.ClientRequest;
+import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.spi.Link;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -252,7 +251,7 @@ public class JMSTest extends MessageTestBase
          publish(queueName, order, null);
 
          ClientResponse<?> res =
-                  consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
+            consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = res.getEntity(Order.class);
@@ -269,7 +268,7 @@ public class JMSTest extends MessageTestBase
          order.setAmount("$5.00");
          publish(queueName, order, null);
 
-        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
+         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);
@@ -286,7 +285,7 @@ public class JMSTest extends MessageTestBase
          order.setAmount("$15.00");
          publish(queueName, order, "application/xml");
 
-        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
+         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          Order order2 = (Order) res.getEntity(Order.class);

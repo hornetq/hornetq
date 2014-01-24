@@ -42,10 +42,10 @@ public interface HornetQStompProtocolMessageBundle
    @Message(id = 339001, value = "Destination doesn't exist: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException destinationNotExist(String destination);
 
-   @Message(id = 339002, value = "Stomp versions not supported: {0}", format = Message.Format.MESSAGE_FORMAT)   
+   @Message(id = 339002, value = "Stomp versions not supported: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException versionNotSupported(String acceptVersion);
 
-   @Message(id = 339003, value = "Header host is null", format = Message.Format.MESSAGE_FORMAT)   
+   @Message(id = 339003, value = "Header host is null", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException nullHostHeader();
 
    @Message(id = 339004, value = "Cannot accept null as host", format = Message.Format.MESSAGE_FORMAT)

@@ -83,7 +83,7 @@ public abstract class XmlDeployer implements Deployer
 
       List<String> added = new ArrayList<String>();
       // pull out the elements that need deploying
-      String elements[] = getElementTagName();
+      String[] elements = getElementTagName();
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);
@@ -166,7 +166,7 @@ public abstract class XmlDeployer implements Deployer
       }
 
       // find all thenodes to deploy
-      String elements[] = getElementTagName();
+      String[] elements = getElementTagName();
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);

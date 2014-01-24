@@ -29,7 +29,6 @@ import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
-import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * Handles scheduling deliveries to a queue at the correct time.
@@ -101,7 +100,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       synchronized (scheduledReferences)
       {
-         for (RefScheduled ref: scheduledReferences)
+         for (RefScheduled ref : scheduledReferences)
          {
             refs.add(ref.getRef());
          }
@@ -175,6 +174,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private class ScheduledDeliveryRunnable implements Runnable
    {
       long deliveryTime;
+
       public ScheduledDeliveryRunnable(final long deliveryTime)
       {
          this.deliveryTime = deliveryTime;
@@ -279,8 +279,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             {
                return 1;
             }
-            else
-            if (!ref1.isTail() && ref2.isTail())
+            else if (!ref1.isTail() && ref2.isTail())
             {
                return -1;
             }

@@ -18,7 +18,6 @@ package org.hornetq.core.server.impl;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;

@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.util.List;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.IllegalStateException;
@@ -26,6 +24,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
+import java.util.List;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Test;
@@ -36,7 +35,6 @@ import org.junit.Test;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class DurableSubscriptionTest extends JMSTestCase
 {
@@ -94,7 +92,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          conn.start();
 
-         TextMessage tm = (TextMessage)durable.receive(1000);
+         TextMessage tm = (TextMessage) durable.receive(1000);
          ProxyAssertSupport.assertEquals("k", tm.getText());
 
          Message m = durable.receive(1000);
@@ -117,7 +115,7 @@ public class DurableSubscriptionTest extends JMSTestCase
     * JMS 1.1 6.11.1: A client can change an existing durable subscription by creating a durable
     * TopicSubscriber with the same name and a new topic and/or message selector, or NoLocal
     * attribute. Changing a durable subscription is equivalent to deleting and recreating it.
-    *
+    * <p/>
     * Test with a different topic (a redeployed topic is a different topic).
     */
    @Test
@@ -170,7 +168,7 @@ public class DurableSubscriptionTest extends JMSTestCase
     * JMS 1.1 6.11.1: A client can change an existing durable subscription by creating a durable
     * TopicSubscriber with the same name and a new topic and/or message selector, or NoLocal
     * attribute. Changing a durable subscription is equivalent to deleting and recreating it.
-    *
+    * <p/>
     * Test with a different selector.
     */
    @Test
@@ -201,7 +199,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          conn.start();
 
-         TextMessage rm = (TextMessage)durable.receive(5000);
+         TextMessage rm = (TextMessage) durable.receive(5000);
          ProxyAssertSupport.assertEquals("A red square message", rm.getText());
 
          tm = s.createTextMessage("Another red square message");
@@ -320,18 +318,18 @@ public class DurableSubscriptionTest extends JMSTestCase
    public void testInvalidSelectorException() throws Exception
    {
       Connection c = createConnection();
-         c.setClientID("sofiavergara");
-         Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      c.setClientID("sofiavergara");
+      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         try
-         {
-            s.createDurableSubscriber(HornetQServerTestCase.topic1, "mysubscribption", "=TEST 'test'", true);
-            ProxyAssertSupport.fail("this should fail");
-         }
-         catch (InvalidSelectorException e)
-         {
-            // OK
-         }
+      try
+      {
+         s.createDurableSubscriber(HornetQServerTestCase.topic1, "mysubscribption", "=TEST 'test'", true);
+         ProxyAssertSupport.fail("this should fail");
+      }
+      catch (InvalidSelectorException e)
+      {
+         // OK
+      }
    }
 
    // See JMS 1.1. spec sec 6.11
@@ -339,75 +337,75 @@ public class DurableSubscriptionTest extends JMSTestCase
    public void testUnsubscribeWithActiveConsumer() throws Exception
    {
       Connection conn = createConnection();
-         conn.setClientID("zeke");
+      conn.setClientID("zeke");
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TopicSubscriber dursub = s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub0");
+      TopicSubscriber dursub = s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub0");
 
-         try
-         {
-            s.unsubscribe("dursub0");
-            ProxyAssertSupport.fail();
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok - it is illegal to ubscribe a subscription if it has active consumers
-         }
-
-         dursub.close();
-
+      try
+      {
          s.unsubscribe("dursub0");
+         ProxyAssertSupport.fail();
+      }
+      catch (IllegalStateException e)
+      {
+         // Ok - it is illegal to ubscribe a subscription if it has active consumers
+      }
+
+      dursub.close();
+
+      s.unsubscribe("dursub0");
    }
 
    @Test
    public void testSubscribeWithActiveSubscription() throws Exception
    {
       Connection conn = createConnection();
-         conn.setClientID("zeke");
+      conn.setClientID("zeke");
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TopicSubscriber dursub1 = s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub1");
+      TopicSubscriber dursub1 = s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub1");
 
-         try
-         {
-            s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub1");
-            ProxyAssertSupport.fail();
-         }
-         catch (IllegalStateException e)
-         {
-            // Ok - it is illegal to have more than one active subscriber on a subscrtiption at any one time
-         }
+      try
+      {
+         s.createDurableSubscriber(HornetQServerTestCase.topic1, "dursub1");
+         ProxyAssertSupport.fail();
+      }
+      catch (IllegalStateException e)
+      {
+         // Ok - it is illegal to have more than one active subscriber on a subscrtiption at any one time
+      }
 
-         dursub1.close();
+      dursub1.close();
 
-         s.unsubscribe("dursub1");
+      s.unsubscribe("dursub1");
    }
 
    @Test
    public void testDurableSubscriptionWithPeriodsInName() throws Exception
    {
       Connection conn = createConnection();
-         conn.setClientID(".client.id.with.periods.");
+      conn.setClientID(".client.id.with.periods.");
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TopicSubscriber subscriber = s.createDurableSubscriber(HornetQServerTestCase.topic1,
-                                                                ".subscription.name.with.periods.");
+      TopicSubscriber subscriber = s.createDurableSubscriber(HornetQServerTestCase.topic1,
+                                                             ".subscription.name.with.periods.");
 
-         s.createProducer(HornetQServerTestCase.topic1).send(s.createTextMessage("Subscription test"));
+      s.createProducer(HornetQServerTestCase.topic1).send(s.createTextMessage("Subscription test"));
 
-         conn.start();
+      conn.start();
 
-         Message m = subscriber.receive(1000L);
+      Message m = subscriber.receive(1000L);
 
-         ProxyAssertSupport.assertNotNull(m);
-         ProxyAssertSupport.assertTrue(m instanceof TextMessage);
+      ProxyAssertSupport.assertNotNull(m);
+      ProxyAssertSupport.assertTrue(m instanceof TextMessage);
 
-         subscriber.close();
+      subscriber.close();
 
-         s.unsubscribe(".subscription.name.with.periods.");
+      s.unsubscribe(".subscription.name.with.periods.");
    }
 
    @Test
@@ -420,51 +418,51 @@ public class DurableSubscriptionTest extends JMSTestCase
    private void internalTestNoLocal(final boolean noLocal) throws Exception
    {
 
-         Connection conn1 = createConnection();
-         conn1.setClientID(".client.id.with.periods.");
+      Connection conn1 = createConnection();
+      conn1.setClientID(".client.id.with.periods.");
 
-         Connection conn2 = createConnection();
-         conn2.setClientID(".client.id.with.periods2.");
+      Connection conn2 = createConnection();
+      conn2.setClientID(".client.id.with.periods2.");
 
-         Session s1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session s2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session s2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TopicSubscriber subscriber1 = s1.createDurableSubscriber(HornetQServerTestCase.topic1,
-                                                                  ".subscription.name.with.periods.",
-                                                                  null,
-                                                                  noLocal);
-         TopicSubscriber subscriber2 = s2.createDurableSubscriber(HornetQServerTestCase.topic1,
-                                                                  ".subscription.name.with.periods.",
-                                                                  null,
-                                                                  false);
+      TopicSubscriber subscriber1 = s1.createDurableSubscriber(HornetQServerTestCase.topic1,
+                                                               ".subscription.name.with.periods.",
+                                                               null,
+                                                               noLocal);
+      TopicSubscriber subscriber2 = s2.createDurableSubscriber(HornetQServerTestCase.topic1,
+                                                               ".subscription.name.with.periods.",
+                                                               null,
+                                                               false);
 
-         s1.createProducer(HornetQServerTestCase.topic1).send(s1.createTextMessage("Subscription test"));
+      s1.createProducer(HornetQServerTestCase.topic1).send(s1.createTextMessage("Subscription test"));
 
-         conn1.start();
+      conn1.start();
 
-         Message m = subscriber1.receive(100L);
+      Message m = subscriber1.receive(100L);
 
-         if (noLocal)
-         {
-            ProxyAssertSupport.assertNull(m);
-         }
-         else
-         {
-            ProxyAssertSupport.assertNotNull(m);
-         }
-
-         conn2.start();
-
-         m = subscriber2.receive(1000l);
-
+      if (noLocal)
+      {
+         ProxyAssertSupport.assertNull(m);
+      }
+      else
+      {
          ProxyAssertSupport.assertNotNull(m);
-         ProxyAssertSupport.assertTrue(m instanceof TextMessage);
+      }
 
-         subscriber1.close();
-         subscriber2.close();
+      conn2.start();
 
-         s1.unsubscribe(".subscription.name.with.periods.");
-         s2.unsubscribe(".subscription.name.with.periods.");
+      m = subscriber2.receive(1000L);
+
+      ProxyAssertSupport.assertNotNull(m);
+      ProxyAssertSupport.assertTrue(m instanceof TextMessage);
+
+      subscriber1.close();
+      subscriber2.close();
+
+      s1.unsubscribe(".subscription.name.with.periods.");
+      s2.unsubscribe(".subscription.name.with.periods.");
       conn1.close();
       conn2.close();
    }

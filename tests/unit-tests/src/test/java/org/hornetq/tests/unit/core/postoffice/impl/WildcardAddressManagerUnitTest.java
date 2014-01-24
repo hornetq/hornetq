@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -29,6 +27,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 
 /**
@@ -56,7 +55,7 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
          // We are not failing the test here as this test is replicating the exact scenario
          // that was happening under https://issues.jboss.org/browse/HORNETQ-988
          // In which this would be ignored
-         errors ++;
+         errors++;
          e.printStackTrace();
       }
       try
@@ -68,7 +67,7 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
          // We are not failing the test here as this test is replicating the exact scenario
          // that was happening under https://issues.jboss.org/browse/HORNETQ-988
          // In which this would be ignored
-         errors ++;
+         errors++;
          e.printStackTrace();
       }
 

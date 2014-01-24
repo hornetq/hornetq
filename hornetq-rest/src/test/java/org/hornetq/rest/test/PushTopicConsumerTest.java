@@ -11,7 +11,10 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.rest.test;
-import org.junit.Before;
+
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.rest.queue.QueueDeployment;
 import org.hornetq.rest.queue.push.HornetQPushStrategy;
@@ -25,16 +28,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.jboss.resteasy.test.TestPortProvider.*;
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
  */
 public class PushTopicConsumerTest extends MessageTestBase
 {

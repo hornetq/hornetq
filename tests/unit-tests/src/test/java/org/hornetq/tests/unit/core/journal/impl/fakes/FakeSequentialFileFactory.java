@@ -32,6 +32,7 @@ import org.hornetq.core.journal.impl.TimedBuffer;
 
 /**
  * A FakeSequentialFileFactory
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -93,7 +94,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       for (int i = 0; i < limit; i++)
       {
-         buffer.put((byte)0);
+         buffer.put((byte) 0);
       }
 
       buffer.rewind();
@@ -219,10 +220,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
    // Inner classes -------------------------------------------------
 
-   /** This listener will return a message to the test with each callback added */
-   public static interface ListenerHoldCallback
+   /**
+    * This listener will return a message to the test with each callback added
+    */
+   public interface ListenerHoldCallback
    {
-      public void callbackAdded(final ByteBuffer bytes);
+      void callbackAdded(final ByteBuffer bytes);
    }
 
    private class CallbackRunnable implements Runnable
@@ -372,7 +375,8 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          for (int i = pos; i < size + pos; i++)
          {
-            data.array()[i] = fillCharacter;
+            byte[] array = data.array();
+            array[i] = fillCharacter;
 
             // log.debug("Filling " + pos + " with char " + fillCharacter);
          }
@@ -416,7 +420,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          checkAlignment(pos);
 
-         data.position((int)pos);
+         data.position((int) pos);
       }
 
       public long position()
@@ -489,7 +493,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          writeDirect(bytes, true);
       }
-
 
 
       private void checkAndResize(final int size)

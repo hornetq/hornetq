@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.cluster.bridge;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +26,7 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.tests.integration.cluster.util.MultiServerTestBase;
+import org.junit.Test;
 
 /**
  * @author Clebert Suconic
@@ -56,7 +55,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
       bridgeConfiguration.setReconnectAttempts(-1);
       servers[2].getConfiguration().getBridgeConfigurations().add(bridgeConfiguration);
 
-      for (HornetQServer server: servers)
+      for (HornetQServer server : servers)
       {
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(ORIGINAL_QUEUE, ORIGINAL_QUEUE, null, true));
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(TARGET_QUEUE, TARGET_QUEUE, null, true));
@@ -71,7 +70,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
       ClientSession session = addClientSession(factory.createSession(false, false));
       ClientProducer producer = addClientProducer(session.createProducer(ORIGINAL_QUEUE));
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("i", i);
@@ -87,7 +86,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       sessionConsumer.start();
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage message = consumer.receive(10000);
          assertNotNull(message);
@@ -131,7 +130,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
       bridgeConfiguration.setHA(true);
       servers[2].getConfiguration().getBridgeConfigurations().add(bridgeConfiguration);
 
-      for (HornetQServer server: servers)
+      for (HornetQServer server : servers)
       {
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(ORIGINAL_QUEUE, ORIGINAL_QUEUE, null, true));
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(TARGET_QUEUE, TARGET_QUEUE, null, true));
@@ -139,7 +138,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       startServers();
 
-      BridgeImpl bridge = (BridgeImpl)servers[2].getClusterManager().getBridges().get("Bridge-for-test");
+      BridgeImpl bridge = (BridgeImpl) servers[2].getClusterManager().getBridges().get("Bridge-for-test");
       assertNotNull(bridge);
 
       long timeout = System.currentTimeMillis() + 5000;
@@ -158,7 +157,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
       ClientSession session = addClientSession(factory.createSession(false, false));
       ClientProducer producer = addClientProducer(session.createProducer(ORIGINAL_QUEUE));
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("i", i);
@@ -174,7 +173,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       sessionConsumer.start();
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage message = consumer.receive(10000);
          assertNotNull(message);
@@ -194,7 +193,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       waitForServer(backupServers[4]);
 
-      for (int i = 100 ; i < 200; i++)
+      for (int i = 100; i < 200; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("i", i);
@@ -212,7 +211,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       sessionConsumer.start();
 
-      for (int i = 0 ; i < 200; i++)
+      for (int i = 0; i < 200; i++)
       {
          ClientMessage message = consumer.receive(10000);
          assertNotNull(message);
@@ -244,14 +243,14 @@ public class BridgeFailoverTest extends MultiServerTestBase
       bridgeConfiguration.setReconnectAttempts(-1);
       servers[2].getConfiguration().getBridgeConfigurations().add(bridgeConfiguration);
 
-      for (HornetQServer server: servers)
+      for (HornetQServer server : servers)
       {
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(ORIGINAL_QUEUE, ORIGINAL_QUEUE, null, true));
          server.getConfiguration().getQueueConfigurations().add(new CoreQueueConfiguration(TARGET_QUEUE, TARGET_QUEUE, null, true));
       }
 
-      startBackups(0,1,3,4);
-      startServers(0,1,3,4);
+      startBackups(0, 1, 3, 4);
+      startServers(0, 1, 3, 4);
 
       waitForTopology(servers[4], getNumberOfServers() - 1, getNumberOfServers() - 1);
 
@@ -269,7 +268,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
       ClientSession session = addClientSession(factory.createSession(false, false));
       ClientProducer producer = addClientProducer(session.createProducer(ORIGINAL_QUEUE));
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("i", i);
@@ -285,7 +284,7 @@ public class BridgeFailoverTest extends MultiServerTestBase
 
       sessionConsumer.start();
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage message = consumer.receive(10000);
          assertNotNull(message);

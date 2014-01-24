@@ -32,7 +32,7 @@ import org.hornetq.utils.UUID;
 
 /**
  * A concrete implementation of a message
- *
+ * <p/>
  * All messages handled by HornetQ core are of this type
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -40,8 +40,6 @@ import org.hornetq.utils.UUID;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 2740 $</tt>
- *
- *
  */
 public abstract class MessageImpl implements MessageInternal
 {
@@ -62,7 +60,9 @@ public abstract class MessageImpl implements MessageInternal
 
    protected boolean durable;
 
-   /** GMT milliseconds at which this message expires. 0 means never expires * */
+   /**
+    * GMT milliseconds at which this message expires. 0 means never expires *
+    */
    private long expiration;
 
    protected long timestamp;
@@ -96,6 +96,7 @@ public abstract class MessageImpl implements MessageInternal
 
    /**
     * overridden by the client message, we need access to the connection so we can create the appropriate HornetQBuffer.
+    *
     * @param type
     * @param durable
     * @param expiration
@@ -187,14 +188,14 @@ public abstract class MessageImpl implements MessageInternal
    public int getHeadersAndPropertiesEncodeSize()
    {
       return DataConstants.SIZE_LONG + // Message ID
-             DataConstants.SIZE_BYTE + // user id null?
-             (userID == null ? 0 : 16) +
+         DataConstants.SIZE_BYTE + // user id null?
+         (userID == null ? 0 : 16) +
              /* address */SimpleString.sizeofNullableString(address) +
-             DataConstants./* Type */SIZE_BYTE +
-             DataConstants./* Durable */SIZE_BOOLEAN +
-             DataConstants./* Expiration */SIZE_LONG +
-             DataConstants./* Timestamp */SIZE_LONG +
-             DataConstants./* Priority */SIZE_BYTE +
+         DataConstants./* Type */SIZE_BYTE +
+         DataConstants./* Durable */SIZE_BOOLEAN +
+         DataConstants./* Expiration */SIZE_LONG +
+         DataConstants./* Timestamp */SIZE_LONG +
+         DataConstants./* Priority */SIZE_BYTE +
              /* PropertySize and Properties */properties.getEncodeSize();
    }
 
@@ -297,8 +298,10 @@ public abstract class MessageImpl implements MessageInternal
       this.userID = userID;
    }
 
-   /** this doesn't need to be synchronized as setAddress is protecting the buffer,
-    *  not the address*/
+   /**
+    * this doesn't need to be synchronized as setAddress is protecting the buffer,
+    * not the address
+    */
    public SimpleString getAddress()
    {
       return address;
@@ -311,16 +314,16 @@ public abstract class MessageImpl implements MessageInternal
     */
    public Message setAddress(final SimpleString address)
    {
-     // This is protecting the buffer
-     synchronized (this)
-     {
+      // This is protecting the buffer
+      synchronized (this)
+      {
          if (this.address != address)
          {
             this.address = address;
 
             bufferValid = false;
          }
-     }
+      }
 
       return this;
    }
@@ -975,7 +978,7 @@ public abstract class MessageImpl implements MessageInternal
       buffer = HornetQBuffers.dynamicBuffer(initialMessageBufferSize);
 
       // There's a bug in netty which means a dynamic buffer won't resize until you write a byte
-      buffer.writeByte((byte)0);
+      buffer.writeByte((byte) 0);
 
       buffer.setIndex(BODY_OFFSET, BODY_OFFSET);
    }

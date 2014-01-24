@@ -39,6 +39,7 @@ public class PageCountSyncOnNonTXTest extends ServiceTestBase
    private long timeToRun;
 
    Process process;
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -80,7 +81,6 @@ public class PageCountSyncOnNonTXTest extends ServiceTestBase
          sessionTransacted.start();
 
 
-
          long start = System.currentTimeMillis();
 
          long nmsgs = 0;
@@ -107,7 +107,7 @@ public class PageCountSyncOnNonTXTest extends ServiceTestBase
                   // complicating the test a bit with transacted sends and consuming
                   producerTransacted.send(msg);
 
-                  for (int i = 0 ; i < 50; i++)
+                  for (int i = 0; i < 50; i++)
                   {
                      msg = consumerTransacted.receive(100);
                      if (msg != null)
@@ -171,7 +171,7 @@ public class PageCountSyncOnNonTXTest extends ServiceTestBase
 
             session.start();
 
-            for (int i = 0 ; i < msgs; i++)
+            for (int i = 0; i < msgs; i++)
             {
                ClientMessage msg = consumer.receive(5000);
                assertNotNull(msg);

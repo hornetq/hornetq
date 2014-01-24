@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -25,10 +20,15 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.After;
 import org.junit.Test;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
 /**
@@ -36,56 +36,58 @@ import org.junit.Test;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Foxv</a>
- *
  */
 public class JMSTest extends JMSTestCase
 {
-    Connection conn = null;
+   Connection conn = null;
 
    @Override
    @After
-   public void tearDown() throws Exception {
+   public void tearDown() throws Exception
+   {
       try
-     {
+      {
          if (conn != null)
          {
-             conn.close();
-             conn=null;
+            conn.close();
+            conn = null;
          }
-     }  finally {
-          super.tearDown();
-     }
-    }
+      }
+      finally
+      {
+         super.tearDown();
+      }
+   }
 
    @Test
    public void test_NonPersistent_NonTransactional() throws Exception
    {
       conn = createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         TextMessage m = session.createTextMessage("message one");
+      TextMessage m = session.createTextMessage("message one");
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
+      TextMessage rm = (TextMessage) cons.receive();
 
-         ProxyAssertSupport.assertNotNull(rm);
+      ProxyAssertSupport.assertNotNull(rm);
 
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
    }
 
    @Test
@@ -93,30 +95,30 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         TextMessage m = session.createTextMessage();
+      TextMessage m = session.createTextMessage();
 
-         m.setText("message one");
+      m.setText("message one");
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
+      TextMessage rm = (TextMessage) cons.receive();
 
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
    }
 
    @Test
@@ -124,28 +126,28 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         TextMessage m = session.createTextMessage("message one");
+      TextMessage m = session.createTextMessage("message one");
 
-         prod.send(m);
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
+      TextMessage rm = (TextMessage) cons.receive();
 
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
    }
 
    @Test
@@ -153,32 +155,32 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         TextMessage m = session.createTextMessage("message one");
-         prod.send(m);
-         m = session.createTextMessage("message two");
-         prod.send(m);
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      m = session.createTextMessage("message two");
+      prod.send(m);
 
-         session.commit();
+      session.commit();
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
-         rm = (TextMessage)cons.receive();
-         ProxyAssertSupport.assertEquals("message two", rm.getText());
+      TextMessage rm = (TextMessage) cons.receive();
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
+      rm = (TextMessage) cons.receive();
+      ProxyAssertSupport.assertEquals("message two", rm.getText());
    }
 
    @Test
@@ -186,32 +188,32 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         TextMessage m = session.createTextMessage("message one");
-         prod.send(m);
-         m = session.createTextMessage("message two");
-         prod.send(m);
+      TextMessage m = session.createTextMessage("message one");
+      prod.send(m);
+      m = session.createTextMessage("message two");
+      prod.send(m);
 
-         session.commit();
+      session.commit();
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
-         rm = (TextMessage)cons.receive();
-         ProxyAssertSupport.assertEquals("message two", rm.getText());
+      TextMessage rm = (TextMessage) cons.receive();
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
+      rm = (TextMessage) cons.receive();
+      ProxyAssertSupport.assertEquals("message two", rm.getText());
    }
 
    @Test
@@ -219,27 +221,27 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         TextMessage m = session.createTextMessage("one");
-         prod.send(m);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage m = session.createTextMessage("one");
+      prod.send(m);
 
-         conn.close();
+      conn.close();
 
       conn = createConnection();
 
-         session = conn.createSession(true, Session.SESSION_TRANSACTED);
+      session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage rm = (TextMessage)cons.receive();
-         ProxyAssertSupport.assertEquals("one", rm.getText());
+      TextMessage rm = (TextMessage) cons.receive();
+      ProxyAssertSupport.assertEquals("one", rm.getText());
 
-         session.commit();
+      session.commit();
    }
 
    @Test
@@ -247,58 +249,58 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       final MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         final AtomicReference<Message> message = new AtomicReference<Message>();
-         final CountDownLatch latch = new CountDownLatch(1);
+      final AtomicReference<Message> message = new AtomicReference<Message>();
+      final CountDownLatch latch = new CountDownLatch(1);
 
-         new Thread(new Runnable()
+      new Thread(new Runnable()
+      {
+         public void run()
          {
-            public void run()
+            try
             {
-               try
-               {
-                  // sleep a little bit to ensure that
-                  // prod.send will be called before cons.reveive
-                  Thread.sleep(500);
+               // sleep a little bit to ensure that
+               // prod.send will be called before cons.reveive
+               Thread.sleep(500);
 
-                  synchronized (session)
+               synchronized (session)
+               {
+                  Message m = cons.receive(5000);
+                  if (m != null)
                   {
-                     Message m = cons.receive(5000);
-                     if (m != null)
-                     {
-                        message.set(m);
-                        latch.countDown();
-                     }
+                     message.set(m);
+                     latch.countDown();
                   }
                }
-               catch (Exception e)
-               {
-                  log.error("receive failed", e);
-               }
-
             }
-         }, "Receiving Thread").start();
+            catch (Exception e)
+            {
+               log.error("receive failed", e);
+            }
 
-         synchronized (session)
-         {
-         MessageProducer prod = session.createProducer(queue1);
-            prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-            TextMessage m = session.createTextMessage("message one");
-
-            prod.send(m);
          }
+      }, "Receiving Thread").start();
 
-         boolean gotMessage = latch.await(5000, TimeUnit.MILLISECONDS);
-         ProxyAssertSupport.assertTrue(gotMessage);
-         TextMessage rm = (TextMessage)message.get();
+      synchronized (session)
+      {
+         MessageProducer prod = session.createProducer(queue1);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         ProxyAssertSupport.assertEquals("message one", rm.getText());
+         TextMessage m = session.createTextMessage("message one");
+
+         prod.send(m);
+      }
+
+      boolean gotMessage = latch.await(5000, TimeUnit.MILLISECONDS);
+      ProxyAssertSupport.assertTrue(gotMessage);
+      TextMessage rm = (TextMessage) message.get();
+
+      ProxyAssertSupport.assertEquals("message one", rm.getText());
    }
 
    @Test
@@ -306,36 +308,36 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessionConsumer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       MessageConsumer cons = sessionConsumer.createConsumer(queue1);
 
-         final AtomicReference<Message> message = new AtomicReference<Message>();
-         final CountDownLatch latch = new CountDownLatch(1);
+      final AtomicReference<Message> message = new AtomicReference<Message>();
+      final CountDownLatch latch = new CountDownLatch(1);
 
-         cons.setMessageListener(new MessageListener()
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(final Message m)
          {
-            public void onMessage(final Message m)
-            {
-               message.set(m);
-               latch.countDown();
-            }
-         });
+            message.set(m);
+            latch.countDown();
+         }
+      });
 
-         conn.start();
+      conn.start();
 
 
-         Session sessionProducer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sessionProducer = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sessionProducer.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         TextMessage m = sessionProducer.createTextMessage("one");
-         prod.send(m);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      TextMessage m = sessionProducer.createTextMessage("one");
+      prod.send(m);
 
-         boolean gotMessage = latch.await(5000, MILLISECONDS);
-         ProxyAssertSupport.assertTrue(gotMessage);
-         TextMessage rm = (TextMessage)message.get();
+      boolean gotMessage = latch.await(5000, MILLISECONDS);
+      ProxyAssertSupport.assertTrue(gotMessage);
+      TextMessage rm = (TextMessage) message.get();
 
-         ProxyAssertSupport.assertEquals("one", rm.getText());
+      ProxyAssertSupport.assertEquals("one", rm.getText());
    }
 
    @Test
@@ -343,23 +345,23 @@ public class JMSTest extends JMSTestCase
    {
       conn = createConnection();
 
-         Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageProducer p = session.createProducer(queue1);
-         p.send(session.createTextMessage("CLACK"));
+      p.send(session.createTextMessage("CLACK"));
 
       MessageConsumer cons = session.createConsumer(queue1);
 
-         conn.start();
+      conn.start();
 
-         TextMessage m = (TextMessage)cons.receive(1000);
+      TextMessage m = (TextMessage) cons.receive(1000);
 
-         ProxyAssertSupport.assertEquals("CLACK", m.getText());
+      ProxyAssertSupport.assertEquals("CLACK", m.getText());
 
-         // make sure the message is still in "delivering" state
-         assertRemainingMessages(1);
+      // make sure the message is still in "delivering" state
+      assertRemainingMessages(1);
 
-         m.acknowledge();
+      m.acknowledge();
 
-         assertRemainingMessages(0);
+      assertRemainingMessages(0);
    }
 }

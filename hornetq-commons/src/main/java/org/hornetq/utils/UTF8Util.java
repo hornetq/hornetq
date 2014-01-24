@@ -239,9 +239,9 @@ public final class UTF8Util
    private static class StringUtilBuffer
    {
 
-      public char charBuffer[];
+      public char[] charBuffer;
 
-      public byte byteBuffer[];
+      public byte[] byteBuffer;
 
       public void resizeCharBuffer(final int newSize)
       {

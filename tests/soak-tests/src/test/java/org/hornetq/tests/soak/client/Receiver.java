@@ -25,8 +25,6 @@ import org.hornetq.utils.ReusableLatch;
  * A Receiver
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class Receiver extends ClientAbstract
 {
@@ -78,7 +76,7 @@ public class Receiver extends ClientAbstract
          {
             beginTX();
 
-            for (int i = 0 ; i < 1000; i++)
+            for (int i = 0; i < 1000; i++)
             {
                ClientMessage msg = cons.receive(5000);
                if (msg == null)

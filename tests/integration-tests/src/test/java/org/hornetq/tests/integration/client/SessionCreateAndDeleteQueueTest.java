@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -28,6 +23,9 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.LastValueQueue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -49,7 +47,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      Queue q = (Queue)binding.getBindable();
+      Queue q = (Queue) binding.getBindable();
       Assert.assertFalse(q.isDurable());
 
       session.close();
@@ -61,7 +59,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, true);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      Queue q = (Queue)binding.getBindable();
+      Queue q = (Queue) binding.getBindable();
       Assert.assertTrue(q.isDurable());
 
       session.close();
@@ -73,7 +71,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      Queue q = (Queue)binding.getBindable();
+      Queue q = (Queue) binding.getBindable();
       Assert.assertFalse(q.isTemporary());
 
       session.close();
@@ -85,7 +83,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createTemporaryQueue(address, queueName);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      Queue q = (Queue)binding.getBindable();
+      Queue q = (Queue) binding.getBindable();
       Assert.assertTrue(q.isTemporary());
 
       session.close();
@@ -98,7 +96,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       SimpleString filterString = new SimpleString("x=y");
       session.createQueue(address, queueName, filterString, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      Queue q = (Queue)binding.getBindable();
+      Queue q = (Queue) binding.getBindable();
       Assert.assertEquals(q.getFilter().getFilterString(), filterString);
 
       session.close();
@@ -141,7 +139,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
          session.deleteQueue(queueName);
          Assert.fail("should throw exception");
       }
-      catch(HornetQNonExistentQueueException neqe)
+      catch (HornetQNonExistentQueueException neqe)
       {
          //ok
       }

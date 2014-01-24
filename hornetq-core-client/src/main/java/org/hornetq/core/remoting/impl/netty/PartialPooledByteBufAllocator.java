@@ -12,9 +12,12 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
-import io.netty.buffer.*;
 
 /**
  * A {@link ByteBufAllocator} which is partial pooled. Which means only direct {@link ByteBuf}s are pooled. The rest
@@ -29,7 +32,9 @@ public class PartialPooledByteBufAllocator implements ByteBufAllocator
 
    public static final PartialPooledByteBufAllocator INSTANCE = new PartialPooledByteBufAllocator();
 
-   private PartialPooledByteBufAllocator() { }
+   private PartialPooledByteBufAllocator()
+   {
+   }
 
    @Override
    public ByteBuf buffer()
@@ -130,13 +135,13 @@ public class PartialPooledByteBufAllocator implements ByteBufAllocator
    @Override
    public CompositeByteBuf compositeDirectBuffer()
    {
-       return POOLED.compositeDirectBuffer();
+      return POOLED.compositeDirectBuffer();
    }
 
    @Override
    public CompositeByteBuf compositeDirectBuffer(int maxNumComponents)
    {
-       return POOLED.compositeDirectBuffer();
+      return POOLED.compositeDirectBuffer();
    }
 
    @Override

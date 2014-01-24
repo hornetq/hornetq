@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.discovery;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -53,22 +54,23 @@ import org.junit.Test;
 
 /**
  * This will test Discovery test on JGroups and UDP.
- * <p>
+ * <p/>
  * In some configurations IPV6 may be a challenge. To make sure this test works, you may add this
  * property to your JVM settings: {@literal -Djgroups.bind_addr=::1}
- * <p>
+ * <p/>
  * Or ultimately you may also turn off IPV6: {@literal -Djava.net.preferIPv4Stack=true}
- * <p>
+ * <p/>
  * Note when you are not sure about your IP settings of your test machine, you should make sure
  * that the jgroups.bind_addr and java.net.preferXXStack by defining them explicitly, for example
  * if you would like to use IPV6, set BOTH properties to your JVM like the following:
  * -Djgroups.bind_addr=::1 -Djava.net.preferIPv6Addresses=true
- * <p>
+ * <p/>
  * or if you prefer IPV4:
  * -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true
- * <p>
+ * <p/>
  * Also: Make sure you add integration-tests/src/tests/resources to your project path on the
  * tests/integration-tests
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class DiscoveryTest extends UnitTestCase
@@ -93,7 +95,7 @@ public class DiscoveryTest extends UnitTestCase
    {
       /** This file path is defined at {@link #TEST_JGROUPS_CONF_FILE} */
       deleteDirectory(new File("/tmp/hqtest.ping.dir"));
-      for (HornetQComponent component : new HornetQComponent[] { bg, bg1, bg2, bg3, dg, dg1, dg2, dg3 })
+      for (HornetQComponent component : new HornetQComponent[]{bg, bg1, bg2, bg3, dg, dg1, dg2, dg3})
       {
          stopComponent(component);
       }
@@ -111,8 +113,8 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID),
-         RandomUtil.randomString(),
-         0,  null, new UDPBroadcastGroupConfiguration(address1, groupPort, null, -1).createBroadcastEndpointFactory());
+                                  RandomUtil.randomString(),
+                                  0, null, new UDPBroadcastGroupConfiguration(address1, groupPort, null, -1).createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -121,11 +123,11 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       dg.start();
 
@@ -142,7 +144,7 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID), "broadcast", 100, null,
-                                      new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory());
+                                  new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory());
 
       bg.start();
 
@@ -150,9 +152,9 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnector(live1);
 
-      dg = new DiscoveryGroup(nodeID + "1", "broadcast", 5000l,
-                                  new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory(),
-            null);
+      dg = new DiscoveryGroup(nodeID + "1", "broadcast", 5000L,
+                              new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst").createBroadcastEndpointFactory(),
+                              null);
 
       dg.start();
 
@@ -164,13 +166,14 @@ public class DiscoveryTest extends UnitTestCase
    /**
     * Create one broadcaster and 100 receivers. Make sure broadcasting works.
     * Then stop 99 of the receivers, the last one could still be working.
+    *
     * @throws Exception
     */
    @Test
    public void testJGropusChannelReferenceCounting() throws Exception
    {
       JGroupsBroadcastGroupConfiguration jgroupsConfig =
-               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
+         new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -183,7 +186,7 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i].openClient();
       }
 
-      final byte[] data = new byte[] {1,2,3,4,5};
+      final byte[] data = new byte[]{1, 2, 3, 4, 5};
       broadcaster.broadcast(data);
 
       for (int i = 0; i < num; i++)
@@ -198,7 +201,7 @@ public class DiscoveryTest extends UnitTestCase
          assertEquals(5, received[4]);
       }
 
-      for (int i = 0; i < num -1; i++)
+      for (int i = 0; i < num - 1; i++)
       {
          receivers[i].close(false);
       }
@@ -232,7 +235,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testJGropusChannelReferenceCounting1() throws Exception
    {
       JGroupsBroadcastGroupConfiguration jgroupsConfig =
-               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
+         new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -245,7 +248,7 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i].openClient();
       }
 
-      final byte[] data = new byte[] {1,2,3,4,5};
+      final byte[] data = new byte[]{1, 2, 3, 4, 5};
       broadcaster.broadcast(data);
 
       for (int i = 0; i < num; i++)
@@ -303,7 +306,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testJGropusChannelReferenceCounting2() throws Exception
    {
       JGroupsBroadcastGroupConfiguration jgroupsConfig =
-               new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
+         new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
       BroadcastEndpointFactory factory = jgroupsConfig.createBroadcastEndpointFactory();
       BroadcastEndpoint broadcaster = factory.createBroadcastEndpoint();
       broadcaster.openBroadcaster();
@@ -316,12 +319,12 @@ public class DiscoveryTest extends UnitTestCase
          receivers[i].openClient();
       }
 
-      for (int i = 0; i < num/2; i++)
+      for (int i = 0; i < num / 2; i++)
       {
          receivers[i].close(false);
       }
 
-      for (int i = 0; i < num/2; i++)
+      for (int i = 0; i < num / 2; i++)
       {
          receivers[i] = factory.createBroadcastEndpoint();
          receivers[i].openClient();
@@ -336,7 +339,7 @@ public class DiscoveryTest extends UnitTestCase
          moreReceivers[i].openClient();
       }
 
-      final byte[] data = new byte[] {1,2,3,4,5};
+      final byte[] data = new byte[]{1, 2, 3, 4, 5};
       broadcaster.broadcast(data);
 
       for (int i = 0; i < num; i++)
@@ -384,7 +387,7 @@ public class DiscoveryTest extends UnitTestCase
       try
       {
          JGroupsBroadcastGroupConfiguration jgroupsConfig =
-                  new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
+            new JGroupsBroadcastGroupConfiguration(TEST_JGROUPS_CONF_FILE, "tst");
          broadcaster = jgroupsConfig.createBroadcastEndpointFactory().createBroadcastEndpoint();
 
          broadcaster.openBroadcaster();
@@ -395,11 +398,11 @@ public class DiscoveryTest extends UnitTestCase
 
          Thread.sleep(1000);
 
-         byte [] randomBytes = "PQP".getBytes();
+         byte[] randomBytes = "PQP".getBytes();
 
          broadcaster.broadcast(randomBytes);
 
-         byte [] btreceived = client.receiveBroadcast(5, TimeUnit.SECONDS);
+         byte[] btreceived = client.receiveBroadcast(5, TimeUnit.SECONDS);
 
          System.out.println("BTReceived = " + btreceived);
 
@@ -446,7 +449,8 @@ public class DiscoveryTest extends UnitTestCase
 
       InetAddress localAddress = null;
 
-      outer: while (networkInterfaces.hasMoreElements())
+   outer:
+      while (networkInterfaces.hasMoreElements())
       {
          NetworkInterface networkInterface = networkInterfaces.nextElement();
          if (networkInterface.isLoopback() || networkInterface.isVirtual() ||
@@ -481,11 +485,11 @@ public class DiscoveryTest extends UnitTestCase
       log.info("Local address is " + localAddress);
 
       bg = newBroadcast(nodeID,
-         RandomUtil.randomString(),
-         localAddress,
-         6552,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        localAddress,
+                        6552,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -494,11 +498,11 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         localAddress,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             localAddress,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       dg.start();
 
@@ -519,11 +523,11 @@ public class DiscoveryTest extends UnitTestCase
       final String nodeID = RandomUtil.randomString();
 
       bg = newBroadcast(nodeID,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -532,11 +536,11 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       dg.start();
 
@@ -567,11 +571,11 @@ public class DiscoveryTest extends UnitTestCase
       String nodeID = RandomUtil.randomString();
 
       bg = newBroadcast(nodeID,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -580,11 +584,11 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = newDiscoveryGroup(nodeID,
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       dg.start();
 
@@ -605,11 +609,11 @@ public class DiscoveryTest extends UnitTestCase
       final int timeout = 500;
 
       bg = newBroadcast(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -620,11 +624,11 @@ public class DiscoveryTest extends UnitTestCase
       final int port2 = getUDPDiscoveryPort(1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         port2,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             port2,
+                             timeout);
 
       dg.start();
 
@@ -639,11 +643,11 @@ public class DiscoveryTest extends UnitTestCase
       final int timeout = 500;
 
       bg = newBroadcast(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -655,11 +659,11 @@ public class DiscoveryTest extends UnitTestCase
       final int port2 = getUDPDiscoveryPort(1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress2,
-         port2,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress2,
+                             port2,
+                             timeout);
 
       dg.start();
 
@@ -690,25 +694,25 @@ public class DiscoveryTest extends UnitTestCase
       String node3 = UUIDGenerator.getInstance().generateStringUUID();
 
       bg1 = newBroadcast(node1,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress1,
-         groupPort1);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress1,
+                         groupPort1);
 
       bg2 = newBroadcast(node2,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress2,
-         groupPort2);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress2,
+                         groupPort2);
 
       bg3 = newBroadcast(node3,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress3,
-         groupPort3);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress3,
+                         groupPort3);
 
       bg2.start();
       bg1.start();
@@ -725,27 +729,27 @@ public class DiscoveryTest extends UnitTestCase
       bg3.addConnector(live3);
 
       dg1 = newDiscoveryGroup("group-1::" + RandomUtil.randomString(),
-         "group-1::" + RandomUtil.randomString(),
-         null,
-         groupAddress1,
-         groupPort1,
-         timeout);
+                              "group-1::" + RandomUtil.randomString(),
+                              null,
+                              groupAddress1,
+                              groupPort1,
+                              timeout);
       dg1.start();
 
       dg2 = newDiscoveryGroup("group-2::" + RandomUtil.randomString(),
-         "group-2::" + RandomUtil.randomString(),
-         null,
-         groupAddress2,
-         groupPort2,
-         timeout);
+                              "group-2::" + RandomUtil.randomString(),
+                              null,
+                              groupAddress2,
+                              groupPort2,
+                              timeout);
       dg2.start();
 
       dg3 = newDiscoveryGroup("group-3::" + RandomUtil.randomString(),
-         "group-3::" + RandomUtil.randomString(),
-         null,
-         groupAddress3,
-         groupPort3,
-         timeout);
+                              "group-3::" + RandomUtil.randomString(),
+                              null,
+                              groupAddress3,
+                              groupPort3,
+                              timeout);
       dg3.start();
 
       bg1.broadcastConnectors();
@@ -824,11 +828,11 @@ public class DiscoveryTest extends UnitTestCase
       String nodeID = RandomUtil.randomString();
 
       bg = newBroadcast(nodeID,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -837,11 +841,11 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       MyListener listener1 = new MyListener();
       MyListener listener2 = new MyListener();
@@ -886,7 +890,7 @@ public class DiscoveryTest extends UnitTestCase
     * @throws Exception
     */
    private static void verifyNonBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup)
-                                                                                                       throws Exception
+      throws Exception
    {
       broadcastGroup.broadcastConnectors();
       Assert.assertFalse("NO broadcast received", discoveryGroup.waitForBroadcast(2000));
@@ -904,27 +908,27 @@ public class DiscoveryTest extends UnitTestCase
       String node3 = RandomUtil.randomString();
 
       bg1 = newBroadcast(node1,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress,
+                         groupPort);
       bg1.start();
 
       bg2 = newBroadcast(node2,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress,
+                         groupPort);
       bg2.start();
 
       bg3 = newBroadcast(node3,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                         RandomUtil.randomString(),
+                         null,
+                         -1,
+                         groupAddress,
+                         groupPort);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -937,11 +941,11 @@ public class DiscoveryTest extends UnitTestCase
       bg3.addConnector(live3);
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout);
 
       MyListener listener1 = new MyListener();
       dg.registerListener(listener1);
@@ -1070,11 +1074,11 @@ public class DiscoveryTest extends UnitTestCase
       String nodeID = RandomUtil.randomString();
 
       bg = newBroadcast(nodeID,
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.start();
 
@@ -1083,25 +1087,25 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnector(live1);
 
       dg1 = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                              RandomUtil.randomString(),
+                              null,
+                              groupAddress,
+                              groupPort,
+                              timeout);
 
       dg2 = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                              RandomUtil.randomString(),
+                              null,
+                              groupAddress,
+                              groupPort,
+                              timeout);
 
       dg3 = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout);
+                              RandomUtil.randomString(),
+                              null,
+                              groupAddress,
+                              groupPort,
+                              timeout);
 
       dg1.start();
       dg2.start();
@@ -1143,11 +1147,11 @@ public class DiscoveryTest extends UnitTestCase
       final int timeout = 500;
 
       dg = newDiscoveryGroup(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         groupAddress,
-         groupPort,
-         timeout, notifService);
+                             RandomUtil.randomString(),
+                             null,
+                             groupAddress,
+                             groupPort,
+                             timeout, notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());
 
@@ -1181,11 +1185,11 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = getUDPDiscoveryPort();
 
       bg = newBroadcast(RandomUtil.randomString(),
-         RandomUtil.randomString(),
-         null,
-         -1,
-         groupAddress,
-         groupPort);
+                        RandomUtil.randomString(),
+                        null,
+                        -1,
+                        groupAddress,
+                        groupPort);
 
       bg.setNotificationService(notifService);
 
@@ -1303,8 +1307,8 @@ public class DiscoveryTest extends UnitTestCase
                                            final int groupPort) throws Exception
    {
       return new BroadcastGroupImpl(new FakeNodeManager(nodeID), name, 0, null,
-         new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort,
-               localAddress != null?localAddress.getHostAddress():null, localPort).createBroadcastEndpointFactory());
+                                    new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort,
+                                                                       localAddress != null ? localAddress.getHostAddress() : null, localPort).createBroadcastEndpointFactory());
    }
 
    private DiscoveryGroup newDiscoveryGroup(final String nodeID, final String name, final InetAddress localBindAddress,
@@ -1317,8 +1321,8 @@ public class DiscoveryTest extends UnitTestCase
                                             final InetAddress groupAddress, final int groupPort, final long timeout, NotificationService notif) throws Exception
    {
       return new DiscoveryGroup(nodeID, name, timeout,
-            new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort,
-                  localBindAddress != null?localBindAddress.getHostAddress(): null, -1).createBroadcastEndpointFactory(), notif);
+                                new UDPBroadcastGroupConfiguration(groupAddress.getHostAddress(), groupPort,
+                                                                   localBindAddress != null ? localBindAddress.getHostAddress() : null, -1).createBroadcastEndpointFactory(), notif);
    }
 
 

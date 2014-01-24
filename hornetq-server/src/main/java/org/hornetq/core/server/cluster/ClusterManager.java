@@ -32,7 +32,6 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -54,7 +53,6 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
-import org.hornetq.core.server.cluster.impl.ClusterConnectionBridge;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -65,10 +63,11 @@ import org.hornetq.utils.FutureLatch;
 
 /**
  * A ClusterManager manages {@link ClusterConnection}s, {@link BroadcastGroup}s and {@link Bridge}s.
- * <p>
+ * <p/>
  * Note that {@link ClusterConnectionBridge}s extend Bridges but are controlled over through
  * {@link ClusterConnectionImpl}. As a node is discovered a new {@link ClusterConnectionBridge} is
  * deployed.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
  */
@@ -95,12 +94,14 @@ public final class ClusterManager implements HornetQComponent
    enum State
    {
       STOPPED,
-      /** Used because {@link ClusterManager#stop()} method is not completely synchronized */
+      /**
+       * Used because {@link ClusterManager#stop()} method is not completely synchronized
+       */
       STOPPING,
       /**
        * Deployed means {@link ClusterManager#deploy()} was called but
        * {@link ClusterManager#start()} was not called.
-       * <p>
+       * <p/>
        * We need the distinction if {@link ClusterManager#stop()} is called before 'start'. As
        * otherwise we would leak locators.
        */
@@ -164,6 +165,7 @@ public final class ClusterManager implements HornetQComponent
 
    /**
     * Return the default ClusterConnection to be used case it's not defined by the acceptor
+    *
     * @return default connection
     */
    public ClusterConnection getDefaultConnection(TransportConfiguration acceptorConfig)
@@ -217,15 +219,15 @@ public final class ClusterManager implements HornetQComponent
          throw new IllegalStateException();
       }
 
-         for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
-         {
-            deployBroadcastGroup(config);
-         }
+      for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
+      {
+         deployBroadcastGroup(config);
+      }
 
-         for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
-         {
-            deployClusterConnection(config);
-         }
+      for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
+      {
+         deployClusterConnection(config);
+      }
    }
 
    public synchronized void start() throws Exception
@@ -235,7 +237,7 @@ public final class ClusterManager implements HornetQComponent
          return;
       }
 
-      for (BroadcastGroup group: broadcastGroups.values())
+      for (BroadcastGroup group : broadcastGroups.values())
       {
          try
          {
@@ -275,7 +277,7 @@ public final class ClusterManager implements HornetQComponent
       state = State.STARTED;
    }
 
-   private final void deployConfiguredBridges() throws Exception
+   private void deployConfiguredBridges() throws Exception
    {
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
@@ -340,7 +342,7 @@ public final class ClusterManager implements HornetQComponent
       if (!future.await(10000))
       {
          server.threadDump("Couldn't flush ClusterManager executor (" + this +
-                           ") in 10 seconds, verify your thread pool size");
+                              ") in 10 seconds, verify your thread pool size");
       }
    }
 
@@ -372,16 +374,16 @@ public final class ClusterManager implements HornetQComponent
 
    /**
     * XXX HORNETQ-720
-    * @param liveChannel channel for opening connection with live
+    *
+    * @param liveChannel        channel for opening connection with live
     * @param attemptingFailBack if {@code true} then this server wants to trigger a fail-back when
-    *           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
-    *           server.
+    *                           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
+    *                           server.
     * @throws HornetQException
     */
-   public
-            void
-            announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
-                                                                                                        throws HornetQException
+   public void
+   announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
+      throws HornetQException
    {
       ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
       if (config == null)
@@ -445,14 +447,14 @@ public final class ClusterManager implements HornetQComponent
          return;
       }
 
-      Queue queue = (Queue)binding.getBindable();
+      Queue queue = (Queue) binding.getBindable();
 
       ServerLocatorInternal serverLocator;
 
       if (config.getDiscoveryGroupName() != null)
       {
          DiscoveryGroupConfiguration discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations()
-                                                                                .get(config.getDiscoveryGroupName());
+            .get(config.getDiscoveryGroupName());
          if (discoveryGroupConfiguration == null)
          {
             HornetQServerLogger.LOGGER.bridgeNoDiscoveryGroup(config.getDiscoveryGroupName());
@@ -462,11 +464,11 @@ public final class ClusterManager implements HornetQComponent
 
          if (config.isHA())
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(discoveryGroupConfiguration);
+            serverLocator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(discoveryGroupConfiguration);
          }
          else
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(discoveryGroupConfiguration);
+            serverLocator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(discoveryGroupConfiguration);
          }
 
       }
@@ -482,11 +484,11 @@ public final class ClusterManager implements HornetQComponent
 
          if (config.isHA())
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tcConfigs);
+            serverLocator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(tcConfigs);
          }
          else
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(tcConfigs);
+            serverLocator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(tcConfigs);
          }
 
       }
@@ -506,7 +508,7 @@ public final class ClusterManager implements HornetQComponent
             final int windowSize = config.getConfirmationWindowSize();
             final long maxBytes = addressConfig.getMaxSizeBytes();
 
-            if (maxBytes !=-1 && maxBytes < windowSize)
+            if (maxBytes != -1 && maxBytes < windowSize)
             {
                HornetQServerLogger.LOGGER.bridgeConfirmationWindowTooSmall(config.getName(),
                                                                            config.getForwardingAddress(), windowSize,
@@ -543,7 +545,7 @@ public final class ClusterManager implements HornetQComponent
       if (!config.isUseDuplicateDetection())
       {
          HornetQServerLogger.LOGGER.debug("Bridge " + config.getName() +
-                   " is configured to not use duplicate detecion, it will send messages synchronously");
+                                             " is configured to not use duplicate detecion, it will send messages synchronously");
       }
 
       clusterLocators.add(serverLocator);
@@ -596,7 +598,7 @@ public final class ClusterManager implements HornetQComponent
       {
          if (packet.getType() == PacketImpl.EXCEPTION)
          {
-            HornetQExceptionMessage msg = (HornetQExceptionMessage)packet;
+            HornetQExceptionMessage msg = (HornetQExceptionMessage) packet;
             final HornetQException exception = msg.getException();
             if (exception.getType() == HornetQExceptionType.CLUSTER_SECURITY_EXCEPTION)
             {
@@ -674,7 +676,7 @@ public final class ClusterManager implements HornetQComponent
    public void informClusterOfBackup(String name)
    {
       ClusterConnection clusterConnection = clusterConnections.get(name);
-      if(clusterConnection != null)
+      if (clusterConnection != null)
       {
          clusterConnection.informClusterOfBackup();
       }
@@ -712,9 +714,9 @@ public final class ClusterManager implements HornetQComponent
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
             HornetQServerLogger.LOGGER.debug(this + " Starting a Discovery Group Cluster Connection, name=" +
-                      config.getDiscoveryGroupName() +
-                      ", dg=" +
-                      dg);
+                                                config.getDiscoveryGroupName() +
+                                                ", dg=" +
+                                                dg);
          }
 
          clusterConnection = new ClusterConnectionImpl(this,
@@ -815,7 +817,7 @@ public final class ClusterManager implements HornetQComponent
          try
          {
             Class<?> clz = loader.loadClass(transformerClassName);
-            transformer = (Transformer)clz.newInstance();
+            transformer = (Transformer) clz.newInstance();
          }
          catch (Exception e)
          {
@@ -842,37 +844,37 @@ public final class ClusterManager implements HornetQComponent
 
    private BroadcastGroup createBroadcastGroup(BroadcastGroupConfiguration config) throws Exception
    {
-       BroadcastGroup group = broadcastGroups.get(config.getName());
+      BroadcastGroup group = broadcastGroups.get(config.getName());
 
-       if (group == null)
-       {
-          group = new BroadcastGroupImpl(nodeManager, config.getName(),
+      if (group == null)
+      {
+         group = new BroadcastGroupImpl(nodeManager, config.getName(),
                                         config.getBroadcastPeriod(), scheduledExecutor, config.getEndpointFactoryConfiguration().createBroadcastEndpointFactory());
 
-          for (String connectorInfo : config.getConnectorInfos())
-          {
-             TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
+         for (String connectorInfo : config.getConnectorInfos())
+         {
+            TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
 
-             if (connector == null)
-             {
-                logWarnNoConnector(connectorInfo, config.getName());
+            if (connector == null)
+            {
+               logWarnNoConnector(connectorInfo, config.getName());
 
-                return null;
-             }
+               return null;
+            }
 
-             group.addConnector(connector);
-          }
-       }
+            group.addConnector(connector);
+         }
+      }
 
-       if (group.size() == 0)
-       {
-          logWarnNoConnector(config.getConnectorInfos().toString(), group.getName());
-          return null;
-       }
+      if (group.size() == 0)
+      {
+         logWarnNoConnector(config.getConnectorInfos().toString(), group.getName());
+         return null;
+      }
 
-       broadcastGroups.put(config.getName(), group);
+      broadcastGroups.put(config.getName(), group);
 
-       return group;
+      return group;
    }
 
    private void logWarnNoConnector(final String connectorName, final String bgName)

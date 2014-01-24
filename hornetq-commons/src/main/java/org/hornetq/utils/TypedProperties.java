@@ -12,6 +12,16 @@
  */
 package org.hornetq.utils;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQPropertyConversionException;
+import org.hornetq.api.core.SimpleString;
+
 import static org.hornetq.utils.DataConstants.BOOLEAN;
 import static org.hornetq.utils.DataConstants.BYTE;
 import static org.hornetq.utils.DataConstants.BYTES;
@@ -24,24 +34,14 @@ import static org.hornetq.utils.DataConstants.NULL;
 import static org.hornetq.utils.DataConstants.SHORT;
 import static org.hornetq.utils.DataConstants.STRING;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQPropertyConversionException;
-import org.hornetq.api.core.SimpleString;
-
 /**
- *
  * Property Value Conversion.
- * <p>
+ * <p/>
  * This implementation follows section 3.5.4 of the <i>Java Message Service<i> specification
  * (Version 1.1 April 12, 2002).
- * <p>
+ * <p/>
  * TODO - should have typed property getters and do conversions herein
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -175,11 +175,11 @@ public final class TypedProperties
       }
       else if (value instanceof Boolean)
       {
-         return (Boolean)value;
+         return (Boolean) value;
       }
       else if (value instanceof SimpleString)
       {
-         return Boolean.valueOf(((SimpleString)value).toString());
+         return Boolean.valueOf(((SimpleString) value).toString());
       }
       else
       {
@@ -196,11 +196,11 @@ public final class TypedProperties
       }
       else if (value instanceof Byte)
       {
-         return (Byte)value;
+         return (Byte) value;
       }
       else if (value instanceof SimpleString)
       {
-         return Byte.parseByte(((SimpleString)value).toString());
+         return Byte.parseByte(((SimpleString) value).toString());
       }
       else
       {
@@ -218,7 +218,7 @@ public final class TypedProperties
 
       if (value instanceof Character)
       {
-         return ((Character)value);
+         return ((Character) value);
       }
       else
       {
@@ -235,7 +235,7 @@ public final class TypedProperties
       }
       else if (value instanceof byte[])
       {
-         return (byte[])value;
+         return (byte[]) value;
       }
       else
       {
@@ -252,15 +252,15 @@ public final class TypedProperties
       }
       else if (value instanceof Float)
       {
-         return ((Float)value).doubleValue();
+         return ((Float) value).doubleValue();
       }
       else if (value instanceof Double)
       {
-         return (Double)value;
+         return (Double) value;
       }
       else if (value instanceof SimpleString)
       {
-         return Double.parseDouble(((SimpleString)value).toString());
+         return Double.parseDouble(((SimpleString) value).toString());
       }
       else
       {
@@ -277,19 +277,19 @@ public final class TypedProperties
       }
       else if (value instanceof Integer)
       {
-         return (Integer)value;
+         return (Integer) value;
       }
       else if (value instanceof Byte)
       {
-         return ((Byte)value).intValue();
+         return ((Byte) value).intValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short)value).intValue();
+         return ((Short) value).intValue();
       }
       else if (value instanceof SimpleString)
       {
-         return Integer.parseInt(((SimpleString)value).toString());
+         return Integer.parseInt(((SimpleString) value).toString());
       }
       else
       {
@@ -306,23 +306,23 @@ public final class TypedProperties
       }
       else if (value instanceof Long)
       {
-         return (Long)value;
+         return (Long) value;
       }
       else if (value instanceof Byte)
       {
-         return ((Byte)value).longValue();
+         return ((Byte) value).longValue();
       }
       else if (value instanceof Short)
       {
-         return ((Short)value).longValue();
+         return ((Short) value).longValue();
       }
       else if (value instanceof Integer)
       {
-         return ((Integer)value).longValue();
+         return ((Integer) value).longValue();
       }
       else if (value instanceof SimpleString)
       {
-         return Long.parseLong(((SimpleString)value).toString());
+         return Long.parseLong(((SimpleString) value).toString());
       }
       else
       {
@@ -339,15 +339,15 @@ public final class TypedProperties
       }
       else if (value instanceof Byte)
       {
-         return ((Byte)value).shortValue();
+         return ((Byte) value).shortValue();
       }
       else if (value instanceof Short)
       {
-         return (Short)value;
+         return (Short) value;
       }
       else if (value instanceof SimpleString)
       {
-         return Short.parseShort(((SimpleString)value).toString());
+         return Short.parseShort(((SimpleString) value).toString());
       }
       else
       {
@@ -362,11 +362,11 @@ public final class TypedProperties
          return Float.valueOf(null);
       if (value instanceof Float)
       {
-         return ((Float)value);
+         return ((Float) value);
       }
       if (value instanceof SimpleString)
       {
-         return Float.parseFloat(((SimpleString)value).toString());
+         return Float.parseFloat(((SimpleString) value).toString());
       }
       throw new HornetQPropertyConversionException("Invalid conversion: " + key);
    }
@@ -382,7 +382,7 @@ public final class TypedProperties
 
       if (value instanceof SimpleString)
       {
-         return (SimpleString)value;
+         return (SimpleString) value;
       }
       else if (value instanceof Boolean)
       {
@@ -672,7 +672,7 @@ public final class TypedProperties
 
    // Inner classes ------------------------------------------------------------------------------
 
-   private static abstract class PropertyValue
+   private abstract static class PropertyValue
    {
       abstract Object getValue();
 
@@ -1002,7 +1002,7 @@ public final class TypedProperties
 
       public CharValue(final HornetQBuffer buffer)
       {
-         val = (char)buffer.readShort();
+         val = (char) buffer.readShort();
       }
 
       @Override
@@ -1015,7 +1015,7 @@ public final class TypedProperties
       public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(DataConstants.CHAR);
-         buffer.writeShort((short)val);
+         buffer.writeShort((short) val);
       }
 
       @Override
@@ -1067,11 +1067,12 @@ public final class TypedProperties
    public Map<String, Object> getMap()
    {
       Map<String, Object> m = new HashMap<String, Object>();
-      for (Entry<SimpleString,PropertyValue> entry:properties.entrySet()) {
+      for (Entry<SimpleString, PropertyValue> entry : properties.entrySet())
+      {
          Object val = entry.getValue().getValue();
          if (val instanceof SimpleString)
          {
-            m.put(entry.getKey().toString(), ((SimpleString)val).toString());
+            m.put(entry.getKey().toString(), ((SimpleString) val).toString());
          }
          else
          {
@@ -1083,13 +1084,12 @@ public final class TypedProperties
 
    /**
     * Helper for {@link MapMessage#setObjectProperty(String, Object)}
-    * @param name
+    *
+    * @param key
     * @param value
-    * @param map
-    * @throws MessageFormatException
+    * @param properties
     */
-   public static final void setObjectProperty(final SimpleString key, final Object value,
-                                              final TypedProperties properties)
+   public static void setObjectProperty(final SimpleString key, final Object value, final TypedProperties properties)
    {
       if (value == null)
       {
@@ -1097,47 +1097,47 @@ public final class TypedProperties
       }
       else if (value instanceof Boolean)
       {
-         properties.putBooleanProperty(key, (Boolean)value);
+         properties.putBooleanProperty(key, (Boolean) value);
       }
       else if (value instanceof Byte)
       {
-         properties.putByteProperty(key, (Byte)value);
+         properties.putByteProperty(key, (Byte) value);
       }
       else if (value instanceof Character)
       {
-         properties.putCharProperty(key, (Character)value);
+         properties.putCharProperty(key, (Character) value);
       }
       else if (value instanceof Short)
       {
-         properties.putShortProperty(key, (Short)value);
+         properties.putShortProperty(key, (Short) value);
       }
       else if (value instanceof Integer)
       {
-         properties.putIntProperty(key, (Integer)value);
+         properties.putIntProperty(key, (Integer) value);
       }
       else if (value instanceof Long)
       {
-         properties.putLongProperty(key, (Long)value);
+         properties.putLongProperty(key, (Long) value);
       }
       else if (value instanceof Float)
       {
-         properties.putFloatProperty(key, (Float)value);
+         properties.putFloatProperty(key, (Float) value);
       }
       else if (value instanceof Double)
       {
-         properties.putDoubleProperty(key, (Double)value);
+         properties.putDoubleProperty(key, (Double) value);
       }
       else if (value instanceof String)
       {
-         properties.putSimpleStringProperty(key, new SimpleString((String)value));
+         properties.putSimpleStringProperty(key, new SimpleString((String) value));
       }
       else if (value instanceof SimpleString)
       {
-         properties.putSimpleStringProperty(key, (SimpleString)value);
+         properties.putSimpleStringProperty(key, (SimpleString) value);
       }
       else if (value instanceof byte[])
       {
-         properties.putBytesProperty(key, (byte[])value);
+         properties.putBytesProperty(key, (byte[]) value);
       }
       else
       {

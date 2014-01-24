@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.jms.tests.message.foreign;
+
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
@@ -25,12 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * Tests the delivery/receipt of a foreign message
  *
- *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
- *
  */
 public class ForeignMessageTest extends MessageTestBase
 {
@@ -69,11 +67,10 @@ public class ForeignMessageTest extends MessageTestBase
 
       ProxyAssertSupport.assertNotNull(txt.getJMSDestination());
 
-      TextMessage tm = (TextMessage)queueCons.receive();
+      TextMessage tm = (TextMessage) queueCons.receive();
       ProxyAssertSupport.assertNotNull(tm);
       ProxyAssertSupport.assertEquals("hello from Brazil!", txt.getText());
    }
-
 
 
    @Test
@@ -84,7 +81,7 @@ public class ForeignMessageTest extends MessageTestBase
       SimpleJMSMessage msg = new SimpleJMSMessage();
 
       msg.setJMSCorrelationID("mycorrelationid");
-      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      byte[] bytes = new byte[]{1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
 
       queueProd.send(msg);
@@ -105,7 +102,7 @@ public class ForeignMessageTest extends MessageTestBase
       SimpleJMSMessage msg = new SimpleJMSMessage();
 
       msg.setJMSCorrelationID("mycorrelationid");
-      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      byte[] bytes = new byte[]{1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
 
       queueProd.send(msg);

@@ -56,7 +56,7 @@ public class JMSSecurityTest extends JMSTestBase
          // expected
       }
       JMSContext ctx = cf.createContext("IDo", "Exist");
-      ctx.close();;
+      ctx.close();
    }
 
    @Test
@@ -75,6 +75,6 @@ public class JMSSecurityTest extends JMSTestBase
          // expected
       }
       JMSContext ctx = cf.createContext("IDo", "Exist");
-      ctx.close();;
+      ctx.close();
    }
 }

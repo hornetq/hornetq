@@ -85,7 +85,7 @@ import org.hornetq.utils.XidCodecSupport;
  */
 public final class DescribeJournal
 {
-   public static final void describeBindingsJournal(final String bindingsDir) throws Exception
+   public static void describeBindingsJournal(final String bindingsDir) throws Exception
    {
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir, null);
@@ -94,7 +94,7 @@ public final class DescribeJournal
       describeJournal(bindingsFF, bindings, bindingsDir);
    }
 
-   public static final void describeMessagesJournal(final String messagesDir) throws Exception
+   public static void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir, null);
@@ -201,7 +201,7 @@ public final class DescribeJournal
 
                   PageSubscriptionCounterImpl subsCounter = lookupCounter(counters, queueIDForCounter);
 
-                  if (subsCounter.getValue() != 0 && subsCounter.getValue() != encoding.value);
+                  if (subsCounter.getValue() != 0 && subsCounter.getValue() != encoding.value)
                   {
                      out.println("####### Counter replace wrongly on queue " + queueIDForCounter + " oldValue=" + subsCounter.getValue() + " newValue=" + encoding.value);
                   }
@@ -644,7 +644,7 @@ public final class DescribeJournal
       }
    }
 
-   private final static class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
+   private static final  class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
    {
 
       @Override

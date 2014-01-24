@@ -12,10 +12,6 @@
  */
 package org.hornetq.ra;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
@@ -23,7 +19,6 @@ import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.QueueSession;
 import javax.jms.ServerSessionPool;
@@ -42,13 +37,13 @@ import javax.resource.spi.ConnectionManager;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionForContext;
 import org.hornetq.jms.client.HornetQConnectionForContextImpl;
-import org.hornetq.jms.client.HornetQJMSContext;
-import org.hornetq.jms.client.HornetQXAJMSContext;
 
 /**
  * Implements the JMS Connection API and produces {@link HornetQRASession} objects.
@@ -57,52 +52,79 @@ import org.hornetq.jms.client.HornetQXAJMSContext;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class HornetQRASessionFactoryImpl extends HornetQConnectionForContextImpl implements
-         HornetQRASessionFactory, HornetQConnectionForContext, Referenceable
+   HornetQRASessionFactory, HornetQConnectionForContext, Referenceable
 {
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** Are we closed? */
+   /**
+    * Are we closed?
+    */
    private boolean closed = false;
 
-   /** The naming reference */
+   /**
+    * The naming reference
+    */
    private Reference reference;
 
-   /** The user name */
+   /**
+    * The user name
+    */
    private String userName;
 
-   /** The password */
+   /**
+    * The password
+    */
    private String password;
 
-   /** The client ID */
+   /**
+    * The client ID
+    */
    private String clientID;
 
-   /** The connection type */
+   /**
+    * The connection type
+    */
    private final int type;
 
-   /** Whether we are started */
+   /**
+    * Whether we are started
+    */
    private boolean started = false;
 
-   /** The managed connection factory */
+   /**
+    * The managed connection factory
+    */
    private final HornetQRAManagedConnectionFactory mcf;
    private TransactionManager tm;
 
-   /** The connection manager */
+   /**
+    * The connection manager
+    */
    private ConnectionManager cm;
 
-   /** The sessions */
+   /**
+    * The sessions
+    */
    private final Set<HornetQRASession> sessions = new HashSet<HornetQRASession>();
 
-   /** The temporary queues */
+   /**
+    * The temporary queues
+    */
    private final Set<TemporaryQueue> tempQueues = new HashSet<TemporaryQueue>();
 
-   /** The temporary topics */
+   /**
+    * The temporary topics
+    */
    private final Set<TemporaryTopic> tempTopics = new HashSet<TemporaryTopic>();
 
    /**
     * Constructor
-    * @param mcf The managed connection factory
-    * @param cm The connection manager
+    *
+    * @param mcf  The managed connection factory
+    * @param cm   The connection manager
     * @param type The connection type
     */
    public HornetQRASessionFactoryImpl(final HornetQRAManagedConnectionFactory mcf,
@@ -145,7 +167,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
             break;
          //these are prohibited in JEE unless not in a JTA tx where they should be ignored and auto_ack used
          case Session.CLIENT_ACKNOWLEDGE:
-            if(!inJtaTx)
+            if (!inJtaTx)
             {
                throw HornetQRABundle.BUNDLE.invalidSessionTransactedModeRuntime();
             }
@@ -175,6 +197,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Set the naming reference
+    *
     * @param reference The reference
     */
    public void setReference(final Reference reference)
@@ -189,6 +212,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Get the naming reference
+    *
     * @return The reference
     */
    public Reference getReference()
@@ -203,6 +227,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Set the user name
+    *
     * @param name The user name
     */
    public void setUserName(final String name)
@@ -217,6 +242,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Set the password
+    *
     * @param password The password
     */
    public void setPassword(final String password)
@@ -231,8 +257,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Get the client ID
+    *
     * @return The client ID
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public String getClientID() throws JMSException
@@ -246,7 +273,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
       if (clientID == null)
       {
-         return ((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties().getClientID();
+         return ((HornetQResourceAdapter) mcf.getResourceAdapter()).getProperties().getClientID();
       }
 
       return clientID;
@@ -254,8 +281,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Set the client ID -- throws IllegalStateException
+    *
     * @param cID The client ID
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public void setClientID(final String cID) throws JMSException
@@ -270,10 +298,11 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a queue session
-    * @param transacted Use transactions
+    *
+    * @param transacted      Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @return The queue session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
@@ -294,8 +323,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a XA queue session
+    *
     * @return The XA queue session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public XAQueueSession createXAQueueSession() throws JMSException
    {
@@ -307,7 +337,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       checkClosed();
 
       if (type == HornetQRAConnectionFactory.CONNECTION || type == HornetQRAConnectionFactory.TOPIC_CONNECTION ||
-          type == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
+         type == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
@@ -317,12 +347,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a connection consumer -- throws IllegalStateException
-    * @param queue The queue
+    *
+    * @param queue           The queue
     * @param messageSelector The message selector
-    * @param sessionPool The session pool
-    * @param maxMessages The number of max messages
+    * @param sessionPool     The session pool
+    * @param maxMessages     The number of max messages
     * @return The connection consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public ConnectionConsumer createConnectionConsumer(final Queue queue,
                                                       final String messageSelector,
@@ -332,13 +363,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createConnectionConsumer(" + queue +
-                                               ", " +
-                                               messageSelector +
-                                               ", " +
-                                               sessionPool +
-                                               ", " +
-                                               maxMessages +
-                                               ")");
+                                         ", " +
+                                         messageSelector +
+                                         ", " +
+                                         sessionPool +
+                                         ", " +
+                                         maxMessages +
+                                         ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -346,10 +377,11 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a topic session
-    * @param transacted Use transactions
+    *
+    * @param transacted      Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @return The topic session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
@@ -365,13 +397,14 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
 
-      return allocateConnection(transacted, acknowledgeMode , type);
+      return allocateConnection(transacted, acknowledgeMode, type);
    }
 
    /**
     * Create a XA topic session
+    *
     * @return The XA topic session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public XATopicSession createXATopicSession() throws JMSException
    {
@@ -383,7 +416,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       checkClosed();
 
       if (type == HornetQRAConnectionFactory.CONNECTION || type == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
-          type == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
+         type == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
@@ -393,12 +426,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a connection consumer -- throws IllegalStateException
-    * @param topic The topic
+    *
+    * @param topic           The topic
     * @param messageSelector The message selector
-    * @param sessionPool The session pool
-    * @param maxMessages The number of max messages
+    * @param sessionPool     The session pool
+    * @param maxMessages     The number of max messages
     * @return The connection consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public ConnectionConsumer createConnectionConsumer(final Topic topic,
                                                       final String messageSelector,
@@ -408,13 +442,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createConnectionConsumer(" + topic +
-                                               ", " +
-                                               messageSelector +
-                                               ", " +
-                                               sessionPool +
-                                               ", " +
-                                               maxMessages +
-                                               ")");
+                                         ", " +
+                                         messageSelector +
+                                         ", " +
+                                         sessionPool +
+                                         ", " +
+                                         maxMessages +
+                                         ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -422,13 +456,14 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a durable connection consumer -- throws IllegalStateException
-    * @param topic The topic
+    *
+    * @param topic            The topic
     * @param subscriptionName The subscription name
-    * @param messageSelector The message selector
-    * @param sessionPool The session pool
-    * @param maxMessages The number of max messages
+    * @param messageSelector  The message selector
+    * @param sessionPool      The session pool
+    * @param maxMessages      The number of max messages
     * @return The connection consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
@@ -440,15 +475,15 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createConnectionConsumer(" + topic +
-                                               ", " +
-                                               subscriptionName +
-                                               ", " +
-                                               messageSelector +
-                                               ", " +
-                                               sessionPool +
-                                               ", " +
-                                               maxMessages +
-                                               ")");
+                                         ", " +
+                                         subscriptionName +
+                                         ", " +
+                                         messageSelector +
+                                         ", " +
+                                         sessionPool +
+                                         ", " +
+                                         maxMessages +
+                                         ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -456,11 +491,12 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a connection consumer -- throws IllegalStateException
+    *
     * @param destination The destination
-    * @param pool The session pool
+    * @param pool        The session pool
     * @param maxMessages The number of max messages
     * @return The connection consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public ConnectionConsumer createConnectionConsumer(final Destination destination,
                                                       final ServerSessionPool pool,
@@ -469,11 +505,11 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createConnectionConsumer(" + destination +
-                                               ", " +
-                                               pool +
-                                               ", " +
-                                               maxMessages +
-                                               ")");
+                                         ", " +
+                                         pool +
+                                         ", " +
+                                         maxMessages +
+                                         ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -481,12 +517,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a connection consumer -- throws IllegalStateException
+    *
     * @param destination The destination
-    * @param name The name
-    * @param pool The session pool
+    * @param name        The name
+    * @param pool        The session pool
     * @param maxMessages The number of max messages
     * @return The connection consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public ConnectionConsumer createConnectionConsumer(final Destination destination,
@@ -497,13 +534,13 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createConnectionConsumer(" + destination +
-                                               ", " +
-                                               name +
-                                               ", " +
-                                               pool +
-                                               ", " +
-                                               maxMessages +
-                                               ")");
+                                         ", " +
+                                         name +
+                                         ", " +
+                                         pool +
+                                         ", " +
+                                         maxMessages +
+                                         ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -511,10 +548,11 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a session
-    * @param transacted Use transactions
+    *
+    * @param transacted      Use transactions
     * @param acknowledgeMode The acknowledge mode
     * @return The session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
@@ -530,8 +568,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Create a XA session
+    *
     * @return The XA session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public XASession createXASession() throws JMSException
    {
@@ -546,8 +585,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Get the connection metadata
+    *
     * @return The connection metadata
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public ConnectionMetaData getMetaData() throws JMSException
@@ -563,8 +603,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Get the exception listener -- throws IllegalStateException
+    *
     * @return The exception listener
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public ExceptionListener getExceptionListener() throws JMSException
@@ -579,8 +620,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Set the exception listener -- throws IllegalStateException
+    *
     * @param listener The exception listener
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public void setExceptionListener(final ExceptionListener listener) throws JMSException
@@ -595,7 +637,8 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Start
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public void start() throws JMSException
@@ -623,8 +666,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Stop
+    *
     * @throws IllegalStateException
-    * @throws JMSException Thrown if an error occurs
+    * @throws JMSException          Thrown if an error occurs
     */
    @Override
    public void stop() throws JMSException
@@ -639,7 +683,8 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Close
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    @Override
    public void close() throws JMSException
@@ -658,7 +703,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
       synchronized (sessions)
       {
-         for (Iterator<HornetQRASession> i = sessions.iterator(); i.hasNext();)
+         for (Iterator<HornetQRASession> i = sessions.iterator(); i.hasNext(); )
          {
             HornetQRASession session = i.next();
             try
@@ -675,7 +720,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
       synchronized (tempQueues)
       {
-         for (Iterator<TemporaryQueue> i = tempQueues.iterator(); i.hasNext();)
+         for (Iterator<TemporaryQueue> i = tempQueues.iterator(); i.hasNext(); )
          {
             TemporaryQueue temp = i.next();
             try
@@ -696,7 +741,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
       synchronized (tempTopics)
       {
-         for (Iterator<TemporaryTopic> i = tempTopics.iterator(); i.hasNext();)
+         for (Iterator<TemporaryTopic> i = tempTopics.iterator(); i.hasNext(); )
          {
             TemporaryTopic temp = i.next();
             try
@@ -718,8 +763,9 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Close session
+    *
     * @param session The session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void closeSession(final HornetQRASession session) throws JMSException
    {
@@ -736,6 +782,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Add temporary queue
+    *
     * @param temp The temporary queue
     */
    public void addTemporaryQueue(final TemporaryQueue temp)
@@ -753,6 +800,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Add temporary topic
+    *
     * @param temp The temporary topic
     */
    public void addTemporaryTopic(final TemporaryTopic temp)
@@ -786,7 +834,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createSharedConnectionConsumer(" + topic + ", " + subscriptionName + ", " +
-                  messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+                                         messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
@@ -798,17 +846,18 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("createSharedDurableConnectionConsumer(" + topic + ", " + subscriptionName +
-                  ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+                                         ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
       }
 
       throw new IllegalStateException(HornetQRASessionFactory.ISE);
    }
 
-    /**
+   /**
     * Allocation a connection
+    *
     * @param sessionType The session type
     * @return The session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
    {
@@ -817,22 +866,23 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Allocate a connection
-    * @param transacted Use transactions
+    *
+    * @param transacted      Use transactions
     * @param acknowledgeMode The acknowledge mode
-    * @param sessionType The session type
+    * @param sessionType     The session type
     * @return The session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    protected HornetQRASession allocateConnection(boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException
    {
       if (HornetQRASessionFactoryImpl.trace)
       {
          HornetQRALogger.LOGGER.trace("allocateConnection(" + transacted +
-                                               ", " +
-                                               acknowledgeMode +
-                                               ", " +
-                                               sessionType +
-                                               ")");
+                                         ", " +
+                                         acknowledgeMode +
+                                         ", " +
+                                         sessionType +
+                                         ")");
       }
 
       try
@@ -846,7 +896,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
             //from createSession
             // In a Java EE web or EJB container, when there is an active JTA transaction in progress:
             //Both arguments {@code transacted} and {@code acknowledgeMode} are ignored.
-            if(inJtaTransaction())
+            if (inJtaTransaction())
             {
                transacted = true;
                //from getAcknowledgeMode
@@ -867,18 +917,18 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
                   //using one of the two acknowledgement modes AUTO_ACKNOWLEDGE and DUPS_OK_ACKNOWLEDGE.
                   case Session.AUTO_ACKNOWLEDGE:
                   case Session.DUPS_OK_ACKNOWLEDGE:
-                  //plus our own
+                     //plus our own
                   case HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE:
                   case HornetQJMSConstants.PRE_ACKNOWLEDGE:
                      break;
                   //The value {@code Session.CLIENT_ACKNOWLEDGE} may not be used.
                   case Session.CLIENT_ACKNOWLEDGE:
                      throw HornetQRABundle.BUNDLE.invalidSessionTransactedModeRuntime();
-                  //same with this although the spec doesn't explicitly say
-               case Session.SESSION_TRANSACTED:
+                     //same with this although the spec doesn't explicitly say
+                  case Session.SESSION_TRANSACTED:
                      throw HornetQRABundle.BUNDLE.invalidClientAcknowledgeModeRuntime();
-               default:
-                  throw HornetQRABundle.BUNDLE.invalidAcknowledgeMode(acknowledgeMode);
+                  default:
+                     throw HornetQRABundle.BUNDLE.invalidAcknowledgeMode(acknowledgeMode);
                }
             }
 
@@ -888,14 +938,14 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
-            info.setDefaults(((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties());
+            info.setDefaults(((HornetQResourceAdapter) mcf.getResourceAdapter()).getProperties());
 
             if (HornetQRASessionFactoryImpl.trace)
             {
                HornetQRALogger.LOGGER.trace("Allocating session for " + this + " with request info=" + info);
             }
 
-            HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
+            HornetQRASession session = (HornetQRASession) cm.allocateConnection(mcf, info);
 
             try
             {
@@ -926,7 +976,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
                }
                if (t instanceof Exception)
                {
-                  throw (Exception)t;
+                  throw (Exception) t;
                }
                else
                {
@@ -945,7 +995,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
          if (current != null && current instanceof JMSException)
          {
-            throw (JMSException)current;
+            throw (JMSException) current;
          }
          else
          {
@@ -959,7 +1009,8 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
 
    /**
     * Check if we are closed
-    * @exception IllegalStateException Thrown if closed
+    *
+    * @throws IllegalStateException Thrown if closed
     */
    protected void checkClosed() throws IllegalStateException
    {
@@ -977,7 +1028,7 @@ public final class HornetQRASessionFactoryImpl extends HornetQConnectionForConte
    private boolean inJtaTransaction()
    {
       boolean inJtaTx = false;
-      if(tm != null)
+      if (tm != null)
       {
          Transaction tx = null;
          try

@@ -38,6 +38,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * The client-side Producer.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
@@ -144,7 +145,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       checkClosed();
       boolean confirmationWindowEnabled = session.isConfirmationWindowEnabled();
-      if (confirmationWindowEnabled) {
+      if (confirmationWindowEnabled)
+      {
          doSend(address1, message, handler, true);
       }
       else
@@ -229,7 +231,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       try
       {
-         MessageInternal msgI = (MessageInternal)msg;
+         MessageInternal msgI = (MessageInternal) msg;
 
          ClientProducerCredits theCredits;
 
@@ -238,7 +240,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          // If it's a server's message, it means this is being done through the bridge or some special consumer on the
          // server's on which case we can't' convert the message into large at the servers
          if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
-            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && ! msgI.isServerMessage())
+            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && !msgI.isServerMessage())
          {
             isLarge = true;
          }
@@ -308,7 +310,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
    }
 
-   private void sendRegularMessage(final MessageInternal msgI,final boolean sendBlocking, final ClientProducerCredits theCredits,                                  final SendAcknowledgementHandler handler) throws HornetQException
+   private void sendRegularMessage(final MessageInternal msgI, final boolean sendBlocking, final ClientProducerCredits theCredits, final SendAcknowledgementHandler handler) throws HornetQException
    {
       try
       {
@@ -352,11 +354,10 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param handler
     * @throws HornetQException
     */
-   private
-            void
-            largeMessageSend(final boolean sendBlocking, final MessageInternal msgI,
-                             final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-                                                                                                     throws HornetQException
+   private void
+   largeMessageSend(final boolean sendBlocking, final MessageInternal msgI,
+                    final ClientProducerCredits credits, SendAcknowledgementHandler handler)
+      throws HornetQException
    {
       int headerSize = msgI.getHeadersAndPropertiesEncodeSize();
 
@@ -388,7 +389,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    private void
-            sendInitialLargeMessageHeader(MessageInternal msgI, ClientProducerCredits credits) throws HornetQException
+   sendInitialLargeMessageHeader(MessageInternal msgI, ClientProducerCredits credits) throws HornetQException
    {
       SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(msgI);
 
@@ -407,16 +408,16 @@ public class ClientProducerImpl implements ClientProducerInternal
    /**
     * Used to send serverMessages through the bridges. No need to validate compression here since
     * the message is only compressed at the client
+    *
     * @param sendBlocking
     * @param msgI
     * @param handler
     * @throws HornetQException
     */
-   private
-            void
-            largeMessageSendServer(final boolean sendBlocking, final MessageInternal msgI,
-                                   final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-                                                                                                           throws HornetQException
+   private void
+   largeMessageSendServer(final boolean sendBlocking, final MessageInternal msgI,
+                          final ClientProducerCredits credits, SendAcknowledgementHandler handler)
+      throws HornetQException
    {
       sendInitialLargeMessageHeader(msgI, credits);
 
@@ -428,11 +429,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       try
       {
 
-         for (int pos = 0; pos < bodySize;)
+         for (int pos = 0; pos < bodySize; )
          {
             final boolean lastChunk;
 
-            final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
+            final int chunkLength = Math.min((int) (bodySize - pos), minLargeMessageSize);
 
             final HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(chunkLength);
 
@@ -444,8 +445,8 @@ public class ClientProducerImpl implements ClientProducerInternal
             final boolean requiresResponse = lastChunk && sendBlocking;
             SendAcknowledgementHandler messageHandler = lastChunk ? handler : null;
             final SessionSendContinuationMessage chunk =
-                     new SessionSendContinuationMessage(msgI, bodyBuffer.toByteBuffer().array(), !lastChunk,
-                                                        requiresResponse, messageHandler);
+               new SessionSendContinuationMessage(msgI, bodyBuffer.toByteBuffer().array(), !lastChunk,
+                                                  requiresResponse, messageHandler);
 
             if (requiresResponse)
             {
@@ -479,11 +480,10 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param handler
     * @throws HornetQException
     */
-   private
-            void
-            largeMessageSendBuffered(final boolean sendBlocking, final MessageInternal msgI,
-                                     final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-                                                                                                              throws HornetQException
+   private void
+   largeMessageSendBuffered(final boolean sendBlocking, final MessageInternal msgI,
+                            final ClientProducerCredits credits, SendAcknowledgementHandler handler)
+      throws HornetQException
    {
       msgI.getBodyBuffer().readerIndex(0);
       largeMessageSendStreamed(sendBlocking, msgI, new HornetQBufferInputStream(msgI.getBodyBuffer()), credits,
@@ -500,7 +500,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    private void largeMessageSendStreamed(final boolean sendBlocking, final MessageInternal msgI,
                                          final InputStream inputStreamParameter, final ClientProducerCredits credits,
                                          SendAcknowledgementHandler handler)
-                                                                                                                  throws HornetQException
+      throws HornetQException
    {
       boolean lastPacket = false;
 

@@ -54,7 +54,7 @@ public class XmlImportExportStressTest extends ServiceTestBase
       ClientMessage msg = session.createMessage(true);
       final int SIZE = 10240;
       final int COUNT = 20000;
-      byte bodyTst[] = new byte[SIZE];
+      byte[] bodyTst = new byte[SIZE];
       for (int i = 0; i < SIZE; i++)
       {
          bodyTst[i] = (byte) (i + 1);
@@ -110,7 +110,7 @@ public class XmlImportExportStressTest extends ServiceTestBase
          System.out.println("Received " + i);
          Assert.assertNotNull(msg);
          assertEquals(msg.getBodySize(), bodyTst.length);
-         byte bodyRead[] = new byte[bodyTst.length];
+         byte[] bodyRead = new byte[bodyTst.length];
          msg.getBodyBuffer().readBytes(bodyRead);
          assertEqualsByteArrays(bodyTst, bodyRead);
       }

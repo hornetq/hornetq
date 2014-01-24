@@ -12,10 +12,6 @@
  */
 package org.hornetq.rest.queue.push.xml;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -24,6 +20,9 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -195,18 +194,18 @@ public class PushRegistration implements Serializable
    public String toString()
    {
       return "PushRegistration{" +
-              "id='" + id + '\'' +
-              ", durable=" + durable +
-              ", target=" + target +
-              ", authenticationMechanism=" + authenticationMechanism +
-              ", headers=" + headers +
-              ", destination='" + destination + '\'' +
-              ", selector='" + selector + '\'' +
-              ", retryWaitMillis=" + retryWaitMillis +
-              ", disableOnFailure=" + disableOnFailure +
-              ", maxRetries=" + maxRetries +
-              ", sessionCount=" + sessionCount +
-              ", enabled=" + enabled +
-              '}';
+         "id='" + id + '\'' +
+         ", durable=" + durable +
+         ", target=" + target +
+         ", authenticationMechanism=" + authenticationMechanism +
+         ", headers=" + headers +
+         ", destination='" + destination + '\'' +
+         ", selector='" + selector + '\'' +
+         ", retryWaitMillis=" + retryWaitMillis +
+         ", disableOnFailure=" + disableOnFailure +
+         ", maxRetries=" + maxRetries +
+         ", sessionCount=" + sessionCount +
+         ", enabled=" + enabled +
+         '}';
    }
 }

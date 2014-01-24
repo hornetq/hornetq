@@ -17,13 +17,12 @@ import java.util.NoSuchElementException;
 
 /**
  * A priority linked list implementation
- * 
+ * <p/>
  * It implements this by maintaining an individual LinkedBlockingDeque for each priority level.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com>Jeff Mesnil</a>
  * @version <tt>$Revision: 1174 $</tt>
- *
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
@@ -39,7 +38,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    public PriorityLinkedListImpl(final int priorities)
    {
-      levels = (LinkedListImpl<T>[])Array.newInstance(LinkedListImpl.class, priorities);
+      levels = (LinkedListImpl<T>[]) Array.newInstance(LinkedListImpl.class, priorities);
 
       for (int i = 0; i < priorities; i++)
       {
@@ -264,7 +263,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          // if (index == highestPriority && levels[index].size() == 0)
          // However we have to keep checking all the previous levels
          // otherwise we would cache a max that will not exist
-         // what would make us eventually having hasNext() returning false 
+         // what would make us eventually having hasNext() returning false
          // as a bug
          // Part of the fix for HORNETQ-705
          for (int i = index; i >= 0 && levels[index].size() == 0; i--)

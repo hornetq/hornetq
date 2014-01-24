@@ -12,26 +12,21 @@
  */
 package org.hornetq.tests.integration.management;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A ManagementHelperTest
  *
  * @author jmesnil
- *
- *
  */
 public class ManagementHelperTest extends Assert
 {
@@ -54,8 +49,8 @@ public class ManagementHelperTest extends Assert
       String resource = RandomUtil.randomString();
       String operationName = RandomUtil.randomString();
       String param = RandomUtil.randomString();
-      String[] params = new String[] { RandomUtil.randomString(), RandomUtil.randomString(), RandomUtil.randomString() };
-      Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
+      String[] params = new String[]{RandomUtil.randomString(), RandomUtil.randomString(), RandomUtil.randomString()};
+      Message msg = new ClientMessageImpl((byte) 0, false, 0, 0, (byte) 4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, param, params);
 
       Object[] parameters = ManagementHelper.retrieveOperationParameters(msg);
@@ -64,7 +59,7 @@ public class ManagementHelperTest extends Assert
       Object parameter_2 = parameters[1];
       ManagementHelperTest.log.info("type " + parameter_2);
       Assert.assertTrue(parameter_2 instanceof Object[]);
-      Object[] retrievedParams = (Object[])parameter_2;
+      Object[] retrievedParams = (Object[]) parameter_2;
       Assert.assertEquals(params.length, retrievedParams.length);
       for (int i = 0; i < retrievedParams.length; i++)
       {
@@ -134,17 +129,17 @@ public class ManagementHelperTest extends Assert
       map3.put(key3_4, value3_4);
       map3.put(key3_5, value3_5);
 
-      Map[] maps = new Map[] { map2, map3 };
+      Map[] maps = new Map[]{map2, map3};
 
       String strElem0 = RandomUtil.randomString();
       String strElem1 = RandomUtil.randomString();
       String strElem2 = RandomUtil.randomString();
 
-      String[] strArray = new String[] { strElem0, strElem1, strElem2 };
+      String[] strArray = new String[]{strElem0, strElem1, strElem2};
 
-      Object[] params = new Object[] { i, s, d, b, l, map, strArray, maps };
+      Object[] params = new Object[]{i, s, d, b, l, map, strArray, maps};
 
-      Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
+      Message msg = new ClientMessageImpl((byte) 0, false, 0, 0, (byte) 4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, params);
 
       Object[] parameters = ManagementHelper.retrieveOperationParameters(msg);
@@ -156,33 +151,33 @@ public class ManagementHelperTest extends Assert
       Assert.assertEquals(d, parameters[2]);
       Assert.assertEquals(b, parameters[3]);
       Assert.assertEquals(l, parameters[4]);
-      Map mapRes = (Map)parameters[5];
+      Map mapRes = (Map) parameters[5];
       Assert.assertEquals(map.size(), mapRes.size());
-      Assert.assertEquals((long)value1, mapRes.get(key1));
+      Assert.assertEquals((long) value1, mapRes.get(key1));
       Assert.assertEquals(value2, mapRes.get(key2));
       Assert.assertEquals(value3, mapRes.get(key3));
       Assert.assertEquals(value4, mapRes.get(key4));
       Assert.assertEquals(value5, mapRes.get(key5));
 
-      Object[] strArr2 = (Object[])parameters[6];
+      Object[] strArr2 = (Object[]) parameters[6];
       Assert.assertEquals(strArray.length, strArr2.length);
       Assert.assertEquals(strElem0, strArr2[0]);
       Assert.assertEquals(strElem1, strArr2[1]);
       Assert.assertEquals(strElem2, strArr2[2]);
 
-      Object[] mapArray = (Object[])parameters[7];
+      Object[] mapArray = (Object[]) parameters[7];
       Assert.assertEquals(2, mapArray.length);
-      Map mapRes2 = (Map)mapArray[0];
+      Map mapRes2 = (Map) mapArray[0];
       Assert.assertEquals(map2.size(), mapRes2.size());
-      Assert.assertEquals((long)value2_1, mapRes2.get(key2_1));
+      Assert.assertEquals((long) value2_1, mapRes2.get(key2_1));
       Assert.assertEquals(value2_2, mapRes2.get(key2_2));
       Assert.assertEquals(value2_3, mapRes2.get(key2_3));
       Assert.assertEquals(value2_4, mapRes2.get(key2_4));
       Assert.assertEquals(value2_5, mapRes2.get(key2_5));
 
-      Map mapRes3 = (Map)mapArray[1];
+      Map mapRes3 = (Map) mapArray[1];
       Assert.assertEquals(map3.size(), mapRes3.size());
-      Assert.assertEquals((long)value3_1, mapRes3.get(key3_1));
+      Assert.assertEquals((long) value3_1, mapRes3.get(key3_1));
       Assert.assertEquals(value3_2, mapRes3.get(key3_2));
       Assert.assertEquals(value3_3, mapRes3.get(key3_3));
       Assert.assertEquals(value3_4, mapRes3.get(key3_4));
@@ -197,21 +192,21 @@ public class ManagementHelperTest extends Assert
 
       Map<String, Object> map = new HashMap<String, Object>();
       String key1 = RandomUtil.randomString();
-      String[] val1 = new String[] { "a", "b", "c" };
+      String[] val1 = new String[]{"a", "b", "c"};
 
       ManagementHelperTest.log.info("val1 type is " + val1);
 
       String key2 = RandomUtil.randomString();
-      Integer[] val2 = new Integer[] { 1, 2, 3, 4, 5 };
+      Integer[] val2 = new Integer[]{1, 2, 3, 4, 5};
 
       ManagementHelperTest.log.info("val2 type is " + val2);
 
       map.put(key1, val1);
       map.put(key2, val2);
 
-      Object[] params = new Object[] { "hello", map };
+      Object[] params = new Object[]{"hello", map};
 
-      Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
+      Message msg = new ClientMessageImpl((byte) 0, false, 0, 0, (byte) 4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, params);
 
       Object[] parameters = ManagementHelper.retrieveOperationParameters(msg);
@@ -220,16 +215,16 @@ public class ManagementHelperTest extends Assert
 
       Assert.assertEquals("hello", parameters[0]);
 
-      Map map2 = (Map)parameters[1];
+      Map map2 = (Map) parameters[1];
       Assert.assertEquals(2, map2.size());
 
-      Object[] arr1 = (Object[])map2.get(key1);
+      Object[] arr1 = (Object[]) map2.get(key1);
       Assert.assertEquals(val1.length, arr1.length);
       Assert.assertEquals(arr1[0], val1[0]);
       Assert.assertEquals(arr1[1], val1[1]);
       Assert.assertEquals(arr1[2], val1[2]);
 
-      Object[] arr2 = (Object[])map2.get(key2);
+      Object[] arr2 = (Object[]) map2.get(key2);
       Assert.assertEquals(val2.length, arr2.length);
       Assert.assertEquals(arr2[0], val2[0]);
       Assert.assertEquals(arr2[1], val2[1]);
@@ -267,7 +262,7 @@ public class ManagementHelperTest extends Assert
       Assert.assertEquals(1, objects.length);
 
       Assert.assertTrue(objects[0] instanceof Map<?, ?>);
-      Map<String, Object> map = (Map<String, Object>)objects[0];
+      Map<String, Object> map = (Map<String, Object>) objects[0];
       Assert.assertEquals(4, map.size());
       Assert.assertTrue(map.containsKey("k11"));
       Assert.assertEquals(1L, map.get("k11"));
@@ -291,7 +286,7 @@ public class ManagementHelperTest extends Assert
       Assert.assertEquals(2, objects.length);
 
       Assert.assertTrue(objects[0] instanceof Map<?, ?>);
-      Map<String, Object> map = (Map<String, Object>)objects[0];
+      Map<String, Object> map = (Map<String, Object>) objects[0];
       Assert.assertEquals(4, map.size());
       Assert.assertTrue(map.containsKey("k11"));
       Assert.assertEquals(1L, map.get("k11"));
@@ -306,7 +301,7 @@ public class ManagementHelperTest extends Assert
       Assert.assertEquals("whatever", map.get("k14"));
 
       Assert.assertTrue(objects[1] instanceof Map<?, ?>);
-      map = (Map<String, Object>)objects[1];
+      map = (Map<String, Object>) objects[1];
       Assert.assertEquals(4, map.size());
       Assert.assertTrue(map.containsKey("k21"));
       Assert.assertEquals(2L, map.get("k21"));

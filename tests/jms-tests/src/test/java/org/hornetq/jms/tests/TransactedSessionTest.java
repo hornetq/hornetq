@@ -12,9 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -24,6 +21,8 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Assert;
@@ -741,7 +740,7 @@ public class TransactedSessionTest extends JMSTestCase
             }
             else
             {
-               if(myReceiver.failed)
+               if (myReceiver.failed)
                {
                   throw myReceiver.e;
                }
@@ -779,15 +778,15 @@ public class TransactedSessionTest extends JMSTestCase
 
       public void onMessage(Message message)
       {
-         if(!started)
+         if (!started)
          {
-             startLatch.countDown();
+            startLatch.countDown();
             started = true;
          }
          try
          {
             int foo = message.getIntProperty("foo");
-            if(foo != count)
+            if (foo != count)
             {
                e = new Exception("received out of order expected " + count + " received " + foo);
                failed = true;
@@ -811,6 +810,7 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
+
    /**
     * Test IllegateStateException is thrown if commit is called on a non-transacted session
     */
@@ -1056,19 +1056,19 @@ public class TransactedSessionTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         boolean thrown = false;
-         try
-         {
-            producerSess.rollback();
-         }
-         catch (javax.jms.IllegalStateException e)
-         {
-            thrown = true;
-         }
+      boolean thrown = false;
+      try
+      {
+         producerSess.rollback();
+      }
+      catch (javax.jms.IllegalStateException e)
+      {
+         thrown = true;
+      }
 
-         ProxyAssertSupport.assertTrue(thrown);
+      ProxyAssertSupport.assertTrue(thrown);
    }
 
    /*
@@ -1165,43 +1165,43 @@ public class TransactedSessionTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+      Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = producerSess.createProducer(queue1);
 
-         Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       MessageConsumer consumer = consumerSess.createConsumer(queue1);
-         conn.start();
+      conn.start();
 
-         final int NUM_MESSAGES = 10;
-         final int NUM_TX = 10;
+      final int NUM_MESSAGES = 10;
+      final int NUM_TX = 10;
 
-         // Send some messages
+      // Send some messages
 
-         for (int j = 0; j < NUM_TX; j++)
+      for (int j = 0; j < NUM_TX; j++)
+      {
+         for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            for (int i = 0; i < NUM_MESSAGES; i++)
-            {
-               Message m = producerSess.createMessage();
-               producer.send(m);
-            }
-
-            producerSess.commit();
+            Message m = producerSess.createMessage();
+            producer.send(m);
          }
 
-         int count = 0;
-         while (true)
+         producerSess.commit();
+      }
+
+      int count = 0;
+      while (true)
+      {
+         Message m = consumer.receive(500);
+         if (m == null)
          {
-            Message m = consumer.receive(500);
-            if (m == null)
-            {
-               break;
-            }
-            count++;
-            m.acknowledge();
+            break;
          }
+         count++;
+         m.acknowledge();
+      }
 
-         ProxyAssertSupport.assertEquals(NUM_MESSAGES * NUM_TX, count);
-         }
+      ProxyAssertSupport.assertEquals(NUM_MESSAGES * NUM_TX, count);
+   }
 
    // Package protected ---------------------------------------------
 

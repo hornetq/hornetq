@@ -18,13 +18,11 @@ import java.util.Set;
 
 import io.netty.util.Version;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 
 /**
  * A TransportConstants
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class TransportConstants
 {
@@ -89,11 +87,12 @@ public class TransportConstants
    /**
     * Disable Nagle's algorithm.<br/>
     * Valid for (client) Sockets.
+    *
     * @see <a
-    *      href="http://design.jboss.org/jbossorg/branding/Javadocs/doc/api/org/jboss/netty/channel/socket/SocketChannelConfig.html#setTcpNoDelay%28boolean%29">
-    *      Netty note on this option</a>
+    * href="http://design.jboss.org/jbossorg/branding/Javadocs/doc/api/org/jboss/netty/channel/socket/SocketChannelConfig.html#setTcpNoDelay%28boolean%29">
+    * Netty note on this option</a>
     * @see <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/net/socketOpt.html">Oracle
-    *      doc on tcpNoDelay</a>
+    * doc on tcpNoDelay</a>
     */
    public static final String TCP_NODELAY_PROPNAME = "tcp-no-delay";
 

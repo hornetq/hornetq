@@ -11,14 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.cluster;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -28,8 +20,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -56,16 +49,18 @@ import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A JMSFailoverTest
- *
+ * <p/>
  * A simple test to test setFailoverListener when using the JMS API.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
- *
  */
 public class JMSFailoverListenerTest extends ServiceTestBase
 {
@@ -134,7 +129,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
+      ClientSession coreSession = ((HornetQSession) sess).getCoreSession();
 
       SimpleString jmsQueueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
@@ -165,21 +160,21 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
       Thread.sleep(2000);
 
-      JMSUtil.crash(liveService, ((HornetQSession)sess).getCoreSession());
+      JMSUtil.crash(liveService, ((HornetQSession) sess).getCoreSession());
 
       Assert.assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getEventTypeList().get(0));
       for (int i = 0; i < numMessages; i++)
       {
          JMSFailoverListenerTest.log.info("got message " + i);
 
-         BytesMessage bm = (BytesMessage)consumer.receive(1000);
+         BytesMessage bm = (BytesMessage) consumer.receive(1000);
 
          Assert.assertNotNull(bm);
 
          Assert.assertEquals(body.length, bm.getBodyLength());
       }
 
-      TextMessage tm = (TextMessage)consumer.receiveNoWait();
+      TextMessage tm = (TextMessage) consumer.receiveNoWait();
 
       Assert.assertNull(tm);
       Assert.assertEquals(FailoverEventType.FAILOVER_COMPLETED, listener.getEventTypeList().get(1));
@@ -192,16 +187,16 @@ public class JMSFailoverListenerTest extends ServiceTestBase
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
       HornetQConnectionFactory jbcfBackup =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY,
-                                                                                            backupParams));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY,
+                                                                                      backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);
       jbcfBackup.setInitialConnectAttempts(-1);
@@ -215,7 +210,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
       Session sessLive = connLive.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ClientSession coreSessionLive = ((HornetQSession)sessLive).getCoreSession();
+      ClientSession coreSessionLive = ((HornetQSession) sessLive).getCoreSession();
 
       SimpleString jmsQueueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
@@ -252,14 +247,14 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         TextMessage tm = (TextMessage)consumerBackup.receive(1000);
+         TextMessage tm = (TextMessage) consumerBackup.receive(1000);
 
          Assert.assertNotNull(tm);
 
          Assert.assertEquals("message" + i, tm.getText());
       }
 
-      TextMessage tm = (TextMessage)consumerBackup.receiveNoWait();
+      TextMessage tm = (TextMessage) consumerBackup.receiveNoWait();
       Assert.assertEquals(FailoverEventType.FAILOVER_FAILED, listener.getEventTypeList().get(1));
       Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getEventTypeList().size());
       Assert.assertNull(tm);
@@ -386,18 +381,17 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
    private static class MyFailoverListener implements FailoverEventListener
    {
-   private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
+      private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
 
-   public ArrayList<FailoverEventType> getEventTypeList()
-   {
-      return eventTypeList;
-   }
+      public ArrayList<FailoverEventType> getEventTypeList()
+      {
+         return eventTypeList;
+      }
 
-   public void failoverEvent(FailoverEventType eventType)
-   {
-      eventTypeList.add(eventType);
-      log.info("Failover event just happen : "+eventType.toString());
-   }
-
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         eventTypeList.add(eventType);
+         log.info("Failover event just happened : " + eventType.toString());
+      }
    }
 }

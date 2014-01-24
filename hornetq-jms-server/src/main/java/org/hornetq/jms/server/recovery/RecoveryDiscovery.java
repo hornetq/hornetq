@@ -27,12 +27,10 @@ import org.hornetq.jms.server.HornetQJMSServerLogger;
 
 /**
  * <p>This class will have a simple Connection Factory and will listen
- *  for topology updates. </p>
+ * for topology updates. </p>
  * <p>This Discovery is instantiated by {@link HornetQRecoveryRegistry}
  *
  * @author clebertsuconic
- *
- *
  */
 public class RecoveryDiscovery implements SessionFailureListener
 {
@@ -53,7 +51,7 @@ public class RecoveryDiscovery implements SessionFailureListener
    {
       if (!started)
       {
-        HornetQJMSServerLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
+         HornetQJMSServerLogger.LOGGER.debug("Starting RecoveryDiscovery on " + config);
          started = true;
 
          locator = config.createServerLocator();
@@ -61,7 +59,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          locator.addClusterTopologyListener(new InternalListener(config));
          try
          {
-            sessionFactory = (ClientSessionFactoryInternal)locator.createSessionFactory();
+            sessionFactory = (ClientSessionFactoryInternal) locator.createSessionFactory();
             // We are using the SessionFactoryInternal here directly as we don't have information to connect with an user and password
             // on the session as all we want here is to get the topology
             // in case of failure we will retry
@@ -87,9 +85,11 @@ public class RecoveryDiscovery implements SessionFailureListener
       internalStop();
    }
 
-   /** we may have several connection factories referencing the same connection recovery entry.
-    *  Because of that we need to make a count of the number of the instances that are referencing it,
-    *  so we will remove it as soon as we are done */
+   /**
+    * we may have several connection factories referencing the same connection recovery entry.
+    * Because of that we need to make a count of the number of the instances that are referencing it,
+    * so we will remove it as soon as we are done
+    */
    public int incrementUsage()
    {
       return usage.decrementAndGet();
@@ -157,10 +157,10 @@ public class RecoveryDiscovery implements SessionFailureListener
          if (topologyMember.getLive() != null)
          {
             Pair<TransportConfiguration, TransportConfiguration> connector =
-                     new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
-                                                                              topologyMember.getBackup());
+               new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                        topologyMember.getBackup());
             HornetQRecoveryRegistry.getInstance().nodeUp(topologyMember.getNodeId(), connector,
-                                           config.getUsername(), config.getPassword());
+                                                         config.getUsername(), config.getPassword());
          }
       }
 
@@ -183,7 +183,7 @@ public class RecoveryDiscovery implements SessionFailureListener
       else
       {
          HornetQJMSServerLogger.LOGGER.warn("Notified of connection failure in xa discovery, we will retry on the next recovery",
-                                           exception);
+                                            exception);
       }
       internalStop();
       HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
@@ -212,12 +212,12 @@ public class RecoveryDiscovery implements SessionFailureListener
    @Override
    public boolean equals(Object o)
    {
-      if (o == null || (! (o instanceof RecoveryDiscovery)))
+      if (o == null || (!(o instanceof RecoveryDiscovery)))
       {
          return false;
       }
-      RecoveryDiscovery discovery = (RecoveryDiscovery)o;
-      
+      RecoveryDiscovery discovery = (RecoveryDiscovery) o;
+
       return config.equals(discovery.config);
    }
 

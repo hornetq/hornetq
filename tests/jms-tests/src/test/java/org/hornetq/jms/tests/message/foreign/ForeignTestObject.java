@@ -68,4 +68,11 @@ public class ForeignTestObject implements Serializable
       return super.equals(o);
    }
 
+   @Override
+   public int hashCode()
+   {
+      // TODO
+      return 0;
+   }
+
 }

@@ -30,26 +30,40 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public class HornetQRAProperties extends ConnectionFactoryProperties implements Serializable
 {
-   /** Serial version UID */
+   /**
+    * Serial version UID
+    */
    static final long serialVersionUID = -2772367477755473248L;
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** The user name */
+   /**
+    * The user name
+    */
    private String userName;
 
-   /** The password */
+   /**
+    * The password
+    */
    private String password = null;
 
-   /** Use Local TX instead of XA */
+   /**
+    * Use Local TX instead of XA
+    */
    private Boolean localTx = false;
 
 
-   /** Class used to locate the Transaction Manager.
-    *  Using JBoss5 as the default locator */
+   /**
+    * Class used to locate the Transaction Manager.
+    * Using JBoss5 as the default locator
+    */
    private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator;org.hornetq.integration.jboss.tm.JBoss4TransactionManagerLocator";
 
-   /** Method used to locate the TM */
+   /**
+    * Method used to locate the TM
+    */
    private String transactionManagerLocatorMethod = "getTm;getTM";
 
    private static final int DEFAULT_SETUP_ATTEMPTS = -1;
@@ -60,7 +74,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    private long setupInterval = DEFAULT_SETUP_INTERVAL;
 
-   private Hashtable<?,?> jndiParams;
+   private Hashtable<?, ?> jndiParams;
 
    private boolean useJNDI;
 
@@ -72,10 +86,14 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    private transient SensitiveDataCodec<String> codecInstance;
 
-   /** Class used to get a JChannel */
+   /**
+    * Class used to get a JChannel
+    */
    private String jgroupsChannelLocatorClass;
-   
-   /** Name used to locate a JChannel */
+
+   /**
+    * Name used to locate a JChannel
+    */
    private String jgroupsChannelRefName;
 
    /**
@@ -91,6 +109,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /**
     * Get the user name
+    *
     * @return The value
     */
    public String getUserName()
@@ -105,6 +124,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /**
     * Set the user name
+    *
     * @param userName The value
     */
    public void setUserName(final String userName)
@@ -119,6 +139,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /**
     * Get the password
+    *
     * @return The value
     */
    public String getPassword()
@@ -138,6 +159,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
     * which is the case at this moment, because we don't know
     * when the UseMaskedPassword and PasswordCodec are loaded. So for the moment
     * we just save the password.
+    *
     * @param password The value
     */
    public void setPassword(final String password)
@@ -150,7 +172,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       this.password = password;
    }
 
-    /**
+   /**
     * @return the useJNDI
     */
    public boolean isUseJNDI()
@@ -167,10 +189,9 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    }
 
    /**
-    *
     * @return return the jndi params to use
     */
-   public Hashtable<?,?> getParsedJndiParams()
+   public Hashtable<?, ?> getParsedJndiParams()
    {
       return jndiParams;
    }
@@ -180,8 +201,10 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    {
       jndiParams = params;
    }
+
    /**
     * Get the use XA flag
+    *
     * @return The value
     */
    public Boolean getUseLocalTx()
@@ -196,6 +219,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    /**
     * Set the use XA flag
+    *
     * @param localTx The value
     */
    public void setUseLocalTx(final Boolean localTx)

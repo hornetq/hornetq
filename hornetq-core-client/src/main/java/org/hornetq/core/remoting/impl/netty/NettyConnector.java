@@ -25,8 +25,8 @@
  */
 package org.hornetq.core.remoting.impl.netty;
 
-import static org.hornetq.utils.Base64.encodeBytes;
-
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet6Address;
@@ -50,9 +50,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -114,6 +111,8 @@ import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.HornetQThreadFactory;
 
+import static org.hornetq.utils.Base64.encodeBytes;
+
 /**
  * A NettyConnector
  *
@@ -138,7 +137,7 @@ public class NettyConnector extends AbstractConnector
    // headers from the HTTP request, compute some values and fill the HTTP response
    public static final String MAGIC_NUMBER = "CF70DEB8-70F9-4FBA-8B4F-DFC3E723B4CD";
    public static final String SEC_HORNETQ_REMOTING_KEY = "Sec-HornetQRemoting-Key";
-   public static final String SEC_HORNETQ_REMOTING_ACCEPT= "Sec-HornetQRemoting-Accept";
+   public static final String SEC_HORNETQ_REMOTING_ACCEPT = "Sec-HornetQRemoting-Accept";
    public static final String HORNETQ_REMOTING = "hornetq-remoting";
 
    private static final AttributeKey<String> REMOTING_KEY = AttributeKey.valueOf(SEC_HORNETQ_REMOTING_KEY);
@@ -260,25 +259,25 @@ public class NettyConnector extends AbstractConnector
       this.handler = handler;
 
       sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
-         TransportConstants.DEFAULT_SSL_ENABLED,
-         configuration);
+                                                          TransportConstants.DEFAULT_SSL_ENABLED,
+                                                          configuration);
       httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
-         TransportConstants.DEFAULT_HTTP_ENABLED,
-         configuration);
+                                                           TransportConstants.DEFAULT_HTTP_ENABLED,
+                                                           configuration);
       servletPath = ConfigurationHelper.getStringProperty(TransportConstants.SERVLET_PATH,
-         TransportConstants.DEFAULT_SERVLET_PATH,
-         configuration);
+                                                          TransportConstants.DEFAULT_SERVLET_PATH,
+                                                          configuration);
       if (httpEnabled)
       {
          httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
-            TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
-            configuration);
+                                                                     TransportConstants.DEFAULT_HTTP_CLIENT_IDLE_TIME,
+                                                                     configuration);
          httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
-            TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
-            configuration);
+                                                                        TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
+                                                                        configuration);
          httpRequiresSessionId = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_REQUIRES_SESSION_ID,
-            TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
-            configuration);
+                                                                        TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
+                                                                        configuration);
       }
       else
       {
@@ -288,60 +287,60 @@ public class NettyConnector extends AbstractConnector
       }
 
       httpUpgradeEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME,
-         TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
-         configuration);
+                                                                  TransportConstants.DEFAULT_HTTP_UPGRADE_ENABLED,
+                                                                  configuration);
 
       nioRemotingThreads = ConfigurationHelper.getIntProperty(TransportConstants.NIO_REMOTING_THREADS_PROPNAME,
-         -1,
-         configuration);
+                                                              -1,
+                                                              configuration);
 
       useNioGlobalWorkerPool = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_GLOBAL_WORKER_POOL_PROP_NAME,
-         TransportConstants.DEFAULT_USE_NIO_GLOBAL_WORKER_POOL,
-         configuration);
+                                                                      TransportConstants.DEFAULT_USE_NIO_GLOBAL_WORKER_POOL,
+                                                                      configuration);
 
       useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
-         TransportConstants.DEFAULT_USE_SERVLET,
-         configuration);
+                                                          TransportConstants.DEFAULT_USE_SERVLET,
+                                                          configuration);
       host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-         TransportConstants.DEFAULT_HOST,
-         configuration);
+                                                   TransportConstants.DEFAULT_HOST,
+                                                   configuration);
       port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-         TransportConstants.DEFAULT_PORT,
-         configuration);
+                                                TransportConstants.DEFAULT_PORT,
+                                                configuration);
       localAddress = ConfigurationHelper.getStringProperty(TransportConstants.LOCAL_ADDRESS_PROP_NAME,
-         TransportConstants.DEFAULT_LOCAL_ADDRESS,
-         configuration);
+                                                           TransportConstants.DEFAULT_LOCAL_ADDRESS,
+                                                           configuration);
 
       localPort = ConfigurationHelper.getIntProperty(TransportConstants.LOCAL_PORT_PROP_NAME,
-         TransportConstants.DEFAULT_LOCAL_PORT,
-         configuration);
+                                                     TransportConstants.DEFAULT_LOCAL_PORT,
+                                                     configuration);
       if (sslEnabled)
       {
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
-            TransportConstants.DEFAULT_KEYSTORE_PATH,
-            configuration);
+                                                              TransportConstants.DEFAULT_KEYSTORE_PATH,
+                                                              configuration);
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-            TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-            configuration,
-            HornetQDefaultConfiguration.getPropMaskPassword(),
-            HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                    TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                    configuration,
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword());
 
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
-            TransportConstants.DEFAULT_TRUSTSTORE_PATH,
-            configuration);
+                                                                TransportConstants.DEFAULT_TRUSTSTORE_PATH,
+                                                                configuration);
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
-            TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
-            configuration,
-            HornetQDefaultConfiguration.getPropMaskPassword(),
-            HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                      TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                      configuration,
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword());
 
          enabledCipherSuites = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME,
-               TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES,
-               configuration);
+                                                                     TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES,
+                                                                     configuration);
 
          enabledProtocols = ConfigurationHelper.getStringProperty(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME,
-               TransportConstants.DEFAULT_ENABLED_PROTOCOLS,
-               configuration);
+                                                                  TransportConstants.DEFAULT_ENABLED_PROTOCOLS,
+                                                                  configuration);
       }
       else
       {
@@ -354,22 +353,22 @@ public class NettyConnector extends AbstractConnector
       }
 
       tcpNoDelay = ConfigurationHelper.getBooleanProperty(TransportConstants.TCP_NODELAY_PROPNAME,
-         TransportConstants.DEFAULT_TCP_NODELAY,
-         configuration);
+                                                          TransportConstants.DEFAULT_TCP_NODELAY,
+                                                          configuration);
       tcpSendBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME,
-         TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
-         configuration);
+                                                             TransportConstants.DEFAULT_TCP_SENDBUFFER_SIZE,
+                                                             configuration);
       tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
-         TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
-         configuration);
+                                                                TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
+                                                                configuration);
 
       batchDelay = ConfigurationHelper.getLongProperty(TransportConstants.BATCH_DELAY,
-         TransportConstants.DEFAULT_BATCH_DELAY,
-         configuration);
+                                                       TransportConstants.DEFAULT_BATCH_DELAY,
+                                                       configuration);
 
       connectTimeoutMillis = ConfigurationHelper.getIntProperty(TransportConstants.NETTY_CONNECT_TIMEOUT,
-         TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
-         configuration);
+                                                                TransportConstants.DEFAULT_NETTY_CONNECT_TIMEOUT,
+                                                                configuration);
       this.closeExecutor = closeExecutor;
       this.scheduledThreadPool = scheduledThreadPool;
    }
@@ -416,7 +415,7 @@ public class NettyConnector extends AbstractConnector
       }
 
 
-      if(useNioGlobalWorkerPool)
+      if (useNioGlobalWorkerPool)
       {
          synchronized (nioWorkerPoolGuard)
          {
@@ -531,77 +530,79 @@ public class NettyConnector extends AbstractConnector
 
       bootstrap.handler(new ChannelInitializer<Channel>()
       {
-          public void initChannel(Channel channel) throws Exception
-          {
-              final ChannelPipeline pipeline = channel.pipeline();
-              if (sslEnabled && !useServlet) {
-                  SSLEngine engine = context.createSSLEngine();
+         public void initChannel(Channel channel) throws Exception
+         {
+            final ChannelPipeline pipeline = channel.pipeline();
+            if (sslEnabled && !useServlet)
+            {
+               SSLEngine engine = context.createSSLEngine();
 
-                  engine.setUseClientMode(true);
+               engine.setUseClientMode(true);
 
-                  engine.setWantClientAuth(true);
+               engine.setWantClientAuth(true);
 
-                  // setting the enabled cipher suites resets the enabled protocols so we need
-                  // to save the enabled protocols so that after the customer cipher suite is enabled
-                  // we can reset the enabled protocols if a customer protocol isn't specified
-                  String[] originalProtocols = engine.getEnabledProtocols();
+               // setting the enabled cipher suites resets the enabled protocols so we need
+               // to save the enabled protocols so that after the customer cipher suite is enabled
+               // we can reset the enabled protocols if a customer protocol isn't specified
+               String[] originalProtocols = engine.getEnabledProtocols();
 
-                  if (enabledCipherSuites != null)
+               if (enabledCipherSuites != null)
+               {
+                  try
                   {
-                     try
-                     {
-                        engine.setEnabledCipherSuites(SSLSupport.parseCommaSeparatedListIntoArray(enabledCipherSuites));
-                     }
-                     catch (IllegalArgumentException e)
-                     {
-                        HornetQClientLogger.LOGGER.invalidCipherSuite(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedCipherSuites()));
-                        throw e;
-                     }
+                     engine.setEnabledCipherSuites(SSLSupport.parseCommaSeparatedListIntoArray(enabledCipherSuites));
                   }
-
-                  if (enabledProtocols != null)
+                  catch (IllegalArgumentException e)
                   {
-                     try
-                     {
-                        engine.setEnabledProtocols(SSLSupport.parseCommaSeparatedListIntoArray(enabledProtocols));
-                     }
-                     catch (IllegalArgumentException e)
-                     {
-                        HornetQClientLogger.LOGGER.invalidProtocol(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedProtocols()));
-                        throw e;
-                     }
+                     HornetQClientLogger.LOGGER.invalidCipherSuite(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedCipherSuites()));
+                     throw e;
                   }
-                  else
+               }
+
+               if (enabledProtocols != null)
+               {
+                  try
                   {
-                     engine.setEnabledProtocols(originalProtocols);
+                     engine.setEnabledProtocols(SSLSupport.parseCommaSeparatedListIntoArray(enabledProtocols));
                   }
+                  catch (IllegalArgumentException e)
+                  {
+                     HornetQClientLogger.LOGGER.invalidProtocol(SSLSupport.parseArrayIntoCommandSeparatedList(engine.getSupportedProtocols()));
+                     throw e;
+                  }
+               }
+               else
+               {
+                  engine.setEnabledProtocols(originalProtocols);
+               }
 
-                  SslHandler handler = new SslHandler(engine);
+               SslHandler handler = new SslHandler(engine);
 
-                  pipeline.addLast(handler);
-              }
+               pipeline.addLast(handler);
+            }
 
-              if (httpEnabled) {
-                  pipeline.addLast(new HttpRequestEncoder());
+            if (httpEnabled)
+            {
+               pipeline.addLast(new HttpRequestEncoder());
 
-                  pipeline.addLast(new HttpResponseDecoder());
+               pipeline.addLast(new HttpResponseDecoder());
 
-                  pipeline.addLast(new HttpObjectAggregator(Integer.MAX_VALUE));
+               pipeline.addLast(new HttpObjectAggregator(Integer.MAX_VALUE));
 
-                  pipeline.addLast(new HttpHandler());
-              }
+               pipeline.addLast(new HttpHandler());
+            }
 
-              if (httpUpgradeEnabled)
-              {
-                 // prepare to handle a HTTP 101 response to upgrade the protocol.
-                 final HttpClientCodec httpClientCodec = new HttpClientCodec();
-                 pipeline.addLast(httpClientCodec);
-                 pipeline.addLast("http-upgrade", new HttpUpgradeHandler(pipeline, httpClientCodec));
-              }
-              pipeline.addLast(new HornetQFrameDecoder2());
+            if (httpUpgradeEnabled)
+            {
+               // prepare to handle a HTTP 101 response to upgrade the protocol.
+               final HttpClientCodec httpClientCodec = new HttpClientCodec();
+               pipeline.addLast(httpClientCodec);
+               pipeline.addLast("http-upgrade", new HttpUpgradeHandler(pipeline, httpClientCodec));
+            }
+            pipeline.addLast(new HornetQFrameDecoder2());
 
-              pipeline.addLast(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
-          }
+            pipeline.addLast(new HornetQClientChannelHandler(channelGroup, handler, new Listener()));
+         }
       });
 
       if (batchDelay > 0)
@@ -611,7 +612,7 @@ public class NettyConnector extends AbstractConnector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-       HornetQClientLogger.LOGGER.debug("Started Netty Connector version " + TransportConstants.NETTY_VERSION);
+      HornetQClientLogger.LOGGER.debug("Started Netty Connector version " + TransportConstants.NETTY_VERSION);
    }
 
    public synchronized void close()
@@ -635,11 +636,11 @@ public class NettyConnector extends AbstractConnector
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
       // if using shared pools only release them once there are no references
-      if(useNioGlobalWorkerPool)
+      if (useNioGlobalWorkerPool)
       {
          synchronized (nioWorkerPoolGuard)
          {
-            if(nioChannelFactoryCount.decrementAndGet() == 0)
+            if (nioChannelFactoryCount.decrementAndGet() == 0)
             {
                closePools();
             }
@@ -694,10 +695,10 @@ public class NettyConnector extends AbstractConnector
 
       ChannelFuture future;
       //port 0 does not work so only use local address if set
-      if(localPort != 0)
+      if (localPort != 0)
       {
          SocketAddress localDestination;
-         if(localAddress != null)
+         if (localAddress != null)
          {
             localDestination = new InetSocketAddress(localAddress, localPort);
          }
@@ -714,7 +715,7 @@ public class NettyConnector extends AbstractConnector
 
       future.awaitUninterruptibly();
 
-       if (future.isSuccess())
+      if (future.isSuccess())
       {
          final Channel ch = future.channel();
          SslHandler sslHandler = ch.pipeline().get(SslHandler.class);
@@ -725,7 +726,9 @@ public class NettyConnector extends AbstractConnector
             {
                if (handshakeFuture.isSuccess())
                {
-                  ch.pipeline().get(HornetQChannelHandler.class).active = true;
+                  ChannelPipeline channelPipeline = ch.pipeline();
+                  HornetQChannelHandler channelHandler = channelPipeline.get(HornetQChannelHandler.class);
+                  channelHandler.active = true;
                }
                else
                {
@@ -758,8 +761,8 @@ public class NettyConnector extends AbstractConnector
                   request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
 
                   final String endpoint = ConfigurationHelper.getStringProperty(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME,
-                     null,
-                     configuration);
+                                                                                null,
+                                                                                configuration);
                   if (endpoint != null)
                   {
                      request.headers().set(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, endpoint);
@@ -776,7 +779,7 @@ public class NettyConnector extends AbstractConnector
                   // Send the HTTP request.
                   ch.writeAndFlush(request);
 
-                  if(!httpUpgradeHandler.awaitHandshake())
+                  if (!httpUpgradeHandler.awaitHandshake())
                   {
                      return null;
                   }
@@ -789,7 +792,9 @@ public class NettyConnector extends AbstractConnector
             }
             else
             {
-               ch.pipeline().get(HornetQChannelHandler.class).active = true;
+               ChannelPipeline channelPipeline = ch.pipeline();
+               HornetQChannelHandler channelHandler = channelPipeline.get(HornetQChannelHandler.class);
+               channelHandler.active = true;
             }
          }
 
@@ -852,7 +857,7 @@ public class NettyConnector extends AbstractConnector
          {
             HttpResponse response = (HttpResponse) msg;
             if (response.getStatus().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code()
-                  && response.headers().get(HttpHeaders.Names.UPGRADE).equals(HORNETQ_REMOTING))
+               && response.headers().get(HttpHeaders.Names.UPGRADE).equals(HORNETQ_REMOTING))
             {
                String accept = response.headers().get(SEC_HORNETQ_REMOTING_ACCEPT);
                String expectedResponse = createExpectedResponse(MAGIC_NUMBER, ctx.channel().attr(REMOTING_KEY).get());
@@ -863,7 +868,8 @@ public class NettyConnector extends AbstractConnector
                   pipeline.remove(httpClientCodec);
                   pipeline.remove(this);
                   handshakeComplete = true;
-                  pipeline.get(HornetQChannelHandler.class).active = true;
+                  HornetQChannelHandler channelHandler = pipeline.get(HornetQChannelHandler.class);
+                  channelHandler.active = true;
                }
                else
                {
@@ -886,7 +892,7 @@ public class NettyConnector extends AbstractConnector
       {
          try
          {
-            if(!latch.await(30000, TimeUnit.MILLISECONDS))
+            if (!latch.await(30000, TimeUnit.MILLISECONDS))
             {
                return false;
             }
@@ -933,9 +939,9 @@ public class NettyConnector extends AbstractConnector
          {
             task = new HttpIdleTimer();
             java.util.concurrent.Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task,
-               httpClientIdleScanPeriod,
-               httpClientIdleScanPeriod,
-               TimeUnit.MILLISECONDS);
+                                                                                            httpClientIdleScanPeriod,
+                                                                                            httpClientIdleScanPeriod,
+                                                                                            TimeUnit.MILLISECONDS);
             task.setFuture(future);
          }
       }
@@ -1123,11 +1129,11 @@ public class NettyConnector extends AbstractConnector
       //here we only check host and port because these two parameters
       //is sufficient to determine the target host
       String host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
-         TransportConstants.DEFAULT_HOST,
-         configuration);
+                                                          TransportConstants.DEFAULT_HOST,
+                                                          configuration);
       Integer port = ConfigurationHelper.getIntProperty(TransportConstants.PORT_PROP_NAME,
-         TransportConstants.DEFAULT_PORT,
-         configuration);
+                                                        TransportConstants.DEFAULT_PORT,
+                                                        configuration);
 
       if (!port.equals(this.port)) return false;
 
@@ -1157,8 +1163,8 @@ public class NettyConnector extends AbstractConnector
    {
       if (nioEventLoopGroup != null)
       {
-        nioEventLoopGroup.shutdown();
-        nioEventLoopGroup = null;
+         nioEventLoopGroup.shutdown();
+         nioEventLoopGroup = null;
       }
    }
 
@@ -1229,18 +1235,19 @@ public class NettyConnector extends AbstractConnector
 
    public static String createExpectedResponse(final String magicNumber, final String secretKey) throws IOException
    {
-        try
-        {
-            final String concat = secretKey + magicNumber;
-            final MessageDigest digest = MessageDigest.getInstance("SHA1");
+      try
+      {
+         final String concat = secretKey + magicNumber;
+         final MessageDigest digest = MessageDigest.getInstance("SHA1");
 
-            digest.update(concat.getBytes("UTF-8"));
-            final byte[] bytes = digest.digest();
-            return encodeBytes(bytes);
-        }
-        catch (NoSuchAlgorithmException e) {
-            throw new IOException(e);
-        }
-    }
+         digest.update(concat.getBytes("UTF-8"));
+         final byte[] bytes = digest.digest();
+         return encodeBytes(bytes);
+      }
+      catch (NoSuchAlgorithmException e)
+      {
+         throw new IOException(e);
+      }
+   }
 }
 

@@ -13,9 +13,6 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -23,7 +20,6 @@ import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class SessionSendMessage extends MessagePacket
 {
@@ -32,12 +28,13 @@ public class SessionSendMessage extends MessagePacket
 
    /**
     * In case, we are using a different handler than the one set on the {@link ClientSession}
-    * <p>
+    * <p/>
     * This field is only used at the client side.
+    *
     * @see ClientSession#setSendAcknowledgementHandler(SendAcknowledgementHandler)
     * @see ClientProducer#send(SimpleString, Message, SendAcknowledgementHandler)
     */
-   private transient final SendAcknowledgementHandler handler;
+   private final transient SendAcknowledgementHandler handler;
 
    public SessionSendMessage(final MessageInternal message, final boolean requiresResponse,
                              final SendAcknowledgementHandler handler)
@@ -128,7 +125,7 @@ public class SessionSendMessage extends MessagePacket
          return false;
       if (!(obj instanceof SessionSendMessage))
          return false;
-      SessionSendMessage other = (SessionSendMessage)obj;
+      SessionSendMessage other = (SessionSendMessage) obj;
       if (requiresResponse != other.requiresResponse)
          return false;
       return true;

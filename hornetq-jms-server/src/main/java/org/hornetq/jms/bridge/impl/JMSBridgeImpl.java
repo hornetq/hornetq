@@ -12,19 +12,6 @@
  */
 package org.hornetq.jms.bridge.impl;
 
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -45,23 +32,34 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionRolledbackException;
 import javax.transaction.xa.XAResource;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.api.jms.HornetQJMSConstants;
-import org.hornetq.jms.client.HornetQConnection;
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.HornetQJMSServerBundle;
-import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.client.HornetQConnection;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.server.HornetQJMSServerBundle;
+import org.hornetq.jms.server.HornetQJMSServerLogger;
 import org.hornetq.jms.server.recovery.HornetQRegistryBase;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.utils.ClassloadingUtil;
@@ -70,13 +68,10 @@ import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
 
 /**
- *
  * A JMSBridge
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision:4566 $</tt>
- *
- *
  */
 public final class JMSBridgeImpl implements JMSBridge
 {
@@ -214,24 +209,24 @@ public final class JMSBridgeImpl implements JMSBridge
    {
 
       this(sourceCff,
-         targetCff,
-         sourceDestinationFactory,
-         targetDestinationFactory,
-         sourceUsername,
-         sourcePassword,
-         targetUsername,
-         targetPassword,
-         selector,
-         failureRetryInterval,
-         maxRetries,
-         qosMode,
-         maxBatchSize,
-         maxBatchTime,
-         subName,
-         clientID,
-         addMessageIDInHeader,
-         null,
-         null);
+           targetCff,
+           sourceDestinationFactory,
+           targetDestinationFactory,
+           sourceUsername,
+           sourcePassword,
+           targetUsername,
+           targetPassword,
+           selector,
+           failureRetryInterval,
+           maxRetries,
+           qosMode,
+           maxBatchSize,
+           maxBatchTime,
+           subName,
+           clientID,
+           addMessageIDInHeader,
+           null,
+           null);
    }
 
    public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
@@ -255,25 +250,25 @@ public final class JMSBridgeImpl implements JMSBridge
                         final String objectName)
    {
       this(sourceCff,
-            targetCff,
-            sourceDestinationFactory,
-            targetDestinationFactory,
-            sourceUsername,
-            sourcePassword,
-            targetUsername,
-            targetPassword,
-            selector,
-            failureRetryInterval,
-            maxRetries,
-            qosMode,
-            maxBatchSize,
-            maxBatchTime,
-            subName,
-            clientID,
-            addMessageIDInHeader,
-            mbeanServer,
-            objectName,
-            DEFAULT_FAILOVER_TIMEOUT);
+           targetCff,
+           sourceDestinationFactory,
+           targetDestinationFactory,
+           sourceUsername,
+           sourcePassword,
+           targetUsername,
+           targetPassword,
+           selector,
+           failureRetryInterval,
+           maxRetries,
+           qosMode,
+           maxBatchSize,
+           maxBatchTime,
+           subName,
+           clientID,
+           addMessageIDInHeader,
+           mbeanServer,
+           objectName,
+           DEFAULT_FAILOVER_TIMEOUT);
    }
 
    public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
@@ -500,12 +495,14 @@ public final class JMSBridgeImpl implements JMSBridge
 
    public void stop() throws Exception
    {
-      synchronized (stoppingGuard) {
+      synchronized (stoppingGuard)
+      {
          if (stopping) return;
          stopping = true;
       }
 
-      synchronized (this) {
+      synchronized (this)
+      {
          if (JMSBridgeImpl.trace)
          {
             HornetQJMSServerLogger.LOGGER.trace("Stopping " + this);
@@ -961,11 +958,11 @@ public final class JMSBridgeImpl implements JMSBridge
          HornetQJMSServerLogger.LOGGER.trace("Enlisting resources in tx");
       }
 
-      XAResource resSource = ((XASession)sourceSession).getXAResource();
+      XAResource resSource = ((XASession) sourceSession).getXAResource();
 
       tx.enlistResource(resSource);
 
-      XAResource resDest = ((XASession)targetSession).getXAResource();
+      XAResource resDest = ((XASession) targetSession).getXAResource();
 
       tx.enlistResource(resDest);
 
@@ -982,7 +979,7 @@ public final class JMSBridgeImpl implements JMSBridge
          HornetQJMSServerLogger.LOGGER.trace("Delisting resources from tx");
       }
 
-      XAResource resSource = ((XASession)sourceSession).getXAResource();
+      XAResource resSource = ((XASession) sourceSession).getXAResource();
 
       try
       {
@@ -996,7 +993,7 @@ public final class JMSBridgeImpl implements JMSBridge
          }
       }
 
-      XAResource resDest = ((XASession)targetSession).getXAResource();
+      XAResource resDest = ((XASession) targetSession).getXAResource();
 
       try
       {
@@ -1054,14 +1051,14 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             Object o = safeInitNewInstance(transactionManagerLocatorClass);
             Method m = o.getClass().getMethod(transactionManagerLocatorMethod);
-            tm = (TransactionManager)m.invoke(o);
+            tm = (TransactionManager) m.invoke(o);
          }
          catch (Exception e)
          {
             throw new IllegalStateException("unable to create TransactionManager from " + transactionManagerLocatorClass +
-               "." +
-               transactionManagerLocatorMethod,
-               e);
+                                               "." +
+                                               transactionManagerLocatorMethod,
+                                            e);
          }
 
          if (tm == null)
@@ -1084,7 +1081,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (cf instanceof HornetQConnectionFactory && registry != null)
       {
-         registry.register(XARecoveryConfig.newConfig((HornetQConnectionFactory)cf, username, password));
+         registry.register(XARecoveryConfig.newConfig((HornetQConnectionFactory) cf, username, password));
       }
 
       if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE && !(cf instanceof XAConnectionFactory))
@@ -1100,7 +1097,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                HornetQJMSServerLogger.LOGGER.trace("Creating an XA connection");
             }
-            conn = ((XAConnectionFactory)cf).createXAConnection();
+            conn = ((XAConnectionFactory) cf).createXAConnection();
          }
          else
          {
@@ -1108,7 +1105,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                HornetQJMSServerLogger.LOGGER.trace("Creating a non XA connection");
             }
-            conn = ((ConnectionFactory)cf).createConnection();
+            conn = ((ConnectionFactory) cf).createConnection();
          }
       }
       else
@@ -1119,7 +1116,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                HornetQJMSServerLogger.LOGGER.trace("Creating an XA connection");
             }
-            conn = ((XAConnectionFactory)cf).createXAConnection(username, password);
+            conn = ((XAConnectionFactory) cf).createXAConnection(username, password);
          }
          else
          {
@@ -1127,7 +1124,7 @@ public final class JMSBridgeImpl implements JMSBridge
             {
                HornetQJMSServerLogger.LOGGER.trace("Creating a non XA connection");
             }
-            conn = ((ConnectionFactory)cf).createConnection(username, password);
+            conn = ((ConnectionFactory) cf).createConnection(username, password);
          }
       }
 
@@ -1141,12 +1138,12 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (conn instanceof HornetQConnection)
       {
-         HornetQConnectionFactory hornetQCF = (HornetQConnectionFactory)cf;
+         HornetQConnectionFactory hornetQCF = (HornetQConnectionFactory) cf;
          ha = hornetQCF.isHA();
 
          if (ha)
          {
-            HornetQConnection hornetQConn = (HornetQConnection)conn;
+            HornetQConnection hornetQConn = (HornetQConnection) conn;
             failoverListener = new BridgeFailoverListener();
             hornetQConn.setFailoverListener(failoverListener);
          }
@@ -1241,7 +1238,7 @@ public final class JMSBridgeImpl implements JMSBridge
                }
 
                sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true);
-               sourceSession = ((XAConnection)sourceConn).createXASession();
+               sourceSession = ((XAConnection) sourceConn).createXASession();
             }
             else // QoS = DUPLICATES_OK || AT_MOST_ONCE
             {
@@ -1278,11 +1275,11 @@ public final class JMSBridgeImpl implements JMSBridge
             // Durable subscription
             if (selector == null)
             {
-               sourceConsumer = sourceSession.createDurableSubscriber((Topic)sourceDestination, subName);
+               sourceConsumer = sourceSession.createDurableSubscriber((Topic) sourceDestination, subName);
             }
             else
             {
-               sourceConsumer = sourceSession.createDurableSubscriber((Topic)sourceDestination, subName, selector, false);
+               sourceConsumer = sourceSession.createDurableSubscriber((Topic) sourceDestination, subName, selector, false);
             }
          }
 
@@ -1291,8 +1288,8 @@ public final class JMSBridgeImpl implements JMSBridge
          // bridging on the same server
          if (forwardMode == JMSBridgeImpl.FORWARD_MODE_LOCALTX)
          {
-             targetConn = sourceConn;
-             targetSession = sourceSession;
+            targetConn = sourceConn;
+            targetSession = sourceSession;
          }
          else // bridging across different servers
          {
@@ -1308,7 +1305,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
                targetConn = createConnection(targetUsername, targetPassword, targetCff, null, true);
 
-               targetSession = ((XAConnection)targetConn).createXASession();
+               targetSession = ((XAConnection) targetConn).createXASession();
             }
             else // QoS = DUPLICATES_OK || AT_MOST_ONCE
             {
@@ -1862,7 +1859,7 @@ public final class JMSBridgeImpl implements JMSBridge
             }
             else if (msg instanceof HornetQMessage)
             {
-               ((HornetQMessage)msg).getCoreMessage().putBytesProperty(propName, (byte[])val);
+               ((HornetQMessage) msg).getCoreMessage().putBytesProperty(propName, (byte[]) val);
             }
          }
       }
@@ -1883,7 +1880,6 @@ public final class JMSBridgeImpl implements JMSBridge
     * We use a Thread which polls the sourceDestination instead of a MessageListener
     * to ensure that message delivery does not happen concurrently with
     * transaction enlistment of the XAResource (see HORNETQ-27)
-    *
     */
    private final class SourceReceiver extends Thread
    {
@@ -1921,7 +1917,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   {
                      // We need to check the buffer mainly in the case of LargeMessages
                      // As we need to reconstruct the buffer before resending the message
-                     ((HornetQMessage)msg).checkBuffer();
+                     ((HornetQMessage) msg).checkBuffer();
                   }
                }
                catch (JMSException jmse)
@@ -2240,9 +2236,10 @@ public final class JMSBridgeImpl implements JMSBridge
       }
    }
 
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+   /**
+    * This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    * utility class, as it would be a door to load anything you like in a safe VM.
+    * For that reason any class trying to do a privileged block should do with the AccessController directly.
     */
    private static Object safeInitNewInstance(final String className)
    {
@@ -2323,14 +2320,14 @@ public final class JMSBridgeImpl implements JMSBridge
             result = lastEvent;
             lastEvent = null;
          }
-         
+
          if (timedOut)
          {
             //timeout, presumably failover failed.
             HornetQJMSServerLogger.LOGGER.debug("Timed out waiting for failover completion " + this);
             return false;
          }
-         
+
          if (result == FailoverEventType.FAILOVER_COMPLETED)
          {
             return true;

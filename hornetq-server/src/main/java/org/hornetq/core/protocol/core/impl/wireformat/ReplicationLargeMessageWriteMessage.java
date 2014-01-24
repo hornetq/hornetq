@@ -19,6 +19,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * A ReplicationLargeMessageWriteMessage
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class ReplicationLargeMessageWriteMessage extends PacketImpl
@@ -26,7 +27,7 @@ public final class ReplicationLargeMessageWriteMessage extends PacketImpl
 
    private long messageId;
 
-   private byte body[];
+   private byte[] body;
 
    public ReplicationLargeMessageWriteMessage()
    {
@@ -84,7 +85,7 @@ public final class ReplicationLargeMessageWriteMessage extends PacketImpl
       final int prime = 31;
       int result = super.hashCode();
       result = prime * result + Arrays.hashCode(body);
-      result = prime * result + (int)(messageId ^ (messageId >>> 32));
+      result = prime * result + (int) (messageId ^ (messageId >>> 32));
       return result;
    }
 
@@ -97,7 +98,7 @@ public final class ReplicationLargeMessageWriteMessage extends PacketImpl
          return false;
       if (!(obj instanceof ReplicationLargeMessageWriteMessage))
          return false;
-      ReplicationLargeMessageWriteMessage other = (ReplicationLargeMessageWriteMessage)obj;
+      ReplicationLargeMessageWriteMessage other = (ReplicationLargeMessageWriteMessage) obj;
       if (!Arrays.equals(body, other.body))
          return false;
       if (messageId != other.messageId)

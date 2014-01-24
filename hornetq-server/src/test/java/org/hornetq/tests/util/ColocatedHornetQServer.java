@@ -12,6 +12,10 @@
  */
 package org.hornetq.tests.util;
 
+import javax.management.MBeanServer;
+import java.util.Map;
+import java.util.Set;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;
@@ -22,10 +26,6 @@ import org.hornetq.core.server.impl.AIOFileLockNodeManager;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-
-import javax.management.MBeanServer;
-import java.util.Map;
-import java.util.Set;
 
 
 public class ColocatedHornetQServer extends HornetQServerImpl
@@ -62,7 +62,7 @@ public class ColocatedHornetQServer extends HornetQServerImpl
    protected NodeManager
    createNodeManager(final String directory, final String nodeGroupName, boolean replicatingBackup)
    {
-      if(replicatingBackup)
+      if (replicatingBackup)
       {
          NodeManager manager;
          if (getConfiguration().getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
@@ -76,7 +76,7 @@ public class ColocatedHornetQServer extends HornetQServerImpl
       }
       else
       {
-         if(backup)
+         if (backup)
          {
             nodeManagerBackup.setNodeGroupName(nodeGroupName);
             return nodeManagerBackup;
@@ -94,7 +94,7 @@ public class ColocatedHornetQServer extends HornetQServerImpl
       Set<Configuration> backupServerConfigurations = configuration.getBackupServerConfigurations();
       for (Configuration backupServerConfiguration : backupServerConfigurations)
       {
-         ColocatedHornetQServer backup = new ColocatedHornetQServer(backupServerConfiguration, this,  nodeManagerBackup, nodeManagerLive);
+         ColocatedHornetQServer backup = new ColocatedHornetQServer(backupServerConfiguration, this, nodeManagerBackup, nodeManagerLive);
          backup.backup = true;
          this.backupServer = backup;
          backupServers.put(backupServerConfiguration.getName(), backup);

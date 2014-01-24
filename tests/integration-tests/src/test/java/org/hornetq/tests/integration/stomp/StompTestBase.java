@@ -11,6 +11,26 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -25,31 +45,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-
-import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -128,16 +126,16 @@ public abstract class StompTestBase extends UnitTestCase
       group = new NioEventLoopGroup();
       bootstrap = new Bootstrap();
       bootstrap.group(group)
-            .channel(NioSocketChannel.class)
-            .option(ChannelOption.TCP_NODELAY, true)
-            .handler(new ChannelInitializer<SocketChannel>()
+         .channel(NioSocketChannel.class)
+         .option(ChannelOption.TCP_NODELAY, true)
+         .handler(new ChannelInitializer<SocketChannel>()
+         {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception
             {
-               @Override
-               public void initChannel(SocketChannel ch) throws Exception
-               {
-                  addChannelHandlers(ch);
-               }
-            });
+               addChannelHandlers(ch);
+            }
+         });
 
       // Start the client.
       try
@@ -172,7 +170,7 @@ public abstract class StompTestBase extends UnitTestCase
    protected void setUpAfterServer(boolean jmsCompressLarge) throws Exception
    {
       connectionFactory = createConnectionFactory();
-      HornetQConnectionFactory hqFact = (HornetQConnectionFactory)connectionFactory;
+      HornetQConnectionFactory hqFact = (HornetQConnectionFactory) connectionFactory;
 
       hqFact.setCompressLargeMessage(jmsCompressLarge);
       createBootstrap();
@@ -186,9 +184,9 @@ public abstract class StompTestBase extends UnitTestCase
    }
 
    /**
-   * @return
-   * @throws Exception
-   */
+    * @return
+    * @throws Exception
+    */
    protected JMSServerManager createServer() throws Exception
    {
       Configuration config = createBasicConfig();
@@ -206,7 +204,7 @@ public abstract class StompTestBase extends UnitTestCase
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
-               .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
+         .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
       server.setContext(new InVMNamingContext());
@@ -288,7 +286,6 @@ public abstract class StompTestBase extends UnitTestCase
    }
 
 
-
    protected void assertChannelClosed() throws InterruptedException
    {
       boolean closed = channel.closeFuture().await(5000);
@@ -368,14 +365,14 @@ public abstract class StompTestBase extends UnitTestCase
       {
          currentMessage.append(msg);
          String fullMessage = currentMessage.toString();
-         if(fullMessage.contains("\0\n"))
+         if (fullMessage.contains("\0\n"))
          {
             int messageEnd = fullMessage.indexOf("\0\n");
             String actualMessage = fullMessage.substring(0, messageEnd);
             fullMessage = fullMessage.substring(messageEnd + 2);
             currentMessage = new StringBuffer("");
             priorityQueue.add(actualMessage);
-            if(fullMessage.length() > 0)
+            if (fullMessage.length() > 0)
             {
                channelRead(ctx, fullMessage);
             }
@@ -389,7 +386,6 @@ public abstract class StompTestBase extends UnitTestCase
          ctx.close();
       }
    }
-
 
 
 }

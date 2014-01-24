@@ -23,7 +23,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
  */
 public final class Validators
 {
-   public static interface Validator
+   public interface Validator
    {
       void validate(String name, Object value);
    }

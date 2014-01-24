@@ -11,14 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.journal.impl;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIOErrorException;
@@ -29,14 +24,15 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A JournalImplTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
@@ -127,13 +123,13 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       byte[] record = new byte[1000];
       for (int i = 0; i < record.length; i++)
       {
-         record[i] = (byte)'a';
+         record[i] = (byte) 'a';
       }
       // Appending records after restart should be valid (not throwing any
       // exceptions)
       for (int i = 0; i < 100; i++)
       {
-         journal.appendAddRecord(1, (byte)1, new SimpleEncoding(2, (byte)'a'), false);
+         journal.appendAddRecord(1, (byte) 1, new SimpleEncoding(2, (byte) 'a'), false);
       }
       stopJournal();
    }
@@ -231,7 +227,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          ByteBuffer buffer = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
-         for (int i = 0 ; i < JournalImpl.SIZE_HEADER; i++)
+         for (int i = 0; i < JournalImpl.SIZE_HEADER; i++)
          {
             buffer.put(Byte.MAX_VALUE);
          }
@@ -256,7 +252,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          load();
       }
-      catch(HornetQIOErrorException ioe)
+      catch (HornetQIOErrorException ioe)
       {
          exceptionHappened = true;
       }
@@ -304,7 +300,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       load();
 
-      for (long i = 0 ; i < 100; i++)
+      for (long i = 0; i < 100; i++)
       {
          add(i);
 
@@ -318,7 +314,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       stopJournal();
 
    }
-
 
 
    @Test
@@ -511,9 +506,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    }
 
    /**
-    *
     * Use: calculateNumberOfFiles (fileSize, numberOfRecords, recordSize,  numberOfRecords2, recordSize2, , ...., numberOfRecordsN, recordSizeN);
-    * */
+    */
    private int calculateNumberOfFiles(final int fileSize, final int alignment, final int... record) throws Exception
    {
       int headerSize = calculateRecordSize(JournalImpl.SIZE_HEADER, alignment);
@@ -780,7 +774,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       // Make sure there is one record per file
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
-                                                                            getAlignment()), true);
+                                                                                                  getAlignment()), true);
       createJournal();
       startJournal();
       load();
@@ -820,7 +814,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       // Make sure there is one record per file
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
-                                                                            getAlignment()), true);
+                                                                                                  getAlignment()), true);
 
       createJournal();
       startJournal();
@@ -1532,7 +1526,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1643,7 +1637,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1761,12 +1755,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
       prepare(1, xid);
 
       stopJournal();
@@ -1776,7 +1770,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       commit(1);
 
-      xid = new SimpleEncoding(10, (byte)1);
+      xid = new SimpleEncoding(10, (byte) 1);
       prepare(2, xid);
 
       stopJournal();
@@ -1798,7 +1792,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1828,7 +1822,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
       prepare(1, xid); // in file 1
 
       Assert.assertEquals(0, journal.getFreeFilesCount());
@@ -1844,7 +1838,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Move on to another file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 3); // in file 2
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 3); // in file 2
 
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
@@ -1862,7 +1856,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 4); // in file 3
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 4); // in file 3
 
       List<String> files7 = fileFactory.listFiles(fileExtension);
 
@@ -1937,7 +1931,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
       prepare(1, xid); // in file 1
 
       List<String> files3 = fileFactory.listFiles(fileExtension);
@@ -2349,18 +2343,18 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          byte[] record = generateRecord(RandomUtil.randomInterval(1500, 10000));
 
-         journal.appendAddRecord(i, (byte)0, record, false);
+         journal.appendAddRecord(i, (byte) 0, record, false);
 
-         records.add(new RecordInfo(i, (byte)0, record, false, (short)0));
+         records.add(new RecordInfo(i, (byte) 0, record, false, (short) 0));
       }
 
       for (int i = 0; i < 100; i++)
       {
          byte[] record = generateRecord(10 + RandomUtil.randomInterval(1500, 10000));
 
-         journal.appendUpdateRecord(i, (byte)0, record, false);
+         journal.appendUpdateRecord(i, (byte) 0, record, false);
 
-         records.add(new RecordInfo(i, (byte)0, record, true, (short)0));
+         records.add(new RecordInfo(i, (byte) 0, record, true, (short) 0));
       }
 
       for (int i = 0; i < 100; i++)
@@ -2432,7 +2426,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       load();
       addTx(1, 1);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)'p');
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 'p');
 
       prepare(1, xid);
 
@@ -2904,7 +2898,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 4, 7, 8);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       stopJournal();
@@ -2924,7 +2918,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 4, 7, 8);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       commit(1);
@@ -2945,7 +2939,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 4, 7, 8);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       rollback(1);
@@ -2984,7 +2978,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 7, 8, 9);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       stopJournal();
@@ -3005,7 +2999,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 7, 8, 9);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       rollback(1);
@@ -3027,7 +3021,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(1, 1, 2, 3, 7, 8, 9);
       deleteTx(1, 1, 2, 3, 4, 5);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(1, xid);
       commit(1);
@@ -3052,7 +3046,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       updateTx(3, 7, 8, 9, 10);
       deleteTx(2, 4, 5, 6, 23, 25, 27);
 
-      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      EncodingSupport xid = new SimpleEncoding(10, (byte) 0);
 
       prepare(2, xid);
       deleteTx(1, 1, 2, 11, 14, 15);

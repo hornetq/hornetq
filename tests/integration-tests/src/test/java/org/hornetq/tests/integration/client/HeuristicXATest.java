@@ -123,7 +123,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
-      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+      String[] preparedTransactions = jmxServer.listPreparedTransactions();
 
       Assert.assertEquals(1, preparedTransactions.length);
 
@@ -218,7 +218,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
-      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+      String[] preparedTransactions = jmxServer.listPreparedTransactions();
 
       Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);
@@ -318,7 +318,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
-      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+      String[] preparedTransactions = jmxServer.listPreparedTransactions();
 
       Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);
@@ -425,7 +425,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
-      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+      String[] preparedTransactions = jmxServer.listPreparedTransactions();
 
       Assert.assertEquals(1, preparedTransactions.length);
       System.out.println(preparedTransactions[0]);

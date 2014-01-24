@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.MemorySize;
 
 /**

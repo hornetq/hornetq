@@ -52,7 +52,7 @@ public final class AddressSettingsInfo
 
    // Static --------------------------------------------------------
 
-   public static final AddressSettingsInfo from(final String jsonString) throws Exception
+   public static AddressSettingsInfo from(final String jsonString) throws Exception
    {
       JSONObject object = new JSONObject(jsonString);
       return new AddressSettingsInfo(object.getString("addressFullMessagePolicy"),

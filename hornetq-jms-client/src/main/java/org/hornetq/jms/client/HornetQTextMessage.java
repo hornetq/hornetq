@@ -33,9 +33,7 @@ import org.hornetq.api.core.client.ClientSession;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
  * @version $Revision: 3412 $
- *
  */
 public class HornetQTextMessage extends HornetQMessage implements TextMessage
 {
@@ -136,12 +134,11 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    @Override
    protected <T> T getBodyInternal(Class<T> c)
    {
-      return (T)getText();
+      return (T) getText();
    }
 
    @Override
-   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c)
+   public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes") Class c)
    {
       if (text == null)
          return true;

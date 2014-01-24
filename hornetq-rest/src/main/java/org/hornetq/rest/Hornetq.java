@@ -12,16 +12,15 @@
  */
 package org.hornetq.rest;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Providers;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Providers;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.rest.util.HttpMessageHelper;
@@ -90,6 +89,7 @@ public class Hornetq
 
    /**
     * Get an HTTP header value from a JMS Message
+    *
     * @param message
     * @param name
     * @return the HTTP header String

@@ -12,15 +12,14 @@
  */
 package org.hornetq.rest.util;
 
-import org.hornetq.rest.HornetQRestLogger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.hornetq.rest.HornetQRestLogger;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -43,13 +42,14 @@ public class TimeoutTask implements Runnable
 
    public interface Callback
    {
-      public boolean testTimeout(String token, boolean autoShutdown);
-      public void shutdown(String token);
+      boolean testTimeout(String token, boolean autoShutdown);
+
+      void shutdown(String token);
    }
 
    public synchronized void add(Callback callback, String token)
    {
-      if(callbacksLock.tryLock())
+      if (callbacksLock.tryLock())
       {
          try
          {
@@ -139,10 +139,10 @@ public class TimeoutTask implements Runnable
             {
                tokens.add(token);
             }
-            for(String token : tokens)
+            for (String token : tokens)
             {
                Callback callback = callbacks.get(token);
-               if(callback.testTimeout(token, false))
+               if (callback.testTimeout(token, false))
                {
                   deadConsumers += 1;
                   expiredCallbacks.put(token, callback);
@@ -154,14 +154,14 @@ public class TimeoutTask implements Runnable
                }
             }
             HornetQRestLogger.LOGGER.debug("Finished testing callbacks for timeouts in " +
-                                           (System.currentTimeMillis()-startTime) + "ms. "+
-                                           "(Live: " + liveConsumers + ", Expired: " + deadConsumers + ")");
+                                              (System.currentTimeMillis() - startTime) + "ms. " +
+                                              "(Live: " + liveConsumers + ", Expired: " + deadConsumers + ")");
 
             // Next, move any pending callback additions to the main callbacks map.
             pendingCallbacksLock.lock();
             try
             {
-               if(pendingCallbacks.size() > 0)
+               if (pendingCallbacks.size() > 0)
                {
                   HornetQRestLogger.LOGGER.debug("Found " + pendingCallbacks.size() + " callbacks to add.");
                   callbacks.putAll(pendingCallbacks);
@@ -179,15 +179,15 @@ public class TimeoutTask implements Runnable
          }
 
          // Finally, freely shutdown all expired consumers.
-         if(expiredCallbacks.size() > 0)
+         if (expiredCallbacks.size() > 0)
          {
             long startTime = System.currentTimeMillis();
             List<String> tokens = new ArrayList<String>(expiredCallbacks.size());
-            for(String token : expiredCallbacks.keySet())
+            for (String token : expiredCallbacks.keySet())
             {
                tokens.add(token);
             }
-            for(String token : tokens)
+            for (String token : tokens)
             {
                Callback expired = expiredCallbacks.get(token);
                expired.shutdown(token);

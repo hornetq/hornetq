@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.unit.core.paging.impl;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -39,9 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class PagingManagerImplTest extends UnitTestCase
 {
@@ -59,7 +58,7 @@ public class PagingManagerImplTest extends UnitTestCase
       final StorageManager storageManager = new NullStorageManager();
 
       PagingStoreFactoryNIO storeFactory =
-               new PagingStoreFactoryNIO(storageManager, getPageDir(), 100, null, getOrderedExecutor(), true, null);
+         new PagingStoreFactoryNIO(storageManager, getPageDir(), 100, null, getOrderedExecutor(), true, null);
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory, addressSettings);
 
@@ -67,7 +66,7 @@ public class PagingManagerImplTest extends UnitTestCase
 
       PagingStore store = managerImpl.getPageStore(new SimpleString("simple-test"));
 
-      ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
+      ServerMessage msg = createMessage(1L, new SimpleString("simple-test"), createRandomBuffer(10));
 
       final RoutingContextImpl ctx = new RoutingContextImpl(null);
       Assert.assertFalse(store.page(msg, ctx.getTransaction(), ctx.getContextListing(store.getStoreName()), lock));
@@ -87,10 +86,10 @@ public class PagingManagerImplTest extends UnitTestCase
       Assert.assertEquals(1, msgs.size());
 
       UnitTestCase.assertEqualsByteArrays(msg.getBodyBuffer().writerIndex(), msg.getBodyBuffer().toByteBuffer().array(), msgs.get(0)
-                                                                                          .getMessage()
-                                                                                          .getBodyBuffer()
-                                                                                          .toByteBuffer()
-                                                                                          .array());
+         .getMessage()
+         .getBodyBuffer()
+         .toByteBuffer()
+         .array());
 
       Assert.assertTrue(store.isPaging());
 
@@ -108,7 +107,7 @@ public class PagingManagerImplTest extends UnitTestCase
       super.setUp();
       File fileJournalDir = new File(getJournalDir());
       fileJournalDir.mkdirs();
-      
+
       File pageDirDir = new File(getPageDir());
       pageDirDir.mkdirs();
    }

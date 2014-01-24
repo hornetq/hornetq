@@ -11,18 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -53,15 +46,17 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
  *
  * @author jmesnil
- *
- * Created 26 nov. 2008 14:18:48
- *
- *
+ *         <p/>
+ *         Created 26 nov. 2008 14:18:48
  */
 public class HornetQServerControlTest extends ManagementTestBase
 {
@@ -161,7 +156,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertNotNull(connectorData);
       Assert.assertEquals(1, connectorData.length);
 
-      Object[] config = (Object[])connectorData[0];
+      Object[] config = (Object[]) connectorData[0];
 
       Assert.assertEquals(connectorConfig.getName(), config[0]);
    }
@@ -546,11 +541,11 @@ public class HornetQServerControlTest extends ManagementTestBase
       }
       catch (Exception expected)
       {
-         ex=true;
+         ex = true;
       }
 
       assertTrue("Exception expected", ex);
-       //restartServer();
+      //restartServer();
       serverControl = createManagementControl();
 
       String jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
@@ -631,7 +626,6 @@ public class HornetQServerControlTest extends ManagementTestBase
 
 
       assertTrue("Supposed to have an exception called", ex);
-
 
 
    }
@@ -747,7 +741,7 @@ public class HornetQServerControlTest extends ManagementTestBase
                                  HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                  HornetQClient.INITIAL_CONNECT_ATTEMPTS,
                                  HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
-                                  false, // duplicateDetection
+                                 false, // duplicateDetection
                                  1, // confirmationWindowSize
                                  HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                  connectorConfig.getName(), // liveConnector
@@ -842,7 +836,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       JSONArray jsonArray = new JSONArray(serverControl.listProducersInfoAsJSON());
 
       assertEquals(1, jsonArray.length());
-      assertEquals(4, ((JSONObject)jsonArray.get(0)).getInt("msgSent"));
+      assertEquals(4, ((JSONObject) jsonArray.get(0)).getInt("msgSent"));
 
       clientSession.close();
       locator.close();

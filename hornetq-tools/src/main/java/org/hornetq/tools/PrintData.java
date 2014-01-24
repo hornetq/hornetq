@@ -15,12 +15,11 @@ package org.hornetq.tools;
 
 import java.io.File;
 
-import org.hornetq.core.journal.Journal;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.server.impl.FileLockNodeManager;
 
 /**
- * Writes a human-readable interpretation of the contents of a HornetQ {@link Journal}.
+ * Writes a human-readable interpretation of the contents of a HornetQ {@link org.hornetq.core.journal.Journal}.
  * <p>
  * To run this class with Maven, use:
  *

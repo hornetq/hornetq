@@ -24,8 +24,6 @@ import org.hornetq.utils.DataConstants;
  * A PersistedJNDI
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class PersistedJNDI implements EncodingSupport
 {
@@ -70,7 +68,7 @@ public class PersistedJNDI implements EncodingSupport
       int jndiArraySize = buffer.readInt();
       jndi = new ArrayList<String>(jndiArraySize);
 
-      for (int i = 0 ; i < jndiArraySize; i++)
+      for (int i = 0; i < jndiArraySize; i++)
       {
          jndi.add(buffer.readSimpleString().toString());
       }
@@ -92,8 +90,8 @@ public class PersistedJNDI implements EncodingSupport
    public int getEncodeSize()
    {
       return DataConstants.SIZE_BYTE +
-             BufferHelper.sizeOfSimpleString(name) +
-             sizeOfJNDI();
+         BufferHelper.sizeOfSimpleString(name) +
+         sizeOfJNDI();
    }
 
    private int sizeOfJNDI()

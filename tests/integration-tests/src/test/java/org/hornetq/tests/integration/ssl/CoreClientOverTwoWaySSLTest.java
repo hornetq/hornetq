@@ -11,21 +11,15 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ssl;
+
 import javax.net.ssl.SSLPeerUnverifiedException;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.netty.handler.ssl.SslHandler;
-import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.remoting.impl.netty.NettyConnection;
-import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -37,19 +31,21 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision: 3716 $</tt>
- *
  */
 public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 {
@@ -75,16 +71,18 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
          {
             try
             {
-               if (connection.getTransportConnection() instanceof  NettyConnection)
+               if (connection.getTransportConnection() instanceof NettyConnection)
                {
                   System.out.println("Passed through....");
                   NettyConnection nettyConnection = (NettyConnection) connection.getTransportConnection();
-                  SslHandler sslHandler = (SslHandler)nettyConnection.getChannel().pipeline().get("ssl");
+                  SslHandler sslHandler = (SslHandler) nettyConnection.getChannel().pipeline().get("ssl");
                   assertNotNull(sslHandler);
                   assertNotNull(sslHandler.engine().getSession());
                   assertNotNull(sslHandler.engine().getSession().getPeerCertificateChain());
                }
-            } catch (SSLPeerUnverifiedException e) {
+            }
+            catch (SSLPeerUnverifiedException e)
+            {
                Assert.fail(e.getMessage());
             }
          }
@@ -135,7 +133,7 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
          createSessionFactory(locator);
          Assert.fail();
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }

@@ -404,7 +404,7 @@ public class LocalTestServer implements Server, Runnable
       }
       else
       {
-         return -1l;
+         return -1L;
       }
    }
 

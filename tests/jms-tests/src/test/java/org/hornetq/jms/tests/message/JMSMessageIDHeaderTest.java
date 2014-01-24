@@ -48,7 +48,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
    {
       try
       {
-         Message m = queueProducerSession.createMessage();;
+         Message m = queueProducerSession.createMessage();
          m.setJMSMessageID("ID:something");
 
          queueProducer.send(m);
@@ -66,7 +66,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
    {
       try
       {
-         Message m = queueProducerSession.createMessage();;
+         Message m = queueProducerSession.createMessage();
          ProxyAssertSupport.assertNull(m.getJMSMessageID());
 
          queueProducer.send(m);

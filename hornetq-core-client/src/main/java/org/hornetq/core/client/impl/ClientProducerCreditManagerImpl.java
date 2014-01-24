@@ -22,8 +22,6 @@ import org.hornetq.api.core.SimpleString;
  * A ProducerCreditManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class ClientProducerCreditManagerImpl implements ClientProducerCreditManager
 {
@@ -55,7 +53,7 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
          boolean needInit = false;
          ClientProducerCredits credits;
 
-         synchronized(this)
+         synchronized (this)
          {
             credits = producerCredits.get(address);
 

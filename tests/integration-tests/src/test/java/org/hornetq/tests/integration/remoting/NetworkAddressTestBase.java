@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.remoting;
 
-import org.junit.Test;
-
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -25,8 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -35,15 +31,15 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A NetworkAddressTest
  *
  * @author jmesnil
- *
- * Created 26 janv. 2009 15:06:58
- *
- *
+ *         <p/>
+ *         Created 26 janv. 2009 15:06:58
  */
 public abstract class NetworkAddressTestBase extends ServiceTestBase
 {
@@ -224,7 +220,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
          params = new HashMap<String, Object>();
          params.put(getHostPropertyKey(), connectorHost);
-         if(localPort != 0)
+         if (localPort != 0)
          {
             params.put(getLocalPortProperty(), localPort);
          }
@@ -234,7 +230,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          if (mustConnect)
          {
             ClientSessionFactory sf = createSessionFactory(locator);
-            if(localPort != 0)
+            if (localPort != 0)
             {
                Iterator<RemotingConnection> iterator = messagingService.getRemotingService().getConnections().iterator();
                assertTrue("no connection created", iterator.hasNext());
@@ -248,7 +244,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          {
             try
             {
-            locator.createSessionFactory();
+               locator.createSessionFactory();
                Assert.fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
             }
             catch (Exception e)

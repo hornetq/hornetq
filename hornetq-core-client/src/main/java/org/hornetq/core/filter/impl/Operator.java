@@ -64,63 +64,63 @@ public final class Operator
    // (perhaps this should be a subclass)
    RegExp re = null;
 
-   public final static int EQUAL = 0;
+   public static final int EQUAL = 0;
 
-   public final static int NOT = 1;
+   public static final int NOT = 1;
 
-   public final static int AND = 2;
+   public static final int AND = 2;
 
-   public final static int OR = 3;
+   public static final int OR = 3;
 
-   public final static int GT = 4;
+   public static final int GT = 4;
 
-   public final static int GE = 5;
+   public static final int GE = 5;
 
-   public final static int LT = 6;
+   public static final int LT = 6;
 
-   public final static int LE = 7;
+   public static final int LE = 7;
 
-   public final static int DIFFERENT = 8;
+   public static final int DIFFERENT = 8;
 
-   final static int ADD = 9;
+   static final int ADD = 9;
 
-   public final static int SUB = 10;
+   public static final int SUB = 10;
 
-   public final static int NEG = 11;
+   public static final int NEG = 11;
 
-   public final static int MUL = 12;
+   public static final int MUL = 12;
 
-   public final static int DIV = 13;
+   public static final int DIV = 13;
 
-   public final static int BETWEEN = 14;
+   public static final int BETWEEN = 14;
 
-   public final static int NOT_BETWEEN = 15;
+   public static final int NOT_BETWEEN = 15;
 
-   public final static int LIKE = 16;
+   public static final int LIKE = 16;
 
-   public final static int NOT_LIKE = 17;
+   public static final int NOT_LIKE = 17;
 
-   public final static int LIKE_ESCAPE = 18;
+   public static final int LIKE_ESCAPE = 18;
 
-   public final static int NOT_LIKE_ESCAPE = 19;
+   public static final int NOT_LIKE_ESCAPE = 19;
 
-   public final static int IS_NULL = 20;
+   public static final int IS_NULL = 20;
 
-   public final static int IS_NOT_NULL = 21;
+   public static final int IS_NOT_NULL = 21;
 
-   public final static int IN = 22;
+   public static final int IN = 22;
 
-   public final static int NOT_IN = 23;
+   public static final int NOT_IN = 23;
 
-   public final static int DOUBLE = 1;
+   public static final int DOUBLE = 1;
 
    // DOUBLE FLOAT
-   public final static int LONG = 2;
+   public static final int LONG = 2;
 
    // LONG BYTE SHORT INTEGER
-   public final static int BOOLEAN = 3;
+   public static final int BOOLEAN = 3;
 
-   public final static int SIMPLE_STRING = 4;
+   public static final int SIMPLE_STRING = 4;
 
    public Operator(final int operation, final Object oper1, final Object oper2, final Object oper3)
    {

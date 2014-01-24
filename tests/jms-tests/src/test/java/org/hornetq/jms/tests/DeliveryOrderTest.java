@@ -12,10 +12,6 @@
  */
 package org.hornetq.jms.tests;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.CountDownLatch;
-
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -24,13 +20,15 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 /**
- *
  * A DeliveryOrderTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -43,45 +41,45 @@ public class DeliveryOrderTest extends JMSTestCase
    {
       Connection conn = createConnection();
 
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
       MessageProducer prod = sess.createProducer(queue1);
 
       MessageConsumer cons = sess2.createConsumer(queue1);
 
-         CountDownLatch latch = new CountDownLatch(1);
+      CountDownLatch latch = new CountDownLatch(1);
 
-         final int NUM_MESSAGES = 1000;
+      final int NUM_MESSAGES = 1000;
 
-         MyListener listener = new MyListener(latch, sess2, NUM_MESSAGES);
+      MyListener listener = new MyListener(latch, sess2, NUM_MESSAGES);
 
-         cons.setMessageListener(listener);
+      cons.setMessageListener(listener);
 
-         conn.start();
+      conn.start();
 
-         for (int i = 0; i < NUM_MESSAGES; i++)
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         TextMessage tm = sess.createTextMessage("message" + i);
+
+         prod.send(tm);
+
+         if (i % 10 == 0)
          {
-            TextMessage tm = sess.createTextMessage("message" + i);
-
-            prod.send(tm);
-
-            if (i % 10 == 0)
-            {
-               sess.commit();
-            }
+            sess.commit();
          }
+      }
 
-         // need extra commit for cases in which the last message index is not a multiple of 10
-         sess.commit();
+      // need extra commit for cases in which the last message index is not a multiple of 10
+      sess.commit();
 
-         Assert.assertTrue(latch.await(20000, MILLISECONDS));
+      Assert.assertTrue(latch.await(20000, MILLISECONDS));
 
-         if (listener.failed)
-         {
-            ProxyAssertSupport.fail("listener failed: " + listener.getError());
-         }
+      if (listener.failed)
+      {
+         ProxyAssertSupport.fail("listener failed: " + listener.getError());
+      }
    }
 
    class MyListener implements MessageListener
@@ -115,7 +113,7 @@ public class DeliveryOrderTest extends JMSTestCase
 
          try
          {
-            TextMessage tm = (TextMessage)msg;
+            TextMessage tm = (TextMessage) msg;
 
             if (!("message" + c).equals(tm.getText()))
             {

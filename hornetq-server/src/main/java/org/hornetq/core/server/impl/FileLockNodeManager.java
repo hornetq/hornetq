@@ -127,7 +127,7 @@ public class FileLockNodeManager extends NodeManager
          }
 
          liveLock = lock(FileLockNodeManager.LIVE_LOCK_POS);
-         if(interrupted)
+         if (interrupted)
          {
             interrupted = false;
             throw new InterruptedException("Lock was interrupted");
@@ -147,7 +147,7 @@ public class FileLockNodeManager extends NodeManager
          }
          else if (state == FileLockNodeManager.LIVE)
          {
-            HornetQServerLogger.LOGGER.debug("acquired live node lock state = " + (char)state);
+            HornetQServerLogger.LOGGER.debug("acquired live node lock state = " + (char) state);
             break;
          }
       }

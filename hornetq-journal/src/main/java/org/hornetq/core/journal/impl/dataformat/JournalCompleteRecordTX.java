@@ -14,7 +14,6 @@ package org.hornetq.core.journal.impl.dataformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 
 /**
@@ -22,7 +21,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
  * A transaction record (Commit or Prepare), will hold the number of elements the transaction has in
  * the current file.
  * <p>
- * While loading the {@link JournalFile}, the number of operations found is matched against this
+ * While loading the {@link org.hornetq.core.journal.impl.JournalFile}, the number of operations found is matched against this
  * number. If for any reason there are missing operations, the transaction will be ignored.
  * <p>
  * We can't just use a global counter as reclaiming could delete files after the transaction was

@@ -705,7 +705,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
                   {
                      log.error("DeliveryImpl count not expected value:" + (j + 1) +
                                " actual:" +
-                               tm.getIntProperty("JMSXDeliveryCount"));;
+                               tm.getIntProperty("JMSXDeliveryCount"));
                      failed = true;
                   }
                }

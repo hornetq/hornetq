@@ -13,6 +13,14 @@
 package org.hornetq.tests.integration.aerogear;
 
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -37,19 +45,10 @@ import org.hornetq.utils.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class AeroGearBasicServerTest extends ServiceTestBase
 {
@@ -78,7 +77,7 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       HashMap<String, Object> params = new HashMap();
       params.put(AeroGearConstants.QUEUE_NAME, "testQueue");
       params.put(AeroGearConstants.ENDPOINT_NAME, "http://localhost:8080");
-      params.put(AeroGearConstants.APPLICATION_ID_NAME, "9d646a12-e601-4452-9e05-efb0fccdfd08") ;
+      params.put(AeroGearConstants.APPLICATION_ID_NAME, "9d646a12-e601-4452-9e05-efb0fccdfd08");
       params.put(AeroGearConstants.APPLICATION_MASTER_SECRET_NAME, "ed75f17e-cf3c-4c9b-a503-865d91d60d40");
       params.put(AeroGearConstants.RETRY_ATTEMPTS_NAME, 2);
       params.put(AeroGearConstants.RETRY_INTERVAL_NAME, 1);
@@ -88,7 +87,7 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       params.put(AeroGearConstants.SOUND_NAME, "sound1");
       params.put(AeroGearConstants.VARIANTS_NAME, "variant1,variant2");
       configuration.getConnectorServiceConfigurations().add(
-            new ConnectorServiceConfiguration(AeroGearConnectorServiceFactory.class.getName(), params, "TestAeroGearService"));
+         new ConnectorServiceConfiguration(AeroGearConnectorServiceFactory.class.getName(), params, "TestAeroGearService"));
 
       configuration.getQueueConfigurations().add(new CoreQueueConfiguration("testQueue", "testQueue", null, true));
       server = createServer(configuration);
@@ -100,15 +99,15 @@ public class AeroGearBasicServerTest extends ServiceTestBase
    @After
    public void tearDown() throws Exception
    {
-      if(jetty != null)
+      if (jetty != null)
       {
          jetty.stop();
       }
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }
-      if(server != null)
+      if (server != null)
       {
          server.stop();
       }
@@ -137,16 +136,16 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       assertNotNull(aeroGearHandler.jsonObject);
       JSONObject body = (JSONObject) aeroGearHandler.jsonObject.get("message");
       assertNotNull(body);
-      String prop1 =  body.getString("AEROGEAR_PROP1");
+      String prop1 = body.getString("AEROGEAR_PROP1");
       assertNotNull(prop1);
       assertEquals(prop1, "prop1");
-      prop1 =  body.getString("AEROGEAR_PROP2");
+      prop1 = body.getString("AEROGEAR_PROP2");
       assertNotNull(prop1);
       assertEquals(prop1, "true");
       String alert = body.getString("alert");
       assertNotNull(alert);
       assertEquals(alert, "hello from HornetQ!");
-      String sound =  body.getString("sound");
+      String sound = body.getString("sound");
       assertNotNull(sound);
       assertEquals(sound, "sound1");
       String badge = body.getString("badge");
@@ -189,7 +188,7 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       alert = body.getString("alert");
       assertNotNull(alert);
       assertEquals(alert, "another hello from HornetQ!");
-      sound =  body.getString("sound");
+      sound = body.getString("sound");
       assertNotNull(sound);
       assertEquals(sound, "s1");
       badge = body.getString("badge");

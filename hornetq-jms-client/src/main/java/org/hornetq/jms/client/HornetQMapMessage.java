@@ -12,14 +12,13 @@
  */
 package org.hornetq.jms.client;
 
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.MessageFormatException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageFormatException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQPropertyConversionException;
@@ -37,9 +36,7 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
  * @version $Revision: 3412 $
- *
  */
 public final class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
@@ -85,8 +82,8 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    }
 
    /**
-    *
     * Constructor for a foreign MapMessage
+    *
     * @param foreign
     * @throws JMSException
     */
@@ -96,7 +93,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
       Enumeration<?> names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
-         String name = (String)names.nextElement();
+         String name = (String) names.nextElement();
          Object obj = foreign.getObject(name);
          setObject(name, obj);
       }
@@ -198,7 +195,8 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    public void setObject(final String name, final Object value) throws JMSException
    {
       checkName(name);
-      try {
+      try
+      {
          TypedProperties.setObjectProperty(new SimpleString(name), value, map);
       }
       catch (HornetQPropertyConversionException e)
@@ -342,7 +340,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
 
       if (val instanceof SimpleString)
       {
-         val = ((SimpleString)val).toString();
+         val = ((SimpleString) val).toString();
       }
 
       return val;
@@ -364,7 +362,6 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    {
       return map.containsProperty(new SimpleString(name));
    }
-
 
 
    // HornetQRAMessage overrides ----------------------------------------
@@ -417,11 +414,11 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    {
       checkWrite();
 
-      if(name == null)
+      if (name == null)
       {
          throw HornetQJMSClientBundle.BUNDLE.nameCannotBeNull();
       }
-      if(name.equals(""))
+      if (name.equals(""))
       {
          throw HornetQJMSClientBundle.BUNDLE.nameCannotBeEmpty();
       }
@@ -435,7 +432,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c)
+                                     Class c)
    {
       if (hasNoBody())
       {
@@ -448,6 +445,6 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    @Override
    protected <T> T getBodyInternal(Class<T> c)
    {
-      return (T)map.getMap();
+      return (T) map.getMap();
    }
 }

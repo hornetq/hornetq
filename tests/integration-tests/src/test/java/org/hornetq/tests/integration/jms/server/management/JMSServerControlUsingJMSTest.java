@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.server.management;
-import org.hornetq.api.core.management.Parameter;
 import org.junit.Before;
 import org.junit.After;
 

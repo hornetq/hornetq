@@ -15,12 +15,6 @@
  */
 package org.hornetq.tests.integration.jms.jms2client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.CompletionListener;
 import javax.jms.Connection;
 import javax.jms.IllegalStateRuntimeException;
@@ -31,6 +25,11 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.tests.util.JMSTestBase;
@@ -55,7 +54,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
    @Parameters(name = "confirmationWindowSize={0}")
    public static Iterable<Object[]> data()
    {
-      return Arrays.asList(new Object[][] { { -1 }, { 0 }, { 10 }, { 1000 } });
+      return Arrays.asList(new Object[][]{{-1}, {0}, {10}, {1000}});
    }
 
    public JmsProducerCompletionListenerTest(int confirmationWindowSize)
@@ -108,7 +107,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
          prod.send(session.createMessage(), null);
          fail("Didn't get expected exception!");
       }
-      catch(IllegalArgumentException expected)
+      catch (IllegalArgumentException expected)
       {
          //ok
       }
@@ -167,7 +166,8 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
          latch.countDown();
          try
          {
-            switch (call) {
+            switch (call)
+            {
                case 0:
                   context.rollback();
                   break;
@@ -226,7 +226,7 @@ public class JmsProducerCompletionListenerTest extends JMSTestBase
       public String toString()
       {
          return JmsProducerCompletionListenerTest.class.getSimpleName() + ":" +
-                  CountingCompletionListener.class.getSimpleName() + ":" + completionLatch;
+            CountingCompletionListener.class.getSimpleName() + ":" + completionLatch;
       }
    }
 }
