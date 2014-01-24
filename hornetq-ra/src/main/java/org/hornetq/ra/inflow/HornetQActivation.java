@@ -327,11 +327,12 @@ public class HornetQActivation
 
       for (int i = 0; i < spec.getMaxSession(); i++)
       {
+         ClientSessionFactory cf = null;
          ClientSession session = null;
 
          try
          {
-            ClientSessionFactory cf = factory.getServerLocator().createSessionFactory();
+            cf = factory.getServerLocator().createSessionFactory();
             session = setupSession(cf);
             HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal)session, cf, i);
             handler.setup();
@@ -339,6 +340,10 @@ public class HornetQActivation
          }
          catch (Exception e)
          {
+            if (cf != null)
+            {
+               cf.close();
+            }
             if (session != null)
             {
                session.close();
