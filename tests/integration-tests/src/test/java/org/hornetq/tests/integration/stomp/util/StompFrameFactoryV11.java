@@ -15,25 +15,24 @@ package org.hornetq.tests.integration.stomp.util;
 import java.util.StringTokenizer;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- * 1.1 frames
- *
- * 1. CONNECT/STOMP(new)
- * 2. CONNECTED
- * 3. SEND
- * 4. SUBSCRIBE
- * 5. UNSUBSCRIBE
- * 6. BEGIN
- * 7. COMMIT
- * 8. ACK
- * 9. NACK (new)
- * 10. ABORT
- * 11. DISCONNECT
- * 12. MESSAGE
- * 13. RECEIPT
- * 14. ERROR
+ *         <p/>
+ *         1.1 frames
+ *         <p/>
+ *         1. CONNECT/STOMP(new)
+ *         2. CONNECTED
+ *         3. SEND
+ *         4. SUBSCRIBE
+ *         5. UNSUBSCRIBE
+ *         6. BEGIN
+ *         7. COMMIT
+ *         8. ACK
+ *         9. NACK (new)
+ *         10. ABORT
+ *         11. DISCONNECT
+ *         12. MESSAGE
+ *         13. RECEIPT
+ *         14. ERROR
  */
 public class StompFrameFactoryV11 implements StompFrameFactory
 {
@@ -63,7 +62,7 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       }
       return frame;
    }
-   
+
    private String[] splitHeader(String header)
    {
       StringBuffer sbKey = new StringBuffer();

@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -80,16 +81,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-   private static final int[] PORTS = { TransportConstants.DEFAULT_PORT,
-                                       TransportConstants.DEFAULT_PORT + 1,
-                                       TransportConstants.DEFAULT_PORT + 2,
-                                       TransportConstants.DEFAULT_PORT + 3,
-                                       TransportConstants.DEFAULT_PORT + 4,
-                                       TransportConstants.DEFAULT_PORT + 5,
-                                       TransportConstants.DEFAULT_PORT + 6,
-                                       TransportConstants.DEFAULT_PORT + 7,
-                                       TransportConstants.DEFAULT_PORT + 8,
-                                       TransportConstants.DEFAULT_PORT + 9, };
+   private static final int[] PORTS = {
+      TransportConstants.DEFAULT_PORT,
+      TransportConstants.DEFAULT_PORT + 1,
+      TransportConstants.DEFAULT_PORT + 2,
+      TransportConstants.DEFAULT_PORT + 3,
+      TransportConstants.DEFAULT_PORT + 4,
+      TransportConstants.DEFAULT_PORT + 5,
+      TransportConstants.DEFAULT_PORT + 6,
+      TransportConstants.DEFAULT_PORT + 7,
+      TransportConstants.DEFAULT_PORT + 8,
+      TransportConstants.DEFAULT_PORT + 9,};
 
    protected int getLargeMessageSize()
    {
@@ -233,7 +235,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
             try
             {
                consumer.close();
-            } catch (HornetQException e)
+            }
+            catch (HornetQException e)
             {
                // ignore
             }
@@ -243,7 +246,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
             try
             {
                session.close();
-            } catch (HornetQException e)
+            }
+            catch (HornetQException e)
             {
                // ignore
             }
@@ -289,36 +293,36 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       for (int node : nodes)
       {
-         ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
+         ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl)ccs.iterator().next();
          Topology topology = clusterConnection.getTopology();
-         TransportConfiguration nodeConnector=
-               servers[node].getClusterManager().getClusterConnections().iterator().next().getConnector();
+         TransportConfiguration nodeConnector =
+            servers[node].getClusterManager().getClusterConnections().iterator().next().getConnector();
          do
          {
             Collection<TopologyMemberImpl> members = topology.getMembers();
             for (TopologyMemberImpl member : members)
             {
-               if(member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
+               if (member.getConnector().getA() != null && member.getConnector().getA().equals(nodeConnector))
                {
                   exists = true;
                   break;
                }
             }
-            if(exists)
+            if (exists)
             {
                break;
             }
             Thread.sleep(10);
          }
          while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
-         if(!exists)
+         if (!exists)
          {
             String msg = "Timed out waiting for cluster topology of " + nodes +
-                   " (received " +
-                   topology.getMembers().size() +
-                   ") topology = " +
-                   topology +
-                   ")";
+               " (received " +
+               topology.getMembers().size() +
+               ") topology = " +
+               topology +
+               ")";
 
             log.error(msg);
 
@@ -343,7 +347,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
                if (ccs.size() >= 1)
                {
-                  ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl) ccs.iterator().next();
+                  ClusterConnectionImpl clusterConnection = (ClusterConnectionImpl)ccs.iterator().next();
                   Collection<TopologyMemberImpl> members = clusterConnection.getTopology().getMembers();
                   for (TopologyMemberImpl member : members)
                   {
@@ -352,12 +356,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
                      String backupServer = null;
                      for (HornetQServer server : servers)
                      {
-                        if(server != null && server.getNodeID() != null && server.isActive() && server.getNodeID().toString().equals(nodeId))
+                        if (server != null && server.getNodeID() != null && server.isActive() && server.getNodeID().toString().equals(nodeId))
                         {
-                           if(server.isActive())
+                           if (server.isActive())
                            {
                               liveServer = server.getIdentity();
-                              if(member.getLive() != null)
+                              if (member.getLive() != null)
                               {
                                  liveServer += "(notified)";
                               }
@@ -369,7 +373,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                            else
                            {
                               backupServer = server.getIdentity();
-                              if(member.getBackup() != null)
+                              if (member.getBackup() != null)
                               {
                                  liveServer += "(notified)";
                               }
@@ -388,7 +392,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                {
                   topologyDiagram.append("-> no cluster connections\n");
                }
-            } else
+            }
+            else
             {
                topologyDiagram.append("-> stopped\n");
             }
@@ -397,6 +402,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       topologyDiagram.append("\n");
       log.info(topologyDiagram.toString());
    }
+
    protected void waitForMessages(final int node, final String address, final int count) throws Exception
    {
       HornetQServer server = servers[node];
@@ -426,8 +432,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       while (System.currentTimeMillis() - start < ServiceTestBase.WAIT_TIMEOUT);
 
       throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount +
-                                      ", expecting = " +
-                                      count);
+                                         ", expecting = " +
+                                         count);
    }
 
    protected void waitForServerRestart(final int node) throws Exception
@@ -456,14 +462,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                   final boolean local) throws Exception
    {
       log.debug("waiting for bindings on node " + node +
-         " address " +
-         address +
-         " expectedBindingCount " +
-         expectedBindingCount +
-         " consumerCount " +
-         expectedConsumerCount +
-         " local " +
-         local);
+                   " address " +
+                   address +
+                   " expectedBindingCount " +
+                   expectedBindingCount +
+                   " consumerCount " +
+                   expectedConsumerCount +
+                   " local " +
+                   local);
 
       HornetQServer server = servers[node];
 
@@ -475,7 +481,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       long timeout = ServiceTestBase.WAIT_TIMEOUT;
 
 
-      if  (waitForBindings(server, address, local, expectedBindingCount, expectedConsumerCount, timeout))
+      if (waitForBindings(server, address, local, expectedBindingCount, expectedConsumerCount, timeout))
       {
          return;
       }
@@ -856,12 +862,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                     final long reaperPeriod)
    {
       servers[node].getConfiguration()
-            .setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"),
-                  type,
-                  new SimpleString("queues"),
-                  timeout,
-                  groupTimeout,
-                  reaperPeriod));
+         .setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"),
+                                                                           type,
+                                                                           new SimpleString("queues"),
+                                                                           timeout,
+                                                                           groupTimeout,
+                                                                           reaperPeriod));
    }
 
    protected void setUpGroupHandler(final GroupingHandler groupingHandler, final int node)
@@ -959,10 +965,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
             else if (groupIdsReceived.get(id) != i)
             {
                Assert.fail("consumer " + groupIdsReceived.get(id) +
-                           " already bound to groupid " +
-                           id +
-                           " received on consumer " +
-                           i);
+                              " already bound to groupid " +
+                              id +
+                              " received on consumer " +
+                              i);
             }
 
          }
@@ -1061,15 +1067,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
                if (firstOutOfOrderMessage == null)
                {
                   firstOutOfOrderMessage = "expected " + j +
-                                           " received " +
-                                           message.getObjectProperty(ClusterTestBase.COUNT_PROP);
+                     " received " +
+                     message.getObjectProperty(ClusterTestBase.COUNT_PROP);
                }
                outOfOrder = true;
                System.out.println("Message j=" + j + " was received out of order = " +
-                        message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+                                     message.getObjectProperty(ClusterTestBase.COUNT_PROP));
                log.info("Message j=" + j +
-                        " was received out of order = " +
-                        message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+                           " was received out of order = " +
+                           message.getObjectProperty(ClusterTestBase.COUNT_PROP));
             }
          }
       }
@@ -1148,8 +1154,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (message != null)
             {
                log.info("check receive Consumer " + consumerID +
-                                        " received message " +
-                                        message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+                           " received message " +
+                           message.getObjectProperty(ClusterTestBase.COUNT_PROP));
             }
             else
             {
@@ -1282,7 +1288,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       // Now check the rest are in order too
 
-      outer: while (count < numMessages)
+   outer:
+      while (count < numMessages)
       {
          for (OrderedConsumerHolder holder : sorted)
          {
@@ -1414,7 +1421,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       if (isLargeMessage())
       {
-         for (int posMsg = 0 ; posMsg < getLargeMessageSize(); posMsg++)
+         for (int posMsg = 0; posMsg < getLargeMessageSize(); posMsg++)
          {
             assertEquals(getSamplebyte(posMsg), message.getBodyBuffer().readByte());
          }
@@ -1675,10 +1682,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
    /**
     * Server lacks a {@link ClusterConnectionConfiguration} necessary for the remote (replicating)
     * backup case.
-    * <p>
+    * <p/>
     * Use
     * {@link #setupClusterConnectionWithBackups(String, String, boolean, int, boolean, int, int[])}
     * to add it.
+    *
     * @param node
     * @param liveNode
     * @param fileStorage
@@ -1910,14 +1918,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       Configuration config = serverFrom.getConfiguration();
       ClusterConnectionConfiguration clusterConf =
-               new ClusterConnectionConfiguration(name, address, name,
-                                                                                      100,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs,
-                                                                                      allowDirectConnectionsOnly);
+         new ClusterConnectionConfiguration(name, address, name,
+                                            100,
+                                            true,
+                                            forwardWhenNoConsumers,
+                                            maxHops,
+                                            1024,
+                                            pairs,
+                                            allowDirectConnectionsOnly);
       config.getClusterConfigurations().add(clusterConf);
    }
 
@@ -1946,12 +1954,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-      Configuration conf=serverFrom.getConfiguration();
+      Configuration conf = serverFrom.getConfiguration();
       ClusterConnectionConfiguration clusterConf =
-               createClusterConfig(name, address, forwardWhenNoConsumers,
-                                                                       maxHops,
-                                                                       connectorFrom,
-                                                                       pairs);
+         createClusterConfig(name, address, forwardWhenNoConsumers,
+                             maxHops,
+                             connectorFrom,
+                             pairs);
 
       conf.getClusterConfigurations().add(clusterConf);
    }
@@ -1983,26 +1991,26 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
          pairs.add(serverTotc.getName());
       }
-Configuration conf=serverFrom.getConfiguration();
+      Configuration conf = serverFrom.getConfiguration();
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(
-name, address, connectorFrom.getName(),
-            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-            HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
-            HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
-            retryInterval,
-            HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
-            HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
-            reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
-            1024, pairs, false,
-            HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
-            HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
+         name, address, connectorFrom.getName(),
+         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+         HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
+         HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
+         retryInterval,
+         HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(),
+         HornetQDefaultConfiguration.getDefaultClusterMaxRetryInterval(),
+         reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
+         1024, pairs, false,
+         HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
 
       conf.getClusterConfigurations().add(clusterConf);
    }
 
    private ClusterConnectionConfiguration createClusterConfig(final String name, final String address,
                                                               final boolean forwardWhenNoConsumers, final int maxHops,
-                                TransportConfiguration connectorFrom, List<String> pairs)
+                                                              TransportConfiguration connectorFrom, List<String> pairs)
    {
       return new ClusterConnectionConfiguration(name, address, connectorFrom.getName(), 250, true,
                                                 forwardWhenNoConsumers, maxHops, 1024, pairs, false);
@@ -2035,8 +2043,8 @@ name, address, connectorFrom.getName(),
       }
       Configuration config = serverFrom.getConfiguration();
       ClusterConnectionConfiguration clusterConf =
-               new ClusterConnectionConfiguration(name, address, name, 250, true, forwardWhenNoConsumers, maxHops,
-                                                  1024, pairs, false);
+         new ClusterConnectionConfiguration(name, address, name, 250, true, forwardWhenNoConsumers, maxHops,
+                                            1024, pairs, false);
 
       config.getClusterConfigurations().add(clusterConf);
    }
@@ -2060,12 +2068,12 @@ name, address, connectorFrom.getName(),
       server.getConfiguration().getConnectorConfigurations().put(name, connectorConfig);
       Configuration conf = server.getConfiguration();
       ClusterConnectionConfiguration clusterConf =
-               new ClusterConnectionConfiguration(name, address, name, 100,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      discoveryGroupName);
+         new ClusterConnectionConfiguration(name, address, name, 100,
+                                            true,
+                                            forwardWhenNoConsumers,
+                                            maxHops,
+                                            1024,
+                                            discoveryGroupName);
       List<ClusterConnectionConfiguration> clusterConfs = conf.getClusterConfigurations();
 
       clusterConfs.add(clusterConf);
@@ -2081,7 +2089,7 @@ name, address, connectorFrom.getName(),
       for (int node : nodes)
       {
          log.info("#test start node " + node);
-         final long currentTime=System.currentTimeMillis();
+         final long currentTime = System.currentTimeMillis();
          boolean waitForSelf = currentTime - timeStarts[node] < TIMEOUT_START_SERVER;
          boolean waitForPrevious = node > 0 && currentTime - timeStarts[node - 1] < TIMEOUT_START_SERVER;
          if (waitForPrevious || waitForSelf)
@@ -2125,7 +2133,7 @@ name, address, connectorFrom.getName(),
                if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
                {
                   // We can't stop and start a node too fast (faster than what the Topology could realize about this
-                 Thread.sleep(TIMEOUT_START_SERVER);
+                  Thread.sleep(TIMEOUT_START_SERVER);
                }
 
                timeStarts[node] = System.currentTimeMillis();

@@ -21,6 +21,7 @@ import org.hornetq.core.server.ServerMessage;
 
 /**
  * A Binding
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Binding
@@ -51,12 +52,13 @@ public interface Binding
 
    void close() throws Exception;
 
-    /**
+   /**
     * This method will create a string representation meant for management operations.
-    * <p>
+    * <p/>
     * This is different from the {@link #toString()} method that is meant for debugging and will
     * contain information that regular users won't understand well.
+    *
     * @return
     */
-    String toManagementString();
+   String toManagementString();
 }

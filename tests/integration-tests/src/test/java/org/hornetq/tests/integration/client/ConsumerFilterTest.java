@@ -11,11 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
 
-import org.junit.Test;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -26,14 +22,13 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A ConsumerFilterTest
  *
  * @author Tim Fox
- *
- *
  */
 public class ConsumerFilterTest extends ServiceTestBase
 {
@@ -72,7 +67,7 @@ public class ConsumerFilterTest extends ServiceTestBase
       StringBuffer token = new StringBuffer();
 
       token.append("'");
-      for (int i = 0 ; i < 5000; i++)
+      for (int i = 0; i < 5000; i++)
       {
          token.append("a");
       }

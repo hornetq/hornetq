@@ -12,14 +12,12 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -123,20 +121,20 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
                                                false);
       bridge.setTransactionManager(newTransactionManager());
       addHornetQComponent(bridge);
-         bridge.start();
-         Assert.assertFalse(bridge.isStarted());
-         Assert.assertTrue(bridge.isFailed());
+      bridge.start();
+      Assert.assertFalse(bridge.isStarted());
+      Assert.assertTrue(bridge.isFailed());
 
-         // Restart the server
-         jmsServer1.start();
+      // Restart the server
+      jmsServer1.start();
 
-         createQueue("targetQueue", 1);
-         setUpAdministeredObjects();
+      createQueue("targetQueue", 1);
+      setUpAdministeredObjects();
 
-         Thread.sleep(3000);
+      Thread.sleep(3000);
 
-         Assert.assertTrue(bridge.isStarted());
-         Assert.assertFalse(bridge.isFailed());
+      Assert.assertTrue(bridge.isStarted());
+      Assert.assertFalse(bridge.isFailed());
    }
 
    /**
@@ -187,8 +185,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
     * Verify all messages are received
     */
    private void performCrashAndReconnectDestBasic(final QualityOfServiceMode qosMode,
-                                               final boolean persistent,
-                                               final boolean largeMessage) throws Exception
+                                                  final boolean persistent,
+                                                  final boolean largeMessage) throws Exception
    {
       JMSBridgeImpl bridge = null;
 
@@ -201,67 +199,67 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       }
 
       bridge =
-               new JMSBridgeImpl(factInUse0,
-                                    factInUse1,
-                                    sourceQueueFactory,
-                                    targetQueueFactory,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    1000,
-                                    -1,
-                                    qosMode,
-                                    10,
-                                    -1,
-                                    null,
-                                    null,
-                                    false);
+         new JMSBridgeImpl(factInUse0,
+                           factInUse1,
+                           sourceQueueFactory,
+                           targetQueueFactory,
+                           null,
+                           null,
+                           null,
+                           null,
+                           null,
+                           1000,
+                           -1,
+                           qosMode,
+                           10,
+                           -1,
+                           null,
+                           null,
+                           false);
       addHornetQComponent(bridge);
       bridge.setTransactionManager(newTransactionManager());
-         bridge.start();
+      bridge.start();
 
-         final int NUM_MESSAGES = 10;
+      final int NUM_MESSAGES = 10;
 
-         // Send some messages
+      // Send some messages
 
-         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, largeMessage);
+      sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, largeMessage);
 
-         // Verify none are received
+      // Verify none are received
 
-         checkEmpty(targetQueue, 1);
+      checkEmpty(targetQueue, 1);
 
-         // Now crash the dest server
+      // Now crash the dest server
 
-         JMSBridgeReconnectionTest.log.info("About to crash server");
+      JMSBridgeReconnectionTest.log.info("About to crash server");
 
-         jmsServer1.stop();
+      jmsServer1.stop();
 
-         // Wait a while before starting up to simulate the dest being down for a while
-         JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(TIME_WAIT);
-         JMSBridgeReconnectionTest.log.info("Done wait");
+      // Wait a while before starting up to simulate the dest being down for a while
+      JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
+      Thread.sleep(TIME_WAIT);
+      JMSBridgeReconnectionTest.log.info("Done wait");
 
-         // Restart the server
-         JMSBridgeReconnectionTest.log.info("Restarting server");
-         jmsServer1.start();
+      // Restart the server
+      JMSBridgeReconnectionTest.log.info("Restarting server");
+      jmsServer1.start();
 
       // jmsServer1.createQueue(false, "targetQueue", null, true, "queue/targetQueue");
 
-         createQueue("targetQueue", 1);
+      createQueue("targetQueue", 1);
 
-         setUpAdministeredObjects();
+      setUpAdministeredObjects();
 
-         // Send some more messages
+      // Send some more messages
 
-         JMSBridgeReconnectionTest.log.info("Sending more messages");
+      JMSBridgeReconnectionTest.log.info("Sending more messages");
 
-         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, largeMessage);
+      sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, largeMessage);
 
-         JMSBridgeReconnectionTest.log.info("Sent messages");
+      JMSBridgeReconnectionTest.log.info("Sent messages");
 
-         checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false, largeMessage);
+      checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false, largeMessage);
    }
 
    /*
@@ -275,57 +273,57 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    private void performCrashAndReconnectDestCrashBeforePrepare(final boolean persistent) throws Exception
    {
       JMSBridgeImpl bridge =
-                  new JMSBridgeImpl(cff0xa,
-                                    cff1xa,
-                                    sourceQueueFactory,
-                                    targetQueueFactory,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    1000,
-                                    -1,
-                                    QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
-                                    10,
-                                    5000,
-                                    null,
-                                    null,
-                                    false);
-         addHornetQComponent(bridge);
-         bridge.setTransactionManager(newTransactionManager());
+         new JMSBridgeImpl(cff0xa,
+                           cff1xa,
+                           sourceQueueFactory,
+                           targetQueueFactory,
+                           null,
+                           null,
+                           null,
+                           null,
+                           null,
+                           1000,
+                           -1,
+                           QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
+                           10,
+                           5000,
+                           null,
+                           null,
+                           false);
+      addHornetQComponent(bridge);
+      bridge.setTransactionManager(newTransactionManager());
 
-         bridge.start();
+      bridge.start();
 
-         final int NUM_MESSAGES = 10;
-         // Send some messages
+      final int NUM_MESSAGES = 10;
+      // Send some messages
 
-         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
+      sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
 
-         // verify none are received
+      // verify none are received
 
-         checkEmpty(targetQueue, 1);
+      checkEmpty(targetQueue, 1);
 
-         // Now crash the dest server
+      // Now crash the dest server
 
-         JMSBridgeReconnectionTest.log.info("About to crash server");
+      JMSBridgeReconnectionTest.log.info("About to crash server");
 
-         jmsServer1.stop();
+      jmsServer1.stop();
 
-         // Wait a while before starting up to simulate the dest being down for a while
-         JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(TIME_WAIT);
-         JMSBridgeReconnectionTest.log.info("Done wait");
+      // Wait a while before starting up to simulate the dest being down for a while
+      JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
+      Thread.sleep(TIME_WAIT);
+      JMSBridgeReconnectionTest.log.info("Done wait");
 
-         // Restart the server
-         jmsServer1.start();
+      // Restart the server
+      jmsServer1.start();
 
-         createQueue("targetQueue", 1);
+      createQueue("targetQueue", 1);
 
-         setUpAdministeredObjects();
+      setUpAdministeredObjects();
 
-         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, false);
+      sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, false);
 
-         checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false, false);
+      checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false, false);
    }
 }

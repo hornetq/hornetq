@@ -48,7 +48,7 @@ public class XidImpl implements Xid, Serializable
 
    public static String toBase64String(final Xid xid)
    {
-      byte data[] = XidImpl.toByteArray(xid);
+      byte[] data = XidImpl.toByteArray(xid);
       return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }
 

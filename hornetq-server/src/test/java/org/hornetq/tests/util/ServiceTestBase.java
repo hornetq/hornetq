@@ -12,9 +12,8 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
 
+import javax.management.MBeanServer;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
@@ -24,10 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanServer;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -73,13 +68,14 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
- *
  * Base class with basic utilities on starting up a basic server
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public abstract class ServiceTestBase extends UnitTestCase
 {
@@ -162,23 +158,22 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       do
       {
+         liveNodesCount = 0;
+         backupNodesCount = 0;
 
-        liveNodesCount = 0;
-        backupNodesCount = 0;
+         for (TopologyMemberImpl member : topology.getMembers())
+         {
+            if (member.getLive() != null)
+            {
+               liveNodesCount++;
+            }
+            if (member.getBackup() != null)
+            {
+               backupNodesCount++;
+            }
+         }
 
-        for (TopologyMemberImpl member : topology.getMembers())
-        {
-           if (member.getLive() != null)
-           {
-              liveNodesCount ++;
-           }
-           if (member.getBackup() != null)
-           {
-              backupNodesCount ++;
-           }
-        }
-
-        if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
+         if ((liveNodes == -1 || liveNodes == liveNodesCount) && (backupNodes == -1 || backupNodes == backupNodesCount))
          {
             return topology;
          }
@@ -188,10 +183,10 @@ public abstract class ServiceTestBase extends UnitTestCase
       while (System.currentTimeMillis() - start < timeout);
 
       String msg = "Timed out waiting for cluster topology of live=" + liveNodes + ",backup=" + backupNodes +
-                   " (received live="+ liveNodesCount + ", backup=" + backupNodesCount +
-                   ") topology = " +
-                   topology.describe() +
-                   ")";
+         " (received live=" + liveNodesCount + ", backup=" + backupNodesCount +
+         ") topology = " +
+         topology.describe() +
+         ")";
 
       HornetQServerLogger.LOGGER.error(msg);
 
@@ -222,19 +217,19 @@ public abstract class ServiceTestBase extends UnitTestCase
       while (System.currentTimeMillis() - start < timeout);
 
       String msg = "Timed out waiting for cluster topology of " + nodes +
-                   " (received " +
-                   topology.getMembers().size() +
-                   ") topology = " +
-                   topology +
-                   ")";
+         " (received " +
+         topology.getMembers().size() +
+         ") topology = " +
+         topology +
+         ")";
 
       HornetQServerLogger.LOGGER.error(msg);
 
       throw new Exception(msg);
    }
 
-   protected final static void
-            waitForComponent(final HornetQComponent component, final long seconds) throws InterruptedException
+   protected static final void
+   waitForComponent(final HornetQComponent component, final long seconds) throws InterruptedException
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
@@ -394,7 +389,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param backup
     */
    public static final void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory, int seconds,
-                                          boolean waitForSync, final HornetQServer backup)
+                                                boolean waitForSync, final HornetQServer backup)
    {
       final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
       final long toWait = seconds * 1000;
@@ -402,17 +397,17 @@ public abstract class ServiceTestBase extends UnitTestCase
       while (true)
       {
          if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
-                  (actualServer.isRemoteBackupUpToDate() || !waitForSync) &&
-                        (!waitForSync || actualServer.getClusterManager() != null && actualServer.getClusterManager().isBackupAnnounced()))
+            (actualServer.isRemoteBackupUpToDate() || !waitForSync) &&
+            (!waitForSync || actualServer.getClusterManager() != null && actualServer.getClusterManager().isBackupAnnounced()))
          {
             break;
          }
          if (System.currentTimeMillis() > (time + toWait))
          {
             fail("backup started? (" + actualServer.isStarted() + "). Finished synchronizing (" +
-                     actualServer.isRemoteBackupUpToDate() + "). SessionFactory!=null ? " + (sessionFactory != null) +
-                     " || sessionFactory.getBackupConnector()==" +
-                     (sessionFactory != null ? sessionFactory.getBackupConnector() : "not-applicable"));
+                    actualServer.isRemoteBackupUpToDate() + "). SessionFactory!=null ? " + (sessionFactory != null) +
+                    " || sessionFactory.getBackupConnector()==" +
+                    (sessionFactory != null ? sessionFactory.getBackupConnector() : "not-applicable"));
          }
          try
          {
@@ -426,12 +421,12 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    protected final HornetQServer
-            createServer(final boolean realFiles,
-                                        final Configuration configuration,
-                                        final int pageSize,
-                                        final int maxAddressSize,
-                                        final Map<String, AddressSettings> settings,
-                                        final MBeanServer mbeanServer)
+   createServer(final boolean realFiles,
+                final Configuration configuration,
+                final int pageSize,
+                final int maxAddressSize,
+                final Map<String, AddressSettings> settings,
+                final MBeanServer mbeanServer)
    {
       HornetQServer server;
 
@@ -445,16 +440,16 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
       try
       {
-      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
-      {
-         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
-      }
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
 
-      AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(pageSize);
-      defaultSetting.setMaxSizeBytes(maxAddressSize);
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxAddressSize);
 
-      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+         server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
          return server;
       }
@@ -465,20 +460,20 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    protected final HornetQServer createServer(final boolean realFiles,
-                                        final Configuration configuration,
-                                        final int pageSize,
-                                        final int maxAddressSize,
-                                        final Map<String, AddressSettings> settings)
+                                              final Configuration configuration,
+                                              final int pageSize,
+                                              final int maxAddressSize,
+                                              final Map<String, AddressSettings> settings)
    {
       return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
    }
 
    protected final HornetQServer createServer(final boolean realFiles,
-                                        final Configuration configuration,
-                                        final int pageSize,
-                                        final int maxAddressSize,
-                                        final AddressFullMessagePolicy fullPolicy,
-                                        final Map<String, AddressSettings> settings)
+                                              final Configuration configuration,
+                                              final int pageSize,
+                                              final int maxAddressSize,
+                                              final AddressFullMessagePolicy fullPolicy,
+                                              final Map<String, AddressSettings> settings)
    {
       HornetQServer server = addServer(HornetQServers.newHornetQServer(configuration, realFiles));
       if (settings != null)
@@ -501,17 +496,17 @@ public abstract class ServiceTestBase extends UnitTestCase
 
 
    protected final HornetQServer createServer(final boolean realFiles,
-                                        Configuration conf,
-                                        MBeanServer mbeanServer)
+                                              Configuration conf,
+                                              MBeanServer mbeanServer)
    {
       return createServer(realFiles, conf, mbeanServer, new HashMap<String, AddressSettings>());
    }
 
    protected final HornetQServer
-            createServer(final boolean realFiles,
-                                        final Configuration configuration,
-                                        final MBeanServer mbeanServer,
-                                        final Map<String, AddressSettings> settings)
+   createServer(final boolean realFiles,
+                final Configuration configuration,
+                final MBeanServer mbeanServer,
+                final Map<String, AddressSettings> settings)
    {
       HornetQServer server;
 
@@ -525,17 +520,16 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
       try
       {
-      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
-      {
-         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
-      }
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
 
-      AddressSettings defaultSetting = new AddressSettings();
-      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+         AddressSettings defaultSetting = new AddressSettings();
+         server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
 
-
-      return server;
+         return server;
       }
       finally
       {
@@ -598,18 +592,18 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          server.setIdentity("Server " + id);
 
-      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
-      {
-         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
-      }
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
 
-      AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(pageSize);
-      defaultSetting.setMaxSizeBytes(maxAddressSize);
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxAddressSize);
 
-      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+         server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
-      return server;
+         return server;
       }
       finally
       {
@@ -638,16 +632,16 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
       try
       {
-      Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+         Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
-      {
-         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
-      }
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
 
-      AddressSettings defaultSetting = new AddressSettings();
+         AddressSettings defaultSetting = new AddressSettings();
 
-      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+         server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
          return server;
       }
@@ -714,7 +708,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
 
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(tnspConfig);
-    return  addServerLocator(locator);
+      return addServerLocator(locator);
    }
 
    /**
@@ -771,13 +765,14 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    /**
     * Send durable messages with pre-specified body.
+    *
     * @param session
     * @param producer
     * @param numMessages
     * @throws Exception
     */
    public final void
-            sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws HornetQException
+   sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws HornetQException
    {
       for (int i = 0; i < numMessages; i++)
       {
@@ -786,7 +781,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    protected final ClientMessage
-            createMessage(ClientSession session, int counter, boolean durable) throws HornetQException
+   createMessage(ClientSession session, int counter, boolean durable) throws HornetQException
    {
       ClientMessage message = session.createMessage(durable);
       setBody(counter, message);
@@ -796,8 +791,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    protected final void
-            receiveMessages(ClientConsumer consumer, final int start, final int msgCount, final boolean ack)
-                                                                                                            throws HornetQException
+   receiveMessages(ClientConsumer consumer, final int start, final int msgCount, final boolean ack)
+      throws HornetQException
    {
       for (int i = start; i < msgCount; i++)
       {
@@ -819,6 +814,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    /**
     * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
     * independent of being deleted or not
+    *
     * @param config
     * @return
     * @throws Exception
@@ -831,13 +827,13 @@ public abstract class ServiceTestBase extends UnitTestCase
          SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
 
          messagesJournal = new JournalImpl(config.getJournalFileSize(),
-            config.getJournalMinFiles(),
-            0,
-            0,
-            messagesFF,
-            "hornetq-data",
-            "hq",
-            1);
+                                           config.getJournalMinFiles(),
+                                           0,
+                                           0,
+                                           messagesFF,
+                                           "hornetq-data",
+                                           "hq",
+                                           1);
          final List<RecordInfo> committedRecords = new LinkedList<RecordInfo>();
          final List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
 
@@ -866,6 +862,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    /**
     * Reads a journal system and returns a Map<Integer,AtomicInteger> of recordTypes and the number of records per type,
     * independent of being deleted or not
+    *
     * @param config
     * @return
     * @throws Exception
@@ -876,13 +873,13 @@ public abstract class ServiceTestBase extends UnitTestCase
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
 
       JournalImpl messagesJournal = new JournalImpl(config.getJournalFileSize(),
-         config.getJournalMinFiles(),
-         0,
-         0,
-         messagesFF,
-         "hornetq-data",
-         "hq",
-         1);
+                                                    config.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
       List<JournalFile> filesToRead = messagesJournal.orderFiles();
 
       for (JournalFile file : filesToRead)
@@ -894,6 +891,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    /**
     * This method will load a journal and count the living records
+    *
     * @param config
     * @return
     * @throws Exception
@@ -904,13 +902,13 @@ public abstract class ServiceTestBase extends UnitTestCase
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getJournalDir(), null);
 
       JournalImpl messagesJournal = new JournalImpl(config.getJournalFileSize(),
-         config.getJournalMinFiles(),
-         0,
-         0,
-         messagesFF,
-         "hornetq-data",
-         "hq",
-         1);
+                                                    config.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
       messagesJournal.start();
 
 
@@ -920,7 +918,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       messagesJournal.load(committedRecords, preparedTransactions, null, false);
 
-      for (RecordInfo info: committedRecords)
+      for (RecordInfo info : committedRecords)
       {
          Integer ikey = new Integer(info.getUserRecordType());
          AtomicInteger value = recordsType.get(ikey);
@@ -1011,12 +1009,12 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * @param server the server where's being checked
-    * @param address the name of the address being checked
-    * @param local if true we are looking for local bindings, false we are looking for remoting servers
-    * @param expectedBindingCount the expected number of counts
+    * @param server                the server where's being checked
+    * @param address               the name of the address being checked
+    * @param local                 if true we are looking for local bindings, false we are looking for remoting servers
+    * @param expectedBindingCount  the expected number of counts
     * @param expectedConsumerCount the expected number of consumers
-    * @param timeout the timeout used on the check
+    * @param timeout               the timeout used on the check
     * @return
     * @throws Exception
     * @throws InterruptedException
@@ -1026,7 +1024,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                      final boolean local,
                                      final int expectedBindingCount,
                                      final int expectedConsumerCount,
-                                     long timeout) throws Exception, InterruptedException
+                                     long timeout) throws Exception
    {
       final PostOffice po = server.getPostOffice();
 

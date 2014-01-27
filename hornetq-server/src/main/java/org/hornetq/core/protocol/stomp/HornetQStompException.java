@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQStompException extends Exception
@@ -86,7 +85,7 @@ public class HornetQStompException extends Exception
       frame.addHeader("message", this.getMessage());
       for (Header header : headers)
       {
-        frame.addHeader(header.key, header.val);
+         frame.addHeader(header.key, header.val);
       }
 
       if (body != null)
@@ -103,7 +102,7 @@ public class HornetQStompException extends Exception
       {
          frame.setByteBody(new byte[0]);
       }
-     frame.setNeedsDisconnect(disconnect);
+      frame.setNeedsDisconnect(disconnect);
       return frame;
    }
 
@@ -123,7 +122,7 @@ public class HornetQStompException extends Exception
    {
       disconnect = b;
    }
-   
+
    public int getCode()
    {
       return code;

@@ -28,7 +28,6 @@ import org.hornetq.tests.util.RandomUtil;
  * Code to be run in an external VM, via main().
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 final class SimpleClient
 {
@@ -50,40 +49,40 @@ final class SimpleClient
          try
          {
             ClientSessionFactory sf = locator.createSessionFactory();
-         ClientSession session = sf.createSession(false, true, true);
+            ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(queueName, queueName, null, false);
-         ClientProducer producer = session.createProducer(queueName);
-         ClientConsumer consumer = session.createConsumer(queueName);
+            session.createQueue(queueName, queueName, null, false);
+            ClientProducer producer = session.createProducer(queueName);
+            ClientConsumer consumer = session.createConsumer(queueName);
 
-         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
-         message.getBodyBuffer().writeString(messageText);
-         producer.send(message);
+            ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
+            message.getBodyBuffer().writeString(messageText);
+            producer.send(message);
 
-         session.start();
+            session.start();
 
-         ClientMessage receivedMsg = consumer.receive(5000);
-         if (receivedMsg == null)
-         {
-            throw new Exception("did not receive the message");
-         }
+            ClientMessage receivedMsg = consumer.receive(5000);
+            if (receivedMsg == null)
+            {
+               throw new Exception("did not receive the message");
+            }
 
-         String text = receivedMsg.getBodyBuffer().readString();
-         if (text == null || !text.equals(messageText))
-         {
-            throw new Exception("received " + text + ", was expecting " + messageText);
-         }
+            String text = receivedMsg.getBodyBuffer().readString();
+            if (text == null || !text.equals(messageText))
+            {
+               throw new Exception("received " + text + ", was expecting " + messageText);
+            }
 
-         // clean all resources to exit cleanly
-         consumer.close();
-         session.deleteQueue(queueName);
-         session.close();
+            // clean all resources to exit cleanly
+            consumer.close();
+            session.deleteQueue(queueName);
+            session.close();
             sf.close();
-         System.out.println("OK");
+            System.out.println("OK");
          }
          finally
          {

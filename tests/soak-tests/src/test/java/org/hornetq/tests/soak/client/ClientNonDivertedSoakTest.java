@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.soak.client;
+
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -32,8 +33,6 @@ import org.junit.Test;
  * A ClientSoakTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ClientNonDivertedSoakTest extends ServiceTestBase
 {
@@ -120,7 +119,7 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
 
       Receiver rec1 = new Receiver(createSessionFactory(locator), ADDRESS.toString());
 
-      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[] { rec1 });
+      Sender send = new Sender(createSessionFactory(locator), ADDRESS.toString(), new Receiver[]{rec1});
 
       send.start();
       rec1.start();
@@ -128,7 +127,7 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
       long timeEnd = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
       while (timeEnd > System.currentTimeMillis())
       {
-         if (send.getErrorsCount() != 0 || rec1.getErrorsCount() != 0 )
+         if (send.getErrorsCount() != 0 || rec1.getErrorsCount() != 0)
          {
             System.out.println("There are sequence errors in some of the clients, please look at the logs");
             break;

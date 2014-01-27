@@ -24,27 +24,27 @@ import org.hornetq.utils.json.JSONObject;
  */
 public final class RoleInfo
 {
-   final private String name;
+   private final String name;
 
-   final private boolean send;
+   private final boolean send;
 
-   final private boolean consume;
+   private final boolean consume;
 
-   final private boolean createDurableQueue;
+   private final boolean createDurableQueue;
 
-   final private boolean deleteDurableQueue;
+   private final boolean deleteDurableQueue;
 
-   final private boolean createNonDurableQueue;
+   private final boolean createNonDurableQueue;
 
-   final private boolean deleteNonDurableQueue;
+   private final boolean deleteNonDurableQueue;
 
-   final private boolean manage;
+   private final boolean manage;
 
    /**
     * Returns an array of RoleInfo corresponding to the JSON serialization returned
     * by {@link AddressControl#getRolesAsJSON()}.
     */
-   public static final RoleInfo[] from(final String jsonString) throws Exception
+   public static RoleInfo[] from(final String jsonString) throws Exception
    {
       JSONArray array = new JSONArray(jsonString);
       RoleInfo[] roles = new RoleInfo[array.length()];

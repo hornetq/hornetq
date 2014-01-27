@@ -1,8 +1,5 @@
 package org.hornetq.rest.topic;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -16,6 +13,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -106,7 +105,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       for (QueueConsumer consumer : queueConsumers.values())
       {
          consumer.shutdown();
-         Subscription subscription = (Subscription) consumer;
+         Subscription subscription = (Subscription)consumer;
          if (!subscription.isDurable())
          {
             deleteSubscriberQueue(consumer);
@@ -148,14 +147,14 @@ public class SubscriptionsResource implements TimeoutTask.Callback
             if (acked != autoAck)
             {
                throw new WebApplicationException(
-                       Response.status(412).entity("Consumer already exists and ack-modes don't match.").type("text/plain").build()
+                  Response.status(412).entity("Consumer already exists and ack-modes don't match.").type("text/plain").build()
                );
             }
-            Subscription sub = (Subscription) consumer;
+            Subscription sub = (Subscription)consumer;
             if (sub.isDurable() != durable)
             {
                throw new WebApplicationException(
-                       Response.status(412).entity("Consumer already exists and durability doesn't match.").type("text/plain").build()
+                  Response.status(412).entity("Consumer already exists and durability doesn't match.").type("text/plain").build()
                );
             }
             Response.ResponseBuilder builder = Response.noContent();
@@ -166,7 +165,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
             }
             else
             {
-               headAcknowledgedConsumerResponse(uriInfo, (AcknowledgedQueueConsumer) consumer, builder);
+               headAcknowledgedConsumerResponse(uriInfo, (AcknowledgedQueueConsumer)consumer, builder);
                consumer.setSessionLink(builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId());
             }
             return builder.build();
@@ -234,7 +233,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    }
 
    protected QueueConsumer createConsumer(boolean durable, boolean autoAck, String subscriptionName, String selector, long timeout, boolean deleteWhenIdle)
-           throws HornetQException
+      throws HornetQException
    {
       QueueConsumer consumer;
       if (autoAck)
@@ -276,11 +275,11 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    private Response internalHeadAutoAckSubscription(UriInfo uriInfo, String consumerId)
    {
-       QueueConsumer consumer = findAutoAckSubscription(consumerId);
-       Response.ResponseBuilder builder = Response.noContent();
-       headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
+      QueueConsumer consumer = findAutoAckSubscription(consumerId);
+      Response.ResponseBuilder builder = Response.noContent();
+      headAutoAckSubscriptionResponse(uriInfo, consumer, builder);
 
-       return builder.build();
+      return builder.build();
    }
 
    private void headAutoAckSubscriptionResponse(UriInfo uriInfo, QueueConsumer consumer, Response.ResponseBuilder builder)
@@ -294,7 +293,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    @Path("auto-ack/{subscription-id}")
    public QueueConsumer findAutoAckSubscription(
-           @PathParam("subscription-id") String subscriptionId)
+      @PathParam("subscription-id") String subscriptionId)
    {
       QueueConsumer consumer = queueConsumers.get(subscriptionId);
       if (consumer == null)
@@ -326,7 +325,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    private Response internalHeadAcknowledgedConsumer(UriInfo uriInfo, String consumerId)
    {
-      AcknowledgedQueueConsumer consumer = (AcknowledgedQueueConsumer) findAcknoledgeSubscription(consumerId);
+      AcknowledgedQueueConsumer consumer = (AcknowledgedQueueConsumer)findAcknoledgeSubscription(consumerId);
       Response.ResponseBuilder builder = Response.ok();
       headAcknowledgedConsumerResponse(uriInfo, consumer, builder);
 
@@ -352,7 +351,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    @Path("acknowledged/{subscription-id}")
    public QueueConsumer findAcknoledgeSubscription(
-           @PathParam("subscription-id") String subscriptionId)
+      @PathParam("subscription-id") String subscriptionId)
    {
       QueueConsumer consumer = queueConsumers.get(subscriptionId);
       if (consumer == null)
@@ -419,8 +418,8 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       else
       {
          throw new WebApplicationException(Response.status(405)
-                 .entity("Failed to find subscriber " + subscriptionId + " you will have to reconnect")
-                 .type("text/plain").build());
+                                              .entity("Failed to find subscriber " + subscriptionId + " you will have to reconnect")
+                                              .type("text/plain").build());
       }
       return consumer;
    }
@@ -451,8 +450,8 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       {
          String msg = "Failed to match a subscription to URL " + consumerId;
          throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                  .entity(msg)
-                  .type("text/plain").build());
+                                              .entity(msg)
+                                              .type("text/plain").build());
       }
       consumer.shutdown();
       deleteSubscriberQueue(consumer);

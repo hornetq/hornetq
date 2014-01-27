@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -26,13 +22,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.hornetq.tests.util.JMSClusteredTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TopicClusterTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class TopicClusterTest extends JMSClusteredTestBase
 {
@@ -96,7 +93,7 @@ public class TopicClusterTest extends JMSClusteredTestBase
          prod1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
 
-         for (int i = 0 ; i < 2; i++)
+         for (int i = 0; i < 2; i++)
          {
             prod1.send(session1.createTextMessage("someMessage"));
          }
@@ -108,7 +105,7 @@ public class TopicClusterTest extends JMSClusteredTestBase
          assertEquals("someMessage", received.getText());
 
          cons2.close();
-       }
+      }
       finally
       {
          conn1.close();

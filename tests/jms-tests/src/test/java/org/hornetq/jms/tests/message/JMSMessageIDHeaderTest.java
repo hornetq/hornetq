@@ -13,12 +13,11 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -51,7 +50,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
    {
       try
       {
-         Message m = queueProducerSession.createMessage();;
+         Message m = queueProducerSession.createMessage();
          m.setJMSMessageID("ID:something");
 
          queueProducer.send(m);
@@ -69,7 +68,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
    {
       try
       {
-         Message m = queueProducerSession.createMessage();;
+         Message m = queueProducerSession.createMessage();
          ProxyAssertSupport.assertNull(m.getJMSMessageID());
 
          queueProducer.send(m);

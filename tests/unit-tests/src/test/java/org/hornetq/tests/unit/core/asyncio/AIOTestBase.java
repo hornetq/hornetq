@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.unit.core.asyncio;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +29,8 @@ import org.junit.Before;
 
 /**
  * The base class for AIO Tests
- * @author Clebert Suconic
  *
+ * @author Clebert Suconic
  */
 public abstract class AIOTestBase extends UnitTestCase
 {
@@ -74,7 +75,7 @@ public abstract class AIOTestBase extends UnitTestCase
 
    protected void preAlloc(final AsynchronousFileImpl controller, final long size) throws HornetQException
    {
-      controller.fill(0l, 1, size, (byte)0);
+      controller.fill(0L, 1, size, (byte)0);
    }
 
    protected static class CountDownCallback implements AIOCallback

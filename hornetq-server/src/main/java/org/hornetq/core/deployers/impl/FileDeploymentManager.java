@@ -31,10 +31,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.api.core.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -101,6 +101,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * registers a Deployer object which will handle the deployment of URL's
+    *
     * @param deployer The Deployer object
     * @throws Exception
     */
@@ -195,7 +196,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                   try
                   {
                      uri = url.toURI();
-                  } catch (URISyntaxException e) {
+                  }
+                  catch (URISyntaxException e)
+                  {
                      HornetQServerLogger.LOGGER.errorDeployingURI(e);
                      continue;
                   }
@@ -283,10 +286,11 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * Checks if the URI is among the current thread context class loader's resources.
-    * <p>
+    * <p/>
     * We do not check that the corresponding file exists using File.exists() directly as it would
     * fail in the case the resource is loaded from inside an EAR file (see
     * https://jira.jboss.org/jira/browse/HORNETQ-122)
+    *
     * @throws URISyntaxException
     */
    private boolean fileExists(final URI resourceURI) throws URISyntaxException
@@ -294,8 +298,8 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       try
       {
          File f = getFileFromURI(resourceURI); // this was the original line, which doesn't work for
-                                               // File-URLs with white spaces: File f = new
-                                               // File(resourceURL.getPath());
+         // File-URLs with white spaces: File f = new
+         // File(resourceURL.getPath());
          Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(f.getName());
          while (resources.hasMoreElements())
          {

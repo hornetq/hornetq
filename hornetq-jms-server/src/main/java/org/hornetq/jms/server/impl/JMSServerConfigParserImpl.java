@@ -44,9 +44,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * JMS Configuration File Parser.
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-final public class JMSServerConfigParserImpl implements JMSServerConfigParser
+public final class JMSServerConfigParserImpl implements JMSServerConfigParser
 {
    protected static final String NAME_ATTR = "name";
 
@@ -80,9 +81,9 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       org.hornetq.utils.XMLUtil.validate(rootnode, "schema/hornetq-jms.xsd");
 
-      String elements[] = new String[] { JMSServerDeployer.QUEUE_NODE_NAME,
-                                        JMSServerDeployer.TOPIC_NODE_NAME,
-                                        JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME};
+      String[] elements = new String[]{JMSServerDeployer.QUEUE_NODE_NAME,
+         JMSServerDeployer.TOPIC_NODE_NAME,
+         JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME};
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);
@@ -121,6 +122,7 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    /**
     * Parse the topic node as a TopicConfiguration object
+    *
     * @param node
     * @return topic configuration
     * @throws Exception
@@ -149,6 +151,7 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    /**
     * Parse the Queue Configuration node as a QueueConfiguration object
+    *
     * @param node
     * @return jms queue configuration
     * @throws Exception
@@ -179,12 +182,13 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
          }
       }
 
-      String jndiArray[] = jndiNames.toArray(new String[jndiNames.size()]);
+      String[] jndiArray = jndiNames.toArray(new String[jndiNames.size()]);
       return newQueue(queueName, selectorString, durable, jndiArray);
    }
 
    /**
     * Parse the Connection Configuration node as a ConnectionFactoryConfiguration object
+    *
     * @param node
     * @return ConnectionFactoryConfiguration
     * @throws Exception
@@ -220,9 +224,9 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                       HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                       Validators.GE_ZERO);
       long callFailoverTimeout = XMLConfigurationUtil.getLong(e,
-                                                      "call-failover-timeout",
-                                                      HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
-                                                      Validators.MINUS_ONE_OR_GT_ZERO);
+                                                              "call-failover-timeout",
+                                                              HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT,
+                                                              Validators.MINUS_ONE_OR_GT_ZERO);
       String clientID = XMLConfigurationUtil.getString(e, "client-id", null, Validators.NO_CHECK);
       int dupsOKBatchSize = XMLConfigurationUtil.getInteger(e,
                                                             "dups-ok-batch-size",
@@ -261,8 +265,8 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
                                                                 Validators.GT_ZERO);
 
       boolean compressLargeMessages = XMLConfigurationUtil.getBoolean(e,
-                                                                "compress-large-messages",
-                                                                HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES);
+                                                                      "compress-large-messages",
+                                                                      HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES);
 
       boolean blockOnAcknowledge = XMLConfigurationUtil.getBoolean(e,
                                                                    "block-on-acknowledge",
@@ -456,6 +460,7 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    /**
     * hook for integration layers
+    *
     * @param topicName
     * @param strBindings
     * @return
@@ -467,6 +472,7 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    /**
     * hook for integration layers
+    *
     * @param queueName
     * @param selectorString
     * @param durable
@@ -483,6 +489,7 @@ final public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
    /**
     * hook for integration layers
+    *
     * @param queues
     * @param topics
     * @param cfs

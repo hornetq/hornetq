@@ -1,19 +1,5 @@
 package org.hornetq.rest.topic;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQTopic;
-import org.hornetq.jms.server.config.TopicConfiguration;
-import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.queue.DestinationSettings;
-import org.hornetq.rest.queue.PostMessage;
-import org.hornetq.rest.queue.PostMessageDupsOk;
-import org.hornetq.rest.queue.PostMessageNoDups;
-import org.w3c.dom.Document;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -27,6 +13,20 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.server.config.TopicConfiguration;
+import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.queue.DestinationSettings;
+import org.hornetq.rest.queue.PostMessage;
+import org.hornetq.rest.queue.PostMessageDupsOk;
+import org.hornetq.rest.queue.PostMessageNoDups;
+import org.w3c.dom.Document;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -72,7 +72,13 @@ public class TopicDestinationsResource
          }
          finally
          {
-            try { session.close(); } catch (Exception ignored) {}
+            try
+            {
+               session.close();
+            }
+            catch (Exception ignored)
+            {
+            }
          }
          if (topic.getBindings() != null && topic.getBindings().length > 0 && manager.getRegistry() != null)
          {
@@ -86,7 +92,7 @@ public class TopicDestinationsResource
       }
       catch (Exception e)
       {
-         if (e instanceof WebApplicationException) throw (WebApplicationException) e;
+         if (e instanceof WebApplicationException) throw (WebApplicationException)e;
          throw new WebApplicationException(e, Response.serverError().type("text/plain").entity("Failed to create queue.").build());
       }
    }
@@ -127,7 +133,13 @@ public class TopicDestinationsResource
       }
       finally
       {
-         try { session.close(); } catch (Exception ignored) {}
+         try
+         {
+            session.close();
+         }
+         catch (Exception ignored)
+         {
+         }
       }
 
    }

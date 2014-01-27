@@ -26,7 +26,9 @@ public final class ReplicationPrepareMessage extends PacketImpl
 {
    private long txId;
 
-   /** 0 - BindingsImpl, 1 - MessagesJournal */
+   /**
+    * 0 - BindingsImpl, 1 - MessagesJournal
+    */
    private byte journalID;
 
    private EncodingSupport encodingData;
@@ -121,7 +123,7 @@ public final class ReplicationPrepareMessage extends PacketImpl
          if (other.encodingData != null)
          {
             return false;
-      }
+         }
       }
       else if (!encodingData.equals(other.encodingData))
       {

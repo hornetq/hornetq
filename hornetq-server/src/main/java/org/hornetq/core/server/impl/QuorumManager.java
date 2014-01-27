@@ -24,23 +24,21 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 
 /**
  * Manages a quorum of servers used to determine whether a given server is running or not.
- * <p>
+ * <p/>
  * The use case scenario is an eventual connection loss between the live and the backup, where the
  * quorum will help a remote backup deciding whether to replace its 'live' server or to keep trying
  * to reconnect.
- * <p>
+ * <p/>
  * If the live server does an orderly shutdown, it will explicitly notify the backup through the
  * replication channel. In this scenario, no voting takes place and the backup fails-over. See
  * {@link #failOver(boolean)}.
- * <p>
+ * <p/>
  * In case of
  * <ol>
  * <li>broken connection, which would trigger a
@@ -65,7 +63,9 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    private final Topology topology;
    private CoreRemotingConnection connection;
 
-   /** safety parameter to make _sure_ we get out of await() */
+   /**
+    * safety parameter to make _sure_ we get out of await()
+    */
    private static final int LATCH_TIMEOUT = 30;
    private static final int RECONNECT_ATTEMPTS = 5;
 
@@ -78,7 +78,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
     * This is a safety net in case the live sends the first {@link ReplicationLiveIsStoppingMessage}
     * with code {@link LiveStopping#STOP_CALLED} and crashes before sending the second with
     * {@link LiveStopping#FAIL_OVER}.
-    * <p>
+    * <p/>
     * If the second message does come within this dead line, we fail over anyway.
     */
    public static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
@@ -193,6 +193,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    /**
     * Decides whether the server is to be considered down or not.
+    *
     * @param totalServers
     * @param reachedServers
     * @return
@@ -226,12 +227,12 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       private final int total;
 
       public QuorumVoteServerConnect(CountDownLatch latch, int total, AtomicInteger count,
-                           ServerLocatorImpl serverLocator,
-                           TransportConfiguration serverTC)
+                                     ServerLocatorImpl serverLocator,
+                                     TransportConfiguration serverTC)
       {
          this.total = total;
          this.locator = serverLocator;
-         this.latch=latch;
+         this.latch = latch;
          this.count = count;
          this.tc = serverTC;
       }
@@ -255,7 +256,9 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
                   if (nodeIsDown(total, count.incrementAndGet()))
                   {
                      while (latch.getCount() > 0)
+                     {
                         latch.countDown();
+                     }
                   }
                   session.close();
                   sessionFactory.close();
@@ -323,9 +326,10 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    /**
     * Called by the replicating backup (i.e. "SharedNothing" backup) to wait for the signal to
     * fail-over or to stop.
+    *
     * @return signal, indicating whether to stop or to fail-over
     */
-   public final BACKUP_ACTIVATION waitForStatusChange()
+   public BACKUP_ACTIVATION waitForStatusChange()
    {
       try
       {
@@ -340,6 +344,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    /**
     * Cause the Activation thread to exit and the server to be stopped.
+    *
     * @param explicitSignal the state we want to set the quorum manager to return
     */
    public synchronized void causeExit(BACKUP_ACTIVATION explicitSignal)
@@ -358,7 +363,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
 
    /**
     * Releases the latch, causing the backup activation thread to fail-over.
-    * <p>
+    * <p/>
     * The use case is for when the 'live' has an orderly shutdown, in which case it informs the
     * backup that it should fail-over.
     */

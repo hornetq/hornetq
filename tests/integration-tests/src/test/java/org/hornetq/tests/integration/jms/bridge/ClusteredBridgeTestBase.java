@@ -11,22 +11,18 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.bridge;
-import org.junit.Before;
-import org.junit.After;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.naming.Context;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.naming.Context;
-
 import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -51,13 +47,14 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
- *
  * A ClusteredBridgeTestBase
- * This class serves as a base class for jms bridge tests in 
+ * This class serves as a base class for jms bridge tests in
  * clustered scenarios.
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public abstract class ClusteredBridgeTestBase extends ServiceTestBase
@@ -115,27 +112,28 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
       private static final int ID_OFFSET = 100;
       private String name;
       private int id;
-      
+
       private JMSServerManager liveNode;
-      private JMSServerManager backupNode; 
-      
+      private JMSServerManager backupNode;
+
       private TransportConfiguration liveConnector;
       private TransportConfiguration backupConnector;
-      
+
       private Context liveContext;
-      
+
       private ServerLocator locator;
       private ClientSessionFactory sessionFactory;
+
       /**
        * @param name - name of the group
-       * @param id - id of the live (should be < 100)
+       * @param id   - id of the live (should be < 100)
        */
       public ServerGroup(String name, int id)
       {
          this.name = name;
          this.id = id;
       }
-      
+
       public String getName()
       {
          return name;
@@ -150,7 +148,7 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
          Map<String, Object> params = new HashMap<String, Object>();
          params.put(TransportConstants.SERVER_ID_PROP_NAME, id + ID_OFFSET);
          backupConnector = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params, "in-vm-backup");
-         
+
          //live
          Configuration conf0 = createBasicConfig();
          conf0.setJournalDirectory(getJournalDir(id, false));
@@ -160,7 +158,7 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
          conf0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
          conf0.setFailoverOnServerShutdown(true);
          basicClusterConnectionConfig(conf0, liveConnector.getName());
-         
+
          HornetQServer server0 = addServer(HornetQServers.newHornetQServer(conf0, true));
 
          liveContext = new InVMContext();
@@ -195,12 +193,12 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
          waitForServer(liveNode.getHornetQServer());
          backupNode.start();
          waitForRemoteBackupSynchronization(backupNode.getHornetQServer());
-         
+
          locator = HornetQClient.createServerLocatorWithHA(liveConnector);
          locator.setReconnectAttempts(-1);
          sessionFactory = locator.createSessionFactory();
       }
-      
+
       public void stop() throws Exception
       {
          sessionFactory.close();
@@ -221,12 +219,12 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
             public ConnectionFactory createConnectionFactory() throws Exception
             {
                HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF,
-                                                                          liveConnector);
+                                                                                            liveConnector);
                cf.getServerLocator().setReconnectAttempts(-1);
                return (ConnectionFactory)cf;
             }
          };
-         
+
          return cff;
       }
 
@@ -290,7 +288,8 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
       public void crashLive() throws Exception
       {
          final CountDownLatch latch = new CountDownLatch(1);
-         sessionFactory.addFailoverListener(new FailoverEventListener() {
+         sessionFactory.addFailoverListener(new FailoverEventListener()
+         {
 
             @Override
             public void failoverEvent(FailoverEventType eventType)

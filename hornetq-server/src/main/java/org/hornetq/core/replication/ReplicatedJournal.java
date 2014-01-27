@@ -28,14 +28,14 @@ import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.persistence.OperationContext;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager.ADD_OPERATION_TYPE;
 
 /**
  * Used by the {@link JournalStorageManager} to replicate journal calls.
- * <p>
+ * <p/>
  * This class wraps a {@link ReplicationManager} and the local {@link Journal}. Every call will be
  * relayed to both instances.
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @see JournalStorageManager
  */
@@ -407,7 +407,6 @@ public class ReplicatedJournal implements Journal
     * @param committedRecords
     * @param preparedTransactions
     * @param transactionFailure
-    *
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(java.util.List, java.util.List, org.hornetq.core.journal.TransactionFailureCallback)
     */
@@ -420,7 +419,6 @@ public class ReplicatedJournal implements Journal
 
    /**
     * @param reloadManager
-    *
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(org.hornetq.core.journal.LoaderCallback)
     */

@@ -12,33 +12,28 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A PreACKJMSTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class PreACKJMSTest extends JMSTestBase
 {
@@ -76,77 +71,77 @@ public class PreACKJMSTest extends JMSTestBase
    public void internalTestPreACK(final int sessionType) throws Exception
    {
       conn = cf.createConnection();
-         Session sess = conn.createSession(false, sessionType);
+      Session sess = conn.createSession(false, sessionType);
 
-         MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue);
 
-         TextMessage msg1 = sess.createTextMessage("hello");
+      TextMessage msg1 = sess.createTextMessage("hello");
 
-         prod.send(msg1);
+      prod.send(msg1);
 
-         conn.start();
+      conn.start();
 
-         MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
 
-         TextMessage msg2 = (TextMessage)cons.receive(1000);
+      TextMessage msg2 = (TextMessage)cons.receive(1000);
 
-         Assert.assertNotNull(msg2);
+      Assert.assertNotNull(msg2);
 
-         Assert.assertEquals(msg1.getText(), msg2.getText());
+      Assert.assertEquals(msg1.getText(), msg2.getText());
 
-         conn.close();
+      conn.close();
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         conn.start();
+      conn.start();
 
-         sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         cons = sess.createConsumer(queue);
+      cons = sess.createConsumer(queue);
 
-         msg2 = (TextMessage)cons.receiveNoWait();
+      msg2 = (TextMessage)cons.receiveNoWait();
 
-         Assert.assertNull("ConnectionFactory is on PreACK mode, the message shouldn't be received", msg2);
+      Assert.assertNull("ConnectionFactory is on PreACK mode, the message shouldn't be received", msg2);
    }
 
    public void disabled_testPreACKTransactional() throws Exception
    {
       conn = cf.createConnection();
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue);
 
-         TextMessage msg1 = sess.createTextMessage("hello");
+      TextMessage msg1 = sess.createTextMessage("hello");
 
-         prod.send(msg1);
+      prod.send(msg1);
 
-         sess.commit();
+      sess.commit();
 
-         conn.start();
+      conn.start();
 
-         MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
 
-         TextMessage msg2 = (TextMessage)cons.receive(1000);
+      TextMessage msg2 = (TextMessage)cons.receive(1000);
 
-         Assert.assertNotNull(msg2);
+      Assert.assertNotNull(msg2);
 
-         Assert.assertEquals(msg1.getText(), msg2.getText());
+      Assert.assertEquals(msg1.getText(), msg2.getText());
 
-         sess.rollback();
+      sess.rollback();
 
-         conn.close();
+      conn.close();
 
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
-         conn.start();
+      conn.start();
 
-         sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         cons = sess.createConsumer(queue);
+      cons = sess.createConsumer(queue);
 
-         msg2 = (TextMessage)cons.receive(10);
+      msg2 = (TextMessage)cons.receive(10);
 
-         Assert.assertNotNull("ConnectionFactory is on PreACK mode but it is transacted", msg2);
+      Assert.assertNotNull("ConnectionFactory is on PreACK mode but it is transacted", msg2);
    }
 
    // Package protected ---------------------------------------------
@@ -171,7 +166,7 @@ public class PreACKJMSTest extends JMSTestBase
 
    @Override
    protected void createCF(final List<TransportConfiguration> connectorConfigs,
-                           final String ... jndiBindings) throws Exception
+                           final String... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
@@ -181,9 +176,9 @@ public class PreACKJMSTest extends JMSTestBase
       ArrayList<String> connectors = registerConnectors(server, connectorConfigs);
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                       false,
-                                       JMSFactoryType.CF,
-                                       connectors,
+                                        false,
+                                        JMSFactoryType.CF,
+                                        connectors,
                                         null,
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,

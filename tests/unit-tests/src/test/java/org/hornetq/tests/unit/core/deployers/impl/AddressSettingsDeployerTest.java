@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -27,6 +22,9 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -36,19 +34,19 @@ import org.w3c.dom.NodeList;
 public class AddressSettingsDeployerTest extends UnitTestCase
 {
    private final String conf = "<address-setting match=\"queues.*\">\n" + "      <dead-letter-address>DLQtest</dead-letter-address>\n"
-                               + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
-                               + "      <redelivery-delay>100</redelivery-delay>\n"
-                               + "      <max-delivery-attempts>32</max-delivery-attempts>\n"
-                               + "      <max-size-bytes>18238172365765</max-size-bytes>\n"
-                               + "      <page-size-bytes>2387273767666</page-size-bytes>\n"
-                               + "      <address-full-policy>DROP</address-full-policy>\n"
-                               + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n"
-                               + "      <last-value-queue>true</last-value-queue>\n"
-                               + "      <redistribution-delay>38383</redistribution-delay>\n"
-                               + "      <redelivery-delay-multiplier>2</redelivery-delay-multiplier>\n"
-                               + "      <max-redelivery-delay>12000</max-redelivery-delay>\n"
-                               + "      <send-to-dla-on-no-route>true</send-to-dla-on-no-route>\n"
-                               + "   </address-setting>";
+      + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
+      + "      <redelivery-delay>100</redelivery-delay>\n"
+      + "      <max-delivery-attempts>32</max-delivery-attempts>\n"
+      + "      <max-size-bytes>18238172365765</max-size-bytes>\n"
+      + "      <page-size-bytes>2387273767666</page-size-bytes>\n"
+      + "      <address-full-policy>DROP</address-full-policy>\n"
+      + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n"
+      + "      <last-value-queue>true</last-value-queue>\n"
+      + "      <redistribution-delay>38383</redistribution-delay>\n"
+      + "      <redelivery-delay-multiplier>2</redelivery-delay-multiplier>\n"
+      + "      <max-redelivery-delay>12000</max-redelivery-delay>\n"
+      + "      <send-to-dla-on-no-route>true</send-to-dla-on-no-route>\n"
+      + "   </address-setting>";
 
    private AddressSettingsDeployer addressSettingsDeployer;
 
@@ -91,9 +89,9 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    public void testDeployFromConfigurationFile() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'> " + "<address-settings>" +
-                   conf +
-                   "</address-settings>" +
-                   "</configuration>";
+         conf +
+         "</address-settings>" +
+         "</configuration>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       addressSettingsDeployer.validate(rootNode);
@@ -109,8 +107,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       Assert.assertEquals(2.0, as.getRedeliveryMultiplier(), 0.000001);
       Assert.assertEquals(12000, as.getMaxRedeliveryDelay());
       Assert.assertEquals(32, as.getMaxDeliveryAttempts());
-      Assert.assertEquals(18238172365765l, as.getMaxSizeBytes());
-      Assert.assertEquals(2387273767666l, as.getPageSizeBytes());
+      Assert.assertEquals(18238172365765L, as.getMaxSizeBytes());
+      Assert.assertEquals(2387273767666L, as.getPageSizeBytes());
       Assert.assertEquals(AddressFullMessagePolicy.DROP, as.getAddressFullMessagePolicy());
       Assert.assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       Assert.assertTrue(as.isLastValueQueue());

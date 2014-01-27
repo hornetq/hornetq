@@ -13,11 +13,7 @@
 
 package org.hornetq.core.config.impl;
 
-import org.junit.Test;
-
 import java.util.Collections;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -30,6 +26,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -95,9 +93,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
       Assert.assertEquals(2, conf.getIncomingInterceptorClassNames().size());
       Assert.assertTrue(conf.getIncomingInterceptorClassNames()
-                            .contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor1"));
+                           .contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor1"));
       Assert.assertTrue(conf.getIncomingInterceptorClassNames()
-                            .contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor2"));
+                           .contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor2"));
 
 
       Assert.assertEquals(2, conf.getConnectorConfigurations().size());
@@ -167,7 +165,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(11999, ((UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration()).getGroupPort());
       Assert.assertEquals(12345, dc.getRefreshTimeout());
 
-      dc =  conf.getDiscoveryGroupConfigurations().get("dg2");
+      dc = conf.getDiscoveryGroupConfigurations().get("dg2");
       Assert.assertEquals("dg2", dc.getName());
       Assert.assertEquals("192.168.0.121", ((UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration()).getGroupAddress());
       assertEquals("172.16.8.11", ((UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration()).getLocalBindAddress());
@@ -281,16 +279,16 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals("a1.1", conf.getAddressesSettings().get("a1").getDeadLetterAddress().toString());
       assertEquals("a1.2", conf.getAddressesSettings().get("a1").getExpiryAddress().toString());
       assertEquals(1, conf.getAddressesSettings().get("a1").getRedeliveryDelay());
-      assertEquals(81781728121878l, conf.getAddressesSettings().get("a1").getMaxSizeBytes());
-      assertEquals(81738173872337l, conf.getAddressesSettings().get("a1").getPageSizeBytes());
+      assertEquals(81781728121878L, conf.getAddressesSettings().get("a1").getMaxSizeBytes());
+      assertEquals(81738173872337L, conf.getAddressesSettings().get("a1").getPageSizeBytes());
       assertEquals(10, conf.getAddressesSettings().get("a1").getPageCacheMaxSize());
       assertEquals(4, conf.getAddressesSettings().get("a1").getMessageCounterHistoryDayLimit());
 
       assertEquals("a2.1", conf.getAddressesSettings().get("a2").getDeadLetterAddress().toString());
       assertEquals("a2.2", conf.getAddressesSettings().get("a2").getExpiryAddress().toString());
       assertEquals(5, conf.getAddressesSettings().get("a2").getRedeliveryDelay());
-      assertEquals(932489234928324l, conf.getAddressesSettings().get("a2").getMaxSizeBytes());
-      assertEquals(7126716262626l, conf.getAddressesSettings().get("a2").getPageSizeBytes());
+      assertEquals(932489234928324L, conf.getAddressesSettings().get("a2").getMaxSizeBytes());
+      assertEquals(7126716262626L, conf.getAddressesSettings().get("a2").getPageSizeBytes());
       assertEquals(20, conf.getAddressesSettings().get("a2").getPageCacheMaxSize());
       assertEquals(8, conf.getAddressesSettings().get("a2").getMessageCounterHistoryDayLimit());
 
@@ -349,7 +347,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
    }
 
-    @Override
+   @Override
    protected Configuration createConfiguration() throws Exception
    {
       FileConfiguration fc = new FileConfiguration("ConfigurationTest-full-config.xml");

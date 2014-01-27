@@ -13,17 +13,13 @@
 
 package org.hornetq.tests.unit.util;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class UUIDGeneratorTest extends UnitTestCase
 {
@@ -60,17 +56,17 @@ public class UUIDGeneratorTest extends UnitTestCase
       Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[0]));
       Assert.assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[7]));
 
-      byte[] fiveBytes = new byte[] { 1, 2, 3, 4, 5 };
+      byte[] fiveBytes = new byte[]{1, 2, 3, 4, 5};
       byte[] zeroPaddedFiveBytes = UUIDGenerator.getZeroPaddedSixBytes(fiveBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 4, 5, 0 }, zeroPaddedFiveBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[]{1, 2, 3, 4, 5, 0}, zeroPaddedFiveBytes);
 
-      byte[] fourBytes = new byte[] { 1, 2, 3, 4 };
+      byte[] fourBytes = new byte[]{1, 2, 3, 4};
       byte[] zeroPaddedFourBytes = UUIDGenerator.getZeroPaddedSixBytes(fourBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 4, 0, 0 }, zeroPaddedFourBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[]{1, 2, 3, 4, 0, 0}, zeroPaddedFourBytes);
 
-      byte[] threeBytes = new byte[] { 1, 2, 3 };
+      byte[] threeBytes = new byte[]{1, 2, 3};
       byte[] zeroPaddedThreeBytes = UUIDGenerator.getZeroPaddedSixBytes(threeBytes);
-      UnitTestCase.assertEqualsByteArrays(new byte[] { 1, 2, 3, 0, 0, 0 }, zeroPaddedThreeBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[]{1, 2, 3, 0, 0, 0}, zeroPaddedThreeBytes);
    }
 
    // Package protected ---------------------------------------------

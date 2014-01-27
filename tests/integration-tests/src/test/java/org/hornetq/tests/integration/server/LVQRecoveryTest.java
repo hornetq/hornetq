@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.server;
+
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -192,7 +193,7 @@ public class LVQRecoveryTest extends ServiceTestBase
             //
          }
       }
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }

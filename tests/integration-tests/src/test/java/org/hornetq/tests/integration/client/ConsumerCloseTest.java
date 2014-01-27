@@ -11,16 +11,9 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.hornetq.core.client.impl.ClientConsumerImpl;
-import org.hornetq.core.settings.impl.AddressSettings;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -34,16 +27,20 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ConsumerCloseTest extends ServiceTestBase
@@ -155,7 +152,6 @@ public class ConsumerCloseTest extends ServiceTestBase
       waitingToProceed.countDown();
 
 
-
       // Close shouldn't wait for all messages to be processed before closing
       long start = System.currentTimeMillis();
       consumer.close();
@@ -205,7 +201,7 @@ public class ConsumerCloseTest extends ServiceTestBase
       consumer = session.createConsumer(queue);
 
       // We received one, so we must receive the others now
-      for (int i = 0 ; i < numMessages - 1; i++)
+      for (int i = 0; i < numMessages - 1; i++)
       {
          msg = consumer.receive(1000);
          assertNotNull("Expected message at i=" + i, msg);
@@ -269,7 +265,7 @@ public class ConsumerCloseTest extends ServiceTestBase
       consumer = session.createConsumer(queue);
 
       // We received one, so we must receive the others now
-      for (int i = 0 ; i < numMessages - 1; i++)
+      for (int i = 0; i < numMessages - 1; i++)
       {
          msg = consumer.receive(1000);
          assertNotNull("Expected message at i=" + i, msg);
@@ -318,8 +314,8 @@ public class ConsumerCloseTest extends ServiceTestBase
       queue = RandomUtil.randomSimpleString();
 
       locator =
-               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
+         addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            ServiceTestBase.INVM_CONNECTOR_FACTORY)));
 
       sf = createSessionFactory(locator);
 

@@ -13,21 +13,24 @@
 
 package org.hornetq.integration.jboss.security;
 
+import javax.naming.InitialContext;
+import javax.security.auth.Subject;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.security.auth.Subject;
-
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.integration.jboss.HornetQJBossLogger;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.jboss.security.*;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)
@@ -134,8 +137,8 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
                if (trace)
                {
                   HornetQJBossLogger.LOGGER.trace("user " + user +
-                                                   (authenticated ? " is " : " is NOT ") +
-                                                   "authorized");
+                                                     (authenticated ? " is " : " is NOT ") +
+                                                     "authorized");
                }
                popSecurityContext();
             }
@@ -168,8 +171,8 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
                if (trace)
                {
                   HornetQJBossLogger.LOGGER.trace("user " + principal.getName() +
-                                                   (authenticated ? " is " : " is NOT ") +
-                                                   "authorized");
+                                                     (authenticated ? " is " : " is NOT ") +
+                                                     "authorized");
                }
             }
             return authenticated;

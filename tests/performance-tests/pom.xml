@@ -17,12 +17,16 @@
    <parent>
       <groupId>org.hornetq.tests</groupId>
       <artifactId>hornetq-tests-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>performance-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ performance Tests</name>
+
+   <properties>
+      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+   </properties>
 
    <dependencies>
       <dependency>
@@ -39,7 +43,7 @@
          <scope>test</scope>
          <type>test-jar</type>
       </dependency>
-       <dependency>
+      <dependency>
          <groupId>org.hornetq.tests</groupId>
          <artifactId>unit-tests</artifactId>
          <version>${project.version}</version>

@@ -61,7 +61,7 @@ public class ForeignStreamMessageTest extends ForeignMessageTest
 
       ProxyAssertSupport.assertTrue(sm.readBoolean());
 
-      byte bytes[] = new byte[5];
+      byte[] bytes = new byte[5];
       sm.readBytes(bytes);
       String s = new String(bytes);
       ProxyAssertSupport.assertEquals("jboss", s);

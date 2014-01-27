@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.stress;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
@@ -23,14 +21,15 @@ import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
+import org.junit.Test;
+
 /**
- *
  * A TopicStressTest.
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2349 $</tt>
- *
- * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
+ *          <p/>
+ *          $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
 public class TopicStressTest extends JMSStressTestBase
 {
@@ -122,171 +121,170 @@ public class TopicStressTest extends JMSStressTestBase
 
       // To make sure paging occurs first send some messages before receiving
 
-      Runner[] runners = new Runner[] {
-
-                                       new Sender("prod1", sess1, prod1, JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND),
-                                       new Sender("prod2", sess2, prod2, JMSStressTestBase.NUM_PERSISTENT_PRESEND) };
+      Runner[] runners = new Runner[]{
+         new Sender("prod1", sess1, prod1, JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND),
+         new Sender("prod2", sess2, prod2, JMSStressTestBase.NUM_PERSISTENT_PRESEND)};
 
       runRunners(runners);
 
-      runners = new Runner[] {
-      // 4 auto ack
-                              new Receiver(rsess1,
-                                           cons1,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           false),
-                              new Receiver(rsess2,
-                                           cons2,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           true),
-                              new Receiver(rsess3,
-                                           cons3,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           false),
-                              new Receiver(rsess4,
-                                           cons4,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           true),
+      runners = new Runner[]{
+         // 4 auto ack
+         new Receiver(rsess1,
+                      cons1,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      false),
+         new Receiver(rsess2,
+                      cons2,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      true),
+         new Receiver(rsess3,
+                      cons3,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      false),
+         new Receiver(rsess4,
+                      cons4,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      true),
 
-                              // 4 dups ok
-                              new Receiver(rsess5,
-                                           cons5,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           false),
-                              new Receiver(rsess6,
-                                           cons6,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           true),
-                              new Receiver(rsess7,
-                                           cons7,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           false),
-                              new Receiver(rsess8,
-                                           cons8,
-                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                           true),
+         // 4 dups ok
+         new Receiver(rsess5,
+                      cons5,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      false),
+         new Receiver(rsess6,
+                      cons6,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      true),
+         new Receiver(rsess7,
+                      cons7,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      false),
+         new Receiver(rsess8,
+                      cons8,
+                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                      true),
 
-                              // 4 client ack
-                              new RecoveringReceiver(rsess9,
-                                                     cons9,
-                                                     JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                              JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                              JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                     1,
-                                                     1,
-                                                     false),
-                              new RecoveringReceiver(rsess10,
-                                                     cons10,
-                                                     JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                              JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                              JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                     10,
-                                                     7,
-                                                     true),
-                              new RecoveringReceiver(rsess11,
-                                                     cons11,
-                                                     JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                              JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                              JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                     50,
-                                                     21,
-                                                     false),
-                              new RecoveringReceiver(rsess12,
-                                                     cons12,
-                                                     JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                              JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                              JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                     100,
-                                                     67,
-                                                     true),
+         // 4 client ack
+         new RecoveringReceiver(rsess9,
+                                cons9,
+                                JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                   JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                1,
+                                1,
+                                false),
+         new RecoveringReceiver(rsess10,
+                                cons10,
+                                JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                   JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                10,
+                                7,
+                                true),
+         new RecoveringReceiver(rsess11,
+                                cons11,
+                                JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                   JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                50,
+                                21,
+                                false),
+         new RecoveringReceiver(rsess12,
+                                cons12,
+                                JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                   JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                100,
+                                67,
+                                true),
 
-                              // 4 transactional
+         // 4 transactional
 
-                              new TransactionalReceiver(rsess13,
-                                                        cons13,
-                                                        JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                 JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                 JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                        1,
-                                                        1,
-                                                        false),
-                              new TransactionalReceiver(rsess14,
-                                                        cons14,
-                                                        JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                 JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                 JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                        10,
-                                                        7,
-                                                        true),
-                              new TransactionalReceiver(rsess15,
-                                                        cons15,
-                                                        JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                 JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                 JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                        50,
-                                                        21,
-                                                        false),
-                              new TransactionalReceiver(rsess16,
-                                                        cons16,
-                                                        JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                 JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                 JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                        100,
-                                                        67,
-                                                        true),
+         new TransactionalReceiver(rsess13,
+                                   cons13,
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                      JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                   1,
+                                   1,
+                                   false),
+         new TransactionalReceiver(rsess14,
+                                   cons14,
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                      JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                   10,
+                                   7,
+                                   true),
+         new TransactionalReceiver(rsess15,
+                                   cons15,
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                      JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                   50,
+                                   21,
+                                   false),
+         new TransactionalReceiver(rsess16,
+                                   cons16,
+                                   JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                      JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                   100,
+                                   67,
+                                   true),
 
-                              // 4 2pc transactional
-                              new Transactional2PCReceiver(rxaSess1,
-                                                           cons17,
-                                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                           1,
-                                                           1,
-                                                           false),
-                              new Transactional2PCReceiver(rxaSess2,
-                                                           cons18,
-                                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                           10,
-                                                           7,
-                                                           true),
-                              new Transactional2PCReceiver(rxaSess3,
-                                                           cons19,
-                                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                           50,
-                                                           21,
-                                                           false),
-                              new Transactional2PCReceiver(rxaSess4,
-                                                           cons20,
-                                                           JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
-                                                                    JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
-                                                                    JMSStressTestBase.NUM_PERSISTENT_PRESEND,
-                                                           100,
-                                                           67,
-                                                           true),
+         // 4 2pc transactional
+         new Transactional2PCReceiver(rxaSess1,
+                                      cons17,
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                      1,
+                                      1,
+                                      false),
+         new Transactional2PCReceiver(rxaSess2,
+                                      cons18,
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                      10,
+                                      7,
+                                      true),
+         new Transactional2PCReceiver(rxaSess3,
+                                      cons19,
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                      50,
+                                      21,
+                                      false),
+         new Transactional2PCReceiver(rxaSess4,
+                                      cons20,
+                                      JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES + JMSStressTestBase.NUM_PERSISTENT_MESSAGES +
+                                         JMSStressTestBase.NUM_NON_PERSISTENT_PRESEND +
+                                         JMSStressTestBase.NUM_PERSISTENT_PRESEND,
+                                      100,
+                                      67,
+                                      true),
 
-                              new Sender("prod3", sess1, prod1, JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES),
-                              new Sender("prod4", sess2, prod2, JMSStressTestBase.NUM_PERSISTENT_MESSAGES) };
+         new Sender("prod3", sess1, prod1, JMSStressTestBase.NUM_NON_PERSISTENT_MESSAGES),
+         new Sender("prod4", sess2, prod2, JMSStressTestBase.NUM_PERSISTENT_MESSAGES)};
 
       runRunners(runners);
 

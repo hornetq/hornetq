@@ -12,14 +12,9 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.junit.Test;
-
-import java.util.Map;
+import javax.jms.Message;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.jms.Message;
-import javax.resource.spi.ActivationSpec;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -35,6 +30,7 @@ import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -98,10 +94,10 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       qResourceAdapter.setReconnectAttempts(-1);
-      qResourceAdapter.setCallTimeout(500l);
+      qResourceAdapter.setCallTimeout(500L);
       qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.setTransactionManagerLocatorMethod("");
-      qResourceAdapter.setRetryInterval(500l);
+      qResourceAdapter.setRetryInterval(500L);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       // This is just to register a listener
@@ -264,9 +260,9 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
-      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 15);
+      assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 15);
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
-      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 0);
+      assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 0);
       assertTrue(endpoint.released);
       qResourceAdapter.stop();
    }
@@ -289,7 +285,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
-      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 1);
+      assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 1);
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
       qResourceAdapter.stop();
    }
@@ -585,7 +581,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeString("" + i);
@@ -669,7 +665,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       @Override
       public void onMessage(Message message)
       {
-         if(throwException)
+         if (throwException)
          {
             throwException = false;
             throw new IllegalStateException("boo!");

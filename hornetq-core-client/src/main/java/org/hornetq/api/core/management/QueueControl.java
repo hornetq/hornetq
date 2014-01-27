@@ -13,9 +13,8 @@
 
 package org.hornetq.api.core.management;
 
-import java.util.Map;
-
 import javax.management.MBeanOperationInfo;
+import java.util.Map;
 
 
 /**
@@ -118,21 +117,22 @@ public interface QueueControl
    @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = MBeanOperationInfo.INFO)
    String listScheduledMessagesAsJSON() throws Exception;
 
-    /**
-     * Lists all the messages being deliver per consumer.
-     * <br>
-     * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
-     */
-    @Operation(desc = "List all messages being delivered per consumer")
-    Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
+   /**
+    * Lists all the messages being deliver per consumer.
+    * <br>
+    * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
+    */
+   @Operation(desc = "List all messages being delivered per consumer")
+   Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;
 
-    /**
-     * Executes a conversion of {@link #listDeliveringMessages()} to JSON
-     * @return
-     * @throws Exception
-     */
-    @Operation(desc = "list all messages being delivered per consumer using JSON form")
-    String listDeliveringMessagesAsJSON() throws Exception;
+   /**
+    * Executes a conversion of {@link #listDeliveringMessages()} to JSON
+    *
+    * @return
+    * @throws Exception
+    */
+   @Operation(desc = "list all messages being delivered per consumer using JSON form")
+   String listDeliveringMessagesAsJSON() throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified filter.
@@ -262,7 +262,6 @@ public interface QueueControl
     * Changes the message's priority corresponding to the specified message ID to the specified priority.
     *
     * @param newPriority between 0 and 9 inclusive.
-    *
     * @return {@code true} if the message priority was changed
     */
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = MBeanOperationInfo.ACTION)

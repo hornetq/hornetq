@@ -12,24 +12,21 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SymmetricClusterTest
- *
+ * <p/>
  * Most of the cases are covered in OneWayTwoNodeClusterTest - we don't duplicate them all here
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 3 Feb 2009 09:10:43
- *
- *
+ *         <p/>
+ *         Created 3 Feb 2009 09:10:43
  */
 public class SymmetricClusterTest extends ClusterTestBase
 {
@@ -1094,7 +1091,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       startServers();
 
-      for (int i = 0 ; i <= 4; i++)
+      for (int i = 0; i <= 4; i++)
       {
          waitForTopology(servers[i], 5);
       }

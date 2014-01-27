@@ -55,6 +55,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    /**
     * Add a buff to the List, or save it to the OutputStream if set
+    *
     * @param packet
     */
    public void addPacket(final SessionReceiveContinuationMessage packet)
@@ -84,7 +85,6 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    }
 
    /**
-    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     */
    public synchronized boolean waitCompletion(final long timeWait) throws HornetQException
@@ -112,7 +112,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
          }
          catch (Exception e)
          {
-            throw new RuntimeException (e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
          }
 
       }
@@ -132,7 +132,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new RuntimeException (e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
       }
    }
 
@@ -150,7 +150,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
    }
 
    @Override
-    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
+   public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
       positioningNotSupported();
    }
@@ -372,7 +372,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -384,7 +384,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -396,7 +396,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
       }
       catch (Exception e)
       {
-         throw new IllegalStateException (e.getMessage(), e);
+         throw new IllegalStateException(e.getMessage(), e);
       }
    }
 
@@ -474,7 +474,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    public void readBytes(final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       readBytes(bytesToGet);
       dst.put(bytesToGet);
    }
@@ -484,7 +484,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
       try
       {
-         for (int i = 0 ; i < length; i++)
+         for (int i = 0; i < length; i++)
          {
             getStream().read();
          }
@@ -574,7 +574,7 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    public HornetQBuffer readBytes(final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       readBytes(bytesToGet);
       return HornetQBuffers.wrappedBuffer(bytesToGet);
    }

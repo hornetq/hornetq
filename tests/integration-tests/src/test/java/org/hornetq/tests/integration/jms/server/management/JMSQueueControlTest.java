@@ -12,14 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -28,8 +20,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.Context;
-
-import org.junit.Assert;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -57,17 +50,19 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A QueueControlTest
- *
+ * <p/>
  * on this testContaining WithRealData will use real data on the journals
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 14 nov. 2008 13:35:10
- *
- *
+ *         <p/>
+ *         Created 14 nov. 2008 13:35:10
  */
 public class JMSQueueControlTest extends ManagementTestBase
 {
@@ -903,7 +898,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientProducer prod1 = session.createProducer(queue.getAddress());
       ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
 
-      String [] ids = new String[10];
+      String[] ids = new String[10];
 
       for (int i = 0; i < 10; i++)
       {
@@ -931,7 +926,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Assert.assertEquals(10, queueControl.getMessageCount());
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          queueControl.moveMessage(ids[i], otherQueueName, true);
       }
@@ -1088,7 +1083,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientMessage msg = session.createMessage(true);
 
       msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          prod.send(msg);
       }
@@ -1096,7 +1091,6 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSQueueControl control = createManagementControl(pagedQueue);
 
       assertEquals(100, control.removeMessages("     "));
-
 
 
       session.start();
@@ -1134,7 +1128,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientSession session = sf.createSession(true, true);
 
       ClientProducer prod = session.createProducer(pagedQueue.getAddress());
-      for (int i = 0 ; i < 200; i++)
+      for (int i = 0; i < 200; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
@@ -1151,8 +1145,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
 
 
-
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = consumer.receive(1000);
          assertNotNull(msg);
@@ -1215,6 +1208,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    /**
     * on this testContaining WithRealData will use real data on the journals
+    *
     * @throws Exception
     */
    @Test
@@ -1327,7 +1321,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    private Connection createConnection() throws JMSException
    {
       HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       cf.setBlockOnDurableSend(true);
 

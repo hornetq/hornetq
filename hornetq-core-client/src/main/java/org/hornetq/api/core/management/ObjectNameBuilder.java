@@ -30,7 +30,7 @@ public final class ObjectNameBuilder
    /**
     * Default JMX domain for HornetQ resources.
     */
-   public final static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(HornetQDefaultConfiguration.getDefaultJmxDomain());
+   public static final ObjectNameBuilder DEFAULT = new ObjectNameBuilder(HornetQDefaultConfiguration.getDefaultJmxDomain());
 
    static final String JMS_MODULE = "JMS";
 

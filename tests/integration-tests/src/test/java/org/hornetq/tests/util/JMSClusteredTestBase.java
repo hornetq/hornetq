@@ -12,27 +12,22 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -41,13 +36,13 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A JMSBaseTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JMSClusteredTestBase extends ServiceTestBase
 {
@@ -92,9 +87,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
    /**
     * @throws Exception
-    * @throws NamingException
     */
-   protected Queue createQueue(final String name) throws Exception, NamingException
+   protected Queue createQueue(final String name) throws Exception
    {
       jmsServer2.createQueue(false, name, null, true, "/queue/" + name);
       jmsServer1.createQueue(false, name, null, true, "/queue/" + name);
@@ -105,7 +99,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       return (Queue)context1.lookup("/queue/" + name);
    }
 
-   protected Topic createTopic(final String name) throws Exception, NamingException
+   protected Topic createTopic(final String name) throws Exception
    {
       jmsServer2.createTopic(false, name, "/topic/" + name);
       jmsServer1.createTopic(false, name, "/topic/" + name);
@@ -134,10 +128,10 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       waitForTopology(jmsServer2.getHornetQServer(), 2);
 
-      cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                generateInVMParams(0)));
+      cf1 = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                                               generateInVMParams(0)));
       cf2 = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                generateInVMParams(1)));
+                                                                                                                               generateInVMParams(1)));
    }
 
    /**
@@ -170,21 +164,21 @@ public class JMSClusteredTestBase extends ServiceTestBase
       conf2.setPersistenceEnabled(false);
 
       conf2.getConnectorConfigurations().put("toServer1",
-         new TransportConfiguration(InVMConnectorFactory.class.getName(),
-            generateInVMParams(0)));
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(0)));
       conf2.getConnectorConfigurations().put("server2",
-         new TransportConfiguration(InVMConnectorFactory.class.getName(),
-            generateInVMParams(1)));
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(1)));
 
       conf2.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server1",
-         "jms",
-         "server2",
-         1000,
-         true,
-         false,
-         MAX_HOPS,
-         1024,
-         toOtherServerPair, false));
+                                                                              "jms",
+                                                                              "server2",
+                                                                              1000,
+                                                                              true,
+                                                                              false,
+                                                                              MAX_HOPS,
+                                                                              1024,
+                                                                              toOtherServerPair, false));
       return conf2;
    }
 
@@ -219,21 +213,21 @@ public class JMSClusteredTestBase extends ServiceTestBase
       conf1.setPersistenceEnabled(false);
 
       conf1.getConnectorConfigurations().put("toServer2",
-         new TransportConfiguration(InVMConnectorFactory.class.getName(),
-            generateInVMParams(1)));
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(1)));
       conf1.getConnectorConfigurations().put("server1",
-         new TransportConfiguration(InVMConnectorFactory.class.getName(),
-            generateInVMParams(0)));
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(0)));
 
       conf1.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server2",
-         "jms",
-         "server1",
-         1000,
-         true,
-         false,
-         MAX_HOPS,
-         1024,
-         toOtherServerPair, false));
+                                                                              "jms",
+                                                                              "server1",
+                                                                              1000,
+                                                                              true,
+                                                                              false,
+                                                                              MAX_HOPS,
+                                                                              1024,
+                                                                              toOtherServerPair, false));
       return conf1;
    }
 

@@ -33,8 +33,6 @@ import org.hornetq.utils.LinkedListIterator;
  * A FakeQueue
  *
  * @author tim
- *
- *
  */
 public class FakeQueue implements Queue
 {
@@ -191,7 +189,7 @@ public class FakeQueue implements Queue
       return false;
    }
 
-@Override
+   @Override
    public int changeReferencesPriority(Filter filter, byte newPriority) throws Exception
    {
       // no-op
@@ -556,7 +554,6 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return null;
    }
-
 
 
 }

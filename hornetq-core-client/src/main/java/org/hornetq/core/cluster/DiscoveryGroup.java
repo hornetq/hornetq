@@ -36,18 +36,16 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * This class is used to search for members on the cluster through the opaque interface {@link BroadcastEndpoint}.
- *
+ * <p/>
  * There are two current implementations, and that's probably all we will ever need.
- *
+ * <p/>
  * We will probably keep both interfaces for a while as UDP is a simple solution requiring no extra dependencies which
  * is suitable for users looking for embedded solutions.
  *
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- *
- * Created 17 Nov 2008 13:21:45
- *
+ *         <p/>
+ *         Created 17 Nov 2008 13:21:45
  */
 public final class DiscoveryGroup implements HornetQComponent
 {
@@ -157,7 +155,7 @@ public final class DiscoveryGroup implements HornetQComponent
       {
          thread.interrupt();
          thread.join(10000);
-         if(thread.isAlive())
+         if (thread.isAlive())
          {
             HornetQClientLogger.LOGGER.timedOutStoppingDiscovery();
          }
@@ -322,7 +320,7 @@ public final class DiscoveryGroup implements HornetQComponent
 
                boolean changed = false;
 
-               DiscoveryEntry entriesRead[] = new DiscoveryEntry[size];
+               DiscoveryEntry[] entriesRead = new DiscoveryEntry[size];
                // Will first decode all the elements outside of any lock
                for (int i = 0; i < size; i++)
                {

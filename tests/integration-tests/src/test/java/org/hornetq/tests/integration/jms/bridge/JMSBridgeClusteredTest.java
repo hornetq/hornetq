@@ -11,33 +11,30 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.bridge;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import javax.transaction.TransactionManager;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
-*
-* A JMSBridgeClusteredTest
-* 
-* Tests of jms bridge using HA connection factories.
-* 
-* @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
-*/
+ * A JMSBridgeClusteredTest
+ * <p/>
+ * Tests of jms bridge using HA connection factories.
+ *
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
+ */
 public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
 {
    private ServerGroup sourceServer;
    private ServerGroup targetServer;
-   
+
    private String sourceQueueName = "SourceQueue";
    private String targetQueueName = "TargetQueue";
 
@@ -49,10 +46,10 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
 
       sourceServer = createServerGroup("source-server");
       targetServer = createServerGroup("target-server");
-      
+
       sourceServer.start();
       targetServer.start();
-      
+
       sourceServer.createQueue(sourceQueueName);
       targetServer.createQueue(targetQueueName);
    }
@@ -86,7 +83,7 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
    //then crash the live
    //then send more messages
    //then receive those messages, no more, no less.
-   //this test are valid for ONCE_AND_ONLY_ONCE and AT_MOST_ONCE. 
+   //this test are valid for ONCE_AND_ONLY_ONCE and AT_MOST_ONCE.
    //with DUPS_OK the test failed because some messages are delivered again
    //after failover, which is fine as in this mode duplication is allowed.
    public void performSourceAndTargetCrashAndFailoverWithMessages(QualityOfServiceMode mode) throws Exception
@@ -129,16 +126,16 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
 
          System.out.println("started bridge");
 
-         final int NUM_MESSAGES = batchSize/2;
+         final int NUM_MESSAGES = batchSize / 2;
 
          //send some messages to source
          sendMessages(sourceServer, sourceQueueName, NUM_MESSAGES);
          //receive from target, no message should be received.
          receiveMessages(targetServer, targetQueueName, 0);
-         
+
          //now crash target server
          targetServer.crashLive();
-         
+
          //send more
          sendMessages(sourceServer, sourceQueueName, NUM_MESSAGES);
 

@@ -12,17 +12,11 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Assert;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -35,15 +29,16 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MultiThreadConsumerStressTest
- *
+ * <p/>
  * This test validates consuming / sending messages while compacting is working
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class MultiThreadConsumerStressTest extends ServiceTestBase
 {
@@ -157,7 +152,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    }
 
-   private void setupServer(final JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception
    {
       Configuration config = createDefaultConfig(true);
 
@@ -271,9 +266,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
             session.commit();
 
             System.out.println("Thread " + Thread.currentThread().getName() +
-                               " sent " +
-                               numberOfMessages +
-                               "  messages");
+                                  " sent " +
+                                  numberOfMessages +
+                                  "  messages");
          }
          catch (Throwable e)
          {
@@ -331,9 +326,9 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
             }
 
             System.out.println("Thread " + Thread.currentThread().getName() +
-                               " received " +
-                               numberOfMessages +
-                               " messages");
+                                  " received " +
+                                  numberOfMessages +
+                                  " messages");
 
             session.commit();
          }

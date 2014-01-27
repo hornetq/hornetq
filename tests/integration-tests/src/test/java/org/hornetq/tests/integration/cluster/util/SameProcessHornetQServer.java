@@ -81,7 +81,7 @@ public class SameProcessHornetQServer implements TestableServer
    public CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
       CountDownLatch latch = new CountDownLatch(sessions.length);
-      CountDownSessionFailureListener listeners[] = new CountDownSessionFailureListener[sessions.length];
+      CountDownSessionFailureListener[] listeners = new CountDownSessionFailureListener[sessions.length];
       for (int i = 0; i < sessions.length; i++)
       {
          listeners[i] = new CountDownSessionFailureListener(latch, sessions[i]);

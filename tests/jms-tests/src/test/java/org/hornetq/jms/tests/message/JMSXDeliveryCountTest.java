@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -31,17 +29,14 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
- *
  * A JMSXDeliveryCountTest
-
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class JMSXDeliveryCountTest extends HornetQServerTestCase
 {
@@ -706,8 +701,8 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
                   if (tm.getIntProperty("JMSXDeliveryCount") != j + 1)
                   {
                      log.error("DeliveryImpl count not expected value:" + (j + 1) +
-                               " actual:" +
-                               tm.getIntProperty("JMSXDeliveryCount"));;
+                                  " actual:" +
+                                  tm.getIntProperty("JMSXDeliveryCount"));
                      failed = true;
                   }
                }

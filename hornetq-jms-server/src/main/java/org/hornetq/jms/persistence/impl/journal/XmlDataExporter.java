@@ -13,14 +13,9 @@
 
 package org.hornetq.jms.persistence.impl.journal;
 
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
-
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -37,10 +32,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -69,7 +60,6 @@ import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
-import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal.MessageDescribe;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal.ReferenceDescribe;
@@ -78,7 +68,6 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager.AckDescri
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.CursorAckRecordEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdateTXEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PersistentQueueBindingEncoding;
-import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
@@ -92,6 +81,14 @@ import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
 import org.hornetq.utils.Base64;
 import org.hornetq.utils.ExecutorFactory;
+
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
 
 /**
  * Read the journal, page, and large-message data from a stopped instance of HornetQ and save it in an XML format to
@@ -174,15 +171,15 @@ public final class XmlDataExporter
       XMLOutputFactory factory = XMLOutputFactory.newInstance();
       XMLStreamWriter rawXmlWriter = factory.createXMLStreamWriter(out, "UTF-8");
       PrettyPrintHandler handler = new PrettyPrintHandler(rawXmlWriter);
-      xmlWriter = (XMLStreamWriter) Proxy.newProxyInstance(
-            XMLStreamWriter.class.getClassLoader(),
-            new Class[]{XMLStreamWriter.class},
-            handler);
+      xmlWriter = (XMLStreamWriter)Proxy.newProxyInstance(
+         XMLStreamWriter.class.getClassLoader(),
+         new Class[]{XMLStreamWriter.class},
+         handler);
    }
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(String[] arg)
    {
       if (arg.length < 4)
       {
@@ -271,7 +268,7 @@ public final class XmlDataExporter
          }
       };
 
-      ((JournalImpl) messageJournal).load(records, preparedTransactions, transactionFailureCallback, false);
+      ((JournalImpl)messageJournal).load(records, preparedTransactions, transactionFailureCallback, false);
 
       // Since we don't use these nullify the reference so that the garbage collector can clean them up
       preparedTransactions = null;
@@ -285,15 +282,15 @@ public final class XmlDataExporter
          Object o = DescribeJournal.newObjectEncoding(info, storageManager);
          if (info.getUserRecordType() == ADD_MESSAGE)
          {
-            messages.put(info.id, ((MessageDescribe) o).getMsg());
+            messages.put(info.id, ((MessageDescribe)o).getMsg());
          }
          else if (info.getUserRecordType() == ADD_LARGE_MESSAGE)
          {
-            messages.put(info.id, ((MessageDescribe) o).getMsg());
+            messages.put(info.id, ((MessageDescribe)o).getMsg());
          }
          else if (info.getUserRecordType() == ADD_REF)
          {
-            ReferenceDescribe ref = (ReferenceDescribe) o;
+            ReferenceDescribe ref = (ReferenceDescribe)o;
             HashMap<Long, ReferenceDescribe> map = messageRefs.get(info.id);
             if (map == null)
             {
@@ -376,13 +373,13 @@ public final class XmlDataExporter
       SequentialFileFactory bindingsJMS = new NIOSequentialFileFactory(config.getBindingsDirectory());
 
       Journal jmsJournal = new JournalImpl(1024 * 1024,
-            2,
-            config.getJournalCompactMinFiles(),
-            config.getJournalCompactPercentage(),
-            bindingsJMS,
-            "hornetq-jms",
-            "jms",
-            1);
+                                           2,
+                                           config.getJournalCompactMinFiles(),
+                                           config.getJournalCompactPercentage(),
+                                           bindingsJMS,
+                                           "hornetq-jms",
+                                           "jms",
+                                           1);
 
       jmsJournal.start();
 
@@ -410,7 +407,7 @@ public final class XmlDataExporter
             HornetQServerLogger.LOGGER.info("Found JMS connection factory: " + cf.getName());
             jmsConnectionFactories.put(cf.getName(), cf);
          }
-         else if(rec == JMSJournalStorageManagerImpl.DESTINATION_RECORD)
+         else if (rec == JMSJournalStorageManagerImpl.DESTINATION_RECORD)
          {
             PersistedDestination destination = new PersistedDestination();
             destination.decode(buffer);
@@ -455,14 +452,14 @@ public final class XmlDataExporter
 
       HornetQServerLogger.LOGGER.debug("Reading bindings journal from " + config.getBindingsDirectory());
 
-      ((JournalImpl) bindingsJournal).load(records, null, null, false);
+      ((JournalImpl)bindingsJournal).load(records, null, null, false);
 
       for (RecordInfo info : records)
       {
          if (info.getUserRecordType() == QUEUE_BINDING_RECORD)
          {
             PersistentQueueBindingEncoding bindingEncoding =
-                  (PersistentQueueBindingEncoding)DescribeJournal.newObjectEncoding(info, null);
+               (PersistentQueueBindingEncoding)DescribeJournal.newObjectEncoding(info, null);
             queueBindings.put(bindingEncoding.getId(), bindingEncoding);
          }
       }
@@ -766,7 +763,7 @@ public final class XmlDataExporter
       // files in order to get the messages in the right order.
       for (Map.Entry<Long, Message> messageMapEntry : messages.entrySet())
       {
-         printSingleMessageAsXML((ServerMessage) messageMapEntry.getValue(), extractQueueNames(messageRefs.get(messageMapEntry.getKey())));
+         printSingleMessageAsXML((ServerMessage)messageMapEntry.getValue(), extractQueueNames(messageRefs.get(messageMapEntry.getKey())));
       }
 
       printPagedMessagesAsXML();
@@ -792,15 +789,15 @@ public final class XmlDataExporter
             }
          };
          PagingStoreFactory pageStoreFactory =
-               new PagingStoreFactoryNIO(storageManager, config.getPagingDirectory(), 1000l, scheduled, executorFactory, true,
-                     null);
+            new PagingStoreFactoryNIO(storageManager, config.getPagingDirectory(), 1000L, scheduled, executorFactory, true,
+                                      null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
          PagingManager manager = new PagingManagerImpl(pageStoreFactory, addressSettingsRepository);
 
          manager.start();
 
-         SimpleString stores[] = manager.getStoreNames();
+         SimpleString[] stores = manager.getStoreNames();
 
          for (SimpleString store : stores)
          {
@@ -813,7 +810,7 @@ public final class XmlDataExporter
             }
             HornetQServerLogger.LOGGER.debug("Reading page store " + store + " folder = " + folder);
 
-            int pageId = (int) pageStore.getFirstPage();
+            int pageId = (int)pageStore.getFirstPage();
             for (int i = 0; i < pageStore.getNumberOfPages(); i++)
             {
                HornetQServerLogger.LOGGER.debug("Reading page " + pageId);
@@ -827,7 +824,7 @@ public final class XmlDataExporter
                for (PagedMessage message : messages)
                {
                   message.initMessage(storageManager);
-                  long queueIDs[] = message.getQueueIDs();
+                  long[] queueIDs = message.getQueueIDs();
                   List<String> queueNames = new ArrayList<String>();
                   for (long queueID : queueIDs)
                   {
@@ -887,7 +884,7 @@ public final class XmlDataExporter
 
       if (message.isLargeMessage())
       {
-         printLargeMessageBody((LargeServerMessage) message);
+         printLargeMessageBody((LargeServerMessage)message);
       }
       else
       {
@@ -971,7 +968,7 @@ public final class XmlDataExporter
          xmlWriter.writeAttribute(XmlDataConstants.PROPERTY_NAME, key.toString());
          if (value instanceof byte[])
          {
-            xmlWriter.writeAttribute(XmlDataConstants.PROPERTY_VALUE, encode((byte[]) value));
+            xmlWriter.writeAttribute(XmlDataConstants.PROPERTY_VALUE, encode((byte[])value));
          }
          else
          {

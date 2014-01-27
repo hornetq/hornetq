@@ -12,7 +12,7 @@
  */
 
 package org.hornetq.tests.integration.management;
-import org.hornetq.api.core.client.HornetQClient;
+
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -27,6 +27,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DayCounterInfo;
@@ -50,7 +51,6 @@ import org.junit.Test;
  * A QueueControlTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class QueueControlTest extends ManagementTestBase
 {
@@ -1085,7 +1085,7 @@ public class QueueControlTest extends ManagementTestBase
 
       // send messages on queue
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
 
          ClientMessage msg = session.createMessage(false);
@@ -1170,14 +1170,14 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          ClientMessage msg = session.createMessage(false);
          msg.putStringProperty(key, SimpleString.toSimpleString(matchingValue));
          producer.send(msg);
       }
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage msg = session.createMessage(false);
          msg.putStringProperty(key, SimpleString.toSimpleString(nonMatchingValue));
@@ -1688,11 +1688,11 @@ public class QueueControlTest extends ManagementTestBase
 
       assertEquals(NUMBER_OF_MSGS, q1Control.moveMessages(null, "q2"));
 
-      long messageIDs[] = new long[NUMBER_OF_MSGS];
+      long[] messageIDs = new long[NUMBER_OF_MSGS];
 
       consumer = session.createConsumer("q2", true);
 
-      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -1703,7 +1703,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumer.close();
 
-      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
       {
          q2Control.moveMessage(messageIDs[i], "q1");
       }
@@ -1755,7 +1755,7 @@ public class QueueControlTest extends ManagementTestBase
          e.printStackTrace();
       }
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

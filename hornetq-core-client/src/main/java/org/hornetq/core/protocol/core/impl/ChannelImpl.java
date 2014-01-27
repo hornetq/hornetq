@@ -44,15 +44,20 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  */
 public final class ChannelImpl implements Channel
 {
-   public enum CHANNEL_ID {
+   public enum CHANNEL_ID
+   {
 
       /**
        * Used for core protocol management.
        */
       PING(0),
-      /** Session creation and attachment. */
+      /**
+       * Session creation and attachment.
+       */
       SESSION(1),
-      /** Replication, i.e. for backups that do not share the journal. */
+      /**
+       * Replication, i.e. for backups that do not share the journal.
+       */
       REPLICATION(2),
       /**
        * Channels [0-9] are reserved for the system, user channels must be greater than that.
@@ -68,8 +73,9 @@ public final class ChannelImpl implements Channel
 
       protected static String idToString(long code)
       {
-         for (CHANNEL_ID channel:EnumSet.allOf(CHANNEL_ID.class)){
-            if (channel.id==code) return channel.toString();
+         for (CHANNEL_ID channel : EnumSet.allOf(CHANNEL_ID.class))
+         {
+            if (channel.id == code) return channel.toString();
          }
          return Long.toString(code);
       }
@@ -311,7 +317,7 @@ public final class ChannelImpl implements Channel
             {
                try
                {
-                  if(connection.getBlockingCallFailoverTimeout() < 0)
+                  if (connection.getBlockingCallFailoverTimeout() < 0)
                   {
                      while (failingOver)
                      {
@@ -359,7 +365,7 @@ public final class ChannelImpl implements Channel
 
                if (response != null && response.getType() != PacketImpl.EXCEPTION && response.getType() != expectedPacket)
                {
-                  HornetQClientLogger.LOGGER.packetOutOfOrder(response, new Exception ("trace"));
+                  HornetQClientLogger.LOGGER.packetOutOfOrder(response, new Exception("trace"));
                }
 
                if (closed)
@@ -400,10 +406,9 @@ public final class ChannelImpl implements Channel
    }
 
    /**
-    *
     * @param packet the packet to intercept
     * @return the name of the interceptor that returned <code>false</code> or <code>null</code> if no interceptors
-    *    returned <code>false</code>.
+    * returned <code>false</code>.
     */
    public static String invokeInterceptors(final Packet packet, final List<Interceptor> interceptors, final RemotingConnection connection)
    {
@@ -420,7 +425,7 @@ public final class ChannelImpl implements Channel
                   // use a StringBuilder for speed since this may be executed a lot
                   StringBuilder msg = new StringBuilder();
                   msg.append("Invocation of interceptor ").append(interceptor.getClass().getName()).append(" on ").
-                        append(packet).append(" returned ").append(callNext);
+                     append(packet).append(" returned ").append(callNext);
                   HornetQClientLogger.LOGGER.debug(msg.toString());
                }
 
@@ -444,8 +449,8 @@ public final class ChannelImpl implements Channel
       if (confWindowSize < 0)
       {
          final String msg =
-                  "You can't set confirmationHandler on a connection with confirmation-window-size < 0."
-                           + " Look at the documentation for more information.";
+            "You can't set confirmationHandler on a connection with confirmation-window-size < 0."
+               + " Look at the documentation for more information.";
          throw new IllegalStateException(msg);
       }
       commandConfirmationHandler = handler;
@@ -473,7 +478,7 @@ public final class ChannelImpl implements Channel
          throw HornetQClientMessageBundle.BUNDLE.noChannelToClose(id);
       }
 
-      if(failingOver)
+      if (failingOver)
       {
          unlock();
       }

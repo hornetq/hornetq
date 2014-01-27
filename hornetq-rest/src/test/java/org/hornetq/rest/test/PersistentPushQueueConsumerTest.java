@@ -104,7 +104,7 @@ public class PersistentPushQueueConsumerTest
          startup();
          deployBridgeQueues(testName);
 
-        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+         ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 
@@ -178,7 +178,7 @@ public class PersistentPushQueueConsumerTest
          Link pushSubscription = response.getLocation();
          response.releaseConnection();
 
-        ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+         ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
          res.releaseConnection();
          Assert.assertEquals(201, res.getStatus());
 

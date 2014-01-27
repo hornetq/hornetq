@@ -38,10 +38,8 @@ import org.hornetq.utils.ReusableLatch;
  * A Redistributor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 8 Feb 2009 14:23:41
- *
- *
+ *         <p/>
+ *         Created 8 Feb 2009 14:23:41
  */
 public class Redistributor implements Consumer
 {
@@ -93,7 +91,7 @@ public class Redistributor implements Consumer
 
    public String toManagementString()
    {
-      return "Redistributor[" + queue.getName() + "/" + queue.getID() +"]";
+      return "Redistributor[" + queue.getName() + "/" + queue.getID() + "]";
    }
 
    public synchronized void start()
@@ -151,7 +149,7 @@ public class Redistributor implements Consumer
          return HandleStatus.BUSY;
       }
       //we shouldn't redistribute with message groups return NO_MATCH so other messages can be delivered
-      else if(reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID) != null)
+      else if (reference.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID) != null)
       {
          return HandleStatus.NO_MATCH;
       }
@@ -227,7 +225,8 @@ public class Redistributor implements Consumer
    private void internalExecute(final Runnable runnable)
    {
       pendingRuns.countUp();
-      executor.execute(new Runnable(){
+      executor.execute(new Runnable()
+      {
          public void run()
          {
             try

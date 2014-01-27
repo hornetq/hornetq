@@ -12,16 +12,6 @@
  */
 package org.hornetq.ra;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.jms.Session;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -32,6 +22,15 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -66,7 +65,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * Trace enabled
     */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
-   
+
    /**
     * The bootstrap context
     */
@@ -142,7 +141,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    public void endpointActivation(final MessageEndpointFactory endpointFactory, final ActivationSpec spec) throws ResourceException
    {
-      if(spec == null)
+      if (spec == null)
       {
          throw HornetQRABundle.BUNDLE.noActivationSpec();
       }
@@ -209,9 +208,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       else
       {
          List<XAResource> xaresources = new ArrayList<XAResource>();
-         for (ActivationSpec spec : specs) {
+         for (ActivationSpec spec : specs)
+         {
             HornetQActivation activation = activations.get(spec);
-            if (activation != null) {
+            if (activation != null)
+            {
                xaresources.addAll(activation.getXAResources());
             }
          }
@@ -223,8 +224,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * Start
     *
     * @param ctx The bootstrap context
-    * @throws ResourceAdapterInternalException
-    *          Thrown if an error occurs
+    * @throws ResourceAdapterInternalException Thrown if an error occurs
     */
    public void start(final BootstrapContext ctx) throws ResourceAdapterInternalException
    {
@@ -290,7 +290,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          defaultHornetQConnectionFactory.close();
       }
 
-      if(recoveryHornetQConnectionFactory != null)
+      if (recoveryHornetQConnectionFactory != null)
       {
          recoveryHornetQConnectionFactory.close();
       }
@@ -1437,7 +1437,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setPassword(password);
    }
 
-    /**
+   /**
     * @return the useJNDI
     */
    public boolean isUseJNDI()
@@ -1454,7 +1454,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
-    *
     * @return return the jndi params to use
     */
    public String getJndiParams()
@@ -1468,10 +1467,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setParsedJndiParams(HornetQRaUtils.parseHashtableConfig(jndiParams));
    }
 
-   public Hashtable<?,?> getParsedJndiParams()
+   public Hashtable<?, ?> getParsedJndiParams()
    {
       return raProperties.getParsedJndiParams();
    }
+
    /**
     * Get the client ID
     *
@@ -1705,7 +1705,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                   break;
                case Session.DUPS_OK_ACKNOWLEDGE:
                   int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
-                                                                  : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
+                     : HornetQClient.DEFAULT_ACK_BATCH_SIZE;
                   result = parameterFactory.createSession(user, pass, false, true, true, false, actDupsOkBatchSize);
                   break;
                default:
@@ -1719,7 +1719,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return result;
 
    }
-
 
 
    public RecoveryManager getRecoveryManager()
@@ -1757,6 +1756,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       return activations;
    }
+
    public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
@@ -1849,10 +1849,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       HornetQConnectionFactory cf;
       List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
-                                                                                    : raProperties.getParsedConnectorClassNames();
+         : raProperties.getParsedConnectorClassNames();
 
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
-                                                                                : getDiscoveryAddress();
+         : getDiscoveryAddress();
 
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
 
@@ -1864,7 +1864,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       String jgroupsLocatorClassName = raProperties.getJgroupsChannelLocatorClass();
 
-      if(ha == null)
+      if (ha == null)
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
@@ -1879,18 +1879,17 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClassName, jchannelRefName);
             endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
          }
-         else
-         if (discoveryAddress != null)
+         else if (discoveryAddress != null)
          {
             Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                                  : getDiscoveryPort();
-            if(discoveryPort == null)
+               : getDiscoveryPort();
+            if (discoveryPort == null)
             {
                discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
             }
 
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
-                                                                           : raProperties.getDiscoveryLocalBindAddress();
+               : raProperties.getDiscoveryLocalBindAddress();
             endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
          else if (jgroupsFileName != null)
@@ -1898,16 +1897,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
          }
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-                                                                    : raProperties.getDiscoveryRefreshTimeout();
+            : raProperties.getDiscoveryRefreshTimeout();
          if (refreshTimeout == null)
          {
             refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
          }
 
          Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+            : raProperties.getDiscoveryInitialWaitTimeout();
 
-         if(initialTimeout == null)
+         if (initialTimeout == null)
          {
             initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
          }
@@ -1933,7 +1932,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
          List<Map<String, Object>> connectionParams;
-         if(overrideProperties.getParsedConnectorClassNames() != null)
+         if (overrideProperties.getParsedConnectorClassNames() != null)
          {
             connectionParams = overrideProperties.getParsedConnectionParameters();
          }
@@ -1945,7 +1944,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          for (int i = 0; i < connectorClassName.size(); i++)
          {
             TransportConfiguration tc;
-            if(connectionParams == null || i >= connectionParams.size())
+            if (connectionParams == null || i >= connectionParams.size())
             {
                tc = new TransportConfiguration(connectorClassName.get(i));
                HornetQRALogger.LOGGER.debug("No connector params provided using default");
@@ -1962,7 +1961,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
             HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for transport=" +
-                     Arrays.toString(transportConfigurations) + " with ha=" + ha);
+                                            Arrays.toString(transportConfigurations) + " with ha=" + ha);
          }
 
          if (ha)
@@ -1987,10 +1986,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    {
       HornetQConnectionFactory cf;
       List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
-                                                                                    : raProperties.getParsedConnectorClassNames();
+         : raProperties.getParsedConnectorClassNames();
 
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
-                                                                                : getDiscoveryAddress();
+         : getDiscoveryAddress();
 
       String jgroupsFileName = overrideProperties.getJgroupsFile() != null ? overrideProperties.getJgroupsFile()
          : getJgroupsFile();
@@ -2004,14 +2003,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          if (discoveryAddress != null)
          {
             Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                                  : getDiscoveryPort();
-            if(discoveryPort == null)
+               : getDiscoveryPort();
+            if (discoveryPort == null)
             {
                discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
             }
 
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
-                                                                           : raProperties.getDiscoveryLocalBindAddress();
+               : raProperties.getDiscoveryLocalBindAddress();
             endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
          }
          else if (jgroupsFileName != null)
@@ -2020,29 +2019,29 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
          else
          {
-             String jgroupsLocatorClass = raProperties.getJgroupsChannelLocatorClass();
-             if (jgroupsLocatorClass != null)
-             {
-                String jgroupsChannelRefName = raProperties.getJgroupsChannelRefName();
-                JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClass, jgroupsChannelRefName);
-            	 endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
-             }
-             if (endpointFactoryConfiguration == null)
-             {
-                 throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
-             }
+            String jgroupsLocatorClass = raProperties.getJgroupsChannelLocatorClass();
+            if (jgroupsLocatorClass != null)
+            {
+               String jgroupsChannelRefName = raProperties.getJgroupsChannelRefName();
+               JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClass, jgroupsChannelRefName);
+               endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
+            }
+            if (endpointFactoryConfiguration == null)
+            {
+               throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+            }
          }
 
          Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-                                                                    : raProperties.getDiscoveryRefreshTimeout();
+            : raProperties.getDiscoveryRefreshTimeout();
          if (refreshTimeout == null)
          {
             refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
          }
 
          Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
-         if(initialTimeout == null)
+            : raProperties.getDiscoveryInitialWaitTimeout();
+         if (initialTimeout == null)
          {
             initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
          }
@@ -2062,7 +2061,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
          List<Map<String, Object>> connectionParams;
-         if(overrideProperties.getParsedConnectorClassNames() != null)
+         if (overrideProperties.getParsedConnectorClassNames() != null)
          {
             connectionParams = overrideProperties.getParsedConnectionParameters();
          }
@@ -2074,7 +2073,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          for (int i = 0; i < connectorClassName.size(); i++)
          {
             TransportConfiguration tc;
-            if(connectionParams == null || i >= connectionParams.size())
+            if (connectionParams == null || i >= connectionParams.size())
             {
                tc = new TransportConfiguration(connectorClassName.get(i));
                HornetQRALogger.LOGGER.debug("No connector params provided using default");
@@ -2091,7 +2090,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
             HornetQRALogger.LOGGER.debug("Creating Recovery Connection Factory on the resource adapter for transport=" +
-                     Arrays.toString(transportConfigurations));
+                                            Arrays.toString(transportConfigurations));
          }
 
          cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -2109,11 +2108,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                            final Map<String, Object> overrideConnectionParams)
    {
       Map<String, Object> map = new HashMap<String, Object>();
-      if(connectionParams != null)
+      if (connectionParams != null)
       {
          map.putAll(connectionParams);
       }
-      if(overrideConnectionParams != null)
+      if (overrideConnectionParams != null)
       {
          for (Map.Entry<String, Object> stringObjectEntry : overrideConnectionParams.entrySet())
          {
@@ -2125,10 +2124,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private void locateTM()
    {
-      String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
-      String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
+      String[] locatorClasses = raProperties.getTransactionManagerLocatorClass().split(";");
+      String[] locatorMethods = raProperties.getTransactionManagerLocatorMethod().split(";");
 
-      for (int i = 0 ; i < locatorClasses.length; i++)
+      for (int i = 0; i < locatorClasses.length; i++)
       {
          tm = HornetQRaUtils.locateTM(locatorClasses[i], locatorMethods[i]);
          if (tm != null)
@@ -2152,108 +2151,108 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                           final ConnectionFactoryProperties overrideProperties)
    {
       Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup()
-                                                            : raProperties.isAutoGroup();
+         : raProperties.isAutoGroup();
       if (val != null)
       {
          cf.setAutoGroup(val);
       }
       val = overrideProperties.isBlockOnAcknowledge() != null ? overrideProperties.isBlockOnAcknowledge()
-                                                             : raProperties.isBlockOnAcknowledge();
+         : raProperties.isBlockOnAcknowledge();
       if (val != null)
       {
          cf.setBlockOnAcknowledge(val);
       }
       val = overrideProperties.isBlockOnNonDurableSend() != null ? overrideProperties.isBlockOnNonDurableSend()
-                                                                   : raProperties.isBlockOnNonDurableSend();
+         : raProperties.isBlockOnNonDurableSend();
       if (val != null)
       {
          cf.setBlockOnNonDurableSend(val);
       }
       val = overrideProperties.isBlockOnDurableSend() != null ? overrideProperties.isBlockOnDurableSend()
-                                                                : raProperties.isBlockOnDurableSend();
+         : raProperties.isBlockOnDurableSend();
       if (val != null)
       {
          cf.setBlockOnDurableSend(val);
       }
       val = overrideProperties.isPreAcknowledge() != null ? overrideProperties.isPreAcknowledge()
-                                                         : raProperties.isPreAcknowledge();
+         : raProperties.isPreAcknowledge();
       if (val != null)
       {
          cf.setPreAcknowledge(val);
       }
       val = overrideProperties.isUseGlobalPools() != null ? overrideProperties.isUseGlobalPools()
-                                                         : raProperties.isUseGlobalPools();
+         : raProperties.isUseGlobalPools();
       if (val != null)
       {
          cf.setUseGlobalPools(val);
       }
 
       val = overrideProperties.isCacheLargeMessagesClient() != null ? overrideProperties.isCacheLargeMessagesClient()
-                                                                    : raProperties.isCacheLargeMessagesClient();
+         : raProperties.isCacheLargeMessagesClient();
       if (val != null)
       {
          cf.setCacheLargeMessagesClient(val);
       }
 
       val = overrideProperties.isCompressLargeMessage() != null ? overrideProperties.isCompressLargeMessage()
-                                                                    : raProperties.isCompressLargeMessage();
+         : raProperties.isCompressLargeMessage();
       if (val != null)
       {
          cf.setCompressLargeMessage(val);
       }
 
       val = overrideProperties.isFailoverOnInitialConnection() != null ? overrideProperties.isFailoverOnInitialConnection()
-                                                                : raProperties.isFailoverOnInitialConnection();
+         : raProperties.isFailoverOnInitialConnection();
       if (val != null)
       {
          cf.setFailoverOnInitialConnection(val);
       }
 
       Integer val2 = overrideProperties.getConsumerMaxRate() != null ? overrideProperties.getConsumerMaxRate()
-                                                                    : raProperties.getConsumerMaxRate();
+         : raProperties.getConsumerMaxRate();
       if (val2 != null)
       {
          cf.setConsumerMaxRate(val2);
       }
       val2 = overrideProperties.getConsumerWindowSize() != null ? overrideProperties.getConsumerWindowSize()
-                                                               : raProperties.getConsumerWindowSize();
+         : raProperties.getConsumerWindowSize();
       if (val2 != null)
       {
          cf.setConsumerWindowSize(val2);
       }
       val2 = overrideProperties.getDupsOKBatchSize() != null ? overrideProperties.getDupsOKBatchSize()
-                                                            : raProperties.getDupsOKBatchSize();
+         : raProperties.getDupsOKBatchSize();
       if (val2 != null)
       {
          cf.setDupsOKBatchSize(val2);
       }
 
       val2 = overrideProperties.getMinLargeMessageSize() != null ? overrideProperties.getMinLargeMessageSize()
-                                                                : raProperties.getMinLargeMessageSize();
+         : raProperties.getMinLargeMessageSize();
       if (val2 != null)
       {
          cf.setMinLargeMessageSize(val2);
       }
       val2 = overrideProperties.getProducerMaxRate() != null ? overrideProperties.getProducerMaxRate()
-                                                            : raProperties.getProducerMaxRate();
+         : raProperties.getProducerMaxRate();
       if (val2 != null)
       {
          cf.setProducerMaxRate(val2);
       }
       val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize()
-                                                                : raProperties.getProducerWindowSize();
+         : raProperties.getProducerWindowSize();
       if (val2 != null)
       {
          cf.setProducerWindowSize(val2);
       }
       val2 = overrideProperties.getConfirmationWindowSize() != null ? overrideProperties.getConfirmationWindowSize()
-                                                                   : raProperties.getConfirmationWindowSize();
+         : raProperties.getConfirmationWindowSize();
       if (val2 != null)
       {
          cf.setConfirmationWindowSize(val2);
       }
       val2 = overrideProperties.getReconnectAttempts() != null ? overrideProperties.getReconnectAttempts()
-                                                              : raProperties.getReconnectAttempts();
+         : raProperties.getReconnectAttempts();
       if (val2 != null)
       {
          cf.setReconnectAttempts(val2);
@@ -2264,89 +2263,89 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          cf.setReconnectAttempts(-1);
       }
       val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize()
-                                                              : raProperties.getThreadPoolMaxSize();
+         : raProperties.getThreadPoolMaxSize();
       if (val2 != null)
       {
          cf.setThreadPoolMaxSize(val2);
       }
       val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null ? overrideProperties.getScheduledThreadPoolMaxSize()
-                                                                       : raProperties.getScheduledThreadPoolMaxSize();
+         : raProperties.getScheduledThreadPoolMaxSize();
       if (val2 != null)
       {
          cf.setScheduledThreadPoolMaxSize(val2);
       }
       val2 = overrideProperties.getTransactionBatchSize() != null ? overrideProperties.getTransactionBatchSize()
-                                                                 : raProperties.getTransactionBatchSize();
+         : raProperties.getTransactionBatchSize();
       if (val2 != null)
       {
          cf.setTransactionBatchSize(val2);
       }
       val2 = overrideProperties.getInitialConnectAttempts() != null ? overrideProperties.getInitialConnectAttempts()
-                                                                    : raProperties.getInitialConnectAttempts();
+         : raProperties.getInitialConnectAttempts();
       if (val2 != null)
       {
          cf.setInitialConnectAttempts(val2);
       }
       val2 = overrideProperties.getInitialMessagePacketSize() != null ? overrideProperties.getInitialMessagePacketSize()
-                                                                      : raProperties.getInitialMessagePacketSize();
+         : raProperties.getInitialMessagePacketSize();
       if (val2 != null)
       {
          cf.setInitialMessagePacketSize(val2);
       }
 
       Long val3 = overrideProperties.getClientFailureCheckPeriod() != null ? overrideProperties.getClientFailureCheckPeriod()
-                                                                          : raProperties.getClientFailureCheckPeriod();
+         : raProperties.getClientFailureCheckPeriod();
       if (val3 != null)
       {
          cf.setClientFailureCheckPeriod(val3);
       }
       val3 = overrideProperties.getCallTimeout() != null ? overrideProperties.getCallTimeout()
-                                                        : raProperties.getCallTimeout();
+         : raProperties.getCallTimeout();
       if (val3 != null)
       {
          cf.setCallTimeout(val3);
       }
       val3 = overrideProperties.getCallFailoverTimeout() != null ? overrideProperties.getCallFailoverTimeout()
-                                                                : raProperties.getCallFailoverTimeout();
+         : raProperties.getCallFailoverTimeout();
       if (val3 != null)
       {
          cf.setCallFailoverTimeout(val3);
       }
       val3 = overrideProperties.getConnectionTTL() != null ? overrideProperties.getConnectionTTL()
-                                                          : raProperties.getConnectionTTL();
+         : raProperties.getConnectionTTL();
       if (val3 != null)
       {
          cf.setConnectionTTL(val3);
       }
 
       val3 = overrideProperties.getRetryInterval() != null ? overrideProperties.getRetryInterval()
-                                                          : raProperties.getRetryInterval();
+         : raProperties.getRetryInterval();
       if (val3 != null)
       {
          cf.setRetryInterval(val3);
       }
 
       val3 = overrideProperties.getMaxRetryInterval() != null ? overrideProperties.getMaxRetryInterval()
-                                                           : raProperties.getMaxRetryInterval();
+         : raProperties.getMaxRetryInterval();
       if (val3 != null)
       {
          cf.setMaxRetryInterval(val3);
       }
 
       Double val4 = overrideProperties.getRetryIntervalMultiplier() != null ? overrideProperties.getRetryIntervalMultiplier()
-                                                                           : raProperties.getRetryIntervalMultiplier();
+         : raProperties.getRetryIntervalMultiplier();
       if (val4 != null)
       {
          cf.setRetryIntervalMultiplier(val4);
       }
       String val5 = overrideProperties.getClientID() != null ? overrideProperties.getClientID()
-                                                            : raProperties.getClientID();
+         : raProperties.getClientID();
       if (val5 != null)
       {
          cf.setClientID(val5);
       }
       val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null ? overrideProperties.getConnectionLoadBalancingPolicyClassName()
-                                                                                   : raProperties.getConnectionLoadBalancingPolicyClassName();
+         : raProperties.getConnectionLoadBalancingPolicyClassName();
       if (val5 != null)
       {
          cf.setConnectionLoadBalancingPolicyClassName(val5);

@@ -13,16 +13,13 @@
 
 package org.hornetq.core.transaction.impl;
 
+import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.transaction.xa.Xid;
-
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.transaction.Transaction;
@@ -33,7 +30,6 @@ import org.hornetq.core.transaction.TransactionOperation;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- *
  */
 public class TransactionImpl implements Transaction
 {
@@ -138,9 +134,9 @@ public class TransactionImpl implements Transaction
       return createTime;
    }
 
-   public boolean hasTimedOut(final long currentTime,final int defaultTimeout)
+   public boolean hasTimedOut(final long currentTime, final int defaultTimeout)
    {
-      if(timeoutSeconds == - 1)
+      if (timeoutSeconds == -1)
       {
          return getState() != Transaction.State.PREPARED && currentTime > createTime + defaultTimeout * 1000;
       }
@@ -155,58 +151,58 @@ public class TransactionImpl implements Transaction
       storageManager.readLock();
       try
       {
-      synchronized (timeoutLock)
-      {
-         if (state == State.ROLLBACK_ONLY)
+         synchronized (timeoutLock)
          {
-            if (exception != null)
+            if (state == State.ROLLBACK_ONLY)
             {
-               // this TX will never be rolled back,
-               // so we reset it now
-               beforeRollback();
-               afterRollback();
-               operations.clear();
-               throw exception;
+               if (exception != null)
+               {
+                  // this TX will never be rolled back,
+                  // so we reset it now
+                  beforeRollback();
+                  afterRollback();
+                  operations.clear();
+                  throw exception;
+               }
+               else
+               {
+                  // Do nothing
+                  return;
+               }
             }
-            else
+            else if (state != State.ACTIVE)
             {
-               // Do nothing
-               return;
+               throw new IllegalStateException("Transaction is in invalid state " + state);
             }
+
+            if (xid == null)
+            {
+               throw new IllegalStateException("Cannot prepare non XA transaction");
+            }
+
+            beforePrepare();
+
+            storageManager.prepare(id, xid);
+
+            state = State.PREPARED;
+            // We use the Callback even for non persistence
+            // If we are using non-persistence with replication, the replication manager will have
+            // to execute this runnable in the correct order
+            storageManager.afterCompleteOperations(new IOAsyncTask()
+            {
+
+               public void onError(final int errorCode, final String errorMessage)
+               {
+                  HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
+               }
+
+               public void done()
+               {
+                  afterPrepare();
+               }
+            });
          }
-         else if (state != State.ACTIVE)
-         {
-            throw new IllegalStateException("Transaction is in invalid state " + state);
-         }
-
-         if (xid == null)
-         {
-            throw new IllegalStateException("Cannot prepare non XA transaction");
-         }
-
-         beforePrepare();
-
-         storageManager.prepare(id, xid);
-
-         state = State.PREPARED;
-         // We use the Callback even for non persistence
-         // If we are using non-persistence with replication, the replication manager will have
-         // to execute this runnable in the correct order
-         storageManager.afterCompleteOperations(new IOAsyncTask()
-         {
-
-            public void onError(final int errorCode, final String errorMessage)
-            {
-               HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
-            }
-
-            public void done()
-            {
-               afterPrepare();
-            }
-         });
       }
-   }
       finally
       {
          storageManager.readUnLock();
@@ -507,16 +503,16 @@ public class TransactionImpl implements Transaction
    {
       Date dt = new Date(this.createTime);
       return "TransactionImpl [xid=" + xid +
-             ", id=" +
-             id +
-             ", state=" +
-             state +
-             ", createTime=" +
-             createTime  + "(" + dt + ")" +
-             ", timeoutSeconds=" +
-             timeoutSeconds +
-             ", nr operations = " + getOperationsCount() +
-             "]@" +
-             Integer.toHexString(hashCode());
+         ", id=" +
+         id +
+         ", state=" +
+         state +
+         ", createTime=" +
+         createTime + "(" + dt + ")" +
+         ", timeoutSeconds=" +
+         timeoutSeconds +
+         ", nr operations = " + getOperationsCount() +
+         "]@" +
+         Integer.toHexString(hashCode());
    }
 }

@@ -25,7 +25,6 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public abstract class VersionedStompFrameHandler
@@ -49,7 +48,7 @@ public abstract class VersionedStompFrameHandler
       }
       return null;
    }
-   
+
    protected VersionedStompFrameHandler(StompConnection connection)
    {
       this.connection = connection;
@@ -59,12 +58,12 @@ public abstract class VersionedStompFrameHandler
    {
       return decoder.decode(buffer);
    }
-   
+
    public boolean hasBytes()
    {
       return decoder.hasBytes();
    }
-   
+
    public StompDecoder getDecoder()
    {
       return decoder;
@@ -139,11 +138,17 @@ public abstract class VersionedStompFrameHandler
    }
 
    public abstract StompFrame onConnect(StompFrame frame);
+
    public abstract StompFrame onDisconnect(StompFrame frame);
+
    public abstract StompFrame onAck(StompFrame request);
+
    public abstract StompFrame onUnsubscribe(StompFrame request);
+
    public abstract StompFrame onStomp(StompFrame request);
+
    public abstract StompFrame onNack(StompFrame request);
+
    public abstract StompFrame createStompFrame(String command);
 
    public StompFrame onUnknown(String command)
@@ -325,30 +330,30 @@ public abstract class VersionedStompFrameHandler
    }
 
    public StompFrame createMessageFrame(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount) throws Exception
+                                        StompSubscription subscription, int deliveryCount) throws Exception
    {
       StompFrame frame = createStompFrame(Stomp.Responses.MESSAGE);
 
       if (subscription.getID() != null)
       {
          frame.addHeader(Stomp.Headers.Message.SUBSCRIPTION,
-               subscription.getID());
+                         subscription.getID());
       }
 
       HornetQBuffer buffer = serverMessage.getBodyBufferCopy();
 
       int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
-            .writerIndex() : serverMessage.getEndOfBodyPosition();
+         .writerIndex() : serverMessage.getEndOfBodyPosition();
 
       buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE
-                  + DataConstants.SIZE_INT);
+                            + DataConstants.SIZE_INT);
 
       int size = bodyPos - buffer.readerIndex();
 
       byte[] data = new byte[size];
 
       if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH)
-            || serverMessage.getType() == Message.BYTES_TYPE)
+         || serverMessage.getType() == Message.BYTES_TYPE)
       {
          frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
          buffer.readBytes(data);
@@ -368,7 +373,7 @@ public abstract class VersionedStompFrameHandler
       frame.setByteBody(data);
 
       StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame,
-            deliveryCount);
+                                                       deliveryCount);
 
       return frame;
    }
@@ -377,6 +382,7 @@ public abstract class VersionedStompFrameHandler
     * this method is called when a newer version of handler is created. It should
     * take over the state of the decoder of the existingHandler so that
     * the decoding can be continued. For V10 handler it's never get called.
+    *
     * @param existingHandler
     */
    public void initDecoder(VersionedStompFrameHandler existingHandler)

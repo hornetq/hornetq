@@ -12,6 +12,11 @@
  */
 package org.hornetq.integration.twitter.impl;
 
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -22,12 +27,14 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.twitter.HornetQTwitterLogger;
 import org.hornetq.utils.ConfigurationHelper;
-import twitter4j.*;
+import twitter4j.GeoLocation;
+import twitter4j.Paging;
+import twitter4j.Place;
+import twitter4j.ResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * IncomingTweetsHandler consumes from twitter and forwards to the
@@ -53,7 +60,7 @@ public class IncomingTweetsHandler implements ConnectorService
 
    private final PostOffice postOffice;
 
-   private  Paging paging;
+   private Paging paging;
 
    private Twitter twitter;
 
@@ -117,15 +124,15 @@ public class IncomingTweetsHandler implements ConnectorService
       this.paging.setCount(TwitterConstants.DEFAULT_PAGE_SIZE);
 
       scheduledFuture = this.scheduledPool.scheduleWithFixedDelay(new TweetsRunnable(),
-                                                intervalSeconds,
-                                                intervalSeconds,
-                                                TimeUnit.SECONDS);
+                                                                  intervalSeconds,
+                                                                  intervalSeconds,
+                                                                  TimeUnit.SECONDS);
       isStarted = true;
    }
 
    public void stop() throws Exception
    {
-      if(!isStarted)
+      if (!isStarted)
       {
          return;
       }
@@ -155,7 +162,7 @@ public class IncomingTweetsHandler implements ConnectorService
          Status status = (Status)res.get(i);
 
          ServerMessage msg = new ServerMessageImpl(this.storageManager.generateUniqueID(),
-               TwitterConstants.INITIAL_MESSAGE_BUFFER_SIZE);
+                                                   TwitterConstants.INITIAL_MESSAGE_BUFFER_SIZE);
          msg.setAddress(new SimpleString(this.queueName));
          msg.setDurable(true);
          msg.encodeMessageIDToBuffer();

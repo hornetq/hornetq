@@ -12,17 +12,10 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.hornetq.utils.ConcurrentHashSet;
-import org.junit.Before;
-
-import org.junit.Test;
-
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
@@ -41,6 +34,10 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.utils.ConcurrentHashSet;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -369,7 +366,7 @@ public class ConsumerTest extends ServiceTestBase
          consumer.receiveImmediate();
          Assert.fail("Should throw exception");
       }
-      catch(HornetQIllegalStateException ise)
+      catch (HornetQIllegalStateException ise)
       {
          //ok
       }
@@ -397,7 +394,7 @@ public class ConsumerTest extends ServiceTestBase
       final CountDownLatch latchReceive = new CountDownLatch(numberOfSessions * numberOfMessages);
 
       ClientSessionFactory sf = locator.createSessionFactory();
-      for (int i = 0 ; i < numberOfSessions; i++)
+      for (int i = 0; i < numberOfSessions; i++)
       {
 
          ClientSession session = sf.createSession(false, true, true);
@@ -406,7 +403,7 @@ public class ConsumerTest extends ServiceTestBase
 
          session.createQueue(QUEUE, QUEUE.concat("" + i), null, false);
 
-         if (i == 0 )
+         if (i == 0)
          {
             session.createQueue(QUEUE_RESPONSE, QUEUE_RESPONSE);
          }
@@ -417,51 +414,51 @@ public class ConsumerTest extends ServiceTestBase
 
          {
 
-         consumer.setMessageHandler(new MessageHandler()
-         {
-            public void onMessage(final ClientMessage msg)
+            consumer.setMessageHandler(new MessageHandler()
             {
-               try
+               public void onMessage(final ClientMessage msg)
                {
-                  ServerLocator locatorSendx = createFactory(isNetty());
-                  locatorSendx.setReconnectAttempts(-1);
-                  ClientSessionFactory factoryx = locatorSendx.createSessionFactory();
-                  ClientSession sessionSend = factoryx.createSession(true, true);
-
-                  sessions.add(sessionSend);
-                  sessions.add(locatorSendx);
-                  sessions.add(factoryx);
-
-
-                  final ClientProducer prod = sessionSend.createProducer(QUEUE_RESPONSE);
-                  sessionSend.start();
-
-                  sessions.add(prod);
-
-                  msg.acknowledge();
-                  prod.send(sessionSend.createMessage(true));
-                  prod.close();
-                  sessionSend.commit();
-                  sessionSend.close();
-                  factoryx.close();
-                  if (Thread.currentThread().isInterrupted())
+                  try
                   {
-                     System.err.println("Netty has interrupted a thread!!!");
+                     ServerLocator locatorSendx = createFactory(isNetty());
+                     locatorSendx.setReconnectAttempts(-1);
+                     ClientSessionFactory factoryx = locatorSendx.createSessionFactory();
+                     ClientSession sessionSend = factoryx.createSession(true, true);
+
+                     sessions.add(sessionSend);
+                     sessions.add(locatorSendx);
+                     sessions.add(factoryx);
+
+
+                     final ClientProducer prod = sessionSend.createProducer(QUEUE_RESPONSE);
+                     sessionSend.start();
+
+                     sessions.add(prod);
+
+                     msg.acknowledge();
+                     prod.send(sessionSend.createMessage(true));
+                     prod.close();
+                     sessionSend.commit();
+                     sessionSend.close();
+                     factoryx.close();
+                     if (Thread.currentThread().isInterrupted())
+                     {
+                        System.err.println("Netty has interrupted a thread!!!");
+                        errors.incrementAndGet();
+                     }
+
+                  }
+                  catch (Throwable e)
+                  {
+                     e.printStackTrace();
                      errors.incrementAndGet();
                   }
-
+                  finally
+                  {
+                     latchReceive.countDown();
+                  }
                }
-               catch (Throwable e)
-               {
-                  e.printStackTrace();
-                  errors.incrementAndGet();
-               }
-               finally
-               {
-                  latchReceive.countDown();
-               }
-            }
-         });
+            });
          }
 
          session.start();
@@ -480,7 +477,7 @@ public class ConsumerTest extends ServiceTestBase
                ClientConsumer cons = sessionSend.createConsumer(QUEUE_RESPONSE);
                sessionSend.start();
 
-               for (int i = 0 ; i < numberOfMessages * numberOfSessions; i++)
+               for (int i = 0; i < numberOfMessages * numberOfSessions; i++)
                {
                   ClientMessage msg = cons.receive(5000);
                   if (msg == null)
@@ -511,7 +508,7 @@ public class ConsumerTest extends ServiceTestBase
       ClientSession mainSessionSend = sf.createSession(true, true);
       ClientProducer mainProd = mainSessionSend.createProducer(QUEUE);
 
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          mainProd.send(mainSessionSend.createMessage(true));
       }

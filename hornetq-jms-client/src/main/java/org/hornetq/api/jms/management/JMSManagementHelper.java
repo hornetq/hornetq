@@ -17,11 +17,11 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * Helper class to use JMS messages to manage HornetQ server resources.
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
@@ -32,7 +32,7 @@ public class JMSManagementHelper
       if (jmsMessage instanceof HornetQMessage == false)
       {
          throw new IllegalArgumentException("Cannot send a non HornetQ message as a management message " + jmsMessage.getClass()
-                                                                                                                   .getName());
+            .getName());
       }
 
       return ((HornetQMessage)jmsMessage).getCoreMessage();
@@ -41,11 +41,10 @@ public class JMSManagementHelper
    /**
     * Stores a resource attribute in a JMS message to retrieve the value from the server resource.
     *
-    * @param message JMS message
+    * @param message      JMS message
     * @param resourceName the name of the resource
-    * @param attribute the name of the attribute
+    * @param attribute    the name of the attribute
     * @throws JMSException if an exception occurs while putting the information in the message
-    *
     * @see ResourceNames
     */
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException
@@ -56,11 +55,10 @@ public class JMSManagementHelper
    /**
     * Stores a operation invocation in a JMS message to invoke the corresponding operation the value from the server resource.
     *
-    * @param message JMS message
-    * @param resourceName the name of the resource
+    * @param message       JMS message
+    * @param resourceName  the name of the resource
     * @param operationName the name of the operation to invoke on the resource
     * @throws JMSException if an exception occurs while putting the information in the message
-    *
     * @see ResourceNames
     */
    public static void putOperationInvocation(final Message message,
@@ -91,12 +89,11 @@ public class JMSManagementHelper
    /**
     * Stores a operation invocation in a JMS message to invoke the corresponding operation the value from the server resource.
     *
-    * @param message JMS message
-    * @param resourceName the name of the server resource
+    * @param message       JMS message
+    * @param resourceName  the name of the server resource
     * @param operationName the name of the operation to invoke on the server resource
-    * @param parameters the parameters to use to invoke the server resource
+    * @param parameters    the parameters to use to invoke the server resource
     * @throws JMSException if an exception occurs while putting the information in the message
-    *
     * @see ResourceNames
     */
    public static void putOperationInvocation(final Message message,

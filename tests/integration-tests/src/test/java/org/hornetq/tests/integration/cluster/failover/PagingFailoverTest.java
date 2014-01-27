@@ -12,14 +12,8 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.HashMap;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -36,15 +30,17 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A PagingFailoverTest
- *
+ * <p/>
  * TODO: validate replication failover also
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class PagingFailoverTest extends FailoverTestBase
 {
@@ -114,82 +110,82 @@ public class PagingFailoverTest extends FailoverTestBase
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
       session = sf.createSession(!transacted, !transacted, 0);
 
-         session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
+      session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
 
-         ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
+      ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
 
-         final int TOTAL_MESSAGES = 2000;
+      final int TOTAL_MESSAGES = 2000;
 
-         for (int i = 0; i < TOTAL_MESSAGES; i++)
+      for (int i = 0; i < TOTAL_MESSAGES; i++)
+      {
+         if (transacted && i % 10 == 0)
          {
-            if (transacted && i % 10 == 0)
-            {
-               session.commit();
-            }
-            ClientMessage msg = session.createMessage(true);
-            msg.putIntProperty(new SimpleString("key"), i);
-            prod.send(msg);
+            session.commit();
          }
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty(new SimpleString("key"), i);
+         prod.send(msg);
+      }
 
-         session.commit();
+      session.commit();
 
-         if (failBeforeConsume)
-         {
-            crash(session);
+      if (failBeforeConsume)
+      {
+         crash(session);
          waitForBackup(null, 30);
-         }
+      }
 
-         session.close();
+      session.close();
 
-         session = sf.createSession(!transacted, !transacted, 0);
+      session = sf.createSession(!transacted, !transacted, 0);
 
-         session.start();
+      session.start();
 
-         ClientConsumer cons = session.createConsumer(PagingFailoverTest.ADDRESS);
+      ClientConsumer cons = session.createConsumer(PagingFailoverTest.ADDRESS);
 
-         final int MIDDLE = TOTAL_MESSAGES / 2;
+      final int MIDDLE = TOTAL_MESSAGES / 2;
 
-         for (int i = 0; i < MIDDLE; i++)
+      for (int i = 0; i < MIDDLE; i++)
+      {
+         ClientMessage msg = cons.receive(20000);
+         Assert.assertNotNull(msg);
+         msg.acknowledge();
+         if (transacted && i % 10 == 0)
          {
-            ClientMessage msg = cons.receive(20000);
-            Assert.assertNotNull(msg);
-            msg.acknowledge();
-            if (transacted && i % 10 == 0)
-            {
-               session.commit();
-            }
-            Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
+            session.commit();
          }
+         Assert.assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
+      }
 
-         session.commit();
+      session.commit();
 
-         cons.close();
+      cons.close();
 
-         Thread.sleep(1000);
+      Thread.sleep(1000);
 
-         if (!failBeforeConsume)
-         {
-            crash(session);
-            // failSession(session, latch);
-         }
+      if (!failBeforeConsume)
+      {
+         crash(session);
+         // failSession(session, latch);
+      }
 
-         session.close();
+      session.close();
 
-         session = sf.createSession(true, true, 0);
+      session = sf.createSession(true, true, 0);
 
-         cons = session.createConsumer(PagingFailoverTest.ADDRESS);
+      cons = session.createConsumer(PagingFailoverTest.ADDRESS);
 
-         session.start();
+      session.start();
 
-         for (int i = MIDDLE; i < TOTAL_MESSAGES; i++)
-         {
-            ClientMessage msg = cons.receive(5000);
-            Assert.assertNotNull(msg);
+      for (int i = MIDDLE; i < TOTAL_MESSAGES; i++)
+      {
+         ClientMessage msg = cons.receive(5000);
+         Assert.assertNotNull(msg);
 
-            msg.acknowledge();
-            int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
-            Assert.assertEquals(i, result);
-         }
+         msg.acknowledge();
+         int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
+         Assert.assertEquals(i, result);
+      }
    }
 
    @Test
@@ -204,32 +200,32 @@ public class PagingFailoverTest extends FailoverTestBase
 
       session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
 
-         ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
+      ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
 
-         final int TOTAL_MESSAGES = 1000;
+      final int TOTAL_MESSAGES = 1000;
 
-         for (int i = 0; i < TOTAL_MESSAGES; i++)
-         {
-            ClientMessage msg = session.createMessage(true);
-            msg.putIntProperty(new SimpleString("key"), i);
-            msg.setExpiration(System.currentTimeMillis() + 1000);
-            prod.send(msg);
-         }
+      for (int i = 0; i < TOTAL_MESSAGES; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty(new SimpleString("key"), i);
+         msg.setExpiration(System.currentTimeMillis() + 1000);
+         prod.send(msg);
+      }
 
-         crash(session);
+      crash(session);
 
-         session.close();
+      session.close();
 
-         Queue queue = backupServer.getServer().locateQueue(ADDRESS);
+      Queue queue = backupServer.getServer().locateQueue(ADDRESS);
 
-         long timeout = System.currentTimeMillis() + 60000;
+      long timeout = System.currentTimeMillis() + 60000;
 
-         while (timeout > System.currentTimeMillis() && queue.getPageSubscription().isPaging())
-         {
-            Thread.sleep(100);
-            // Simulating what would happen on expire
-            queue.expireReferences();
-         }
+      while (timeout > System.currentTimeMillis() && queue.getPageSubscription().isPaging())
+      {
+         Thread.sleep(100);
+         // Simulating what would happen on expire
+         queue.expireReferences();
+      }
 
       assertFalse(queue.getPageSubscription().isPaging());
 

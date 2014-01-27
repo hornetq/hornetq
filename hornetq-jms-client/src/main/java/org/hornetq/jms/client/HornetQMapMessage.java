@@ -13,14 +13,13 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.MessageFormatException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageFormatException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQPropertyConversionException;
@@ -38,10 +37,9 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
  * @version $Revision: 3412 $
- *
- * $Id: HornetQRAMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ *          <p/>
+ *          $Id: HornetQRAMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public final class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
@@ -87,8 +85,8 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    }
 
    /**
-    *
     * Constructor for a foreign MapMessage
+    *
     * @param foreign
     * @throws JMSException
     */
@@ -200,7 +198,8 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    public void setObject(final String name, final Object value) throws JMSException
    {
       checkName(name);
-      try {
+      try
+      {
          TypedProperties.setObjectProperty(new SimpleString(name), value, map);
       }
       catch (HornetQPropertyConversionException e)

@@ -513,7 +513,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 
          conn2.start();
 
-         m = subscriber2.receive(1000l);
+         m = subscriber2.receive(1000L);
 
          ProxyAssertSupport.assertNotNull(m);
          ProxyAssertSupport.assertTrue(m instanceof TextMessage);

@@ -12,20 +12,24 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
 
-import org.junit.Test;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * The delete queue was reseting some fields on the Queue what would eventually turn a NPE.
@@ -50,8 +54,6 @@ public class ConcurrentCreateDeleteProduceTest extends ServiceTestBase
    private static final int PAGE_SIZE = 10 * 1024;
 
 
-
-
    @Before
    public void setUp() throws Exception
    {
@@ -64,9 +66,9 @@ public class ConcurrentCreateDeleteProduceTest extends ServiceTestBase
 
       server =
          createServer(true, config,
-            PAGE_SIZE,
-            PAGE_MAX,
-            new HashMap<String, AddressSettings>());
+                      PAGE_SIZE,
+                      PAGE_MAX,
+                      new HashMap<String, AddressSettings>());
       server.start();
       locator = createNonHALocator(false);
       locator.setBlockOnDurableSend(false);
@@ -129,11 +131,11 @@ public class ConcurrentCreateDeleteProduceTest extends ServiceTestBase
             session = factory.createSession(false, false);
             session.start();
 
-            int msgcount = 0 ;
+            int msgcount = 0;
 
-            for (int i = 0 ; i < 100 && running; i++)
+            for (int i = 0; i < 100 && running; i++)
             {
-               SimpleString queueName =ADDRESS.concat("_" + sequence.incrementAndGet());
+               SimpleString queueName = ADDRESS.concat("_" + sequence.incrementAndGet());
                session.createQueue(ADDRESS, queueName, true);
                ClientConsumer consumer = session.createConsumer(queueName);
                while (running)

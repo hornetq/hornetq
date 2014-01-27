@@ -34,6 +34,7 @@ import org.jnp.server.NamingBeanImpl;
 /**
  * This server class is only used in the standalone mode, its used to control the life cycle of the Naming Server to allow
  * it to be activated and deactivated
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         11/8/12
  */
@@ -45,14 +46,14 @@ public class StandaloneNamingServer implements HornetQComponent
 
    private NamingBeanImpl namingBean;
 
-   private int port = 1099;;
+   private int port = 1099;
 
    private String bindAddress = "localhost";
 
-   private int rmiPort= 1098;
+   private int rmiPort = 1098;
 
    private String rmiBindAddress = "localhost";
-   
+
    private ExecutorService executor;
 
    public StandaloneNamingServer(HornetQServer server)
@@ -100,10 +101,11 @@ public class StandaloneNamingServer implements HornetQComponent
    private class ServerActivateCallback implements ActivateCallback
    {
       private boolean activated = false;
+
       @Override
       public synchronized void preActivate()
       {
-         if(activated)
+         if (activated)
          {
             return;
          }
@@ -138,7 +140,7 @@ public class StandaloneNamingServer implements HornetQComponent
       @Override
       public synchronized void deActivate()
       {
-         if(!activated)
+         if (!activated)
          {
             return;
          }

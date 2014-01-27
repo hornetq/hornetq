@@ -1,5 +1,4 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
 
 import org.hornetq.rest.topic.TopicDeployment;
 import org.hornetq.rest.util.Constants;

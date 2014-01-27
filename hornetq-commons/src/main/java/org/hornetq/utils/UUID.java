@@ -21,17 +21,17 @@ package org.hornetq.utils;
  * world). UUIDs are usually generated via UUIDGenerator (or in case of 'Null
  * UUID', 16 zero bytes, via static method getNullUUID()), or received from
  * external systems.
- *
+ * <p/>
  * By default class caches the string presentations of UUIDs so that description
  * is only created the first time it's needed. For memory stingy applications
  * this caching can be turned off (note though that if uuid.toString() is never
  * called, desc is never calculated so only loss is the space allocated for the
  * desc pointer... which can of course be commented out to save memory).
- *
+ * <p/>
  * Similarly, hash code is calculated when it's needed for the first time, and
  * from thereon that value is just returned. This means that using UUIDs as keys
  * should be reasonably efficient.
- *
+ * <p/>
  * UUIDs can be compared for equality, serialized, cloned and even sorted.
  * Equality is a simple bit-wise comparison. Ordering (for sorting) is done by
  * first ordering based on type (in the order of numeric values of types),
@@ -42,41 +42,41 @@ package org.hornetq.utils;
 
 public final class UUID
 {
-   private final static String kHexChars = "0123456789abcdefABCDEF";
+   private static final String kHexChars = "0123456789abcdefABCDEF";
 
-   public final static byte INDEX_CLOCK_HI = 6;
+   public static final byte INDEX_CLOCK_HI = 6;
 
-   public final static byte INDEX_CLOCK_MID = 4;
+   public static final byte INDEX_CLOCK_MID = 4;
 
-   public final static byte INDEX_CLOCK_LO = 0;
+   public static final byte INDEX_CLOCK_LO = 0;
 
-   public final static byte INDEX_TYPE = 6;
+   public static final byte INDEX_TYPE = 6;
 
    // Clock seq. & variant are multiplexed...
-   public final static byte INDEX_CLOCK_SEQUENCE = 8;
+   public static final byte INDEX_CLOCK_SEQUENCE = 8;
 
-   public final static byte INDEX_VARIATION = 8;
+   public static final byte INDEX_VARIATION = 8;
 
-   public final static byte TYPE_NULL = 0;
+   public static final byte TYPE_NULL = 0;
 
-   public final static byte TYPE_TIME_BASED = 1;
+   public static final byte TYPE_TIME_BASED = 1;
 
-   public final static byte TYPE_DCE = 2; // Not used
+   public static final byte TYPE_DCE = 2; // Not used
 
-   public final static byte TYPE_NAME_BASED = 3;
+   public static final byte TYPE_NAME_BASED = 3;
 
-   public final static byte TYPE_RANDOM_BASED = 4;
+   public static final byte TYPE_RANDOM_BASED = 4;
 
    /*
     * 'Standard' namespaces defined (suggested) by UUID specs:
     */
-   public final static String NAMESPACE_DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+   public static final String NAMESPACE_DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 
-   public final static String NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+   public static final String NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
 
-   public final static String NAMESPACE_OID = "6ba7b812-9dad-11d1-80b4-00c04fd430c8";
+   public static final String NAMESPACE_OID = "6ba7b812-9dad-11d1-80b4-00c04fd430c8";
 
-   public final static String NAMESPACE_X500 = "6ba7b814-9dad-11d1-80b4-00c04fd430c8";
+   public static final String NAMESPACE_X500 = "6ba7b814-9dad-11d1-80b4-00c04fd430c8";
 
    /*
     * By default let's cache desc, can be turned off. For hash code there's no
@@ -94,12 +94,8 @@ public final class UUID
    private transient int mHashCode = 0;
 
    /**
-    *
-    *
-    * @param type
-    *           UUID type
-    * @param data
-    *           16 byte UUID contents
+    * @param type UUID type
+    * @param data 16 byte UUID contents
     */
    public UUID(final int type, final byte[] data)
    {
@@ -112,7 +108,7 @@ public final class UUID
       mId[UUID.INDEX_VARIATION] |= (byte)0x80;
    }
 
-   public final byte[] asBytes()
+   public byte[] asBytes()
    {
       return mId;
    }
@@ -122,17 +118,17 @@ public final class UUID
     * identity hash (ie. same contents generate same hash) manually, without
     * sacrificing speed too much. Although multiplications with modulos would
     * generate better hashing, let's use just shifts, and do 2 bytes at a time.
-    * <p>
+    * <p/>
     * Of course, assuming UUIDs are randomized enough, even simpler approach
     * might be good enough?
-    * <p>
+    * <p/>
     * Is this a good hash? ... one of these days I better read more about basic
     * hashing techniques I swear!
     */
-   private final static int[] kShifts = { 3, 7, 17, 21, 29, 4, 9 };
+   private static final int[] kShifts = {3, 7, 17, 21, 29, 4, 9};
 
    @Override
-   public final int hashCode()
+   public int hashCode()
    {
       if (mHashCode == 0)
       {
@@ -177,7 +173,7 @@ public final class UUID
    }
 
    @Override
-   public final String toString()
+   public String toString()
    {
       /*
        * Could be synchronized, but there isn't much harm in just taking our
@@ -218,9 +214,10 @@ public final class UUID
 
    /**
     * Creates a 128bit number from the String representation of {@link UUID}.
+    *
     * @param uuid
     * @return byte array that can be used to recreate a UUID instance from the given String
-    *         representation
+    * representation
     */
    public static byte[] stringToBytes(String uuid)
    {
@@ -228,10 +225,12 @@ public final class UUID
       int dataIdx = 0;
       try
       {
-         for (int i = 0; i < uuid.length();)
+         for (int i = 0; i < uuid.length(); )
          {
             while (uuid.charAt(i) == '-')
+            {
                i++;
+            }
             char c1 = uuid.charAt(i);
             char c2 = uuid.charAt(i + 1);
             i += 2;
@@ -251,7 +250,7 @@ public final class UUID
     * Checking equality of UUIDs is easy; just compare the 128-bit number.
     */
    @Override
-   public final boolean equals(final Object o)
+   public boolean equals(final Object o)
    {
       if (!(o instanceof UUID))
       {

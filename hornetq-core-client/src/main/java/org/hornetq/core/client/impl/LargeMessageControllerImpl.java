@@ -45,6 +45,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  * by a single buffer. This buffer can be consumed as messages are arriving, and it will hold the
  * packets until they are read using the ChannelBuffer interface, or the setOutputStream or
  * saveStream are called.
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class LargeMessageControllerImpl implements LargeMessageController
@@ -73,7 +74,9 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    private long readerIndex = 0;
 
-   /** This is to control if packets are arriving for a better timeout control */
+   /**
+    * This is to control if packets are arriving for a better timeout control
+    */
    private boolean packetAdded = false;
 
    private long packetPosition = -1;
@@ -96,25 +99,25 @@ public class LargeMessageControllerImpl implements LargeMessageController
    // Constructors --------------------------------------------------
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
-                                 final long totalSize,
-                                 final long readTimeout)
+                                     final long totalSize,
+                                     final long readTimeout)
    {
       this(consumerInternal, totalSize, readTimeout, null);
    }
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
-                                 final long totalSize,
-                                 final long readTimeout,
-                                 final File cachedFile)
+                                     final long totalSize,
+                                     final long readTimeout,
+                                     final File cachedFile)
    {
       this(consumerInternal, totalSize, readTimeout, cachedFile, 10 * 1024);
    }
 
    public LargeMessageControllerImpl(final ClientConsumerInternal consumerInternal,
-                                 final long totalSize,
-                                 final long readTimeout,
-                                 final File cachedFile,
-                                 final int bufferSize)
+                                     final long totalSize,
+                                     final long readTimeout,
+                                     final File cachedFile,
+                                     final int bufferSize)
    {
       this.consumerInternal = consumerInternal;
       this.readTimeout = readTimeout;
@@ -154,6 +157,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    /**
     * Add a buff to the List, or save it to the OutputStream if set
+    *
     * @param packet
     */
    public void addPacket(final SessionReceiveContinuationMessage packet)
@@ -317,7 +321,6 @@ public class LargeMessageControllerImpl implements LargeMessageController
    }
 
    /**
-    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
@@ -362,7 +365,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
                //throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                //         "Timeout waiting for LargeMessage Body");
                throw HornetQClientMessageBundle.BUNDLE.timeoutOnLargeMessage();
-           }
+            }
             else if (System.currentTimeMillis() > timeOut && !packetAdded)
             {
                // throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
@@ -451,7 +454,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
    @Override
    public void getBytes(final int index, final byte[] dst, final int dstIndex, final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
 
       getBytes(index, bytesToGet);
 
@@ -460,7 +463,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public void getBytes(final long index, final byte[] dst, final int dstIndex, final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
 
       getBytes(index, bytesToGet);
 
@@ -470,35 +473,35 @@ public class LargeMessageControllerImpl implements LargeMessageController
    @Override
    public void getBytes(final int index, final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       getBytes(index, bytesToGet);
       dst.put(bytesToGet);
    }
 
    public void getBytes(final long index, final ByteBuffer dst)
    {
-      byte bytesToGet[] = new byte[dst.remaining()];
+      byte[] bytesToGet = new byte[dst.remaining()];
       getBytes(index, bytesToGet);
       dst.put(bytesToGet);
    }
 
    public void getBytes(final int index, final OutputStream out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
    public void getBytes(final long index, final OutputStream out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       out.write(bytesToGet);
    }
 
    public int getBytes(final int index, final GatheringByteChannel out, final int length) throws IOException
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(index, bytesToGet);
       return out.write(ByteBuffer.wrap(bytesToGet));
    }
@@ -506,38 +509,38 @@ public class LargeMessageControllerImpl implements LargeMessageController
    public int getInt(final int index)
    {
       return (getByte(index) & 0xff) << 24 | (getByte(index + 1) & 0xff) << 16 |
-             (getByte(index + 2) & 0xff) << 8 |
-             (getByte(index + 3) & 0xff) << 0;
+         (getByte(index + 2) & 0xff) << 8 |
+         (getByte(index + 3) & 0xff) << 0;
    }
 
    public int getInt(final long index)
    {
       return (getByte(index) & 0xff) << 24 | (getByte(index + 1) & 0xff) << 16 |
-             (getByte(index + 2) & 0xff) << 8 |
-             (getByte(index + 3) & 0xff) << 0;
+         (getByte(index + 2) & 0xff) << 8 |
+         (getByte(index + 3) & 0xff) << 0;
    }
 
    @Override
    public long getLong(final int index)
    {
       return ((long)getByte(index) & 0xff) << 56 | ((long)getByte(index + 1) & 0xff) << 48 |
-             ((long)getByte(index + 2) & 0xff) << 40 |
-             ((long)getByte(index + 3) & 0xff) << 32 |
-             ((long)getByte(index + 4) & 0xff) << 24 |
-             ((long)getByte(index + 5) & 0xff) << 16 |
-             ((long)getByte(index + 6) & 0xff) << 8 |
-             ((long)getByte(index + 7) & 0xff) << 0;
+         ((long)getByte(index + 2) & 0xff) << 40 |
+         ((long)getByte(index + 3) & 0xff) << 32 |
+         ((long)getByte(index + 4) & 0xff) << 24 |
+         ((long)getByte(index + 5) & 0xff) << 16 |
+         ((long)getByte(index + 6) & 0xff) << 8 |
+         ((long)getByte(index + 7) & 0xff) << 0;
    }
 
    public long getLong(final long index)
    {
       return ((long)getByte(index) & 0xff) << 56 | ((long)getByte(index + 1) & 0xff) << 48 |
-             ((long)getByte(index + 2) & 0xff) << 40 |
-             ((long)getByte(index + 3) & 0xff) << 32 |
-             ((long)getByte(index + 4) & 0xff) << 24 |
-             ((long)getByte(index + 5) & 0xff) << 16 |
-             ((long)getByte(index + 6) & 0xff) << 8 |
-             ((long)getByte(index + 7) & 0xff) << 0;
+         ((long)getByte(index + 2) & 0xff) << 40 |
+         ((long)getByte(index + 3) & 0xff) << 32 |
+         ((long)getByte(index + 4) & 0xff) << 24 |
+         ((long)getByte(index + 5) & 0xff) << 16 |
+         ((long)getByte(index + 6) & 0xff) << 8 |
+         ((long)getByte(index + 7) & 0xff) << 0;
    }
 
    @Override
@@ -1039,7 +1042,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public HornetQBuffer readBytes(final int length)
    {
-      byte bytesToGet[] = new byte[length];
+      byte[] bytesToGet = new byte[length];
       getBytes(readerIndex, bytesToGet);
       readerIndex += length;
       return HornetQBuffers.wrappedBuffer(bytesToGet);
@@ -1364,8 +1367,8 @@ public class LargeMessageControllerImpl implements LargeMessageController
       }
 
       /**
-      * @throws FileNotFoundException
-      */
+       * @throws FileNotFoundException
+       */
       public void checkOpen() throws FileNotFoundException
       {
          if (cachedFile != null || !cachedChannel.isOpen())

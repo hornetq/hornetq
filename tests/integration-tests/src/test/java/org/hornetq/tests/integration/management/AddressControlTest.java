@@ -12,16 +12,9 @@
  */
 
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -42,12 +35,16 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.hornetq.tests.util.RandomUtil.randomString;
 
 /**
  * A QueueControlTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class AddressControlTest extends ManagementTestBase
 {
@@ -224,8 +221,8 @@ public class AddressControlTest extends ManagementTestBase
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
       ServerLocator locator2 =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     UnitTestCase.INVM_CONNECTOR_FACTORY));
+         HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            UnitTestCase.INVM_CONNECTOR_FACTORY));
       addServerLocator(locator2);
       ClientSessionFactory sf2 = createSessionFactory(locator2);
 
@@ -265,7 +262,7 @@ public class AddressControlTest extends ManagementTestBase
       producer.send(msg);
 
       session.commit();
-         Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
+      Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
    }
 
    @Test
@@ -286,14 +283,14 @@ public class AddressControlTest extends ManagementTestBase
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
       ServerLocator locator2 =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     UnitTestCase.INVM_CONNECTOR_FACTORY));
+         HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            UnitTestCase.INVM_CONNECTOR_FACTORY));
       addServerLocator(locator2);
       ClientSessionFactory sf2 = createSessionFactory(locator2);
 
-         session = sf2.createSession(false, true, false);
-         session.createQueue(address, address, true);
-         Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
+      session = sf2.createSession(false, true, false);
+      session.createQueue(address, address, true);
+      Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
    }
 
    // Package protected ---------------------------------------------

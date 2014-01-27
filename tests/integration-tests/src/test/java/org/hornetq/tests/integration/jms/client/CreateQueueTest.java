@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import org.junit.Test;
-
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -24,14 +22,12 @@ import javax.jms.Topic;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Test;
 
 /**
- *
  * A CreateQueueTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class CreateQueueTest extends JMSTestBase
 {
@@ -52,25 +48,25 @@ public class CreateQueueTest extends JMSTestBase
    {
       conn = cf.createConnection();
 
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue tempQueue = session.createTemporaryQueue();
+      Queue tempQueue = session.createTemporaryQueue();
 
-         String tempQueueName = tempQueue.getQueueName();
+      String tempQueueName = tempQueue.getQueueName();
 
-         assertFalse(tempQueueName.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX));
+      assertFalse(tempQueueName.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX));
 
-         Queue replyQueue = session.createQueue(tempQueueName);
+      Queue replyQueue = session.createQueue(tempQueueName);
 
-         MessageProducer producer = session.createProducer(replyQueue);
+      MessageProducer producer = session.createProducer(replyQueue);
 
-         producer.send(session.createMessage());
+      producer.send(session.createMessage());
 
-         MessageConsumer consumer= session.createConsumer(replyQueue);
+      MessageConsumer consumer = session.createConsumer(replyQueue);
 
-         conn.start();
+      conn.start();
 
-         assertNotNull(consumer.receive(10000));
+      assertNotNull(consumer.receive(10000));
    }
 
    @Test
@@ -79,26 +75,26 @@ public class CreateQueueTest extends JMSTestBase
       conn = cf.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue queue = createQueue("TestQueue");
+      Queue queue = createQueue("TestQueue");
 
-         String queueName = queue.getQueueName();
+      String queueName = queue.getQueueName();
 
-         log.info("queue name is " + queueName);
+      log.info("queue name is " + queueName);
 
-         assertFalse(queueName.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX));
+      assertFalse(queueName.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX));
 
-         Queue replyQueue = session.createQueue(queueName);
+      Queue replyQueue = session.createQueue(queueName);
 
-         MessageProducer producer = session.createProducer(replyQueue);
+      MessageProducer producer = session.createProducer(replyQueue);
 
-         producer.send(session.createMessage());
+      producer.send(session.createMessage());
 
-         MessageConsumer consumer= session.createConsumer(replyQueue);
+      MessageConsumer consumer = session.createConsumer(replyQueue);
 
-         conn.start();
+      conn.start();
 
-         assertNotNull(consumer.receive(10000));
-         }
+      assertNotNull(consumer.receive(10000));
+   }
 
    @Test
    public void testCreateTopic() throws Exception
@@ -107,47 +103,47 @@ public class CreateQueueTest extends JMSTestBase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Topic topic = createTopic("TestTopic");
+      Topic topic = createTopic("TestTopic");
 
-         String topicName = topic.getTopicName();
+      String topicName = topic.getTopicName();
 
-         assertFalse(topicName.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX));
+      assertFalse(topicName.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX));
 
-         Topic replyTopic = session.createTopic(topicName);
+      Topic replyTopic = session.createTopic(topicName);
 
-         MessageConsumer consumer= session.createConsumer(replyTopic);
+      MessageConsumer consumer = session.createConsumer(replyTopic);
 
-         conn.start();
+      conn.start();
 
-         MessageProducer producer = session.createProducer(replyTopic);
+      MessageProducer producer = session.createProducer(replyTopic);
 
-         producer.send(session.createMessage());
+      producer.send(session.createMessage());
 
-         assertNotNull(consumer.receive(10000));
-         }
+      assertNotNull(consumer.receive(10000));
+   }
 
    @Test
    public void testCreateTopicTempTopic() throws Exception
    {
       conn = cf.createConnection();
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Topic tempTopic = session.createTemporaryTopic();
+      Topic tempTopic = session.createTemporaryTopic();
 
-         String tempTopicName = tempTopic.getTopicName();
+      String tempTopicName = tempTopic.getTopicName();
 
-         assertFalse(tempTopicName.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX));
+      assertFalse(tempTopicName.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX));
 
-         Topic replyTopic = session.createTopic(tempTopicName);
+      Topic replyTopic = session.createTopic(tempTopicName);
 
-         MessageConsumer consumer= session.createConsumer(replyTopic);
+      MessageConsumer consumer = session.createConsumer(replyTopic);
 
-         conn.start();
+      conn.start();
 
-         MessageProducer producer = session.createProducer(replyTopic);
+      MessageProducer producer = session.createProducer(replyTopic);
 
-         producer.send(session.createMessage());
+      producer.send(session.createMessage());
 
-         assertNotNull(consumer.receive(10000));
-         }
+      assertNotNull(consumer.receive(10000));
+   }
 }

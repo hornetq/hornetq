@@ -12,30 +12,27 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
-
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
  */
 public class ObjectMessageTest extends MessageTestBase
 {
@@ -84,7 +81,7 @@ public class ObjectMessageTest extends MessageTestBase
          ProxyAssertSupport.assertNotSame(testObject, testObject2);
          ProxyAssertSupport.assertNotSame(testObject.getClass(), testObject2.getClass());
          ProxyAssertSupport.assertNotSame(testObject.getClass().getClassLoader(), testObject2.getClass()
-                                                                                             .getClassLoader());
+            .getClassLoader());
          ProxyAssertSupport.assertSame(testClassLoader, testObject2.getClass().getClassLoader());
       }
       finally
@@ -224,7 +221,7 @@ public class ObjectMessageTest extends MessageTestBase
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
 
-      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[] { classLocation }, masterClassLoader);
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation}, masterClassLoader);
 
       return appClassLoader;
    }

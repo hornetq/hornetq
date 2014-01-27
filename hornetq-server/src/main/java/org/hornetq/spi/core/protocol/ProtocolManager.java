@@ -29,9 +29,9 @@ public interface ProtocolManager extends BufferDecoder
 {
    ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection);
 
-   public void removeHandler(final String name);
+   void removeHandler(final String name);
 
-   public int isReadyToHandle(HornetQBuffer buffer);
+   int isReadyToHandle(HornetQBuffer buffer);
 
    void handleBuffer(RemotingConnection connection, HornetQBuffer buffer);
 

@@ -13,27 +13,23 @@
 
 package org.hornetq.tests.util;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.DataConstants;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A SimpleStringTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class SimpleStringTest extends Assert
 {
    /**
     * Converting back and forth between char and byte requires care as char is unsigned.
+    *
     * @see SimpleString#getChars(int, int, char[], int)
     * @see SimpleString#charAt(int)
     * @see SimpleString#split(char)
@@ -432,7 +428,7 @@ public class SimpleStringTest extends Assert
             }
          }
 
-         T x[] = new T[nThreads];
+         T[] x = new T[nThreads];
          for (int i = 0; i < nThreads; i++)
          {
             x[i] = new T();

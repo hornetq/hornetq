@@ -15,7 +15,6 @@ package org.hornetq.core.server.group.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,7 +23,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
@@ -218,12 +216,12 @@ public final class LocalGroupingHandler implements GroupingHandler
             bindingsAdded.removeAll(bindingsAlreadyAdded);
             //now we wait here for the rest to be received in onNotification, it will signal once all have been received.
             //if we arent signaled then bindingsAdded still has some groupids we need to remove.
-            if(!awaitCondition.await(timeout, TimeUnit.MILLISECONDS))
+            if (!awaitCondition.await(timeout, TimeUnit.MILLISECONDS))
             {
                //if we get here there are some bindings that we haven't been told about in the cluster so we need to remove them.
                for (SimpleString clusterName : groupMap.keySet())
                {
-                  if(bindingsAdded.contains(clusterName))
+                  if (bindingsAdded.contains(clusterName))
                   {
                      removeGrouping(clusterName, true);
                   }
@@ -243,18 +241,18 @@ public final class LocalGroupingHandler implements GroupingHandler
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
          SimpleString clusterName = notification.getProperties()
-                                                .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+            .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          removeGrouping(clusterName, false);
       }
-      else if(notification.getType() == NotificationType.BINDING_ADDED)
+      else if (notification.getType() == NotificationType.BINDING_ADDED)
       {
          SimpleString clusterName = notification.getProperties()
-               .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+            .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          try
          {
             lock.lock();
             //if we are not yet waiting for bindings then add any new ones.
-            if(!waitingForBindings && !bindingsAdded.contains(clusterName))
+            if (!waitingForBindings && !bindingsAdded.contains(clusterName))
             {
                bindingsAdded.add(clusterName);
             }
@@ -264,7 +262,7 @@ public final class LocalGroupingHandler implements GroupingHandler
                bindingsAdded.remove(clusterName);
             }
             //and signal once we have heard from all of them.
-            if(waitingForBindings && bindingsAdded.size() == 0)
+            if (waitingForBindings && bindingsAdded.size() == 0)
             {
                awaitCondition.signal();
             }
@@ -275,6 +273,7 @@ public final class LocalGroupingHandler implements GroupingHandler
          }
       }
    }
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -313,7 +312,7 @@ public final class LocalGroupingHandler implements GroupingHandler
    private void removeGrouping(final SimpleString clusterName, final boolean warn)
    {
       final List<GroupBinding> list = groupMap.remove(clusterName);
-      if(warn && list != null)
+      if (warn && list != null)
       {
          HornetQServerLogger.LOGGER.groupingQueueRemoved(list.size(), clusterName);
       }
@@ -341,7 +340,7 @@ public final class LocalGroupingHandler implements GroupingHandler
                      }
                   }
                }
-               if(warn)
+               if (warn)
                {
                   HornetQServerLogger.LOGGER.groupingQueueRemovedComplete(clusterName);
                }
@@ -364,7 +363,7 @@ public final class LocalGroupingHandler implements GroupingHandler
 
             for (GroupBinding groupBinding : map.values())
             {
-               if(groupBinding.getTimeCreated() + groupTimeout > System.currentTimeMillis())
+               if (groupBinding.getTimeCreated() + groupTimeout > System.currentTimeMillis())
                {
                   map.remove(groupBinding.getGroupId());
                   List<GroupBinding> groupBindings = groupMap.get(groupBinding.getClusterName());

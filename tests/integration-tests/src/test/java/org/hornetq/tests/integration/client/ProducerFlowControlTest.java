@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,8 +18,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
@@ -45,13 +40,14 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A ProducerFlowControlTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
- *
  */
 public class ProducerFlowControlTest extends ServiceTestBase
 {
@@ -241,129 +237,129 @@ public class ProducerFlowControlTest extends ServiceTestBase
       waitForServer(server);
 
       locator.setProducerWindowSize(producerWindowSize);
-         locator.setConsumerWindowSize(consumerWindowSize);
-         locator.setAckBatchSize(ackBatchSize);
+      locator.setConsumerWindowSize(consumerWindowSize);
+      locator.setAckBatchSize(ackBatchSize);
 
-         if (minLargeMessageSize != -1)
-         {
-            locator.setMinLargeMessageSize(minLargeMessageSize);
-         }
+      if (minLargeMessageSize != -1)
+      {
+         locator.setMinLargeMessageSize(minLargeMessageSize);
+      }
 
       sf = createSessionFactory(locator);
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.start();
+      session.start();
 
-         final String queueName = "testqueue";
+      final String queueName = "testqueue";
 
-         for (int i = 0; i < numConsumers; i++)
+      for (int i = 0; i < numConsumers; i++)
+      {
+         session.createQueue(address, new SimpleString(queueName + i), null, false);
+      }
+
+      final byte[] bytes = RandomUtil.randomBytes(messageSize);
+
+      class MyHandler implements MessageHandler
+      {
+         int count = 0;
+
+         final CountDownLatch latch = new CountDownLatch(1);
+
+         volatile Exception exception;
+
+         public void onMessage(final ClientMessage message)
          {
-            session.createQueue(address, new SimpleString(queueName + i), null, false);
-         }
-
-         final byte[] bytes = RandomUtil.randomBytes(messageSize);
-
-         class MyHandler implements MessageHandler
-         {
-            int count = 0;
-
-            final CountDownLatch latch = new CountDownLatch(1);
-
-            volatile Exception exception;
-
-            public void onMessage(final ClientMessage message)
+            try
             {
-               try
+               byte[] bytesRead = new byte[messageSize];
+
+               message.getBodyBuffer().readBytes(bytesRead);
+
+               UnitTestCase.assertEqualsByteArrays(bytes, bytesRead);
+
+               message.acknowledge();
+
+               if (++count == numMessages * numProducers)
                {
-                  byte[] bytesRead = new byte[messageSize];
-
-                  message.getBodyBuffer().readBytes(bytesRead);
-
-                  UnitTestCase.assertEqualsByteArrays(bytes, bytesRead);
-
-                  message.acknowledge();
-
-                  if (++count == numMessages * numProducers)
-                  {
-                     latch.countDown();
-                  }
-
-                  if (consumerDelay > 0)
-                  {
-                     Thread.sleep(consumerDelay);
-                  }
-
-               }
-               catch (Exception e)
-               {
-                  ProducerFlowControlTest.log.error("Failed to handle message", e);
-
-                  exception = e;
-
                   latch.countDown();
                }
+
+               if (consumerDelay > 0)
+               {
+                  Thread.sleep(consumerDelay);
+               }
+
+            }
+            catch (Exception e)
+            {
+               ProducerFlowControlTest.log.error("Failed to handle message", e);
+
+               exception = e;
+
+               latch.countDown();
             }
          }
+      }
 
-         MyHandler[] handlers = new MyHandler[numConsumers];
+      MyHandler[] handlers = new MyHandler[numConsumers];
 
-         for (int i = 0; i < numConsumers; i++)
+      for (int i = 0; i < numConsumers; i++)
+      {
+         handlers[i] = new MyHandler();
+
+         ClientConsumer consumer = session.createConsumer(new SimpleString(queueName + i));
+
+         consumer.setMessageHandler(handlers[i]);
+      }
+
+      ClientProducer[] producers = new ClientProducer[numProducers];
+
+      for (int i = 0; i < numProducers; i++)
+      {
+         if (anon)
          {
-            handlers[i] = new MyHandler();
-
-            ClientConsumer consumer = session.createConsumer(new SimpleString(queueName + i));
-
-            consumer.setMessageHandler(handlers[i]);
+            producers[i] = session.createProducer();
          }
+         else
+         {
+            producers[i] = session.createProducer(address);
+         }
+      }
 
-         ClientProducer[] producers = new ClientProducer[numProducers];
+      long start = System.currentTimeMillis();
 
-         for (int i = 0; i < numProducers; i++)
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
+
+         message.getBodyBuffer().writeBytes(bytes);
+
+         for (int j = 0; j < numProducers; j++)
          {
             if (anon)
             {
-               producers[i] = session.createProducer();
+               producers[j].send(address, message);
             }
             else
             {
-               producers[i] = session.createProducer(address);
+               producers[j].send(message);
             }
+
          }
+      }
 
-         long start = System.currentTimeMillis();
+      for (int i = 0; i < numConsumers; i++)
+      {
+         Assert.assertTrue(handlers[i].latch.await(5, TimeUnit.MINUTES));
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = session.createMessage(false);
+         Assert.assertNull(handlers[i].exception);
+      }
 
-            message.getBodyBuffer().writeBytes(bytes);
+      long end = System.currentTimeMillis();
 
-            for (int j = 0; j < numProducers; j++)
-            {
-               if (anon)
-               {
-                  producers[j].send(address, message);
-               }
-               else
-               {
-                  producers[j].send(message);
-               }
+      double rate = 1000 * (double)numMessages / (end - start);
 
-            }
-         }
-
-         for (int i = 0; i < numConsumers; i++)
-         {
-            Assert.assertTrue(handlers[i].latch.await(5, TimeUnit.MINUTES));
-
-            Assert.assertNull(handlers[i].exception);
-         }
-
-         long end = System.currentTimeMillis();
-
-         double rate = 1000 * (double)numMessages / (end - start);
-
-         ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
+      ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
    }
 
    @Test
@@ -427,7 +423,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       try
       {
          // This will block
-         for (int i = 0 ; i < 10; i++)
+         for (int i = 0; i < 10; i++)
          {
             producer.send(message);
          }
@@ -458,28 +454,28 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-         locator.setProducerWindowSize(1024);
-         locator.setConsumerWindowSize(1024);
-         locator.setAckBatchSize(1024);
+      locator.setProducerWindowSize(1024);
+      locator.setConsumerWindowSize(1024);
+      locator.setAckBatchSize(1024);
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         ClientProducer producer = session.createProducer(address);
+      ClientProducer producer = session.createProducer(address);
 
-         byte[] bytes = new byte[100];
+      byte[] bytes = new byte[100];
 
-         final int numMessages = 1000;
+      final int numMessages = 1000;
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = session.createMessage(false);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(false);
 
-            message.getBodyBuffer().writeBytes(bytes);
+         message.getBodyBuffer().writeBytes(bytes);
 
-            producer.send(message);
-         }
+         producer.send(message);
+      }
    }
 
    // Not technically a flow control test, but what the hell
@@ -493,59 +489,59 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
-         session.createQueue("address", "queue2", null, false);
-         session.createQueue("address", "queue3", null, false);
-         session.createQueue("address", "queue4", null, false);
-         session.createQueue("address", "queue5", null, false);
+      session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue2", null, false);
+      session.createQueue("address", "queue3", null, false);
+      session.createQueue("address", "queue4", null, false);
+      session.createQueue("address", "queue5", null, false);
 
-         ClientConsumer consumer1 = session.createConsumer("queue1");
-         ClientConsumer consumer2 = session.createConsumer("queue2");
-         ClientConsumer consumer3 = session.createConsumer("queue3");
-         ClientConsumer consumer4 = session.createConsumer("queue4");
-         ClientConsumer consumer5 = session.createConsumer("queue5");
+      ClientConsumer consumer1 = session.createConsumer("queue1");
+      ClientConsumer consumer2 = session.createConsumer("queue2");
+      ClientConsumer consumer3 = session.createConsumer("queue3");
+      ClientConsumer consumer4 = session.createConsumer("queue4");
+      ClientConsumer consumer5 = session.createConsumer("queue5");
 
-         ClientProducer producer = session.createProducer("address");
+      ClientProducer producer = session.createProducer("address");
 
-         byte[] bytes = new byte[2000];
+      byte[] bytes = new byte[2000];
 
-         ClientMessage message = session.createMessage(false);
+      ClientMessage message = session.createMessage(false);
 
-         message.getBodyBuffer().writeBytes(bytes);
+      message.getBodyBuffer().writeBytes(bytes);
 
-         final int numMessages = 1000;
+      final int numMessages = 1000;
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            producer.send(message);
-         }
+      for (int i = 0; i < numMessages; i++)
+      {
+         producer.send(message);
+      }
 
-         session.start();
+      session.start();
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage msg = consumer1.receive(1000);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage msg = consumer1.receive(1000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
-            msg = consumer2.receive(5000);
+         msg = consumer2.receive(5000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
-            msg = consumer3.receive(5000);
+         msg = consumer3.receive(5000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
-            msg = consumer4.receive(5000);
+         msg = consumer4.receive(5000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
-            msg = consumer5.receive(5000);
+         msg = consumer5.receive(5000);
 
-            Assert.assertNotNull(msg);
-         }
+         Assert.assertNotNull(msg);
+      }
    }
 
    @Test
@@ -579,7 +575,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
          Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
          Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                .unReferencedCreditsSize());
+            .unReferencedCreditsSize());
       }
    }
 
@@ -592,31 +588,31 @@ public class ProducerFlowControlTest extends ServiceTestBase
       waitForServer(server);
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducerCredits credits = null;
+      ClientProducerCredits credits = null;
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      {
+         ClientProducer prod = session.createProducer("address");
+
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         if (credits != null)
          {
-            ClientProducer prod = session.createProducer("address");
-
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
-
-            if (credits != null)
-            {
-               Assert.assertTrue(newCredits == credits);
-            }
-
-            credits = newCredits;
-
-            prod.close();
-
-            Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
+            Assert.assertTrue(newCredits == credits);
          }
+
+         credits = newCredits;
+
+         prod.close();
+
+         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -629,29 +625,29 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducerCredits credits = null;
+      ClientProducerCredits credits = null;
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         if (credits != null)
          {
-            ClientProducer prod = session.createProducer("address" + i);
-
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
-
-            if (credits != null)
-            {
-               Assert.assertFalse(newCredits == credits);
-            }
-
-            credits = newCredits;
-
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
+            Assert.assertFalse(newCredits == credits);
          }
+
+         credits = newCredits;
+
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -663,31 +659,31 @@ public class ProducerFlowControlTest extends ServiceTestBase
       waitForServer(server);
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducerCredits credits = null;
+      ClientProducerCredits credits = null;
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         if (credits != null)
          {
-            ClientProducer prod = session.createProducer("address" + i);
-
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
-
-            if (credits != null)
-            {
-               Assert.assertFalse(newCredits == credits);
-            }
-
-            credits = newCredits;
-
-            prod.close();
-
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                       .unReferencedCreditsSize());
+            Assert.assertFalse(newCredits == credits);
          }
+
+         credits = newCredits;
+
+         prod.close();
+
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -700,59 +696,59 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducerCredits credits = null;
+      ClientProducerCredits credits = null;
 
-         List<ClientProducerCredits> creditsList = new ArrayList<ClientProducerCredits>();
+      List<ClientProducerCredits> creditsList = new ArrayList<ClientProducerCredits>();
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
+
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         if (credits != null)
          {
-            ClientProducer prod = session.createProducer("address" + i);
-
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
-
-            if (credits != null)
-            {
-               Assert.assertFalse(newCredits == credits);
-            }
-
-            credits = newCredits;
-
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
-
-            creditsList.add(credits);
+            Assert.assertFalse(newCredits == credits);
          }
 
-         Iterator<ClientProducerCredits> iter = creditsList.iterator();
+         credits = newCredits;
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
-         {
-            ClientProducer prod = session.createProducer("address" + i);
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
 
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+         creditsList.add(credits);
+      }
 
-            Assert.assertTrue(newCredits == iter.next());
+      Iterator<ClientProducerCredits> iter = creditsList.iterator();
 
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
-                                ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
-         }
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer("address" + i);
 
-         for (int i = 0; i < 10; i++)
-         {
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         Assert.assertTrue(newCredits == iter.next());
+
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
+                             ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
+
+      for (int i = 0; i < 10; i++)
+      {
          session.createProducer("address" + (i + ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE));
 
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE + i + 1,
-                                ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
-         }
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE + i + 1,
+                             ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -764,20 +760,20 @@ public class ProducerFlowControlTest extends ServiceTestBase
       waitForServer(server);
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
-         {
-            ClientProducer prod = session.createProducer((String)null);
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
 
-            prod.send("address", session.createMessage(false));
+         prod.send("address", session.createMessage(false));
 
-            Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
-         }
+         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -790,44 +786,44 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
-         {
-            ClientProducer prod = session.createProducer((String)null);
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
 
-            prod.send("address" + i, session.createMessage(false));
+         prod.send("address" + i, session.createMessage(false));
 
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                       .unReferencedCreditsSize());
-         }
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager()
+            .unReferencedCreditsSize());
+      }
 
-         for (int i = 0; i < 10; i++)
-         {
-            ClientProducer prod = session.createProducer((String)null);
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
 
-            prod.send("address" + i, session.createMessage(false));
+         prod.send("address" + i, session.createMessage(false));
 
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
-                                ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
-                                ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
-         }
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
+                             ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
+                             ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
 
-         for (int i = 0; i < 10; i++)
-         {
-            ClientProducer prod = session.createProducer((String)null);
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer prod = session.createProducer((String)null);
 
-            prod.send("address2-" + i, session.createMessage(false));
+         prod.send("address2-" + i, session.createMessage(false));
 
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
-                                ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
-                                ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
-         }
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
+                             ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
+                             ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      }
    }
 
    @Test
@@ -840,36 +836,36 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = createSessionFactory(locator);
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducer prod1 = session.createProducer("address");
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      ClientProducer prod1 = session.createProducer("address");
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
 
-         ClientProducer prod2 = session.createProducer("address");
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      ClientProducer prod2 = session.createProducer("address");
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
 
-         ClientProducer prod3 = session.createProducer("address");
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      ClientProducer prod3 = session.createProducer("address");
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
 
-         prod1.close();
+      prod1.close();
 
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
 
-         prod2.close();
+      prod2.close();
 
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
 
-         prod3.close();
+      prod3.close();
 
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+      Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
    }
 
 }

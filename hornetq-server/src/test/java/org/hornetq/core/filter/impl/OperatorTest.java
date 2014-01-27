@@ -13,24 +13,18 @@
 
 package org.hornetq.core.filter.impl;
 
-import org.junit.Test;
-
 import java.util.HashSet;
 
-import org.junit.Assert;
-
-
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.filter.impl.Operator;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A OperatorTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 3 nov. 2008 17:22:22
- *
- *
+ *         <p/>
+ *         Created 3 nov. 2008 17:22:22
  */
 public class OperatorTest extends Assert
 {

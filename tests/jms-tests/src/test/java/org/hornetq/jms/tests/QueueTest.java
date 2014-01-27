@@ -13,11 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -25,12 +20,14 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class QueueTest extends JMSTestCase
 {
@@ -72,7 +69,7 @@ public class QueueTest extends JMSTestCase
    {
       Connection conn = null;
 
-      byte[] bytes = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 123, 55, 0, 12, -100, -11 };
+      byte[] bytes = new byte[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 123, 55, 0, 12, -100, -11};
 
       try
       {

@@ -1,12 +1,6 @@
 package org.hornetq.tests.integration.cluster.failover;
-import org.hornetq.core.server.Queue;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -30,10 +24,13 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.UUID;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BackupSyncJournalTest extends FailoverTestBase
 {
@@ -237,9 +234,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    }
 
    /**
-    * @throws FileNotFoundException
-    * @throws IOException
-    * @throws InterruptedException
+    * @throws Exception
     */
    private void assertNodeIdWasSaved() throws Exception
    {
@@ -284,6 +279,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    /**
     * Basic fail-back test.
+    *
     * @throws Exception
     */
    @Test
@@ -338,7 +334,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       backupServer.getServer().waitForActivation(5, TimeUnit.SECONDS);
    }
 
-   protected void createProducerSendSomeMessages() throws HornetQException, Exception
+   protected void createProducerSendSomeMessages() throws Exception
    {
       session = addClientSession(sessionFactory.createSession(true, true));
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);

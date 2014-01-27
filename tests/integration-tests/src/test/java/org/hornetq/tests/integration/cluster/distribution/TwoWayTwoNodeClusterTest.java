@@ -12,21 +12,17 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
-import org.junit.Before;
-
-import org.junit.Test;
-
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A OnewayTwoNodeClusterTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 30 Jan 2009 18:03:28
- *
- *
+ *         <p/>
+ *         Created 30 Jan 2009 18:03:28
  */
 public class TwoWayTwoNodeClusterTest extends ClusterTestBase
 {
@@ -180,7 +176,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       stopServers(1);
 
       //allow the topology to be propagated before restarting
-       waitForTopology(servers[0], 1, -1, 2000);
+      waitForTopology(servers[0], 1, -1, 2000);
 
       System.out.println(clusterDescription(servers[0]));
 

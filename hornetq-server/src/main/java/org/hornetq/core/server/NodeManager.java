@@ -14,7 +14,6 @@
 package org.hornetq.core.server;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -98,8 +97,9 @@ public abstract class NodeManager implements HornetQComponent
 
    /**
     * Sets the nodeID.
-    * <p>
+    * <p/>
     * Only used by replicating backups.
+    *
     * @param nodeID
     */
    public void setNodeID(String nodeID)
@@ -159,7 +159,7 @@ public abstract class NodeManager implements HornetQComponent
 
    /**
     * Ensures existence of persistent information about the server's nodeID.
-    * <p>
+    * <p/>
     * Roughly the different use cases are:
     * <ol>
     * <li>old live server restarts: a server.lock file already exists and contains a nodeID.
@@ -168,11 +168,10 @@ public abstract class NodeManager implements HornetQComponent
     * <li>replicated backup received its nodeID from its live: no file exists, we need to persist
     * the *current* nodeID
     * </ol>
-    * @throws Exception
-    * @throws FileNotFoundException
+    *
     * @throws IOException
     */
-   protected synchronized final void setUpServerLockFile() throws FileNotFoundException, IOException
+   protected synchronized void setUpServerLockFile() throws IOException
    {
       File serverLockFile = newFile(SERVER_LOCK_NAME);
 
@@ -195,7 +194,7 @@ public abstract class NodeManager implements HornetQComponent
             /*
             * on some OS's this may fail weirdly even tho the parent dir exists, retrying will work, some weird timing issue i think
             * */
-            if(count < 5)
+            if (count < 5)
             {
                try
                {

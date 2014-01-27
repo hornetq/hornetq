@@ -13,11 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -27,8 +22,11 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -56,7 +54,7 @@ public class TransactedSessionTest extends JMSTestCase
          Message m = c.receive(1000);
          ProxyAssertSupport.assertNotNull(m);
 
-         ProxyAssertSupport.assertEquals("one", ((TextMessage) m).getText());
+         ProxyAssertSupport.assertEquals("one", ((TextMessage)m).getText());
          ProxyAssertSupport.assertFalse(m.getJMSRedelivered());
          ProxyAssertSupport.assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
 
@@ -105,7 +103,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          conn.start();
 
-         TextMessage mRec1 = (TextMessage) consumer1.receive(2000);
+         TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
          ProxyAssertSupport.assertNotNull(mRec1);
 
          ProxyAssertSupport.assertEquals("igloo", mRec1.getText());
@@ -113,7 +111,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess1.rollback(); // causes redelivery for session
 
-         mRec1 = (TextMessage) consumer1.receive(2000);
+         mRec1 = (TextMessage)consumer1.receive(2000);
          ProxyAssertSupport.assertEquals("igloo", mRec1.getText());
          ProxyAssertSupport.assertTrue(mRec1.getJMSRedelivered());
 
@@ -151,14 +149,14 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess.commit();
 
-         TextMessage mRec = (TextMessage) consumer.receive(2000);
+         TextMessage mRec = (TextMessage)consumer.receive(2000);
 
          ProxyAssertSupport.assertEquals("igloo", mRec.getText());
          ProxyAssertSupport.assertFalse(mRec.getJMSRedelivered());
 
          sess.rollback();
 
-         mRec = (TextMessage) consumer.receive(2000);
+         mRec = (TextMessage)consumer.receive(2000);
 
          ProxyAssertSupport.assertNotNull(mRec);
          ProxyAssertSupport.assertEquals("igloo", mRec.getText());
@@ -197,7 +195,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess.commit();
 
-         TextMessage mRec = (TextMessage) consumer.receive(2000);
+         TextMessage mRec = (TextMessage)consumer.receive(2000);
          ProxyAssertSupport.assertEquals("igloo", mRec.getText());
 
          sess.commit();
@@ -209,11 +207,11 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess.commit();
 
-         mRec = (TextMessage) consumer.receive(2000);
+         mRec = (TextMessage)consumer.receive(2000);
          ProxyAssertSupport.assertEquals("rollback", mRec.getText());
          sess.rollback();
 
-         TextMessage mRec2 = (TextMessage) consumer.receive(2000);
+         TextMessage mRec2 = (TextMessage)consumer.receive(2000);
 
          sess.commit();
 
@@ -464,12 +462,12 @@ public class TransactedSessionTest extends JMSTestCase
 
          sess.commit();
 
-         TextMessage mRec = (TextMessage) consumer.receive(2000);
+         TextMessage mRec = (TextMessage)consumer.receive(2000);
          ProxyAssertSupport.assertEquals("igloo", mRec.getText());
          ProxyAssertSupport.assertFalse(mRec.getJMSRedelivered());
 
          sess.rollback();
-         mRec = (TextMessage) consumer.receive(2000);
+         mRec = (TextMessage)consumer.receive(2000);
          ProxyAssertSupport.assertEquals("igloo", mRec.getText());
          ProxyAssertSupport.assertTrue(mRec.getJMSRedelivered());
 
@@ -513,7 +511,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          conn.start();
 
-         TextMessage tm = (TextMessage) cons.receive(1000);
+         TextMessage tm = (TextMessage)cons.receive(1000);
          ProxyAssertSupport.assertNotNull(tm);
 
          ProxyAssertSupport.assertEquals("a message", tm.getText());
@@ -529,7 +527,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          cons = sess2.createConsumer(HornetQServerTestCase.queue1);
 
-         tm = (TextMessage) cons.receive(1000);
+         tm = (TextMessage)cons.receive(1000);
 
          ProxyAssertSupport.assertEquals("a message", tm.getText());
 
@@ -563,7 +561,7 @@ public class TransactedSessionTest extends JMSTestCase
 
       sess.commit();
 
-      TextMessage mRec = (TextMessage) consumer.receive(1000);
+      TextMessage mRec = (TextMessage)consumer.receive(1000);
       ProxyAssertSupport.assertNotNull(mRec);
       log.trace("Got 1");
       ProxyAssertSupport.assertNotNull(mRec);
@@ -577,7 +575,7 @@ public class TransactedSessionTest extends JMSTestCase
       sess.commit();
 
       log.trace("Receiving 2");
-      mRec = (TextMessage) consumer.receive(1000);
+      mRec = (TextMessage)consumer.receive(1000);
       ProxyAssertSupport.assertNotNull(mRec);
 
       log.trace("Received 2");
@@ -586,7 +584,7 @@ public class TransactedSessionTest extends JMSTestCase
 
       sess.rollback();
 
-      TextMessage mRec2 = (TextMessage) consumer.receive(1000);
+      TextMessage mRec2 = (TextMessage)consumer.receive(1000);
       ProxyAssertSupport.assertNotNull(mRec2);
       ProxyAssertSupport.assertEquals("rollback", mRec2.getText());
 
@@ -735,14 +733,14 @@ public class TransactedSessionTest extends JMSTestCase
             }
 
             // wait for the first message to be received before we continue sending
-            if(!started)
+            if (!started)
             {
                assertTrue(latch.await(5, TimeUnit.SECONDS));
                started = true;
             }
             else
             {
-               if(myReceiver.failed)
+               if (myReceiver.failed)
                {
                   fail(myReceiver.e.getMessage());
                }
@@ -780,15 +778,15 @@ public class TransactedSessionTest extends JMSTestCase
 
       public void onMessage(Message message)
       {
-         if(!started)
+         if (!started)
          {
-             startLatch.countDown();
+            startLatch.countDown();
             started = true;
          }
          try
          {
             int foo = message.getIntProperty("foo");
-            if(foo != count)
+            if (foo != count)
             {
                e = new Exception("received out of order expected " + count + " received " + foo);
                failed = true;
@@ -812,6 +810,7 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
+
    /**
     * Test IllegateStateException is thrown if commit is called on a non-transacted session
     */

@@ -17,32 +17,38 @@ package org.hornetq.jms.persistence.config;
  * A PersistedType
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public enum PersistedType
 {
-    ConnectionFactory, Topic, Queue;
+   ConnectionFactory, Topic, Queue;
 
-    public byte getType()
-    {
-       switch (this)
-       {
-          case ConnectionFactory: return 0;
-          case Topic: return 1;
-          case Queue: return 2;
-          default: return -1;
-       }
-    }
+   public byte getType()
+   {
+      switch (this)
+      {
+         case ConnectionFactory:
+            return 0;
+         case Topic:
+            return 1;
+         case Queue:
+            return 2;
+         default:
+            return -1;
+      }
+   }
 
-    public static PersistedType getType(byte type)
-    {
-       switch (type)
-       {
-          case 0: return ConnectionFactory;
-          case 1: return Topic;
-          case 2: return Queue;
-          default: return null;
-       }
-    }
+   public static PersistedType getType(byte type)
+   {
+      switch (type)
+      {
+         case 0:
+            return ConnectionFactory;
+         case 1:
+            return Topic;
+         case 2:
+            return Queue;
+         default:
+            return null;
+      }
+   }
 }

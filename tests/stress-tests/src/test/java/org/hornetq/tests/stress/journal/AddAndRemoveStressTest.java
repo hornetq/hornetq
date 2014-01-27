@@ -12,15 +12,10 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -30,11 +25,12 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class AddAndRemoveStressTest extends UnitTestCase
 {
@@ -67,7 +63,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       }
    };
 
-   private static final long NUMBER_OF_MESSAGES = 210000l;
+   private static final long NUMBER_OF_MESSAGES = 210000L;
 
    private static final int NUMBER_OF_FILES_ON_JOURNAL = 6;
 

@@ -13,14 +13,12 @@
 
 package org.hornetq.tests.unit.core.settings.impl;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -40,7 +38,7 @@ public class AddressSettingsTest extends UnitTestCase
                           addressSettings.getMessageCounterHistoryDayLimit());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
       Assert.assertEquals(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER,
- addressSettings.getRedeliveryMultiplier(),
+                          addressSettings.getRedeliveryMultiplier(),
                           0.000001);
 
    }

@@ -28,13 +28,11 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  * A StompUtils
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class StompUtils
 {
    // Constants -----------------------------------------------------
-   private static final String DEFAULT_MESSAGE_PRIORITY= "4";
+   private static final String DEFAULT_MESSAGE_PRIORITY = "4";
 
    // Attributes ----------------------------------------------------
 
@@ -48,7 +46,9 @@ public class StompUtils
       if (priority != null)
       {
          msg.setPriority(Byte.parseByte(priority));
-      } else {
+      }
+      else
+      {
          msg.setPriority(Byte.parseByte(DEFAULT_MESSAGE_PRIORITY));
       }
       String persistent = headers.remove(Stomp.Headers.Send.PERSISTENT);
@@ -101,7 +101,7 @@ public class StompUtils
       if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null)
       {
          command.addHeader(Stomp.Headers.Message.REPLY_TO,
-                     message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
+                           message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
       }
       command.addHeader(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
 
@@ -116,9 +116,9 @@ public class StompUtils
       {
          String value = name.toString();
          if (name.equals(ClientMessageImpl.REPLYTO_HEADER_NAME) ||
-                  value.equals("JMSType") ||
-                  value.equals("JMSCorrelationID") ||
-                  value.equals(Stomp.Headers.Message.DESTINATION))
+            value.equals("JMSType") ||
+            value.equals("JMSCorrelationID") ||
+            value.equals(Stomp.Headers.Message.DESTINATION))
          {
             continue;
          }

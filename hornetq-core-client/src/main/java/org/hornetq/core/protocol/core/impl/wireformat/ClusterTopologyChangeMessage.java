@@ -20,7 +20,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class ClusterTopologyChangeMessage extends PacketImpl
 {
@@ -131,7 +130,7 @@ public class ClusterTopologyChangeMessage extends PacketImpl
       {
          boolean hasLive = buffer.readBoolean();
          TransportConfiguration a;
-         if(hasLive)
+         if (hasLive)
          {
             a = new TransportConfiguration();
             a.decode(buffer);

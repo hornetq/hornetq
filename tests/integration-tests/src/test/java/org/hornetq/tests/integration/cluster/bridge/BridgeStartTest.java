@@ -13,14 +13,10 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -39,13 +35,15 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A BridgeStartTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 14 Jan 2009 14:05:01
+ *         <p/>
+ *         Created 14 Jan 2009 14:05:01
  */
 public class BridgeStartTest extends ServiceTestBase
 {
@@ -224,7 +222,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -270,7 +268,7 @@ public class BridgeStartTest extends ServiceTestBase
       server0.getConfiguration().setConnectorConfigurations(connectors);
 
       ArrayList<String> staticConnectors = new ArrayList<String>();
-         staticConnectors.add(server1tc.getName());
+      staticConnectors.add(server1tc.getName());
 
       final String bridgeName = "bridge1";
 
@@ -317,7 +315,6 @@ public class BridgeStartTest extends ServiceTestBase
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
-
 
 
          ClientSession session0 = sf0.createSession(false, true, true);
@@ -447,7 +444,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -605,7 +602,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -815,7 +812,7 @@ public class BridgeStartTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }

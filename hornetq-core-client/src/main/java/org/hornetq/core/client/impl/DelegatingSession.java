@@ -13,11 +13,10 @@
 
 package org.hornetq.core.client.impl;
 
-import java.util.Set;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -39,13 +38,11 @@ import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * A DelegatingSession
- *
+ * <p/>
  * We wrap the real session, so we can add a finalizer on this and close the session
  * on GC if it has not already been closed
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class DelegatingSession implements ClientSessionInternal
 {
@@ -118,7 +115,7 @@ public class DelegatingSession implements ClientSessionInternal
 
    public void addFailoverListener(FailoverEventListener listener)
    {
-     session.addFailoverListener(listener);
+      session.addFailoverListener(listener);
    }
 
    public void addProducer(final ClientProducerInternal producer)
@@ -170,10 +167,10 @@ public class DelegatingSession implements ClientSessionInternal
    }
 
    public ClientMessage createMessage(final byte type,
-                                            final boolean durable,
-                                            final long expiration,
-                                            final long timestamp,
-                                            final byte priority)
+                                      final boolean durable,
+                                      final long expiration,
+                                      final long timestamp,
+                                      final byte priority)
    {
       return session.createMessage(type, durable, expiration, timestamp, priority);
    }

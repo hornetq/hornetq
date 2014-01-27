@@ -12,13 +12,8 @@
  */
 
 package org.hornetq.tests.stress.paging;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.HashMap;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -33,6 +28,9 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This is an integration-tests that will take some time to run.
@@ -185,7 +183,7 @@ public class PageStressTest extends ServiceTestBase
          session = factory.createSession(false, false, false);
 
          SimpleString address = new SimpleString("page-adr");
-         SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+         SimpleString[] queue = new SimpleString[]{new SimpleString("queue1"), new SimpleString("queue2")};
 
          session.createQueue(address, queue[0], null, true);
          session.createQueue(address, queue[1], null, true);
@@ -209,10 +207,10 @@ public class PageStressTest extends ServiceTestBase
 
          session.start();
 
-         int counters[] = new int[2];
+         int[] counters = new int[2];
 
-         ClientConsumer consumers[] = new ClientConsumer[] { session.createConsumer(queue[0]),
-                                                            session.createConsumer(queue[1]) };
+         ClientConsumer[] consumers = new ClientConsumer[]{session.createConsumer(queue[0]),
+            session.createConsumer(queue[1])};
 
          while (true)
          {

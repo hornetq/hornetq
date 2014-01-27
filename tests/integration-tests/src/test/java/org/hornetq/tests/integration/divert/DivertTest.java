@@ -13,12 +13,8 @@
 
 package org.hornetq.tests.integration.divert;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -32,15 +28,15 @@ import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A DivertTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 14 Jan 2009 14:05:01
- *
- *
+ *         <p/>
+ *         Created 14 Jan 2009 14:05:01
  */
 public class DivertTest extends ServiceTestBase
 {
@@ -1142,7 +1138,7 @@ public class DivertTest extends ServiceTestBase
          producer.send(message);
       }
 
-      for (int i = 0; i < numMessages;)
+      for (int i = 0; i < numMessages; )
       {
          ClientMessage message = consumer1.receive(DivertTest.TIMEOUT);
 
@@ -1258,7 +1254,7 @@ public class DivertTest extends ServiceTestBase
 
       // Only the first and third should be deployed
 
-      ServerLocator locator = createInVMNonHALocator();;
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);

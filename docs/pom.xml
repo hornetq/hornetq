@@ -26,6 +26,9 @@
    <packaging>pom</packaging>
    <name>HornetQ Documentation</name>
 
+   <properties>
+      <skipStyleCheck>true</skipStyleCheck>
+   </properties>
 
    <modules>
       <module>user-manual</module>

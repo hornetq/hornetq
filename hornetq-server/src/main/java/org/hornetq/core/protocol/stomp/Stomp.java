@@ -28,7 +28,7 @@ public interface Stomp
 
    String NEWLINE = "\n";
 
-   public static interface Commands
+   public interface Commands
    {
       String CONNECT = "CONNECT";
 
@@ -155,7 +155,7 @@ public interface Stomp
          String DESTINATION = "destination";
 
          String ID = "id";
-         
+
          String DURABLE_SUBSCRIBER_NAME = "durable-subscriber-name";
       }
 

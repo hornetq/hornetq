@@ -18,11 +18,8 @@ import javax.transaction.TransactionManager;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * 
  */
 public interface JMSBridge extends HornetQComponent
 {

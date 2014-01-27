@@ -13,11 +13,10 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
@@ -36,8 +35,6 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class AddressControlImpl extends AbstractControl implements AddressControl
 {
@@ -116,7 +113,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          int i = 0;
          for (Binding binding : bindings.getBindings())
          {
-               bindingNames[i++] = binding.getUniqueName().toString();
+            bindingNames[i++] = binding.getUniqueName().toString();
          }
          return bindingNames;
       }
@@ -142,14 +139,15 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          int i = 0;
          for (Role role : roles)
          {
-            objRoles[i++] = new Object[] { role.getName(),
-                                          CheckType.SEND.hasRole(role),
-                                          CheckType.CONSUME.hasRole(role),
-                                          CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
-                                          CheckType.MANAGE.hasRole(role) };
+            objRoles[i++] = new Object[]{
+               role.getName(),
+               CheckType.SEND.hasRole(role),
+               CheckType.CONSUME.hasRole(role),
+               CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+               CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+               CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+               CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
+               CheckType.MANAGE.hasRole(role)};
          }
          return objRoles;
       }

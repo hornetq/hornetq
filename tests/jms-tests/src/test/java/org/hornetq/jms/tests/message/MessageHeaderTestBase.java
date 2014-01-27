@@ -12,8 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-import java.util.Arrays;
-import java.util.Enumeration;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -28,6 +26,8 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import java.util.Arrays;
+import java.util.Enumeration;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.jms.client.HornetQBytesMessage;
@@ -42,12 +42,11 @@ import org.junit.After;
 import org.junit.Before;
 
 /**
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2883 $</tt>
- *
- * $Id: MessageImplTestBase.java 2883 2007-07-12 23:36:16Z timfox $
+ *          <p/>
+ *          $Id: MessageImplTestBase.java 2883 2007-07-12 23:36:16Z timfox $
  */
 public abstract class MessageHeaderTestBase extends HornetQServerTestCase
 {
@@ -61,18 +60,18 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    public static void configureMessage(final HornetQMessage m) throws JMSException
    {
       m.setJMSMessageID("ID:messageID777");
-      m.setJMSTimestamp(123456789l);
+      m.setJMSTimestamp(123456789L);
       m.setJMSCorrelationID("correlationID777");
       m.setJMSReplyTo(HornetQJMSClient.createQueue("ReplyToQueue"));
       m.setJMSDestination(HornetQJMSClient.createQueue("DestinationQueue"));
       m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-      m.setJMSExpiration(987654321l);
+      m.setJMSExpiration(987654321L);
       m.setJMSPriority(9);
       m.setBooleanProperty("booleanProperty", true);
       m.setByteProperty("byteProperty", (byte)2);
       m.setShortProperty("shortProperty", (short)3);
       m.setIntProperty("intProperty", 4);
-      m.setLongProperty("longProperty", 5l);
+      m.setLongProperty("longProperty", 5L);
       m.setFloatProperty("floatProperty", 6);
       m.setDoubleProperty("doubleProperty", 7);
       m.setStringProperty("stringPoperty", "someString");
@@ -137,7 +136,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
       ProxyAssertSupport.assertEquals(m1.getJMSPriority(), m2.getJMSPriority());
 
       int m1PropertyCount = 0, m2PropertyCount = 0;
-      for (Enumeration p = m1.getPropertyNames(); p.hasMoreElements();)
+      for (Enumeration p = m1.getPropertyNames(); p.hasMoreElements(); )
       {
          String name = (String)p.nextElement();
 
@@ -146,7 +145,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
             m1PropertyCount++;
          }
       }
-      for (Enumeration p = m2.getPropertyNames(); p.hasMoreElements();)
+      for (Enumeration p = m2.getPropertyNames(); p.hasMoreElements(); )
       {
          String name = (String)p.nextElement();
 
@@ -158,7 +157,7 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
 
       ProxyAssertSupport.assertEquals(m1PropertyCount, m2PropertyCount);
 
-      for (Enumeration props = m1.getPropertyNames(); props.hasMoreElements();)
+      for (Enumeration props = m1.getPropertyNames(); props.hasMoreElements(); )
       {
          boolean found = false;
 
@@ -345,13 +344,13 @@ public abstract class MessageHeaderTestBase extends HornetQServerTestCase
    {
       MessageHeaderTestBase.ensureEquivalent((Message)m1, m2);
 
-      for (Enumeration e = m1.getMapNames(); e.hasMoreElements();)
+      for (Enumeration e = m1.getMapNames(); e.hasMoreElements(); )
       {
          String name = (String)e.nextElement();
          ProxyAssertSupport.assertEquals(m1.getObject(name), m2.getObject(name));
       }
 
-      for (Enumeration e = m2.getMapNames(); e.hasMoreElements();)
+      for (Enumeration e = m2.getMapNames(); e.hasMoreElements(); )
       {
          String name = (String)e.nextElement();
          ProxyAssertSupport.assertEquals(m2.getObject(name), m1.getObject(name));

@@ -47,7 +47,7 @@ import java.util.Random;
  * system, file-based locking is used. This works between multiple JVMs and Jug
  * instances.
  * </ul>
- * <p>
+ * <p/>
  * Some additional assumptions about calculating the timestamp:
  * <ul>
  * <li>System.currentTimeMillis() is assumed to give time offset in UTC, or at
@@ -59,7 +59,7 @@ import java.util.Random;
  * of Gregorian calendar is assumed to be correct (which seems to be the case
  * when testing with Java calendars).
  * </ul>
- * <p>
+ * <p/>
  * Note about synchronization: this class is assumed to always be called from a
  * synchronized context (caller locks on either this object, or a similar timer
  * lock), and so has no method synchronization.
@@ -73,21 +73,21 @@ public class UUIDTimer
     * UUIDs need time from the beginning of gregorian calendar (15-oct-1582),
     * need to apply the offset:
     */
-   private final static long kClockOffset = 0x01b21dd213814000L;
+   private static final long kClockOffset = 0x01b21dd213814000L;
 
    /**
     * Also, instead of getting time in units of 100nsecs, we get something with
     * max resolution of 1 msec... and need the multiplier as well
     */
-   private final static long kClockMultiplier = 10000;
+   private static final long kClockMultiplier = 10000;
 
-   private final static long kClockMultiplierL = 10000L;
+   private static final long kClockMultiplierL = 10000L;
 
    /**
     * Let's allow "virtual" system time to advance at most 100 milliseconds
     * beyond actual physical system time, before adding delays.
     */
-   private final static long kMaxClockAdvance = 100L;
+   private static final long kMaxClockAdvance = 100L;
 
    // // // Configuration
 
@@ -261,7 +261,7 @@ public class UUIDTimer
     * methods ///////////////////////////////////////////////////////////
     */
 
-   private final static int MAX_WAIT_COUNT = 50;
+   private static final int MAX_WAIT_COUNT = 50;
 
    /**
     * Simple utility method to use to wait for couple of milliseconds, to let
@@ -270,10 +270,9 @@ public class UUIDTimer
     * but that should be enough to eventually synchronize physical clock with
     * virtual clock values used for UUIDs.
     *
-    * @param msecs
-    *           Number of milliseconds to wait for from current time point
+    * @param msecs Number of milliseconds to wait for from current time point
     */
-   private final static void slowDown(final long startTime, final long actDiff)
+   private static void slowDown(final long startTime, final long actDiff)
    {
       /*
        * First, let's determine how long we'd like to wait. This is based on how

@@ -12,13 +12,8 @@
  */
 
 package org.hornetq.tests.performance.journal;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
-
-import org.junit.Assert;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.Journal;
@@ -28,14 +23,15 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A RealJournalImplTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:Clebert.Suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
@@ -218,7 +214,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          long start = System.currentTimeMillis();
 
          int count = 0;
-         double rates[] = new double[50];
+         double[] rates = new double[50];
          for (int i = 0; i < 50; i++)
          {
             long startTrans = System.currentTimeMillis();

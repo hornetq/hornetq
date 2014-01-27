@@ -13,27 +13,23 @@
 
 package org.hornetq.tests.unit.core.persistence.impl;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A OperationContextUnitTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class OperationContextUnitTest extends UnitTestCase
 {
@@ -73,8 +69,8 @@ public class OperationContextUnitTest extends UnitTestCase
 
          assertTrue(latch1.await(10, TimeUnit.SECONDS));
 
-         for (int i = 0 ; i < 10; i++) impl.storeLineUp();
-         for (int i = 0 ; i < 3; i++) impl.pageSyncLineUp();
+         for (int i = 0; i < 10; i++) impl.storeLineUp();
+         for (int i = 0; i < 3; i++) impl.pageSyncLineUp();
 
          impl.executeOnCompletion(new IOAsyncTask()
          {
@@ -92,8 +88,8 @@ public class OperationContextUnitTest extends UnitTestCase
 
          assertFalse(latch2.await(1, TimeUnit.MILLISECONDS));
 
-         for (int i = 0 ; i < 9; i++) impl.done();
-         for (int i = 0 ; i < 2; i++) impl.pageSyncDone();
+         for (int i = 0; i < 9; i++) impl.done();
+         for (int i = 0; i < 2; i++) impl.pageSyncDone();
 
 
          assertFalse(latch2.await(1, TimeUnit.MILLISECONDS));

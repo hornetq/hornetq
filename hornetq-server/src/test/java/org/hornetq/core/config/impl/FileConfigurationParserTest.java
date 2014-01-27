@@ -13,8 +13,6 @@
 
 package org.hornetq.core.config.impl;
 
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,9 +22,11 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.impl.FileConfigurationParser;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
+import org.junit.Test;
 
 /**
  * A FileConfigurationParserTest
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class FileConfigurationParserTest extends UnitTestCase
@@ -34,10 +34,11 @@ public class FileConfigurationParserTest extends UnitTestCase
    /**
     * These "InvalidConfigurationTest*.xml" files are modified copies of {@value
     * ConfigurationTest-full-config.xml}, so just diff it for changes, e.g.
-    *
+    * <p/>
     * <pre>
     * diff ConfigurationTest-full-config.xml InvalidConfigurationTest4.xml
     * </pre>
+    *
     * @throws Exception
     */
    @Test
@@ -116,7 +117,7 @@ public class FileConfigurationParserTest extends UnitTestCase
       clusterPasswordPart = "<cluster-password>" + mask + "</cluster-password>";
 
       String codecPart = "<password-codec>" + "org.hornetq.utils.DefaultSensitiveStringCodec" +
-                         ";key=newkey</password-codec>";
+         ";key=newkey</password-codec>";
 
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + codecPart + lastPart;
 
@@ -128,72 +129,72 @@ public class FileConfigurationParserTest extends UnitTestCase
    }
 
    private static String firstPart =
-            "<configuration xmlns=\"urn:hornetq\"\n" +
-            "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "xsi:schemaLocation=\"urn:hornetq /schema/hornetq-configuration.xsd\">\n" +
-            "<name>HornetQ.main.config</name>" + "\n" +
-            "<backup-group-name>anodegroupname</backup-group-name>" + "\n" +
-            "<log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
-            "<bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>" + "\n" +
-            "<journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>" + "\n" +
-            "<journal-min-files>10</journal-min-files>" + "\n" +
-            "<large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>" + "\n" +
-            "<paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>" + "\n" +
-            "<connectors>" + "\n" +
-            "<connector name=\"netty\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>" + "\n" +
-            "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
-            "<param key=\"port\"  value=\"${hornetq.remoting.netty.port:5445}\"/>" + "\n" +
-            "</connector>" + "\n" +
-            "<connector name=\"netty-throughput\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>" + "\n" +
-            "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
-            "<param key=\"port\"  value=\"${hornetq.remoting.netty.batch.port:5455}\"/>" + "\n" +
-            "<param key=\"batch-delay\" value=\"50\"/>" + "\n" +
-            "</connector>" + "\n" +
-            "<connector name=\"in-vm\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>" + "\n" +
-            "<param key=\"server-id\" value=\"${hornetq.server-id:0}\"/>" + "\n" +
-            "</connector>" + "\n" +
-            "</connectors>" + "\n" +
-            "<acceptors>" + "\n" +
-            "<acceptor name=\"netty\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>" + "\n" +
-            "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
-            "<param key=\"port\"  value=\"${hornetq.remoting.netty.port:5445}\"/>" + "\n" +
-            "</acceptor>" + "\n" +
-            "<acceptor name=\"netty-throughput\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>" + "\n" +
-            "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
-            "<param key=\"port\"  value=\"${hornetq.remoting.netty.batch.port:5455}\"/>" + "\n" +
-            "<param key=\"batch-delay\" value=\"50\"/>" + "\n" +
-            "<param key=\"direct-deliver\" value=\"false\"/>" + "\n" +
-            "</acceptor>" + "\n" +
-            "<acceptor name=\"in-vm\">" + "\n" +
-            "<factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>" + "\n" +
-            "<param key=\"server-id\" value=\"0\"/>" + "\n" +
-            "</acceptor>" + "\n" +
-            "</acceptors>" + "\n" +
-            "<security-settings>" + "\n" +
-            "<security-setting match=\"#\">" + "\n" +
-            "<permission type=\"createNonDurableQueue\" roles=\"guest\"/>" + "\n" +
-            "<permission type=\"deleteNonDurableQueue\" roles=\"guest\"/>" + "\n" +
-            "<permission type=\"createDurableQueue\" roles=\"guest\"/>" + "\n" +
-            "<permission type=\"deleteDurableQueue\" roles=\"guest\"/>" + "\n" +
-            "<permission type=\"consume\" roles=\"guest\"/>" + "\n" +
-            "<permission type=\"send\" roles=\"guest\"/>" + "\n" +
-            "</security-setting>" + "\n" +
-            "</security-settings>" + "\n" +
-            "<address-settings>" + "\n" +
- "<address-setting match=\"#\">"
-                     + "\n" + "<dead-letter-address>jms.queue.DLQ\n</dead-letter-address>" + "\n"
-                     + "<expiry-address>jms.queue.ExpiryQueue\n</expiry-address>" + "\n"
-                     + "<redelivery-delay>0\n</redelivery-delay>" + "\n"
-                     + "<max-size-bytes>10485760\n</max-size-bytes>" + "\n"
-                     + "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n"
-                     + "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
-            "</address-setting>" + "\n" +
-            "</address-settings>";
+      "<configuration xmlns=\"urn:hornetq\"\n" +
+         "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+         "xsi:schemaLocation=\"urn:hornetq /schema/hornetq-configuration.xsd\">\n" +
+         "<name>HornetQ.main.config</name>" + "\n" +
+         "<backup-group-name>anodegroupname</backup-group-name>" + "\n" +
+         "<log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
+         "<bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>" + "\n" +
+         "<journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>" + "\n" +
+         "<journal-min-files>10</journal-min-files>" + "\n" +
+         "<large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>" + "\n" +
+         "<paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>" + "\n" +
+         "<connectors>" + "\n" +
+         "<connector name=\"netty\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>" + "\n" +
+         "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
+         "<param key=\"port\"  value=\"${hornetq.remoting.netty.port:5445}\"/>" + "\n" +
+         "</connector>" + "\n" +
+         "<connector name=\"netty-throughput\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>" + "\n" +
+         "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
+         "<param key=\"port\"  value=\"${hornetq.remoting.netty.batch.port:5455}\"/>" + "\n" +
+         "<param key=\"batch-delay\" value=\"50\"/>" + "\n" +
+         "</connector>" + "\n" +
+         "<connector name=\"in-vm\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>" + "\n" +
+         "<param key=\"server-id\" value=\"${hornetq.server-id:0}\"/>" + "\n" +
+         "</connector>" + "\n" +
+         "</connectors>" + "\n" +
+         "<acceptors>" + "\n" +
+         "<acceptor name=\"netty\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>" + "\n" +
+         "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
+         "<param key=\"port\"  value=\"${hornetq.remoting.netty.port:5445}\"/>" + "\n" +
+         "</acceptor>" + "\n" +
+         "<acceptor name=\"netty-throughput\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>" + "\n" +
+         "<param key=\"host\"  value=\"${jboss.bind.address:localhost}\"/>" + "\n" +
+         "<param key=\"port\"  value=\"${hornetq.remoting.netty.batch.port:5455}\"/>" + "\n" +
+         "<param key=\"batch-delay\" value=\"50\"/>" + "\n" +
+         "<param key=\"direct-deliver\" value=\"false\"/>" + "\n" +
+         "</acceptor>" + "\n" +
+         "<acceptor name=\"in-vm\">" + "\n" +
+         "<factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>" + "\n" +
+         "<param key=\"server-id\" value=\"0\"/>" + "\n" +
+         "</acceptor>" + "\n" +
+         "</acceptors>" + "\n" +
+         "<security-settings>" + "\n" +
+         "<security-setting match=\"#\">" + "\n" +
+         "<permission type=\"createNonDurableQueue\" roles=\"guest\"/>" + "\n" +
+         "<permission type=\"deleteNonDurableQueue\" roles=\"guest\"/>" + "\n" +
+         "<permission type=\"createDurableQueue\" roles=\"guest\"/>" + "\n" +
+         "<permission type=\"deleteDurableQueue\" roles=\"guest\"/>" + "\n" +
+         "<permission type=\"consume\" roles=\"guest\"/>" + "\n" +
+         "<permission type=\"send\" roles=\"guest\"/>" + "\n" +
+         "</security-setting>" + "\n" +
+         "</security-settings>" + "\n" +
+         "<address-settings>" + "\n" +
+         "<address-setting match=\"#\">"
+         + "\n" + "<dead-letter-address>jms.queue.DLQ\n</dead-letter-address>" + "\n"
+         + "<expiry-address>jms.queue.ExpiryQueue\n</expiry-address>" + "\n"
+         + "<redelivery-delay>0\n</redelivery-delay>" + "\n"
+         + "<max-size-bytes>10485760\n</max-size-bytes>" + "\n"
+         + "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n"
+         + "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
+         "</address-setting>" + "\n" +
+         "</address-settings>";
 
    private static String lastPart = "</configuration>";
 }

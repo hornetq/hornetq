@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -33,7 +29,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
@@ -62,19 +57,20 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A JMSFailoverTest
- *
+ * <p/>
  * A simple test to test failover when using the JMS API.
  * Most of the failover tests are done on the Core API.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 7 Nov 2008 11:13:39
- *
- *
+ *         <p/>
+ *         Created 7 Nov 2008 11:13:39
  */
 public class JMSFailoverTest extends ServiceTestBase
 {
@@ -264,16 +260,16 @@ public class JMSFailoverTest extends ServiceTestBase
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
       HornetQConnectionFactory jbcfBackup =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY,
-                                                                                            backupParams));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY,
+                                                                                      backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);
       jbcfBackup.setInitialConnectAttempts(-1);
@@ -383,7 +379,6 @@ public class JMSFailoverTest extends ServiceTestBase
       });
 
 
-
       Connection conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       final ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
@@ -410,7 +405,8 @@ public class JMSFailoverTest extends ServiceTestBase
                System.out.println("Killing server...");
 
                JMSUtil.crash(liveService, coreSession);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                e.printStackTrace();
             }
@@ -424,7 +420,7 @@ public class JMSFailoverTest extends ServiceTestBase
       MessageProducer producer = sess.createProducer(queue);
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          TextMessage message = sess.createTextMessage(new String(new byte[10 * 1024]));
          producer.send(message);
@@ -448,14 +444,14 @@ public class JMSFailoverTest extends ServiceTestBase
 
       // We won't receive the whole thing here.. we just want to validate if message will arrive or not...
       // this test is not meant to validate transactionality during Failover as that would require XA and recovery
-      for (int i = 0 ; i < 90; i++)
+      for (int i = 0; i < 90; i++)
       {
          TextMessage message = null;
 
          int retryNrs = 0;
          do
          {
-            retryNrs ++;
+            retryNrs++;
             try
             {
                message = (TextMessage)consumer.receive(5000);
@@ -464,7 +460,7 @@ public class JMSFailoverTest extends ServiceTestBase
             }
             catch (JMSException e)
             {
-               new Exception ("Exception on receive message", e).printStackTrace();
+               new Exception("Exception on receive message", e).printStackTrace();
             }
          } while (retryNrs < 10);
 
@@ -476,7 +472,7 @@ public class JMSFailoverTest extends ServiceTestBase
          }
          catch (Exception e)
          {
-            new Exception ("Exception during commit", e);
+            new Exception("Exception during commit", e);
             sess.rollback();
          }
 
@@ -490,7 +486,6 @@ public class JMSFailoverTest extends ServiceTestBase
 
 
    }
-
 
 
    // Package protected ---------------------------------------------

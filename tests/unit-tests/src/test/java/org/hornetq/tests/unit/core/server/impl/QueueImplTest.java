@@ -915,7 +915,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(2, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -951,7 +951,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(3, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(1, consumer.getReferences().size());
 
@@ -1246,7 +1246,7 @@ public class QueueImplTest extends UnitTestCase
 
       Assert.assertEquals(6, queue.getMessageCount());
 
-      awaitExecution();;
+      awaitExecution();
 
       Assert.assertEquals(2, consumer.getReferences().size());
 
@@ -1432,7 +1432,7 @@ public class QueueImplTest extends UnitTestCase
       // resuming work
       queue.resume();
 
-      awaitExecution();;
+      awaitExecution();
 
       // after resuming the delivery begins.
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
@@ -1492,7 +1492,7 @@ public class QueueImplTest extends UnitTestCase
       queue.resume();
 
 
-      awaitExecution();;
+      awaitExecution();
 
       // resuming delivery of messages
       assertRefListsIdenticalRefs(refs, consumer.getReferences());

@@ -43,7 +43,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  */
 public class HornetQConnectionFactory implements Serializable, Referenceable
 {
-   private final static long serialVersionUID = -2810634789345348326L;
+   private static final long serialVersionUID = -2810634789345348326L;
 
    private final ServerLocator serverLocator;
 

@@ -30,7 +30,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
- * 
+ *
  * Logger Code 15
  * <p>
  * each message id must be 6 digits long starting with 15, the 3rd digit donates

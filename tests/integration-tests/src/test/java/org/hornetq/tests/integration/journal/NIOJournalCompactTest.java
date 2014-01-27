@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -30,8 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.config.Configuration;
@@ -56,13 +50,15 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A JournalImplTestBase
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class NIOJournalCompactTest extends JournalImplTestBase
 {
@@ -1298,7 +1294,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
       }
 
-      JournalFile files[] = journal.getDataFiles();
+      JournalFile[] files = journal.getDataFiles();
 
       stopJournal();
       createJournal();
@@ -1307,7 +1303,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files2[] = journal.getDataFiles();
+      JournalFile[] files2 = journal.getDataFiles();
 
       Assert.assertEquals(files.length, files2.length);
 
@@ -1324,7 +1320,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files3[] = journal.getDataFiles();
+      JournalFile[] files3 = journal.getDataFiles();
 
       for (JournalFile file : files3)
       {
@@ -1503,7 +1499,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1564,7 +1560,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1625,7 +1621,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      long ids[] = new long[10];
+      long[] ids = new long[10];
 
       long tx0 = idGenerator.generateID();
       for (int i = 0; i < 10; i++)
@@ -1661,7 +1657,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       long tx0 = idGenerator.generateID();
       add(idGenerator.generateID());
 
-      long ids[] = new long[] { idGenerator.generateID(), idGenerator.generateID() };
+      long[] ids = new long[]{idGenerator.generateID(), idGenerator.generateID()};
 
       addTx(tx0, ids[0]);
       addTx(tx0, ids[1]);
@@ -1722,7 +1718,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
       }
 
-      JournalFile files[] = journal.getDataFiles();
+      JournalFile[] files = journal.getDataFiles();
 
       stopJournal();
       createJournal();
@@ -1731,7 +1727,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files2[] = journal.getDataFiles();
+      JournalFile[] files2 = journal.getDataFiles();
 
       Assert.assertEquals(files.length, files2.length);
 
@@ -1750,7 +1746,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      JournalFile files3[] = journal.getDataFiles();
+      JournalFile[] files3 = journal.getDataFiles();
 
       for (JournalFile file : files3)
       {
@@ -1945,7 +1941,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       File testDir = new File(getTestDir());
 
-      File files[] = testDir.listFiles(new FilenameFilter()
+      File[] files = testDir.listFiles(new FilenameFilter()
       {
 
          public boolean accept(File dir, String name)

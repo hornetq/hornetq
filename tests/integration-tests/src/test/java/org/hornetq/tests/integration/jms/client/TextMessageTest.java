@@ -12,34 +12,28 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.List;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A TextMessageTest
  *
  * @author Tim Fox
- *
- *
  */
 public class TextMessageTest extends JMSTestBase
 {
@@ -61,32 +55,32 @@ public class TextMessageTest extends JMSTestBase
    {
       conn = cf.createConnection();
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue);
 
-         conn.start();
+      conn.start();
 
-         MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
 
-         TextMessage msg1 = sess.createTextMessage(null);
-         prod.send(msg1);
-         TextMessage received1 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received1);
-         Assert.assertNull(received1.getText());
+      TextMessage msg1 = sess.createTextMessage(null);
+      prod.send(msg1);
+      TextMessage received1 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received1);
+      Assert.assertNull(received1.getText());
 
-         TextMessage msg2 = sess.createTextMessage();
-         msg2.setText(null);
-         prod.send(msg2);
-         TextMessage received2 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received2);
-         Assert.assertNull(received2.getText());
+      TextMessage msg2 = sess.createTextMessage();
+      msg2.setText(null);
+      prod.send(msg2);
+      TextMessage received2 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received2);
+      Assert.assertNull(received2.getText());
 
-         TextMessage msg3 = sess.createTextMessage();
-         prod.send(msg3);
-         TextMessage received3 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received3);
-         Assert.assertNull(received3.getText());
+      TextMessage msg3 = sess.createTextMessage();
+      prod.send(msg3);
+      TextMessage received3 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received3);
+      Assert.assertNull(received3.getText());
    }
 
    @Test
@@ -140,51 +134,51 @@ public class TextMessageTest extends JMSTestBase
    private void testSendReceiveWithBody(final int bodyLength) throws Exception
    {
       conn = cf.createConnection();
-         char[] chrs = new char[bodyLength];
+      char[] chrs = new char[bodyLength];
 
-         for (int i = 0; i < bodyLength; i++)
-         {
-            chrs[i] = RandomUtil.randomChar();
-         }
-         String str = new String(chrs);
+      for (int i = 0; i < bodyLength; i++)
+      {
+         chrs[i] = RandomUtil.randomChar();
+      }
+      String str = new String(chrs);
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue);
 
-         conn.start();
+      conn.start();
 
-         MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
 
-         TextMessage msg1 = sess.createTextMessage(str);
-         prod.send(msg1);
-         TextMessage received1 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received1);
-         Assert.assertEquals(str, received1.getText());
+      TextMessage msg1 = sess.createTextMessage(str);
+      prod.send(msg1);
+      TextMessage received1 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received1);
+      Assert.assertEquals(str, received1.getText());
 
-         TextMessage msg2 = sess.createTextMessage();
-         msg2.setText(str);
-         prod.send(msg2);
-         TextMessage received2 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received2);
-         Assert.assertEquals(str, received2.getText());
+      TextMessage msg2 = sess.createTextMessage();
+      msg2.setText(str);
+      prod.send(msg2);
+      TextMessage received2 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received2);
+      Assert.assertEquals(str, received2.getText());
 
-         assertEquals(str, msg2.getText());
+      assertEquals(str, msg2.getText());
 
-         // Now resend it
-         prod.send(received2);
-         assertEquals(str, received2.getText());
-         TextMessage received3 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received3);
-         assertEquals(str, received3.getText());
+      // Now resend it
+      prod.send(received2);
+      assertEquals(str, received2.getText());
+      TextMessage received3 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received3);
+      assertEquals(str, received3.getText());
 
-         // And resend again
+      // And resend again
 
-         prod.send(received3);
-         assertEquals(str, received3.getText());
-         TextMessage received4 = (TextMessage)cons.receive(1000);
-         Assert.assertNotNull(received4);
-         assertEquals(str, received4.getText());
+      prod.send(received3);
+      assertEquals(str, received3.getText());
+      TextMessage received4 = (TextMessage)cons.receive(1000);
+      Assert.assertNotNull(received4);
+      assertEquals(str, received4.getText());
    }
 
    // Package protected ---------------------------------------------
@@ -209,7 +203,7 @@ public class TextMessageTest extends JMSTestBase
 
    @Override
    protected void createCF(final List<TransportConfiguration> connectorConfigs,
-                           final String ... jndiBindings) throws Exception
+                           final String... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
@@ -217,8 +211,8 @@ public class TextMessageTest extends JMSTestBase
       int callTimeout = 30000;
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                       false,
-                                       JMSFactoryType.CF,
+                                        false,
+                                        JMSFactoryType.CF,
                                         registerConnectors(server, connectorConfigs),
                                         null,
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,

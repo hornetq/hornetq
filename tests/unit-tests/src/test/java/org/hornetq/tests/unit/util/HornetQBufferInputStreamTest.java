@@ -13,19 +13,16 @@
 
 package org.hornetq.tests.unit.util;
 
-import org.junit.Test;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQBufferInputStream;
+import org.junit.Test;
 
 /**
  * A HornetQInputStreamTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class HornetQBufferInputStreamTest extends UnitTestCase
 {
@@ -33,8 +30,8 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
    @Test
    public void testReadBytes() throws Exception
    {
-      byte bytes[] = new byte[10*1024];
-      for (int i = 0 ; i < bytes.length; i++)
+      byte[] bytes = new byte[10 * 1024];
+      for (int i = 0; i < bytes.length; i++)
       {
          bytes[i] = getSamplebyte(i);
       }
@@ -43,7 +40,7 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
       HornetQBufferInputStream is = new HornetQBufferInputStream(buffer);
 
       // First read byte per byte
-      for (int i = 0 ; i < 1024; i++)
+      for (int i = 0; i < 1024; i++)
       {
          assertEquals(getSamplebyte(i), is.read());
       }
@@ -53,7 +50,7 @@ public class HornetQBufferInputStreamTest extends UnitTestCase
       {
          bytes = new byte[1024];
          is.read(bytes);
-         for (int j = 0 ; j < bytes.length; j++)
+         for (int j = 0; j < bytes.length; j++)
          {
             assertEquals(getSamplebyte(i * 1024 + j), bytes[j]);
          }

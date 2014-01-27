@@ -79,6 +79,7 @@ import org.hornetq.core.server.impl.QuorumManager;
 /**
  * Handles all the synchronization necessary for replication on the backup side (that is the
  * backup's side of the "remote backup" use case).
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class ReplicationEndpoint implements ChannelHandler, HornetQComponent
@@ -94,9 +95,11 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private Journal[] journals;
    private final JournalLoadInformation[] journalLoadInformation = new JournalLoadInformation[2];
 
-   /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
+   /**
+    * Files reserved in each journal for synchronization of existing data from the 'live' server.
+    */
    private final Map<JournalContent, Map<Long, JournalSyncFile>> filesReservedForSync =
-            new HashMap<JournalContent, Map<Long, JournalSyncFile>>();
+      new HashMap<JournalContent, Map<Long, JournalSyncFile>>();
 
    /**
     * Used to hold the real Journals before the backup is synchronized. This field should be
@@ -109,9 +112,9 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private PagingManager pageManager;
 
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex =
-            new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
+      new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
    private final ConcurrentMap<Long, ReplicatedLargeMessage> largeMessages =
-            new ConcurrentHashMap<Long, ReplicatedLargeMessage>();
+      new ConcurrentHashMap<Long, ReplicatedLargeMessage>();
 
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
@@ -141,7 +144,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
          if (oldJournals != null)
          {
-            for (int i = 0 ; i < oldJournals.length; i++)
+            for (int i = 0; i < oldJournals.length; i++)
             {
                journals[i] = oldJournals[i];
             }
@@ -155,67 +158,67 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    public void handlePacket(final Packet packet)
    {
       PacketImpl response = new ReplicationResponseMessage();
-      final byte type=packet.getType();
+      final byte type = packet.getType();
 
       try
       {
-            if (!started)
-            {
-               return;
-            }
+         if (!started)
+         {
+            return;
+         }
 
-            if (type == PacketImpl.REPLICATION_APPEND)
-            {
-               handleAppendAddRecord((ReplicationAddMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_APPEND_TX)
-            {
-               handleAppendAddTXRecord((ReplicationAddTXMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_DELETE)
-            {
-               handleAppendDelete((ReplicationDeleteMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_DELETE_TX)
-            {
-               handleAppendDeleteTX((ReplicationDeleteTXMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_PREPARE)
-            {
-               handlePrepare((ReplicationPrepareMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
-            {
-               handleCommitRollback((ReplicationCommitMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
-            {
-               handlePageWrite((ReplicationPageWriteMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
-            {
-               handlePageEvent((ReplicationPageEventMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
-            {
-               handleLargeMessageBegin((ReplicationLargeMessageBeginMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
-            {
-               handleLargeMessageWrite((ReplicationLargeMessageWriteMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
-            {
-               handleLargeMessageEnd((ReplicationLargeMessageEndMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
-            {
-               handleStartReplicationSynchronization((ReplicationStartSyncMessage) packet);
-            }
-            else if (type == PacketImpl.REPLICATION_SYNC_FILE)
-            {
-               handleReplicationSynchronization((ReplicationSyncFileMessage) packet);
-            }
+         if (type == PacketImpl.REPLICATION_APPEND)
+         {
+            handleAppendAddRecord((ReplicationAddMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_APPEND_TX)
+         {
+            handleAppendAddTXRecord((ReplicationAddTXMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_DELETE)
+         {
+            handleAppendDelete((ReplicationDeleteMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_DELETE_TX)
+         {
+            handleAppendDeleteTX((ReplicationDeleteTXMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_PREPARE)
+         {
+            handlePrepare((ReplicationPrepareMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
+         {
+            handleCommitRollback((ReplicationCommitMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
+         {
+            handlePageWrite((ReplicationPageWriteMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
+         {
+            handlePageEvent((ReplicationPageEventMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
+         {
+            handleLargeMessageBegin((ReplicationLargeMessageBeginMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
+         {
+            handleLargeMessageWrite((ReplicationLargeMessageWriteMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
+         {
+            handleLargeMessageEnd((ReplicationLargeMessageEndMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
+         {
+            handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_SYNC_FILE)
+         {
+            handleReplicationSynchronization((ReplicationSyncFileMessage)packet);
+         }
          else if (type == PacketImpl.REPLICATION_SCHEDULED_FAILOVER)
          {
             handleLiveStopping((ReplicationLiveIsStoppingMessage)packet);
@@ -238,7 +241,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       {
          HornetQServerLogger.LOGGER.errorHandlingReplicationPacket(e, packet);
          response =
-                  new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.replicationUnhandledError(e));
+            new HornetQExceptionMessage(HornetQMessageBundle.BUNDLE.replicationUnhandledError(e));
       }
       channel.send(response);
    }
@@ -271,32 +274,32 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       Configuration config = server.getConfiguration();
       try
       {
-      storageManager = server.getStorageManager();
-      storageManager.start();
+         storageManager = server.getStorageManager();
+         storageManager.start();
 
-      server.getManagementService().setStorageManager(storageManager);
+         server.getManagementService().setStorageManager(storageManager);
 
-      journalsHolder.put(JournalContent.BINDINGS, storageManager.getBindingsJournal());
-      journalsHolder.put(JournalContent.MESSAGES, storageManager.getMessageJournal());
+         journalsHolder.put(JournalContent.BINDINGS, storageManager.getBindingsJournal());
+         journalsHolder.put(JournalContent.MESSAGES, storageManager.getMessageJournal());
 
-      for (JournalContent jc : EnumSet.allOf(JournalContent.class))
-      {
-         filesReservedForSync.put(jc, new HashMap<Long, JournalSyncFile>());
-         // We only need to load internal structures on the backup...
+         for (JournalContent jc : EnumSet.allOf(JournalContent.class))
+         {
+            filesReservedForSync.put(jc, new HashMap<Long, JournalSyncFile>());
+            // We only need to load internal structures on the backup...
             journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly(JournalState.SYNCING);
-      }
+         }
 
          pageManager =
-                  new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, config.getPagingDirectory(),
-                                                                    config.getJournalBufferSize_NIO(),
-                                                                    server.getScheduledPool(),
-                                                                    server.getExecutorFactory(),
-                                                                    config.isJournalSyncNonTransactional(), criticalErrorListener),
-                                          server.getAddressSettingsRepository());
+            new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, config.getPagingDirectory(),
+                                                            config.getJournalBufferSize_NIO(),
+                                                            server.getScheduledPool(),
+                                                            server.getExecutorFactory(),
+                                                            config.isJournalSyncNonTransactional(), criticalErrorListener),
+                                  server.getAddressSettingsRepository());
 
-      pageManager.start();
+         pageManager.start();
 
-      started = true;
+         started = true;
       }
       catch (Exception e)
       {
@@ -307,41 +310,41 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    public synchronized void stop() throws Exception
    {
-         if (!started)
-         {
-            return;
-         }
+      if (!started)
+      {
+         return;
+      }
 
-         // Channel may be null if there isn't a connection to a live server
-         if (channel != null)
-         {
-            channel.close();
-         }
+      // Channel may be null if there isn't a connection to a live server
+      if (channel != null)
+      {
+         channel.close();
+      }
 
-         for (ReplicatedLargeMessage largeMessage : largeMessages.values())
-         {
-            largeMessage.releaseResources();
-         }
-         largeMessages.clear();
+      for (ReplicatedLargeMessage largeMessage : largeMessages.values())
+      {
+         largeMessage.releaseResources();
+      }
+      largeMessages.clear();
 
-         for (Entry<JournalContent, Map<Long, JournalSyncFile>> entry : filesReservedForSync
-               .entrySet())
+      for (Entry<JournalContent, Map<Long, JournalSyncFile>> entry : filesReservedForSync
+         .entrySet())
+      {
+         for (JournalSyncFile filesReserved : entry.getValue().values())
          {
-            for (JournalSyncFile filesReserved : entry.getValue().values())
-            {
-               filesReserved.close();
-            }
+            filesReserved.close();
          }
+      }
 
-         filesReservedForSync.clear();
-         if (journals != null)
+      filesReservedForSync.clear();
+      if (journals != null)
+      {
+         for (Journal j : journals)
          {
-            for (Journal j : journals)
-            {
-               if (j instanceof FileWrapperJournal)
-                  j.stop();
-            }
+            if (j instanceof FileWrapperJournal)
+               j.stop();
          }
+      }
 
       for (ConcurrentMap<Integer, Page> map : pageIndex.values())
       {
@@ -413,7 +416,9 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    }
 
-   /** Used on tests only. To simulate missing page deletes*/
+   /**
+    * Used on tests only. To simulate missing page deletes
+    */
    public void setDeletePages(final boolean deletePages)
    {
       this.deletePages = deletePages;
@@ -425,23 +430,23 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private String journalParametersToString(final JournalLoadInformation[] journalInformation)
    {
       return "**********************************************************\n" + "parameters:\n" +
-             "BindingsImpl = " +
-             journalInformation[0] +
-             "\n" +
-             "Messaging = " +
-             journalInformation[1] +
-             "\n" +
-             "**********************************************************" +
-             "\n" +
-             "Expected:" +
-             "\n" +
-             "BindingsImpl = " +
-             journalLoadInformation[0] +
-             "\n" +
-             "Messaging = " +
-             journalLoadInformation[1] +
-             "\n" +
-             "**********************************************************";
+         "BindingsImpl = " +
+         journalInformation[0] +
+         "\n" +
+         "Messaging = " +
+         journalInformation[1] +
+         "\n" +
+         "**********************************************************" +
+         "\n" +
+         "Expected:" +
+         "\n" +
+         "BindingsImpl = " +
+         journalLoadInformation[0] +
+         "\n" +
+         "Messaging = " +
+         journalLoadInformation[1] +
+         "\n" +
+         "**********************************************************";
    }
 
    private void finishSynchronization(String liveID) throws Exception
@@ -484,6 +489,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
 
    /**
     * Receives 'raw' journal/page/large-message data from live server for synchronization of logs.
+    *
     * @param msg
     * @throws Exception
     */
@@ -502,7 +508,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                HornetQServerLogger.LOGGER.largeMessageIncompatible();
                return;
             }
-            LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
+            LargeServerMessageInSync largeMessageInSync = (LargeServerMessageInSync)largeMessage;
             channel1 = largeMessageInSync.getSyncFile();
             break;
          }
@@ -544,6 +550,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    /**
     * Reserves files (with the given fileID) in the specified journal, and places a
     * {@link FileWrapperJournal} in place to store messages while synchronization is going on.
+    *
     * @param packet
     * @throws Exception
     */
@@ -927,6 +934,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    /**
     * Sets the quorumManager used by the server in the replicationEndpoint. It is used to inform the
     * backup server of the live's nodeID.
+    *
     * @param quorumManager
     */
    public synchronized void setQuorumManager(QuorumManager quorumManager)

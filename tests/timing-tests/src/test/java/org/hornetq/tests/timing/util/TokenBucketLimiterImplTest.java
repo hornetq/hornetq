@@ -17,22 +17,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.Random;
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.TokenBucketLimiterImpl;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A TokenBucketLimiterImplTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class TokenBucketLimiterImplTest extends UnitTestCase
 {
@@ -216,7 +210,7 @@ public class TokenBucketLimiterImplTest extends UnitTestCase
                {
                   int consumed = tmpValue - lastRun;
 
-                  double calculatedRate = consumed  * window * 1000 / ((System.currentTimeMillis() - lastTime));
+                  double calculatedRate = consumed * window * 1000 / ((System.currentTimeMillis() - lastTime));
 
                   if (calculatedRate > rate * error)
                   {
@@ -226,7 +220,7 @@ public class TokenBucketLimiterImplTest extends UnitTestCase
                   else if (calculatedRate > rate)
                   {
                      System.out.println("got more than " + rate + " tokens / second but still on the error marging" +
-                                        "make sure it's ok though, if you see to many of this message it's an issue");
+                                           "make sure it's ok though, if you see to many of this message it's an issue");
                   }
                   System.out.println("Rate = " + calculatedRate + " consumed = " + consumed);
                }

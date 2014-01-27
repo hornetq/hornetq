@@ -23,13 +23,13 @@ import org.hornetq.api.jms.JMSFactoryType;
 
 /**
  * A class that represents a XAConnectionFactory.
- *
+ * <p/>
  * We consider the XAConnectionFactory to be the most complete possible option. It can be casted to any other connection factory since it is fully functional
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQXAConnectionFactory extends HornetQConnectionFactory implements XATopicConnectionFactory,
-         XAQueueConnectionFactory
+   XAQueueConnectionFactory
 {
    private static final long serialVersionUID = 743611571839154115L;
 
@@ -47,12 +47,11 @@ public class HornetQXAConnectionFactory extends HornetQConnectionFactory impleme
    public HornetQXAConnectionFactory(ServerLocator serverLocator)
    {
       super(serverLocator);
-    }
+   }
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQXAConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

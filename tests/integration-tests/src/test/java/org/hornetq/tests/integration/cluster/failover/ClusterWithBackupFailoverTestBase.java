@@ -21,9 +21,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.HashSet;
 
@@ -33,14 +30,15 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A ClusterWithBackupFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 9 Mar 2009 16:31:21
+ *         <p/>
+ *         Created 9 Mar 2009 16:31:21
  */
 public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
@@ -68,127 +66,127 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    @Test
    public void testFailLiveNodes() throws Throwable
    {
-         setupCluster();
+      setupCluster();
 
-         startServers(3, 4, 5, 0, 1, 2);
-         //startServers(0, 1, 2, 3, 4, 5);
+      startServers(3, 4, 5, 0, 1, 2);
+      //startServers(0, 1, 2, 3, 4, 5);
 
-         for (int i = 0 ; i < 3; i++)
-         {
-             waitForTopology(servers[i], 3, 3);
-         }
+      for (int i = 0; i < 3; i++)
+      {
+         waitForTopology(servers[i], 3, 3);
+      }
 
-         waitForFailoverTopology(3, 0, 1, 2);
-         waitForFailoverTopology(4, 0, 1, 2);
-         waitForFailoverTopology(5, 0, 1, 2);
+      waitForFailoverTopology(3, 0, 1, 2);
+      waitForFailoverTopology(4, 0, 1, 2);
+      waitForFailoverTopology(5, 0, 1, 2);
 
-         setupSessionFactory(0, 3, isNetty(), false);
-         setupSessionFactory(1, 4, isNetty(), false);
-         setupSessionFactory(2, 5, isNetty(), false);
+      setupSessionFactory(0, 3, isNetty(), false);
+      setupSessionFactory(1, 4, isNetty(), false);
+      setupSessionFactory(2, 5, isNetty(), false);
 
-         createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
-         createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
-         createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
 
-         addConsumer(0, 0, QUEUE_NAME, null);
-         waitForBindings(0, QUEUES_TESTADDRESS, 1, 1, true);
-         addConsumer(1, 1, QUEUE_NAME, null);
-         waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
-         addConsumer(2, 2, QUEUE_NAME, null);
-         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
+      addConsumer(0, 0, QUEUE_NAME, null);
+      waitForBindings(0, QUEUES_TESTADDRESS, 1, 1, true);
+      addConsumer(1, 1, QUEUE_NAME, null);
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+      addConsumer(2, 2, QUEUE_NAME, null);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
 
-         waitForBindings();
+      waitForBindings();
 
-         send(0, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-         Thread.sleep(1000);
-         log.info("######### Topology on client = " + locators[0].getTopology().describe() + " locator = " + locators[0]);
-         log.info("######### Crashing it........., sfs[0] = " +  sfs[0]);
-         failNode(0);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      Thread.sleep(1000);
+      log.info("######### Topology on client = " + locators[0].getTopology().describe() + " locator = " + locators[0]);
+      log.info("######### Crashing it........., sfs[0] = " + sfs[0]);
+      failNode(0);
 
-         waitForFailoverTopology(4, 3, 1, 2);
-         waitForFailoverTopology(5, 3, 1, 2);
+      waitForFailoverTopology(4, 3, 1, 2);
+      waitForFailoverTopology(5, 3, 1, 2);
 
-         // live nodes
-         waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
-         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
+      // live nodes
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
 
-         // live nodes
-         waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
-         waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
+      // live nodes
+      waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
 
-         ClusterWithBackupFailoverTestBase.log.info("** now sending");
+      ClusterWithBackupFailoverTestBase.log.info("** now sending");
 
-         send(0, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         failNode(1);
+      failNode(1);
 
-         waitForFailoverTopology(5, 3, 4, 2);
+      waitForFailoverTopology(5, 3, 4, 2);
 
-         Thread.sleep(1000);
-         // live nodes
-         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
-         waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
+      Thread.sleep(1000);
+      // live nodes
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
 
-         // live nodes
-         waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
-         waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
+      // live nodes
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
 
-         send(0, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         failNode(2);
+      failNode(2);
 
-         Thread.sleep(1000);
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
-         waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
-         waitForBindings(5, QUEUES_TESTADDRESS, 1, 1, true);
+      Thread.sleep(1000);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(5, QUEUES_TESTADDRESS, 1, 1, true);
 
-         // activated backup nodes
-         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
-         waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
-         waitForBindings(5, QUEUES_TESTADDRESS, 2, 2, false);
+      // activated backup nodes
+      waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(5, QUEUES_TESTADDRESS, 2, 2, false);
 
-         send(0, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, QUEUES_TESTADDRESS, 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         removeConsumer(0);
-         removeConsumer(1);
-         removeConsumer(2);
+      removeConsumer(0);
+      removeConsumer(1);
+      removeConsumer(2);
    }
 
    private void waitForBindings() throws Exception
@@ -209,9 +207,9 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       startServers(3, 4, 5, 0, 1, 2);
 
-      for (int i = 0 ; i < 3; i++)
+      for (int i = 0; i < 3; i++)
       {
-          waitForTopology(servers[i], 3, 3);
+         waitForTopology(servers[i], 3, 3);
       }
 
       setupSessionFactory(0, 3, isNetty(), false);
@@ -294,8 +292,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
 
    /**
-    *
-    * @param node The node which we should fail
+    * @param node             The node which we should fail
     * @param originalLiveNode The number of the original node, to locate session to fail
     * @throws Exception
     */

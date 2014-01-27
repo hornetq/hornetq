@@ -15,10 +15,8 @@ package org.hornetq.api.jms.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
-import org.hornetq.spi.core.remoting.ConnectorFactory;
 
 /**
  * A JMSSserverControl is used to manage HornetQ JMS server.
@@ -56,11 +54,12 @@ public interface JMSServerControl
    String[] getConnectionFactoryNames();
 
    // Operations ----------------------------------------------------
+
    /**
-       * Creates a durable JMS Queue.
-       *
-       * @return {@code true} if the queue was created, {@code false} else
-       */
+    * Creates a durable JMS Queue.
+    *
+    * @return {@code true} if the queue was created, {@code false} else
+    */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name) throws Exception;
 
@@ -74,10 +73,10 @@ public interface JMSServerControl
                        @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
 
    /**
-      * Creates a durable JMS Queue with the specified name, JNDI binding and selector.
-      *
-      * @return {@code true} if the queue was created, {@code false} else
-      */
+    * Creates a durable JMS Queue with the specified name, JNDI binding and selector.
+    *
+    * @return {@code true} if the queue was created, {@code false} else
+    */
    @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
                        @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings,
@@ -135,7 +134,6 @@ public interface JMSServerControl
     * {@code liveConnectorsTransportClassNames}  are the class names
     * of the {@link ConnectorFactory} to connect to the live servers
     * and {@code liveConnectorTransportParams}  are Map&lt;String, Object&gt; for the corresponding {@link TransportConfiguration}'s parameters.
-    *
     */
    void createConnectionFactory(String name,
                                 boolean ha,
@@ -148,7 +146,6 @@ public interface JMSServerControl
     * Create a JMS ConnectionFactory with the specified name connected to a single live-backup pair of servers.
     * <br>
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    *
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
@@ -232,7 +229,6 @@ public interface JMSServerControl
                                 @Parameter(name = "reconnectAttempts", desc = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnInitialConnection", desc = "failoverOnInitialConnection") boolean failoverOnInitialConnection,
                                 @Parameter(name = "groupId", desc = "groupId") String groupId) throws Exception;
-
 
 
    @Operation(desc = "Destroy a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
@@ -340,5 +336,5 @@ public interface JMSServerControl
     * oldest first, with details, in HTML format
     */
    @Operation(desc = "Will close any connection with the given connectionID", impact = MBeanOperationInfo.INFO)
-   String closeConnectionWithClientID(@Parameter(desc="the clientID used to connect", name="clientID") String clientID) throws Exception;
+   String closeConnectionWithClientID(@Parameter(desc = "the clientID used to connect", name = "clientID") String clientID) throws Exception;
 }

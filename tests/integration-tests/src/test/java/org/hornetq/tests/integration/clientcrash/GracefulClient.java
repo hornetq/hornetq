@@ -14,7 +14,13 @@
 package org.hornetq.tests.integration.clientcrash;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
@@ -24,8 +30,6 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class GracefulClient
 {
@@ -53,10 +57,10 @@ public class GracefulClient
          ClientConsumer consumer = session.createConsumer(queueName);
 
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.getBodyBuffer().writeString(messageText);
          producer.send(message);
 

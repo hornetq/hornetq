@@ -30,11 +30,9 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- *
  */
 public final class PagingManagerImpl implements PagingManager
 {
@@ -57,7 +55,7 @@ public final class PagingManagerImpl implements PagingManager
    private volatile boolean cleanupEnabled = true;
 
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions =
-            new ConcurrentHashMap<Long, PageTransactionInfo>();
+      new ConcurrentHashMap<Long, PageTransactionInfo>();
 
    // Static
    // --------------------------------------------------------------------------------------------------------------------------
@@ -101,7 +99,7 @@ public final class PagingManagerImpl implements PagingManager
       try
       {
          cleanupEnabled = false;
-         for (PagingStore store: stores.values())
+         for (PagingStore store : stores.values())
          {
             store.disableCleanup();
          }
@@ -123,7 +121,7 @@ public final class PagingManagerImpl implements PagingManager
       try
       {
          cleanupEnabled = true;
-         for (PagingStore store: stores.values())
+         for (PagingStore store : stores.values())
          {
             store.enableCleanup();
          }
@@ -185,7 +183,9 @@ public final class PagingManagerImpl implements PagingManager
       }
    }
 
-   /** stores is a ConcurrentHashMap, so we don't need to synchronize this method */
+   /**
+    * stores is a ConcurrentHashMap, so we don't need to synchronize this method
+    */
    public PagingStore getPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
@@ -210,7 +210,7 @@ public final class PagingManagerImpl implements PagingManager
    {
       if (isTrace)
       {
-         HornetQServerLogger.LOGGER.trace("Removing pageTransaction " +id);
+         HornetQServerLogger.LOGGER.trace("Removing pageTransaction " + id);
       }
       transactions.remove(id);
    }
@@ -287,7 +287,7 @@ public final class PagingManagerImpl implements PagingManager
 
    public void processReload() throws Exception
    {
-      for (PagingStore store: stores.values())
+      for (PagingStore store : stores.values())
       {
          store.processReload();
       }
@@ -297,7 +297,8 @@ public final class PagingManagerImpl implements PagingManager
    private PagingStore newStore(final SimpleString address) throws Exception
    {
       syncLock.readLock().lock();
-      try {
+      try
+      {
          PagingStore store = stores.get(address);
          if (store == null)
          {

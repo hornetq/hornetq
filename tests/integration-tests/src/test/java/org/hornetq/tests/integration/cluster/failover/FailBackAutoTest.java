@@ -12,16 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -37,6 +31,9 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -120,14 +117,14 @@ public class FailBackAutoTest extends FailoverTestBase
     * @throws Exception
     * @throws HornetQException
     */
-   private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception, HornetQException
+   private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception
    {
       ServerLocator backupLocator = createInVMLocator(server);
       ClientSessionFactory factorybkp = addSessionFactory(createSessionFactory(backupLocator));
       ClientSession sessionbkp = factorybkp.createSession(false, false);
       sessionbkp.start();
       ClientConsumer consumerbkp = sessionbkp.createConsumer(ADDRESS);
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage msg = consumerbkp.receive(1000);
          assertNotNull(msg);
@@ -195,6 +192,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
    /**
     * Basic fail-back test.
+    *
     * @throws Exception
     */
    @Test
@@ -281,13 +279,13 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-         return TransportConfigurationUtils.getInVMAcceptor(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-         return TransportConfigurationUtils.getInVMConnector(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 
@@ -297,7 +295,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       if (createQueue)
       {
-          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -307,10 +305,10 @@ public class FailBackAutoTest extends FailoverTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-               false,
-               0,
-               System.currentTimeMillis(),
-               (byte) 1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);

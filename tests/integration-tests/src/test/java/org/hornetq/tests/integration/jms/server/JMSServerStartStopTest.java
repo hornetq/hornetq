@@ -12,12 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.server;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -25,8 +19,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -41,9 +35,11 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A JMSServerStartStopTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -78,23 +74,23 @@ public class JMSServerStartStopTest extends UnitTestCase
          Connection conn = jbcf.createConnection();
          try
          {
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue queue = sess.createQueue("myJMSQueue");
+            Queue queue = sess.createQueue("myJMSQueue");
 
-         MessageProducer producer = sess.createProducer(queue);
+            MessageProducer producer = sess.createProducer(queue);
 
-         TextMessage tm = sess.createTextMessage("message" + j);
+            TextMessage tm = sess.createTextMessage("message" + j);
 
-         producer.send(tm);
+            producer.send(tm);
          }
          finally
          {
-         conn.close();
+            conn.close();
 
-         jbcf.close();
+            jbcf.close();
 
-         stop();
+            stop();
          }
       }
 
@@ -155,8 +151,8 @@ public class JMSServerStartStopTest extends UnitTestCase
    private HornetQConnectionFactory createConnectionFactory()
    {
       HornetQConnectionFactory cf =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                        new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
 
       connectionFactories.add(cf);
       return cf;
@@ -170,8 +166,10 @@ public class JMSServerStartStopTest extends UnitTestCase
          conn.close();
       if (jbcf != null)
          jbcf.close();
-      for (HornetQConnectionFactory cf:connectionFactories) {
-         try {
+      for (HornetQConnectionFactory cf : connectionFactories)
+      {
+         try
+         {
             cf.close();
          }
          catch (Exception ignored)

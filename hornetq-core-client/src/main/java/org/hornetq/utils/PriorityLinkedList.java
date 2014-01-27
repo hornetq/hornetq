@@ -17,11 +17,11 @@ package org.hornetq.utils;
 /**
  * A type of linked list which maintains items according to a priority
  * and allows adding and removing of elements at both ends, and peeking
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision: 1174 $</tt>
- *
- * $Id: PrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
+ *          <p/>
+ *          $Id: PrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
 public interface PriorityLinkedList<T>
 {

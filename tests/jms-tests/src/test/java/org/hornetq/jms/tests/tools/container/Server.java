@@ -133,7 +133,7 @@ public interface Server extends Remote
     * Destroys a programatically created destination.
     */
    // boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
-   public void deployConnectionFactory(String clientId,
+   void deployConnectionFactory(String clientId,
                                        String objectName,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,

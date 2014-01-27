@@ -13,21 +13,17 @@
 
 package org.hornetq.tests.unit.util;
 
-import org.junit.Test;
-
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.junit.Assert;
 
 import org.hornetq.core.version.Version;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.VersionLoader;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class VersionLoaderTest extends UnitTestCase
 {
@@ -56,7 +52,7 @@ public class VersionLoaderTest extends UnitTestCase
       Assert.assertEquals(Integer.parseInt(props.getProperty("hornetq.version.minorVersion")),
                           version.getMinorVersion());
       Assert.assertEquals(Integer.parseInt(props.getProperty("hornetq.version.microVersion")),
-                          version.getMicroVersion());           
+                          version.getMicroVersion());
       Assert.assertEquals(Integer.parseInt(new StringTokenizer(props.getProperty("hornetq.version.incrementingVersion"), ",").nextToken()),
                           version.getIncrementingVersion());
    }

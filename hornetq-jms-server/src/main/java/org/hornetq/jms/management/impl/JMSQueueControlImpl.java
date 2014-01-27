@@ -13,10 +13,9 @@
 
 package org.hornetq.jms.management.impl;
 
-import java.util.Map;
-
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
+import java.util.Map;
 
 import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
@@ -36,8 +35,6 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSQueueControlImpl extends StandardMBean implements JMSQueueControl
 {
@@ -57,7 +54,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
       return selectorStr == null || selectorStr.trim().length() == 0 ? null
-                                                                    : SelectorTranslator.convertToHornetQFilterString(selectorStr);
+         : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
    private static String createFilterForJMSMessageID(final String jmsMessageID) throws Exception
@@ -333,7 +330,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public String listMessageCounterAsHTML()
    {
-      return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
+      return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[]{counter});
    }
 
    public String listMessageCounterHistory() throws Exception
@@ -343,7 +340,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public String listMessageCounterHistoryAsHTML()
    {
-      return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+      return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[]{counter});
    }
 
    public boolean isPaused() throws Exception

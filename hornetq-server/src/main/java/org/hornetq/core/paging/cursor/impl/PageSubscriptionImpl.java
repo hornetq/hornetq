@@ -194,7 +194,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    /**
     * A page marked as complete will be ignored until it's cleared.
-    * <p>
+    * <p/>
     * Usually paging is a stream of messages but in certain scenarios (such as a pending prepared
     * TX) we may have big holes on the page streaming, and we will need to ignore such pages on the
     * cursor/subscription.
@@ -253,7 +253,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    /**
     * It will cleanup all the records for completed pages
-    * */
+    */
    public void cleanupEntries(final boolean completeDelete) throws Exception
    {
       if (completeDelete)
@@ -287,7 +287,7 @@ final class PageSubscriptionImpl implements PageSubscription
                   currentPage.isLive())
                {
                   HornetQServerLogger.LOGGER.trace("We can't clear page " + entry.getKey() +
-                     " now since it's the current page");
+                                                      " now since it's the current page");
                }
                else
                {
@@ -393,7 +393,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
       // it will scan for the next available page
       while ((cache == null && retPos.getPageNr() <= pageStore.getCurrentWritingPage()) ||
-             (cache != null && retPos.getPageNr() <= pageStore.getCurrentWritingPage() && cache.getNumberOfMessages() ==0))
+         (cache != null && retPos.getPageNr() <= pageStore.getCurrentWritingPage() && cache.getNumberOfMessages() == 0))
       {
          retPos = moveNextPage(retPos);
 
@@ -962,7 +962,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    /**
     * This will hold information about the pending ACKs towards a page.
-    * <p>
+    * <p/>
     * This instance will be released as soon as the entire page is consumed, releasing the memory at
     * that point The ref counts are increased also when a message is ignored for any reason.
     */
@@ -1090,11 +1090,11 @@ final class PageSubscriptionImpl implements PageSubscription
          if (isTrace)
          {
             HornetQServerLogger.LOGGER.trace("numberOfMessages =  " + getNumberOfMessages() +
-               " confirmed =  " +
-               (confirmed.get() + 1) +
-               " pendingTX = " + pendingTX +
-               ", page = " +
-               pageId + " posACK = " + posACK);
+                                                " confirmed =  " +
+                                                (confirmed.get() + 1) +
+                                                " pendingTX = " + pendingTX +
+                                                ", page = " +
+                                                pageId + " posACK = " + posACK);
          }
 
          boolean added = internalAddACK(posACK);
@@ -1335,11 +1335,11 @@ final class PageSubscriptionImpl implements PageSubscription
                if (valid && message.getPagedMessage().getTransactionID() >= 0)
                {
                   PageTransactionInfo tx = pageStore.getPagingManager().getTransaction(message.getPagedMessage()
-                     .getTransactionID());
+                                                                                          .getTransactionID());
                   if (tx == null)
                   {
                      HornetQServerLogger.LOGGER.pageSubscriptionCouldntLoad(message.getPagedMessage().getTransactionID(),
-                        message.getPosition(), pageStore.getAddress(), queue.getName());
+                                                                            message.getPosition(), pageStore.getAddress(), queue.getName());
                      valid = false;
                      ignored = true;
                   }

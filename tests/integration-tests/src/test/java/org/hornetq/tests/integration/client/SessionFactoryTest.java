@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,8 +19,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -39,21 +34,21 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A ClientSessionFactoryTest
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class SessionFactoryTest extends ServiceTestBase
 {
    private final DiscoveryGroupConfiguration groupConfiguration =
-            new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                                            new UDPBroadcastGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort(), null, -1));
+      new DiscoveryGroupConfiguration(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                                      new UDPBroadcastGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort(), null, -1));
 
    private HornetQServer liveService;
 
@@ -149,7 +144,7 @@ public class SessionFactoryTest extends ServiceTestBase
    @Test
    public void testStaticConnectorListConstructor() throws Exception
    {
-      TransportConfiguration[] tc = new TransportConfiguration[] { liveTC };
+      TransportConfiguration[] tc = new TransportConfiguration[]{liveTC};
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
 
       assertFactoryParams(locator,
@@ -190,7 +185,7 @@ public class SessionFactoryTest extends ServiceTestBase
    public void testGettersAndSetters() throws Exception
    {
 
-      TransportConfiguration[] tc = new TransportConfiguration[] { liveTC };
+      TransportConfiguration[] tc = new TransportConfiguration[]{liveTC};
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
 
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
@@ -252,7 +247,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertEquals(autoGroup, locator.isAutoGroup());
       Assert.assertEquals(preAcknowledge, locator.isPreAcknowledge());
       Assert.assertEquals(loadBalancingPolicyClassName, locator
-                                                          .getConnectionLoadBalancingPolicyClassName());
+         .getConnectionLoadBalancingPolicyClassName());
       Assert.assertEquals(ackBatchSize, locator.getAckBatchSize());
       Assert.assertEquals(useGlobalPools, locator.isUseGlobalPools());
       Assert.assertEquals(scheduledThreadPoolMaxSize, locator.getScheduledThreadPoolMaxSize());
@@ -530,7 +525,7 @@ public class SessionFactoryTest extends ServiceTestBase
       if (staticConnectors == null)
       {
          Assert.assertTrue("no static connectors",
-                           Arrays.equals(new String[] {}, locator.getStaticTransportConfigurations()));
+                           Arrays.equals(new String[]{}, locator.getStaticTransportConfigurations()));
       }
       else
       {
@@ -580,10 +575,10 @@ public class SessionFactoryTest extends ServiceTestBase
                                                                               broadcastPeriod,
                                                                               Arrays.asList(liveTC.getName()),
                                                                               new UDPBroadcastGroupConfiguration(
-                                                                              getUDPDiscoveryAddress(),
-                                                                              getUDPDiscoveryPort(),
-                                                                              null,
-                                                                              localBindPort));
+                                                                                 getUDPDiscoveryAddress(),
+                                                                                 getUDPDiscoveryPort(),
+                                                                                 null,
+                                                                                 localBindPort));
 
       List<BroadcastGroupConfiguration> bcConfigs1 = new ArrayList<BroadcastGroupConfiguration>();
       bcConfigs1.add(bcConfig1);

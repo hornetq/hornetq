@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 
 /**
  * This test validates a deadlock identified by https://bugzilla.redhat.com/show_bug.cgi?id=959616
+ *
  * @author Clebert
  */
 @RunWith(BMUnitRunner.class)
@@ -42,35 +43,34 @@ public class StartStopDeadlockTest extends ServiceTestBase
    * */
    @Test
    @BMRules
-   (
-
-      rules =
-      {
-         @BMRule
-         (
-            name = "Server.start wait-init",
-            targetClass = "org.hornetq.core.server.impl.HornetQServerImpl",
-            targetMethod = "initialisePart2",
-            targetLocation = "ENTRY",
-            condition = "incrementCounter(\"server-Init\") == 2",
-            action = "System.out.println(\"server backup init\"), waitFor(\"start-init\")"
-         ),
-         @BMRule(
-            name = "JMSServer.stop wait-init",
-            targetClass = "org.hornetq.jms.server.impl.JMSServerManagerImpl",
-            targetMethod = "stop",
-            targetLocation = "ENTRY",
-            action = "signalWake(\"start-init\", true)"
-         ),
-         @BMRule(
-            name = "StartStopDeadlockTest tearDown",
-            targetClass = "org.hornetq.byteman.tests.StartStopDeadlockTest",
-            targetMethod = "tearDown",
-            targetLocation = "ENTRY",
-            action = "deleteCounter(\"server-Init\")"
-         )
-      }
-   )
+      (
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "Server.start wait-init",
+                     targetClass = "org.hornetq.core.server.impl.HornetQServerImpl",
+                     targetMethod = "initialisePart2",
+                     targetLocation = "ENTRY",
+                     condition = "incrementCounter(\"server-Init\") == 2",
+                     action = "System.out.println(\"server backup init\"), waitFor(\"start-init\")"
+                  ),
+               @BMRule(
+                  name = "JMSServer.stop wait-init",
+                  targetClass = "org.hornetq.jms.server.impl.JMSServerManagerImpl",
+                  targetMethod = "stop",
+                  targetLocation = "ENTRY",
+                  action = "signalWake(\"start-init\", true)"
+               ),
+               @BMRule(
+                  name = "StartStopDeadlockTest tearDown",
+                  targetClass = "org.hornetq.byteman.tests.StartStopDeadlockTest",
+                  targetMethod = "tearDown",
+                  targetLocation = "ENTRY",
+                  action = "deleteCounter(\"server-Init\")"
+               )
+            }
+      )
    public void testDeadlock() throws Exception
    {
 
@@ -83,7 +83,6 @@ public class StartStopDeadlockTest extends ServiceTestBase
       final HornetQServer serverLive = HornetQServers.newHornetQServer(confLive);
       serverLive.start();
       addServer(serverLive);
-
 
 
       // A backup that will be waiting to be activated

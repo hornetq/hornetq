@@ -13,7 +13,6 @@
 
 package org.hornetq.api.core;
 
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -23,6 +22,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  * To add an interceptor to HornetQ server, you have to modify the server configuration file
  * {@literal hornetq-configuration.xml}. <br/>
  * To add it to a client, use {@link ServerLocator#addIncomingInterceptor(Interceptor)}
+ *
  * @author clebert.suconic@jboss.com
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
@@ -34,7 +34,7 @@ public interface Interceptor
     * @param packet     the packet being received
     * @param connection the connection the packet was received on
     * @return {@code true} to process the next interceptor and handle the packet,
-    *         {@code false} to abort processing of the packet
+    * {@code false} to abort processing of the packet
     * @throws HornetQException
     */
    boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException;

@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.unit.util;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -25,13 +22,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.LinkedListImpl;
 import org.hornetq.utils.LinkedListIterator;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A LinkedListTest
  *
  * @author Tim Fox
- *
- *
  */
 public class LinkedListTest extends UnitTestCase
 {
@@ -52,7 +49,7 @@ public class LinkedListTest extends UnitTestCase
       final AtomicInteger count = new AtomicInteger(0);
       class MyObject
       {
-         private final byte payload[];
+         private final byte[] payload;
 
          MyObject()
          {
@@ -65,7 +62,7 @@ public class LinkedListTest extends UnitTestCase
          {
             count.decrementAndGet();
          }
-      };
+      }
 
       LinkedListImpl<MyObject> objs = new LinkedListImpl<MyObject>();
 
@@ -135,7 +132,7 @@ public class LinkedListTest extends UnitTestCase
          {
             return "" + payload;
          }
-      };
+      }
 
       LinkedListImpl<MyObject> objs = new LinkedListImpl<MyObject>();
 
@@ -149,7 +146,7 @@ public class LinkedListTest extends UnitTestCase
       LinkedListIterator<MyObject> iter = objs.iterator();
 
       int countLoop = 0;
-      for (countLoop = 0 ; countLoop <= 1000; countLoop++)
+      for (countLoop = 0; countLoop <= 1000; countLoop++)
       {
          MyObject obj = iter.next();
          assertEquals(countLoop, obj.payload);
@@ -177,7 +174,6 @@ public class LinkedListTest extends UnitTestCase
       }
 
 
-
       assertCount(999, count);
 
    }
@@ -192,7 +188,7 @@ public class LinkedListTest extends UnitTestCase
       int seqCount = 0;
       while (timeout > System.currentTimeMillis() && count.get() != expected)
       {
-         seqCount ++;
+         seqCount++;
          if (seqCount > 5)
          {
             LinkedList<String> toOME = new LinkedList<String>();
@@ -986,7 +982,7 @@ public class LinkedListTest extends UnitTestCase
       LinkedListIterator<Integer> iter2 = list.iterator();
       LinkedListIterator<Integer> iter3 = list.iterator();
 
-      for (int i = 0; i < num;)
+      for (int i = 0; i < num; )
       {
          assertTrue(iter1.hasNext());
          assertEquals(i++, iter1.next().intValue());

@@ -33,6 +33,7 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * A LargeServerMessageImpl
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class LargeServerMessageImpl extends ServerMessageImpl implements LargeServerMessage
@@ -70,6 +71,7 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    /**
     * Copy constructor
+    *
     * @param properties
     * @param copy
     * @param fileCopy
@@ -253,10 +255,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
       {
          // The body won't be on memory (aways on-file), so we don't consider this for paging
          memoryEstimate = getHeadersAndPropertiesEncodeSize() + DataConstants.SIZE_INT +
-                          getEncodeSize() +
-                          (16 + 4) *
-                          2 +
-                          1;
+            getEncodeSize() +
+            (16 + 4) *
+               2 +
+            1;
       }
 
       return memoryEstimate;
@@ -338,7 +340,7 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    /**
     * The copy of the file itself will be done later by {@link LargeServerMessageImpl#finishCopy()}
-    * */
+    */
    @Override
    public synchronized ServerMessage copy(final long newID)
    {
@@ -347,9 +349,9 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
          SequentialFile newfile = storageManager.createFileForLargeMessage(newID, durable);
 
          LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this,
-                                                               properties,
-                                                               newfile,
-                                                               newID);
+                                                                        properties,
+                                                                        newfile,
+                                                                        newID);
          newMessage.copyFrom(createFile());
          return newMessage;
       }
@@ -370,8 +372,8 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
    public String toString()
    {
       return "LargeServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() +
-      ",expiration=[" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : "null") + "]" +
-      ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
+         ",expiration=[" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : "null") + "]" +
+         ", durable=" + durable + ", address=" + getAddress() + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
 
 
@@ -423,12 +425,11 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    protected void openFile() throws Exception
    {
-     if (file == null)
-     {
-        validateFile();
-     }
-     else
-      if (!file.isOpen())
+      if (file == null)
+      {
+         validateFile();
+      }
+      else if (!file.isOpen())
       {
          file.open();
       }
@@ -436,10 +437,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    protected void closeFile() throws Exception
    {
-     if (file != null && file.isOpen())
-     {
-        file.close();
-     }
+      if (file != null && file.isOpen())
+      {
+         file.close();
+      }
    }
 
    // Inner classes -------------------------------------------------

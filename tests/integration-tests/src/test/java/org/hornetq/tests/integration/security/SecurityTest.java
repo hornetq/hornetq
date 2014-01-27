@@ -11,16 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.security;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import java.io.IOException;
-import java.security.acl.Group;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -31,11 +21,16 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.io.IOException;
+import java.security.acl.Group;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQSecurityException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -52,6 +47,9 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
 import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.security.SimpleGroup;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -124,7 +122,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession(false, true, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -148,7 +146,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
          Assert.fail("should not throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -219,7 +217,7 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -271,7 +269,7 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -323,7 +321,7 @@ public class SecurityTest extends ServiceTestBase
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -375,7 +373,7 @@ public class SecurityTest extends ServiceTestBase
          session.deleteQueue(SecurityTest.queueA);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -476,7 +474,7 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -569,7 +567,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -614,7 +612,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -671,7 +669,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -693,7 +691,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -744,7 +742,7 @@ public class SecurityTest extends ServiceTestBase
       {
          session.createConsumer(SecurityTest.queueA);
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -854,7 +852,7 @@ public class SecurityTest extends ServiceTestBase
       {
          cp.send(session.createMessage(false));
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -960,7 +958,7 @@ public class SecurityTest extends ServiceTestBase
          cf.createSession(false, true, true);
          Assert.fail("should not throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -976,138 +974,138 @@ public class SecurityTest extends ServiceTestBase
    {
       HornetQServer server = createServer();
       server.start();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("all", "all");
-         securityManager.addUser("bill", "hornetq");
-         securityManager.addUser("andrew", "hornetq1");
-         securityManager.addUser("frank", "hornetq2");
-         securityManager.addUser("sam", "hornetq3");
-         securityManager.addRole("all", "all");
-         securityManager.addRole("bill", "user");
-         securityManager.addRole("andrew", "europe-user");
-         securityManager.addRole("andrew", "user");
-         securityManager.addRole("frank", "us-user");
-         securityManager.addRole("frank", "news-user");
-         securityManager.addRole("frank", "user");
-         securityManager.addRole("sam", "news-user");
-         securityManager.addRole("sam", "user");
-         Role all = new Role("all", true, true, true, true, true, true, true);
-         HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
-         Set<Role> add = new HashSet<Role>();
-         add.add(new Role("user", true, true, true, true, true, true, false));
-         add.add(all);
-         repository.addMatch("#", add);
-         Set<Role> add1 = new HashSet<Role>();
-         add1.add(all);
-         add1.add(new Role("user", false, false, true, true, true, true, false));
-         add1.add(new Role("europe-user", true, false, false, false, false, false, false));
-         add1.add(new Role("news-user", false, true, false, false, false, false, false));
-         repository.addMatch("news.europe.#", add1);
-         Set<Role> add2 = new HashSet<Role>();
-         add2.add(all);
-         add2.add(new Role("user", false, false, true, true, true, true, false));
-         add2.add(new Role("us-user", true, false, false, false, false, false, false));
-         add2.add(new Role("news-user", false, true, false, false, false, false, false));
-         repository.addMatch("news.us.#", add2);
-         ClientSession billConnection = null;
-         ClientSession andrewConnection = null;
-         ClientSession frankConnection = null;
-         ClientSession samConnection = null;
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnDurableSend(true);
-         ClientSessionFactory factory = createSessionFactory(locator);
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("all", "all");
+      securityManager.addUser("bill", "hornetq");
+      securityManager.addUser("andrew", "hornetq1");
+      securityManager.addUser("frank", "hornetq2");
+      securityManager.addUser("sam", "hornetq3");
+      securityManager.addRole("all", "all");
+      securityManager.addRole("bill", "user");
+      securityManager.addRole("andrew", "europe-user");
+      securityManager.addRole("andrew", "user");
+      securityManager.addRole("frank", "us-user");
+      securityManager.addRole("frank", "news-user");
+      securityManager.addRole("frank", "user");
+      securityManager.addRole("sam", "news-user");
+      securityManager.addRole("sam", "user");
+      Role all = new Role("all", true, true, true, true, true, true, true);
+      HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+      Set<Role> add = new HashSet<Role>();
+      add.add(new Role("user", true, true, true, true, true, true, false));
+      add.add(all);
+      repository.addMatch("#", add);
+      Set<Role> add1 = new HashSet<Role>();
+      add1.add(all);
+      add1.add(new Role("user", false, false, true, true, true, true, false));
+      add1.add(new Role("europe-user", true, false, false, false, false, false, false));
+      add1.add(new Role("news-user", false, true, false, false, false, false, false));
+      repository.addMatch("news.europe.#", add1);
+      Set<Role> add2 = new HashSet<Role>();
+      add2.add(all);
+      add2.add(new Role("user", false, false, true, true, true, true, false));
+      add2.add(new Role("us-user", true, false, false, false, false, false, false));
+      add2.add(new Role("news-user", false, true, false, false, false, false, false));
+      repository.addMatch("news.us.#", add2);
+      ClientSession billConnection = null;
+      ClientSession andrewConnection = null;
+      ClientSession frankConnection = null;
+      ClientSession samConnection = null;
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      ClientSessionFactory factory = createSessionFactory(locator);
 
-         ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
-         String genericQueueName = "genericQueue";
-         adminSession.createQueue(genericQueueName, genericQueueName, false);
-         String eurQueueName = "news.europe.europeQueue";
-         adminSession.createQueue(eurQueueName, eurQueueName, false);
-         String usQueueName = "news.us.usQueue";
-         adminSession.createQueue(usQueueName, usQueueName, false);
-         // Step 4. Try to create a JMS Connection without user/password. It will fail.
-         try
-         {
-            factory.createSession(false, true, true);
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQSecurityException se)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
+      String genericQueueName = "genericQueue";
+      adminSession.createQueue(genericQueueName, genericQueueName, false);
+      String eurQueueName = "news.europe.europeQueue";
+      adminSession.createQueue(eurQueueName, eurQueueName, false);
+      String usQueueName = "news.us.usQueue";
+      adminSession.createQueue(usQueueName, usQueueName, false);
+      // Step 4. Try to create a JMS Connection without user/password. It will fail.
+      try
+      {
+         factory.createSession(false, true, true);
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQSecurityException se)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         // Step 5. bill tries to make a connection using wrong password
-         try
-         {
-            billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQSecurityException se)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      // Step 5. bill tries to make a connection using wrong password
+      try
+      {
+         billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQSecurityException se)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         // Step 6. bill makes a good connection.
-         billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
+      // Step 6. bill makes a good connection.
+      billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
-         // Step 7. andrew makes a good connection.
-         andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
+      // Step 7. andrew makes a good connection.
+      andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
-         // Step 8. frank makes a good connection.
-         frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
+      // Step 8. frank makes a good connection.
+      frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
-         // Step 9. sam makes a good connection.
-         samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
+      // Step 9. sam makes a good connection.
+      samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
-         checkUserSendAndReceive(genericQueueName, billConnection);
-         checkUserSendAndReceive(genericQueueName, andrewConnection);
-         checkUserSendAndReceive(genericQueueName, frankConnection);
-         checkUserSendAndReceive(genericQueueName, samConnection);
+      checkUserSendAndReceive(genericQueueName, billConnection);
+      checkUserSendAndReceive(genericQueueName, andrewConnection);
+      checkUserSendAndReceive(genericQueueName, frankConnection);
+      checkUserSendAndReceive(genericQueueName, samConnection);
 
-         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
-         // receive
-         checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
+      // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
+      // receive
+      checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
-         // receive
-         checkUserSendNoReceive(eurQueueName, andrewConnection);
+      // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
+      // receive
+      checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
-         // receive
-         checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
+      // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
+      // receive
+      checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
-         // receive
-         checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
+      // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
+      // receive
+      checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
-         // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
-         checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
+      // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+      checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
 
-         // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
-         checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
+      // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+      checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
 
-         // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
-         checkUserSendAndReceive(usQueueName, frankConnection);
+      // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+      checkUserSendAndReceive(usQueueName, frankConnection);
 
-         // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
-         checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
+      // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+      checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
 
-         billConnection.close();
+      billConnection.close();
 
-         andrewConnection.close();
+      andrewConnection.close();
 
-         frankConnection.close();
+      frankConnection.close();
 
-         samConnection.close();
+      samConnection.close();
 
-         adminSession.close();
+      adminSession.close();
 
    }
 
@@ -1115,128 +1113,128 @@ public class SecurityTest extends ServiceTestBase
    {
       HornetQServer server = createServer();
       server.start();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("all", "all");
-         securityManager.addUser("bill", "hornetq");
-         securityManager.addUser("andrew", "hornetq1");
-         securityManager.addUser("frank", "hornetq2");
-         securityManager.addUser("sam", "hornetq3");
-         securityManager.addRole("all", "all");
-         securityManager.addRole("bill", "user");
-         securityManager.addRole("andrew", "europe-user");
-         securityManager.addRole("andrew", "user");
-         securityManager.addRole("frank", "us-user");
-         securityManager.addRole("frank", "news-user");
-         securityManager.addRole("frank", "user");
-         securityManager.addRole("sam", "news-user");
-         securityManager.addRole("sam", "user");
-         Role all = new Role("all", true, true, true, true, true, true, true);
-         HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
-         Set<Role> add = new HashSet<Role>();
-         add.add(new Role("user", true, true, true, true, true, true, false));
-         add.add(all);
-         repository.addMatch("#", add);
-         Set<Role> add1 = new HashSet<Role>();
-         add1.add(all);
-         add1.add(new Role("user", false, false, true, true, true, true, false));
-         add1.add(new Role("europe-user", true, false, false, false, false, false, false));
-         add1.add(new Role("news-user", false, true, false, false, false, false, false));
-         repository.addMatch("news.europe.#", add1);
-         Set<Role> add2 = new HashSet<Role>();
-         add2.add(all);
-         add2.add(new Role("user", false, false, true, true, true, true, false));
-         add2.add(new Role("us-user", true, false, false, false, false, false, false));
-         add2.add(new Role("news-user", false, true, false, false, false, false, false));
-         repository.addMatch("news.us.#", add2);
-         ClientSession billConnection = null;
-         ClientSession andrewConnection = null;
-         ClientSession frankConnection = null;
-         ClientSession samConnection = null;
-         ClientSessionFactory factory = createSessionFactory(locator);
-         factory.getServerLocator().setBlockOnNonDurableSend(true);
-         factory.getServerLocator().setBlockOnDurableSend(true);
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("all", "all");
+      securityManager.addUser("bill", "hornetq");
+      securityManager.addUser("andrew", "hornetq1");
+      securityManager.addUser("frank", "hornetq2");
+      securityManager.addUser("sam", "hornetq3");
+      securityManager.addRole("all", "all");
+      securityManager.addRole("bill", "user");
+      securityManager.addRole("andrew", "europe-user");
+      securityManager.addRole("andrew", "user");
+      securityManager.addRole("frank", "us-user");
+      securityManager.addRole("frank", "news-user");
+      securityManager.addRole("frank", "user");
+      securityManager.addRole("sam", "news-user");
+      securityManager.addRole("sam", "user");
+      Role all = new Role("all", true, true, true, true, true, true, true);
+      HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+      Set<Role> add = new HashSet<Role>();
+      add.add(new Role("user", true, true, true, true, true, true, false));
+      add.add(all);
+      repository.addMatch("#", add);
+      Set<Role> add1 = new HashSet<Role>();
+      add1.add(all);
+      add1.add(new Role("user", false, false, true, true, true, true, false));
+      add1.add(new Role("europe-user", true, false, false, false, false, false, false));
+      add1.add(new Role("news-user", false, true, false, false, false, false, false));
+      repository.addMatch("news.europe.#", add1);
+      Set<Role> add2 = new HashSet<Role>();
+      add2.add(all);
+      add2.add(new Role("user", false, false, true, true, true, true, false));
+      add2.add(new Role("us-user", true, false, false, false, false, false, false));
+      add2.add(new Role("news-user", false, true, false, false, false, false, false));
+      repository.addMatch("news.us.#", add2);
+      ClientSession billConnection = null;
+      ClientSession andrewConnection = null;
+      ClientSession frankConnection = null;
+      ClientSession samConnection = null;
+      ClientSessionFactory factory = createSessionFactory(locator);
+      factory.getServerLocator().setBlockOnNonDurableSend(true);
+      factory.getServerLocator().setBlockOnDurableSend(true);
 
-         ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
-         String genericQueueName = "genericQueue";
-         adminSession.createQueue(genericQueueName, genericQueueName, false);
-         String eurQueueName = "news.europe.europeQueue";
-         adminSession.createQueue(eurQueueName, eurQueueName, false);
-         String usQueueName = "news.us.usQueue";
-         adminSession.createQueue(usQueueName, usQueueName, false);
-         // Step 4. Try to create a JMS Connection without user/password. It will fail.
-         try
-         {
-            factory.createSession(false, true, true);
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQSecurityException se)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
+      String genericQueueName = "genericQueue";
+      adminSession.createQueue(genericQueueName, genericQueueName, false);
+      String eurQueueName = "news.europe.europeQueue";
+      adminSession.createQueue(eurQueueName, eurQueueName, false);
+      String usQueueName = "news.us.usQueue";
+      adminSession.createQueue(usQueueName, usQueueName, false);
+      // Step 4. Try to create a JMS Connection without user/password. It will fail.
+      try
+      {
+         factory.createSession(false, true, true);
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQSecurityException se)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         // Step 5. bill tries to make a connection using wrong password
-         try
-         {
-            billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQSecurityException se)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      // Step 5. bill tries to make a connection using wrong password
+      try
+      {
+         billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQSecurityException se)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         // Step 6. bill makes a good connection.
-         billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
+      // Step 6. bill makes a good connection.
+      billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
-         // Step 7. andrew makes a good connection.
-         andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
+      // Step 7. andrew makes a good connection.
+      andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
-         // Step 8. frank makes a good connection.
-         frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
+      // Step 8. frank makes a good connection.
+      frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
-         // Step 9. sam makes a good connection.
-         samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
+      // Step 9. sam makes a good connection.
+      samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
-         checkUserSendAndReceive(genericQueueName, billConnection);
-         checkUserSendAndReceive(genericQueueName, andrewConnection);
-         checkUserSendAndReceive(genericQueueName, frankConnection);
-         checkUserSendAndReceive(genericQueueName, samConnection);
+      checkUserSendAndReceive(genericQueueName, billConnection);
+      checkUserSendAndReceive(genericQueueName, andrewConnection);
+      checkUserSendAndReceive(genericQueueName, frankConnection);
+      checkUserSendAndReceive(genericQueueName, samConnection);
 
-         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
-         // receive
-         checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
+      // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
+      // receive
+      checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
-         // receive
-         checkUserSendNoReceive(eurQueueName, andrewConnection);
+      // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
+      // receive
+      checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
-         // receive
-         checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
+      // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
+      // receive
+      checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
-         // receive
-         checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
+      // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
+      // receive
+      checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
-         // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
-         checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
+      // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+      checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
 
-         // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
-         checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
+      // Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+      checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
 
-         // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
-         checkUserSendAndReceive(usQueueName, frankConnection);
+      // Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+      checkUserSendAndReceive(usQueueName, frankConnection);
 
-         // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
-         checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
+      // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+      checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
 
    }
 
@@ -1341,7 +1339,7 @@ public class SecurityTest extends ServiceTestBase
          connection.createConsumer(queue);
          Assert.fail("should throw exception");
       }
-      catch(HornetQSecurityException se)
+      catch (HornetQSecurityException se)
       {
          //ok
       }
@@ -1418,9 +1416,9 @@ public class SecurityTest extends ServiceTestBase
       public AppConfigurationEntry[] getAppConfigurationEntry(final String name)
       {
          AppConfigurationEntry entry =
-                  new AppConfigurationEntry(loginModuleName, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-                                            options);
-         return new AppConfigurationEntry[] { entry };
+            new AppConfigurationEntry(loginModuleName, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                      options);
+         return new AppConfigurationEntry[]{entry};
       }
 
       @Override

@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.twitter;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -40,7 +41,6 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import twitter4j.Paging;
 import twitter4j.ResponseList;
 import twitter4j.Status;
@@ -52,8 +52,6 @@ import twitter4j.http.AccessToken;
  * A TwitterTest
  *
  * @author tm.igarashi@gmail.com
- *
- *
  */
 public class TwitterTest extends ServiceTestBase
 {
@@ -89,25 +87,25 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testSimpleIncoming() throws Exception
    {
-      internalTestIncoming(true,false);
+      internalTestIncoming(true, false);
    }
 
    @Test
    public void testIncomingNoQueue() throws Exception
    {
-      internalTestIncoming(false,false);
+      internalTestIncoming(false, false);
    }
 
    @Test
    public void testIncomingWithRestart() throws Exception
    {
-      internalTestIncoming(true,true);
+      internalTestIncoming(true, true);
    }
 
    @Test
    public void testIncomingWithEmptyConnectorName() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_CONNECTOR_NAME, "");
       internalTestIncomingFailedToInitialize(params);
    }
@@ -115,7 +113,7 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testIncomingWithEmptyQueueName() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_QUEUE_NAME, "");
       internalTestIncomingFailedToInitialize(params);
    }
@@ -123,7 +121,7 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testIncomingWithInvalidCredentials() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_CONSUMER_KEY, "invalidConsumerKey");
       params.put(KEY_CONSUMER_SECRET, "invalidConsumerSecret");
       params.put(KEY_ACCESS_TOKEN, "invalidAccessToken");
@@ -136,24 +134,25 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testSimpleOutgoing() throws Exception
    {
-      internalTestOutgoing(true,false);
+      internalTestOutgoing(true, false);
    }
 
    @Test
    public void testOutgoingNoQueue() throws Exception
    {
-      internalTestOutgoing(false,false);
+      internalTestOutgoing(false, false);
    }
+
    @Test
    public void testOutgoingWithRestart() throws Exception
    {
-      internalTestOutgoing(true,true);
+      internalTestOutgoing(true, true);
    }
 
    @Test
    public void testOutgoingWithEmptyConnectorName() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_CONNECTOR_NAME, "");
       internalTestOutgoingFailedToInitialize(params);
    }
@@ -161,7 +160,7 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testOutgoingWithEmptyQueueName() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_QUEUE_NAME, "");
       internalTestOutgoingFailedToInitialize(params);
    }
@@ -169,7 +168,7 @@ public class TwitterTest extends ServiceTestBase
    @Test
    public void testOutgoingWithInvalidCredentials() throws Exception
    {
-      HashMap<String,String> params = new HashMap<String,String>();
+      HashMap<String, String> params = new HashMap<String, String>();
       params.put(KEY_CONSUMER_KEY, "invalidConsumerKey");
       params.put(KEY_CONSUMER_SECRET, "invalidConsumerSecret");
       params.put(KEY_ACCESS_TOKEN, "invalidAccessToken");
@@ -208,21 +207,21 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
          config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration inconf =
-               new ConnectorServiceConfiguration(
+            new ConnectorServiceConfiguration(
                TwitterIncomingConnectorServiceFactory.class.getName(),
-                     config,"test-incoming-connector");
+               config, "test-incoming-connector");
          configuration.getConnectorServiceConfigurations().add(inconf);
 
-         if(createQueue)
+         if (createQueue)
          {
             CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, true);
             configuration.getQueueConfigurations().add(qc);
          }
 
-         server0 = createServer(false,configuration);
+         server0 = createServer(false, configuration);
          server0.start();
 
-         if(restart)
+         if (restart)
          {
             server0.getConnectorsService().stop();
             server0.getConnectorsService().start();
@@ -230,7 +229,7 @@ public class TwitterTest extends ServiceTestBase
 
          assertEquals(1, server0.getConnectorsService().getConnectors().size());
          Iterator<ConnectorService> connectorServiceIterator = server0.getConnectorsService().getConnectors().iterator();
-         if(createQueue)
+         if (createQueue)
          {
             Assert.assertTrue(connectorServiceIterator.next().isStarted());
          }
@@ -248,7 +247,7 @@ public class TwitterTest extends ServiceTestBase
          session = sf.createSession(false, true, true);
          ClientConsumer consumer = session.createConsumer(queue);
          session.start();
-         ClientMessage msg = consumer.receive(60*1000);
+         ClientMessage msg = consumer.receive(60 * 1000);
 
          Assert.assertNotNull(msg);
          Assert.assertEquals(testMessage, msg.getBodyBuffer().readString());
@@ -261,7 +260,7 @@ public class TwitterTest extends ServiceTestBase
          {
             session.close();
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
          }
 
@@ -269,7 +268,7 @@ public class TwitterTest extends ServiceTestBase
          {
             locator.close();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
 
@@ -277,13 +276,13 @@ public class TwitterTest extends ServiceTestBase
          {
             server0.stop();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
       }
    }
 
-   protected void internalTestIncomingFailedToInitialize(HashMap<String,String> params) throws Exception
+   protected void internalTestIncomingFailedToInitialize(HashMap<String, String> params) throws Exception
    {
       HornetQServer server0 = null;
       String connectorName = "test-incoming-connector";
@@ -294,27 +293,27 @@ public class TwitterTest extends ServiceTestBase
       String accessTokenSecret = "invalidAccessTokenSecret";
       int interval = 5;
 
-      if(params.containsKey(KEY_CONNECTOR_NAME))
+      if (params.containsKey(KEY_CONNECTOR_NAME))
       {
          connectorName = params.get(KEY_CONNECTOR_NAME);
       }
-      if(params.containsKey(KEY_CONSUMER_KEY))
+      if (params.containsKey(KEY_CONSUMER_KEY))
       {
          consumerKey = params.get(KEY_CONSUMER_KEY);
       }
-      if(params.containsKey(KEY_CONSUMER_SECRET))
+      if (params.containsKey(KEY_CONSUMER_SECRET))
       {
          consumerSecret = params.get(KEY_CONSUMER_SECRET);
       }
-      if(params.containsKey(KEY_ACCESS_TOKEN))
+      if (params.containsKey(KEY_ACCESS_TOKEN))
       {
          accessToken = params.get(KEY_ACCESS_TOKEN);
       }
-      if(params.containsKey(KEY_ACCESS_TOKEN_SECRET))
+      if (params.containsKey(KEY_ACCESS_TOKEN_SECRET))
       {
          accessTokenSecret = params.get(KEY_ACCESS_TOKEN_SECRET);
       }
-      if(params.containsKey(KEY_QUEUE_NAME))
+      if (params.containsKey(KEY_QUEUE_NAME))
       {
          queue = params.get(KEY_QUEUE_NAME);
       }
@@ -330,14 +329,14 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.ACCESS_TOKEN, accessToken);
          config.put(TwitterConstants.ACCESS_TOKEN_SECRET, accessTokenSecret);
          ConnectorServiceConfiguration inconf =
-               new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
-                     config,
-               connectorName);
+            new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
+                                              config,
+                                              connectorName);
          configuration.getConnectorServiceConfigurations().add(inconf);
          CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, true);
          configuration.getQueueConfigurations().add(qc);
 
-         server0 = createServer(false,configuration);
+         server0 = createServer(false, configuration);
          server0.start();
 
          Set<ConnectorService> conns = server0.getConnectorsService().getConnectors();
@@ -351,7 +350,7 @@ public class TwitterTest extends ServiceTestBase
          {
             server0.stop();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
       }
@@ -380,20 +379,20 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
          config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
-                     config,
-               "test-outgoing-connector");
+            new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+                                              config,
+                                              "test-outgoing-connector");
          configuration.getConnectorServiceConfigurations().add(outconf);
-         if(createQueue)
+         if (createQueue)
          {
             CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
             configuration.getQueueConfigurations().add(qc);
          }
 
-         server0 = createServer(false,configuration);
+         server0 = createServer(false, configuration);
          server0.start();
 
-         if(restart)
+         if (restart)
          {
             server0.getConnectorsService().stop();
             server0.getConnectorsService().start();
@@ -401,7 +400,7 @@ public class TwitterTest extends ServiceTestBase
 
          assertEquals(1, server0.getConnectorsService().getConnectors().size());
          Iterator<ConnectorService> connectorServiceIterator = server0.getConnectorsService().getConnectors().iterator();
-         if(createQueue)
+         if (createQueue)
          {
             Assert.assertTrue(connectorServiceIterator.next().isStarted());
          }
@@ -435,7 +434,7 @@ public class TwitterTest extends ServiceTestBase
          {
             session.close();
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
          }
 
@@ -443,7 +442,7 @@ public class TwitterTest extends ServiceTestBase
          {
             locator.close();
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
          }
 
@@ -451,13 +450,13 @@ public class TwitterTest extends ServiceTestBase
          {
             server0.stop();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
       }
    }
 
-   protected void internalTestOutgoingFailedToInitialize(HashMap<String,String> params) throws Exception
+   protected void internalTestOutgoingFailedToInitialize(HashMap<String, String> params) throws Exception
    {
       HornetQServer server0 = null;
       String connectorName = "test-outgoing-connector";
@@ -467,7 +466,7 @@ public class TwitterTest extends ServiceTestBase
       String accessToken = TWITTER_ACCESS_TOKEN;
       String accessTokenSecret = TWITTER_ACCESS_TOKEN_SECRET;
 
-      if(params.containsKey(KEY_CONNECTOR_NAME))
+      if (params.containsKey(KEY_CONNECTOR_NAME))
       {
          connectorName = params.get(KEY_CONNECTOR_NAME);
       }
@@ -502,14 +501,14 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.ACCESS_TOKEN, accessToken);
          config.put(TwitterConstants.ACCESS_TOKEN_SECRET, accessTokenSecret);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
-                     config,
-               connectorName);
+            new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+                                              config,
+                                              connectorName);
          configuration.getConnectorServiceConfigurations().add(outconf);
          CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
          configuration.getQueueConfigurations().add(qc);
 
-         server0 = createServer(false,configuration);
+         server0 = createServer(false, configuration);
          server0.start();
 
       }
@@ -519,7 +518,7 @@ public class TwitterTest extends ServiceTestBase
          {
             server0.stop();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
       }
@@ -547,16 +546,16 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
          config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
-                     config,
-               "test-outgoing-with-in-reply-to");
+            new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+                                              config,
+                                              "test-outgoing-with-in-reply-to");
          configuration.getConnectorServiceConfigurations().add(outconf);
          CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
          configuration.getQueueConfigurations().add(qc);
 
          Status s = twitter.updateStatus(testMessage);
 
-         server0 = createServer(false,configuration);
+         server0 = createServer(false, configuration);
          server0.start();
 
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
@@ -579,7 +578,7 @@ public class TwitterTest extends ServiceTestBase
 
          Assert.assertEquals(testMessage, ((Status)(res.get(1))).getText());
          Assert.assertEquals(-1, ((Status)(res.get(1))).getInReplyToStatusId());
-         Assert.assertEquals(replyMessage,((Status)(res.get(0))).getText());
+         Assert.assertEquals(replyMessage, ((Status)(res.get(0))).getText());
          Assert.assertEquals(s.getId(), ((Status)(res.get(0))).getInReplyToStatusId());
       }
       finally
@@ -588,21 +587,21 @@ public class TwitterTest extends ServiceTestBase
          {
             session.close();
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
          }
          try
          {
             locator.close();
          }
-         catch(Throwable t)
+         catch (Throwable t)
          {
          }
          try
          {
             server0.stop();
          }
-         catch(Throwable ignored)
+         catch (Throwable ignored)
          {
          }
       }

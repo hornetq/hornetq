@@ -12,51 +12,50 @@
  */
 
 package org.hornetq.tests.unit.core.deployers.impl;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.junit.Assert;
-
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
  * tests the abstract xml deployer class
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class XMLDeployerTest extends UnitTestCase
 {
    private static final String conf1 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
-                                       + "   <test name=\"test2\">content2</test>\n"
-                                       + "   <test name=\"test3\">content3</test>\n"
-                                       + "   <test name=\"test4\">content4</test>\n"
-                                       + "</configuration>";
+      + "   <test name=\"test2\">content2</test>\n"
+      + "   <test name=\"test3\">content3</test>\n"
+      + "   <test name=\"test4\">content4</test>\n"
+      + "</configuration>";
 
    private static final String conf2 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
-                                       + "   <test name=\"test2\">contenthaschanged2</test>\n"
-                                       + "   <test name=\"test3\">contenthaschanged3</test>\n"
-                                       + "   <test name=\"test4\">content4</test>\n"
-                                       + "</configuration>";
+      + "   <test name=\"test2\">contenthaschanged2</test>\n"
+      + "   <test name=\"test3\">contenthaschanged3</test>\n"
+      + "   <test name=\"test4\">content4</test>\n"
+      + "</configuration>";
 
    private static final String conf3 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
-                                       + "   <test name=\"test2\">contenthaschanged2</test>\n"
-                                       + "</configuration>";
+      + "   <test name=\"test2\">contenthaschanged2</test>\n"
+      + "</configuration>";
 
    private static final String conf4 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
-                                       + "   <test name=\"test2\">content2</test>\n"
-                                       + "   <test name=\"test3\">content3</test>\n"
-                                       + "   <test name=\"test4\">content4</test>\n"
-                                       + "   <test name=\"test5\">content5</test>\n"
-                                       + "   <test name=\"test6\">content6</test>\n"
-                                       + "</configuration>";
+      + "   <test name=\"test2\">content2</test>\n"
+      + "   <test name=\"test3\">content3</test>\n"
+      + "   <test name=\"test4\">content4</test>\n"
+      + "   <test name=\"test5\">content5</test>\n"
+      + "   <test name=\"test6\">content6</test>\n"
+      + "</configuration>";
 
    private URI url;
 
@@ -221,13 +220,13 @@ public class XMLDeployerTest extends UnitTestCase
       @Override
       public String[] getElementTagName()
       {
-         return new String[] { elementname };
+         return new String[]{elementname};
       }
 
       @Override
       public String[] getConfigFileNames()
       {
-         return new String[] { "test" };
+         return new String[]{"test"};
       }
 
       @Override

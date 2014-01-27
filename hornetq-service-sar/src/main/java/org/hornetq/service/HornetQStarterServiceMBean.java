@@ -22,9 +22,9 @@ public interface HornetQStarterServiceMBean
 {
    void create() throws Exception;
 
-   public void start() throws Exception;
+   void start() throws Exception;
 
-   public void stop() throws Exception;
+   void stop() throws Exception;
 
    HornetQServer getServer();
 

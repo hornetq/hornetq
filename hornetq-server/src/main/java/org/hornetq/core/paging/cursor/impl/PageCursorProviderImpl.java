@@ -37,15 +37,14 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SoftValueHashMap;
+
 /**
  * A PageProviderIMpl
- *
+ * <p/>
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
- *       However I want to keep this isolated as much as possible during development
+ * However I want to keep this isolated as much as possible during development
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
- *
  */
 public class PageCursorProviderImpl implements PageCursorProvider
 {
@@ -94,7 +93,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+         HornetQServerLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception("trace"));
       }
 
       if (activeCursors.containsKey(cursorID))
@@ -103,7 +102,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
 
       PageSubscription activeCursor =
-               new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
+         new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
@@ -161,7 +160,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                cache.lock();
                if (isTrace)
                {
-                  HornetQServerLogger.LOGGER.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
+                  HornetQServerLogger.LOGGER.trace("adding " + pageId + " into cursor = " + this.pagingStore.getAddress());
                }
                softCache.put(pageId, cache);
             }
@@ -457,7 +456,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   if (HornetQServerLogger.LOGGER.isDebugEnabled())
                   {
                      HornetQServerLogger.LOGGER.debug("Address " + pagingStore.getAddress() +
-                        " is leaving page mode as all messages are consumed and acknowledged from the page store");
+                                                         " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   }
 
                   pagingStore.forceAnotherPage();
@@ -490,10 +489,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
                if (HornetQServerLogger.LOGGER.isTraceEnabled())
                {
                   HornetQServerLogger.LOGGER.trace("Couldn't cleanup page on address " + this.pagingStore.getAddress() +
-                     " as numberOfPages == " +
-                     pagingStore.getNumberOfPages() +
-                     " and currentPage.numberOfMessages = " +
-                     pagingStore.getCurrentPage().getNumberOfMessages());
+                                                      " as numberOfPages == " +
+                                                      pagingStore.getNumberOfPages() +
+                                                      " and currentPage.numberOfMessages = " +
+                                                      pagingStore.getCurrentPage().getNumberOfMessages());
                }
             }
          }
@@ -587,7 +586,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    protected void onDeletePage(Page deletedPage) throws Exception
    {
       List<PageSubscription> subscriptions = cloneSubscriptions();
-      for (PageSubscription subs: subscriptions)
+      for (PageSubscription subs : subscriptions)
       {
          subs.onDeletePage(deletedPage);
       }

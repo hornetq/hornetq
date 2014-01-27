@@ -29,7 +29,9 @@ public final class TopologyMemberImpl implements TopologyMember
 
    private final String nodeName;
 
-   /** transient to avoid serialization changes */
+   /**
+    * transient to avoid serialization changes
+    */
    private transient long uniqueEventID = System.currentTimeMillis();
 
    private final String nodeId;
@@ -99,7 +101,7 @@ public final class TopologyMemberImpl implements TopologyMember
 
    public boolean isMember(RemotingConnection connection)
    {
-      TransportConfiguration connectorConfig = connection.getTransportConnection() != null ? connection.getTransportConnection().getConnectorConfig(): null;
+      TransportConfiguration connectorConfig = connection.getTransportConnection() != null ? connection.getTransportConnection().getConnectorConfig() : null;
 
       return isMember(connectorConfig);
 
@@ -108,7 +110,7 @@ public final class TopologyMemberImpl implements TopologyMember
    public boolean isMember(TransportConfiguration configuration)
    {
       if (getConnector().getA() != null && getConnector().getA().equals(configuration) ||
-          getConnector().getB() != null && getConnector().getB().equals(configuration))
+         getConnector().getB() != null && getConnector().getB().equals(configuration))
       {
          return true;
       }

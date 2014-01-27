@@ -13,19 +13,18 @@
 
 package org.hornetq.tests.unit.jms.client;
 
-import org.junit.Test;
-
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.jms.client.JMSExceptionHelper;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static org.hornetq.api.core.HornetQExceptionType.CONNECTION_TIMEDOUT;
 import static org.hornetq.api.core.HornetQExceptionType.GENERIC_EXCEPTION;
@@ -33,8 +32,6 @@ import static org.hornetq.api.core.HornetQExceptionType.INVALID_FILTER_EXPRESSIO
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSExceptionHelperTest extends UnitTestCase
 {

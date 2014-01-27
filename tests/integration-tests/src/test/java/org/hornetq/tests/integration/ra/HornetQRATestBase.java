@@ -11,14 +11,6 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
-import org.hornetq.ra.inflow.HornetQActivation;
-import org.junit.Before;
-import org.junit.After;
-
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -35,20 +27,27 @@ import javax.resource.spi.work.WorkException;
 import javax.resource.spi.work.WorkListener;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Jul 6, 2010
  */
-public abstract class HornetQRATestBase  extends JMSTestBase
+public abstract class HornetQRATestBase extends JMSTestBase
 {
    protected ServerLocator locator;
 
@@ -104,7 +103,6 @@ public abstract class HornetQRATestBase  extends JMSTestBase
    }
 
 
-
    class DummyMessageEndpointFactory implements MessageEndpointFactory
    {
       private DummyMessageEndpoint endpoint;
@@ -119,7 +117,7 @@ public abstract class HornetQRATestBase  extends JMSTestBase
 
       public MessageEndpoint createEndpoint(XAResource xaResource) throws UnavailableException
       {
-         if(xaResource != null)
+         if (xaResource != null)
          {
             endpoint.setXAResource(xaResource);
          }
@@ -154,7 +152,7 @@ public abstract class HornetQRATestBase  extends JMSTestBase
 
       public void afterDelivery() throws ResourceException
       {
-         if(latch != null)
+         if (latch != null)
          {
             latch.countDown();
          }
@@ -167,7 +165,7 @@ public abstract class HornetQRATestBase  extends JMSTestBase
 
       public void onMessage(Message message)
       {
-         lastMessage = (HornetQMessage) message;
+         lastMessage = (HornetQMessage)message;
       }
 
       public void reset(CountDownLatch latch)

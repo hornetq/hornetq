@@ -30,11 +30,9 @@ import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- *
  * A AIOSequentialFileFactory
  *
  * @author clebert.suconic@jboss.com
- *
  */
 public final class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 {
@@ -47,7 +45,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
    // Journal
-   private static final void trace(final String message)
+   private static void trace(final String message)
    {
       HornetQJournalLogger.LOGGER.trace(message);
    }
@@ -116,7 +114,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
       int blocks = size / 512;
       if (size % 512 != 0)
       {
-         blocks ++;
+         blocks++;
       }
 
       // The buffer on AIO has to be a multiple of 512
@@ -220,14 +218,18 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
       stop();
    }
 
-   /** Class that will control buffer-reuse */
+   /**
+    * Class that will control buffer-reuse
+    */
    private class ReuseBuffersController
    {
       private volatile long bufferReuseLastTime = System.currentTimeMillis();
 
-      /** This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
+      /**
+       * This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
        * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
-       * and ready to be reused or GCed */
+       * and ready to be reused or GCed
+       */
       private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffersQueue = new ConcurrentLinkedQueue<ByteBuffer>();
 
       private boolean stopped = false;
@@ -244,7 +246,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
             if (AIOSequentialFileFactory.trace)
             {
                AIOSequentialFileFactory.trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() +
-                                              " elements");
+                                                 " elements");
             }
 
             bufferReuseLastTime = System.currentTimeMillis();
@@ -351,6 +353,6 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
    public String toString()
    {
       return AIOSequentialFileFactory.class.getSimpleName() + "(buffersControl.stopped=" + buffersControl.stopped +
-               "):" + super.toString();
+         "):" + super.toString();
    }
 }

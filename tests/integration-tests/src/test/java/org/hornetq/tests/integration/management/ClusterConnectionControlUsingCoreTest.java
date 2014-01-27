@@ -12,8 +12,6 @@
  */
 
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
 import java.util.Map;
 
@@ -25,13 +23,13 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A ClusterConnectionControlUsingCoreTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionControlTest
 {
@@ -63,12 +61,12 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
 
          public Object[] getStaticConnectors()
          {
-            return (Object[]) proxy.retrieveAttributeValue("staticConnectors");
+            return (Object[])proxy.retrieveAttributeValue("staticConnectors");
          }
 
          public String getStaticConnectorsAsJSON() throws Exception
          {
-            return (String) proxy.retrieveAttributeValue("staticConnectorsAsJSON");
+            return (String)proxy.retrieveAttributeValue("staticConnectorsAsJSON");
          }
 
          public String getAddress()
@@ -164,7 +162,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          session.close();
       }
 
-      if(locator != null)
+      if (locator != null)
       {
          locator.close();
       }

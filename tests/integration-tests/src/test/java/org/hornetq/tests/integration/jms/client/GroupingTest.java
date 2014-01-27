@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -29,22 +25,19 @@ import javax.jms.TextMessage;
 
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
-
-import java.util.Iterator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * GroupingTest
  *
  * @author Tim Fox
- *
  */
 public class GroupingTest extends JMSTestBase
 {
@@ -194,7 +187,7 @@ public class GroupingTest extends JMSTestBase
    @Test
    public void testGroupingRollbackOnClose() throws Exception
    {
-      HornetQConnectionFactory fact = (HornetQConnectionFactory) getCF();
+      HornetQConnectionFactory fact = (HornetQConnectionFactory)getCF();
       fact.setConsumerWindowSize(1000);
       fact.setTransactionBatchSize(0);
       Connection connection = fact.createConnection();
@@ -253,8 +246,8 @@ public class GroupingTest extends JMSTestBase
       //session.rollback();
       //session.close();
       //consume all msgs from 2nd first consumer
-     // ClientSession hqs = ((HornetQSession) session).getCoreSession();
-    //  ((DelegatingSession) hqs).getChannel().close();
+      // ClientSession hqs = ((HornetQSession) session).getCoreSession();
+      //  ((DelegatingSession) hqs).getChannel().close();
       rc.fail(new HornetQNotConnectedException());
       for (int j = 0; j < 10; j++)
       {
@@ -262,7 +255,7 @@ public class GroupingTest extends JMSTestBase
 
          assertNotNull(tm);
 
-         long text = ((HornetQTextMessage) tm).getCoreMessage().getMessageID();
+         long text = ((HornetQTextMessage)tm).getCoreMessage().getMessageID();
          System.out.println(tm.getJMSMessageID() + " text = " + text);
          //assertEquals("Message" + j, text);
 

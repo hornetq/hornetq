@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.cursor;
 
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.transaction.Transaction;
 
@@ -21,8 +20,6 @@ import org.hornetq.core.transaction.Transaction;
  * A PagingSubscriptionCounterInterface
  *
  * @author clebertsuconic
- *
- *
  */
 public interface PageSubscriptionCounter
 {
@@ -37,11 +34,12 @@ public interface PageSubscriptionCounter
 
    void applyIncrementOnTX(Transaction tx, long recordID, int add);
 
-   /** This will process the reload */
+   /**
+    * This will process the reload
+    */
    void processReload();
 
    /**
-    *
     * @param id
     * @param variance
     */

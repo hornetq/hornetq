@@ -12,16 +12,12 @@
  */
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
-import org.junit.Test;
-
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -38,17 +34,17 @@ import org.jboss.netty.channel.ChannelConfig;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A NettyConnectionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class NettyConnectionTest extends UnitTestCase
 {
-   private static final Map<String,Object> emptyMap = Collections.emptyMap();
+   private static final Map<String, Object> emptyMap = Collections.emptyMap();
 
    @Test
    public void testGetID() throws Exception
@@ -225,16 +221,17 @@ public class NettyConnectionTest extends UnitTestCase
          return null;
       }
 
-       @Override
-       public Object getAttachment()
-       {
-           return null;
-       }
+      @Override
+      public Object getAttachment()
+      {
+         return null;
+      }
 
-       @Override
-       public void setAttachment(Object attachment) {
-           // nothing to-do
-       }
+      @Override
+      public void setAttachment(Object attachment)
+      {
+         // nothing to-do
+      }
    }
 
    class MyListener implements ConnectionLifeCycleListener

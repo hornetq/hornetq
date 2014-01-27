@@ -13,16 +13,25 @@
 
 package org.hornetq.tests.integration.cluster;
 
-import org.junit.Test;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hornetq.tests.integration.cluster.NodeManagerAction.*;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.AWAIT_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.CRASH_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.DOESNT_HAVE_BACKUP;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.DOESNT_HAVE_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.HAS_BACKUP;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.HAS_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.PAUSE_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.RELEASE_BACKUP;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.START_BACKUP;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.START_LIVE;
+import static org.hornetq.tests.integration.cluster.NodeManagerAction.STOP_BACKUP;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -37,6 +46,7 @@ public class NodeManagerTest extends ServiceTestBase
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
       performWork(live1);
    }
+
    @Test
    public void testSimpleLiveAndBackup() throws Exception
    {
@@ -46,7 +56,7 @@ public class NodeManagerTest extends ServiceTestBase
    }
 
    @Test
-    public void testSimpleBackupAndLive() throws Exception
+   public void testSimpleBackupAndLive() throws Exception
    {
       NodeManagerAction live1 = new NodeManagerAction(START_LIVE, HAS_LIVE, DOESNT_HAVE_BACKUP, CRASH_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
       NodeManagerAction backup1 = new NodeManagerAction(DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_BACKUP, HAS_BACKUP, AWAIT_LIVE, RELEASE_BACKUP, HAS_LIVE, PAUSE_LIVE, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
@@ -104,7 +114,7 @@ public class NodeManagerTest extends ServiceTestBase
       NodeManagerAction backup9 = new NodeManagerAction(DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_BACKUP, HAS_BACKUP, STOP_BACKUP, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
       NodeManagerAction backup10 = new NodeManagerAction(DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_BACKUP, HAS_BACKUP, STOP_BACKUP, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
       NodeManagerAction backup11 = new NodeManagerAction(DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE, START_BACKUP, HAS_BACKUP, STOP_BACKUP, DOESNT_HAVE_BACKUP, DOESNT_HAVE_LIVE);
-      performWork(backup1,backup2,backup3,backup4,backup5,backup6,backup7,backup8,backup9,backup10,backup11);
+      performWork(backup1, backup2, backup3, backup4, backup5, backup6, backup7, backup8, backup9, backup10, backup11);
    }
 
    @Test
@@ -151,7 +161,7 @@ public class NodeManagerTest extends ServiceTestBase
          {
             //
          }
-         if(thread.isAlive())
+         if (thread.isAlive())
          {
             thread.interrupt();
             fail("thread still running");
@@ -160,7 +170,7 @@ public class NodeManagerTest extends ServiceTestBase
 
       for (NodeRunner nodeRunner : nodeRunners)
       {
-         if(nodeRunner.e != null)
+         if (nodeRunner.e != null)
          {
             nodeRunner.e.printStackTrace();
             fail(nodeRunner.e.getMessage());
@@ -173,6 +183,7 @@ public class NodeManagerTest extends ServiceTestBase
       private NodeManagerAction action;
       private NodeManager manager;
       Throwable e;
+
       public NodeRunner(NodeManager nodeManager, NodeManagerAction action)
       {
          this.manager = nodeManager;

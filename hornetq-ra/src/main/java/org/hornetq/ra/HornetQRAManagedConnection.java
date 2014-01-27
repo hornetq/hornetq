@@ -13,16 +13,6 @@
 
 package org.hornetq.ra;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
-
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ResourceAllocationException;
@@ -43,6 +33,15 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -56,34 +55,54 @@ import org.hornetq.jms.client.HornetQXAConnection;
  */
 public final class HornetQRAManagedConnection implements ManagedConnection, ExceptionListener
 {
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** The managed connection factory */
+   /**
+    * The managed connection factory
+    */
    private final HornetQRAManagedConnectionFactory mcf;
 
-   /** The connection request information */
+   /**
+    * The connection request information
+    */
    private final HornetQRAConnectionRequestInfo cri;
 
-   /** The resource adapter */
+   /**
+    * The resource adapter
+    */
    private final HornetQResourceAdapter ra;
 
-   /** The user name */
+   /**
+    * The user name
+    */
    private final String userName;
 
-   /** The password */
+   /**
+    * The password
+    */
    private final String password;
 
-   /** Has the connection been destroyed */
+   /**
+    * Has the connection been destroyed
+    */
    private final AtomicBoolean isDestroyed = new AtomicBoolean(false);
 
-   /** Event listeners */
+   /**
+    * Event listeners
+    */
    private final List<ConnectionEventListener> eventListeners;
 
-   /** Handles */
+   /**
+    * Handles
+    */
    private final Set<HornetQRASession> handles;
 
-   /** Lock */
+   /**
+    * Lock
+    */
    private ReentrantLock lock = new ReentrantLock();
 
    // Physical connection stuff
@@ -105,8 +124,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Constructor
-    * @param mcf The managed connection factory
-    * @param cri The connection request information
+    *
+    * @param mcf      The managed connection factory
+    * @param cri      The connection request information
     * @param userName The user name
     * @param password The password
     */
@@ -154,10 +174,11 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get a connection
-    * @param subject The security subject
+    *
+    * @param subject       The security subject
     * @param cxRequestInfo The request info
     * @return The connection
-    * @exception ResourceException Thrown if an error occurs
+    * @throws ResourceException Thrown if an error occurs
     */
    public synchronized Object getConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
@@ -192,7 +213,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Destroy all handles.
-    * @exception ResourceException Failed to close one or more handles.
+    *
+    * @throws ResourceException Failed to close one or more handles.
     */
    private void destroyHandles() throws ResourceException
    {
@@ -224,7 +246,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Destroy the physical connection.
-    * @exception ResourceException Could not property close the session and connection.
+    *
+    * @throws ResourceException Could not property close the session and connection.
     */
    public void destroy() throws ResourceException
    {
@@ -233,7 +256,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
          HornetQRALogger.LOGGER.trace("destroy()");
       }
 
-      if (isDestroyed.get() ||  connection == null)
+      if (isDestroyed.get() || connection == null)
       {
          return;
       }
@@ -303,7 +326,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Cleanup
-    * @exception ResourceException Thrown if an error occurs
+    *
+    * @throws ResourceException Thrown if an error occurs
     */
    public void cleanup() throws ResourceException
    {
@@ -332,8 +356,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Move a handler from one mc to this one.
+    *
     * @param obj An object of type HornetQSession.
-    * @throws ResourceException Failed to associate connection.
+    * @throws ResourceException     Failed to associate connection.
     * @throws IllegalStateException ManagedConnection in an illegal state.
     */
    public void associateConnection(final Object obj) throws ResourceException
@@ -368,8 +393,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
                int status = tx.getStatus();
                // Only allow states that will actually succeed
                if (status != Status.STATUS_ACTIVE && status != Status.STATUS_PREPARING &&
-                   status != Status.STATUS_PREPARED &&
-                   status != Status.STATUS_COMMITTING)
+                  status != Status.STATUS_PREPARED &&
+                  status != Status.STATUS_COMMITTING)
                {
                   throw new javax.jms.IllegalStateException("Transaction " + tx + " not active");
                }
@@ -400,7 +425,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Aqquire a lock on the managed connection within the specified period
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    protected void tryLock() throws JMSException
    {
@@ -443,6 +469,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Add a connection event listener.
+    *
     * @param l The connection event listener to be added.
     */
    public void addConnectionEventListener(final ConnectionEventListener l)
@@ -457,6 +484,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Remove a connection event listener.
+    *
     * @param l The connection event listener to be removed.
     */
    public void removeConnectionEventListener(final ConnectionEventListener l)
@@ -471,8 +499,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the XAResource for the connection.
+    *
     * @return The XAResource for the connection.
-    * @exception ResourceException XA transaction not supported
+    * @throws ResourceException XA transaction not supported
     */
    public XAResource getXAResource() throws ResourceException
    {
@@ -487,7 +516,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       //
       if (xaResource == null)
       {
-            xaResource = new HornetQRAXAResource(this, xaSession.getXAResource());
+         xaResource = new HornetQRAXAResource(this, xaSession.getXAResource());
       }
 
       if (HornetQRAManagedConnection.trace)
@@ -500,8 +529,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the location transaction for the connection.
+    *
     * @return The local transaction for the connection.
-    * @exception ResourceException Thrown if operation fails.
+    * @throws ResourceException Thrown if operation fails.
     */
    public LocalTransaction getLocalTransaction() throws ResourceException
    {
@@ -522,9 +552,10 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the meta data for the connection.
+    *
     * @return The meta data for the connection.
-    * @exception ResourceException Thrown if the operation fails.
-    * @exception IllegalStateException Thrown if the managed connection already is destroyed.
+    * @throws ResourceException     Thrown if the operation fails.
+    * @throws IllegalStateException Thrown if the managed connection already is destroyed.
     */
    public ManagedConnectionMetaData getMetaData() throws ResourceException
    {
@@ -543,8 +574,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Set the log writer -- NOT SUPPORTED
+    *
     * @param out The log writer
-    * @exception ResourceException If operation fails
+    * @throws ResourceException If operation fails
     */
    public void setLogWriter(final PrintWriter out) throws ResourceException
    {
@@ -556,8 +588,9 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the log writer -- NOT SUPPORTED
+    *
     * @return Always null
-    * @exception ResourceException If operation fails
+    * @throws ResourceException If operation fails
     */
    public PrintWriter getLogWriter() throws ResourceException
    {
@@ -571,11 +604,12 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Notifies user of a JMS exception.
+    *
     * @param exception The JMS exception
     */
    public void onException(final JMSException exception)
    {
-      if(HornetQConnection.EXCEPTION_FAILOVER.equals(exception.getErrorCode()))
+      if (HornetQConnection.EXCEPTION_FAILOVER.equals(exception.getErrorCode()))
       {
          return;
       }
@@ -610,6 +644,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the session for this connection.
+    *
     * @return The session
     * @throws JMSException
     */
@@ -637,6 +672,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Send an event.
+    *
     * @param event The event to send.
     */
    protected void sendEvent(final ConnectionEvent event)
@@ -683,6 +719,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Remove a handle from the handle map.
+    *
     * @param handle The handle to remove.
     */
    protected void removeHandle(final HornetQRASession handle)
@@ -697,6 +734,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the request info for this connection.
+    *
     * @return The connection request info for this connection.
     */
    protected HornetQRAConnectionRequestInfo getCRI()
@@ -711,6 +749,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the connection factory for this connection.
+    *
     * @return The connection factory for this connection.
     */
    protected HornetQRAManagedConnectionFactory getManagedConnectionFactory()
@@ -725,7 +764,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Start the connection
-    * @exception JMSException Thrown if the connection cant be started
+    *
+    * @throws JMSException Thrown if the connection cant be started
     */
    void start() throws JMSException
    {
@@ -742,7 +782,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Stop the connection
-    * @exception JMSException Thrown if the connection cant be stopped
+    *
+    * @throws JMSException Thrown if the connection cant be stopped
     */
    void stop() throws JMSException
    {
@@ -759,6 +800,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Get the user name
+    *
     * @return The user name
     */
    protected String getUserName()
@@ -773,7 +815,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
    /**
     * Setup the connection.
-    * @exception ResourceException Thrown if a connection couldn't be created
+    *
+    * @throws ResourceException Thrown if a connection couldn't be created
     */
    private void setup() throws ResourceException
    {
@@ -786,7 +829,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       {
          connectionFactory = ra.createHornetQConnectionFactory(mcf.getProperties());
          boolean transacted = cri.isTransacted();
-         int acknowledgeMode =  Session.AUTO_ACKNOWLEDGE;
+         int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
          {
             if (userName != null && password != null)

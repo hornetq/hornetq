@@ -25,9 +25,9 @@
       </license>
    </licenses>
 
-    <prerequisites>
-       <maven>3.0.0</maven>
-    </prerequisites>
+   <prerequisites>
+      <maven>3.0.0</maven>
+   </prerequisites>
 
    <properties>
       <netty.version>3.6.7.Final</netty.version>
@@ -57,7 +57,13 @@
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:${user.dir}/tests/config/logging.properties -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost -Djava.net.preferIPv4Stack=true</hornetq-surefire-argline>
+      <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager
+         -Dlogging.configuration=file:${user.dir}/tests/config/logging.properties
+         -Djava.library.path=${user.dir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost
+         -Djava.net.preferIPv4Stack=true
+      </hornetq-surefire-argline>
+      <hornetq.basedir>${project.basedir}</hornetq.basedir>
+      <skipStyleCheck>false</skipStyleCheck>
    </properties>
 
    <scm>
@@ -132,27 +138,27 @@
          <!--
             JBoss Tools
         -->
-        <dependency>
+         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <version>1.0.0.Final</version>
             <scope>provided</scope>
-        </dependency>
+         </dependency>
 
-        <!--
-            JBoss Logging
-        -->
-        <dependency>
+         <!--
+             JBoss Logging
+         -->
+         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
             <version>3.1.0.GA</version>
-        </dependency>
+         </dependency>
 
-        <dependency>
+         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
             <version>1.2.2.GA</version>
-        </dependency>
+         </dependency>
 
          <dependency>
             <groupId>net.java.dev.javacc</groupId>
@@ -231,9 +237,9 @@
             </exclusions>
          </dependency>
          <dependency>
-             <groupId>org.jgroups</groupId>
-             <artifactId>jgroups</artifactId>
-             <version>3.2.12.Final</version>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+            <version>3.2.12.Final</version>
          </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
@@ -327,11 +333,11 @@
             <artifactId>resteasy-atom-provider</artifactId>
             <version>${resteasy.version}</version>
          </dependency>
-          <dependency>
-              <groupId>org.jboss.resteasy</groupId>
-              <artifactId>tjws</artifactId>
-              <version>${resteasy.version}</version>
-          </dependency>
+         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>tjws</artifactId>
+            <version>${resteasy.version}</version>
+         </dependency>
          <!-- needed to compile the tests -->
          <dependency>
             <groupId>junit</groupId>
@@ -588,21 +594,21 @@
                   </execution>
                </executions>
             </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.0</version>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-clean-plugin</artifactId>
-            <version>2.5</version>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9</version>
-         </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <version>3.0</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-clean-plugin</artifactId>
+               <version>2.5</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>2.9</version>
+            </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-rar-plugin</artifactId>
@@ -681,18 +687,18 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-pmd-plugin</artifactId>
-	       <version>2.7.1</version>
+               <version>2.7.1</version>
                <configuration>
-                  <linkXref>true</linkXref>
+                  <linkXRef>true</linkXRef>
                   <sourceEncoding>utf-8</sourceEncoding>
                   <minimumTokens>100</minimumTokens>
                   <targetJdk>1.5</targetJdk>
                </configuration>
             </plugin>
             <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>xml-maven-plugin</artifactId>
-              <version>1.0</version>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>xml-maven-plugin</artifactId>
+               <version>1.0</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
@@ -711,12 +717,12 @@
                <artifactId>maven-resources-plugin</artifactId>
                <version>2.6</version>
             </plugin>
-         <!-- Many examples use it -->
-         <plugin>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-maven-plugin</artifactId>
-            <version>1.2.0</version>
-         </plugin>
+            <!-- Many examples use it -->
+            <plugin>
+               <groupId>org.hornetq</groupId>
+               <artifactId>hornetq-maven-plugin</artifactId>
+               <version>1.2.0</version>
+            </plugin>
          </plugins>
       </pluginManagement>
 
@@ -763,7 +769,7 @@
             <version>2.10</version>
             <configuration>
                <configLocation>${user.dir}/etc/checkstyle.xml</configLocation>
-               <failOnError>false</failOnError>
+               <failsOnError>false</failsOnError>
             </configuration>
          </plugin>
 
@@ -772,12 +778,34 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
-              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
-              <findbugsXmlOutput>true</findbugsXmlOutput>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <findbugsXmlOutput>true</findbugsXmlOutput>
                <xmlOutput>true</xmlOutput>
                <effort>Max</effort>
                <failOnError>false</failOnError>
             </configuration>
+         </plugin>
+
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>2.10</version>
+            <configuration>
+               <skip>${skipStyleCheck}</skip>
+               <configLocation>${hornetq.basedir}/etc/checkstyle.xml</configLocation>
+               <failsOnError>false</failsOnError>
+               <failOnViolation>true</failOnViolation>
+               <consoleOutput>true</consoleOutput>
+               <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>compile</phase>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
@@ -789,6 +817,7 @@
             <artifactId>cobertura-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
+               <check/>
                <formats>
                   <format>html</format>
                   <format>xml</format>
@@ -801,7 +830,7 @@
             <version>2.10</version>
             <configuration>
                <configLocation>${user.dir}/checkstyle.xml</configLocation>
-               <failOnError>false</failOnError>
+               <failsOnError>false</failsOnError>
             </configuration>
          </plugin>
          <plugin>
@@ -809,9 +838,9 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.5.2</version>
             <configuration>
-              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
-              <effort>Max</effort>
-              <failOnError>false</failOnError>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <effort>Max</effort>
+               <failOnError>false</failOnError>
             </configuration>
          </plugin>
          <plugin>
@@ -831,7 +860,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

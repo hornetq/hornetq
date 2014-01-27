@@ -127,7 +127,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          try
          {
-            incomingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
+            incomingInterceptors.add((Interceptor)safeInitNewInstance(interceptorClass));
          }
          catch (Exception e)
          {
@@ -139,7 +139,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          try
          {
-            outgoingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
+            outgoingInterceptors.add((Interceptor)safeInitNewInstance(interceptorClass));
          }
          catch (Exception e)
          {
@@ -183,8 +183,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads-" + server.toString() +
-                                                        "-" +
-                                                        System.identityHashCode(this), false, tccl);
+                                                           "-" +
+                                                           System.identityHashCode(this), false, tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 
@@ -203,7 +203,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             if (info.getParams() != null)
             {
                Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), info.getParams()
-                                                                                                         .keySet());
+                  .keySet());
 
                if (!invalid.isEmpty())
                {
@@ -231,7 +231,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                        threadPool,
                                                        scheduledThreadPool);
 
-            if(defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
+            if (defaultInvmSecurityPrincipal != null && acceptor.isUnsecurable())
             {
                acceptor.setDefaultHornetQPrincipal(defaultInvmSecurityPrincipal);
             }
@@ -269,7 +269,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       defaultInvmSecurityPrincipal = principal;
       for (Acceptor acceptor : acceptors)
       {
-         if(acceptor.isUnsecurable())
+         if (acceptor.isUnsecurable())
          {
             acceptor.setDefaultHornetQPrincipal(principal);
          }
@@ -442,7 +442,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw HornetQMessageBundle.BUNDLE.unknownProtocol(protocol);
       }
 
-      ConnectionEntry entry = pmgr.createConnectionEntry((Acceptor) component, connection);
+      ConnectionEntry entry = pmgr.createConnectionEntry((Acceptor)component, connection);
 
       if (isTrace)
       {

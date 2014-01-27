@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.core.filter.impl;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -26,6 +21,9 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.SilentTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the compliance with the HornetQ Filter syntax.
@@ -71,9 +69,9 @@ public class FilterTest extends SilentTestCase
    @Test
    public void testNullFilter() throws Exception
    {
-      Assert.assertNull(FilterImpl.createFilter((String) null));
+      Assert.assertNull(FilterImpl.createFilter((String)null));
       Assert.assertNull(FilterImpl.createFilter(""));
-      Assert.assertNull(FilterImpl.createFilter((SimpleString) null));
+      Assert.assertNull(FilterImpl.createFilter((SimpleString)null));
       Assert.assertNull(FilterImpl.createFilter(new SimpleString("")));
    }
 
@@ -725,7 +723,7 @@ public class FilterTest extends SilentTestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(HornetQInvalidFilterExpressionException ife)
+      catch (HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }
@@ -742,7 +740,7 @@ public class FilterTest extends SilentTestCase
          filter = FilterImpl.createFilter(filterString);
          Assert.fail("Should throw exception");
       }
-      catch(HornetQInvalidFilterExpressionException ife)
+      catch (HornetQInvalidFilterExpressionException ife)
       {
          //pass
       }

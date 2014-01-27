@@ -11,14 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.nio.ByteBuffer;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -37,14 +31,17 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * This class contains tests for core management 
+ * This class contains tests for core management
  * functionalities that are affected by a server
  * in paging mode.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class ManagementWithPagingServerTest extends ManagementTestBase
 {
@@ -67,22 +64,22 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       SenderThread sender = new SenderThread(address, num, 0);
 
       ReceiverThread receiver = new ReceiverThread(queue, num, 0);
-      
+
       //kick off sender
       sender.start();
-      
+
       //wait for all messages sent
       sender.join();
       assertNull(sender.getError());
-      
+
       long count = queueControl.countMessages(null);
-      
+
       assertEquals(num, count);
 
       String result = queueControl.listMessagesAsJSON(null);
 
       JSONArray array = new JSONArray(result);
-      
+
       assertEquals(num, array.length());
 
       //kick off receiver
@@ -94,7 +91,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       result = queueControl.listMessagesAsJSON(null);
 
       array = new JSONArray(result);
-      
+
       assertEquals(0, array.length());
    }
 
@@ -109,7 +106,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       QueueControl queueControl = createManagementControl(address, queue);
 
       int num = 1000;
-      
+
       SimpleString key = new SimpleString("key");
       long matchingValue = RandomUtil.randomLong();
       long unmatchingValue = matchingValue + 1;
@@ -126,7 +123,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       for (int i = 0; i < num; i++)
       {
          ClientMessage message = session1.createMessage(true);
-         if (i%2 == 0)
+         if (i % 2 == 0)
          {
             message.putLongProperty(key, matchingValue);
          }
@@ -140,11 +137,11 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       String jsonString = queueControl.listMessagesAsJSON(filter);
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
-      Assert.assertEquals(num/2, array.length());
+      Assert.assertEquals(num / 2, array.length());
       Assert.assertEquals(matchingValue, array.getJSONObject(0).get("key"));
-      
+
       long n = queueControl.countMessages(filter);
-      assertEquals(num/2, n);
+      assertEquals(num / 2, n);
 
       //drain out messages
       ReceiverThread receiver = new ReceiverThread(queue, num, 1);
@@ -170,28 +167,28 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       SenderThread sender = new SenderThread(address, num, 1);
 
       ReceiverThread receiver = new ReceiverThread(queue, num, 2);
-      
+
       ManagementThread console = new ManagementThread(queueControl);
-      
+
       //kick off sender
       sender.start();
-      
+
       //kick off jmx client
       console.start();
-      
+
       //wait for all messages sent
       sender.join();
       assertNull(sender.getError());
-      
+
       //kick off receiver
       receiver.start();
-      
+
       receiver.join();
       assertNull(receiver.getError());
 
       console.exit();
       console.join();
-      
+
       assertNull(console.getError());
    }
 
@@ -258,7 +255,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       private int num;
       private long delay;
       private volatile Exception error = null;
-      
+
       public SenderThread(SimpleString address, int num, long delay)
       {
          this.address = address;
@@ -281,7 +278,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
          try
          {
             producer = session1.createProducer(address);
-            
+
             for (int i = 0; i < num; i++)
             {
                ClientMessage message = session1.createMessage(true);
@@ -303,7 +300,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
             error = e;
          }
       }
-      
+
       public Exception getError()
       {
          return this.error;
@@ -316,7 +313,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       private int num;
       private long delay;
       private volatile Exception error = null;
-      
+
       public ReceiverThread(SimpleString queue, int num, long delay)
       {
          this.queue = queue;
@@ -331,7 +328,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
          try
          {
             consumer = session2.createConsumer(queue);
-            
+
             for (int i = 0; i < num; i++)
             {
                ClientMessage message = consumer.receive(5000);
@@ -352,7 +349,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
             error = e;
          }
       }
-      
+
       public Exception getError()
       {
          return this.error;
@@ -369,7 +366,7 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       {
          this.queueControl = queueControl;
       }
-      
+
       @Override
       public void run()
       {
@@ -394,12 +391,12 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
             error = e;
          }
       }
-      
+
       public Exception getError()
       {
          return error;
       }
-      
+
       public void exit()
       {
          stop = true;

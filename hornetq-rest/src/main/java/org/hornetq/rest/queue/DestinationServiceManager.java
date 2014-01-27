@@ -78,17 +78,19 @@ public abstract class DestinationServiceManager
       this.consumerSessionFactory = consumerSessionFactory;
    }
 
-    /**
+   /**
     * @return the consumerServerLocator
     */
-   public ServerLocator getConsumerServerLocator() {
+   public ServerLocator getConsumerServerLocator()
+   {
       return consumerServerLocator;
    }
 
    /**
     * @param consumerServerLocator the consumerServerLocator to set
     */
-   public void setConsumerServerLocator(ServerLocator consumerServerLocator) {
+   public void setConsumerServerLocator(ServerLocator consumerServerLocator)
+   {
       this.consumerServerLocator = consumerServerLocator;
    }
 
@@ -144,20 +146,20 @@ public abstract class DestinationServiceManager
 
    protected void initDefaults()
    {
-     if (locator == null)
-     {
-        locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-     }
+      if (locator == null)
+      {
+         locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      }
       if (sessionFactory == null)
       {
-        try
-        {
-           sessionFactory = locator.createSessionFactory();
-        }
-        catch (Exception e)
-        {
-           throw new RuntimeException (e.getMessage(), e);
-        }
+         try
+         {
+            sessionFactory = locator.createSessionFactory();
+         }
+         catch (Exception e)
+         {
+            throw new RuntimeException(e.getMessage(), e);
+         }
       }
 
       if (consumerSessionFactory == null) consumerSessionFactory = sessionFactory;

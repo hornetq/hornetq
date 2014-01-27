@@ -27,7 +27,6 @@ import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
 import org.hornetq.core.server.HornetQServerLogger;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements FrameEventListener
@@ -65,20 +64,20 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
             // version
             response.addHeader(Stomp.Headers.Connected.VERSION,
-                  connection.getVersion());
+                               connection.getVersion());
 
             // session
             response.addHeader(Stomp.Headers.Connected.SESSION, connection
-                  .getID().toString());
+               .getID().toString());
 
             // server
             response.addHeader(Stomp.Headers.Connected.SERVER,
-                  connection.getHornetQServerName());
+                               connection.getHornetQServerName());
 
             if (requestID != null)
             {
                response.addHeader(Stomp.Headers.Connected.RESPONSE_ID,
-                     requestID);
+                                  requestID);
             }
 
             // heart-beat. We need to start after connected frame has been sent.
@@ -174,8 +173,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
       else
       {
-          response = new HornetQStompException("Must specify the subscription's id").getFrame();
-          return response;
+         response = new HornetQStompException("Must specify the subscription's id").getFrame();
+         return response;
       }
 
       try
@@ -380,7 +379,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   waitTime2 = serverAcceptPing * 2 - dur2;
                }
 
-               long waitTime = 10l;
+               long waitTime = 10L;
 
                if ((waitTime1 > 0) && (waitTime2 > 0))
                {
@@ -446,7 +445,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          this.pos = decoder.pos;
          this.command = decoder.command;
       }
-      
+
       @Override
       public void init()
       {
@@ -463,7 +462,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
          //check for ping
          // Some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
-         // STOMP frame this can manifest as an extra \n at the beginning when the 
+         // STOMP frame this can manifest as an extra \n at the beginning when the
          // next STOMP frame is read - we need to deal with this.
          // Besides, Stomp 1.2 allows for extra EOLs after NULL (i.e.
          // either "[\r]\n"s or "\n"s)
@@ -490,12 +489,12 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
             offset++;
             if (offset == data) return false; //no more bytes
          }
-         
+
          if (nextChar)
          {
             throw new HornetQStompException("Invalid char sequence: There is a CR not followed by an LF");
          }
-         
+
          //if some EOLs have been processed, drop those bytes before parsing command
          if (offset > 0)
          {
@@ -564,7 +563,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   command = COMMAND_COMMIT;
                }
                /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-               else if (workingBuffer[offset+7] == E)
+               else if (workingBuffer[offset + 7] == E)
                {
                   if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + eolLen))
                   {
@@ -700,16 +699,16 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
 
          checkEol();
-         
+
          return true;
       }
-      
+
       protected void checkEol() throws HornetQStompException
       {
          if (workingBuffer[pos - 1] != NEW_LINE)
          {
             throwInvalid();
-         }         
+         }
       }
 
       @Override
@@ -717,7 +716,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       {
 
 
-         outer: while (true)
+      outer:
+         while (true)
          {
             byte b = workingBuffer[pos++];
 
@@ -843,7 +843,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
          return true;
       }
-      
+
       protected StompFrame parseBody() throws HornetQStompException
       {
          byte[] content = null;
@@ -906,8 +906,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                if (workingBuffer[pos] == NEW_LINE) pos++;
 
                if (data > pos)
-                 // More data still in the buffer from the next packet
-                 System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
+                  // More data still in the buffer from the next packet
+                  System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
             }
 
             data = data - pos;

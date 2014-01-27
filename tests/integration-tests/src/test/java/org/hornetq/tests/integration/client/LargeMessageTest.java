@@ -12,6 +12,9 @@
  */
 
 package org.hornetq.tests.integration.client;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -19,9 +22,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
@@ -55,16 +55,14 @@ import org.junit.Test;
  * A LargeMessageTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created 29-Sep-08 4:04:10 PM
- *
- *
+ *         <p/>
+ *         Created 29-Sep-08 4:04:10 PM
  */
 public class LargeMessageTest extends LargeMessageTestBase
 {
    // Constants -----------------------------------------------------
 
-   final static int RECEIVE_WAIT_TIME = 10000;
+   static final int RECEIVE_WAIT_TIME = 10000;
 
    private final int LARGE_MESSAGE_SIZE = 20 * 1024;
 
@@ -86,7 +84,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    @Test
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
-      for (int i = 0 ; i < 1; i++)
+      for (int i = 0; i < 1; i++)
       {
          log.info("#test " + i);
          internalTestRollbackPartiallyConsumedBuffer(false);
@@ -136,7 +134,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      for (int i = 0 ; i < 20; i++)
+      for (int i = 0; i < 20; i++)
       {
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -158,13 +156,14 @@ public class LargeMessageTest extends LargeMessageTestBase
       consumer.setMessageHandler(new MessageHandler()
       {
          int counter = 0;
+
          public void onMessage(ClientMessage message)
          {
             message.getBodyBuffer().readByte();
             // System.out.println("message:" + message);
             try
             {
-               if (counter ++ <  20)
+               if (counter++ < 20)
                {
                   Thread.sleep(100);
                   // System.out.println("Rollback");
@@ -308,10 +307,10 @@ public class LargeMessageTest extends LargeMessageTestBase
       config.setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true,
-            config,
-            PAGE_SIZE,
-            PAGE_MAX,
-            new HashMap<String, AddressSettings>());
+                                          config,
+                                          PAGE_SIZE,
+                                          PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -985,11 +984,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             if (isSimulateBridge)
             {
-               clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID,  someDuplicateInfo.getBytes());
+               clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, someDuplicateInfo.getBytes());
             }
             else
             {
-               clientFile.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID,  someDuplicateInfo.getBytes());
+               clientFile.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, someDuplicateInfo.getBytes());
             }
 
             producer.send(clientFile);
@@ -1001,7 +1000,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientMessage msg = consumer.receive(10000);
 
-         for (int i = 0 ; i < messageSize; i++)
+         for (int i = 0; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
          }
@@ -1219,7 +1218,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  false,
                  1,
-                 100 * 1024l * 1024l,
+                 100 * 1024L * 1024L,
                  LargeMessageTest.RECEIVE_WAIT_TIME,
                  0,
                  10 * 1024 * 1024,
@@ -1239,7 +1238,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  false,
                  false,
                  1,
-                 100 * 1024l * 1024l,
+                 100 * 1024L * 1024L,
                  LargeMessageTest.RECEIVE_WAIT_TIME,
                  0);
    }
@@ -2108,7 +2107,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+      SimpleString[] queue = new SimpleString[]{new SimpleString("queue1"), new SimpleString("queue2")};
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
@@ -2178,7 +2177,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       server.start();
 
-      SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+      SimpleString[] queue = new SimpleString[]{new SimpleString("queue1"), new SimpleString("queue2")};
 
       ClientSessionFactory sf = addSessionFactory(createSessionFactory(locator));
 
@@ -2504,9 +2503,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2609,9 +2608,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2847,7 +2846,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         for (int received = 0 ; received < 5; received++)
+         for (int received = 0; received < 5; received++)
          {
             for (int i = 0; i < 100; i++)
             {
@@ -2942,9 +2941,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.commit();
 
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -2967,7 +2966,9 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
-   /** Receive messages but never reads them, leaving the buffer pending */
+   /**
+    * Receive messages but never reads them, leaving the buffer pending
+    */
    @Test
    public void testIgnoreStreaming() throws Exception
    {
@@ -3026,9 +3027,9 @@ public class LargeMessageTest extends LargeMessageTestBase
       session.commit();
 
       Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+                          ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
       Assert.assertEquals(0,
- ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                          ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       log.debug("Thread done");
    }
@@ -3052,7 +3053,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
       {
-         fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
+         fileMessage.addBytes(new byte[]{UnitTestCase.getSamplebyte(i)});
       }
 
       // The server would be doing this

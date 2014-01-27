@@ -1,18 +1,22 @@
 package org.hornetq.tests.stress.journal;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-import org.hornetq.api.core.client.*;
-import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.util.ServiceTestBase;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class XmlImportExportStressTest extends ServiceTestBase
 {
@@ -37,10 +41,10 @@ public class XmlImportExportStressTest extends ServiceTestBase
       ClientMessage msg = session.createMessage(true);
       final int SIZE = 10240;
       final int COUNT = 20000;
-      byte bodyTst[] = new byte[SIZE];
+      byte[] bodyTst = new byte[SIZE];
       for (int i = 0; i < SIZE; i++)
       {
-         bodyTst[i] = (byte) (i + 1);
+         bodyTst[i] = (byte)(i + 1);
       }
 
       msg.getBodyBuffer().writeBytes(bodyTst);
@@ -93,7 +97,7 @@ public class XmlImportExportStressTest extends ServiceTestBase
          System.out.println("Received " + i);
          Assert.assertNotNull(msg);
          assertEquals(msg.getBodySize(), bodyTst.length);
-         byte bodyRead[] = new byte[bodyTst.length];
+         byte[] bodyRead = new byte[bodyTst.length];
          msg.getBodyBuffer().readBytes(bodyRead);
          assertEqualsByteArrays(bodyTst, bodyRead);
       }

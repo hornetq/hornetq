@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.scheduling;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -30,6 +25,9 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="jbertram@redhat.com">Justin Bertram</a>
@@ -46,7 +44,7 @@ public class MultipliedDelayedMessageTest extends ServiceTestBase
 
    private static final double MULTIPLIER = 2.0;
 
-   private static final long  MAX_DELAY = 17000;
+   private static final long MAX_DELAY = 17000;
 
    private final String queueName = "MultipliedDelayedMessageTestQueue";
 
@@ -138,9 +136,10 @@ public class MultipliedDelayedMessageTest extends ServiceTestBase
    }
 
    // This is based on org.hornetq.core.server.impl.QueueImpl.calculateRedeliveryDelay()
-   private long calculateExpectedDelay(final long redeliveryDelay, final long maxRedeliveryDelay, final double redeliveryMultiplier, final int deliveryCount) {
+   private long calculateExpectedDelay(final long redeliveryDelay, final long maxRedeliveryDelay, final double redeliveryMultiplier, final int deliveryCount)
+   {
       int tmpDeliveryCount = deliveryCount > 0 ? deliveryCount - 1 : 0;
-      long delay = (long) (redeliveryDelay * (Math.pow(redeliveryMultiplier, tmpDeliveryCount)));
+      long delay = (long)(redeliveryDelay * (Math.pow(redeliveryMultiplier, tmpDeliveryCount)));
 
       if (delay > maxRedeliveryDelay)
       {

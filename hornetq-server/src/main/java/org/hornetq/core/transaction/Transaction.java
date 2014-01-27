@@ -13,9 +13,8 @@
 
 package org.hornetq.core.transaction;
 
-import java.util.List;
-
 import javax.transaction.xa.Xid;
+import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
 
@@ -58,7 +57,7 @@ public interface Transaction
 
    void addOperation(TransactionOperation sync);
 
-   public List<TransactionOperation> getAllOperations();
+   List<TransactionOperation> getAllOperations();
 
    boolean hasTimedOut(long currentTime, int defaultTimeout);
 

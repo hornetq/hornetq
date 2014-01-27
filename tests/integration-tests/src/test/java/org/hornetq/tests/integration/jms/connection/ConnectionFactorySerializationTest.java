@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.connection;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,14 +24,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.tests.HornetQServerTestCase;
-import org.hornetq.jms.tests.JMSTest;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Justin Bertram
@@ -70,10 +67,10 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
          jmsServer.getHornetQServer().getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
          jmsServer.createConnectionFactory("MyConnectionFactory",
-               false,
-               JMSFactoryType.CF,
-               dcConfig.getName(),
-               "/MyConnectionFactory");
+                                           false,
+                                           JMSFactoryType.CF,
+                                           dcConfig.getName(),
+                                           "/MyConnectionFactory");
       }
       catch (Exception e)
       {
@@ -87,7 +84,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    @Test
    public void testNullLocalBindAddress() throws Exception
    {
-      cf = (HornetQConnectionFactory) context.lookup("/MyConnectionFactory");
+      cf = (HornetQConnectionFactory)context.lookup("/MyConnectionFactory");
 
       // apparently looking up the connection factory with the org.hornetq.jms.tests.tools.container.InVMInitialContextFactory
       // is not enough to actually serialize it so we serialize it manually
@@ -97,7 +94,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    }
 
    private static <T extends Serializable> byte[] serialize(T obj)
-         throws IOException
+      throws IOException
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -107,7 +104,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    }
 
    private static <T extends Serializable> T deserialize(byte[] b, Class<T> cl)
-         throws IOException, ClassNotFoundException
+      throws IOException, ClassNotFoundException
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
       ObjectInputStream ois = new ObjectInputStream(bais);
@@ -122,9 +119,12 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
    protected static InetAddress getLocalHost() throws UnknownHostException
    {
       InetAddress addr;
-      try {
+      try
+      {
          addr = InetAddress.getLocalHost();
-      } catch (ArrayIndexOutOfBoundsException e) {  //this is workaround for mac osx bug see AS7-3223 and JGRP-1404
+      }
+      catch (ArrayIndexOutOfBoundsException e)
+      {  //this is workaround for mac osx bug see AS7-3223 and JGRP-1404
          addr = InetAddress.getByName(null);
       }
       return addr;

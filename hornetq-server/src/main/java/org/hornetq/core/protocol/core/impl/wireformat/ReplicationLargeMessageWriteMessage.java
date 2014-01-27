@@ -27,7 +27,7 @@ public final class ReplicationLargeMessageWriteMessage extends PacketImpl
 
    private long messageId;
 
-   private byte body[];
+   private byte[] body;
 
    public ReplicationLargeMessageWriteMessage()
    {

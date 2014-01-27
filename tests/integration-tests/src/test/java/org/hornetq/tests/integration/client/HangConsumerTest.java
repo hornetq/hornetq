@@ -12,11 +12,8 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
@@ -24,10 +21,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import javax.management.MBeanServer;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -45,7 +38,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PageSubscription;
-import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
@@ -61,7 +53,6 @@ import org.hornetq.core.server.impl.QueueFactoryImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -71,6 +62,10 @@ import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.ReusableLatch;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This test will simulate a consumer hanging on the delivery packet due to unbehaved clients
@@ -211,6 +206,7 @@ public class HangConsumerTest extends ServiceTestBase
 
    /**
     * This would recreate the scenario where a queue was duplicated
+    *
     * @throws Exception
     */
    @Test
@@ -249,17 +245,17 @@ public class HangConsumerTest extends ServiceTestBase
                                     final Executor executor)
          {
             super(id,
-               address,
-               name,
-               filter,
-               pageSubscription,
-               durable,
-               temporary,
-               scheduledExecutor,
-               postOffice,
-               storageManager,
-               addressSettingsRepository,
-               executor);
+                  address,
+                  name,
+                  filter,
+                  pageSubscription,
+                  durable,
+                  temporary,
+                  scheduledExecutor,
+                  postOffice,
+                  storageManager,
+                  addressSettingsRepository,
+                  executor);
          }
 
          @Override
@@ -292,26 +288,26 @@ public class HangConsumerTest extends ServiceTestBase
                                   final boolean temporary)
          {
             queue = new MyQueueWithBlocking(persistenceID,
-               address,
-               name,
-               filter,
-               pageSubscription,
-               durable,
-               temporary,
-               scheduledExecutor,
-               postOffice,
-               storageManager,
-               addressSettingsRepository,
-               executorFactory.getExecutor());
+                                            address,
+                                            name,
+                                            filter,
+                                            pageSubscription,
+                                            durable,
+                                            temporary,
+                                            scheduledExecutor,
+                                            postOffice,
+                                            storageManager,
+                                            addressSettingsRepository,
+                                            executorFactory.getExecutor());
             return queue;
          }
 
       }
 
       LocalFactory queueFactory = new LocalFactory(server.getExecutorFactory(),
-         server.getScheduledPool(),
-         server.getAddressSettingsRepository(),
-         server.getStorageManager());
+                                                   server.getScheduledPool(),
+                                                   server.getAddressSettingsRepository(),
+                                                   server.getStorageManager());
 
       queueFactory.setPostOffice(server.getPostOffice());
 
@@ -376,6 +372,7 @@ public class HangConsumerTest extends ServiceTestBase
    /**
     * This would force a journal duplication on bindings even with the scenario that generated fixed,
     * the server shouldn't hold of from starting
+    *
     * @throws Exception
     */
    @Test
@@ -463,6 +460,7 @@ public class HangConsumerTest extends ServiceTestBase
 
    /**
     * This will simulate what would happen with topic creationg where a single record is supposed to be created on the journal
+    *
     * @throws Exception
     */
    @Test
@@ -480,13 +478,13 @@ public class HangConsumerTest extends ServiceTestBase
          SequentialFileFactory messagesFF = new NIOSequentialFileFactory(getBindingsDir(), null);
 
          JournalImpl messagesJournal = new JournalImpl(1024 * 1024,
-            2,
-            0,
-            0,
-            messagesFF,
-            "hornetq-bindings",
-            "bindings",
-            1);
+                                                       2,
+                                                       0,
+                                                       0,
+                                                       messagesFF,
+                                                       "hornetq-bindings",
+                                                       "bindings",
+                                                       1);
 
          messagesJournal.start();
 
@@ -495,7 +493,7 @@ public class HangConsumerTest extends ServiceTestBase
          messagesJournal.load(infos, null, null);
 
          int bindings = 0;
-         for (RecordInfo info: infos)
+         for (RecordInfo info : infos)
          {
             if (info.getUserRecordType() == JournalRecordIds.QUEUE_BINDING_RECORD)
             {
@@ -509,7 +507,6 @@ public class HangConsumerTest extends ServiceTestBase
          if (i < 4) server.start();
       }
    }
-
 
 
    ReusableLatch inCall = new ReusableLatch(1);
@@ -619,7 +616,6 @@ public class HangConsumerTest extends ServiceTestBase
    {
 
 
-
       public MyHornetQServer(Configuration configuration,
                              MBeanServer mbeanServer,
                              HornetQSecurityManager securityManager)
@@ -631,26 +627,26 @@ public class HangConsumerTest extends ServiceTestBase
       protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
       {
          return new ServerSessionImpl(name,
-            username,
-            password,
-            minLargeMessageSize,
-            autoCommitSends,
-            autoCommitAcks,
-            preAcknowledge,
-            getConfiguration().isPersistDeliveryCountBeforeDelivery(),
-            xa,
-            connection,
-            getStorageManager(),
-            getPostOffice(),
-            getResourceManager(),
-            getSecurityStore(),
-            getManagementService(),
-            this,
-            getConfiguration().getManagementAddress(),
-            defaultAddress == null ? null
-               : new SimpleString(defaultAddress),
-            new MyCallback(callback),
-            context);
+                                      username,
+                                      password,
+                                      minLargeMessageSize,
+                                      autoCommitSends,
+                                      autoCommitAcks,
+                                      preAcknowledge,
+                                      getConfiguration().isPersistDeliveryCountBeforeDelivery(),
+                                      xa,
+                                      connection,
+                                      getStorageManager(),
+                                      getPostOffice(),
+                                      getResourceManager(),
+                                      getSecurityStore(),
+                                      getManagementService(),
+                                      this,
+                                      getConfiguration().getManagementAddress(),
+                                      defaultAddress == null ? null
+                                         : new SimpleString(defaultAddress),
+                                      new MyCallback(callback),
+                                      context);
       }
    }
 

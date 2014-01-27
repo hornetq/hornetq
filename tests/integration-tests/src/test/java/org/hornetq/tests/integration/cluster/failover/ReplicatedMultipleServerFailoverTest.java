@@ -21,23 +21,20 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -86,13 +83,13 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
          }
 
          ClientSessionFactory[] factories = new ClientSessionFactory[liveServers.size()];
-         for(int i = 0; i < factories.length; i++)
+         for (int i = 0; i < factories.length; i++)
          {
             factories[i] = createSessionFactory(locators[i]);
          }
 
          ClientSession[] sessions = new ClientSession[liveServers.size()];
-         for(int i = 0; i < factories.length; i++)
+         for (int i = 0; i < factories.length; i++)
          {
             sessions[i] = createSession(factories[i], true, true);
             sessions[i].createQueue(MultipleServerFailoverTestBase.ADDRESS, MultipleServerFailoverTestBase.ADDRESS, null, true);
@@ -131,7 +128,7 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
             liveServer.crash();
          }
          ClientConsumer[] consumers = new ClientConsumer[liveServers.size()];
-         for(int i = 0; i < factories.length; i++)
+         for (int i = 0; i < factories.length; i++)
          {
             consumers[i] = sessions[i].createConsumer(MultipleServerFailoverTestBase.ADDRESS);
             sessions[i].start();
@@ -152,7 +149,7 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
       {
          for (ServerLocator locator : locators)
          {
-            if(locator != null)
+            if (locator != null)
             {
                try
                {
@@ -206,7 +203,7 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
       TransportConfiguration livetc = getConnectorTransportConfiguration(true, server);
       configuration.getConnectorConfigurations().put(livetc.getName(), livetc);
       List<String> connectors = new ArrayList<String>();
-      for(int i = 0; i < servers; i++)
+      for (int i = 0; i < servers; i++)
       {
          if (i != server)
          {
@@ -228,13 +225,13 @@ public class ReplicatedMultipleServerFailoverTest extends MultipleServerFailover
       TransportConfiguration backuptc = getConnectorTransportConfiguration(false, server);
       configuration.getConnectorConfigurations().put(backuptc.getName(), backuptc);
       List<String> connectors = new ArrayList<String>();
-      for(int i = 0; i < servers; i++)
+      for (int i = 0; i < servers; i++)
       {
          TransportConfiguration staticTc = getConnectorTransportConfiguration(true, i);
          configuration.getConnectorConfigurations().put(staticTc.getName(), staticTc);
          connectors.add(staticTc.getName());
       }
-      for(int i = 0; i < servers; i++)
+      for (int i = 0; i < servers; i++)
       {
          if (i != server)
          {

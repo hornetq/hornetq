@@ -10,8 +10,7 @@ public final class ConfigurationUtils
       // Utility class
    }
 
-   public static ClusterConnectionConfiguration
-            getReplicationClusterConfiguration(Configuration conf) throws HornetQIllegalStateException
+   public static ClusterConnectionConfiguration getReplicationClusterConfiguration(Configuration conf) throws HornetQIllegalStateException
    {
       final String replicationCluster = conf.getReplicationClustername();
       if (replicationCluster == null || replicationCluster.isEmpty())
@@ -22,6 +21,6 @@ public final class ConfigurationUtils
             return clusterConf;
       }
       throw new HornetQIllegalStateException("Missing cluster-configuration for replication-cluster-name '" +
-               replicationCluster + "'.");
+                                                replicationCluster + "'.");
    }
 }

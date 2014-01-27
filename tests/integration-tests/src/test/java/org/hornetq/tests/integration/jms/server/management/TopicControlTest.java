@@ -12,12 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -26,8 +20,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.TopicSubscriber;
-
-import org.junit.Assert;
+import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -45,15 +38,17 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TopicControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * Created 13 nov. 2008 16:50:53
- *
- *
+ *         <p/>
+ *         Created 13 nov. 2008 16:50:53
  */
 public class TopicControlTest extends ManagementTestBase
 {
@@ -90,7 +85,7 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(topic.isTemporary(), topicControl.isTemporary());
       Object[] bindings = topicControl.getJNDIBindings();
       assertEquals(1, bindings.length);
-      Assert.assertEquals(topicBinding , bindings[0]);
+      Assert.assertEquals(topicBinding, bindings[0]);
    }
 
    @Test
@@ -125,7 +120,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"_2", subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "_2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
 
@@ -180,7 +175,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
       String jsonString = topicControl.listDurableSubscriptionsAsJSON();
@@ -188,7 +183,7 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(2, infos.length);
       Assert.assertEquals(clientID, infos[0].getClientID());
       Assert.assertEquals(subscriptionName, infos[0].getName());
-      Assert.assertEquals(clientID+"2", infos[1].getClientID());
+      Assert.assertEquals(clientID + "2", infos[1].getClientID());
       Assert.assertEquals(subscriptionName + "2", infos[1].getName());
 
       jsonString = topicControl.listNonDurableSubscriptionsAsJSON();
@@ -227,9 +222,9 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(3, topicControl.getMessageCount());
 
       Assert.assertEquals(2, topicControl.countMessagesForSubscription(clientID, subscriptionName, key + " =" +
-                                                                                                   matchingValue));
+         matchingValue));
       Assert.assertEquals(1, topicControl.countMessagesForSubscription(clientID, subscriptionName, key + " =" +
-                                                                                                   unmatchingValue));
+         unmatchingValue));
 
       connection.close();
    }
@@ -360,7 +355,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_1, topic, clientID, subscriptionName);
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_2, topic, clientID+"2", subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_2, topic, clientID + "2", subscriptionName + "2");
 
       JMSUtil.sendMessages(topic, 3);
 
@@ -459,7 +454,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
 
@@ -482,7 +477,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       MessageConsumer cons_2 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName, Session.CLIENT_ACKNOWLEDGE);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "2", subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
 
       TopicControl topicControl = createManagementControl();
 
@@ -537,7 +532,7 @@ public class TopicControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+         .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 

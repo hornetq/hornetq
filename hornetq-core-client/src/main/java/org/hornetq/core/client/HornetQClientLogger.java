@@ -34,9 +34,9 @@ import org.w3c.dom.Node;
 
 /**
  * Logger Code 21
- * <p>
+ * <p/>
  * Each message id must be 6 digits long starting with 10, the 3rd digit donates the level so
- *
+ * <p/>
  * <pre>
  * INF0  1
  * WARN  2
@@ -45,11 +45,12 @@ import org.w3c.dom.Node;
  * TRACE 5
  * FATAL 6
  * </pre>
- *
+ * <p/>
  * so an INFO message would be 101000 to 101999.
- * <p>
+ * <p/>
  * Once released, methods should not be deleted as they may be referenced by knowledge base
  * articles. Unused methods should be marked as deprecated.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 @MessageLogger(projectCode = "HQ")
@@ -98,17 +99,17 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
-            id = 212007,
-            value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway."
-               , format = Message.Format.MESSAGE_FORMAT)
+      id = 212007,
+      value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway."
+      , format = Message.Format.MESSAGE_FORMAT)
    void createConnectorException(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
-            id = 212008,
-            value = "I am closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly "
-                     + "before letting them go out of scope! {0}"
-               , format = Message.Format.MESSAGE_FORMAT)
+      id = 212008,
+      value = "I am closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly "
+         + "before letting them go out of scope! {0}"
+      , format = Message.Format.MESSAGE_FORMAT)
    void factoryLeftOpen(@Cause Exception e, int i);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -141,9 +142,9 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
-            id = 212016,
-            value = "I am closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly before letting them go out of scope! {0}",
-            format = Message.Format.MESSAGE_FORMAT)
+      id = 212016,
+      value = "I am closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly before letting them go out of scope! {0}",
+      format = Message.Format.MESSAGE_FORMAT)
    void clientSessionNotClosed(@Cause Exception e, int identity);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -196,9 +197,9 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
-            id = 212029,
-            value = "Closing a Server Locator left open. Please make sure you close all Server Locators explicitly before letting them go out of scope! {0}",
-            format = Message.Format.MESSAGE_FORMAT)
+      id = 212029,
+      value = "Closing a Server Locator left open. Please make sure you close all Server Locators explicitly before letting them go out of scope! {0}",
+      format = Message.Format.MESSAGE_FORMAT)
    void serverLocatorNotClosed(@Cause Exception e, int identity);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -233,7 +234,7 @@ public interface HornetQClientLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212036,
             value = "Can not find packet to clear: {0} last received command id first stored command id {1}",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void cannotFindPacketToClear(Integer lastReceivedCommandID, Integer firstStoredCommandID);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -279,7 +280,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212048, value = "local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound to a local address/port",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void broadcastGroupBindError();
 
    @LogMessage(level = Logger.Level.WARN)
@@ -291,7 +292,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212050, value = "Compressed large message tried to read {0} bytes from stream {1}",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
 
    @LogMessage(level = Logger.Level.ERROR)
@@ -363,15 +364,15 @@ public interface HornetQClientLogger extends BasicLogger
    void errorCreatingNettyConnection(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214017, value =  "Caught unexpected Throwable", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214017, value = "Caught unexpected Throwable", format = Message.Format.MESSAGE_FORMAT)
    void caughtunexpectedThrowable(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214018, value =  "Failed to invoke getTextContent() on node {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214018, value = "Failed to invoke getTextContent() on node {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorOnXMLTransform(@Cause Throwable t, Node n);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214019, value =  "Invalid configuration", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214019, value = "Invalid configuration", format = Message.Format.MESSAGE_FORMAT)
    void errorOnXMLTransformInvalidConf(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.ERROR)
@@ -380,14 +381,14 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 214021,
-      value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
-      format = Message.Format.MESSAGE_FORMAT)
+            value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
+            format = Message.Format.MESSAGE_FORMAT)
    void invalidConcurrentSessionUsage(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 214022,
-      value = "Packet {0} was answered out of sequence due to a previous server timeout and it's being ignored",
-      format = Message.Format.MESSAGE_FORMAT)
+            value = "Packet {0} was answered out of sequence due to a previous server timeout and it's being ignored",
+            format = Message.Format.MESSAGE_FORMAT)
    void packetOutOfOrder(Object obj, @Cause Throwable t);
 
 
@@ -395,6 +396,6 @@ public interface HornetQClientLogger extends BasicLogger
    @Message(id = 214024,
             value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
             format = Message.Format.MESSAGE_FORMAT)
-   void outOfCreditOnFlowControl (String address);
+   void outOfCreditOnFlowControl(String address);
 
 }

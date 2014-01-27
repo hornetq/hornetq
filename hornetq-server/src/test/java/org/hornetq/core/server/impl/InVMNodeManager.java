@@ -13,11 +13,6 @@
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.core.server.impl.InVMNodeManager.State.FAILING_BACK;
-import static org.hornetq.core.server.impl.InVMNodeManager.State.LIVE;
-import static org.hornetq.core.server.impl.InVMNodeManager.State.NOT_STARTED;
-import static org.hornetq.core.server.impl.InVMNodeManager.State.PAUSED;
-
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
@@ -26,12 +21,18 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
 
+import static org.hornetq.core.server.impl.InVMNodeManager.State.FAILING_BACK;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.LIVE;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.NOT_STARTED;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.PAUSED;
+
 /**
  * NodeManager used to run multiple servers in the same VM.
- * <p>
+ * <p/>
  * We use the {@link InVMNodeManager} instead of {@link FileLockNodeManager} because in the
  * unit-tests multiple servers are run inside the same VM and File Locks can not be shared in the
  * same VM (it would cause a shared lock violation).
+ *
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a> Date: Oct 13, 2010 Time: 3:55:47
  *         PM
  */
@@ -42,11 +43,14 @@ public final class InVMNodeManager extends NodeManager
 
    private final Semaphore backupLock;
 
-   public enum State {LIVE, PAUSED, FAILING_BACK, NOT_STARTED}
+   public enum State
+   {
+      LIVE, PAUSED, FAILING_BACK, NOT_STARTED
+   }
 
    public State state = NOT_STARTED;
 
-   public long failoverPause = 0l;
+   public long failoverPause = 0L;
 
    public InVMNodeManager(boolean replicatedBackup)
    {
@@ -91,7 +95,7 @@ public final class InVMNodeManager extends NodeManager
          }
       }
       while (true);
-      if(failoverPause > 0l)
+      if (failoverPause > 0L)
       {
          Thread.sleep(failoverPause);
       }

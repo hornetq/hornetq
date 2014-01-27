@@ -13,10 +13,9 @@
 package org.hornetq.tests.integration.stomp.util;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
- * pls use factory to create frames.
+ *         <p/>
+ *         pls use factory to create frames.
  */
 public class ClientStompFrameV11 extends AbstractClientStompFrame
 {
@@ -65,7 +64,7 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
    {
       return isPing;
    }
-   
+
    @Override
    public String toString()
    {

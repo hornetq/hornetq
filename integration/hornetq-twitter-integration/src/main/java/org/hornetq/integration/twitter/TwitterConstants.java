@@ -52,9 +52,9 @@ public final class TwitterConstants
 
    public static final String CONSUMER_KEY = "consumerKey";
    public static final String CONSUMER_SECRET = "consumerSecret";
-   public static final String ACCESS_TOKEN ="accessToken";
+   public static final String ACCESS_TOKEN = "accessToken";
    public static final String ACCESS_TOKEN_SECRET = "accessTokenSecret";
-   public static final String QUEUE_NAME =  "queue";
+   public static final String QUEUE_NAME = "queue";
    public static final String INCOMING_INTERVAL = "interval";
 
    static

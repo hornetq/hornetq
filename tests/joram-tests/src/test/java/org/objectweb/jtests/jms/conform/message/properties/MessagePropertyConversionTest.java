@@ -204,7 +204,7 @@ public class MessagePropertyConversionTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          message.setStringProperty("prop", "0");
-         Assert.assertEquals(0l, message.getLongProperty("prop"));
+         Assert.assertEquals(0L, message.getLongProperty("prop"));
       }
       catch (JMSException e)
       {

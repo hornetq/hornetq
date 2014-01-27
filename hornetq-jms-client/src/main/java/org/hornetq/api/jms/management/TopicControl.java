@@ -13,9 +13,8 @@
 
 package org.hornetq.api.jms.management;
 
-import java.util.Map;
-
 import javax.management.MBeanOperationInfo;
+import java.util.Map;
 
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
@@ -64,7 +63,6 @@ public interface TopicControl extends DestinationControl
     */
    @Operation(desc = "Adds the queue to another JNDI binding")
    void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
-
 
 
    // Operations ----------------------------------------------------
@@ -117,13 +115,13 @@ public interface TopicControl extends DestinationControl
     * 1 Map represents 1 message, keys are the message's properties and headers, values are the corresponding values.
     */
    @Operation(desc = "List all the message for the given subscription")
-   public Map<String, Object>[] listMessagesForSubscription(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
+   Map<String, Object>[] listMessagesForSubscription(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
 
    /**
     * Lists all the messages in this queue matching the specified queue representing the subscription using JSON serialization.
     */
    @Operation(desc = "List all the message for the given subscription")
-   public String listMessagesForSubscriptionAsJSON(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
+   String listMessagesForSubscriptionAsJSON(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
 
    /**
     * Counts the number of messages in the subscription specified by the specified client ID and subscription name. Only messages matching the filter will be counted.
@@ -131,9 +129,9 @@ public interface TopicControl extends DestinationControl
     * Using {@code null} or an empty filter will count <em>all</em> messages from this queue.
     */
    @Operation(desc = "Count the number of messages matching the filter for the given subscription")
-   public int countMessagesForSubscription(@Parameter(name = "clientID", desc = "the client ID") String clientID,
-                                           @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
-                                           @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter) throws Exception;
+   int countMessagesForSubscription(@Parameter(name = "clientID", desc = "the client ID") String clientID,
+                                    @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
+                                    @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter) throws Exception;
 
    /**
     * Drops the subscription specified by the specified client ID and subscription name.

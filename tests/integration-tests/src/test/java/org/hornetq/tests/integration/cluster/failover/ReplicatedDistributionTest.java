@@ -12,17 +12,10 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -34,13 +27,15 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SymmetricFailoverTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicatedDistributionTest extends ClusterTestBase
 {
@@ -57,65 +52,65 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       commonTestCode();
 
 
-         for (int i = 0; i < 50; i++)
-         {
-            ClientMessage msg = consThree.receive(15000);
+      for (int i = 0; i < 50; i++)
+      {
+         ClientMessage msg = consThree.receive(15000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
          // System.out.println(i + " msg = " + msg);
 
          int received = msg.getIntProperty("key");
 
-            Assert.assertEquals(i, received);
+         Assert.assertEquals(i, received);
 
-            msg.acknowledge();
-         }
+         msg.acknowledge();
+      }
 
-         sessionThree.commit();
+      sessionThree.commit();
 
-         // consThree.close();
+      // consThree.close();
 
-         // TODO: Remove this sleep: If a node fail,
-         // Redistribution may loose messages between the nodes.
-         Thread.sleep(500);
+      // TODO: Remove this sleep: If a node fail,
+      // Redistribution may loose messages between the nodes.
+      Thread.sleep(500);
 
-         fail(sessionThree);
+      fail(sessionThree);
 
-         // sessionThree.close();
-         //
-         // setupSessionFactory(2, -1, true);
-         //
-         // sessionThree = sfs[2].createSession(true, true);
-         //
-         // sessionThree.start();
+      // sessionThree.close();
+      //
+      // setupSessionFactory(2, -1, true);
+      //
+      // sessionThree = sfs[2].createSession(true, true);
+      //
+      // sessionThree.start();
 
-         // consThree = sessionThree.createConsumer(ADDRESS);
+      // consThree = sessionThree.createConsumer(ADDRESS);
 
-         for (int i = 50; i < 100; i++)
-         {
-            ClientMessage msg = consThree.receive(15000);
+      for (int i = 50; i < 100; i++)
+      {
+         ClientMessage msg = consThree.receive(15000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
          // System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
+         int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
-            Assert.assertEquals(i, received);
+         Assert.assertEquals(i, received);
 
-            msg.acknowledge();
-         }
+         msg.acknowledge();
+      }
 
-         Assert.assertNull(consThree.receiveImmediate());
+      Assert.assertNull(consThree.receiveImmediate());
 
-         sessionThree.commit();
+      sessionThree.commit();
 
-         sessionOne.start();
+      sessionOne.start();
 
-         ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
+      ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
-         Assert.assertNull(consOne.receiveImmediate());
+      Assert.assertNull(consOne.receiveImmediate());
    }
 
    @Test
@@ -124,33 +119,33 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       commonTestCode();
 
       for (int i = 0; i < 100; i++)
-         {
-            ClientMessage msg = consThree.receive(15000);
+      {
+         ClientMessage msg = consThree.receive(15000);
 
-            Assert.assertNotNull(msg);
+         Assert.assertNotNull(msg);
 
          // System.out.println(i + " msg = " + msg);
 
          int received = msg.getIntProperty("key");
 
-            if (i != received)
-            {
-               // Shouldn't this be a failure?
-               System.out.println(i + "!=" + received);
-            }
-            msg.acknowledge();
+         if (i != received)
+         {
+            // Shouldn't this be a failure?
+            System.out.println(i + "!=" + received);
          }
+         msg.acknowledge();
+      }
 
-         sessionThree.commit();
+      sessionThree.commit();
 
-         sessionOne.start();
+      sessionOne.start();
 
-         ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
+      ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
-         Assert.assertNull(consOne.receiveImmediate());
+      Assert.assertNull(consOne.receiveImmediate());
    }
 
-   private void commonTestCode() throws Exception, HornetQException
+   private void commonTestCode() throws Exception
    {
       waitForBindings(3, "test.SomeAddress", 1, 1, true);
       waitForBindings(1, "test.SomeAddress", 1, 1, false);
@@ -202,14 +197,14 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       final String address = ReplicatedDistributionTest.ADDRESS.toString();
       // notice the abuse of the method call, '3' is not a backup for '1'
-      setupClusterConnectionWithBackups("test", address, false, 1, true, 1, new int[] { 3 });
-      setupClusterConnectionWithBackups("test", address, false, 1, true, 3, new int[] { 2, 1 });
-      setupClusterConnectionWithBackups("test", address, false, 1, true, 2, new int[] { 3 });
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 1, new int[]{3});
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 3, new int[]{2, 1});
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 2, new int[]{3});
 
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(0);
 
-      for (int i : new int[] { 1, 2, 3 })
+      for (int i : new int[]{1, 2, 3})
       {
          getServer(i).getAddressSettingsRepository().addMatch("test.*", as);
          getServer(i).start();

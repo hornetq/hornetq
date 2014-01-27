@@ -1,13 +1,13 @@
 package org.hornetq.rest.test;
 
+import org.hornetq.rest.topic.TopicDeployment;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.spi.Link;
-import org.hornetq.rest.topic.TopicDeployment;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -34,7 +34,7 @@ public class AutoAckTopicTest extends MessageTestBase
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
 
-     ClientResponse<?> res = subscriptions.request().post();
+      ClientResponse<?> res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocation();

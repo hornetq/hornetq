@@ -12,15 +12,9 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
-
-import org.junit.Assert;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
@@ -28,13 +22,15 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This class will control mix up compactor between each operation of a test
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public abstract class MixupCompactorTestBase extends JournalImplTestBase
 {
@@ -93,7 +89,7 @@ public abstract class MixupCompactorTestBase extends JournalImplTestBase
 
       File testDir = new File(getTestDir());
 
-      File files[] = testDir.listFiles(new FilenameFilter()
+      File[] files = testDir.listFiles(new FilenameFilter()
       {
 
          public boolean accept(final File dir, final String name)
@@ -149,7 +145,7 @@ public abstract class MixupCompactorTestBase extends JournalImplTestBase
       {
          for (int joinAt = startAt; joinAt < MAX_OPERATIONS; joinAt++)
          {
-            for (int secondAt = joinAt ; secondAt < MAX_OPERATIONS; secondAt++)
+            for (int secondAt = joinAt; secondAt < MAX_OPERATIONS; secondAt++)
             {
                System.out.println("start=" + startAt + ", join=" + joinAt + ", second=" + secondAt);
 
@@ -162,10 +158,10 @@ public abstract class MixupCompactorTestBase extends JournalImplTestBase
                catch (Throwable e)
                {
                   throw new Exception("Error at compact=" + startCompactAt +
-                                      ", joinCompactAt=" +
-                                      joinCompactAt +
-                                      ", secondCompactAt=" +
-                                      secondCompactAt, e);
+                                         ", joinCompactAt=" +
+                                         joinCompactAt +
+                                         ", secondCompactAt=" +
+                                         secondCompactAt, e);
                }
             }
          }
@@ -192,10 +188,9 @@ public abstract class MixupCompactorTestBase extends JournalImplTestBase
    }
 
    /**
-    * @throws InterruptedException
     * @throws Exception
     */
-   protected void checkJournalOperation() throws InterruptedException, Exception
+   protected void checkJournalOperation() throws Exception
    {
       if (startCompactAt == currentOperation)
       {

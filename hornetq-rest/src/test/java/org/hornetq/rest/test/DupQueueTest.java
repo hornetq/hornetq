@@ -38,7 +38,7 @@ public class DupQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+      ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       Assert.assertEquals(307, res.getStatus());
       sender = res.getLocation();
       res.releaseConnection();
@@ -104,7 +104,7 @@ public class DupQueueTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-     ClientResponse<?> res = sender.request().pathParameter("id", "1").body("text/plain", Integer.toString(1)).post();
+      ClientResponse<?> res = sender.request().pathParameter("id", "1").body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       res = sender.request().body("text/plain", Integer.toString(1)).pathParameter("id", "1").post();

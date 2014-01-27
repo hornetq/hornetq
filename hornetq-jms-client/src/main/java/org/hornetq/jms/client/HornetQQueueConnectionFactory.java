@@ -24,7 +24,6 @@ import org.hornetq.api.jms.JMSFactoryType;
  * A class that represents a QueueConnectionFactory.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public class HornetQQueueConnectionFactory extends HornetQConnectionFactory implements QueueConnectionFactory
 {
@@ -44,7 +43,7 @@ public class HornetQQueueConnectionFactory extends HornetQConnectionFactory impl
    public HornetQQueueConnectionFactory(ServerLocator serverLocator)
    {
       super(serverLocator);
-    }
+   }
 
    /**
     * @param ha

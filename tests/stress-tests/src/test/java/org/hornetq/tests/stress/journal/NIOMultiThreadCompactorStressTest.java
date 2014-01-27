@@ -12,19 +12,12 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
 
-import org.junit.Test;
-
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -45,13 +38,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MultiThreadConsumerStressTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 {
@@ -130,7 +124,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
             if (journal.getDataFilesCount() != 0)
             {
-               System.out.println("DebugJournal:"  + journal.debug());
+               System.out.println("DebugJournal:" + journal.debug());
             }
             Assert.assertEquals(0, journal.getDataFilesCount());
          }
@@ -153,10 +147,9 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    /**
     * @param xid
-    * @throws HornetQException
-    * @throws XAException
+    * @throws Exception
     */
-   private void addEmptyTransaction(final Xid xid) throws Exception, XAException
+   private void addEmptyTransaction(final Xid xid) throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, false, false);
@@ -167,7 +160,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       sf.close();
    }
 
-   private void checkEmptyXID(final Xid xid) throws Exception, XAException
+   private void checkEmptyXID(final Xid xid) throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, false, false);
@@ -347,7 +340,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       sf = null;
    }
 
-   private void setupServer(JournalType journalType) throws Exception, HornetQException
+   private void setupServer(JournalType journalType) throws Exception
    {
       if (!AsynchronousFileImpl.isLoaded())
       {
@@ -480,9 +473,9 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
             }
 
             System.out.println("Thread " + Thread.currentThread().getName() +
-                               " sent " +
-                               numberOfMessages +
-                               "  messages");
+                                  " sent " +
+                                  numberOfMessages +
+                                  "  messages");
          }
          catch (Throwable e)
          {
@@ -541,9 +534,9 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
             }
 
             System.out.println("Thread " + Thread.currentThread().getName() +
-                               " received " +
-                               numberOfMessages +
-                               " messages");
+                                  " received " +
+                                  numberOfMessages +
+                                  " messages");
 
             session.commit();
          }

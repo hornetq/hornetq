@@ -6,48 +6,52 @@
    <parent>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>hornetq-ra</artifactId>
    <packaging>jar</packaging>
 
-    <dependencies>
-      <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-        </dependency>
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
 
-        <!--
-            JBoss Logging
-        -->
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-core-client</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-client</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-server</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-jca-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+   <dependencies>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
+      </dependency>
+
+      <!--
+          JBoss Logging
+      -->
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-core-client</artifactId>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jms-client</artifactId>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jms-server</artifactId>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.javaee</groupId>
+         <artifactId>jboss-jca-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
+   </dependencies>
 
 </project>

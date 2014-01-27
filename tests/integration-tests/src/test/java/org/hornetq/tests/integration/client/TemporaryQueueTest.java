@@ -12,17 +12,11 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQDisconnectedException;
 import org.hornetq.api.core.HornetQException;
@@ -59,6 +53,10 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A TemporaryQueueTest
@@ -119,7 +117,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    @Test
    public void testMemoryLeakOnAddressSettingForTemporaryQueue() throws Exception
    {
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0; i < 1000; i++)
       {
          SimpleString queue = RandomUtil.randomSimpleString();
          SimpleString address = RandomUtil.randomSimpleString();
@@ -196,7 +194,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    @After
    public void tearDown() throws Exception
    {
-      Thread.sleep(5000l);
+      Thread.sleep(5000L);
       super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
    }
 
@@ -208,9 +206,9 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       session.createTemporaryQueue(address, queue);
       RemotingConnectionImpl conn = (RemotingConnectionImpl)server.getRemotingService()
-                                                                  .getConnections()
-                                                                  .iterator()
-                                                                  .next();
+         .getConnections()
+         .iterator()
+         .next();
 
       final CountDownLatch latch = new CountDownLatch(1);
       conn.addCloseListener(new CloseListener()
@@ -235,7 +233,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          session.createConsumer(queue);
          Assert.fail("temp queue must not exist after the remoting connection is closed");
       }
-      catch(HornetQNonExistentQueueException neqe)
+      catch (HornetQNonExistentQueueException neqe)
       {
          //ol
       }
@@ -403,7 +401,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    public void testTemporaryQueuesWithFilter() throws Exception
    {
 
-      int countTmpQueue=0;
+      int countTmpQueue = 0;
 
       final AtomicInteger errors = new AtomicInteger(0);
 
@@ -454,7 +452,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       int iterations = 100;
       int msgs = 100;
 
-      for (int i = 0 ; i < iterations; i++)
+      for (int i = 0; i < iterations; i++)
       {
          ClientSessionFactory clientsConnecton = addSessionFactory(createSessionFactory(locator));
          ClientSession localSession = clientsConnecton.createSession();
@@ -565,8 +563,8 @@ public class TemporaryQueueTest extends ServiceTestBase
       // let some time for the server to clean the connections
       Assert.assertTrue("server has not closed the connection",
                         serverCloseLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL +
-                                               2 *
-                                               TemporaryQueueTest.CONNECTION_TTL, TimeUnit.MILLISECONDS));
+                                                  2 *
+                                                     TemporaryQueueTest.CONNECTION_TTL, TimeUnit.MILLISECONDS));
       Assert.assertEquals(0, server.getConnectionCount());
 
       session.close();
@@ -578,15 +576,17 @@ public class TemporaryQueueTest extends ServiceTestBase
       session = sf.createSession(false, true, true);
       session.start();
 
+      HornetQAction hornetQAction = new HornetQAction()
+      {
+         public void run() throws HornetQException
+         {
+            session.createConsumer(queue);
+         }
+      };
+
       UnitTestCase.expectHornetQException("temp queue must not exist after the server detected the client crash",
                                           HornetQExceptionType.QUEUE_DOES_NOT_EXIST,
-                                          new HornetQAction()
-                                          {
-                                             public void run() throws HornetQException
-                                             {
-                                                session.createConsumer(queue);
-                                             }
-                                          });
+                                          hornetQAction);
 
       session.close();
 
@@ -625,7 +625,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          {
             try
             {
-               for (int i = 0 ; i < TOTAL_MSG; i++)
+               for (int i = 0; i < TOTAL_MSG; i++)
                {
                   ClientMessage msg = session.createMessage(false);
                   msg.getBodyBuffer().writeBytes(new byte[1024]);
@@ -665,12 +665,12 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       int toReceive = TOTAL_MSG - msgs.get();
 
-      for (ServerSession sessionIterator: server.getSessions())
+      for (ServerSession sessionIterator : server.getSessions())
       {
          if (sessionIterator.getMetaData("consumer") != null)
          {
             System.out.println("Failing session");
-            ServerSessionImpl impl = (ServerSessionImpl) sessionIterator;
+            ServerSessionImpl impl = (ServerSessionImpl)sessionIterator;
             impl.getRemotingConnection().fail(new HornetQDisconnectedException("failure e"));
          }
       }
@@ -689,7 +689,6 @@ public class TemporaryQueueTest extends ServiceTestBase
       assertEquals(toReceive, secondReceive);
 
       t.join();
-
 
 
    }

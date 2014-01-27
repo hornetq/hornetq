@@ -35,7 +35,6 @@ import org.hornetq.utils.UUIDGenerator;
  * A InVMConnection
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class InVMConnection implements Connection
 {
@@ -179,7 +178,8 @@ public class InVMConnection implements Connection
          if (flush && flushEnabled)
          {
             final CountDownLatch latch = new CountDownLatch(1);
-            executor.execute(new Runnable(){
+            executor.execute(new Runnable()
+            {
                public void run()
                {
                   latch.countDown();

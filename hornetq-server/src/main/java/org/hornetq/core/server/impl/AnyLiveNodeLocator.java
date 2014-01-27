@@ -29,14 +29,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
-import org.hornetq.api.core.Pair;
 
 /**
  * This implementation looks for any available live node, once tried with no success it is marked as
  * tried and the next available is used.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class AnyLiveNodeLocator extends LiveNodeLocator
@@ -60,7 +61,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         if(untriedConnectors.isEmpty())
+         if (untriedConnectors.isEmpty())
          {
             try
             {
@@ -85,7 +86,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       {
          lock.lock();
          Pair<TransportConfiguration, TransportConfiguration> connector =
-                  new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
+            new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
          untriedConnectors.put(topologyMember.getNodeId(), connector);
          condition.signal();
       }
@@ -98,7 +99,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
    /**
     * if a node goes down we try all the connectors again as one may now be available for
     * replication
-    * <p>
+    * <p/>
     * TODO: there will be a better way to do this by finding which nodes backup has gone down.
     */
    @Override
@@ -109,7 +110,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
          lock.lock();
          untriedConnectors.putAll(triedConnectors);
          triedConnectors.clear();
-         if(untriedConnectors.size() > 0)
+         if (untriedConnectors.size() > 0)
          {
             condition.signal();
          }
@@ -134,7 +135,7 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
          lock.lock();
          Iterator<String> iterator = untriedConnectors.keySet().iterator();
          //sanity check but this should never happen
-         if(iterator.hasNext())
+         if (iterator.hasNext())
          {
             nodeID = iterator.next();
          }

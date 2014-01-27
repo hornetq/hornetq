@@ -12,8 +12,7 @@
  */
 
 package org.hornetq.jms;
-import org.junit.Before;
-import org.junit.After;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -47,29 +46,30 @@ import org.objectweb.jtests.jms.framework.JMSTestCase;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-TopicConnectionTest.class,
-               ConnectionTest.class,
-               MessageBodyTest.class,
-               MessageDefaultTest.class,
-               MessageTypeTest.class,
-               MessageHeaderTest.class,
-               JMSXPropertyTest.class,
-               MessagePropertyConversionTest.class,
-               MessagePropertyTest.class,
-               QueueBrowserTest.class,
-               TemporaryQueueTest.class,
-               SelectorSyntaxTest.class,
-               SelectorTest.class,
-               QueueSessionTest.class,
-               SessionTest.class,
-               TopicSessionTest.class,
-               UnifiedSessionTest.class,
-               TemporaryTopicTest.class,
-    })
+                 TopicConnectionTest.class,
+                 ConnectionTest.class,
+                 MessageBodyTest.class,
+                 MessageDefaultTest.class,
+                 MessageTypeTest.class,
+                 MessageHeaderTest.class,
+                 JMSXPropertyTest.class,
+                 MessagePropertyConversionTest.class,
+                 MessagePropertyTest.class,
+                 QueueBrowserTest.class,
+                 TemporaryQueueTest.class,
+                 SelectorSyntaxTest.class,
+                 SelectorTest.class,
+                 QueueSessionTest.class,
+                 SessionTest.class,
+                 TopicSessionTest.class,
+                 UnifiedSessionTest.class,
+                 TemporaryTopicTest.class,
+              })
 public class JoramAggregationTest extends Assert
 {
    /**
     * Should be overridden
+    *
     * @return
     */
    protected static Properties getProviderProperties() throws IOException

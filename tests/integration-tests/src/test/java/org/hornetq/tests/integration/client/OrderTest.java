@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -27,13 +22,14 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A OrderTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class OrderTest extends ServiceTestBase
 {
@@ -82,64 +78,64 @@ public class OrderTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(true, true, 0);
 
-         session.createQueue("queue", "queue", true);
+      session.createQueue("queue", "queue", true);
 
-         ClientProducer prod = session.createProducer("queue");
+      ClientProducer prod = session.createProducer("queue");
+
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage msg = session.createMessage(i % 2 == 0);
+         msg.putIntProperty("id", i);
+         prod.send(msg);
+      }
+
+      session.close();
+
+      boolean started = false;
+
+      for (int start = 0; start < 2; start++)
+      {
+
+         if (persistent && start == 1)
+         {
+            started = true;
+            server.stop();
+            server.start();
+            sf = createSessionFactory(locator);
+         }
+
+         session = sf.createSession(true, true);
+
+         session.start();
+
+         ClientConsumer cons = session.createConsumer("queue");
 
          for (int i = 0; i < 100; i++)
          {
-            ClientMessage msg = session.createMessage(i % 2 == 0);
-            msg.putIntProperty("id", i);
-            prod.send(msg);
+            if (!started || started && i % 2 == 0)
+            {
+               ClientMessage msg = cons.receive(10000);
+
+               Assert.assertEquals(i, msg.getIntProperty("id").intValue());
+            }
+         }
+
+         cons.close();
+
+         cons = session.createConsumer("queue");
+
+         for (int i = 0; i < 100; i++)
+         {
+            if (!started || started && i % 2 == 0)
+            {
+               ClientMessage msg = cons.receive(10000);
+
+               Assert.assertEquals(i, msg.getIntProperty("id").intValue());
+            }
          }
 
          session.close();
-
-         boolean started = false;
-
-         for (int start = 0; start < 2; start++)
-         {
-
-            if (persistent && start == 1)
-            {
-               started = true;
-               server.stop();
-               server.start();
-               sf = createSessionFactory(locator);
-            }
-
-            session = sf.createSession(true, true);
-
-            session.start();
-
-            ClientConsumer cons = session.createConsumer("queue");
-
-            for (int i = 0; i < 100; i++)
-            {
-               if (!started || started && i % 2 == 0)
-               {
-                  ClientMessage msg = cons.receive(10000);
-
-                  Assert.assertEquals(i, msg.getIntProperty("id").intValue());
-               }
-            }
-
-            cons.close();
-
-            cons = session.createConsumer("queue");
-
-            for (int i = 0; i < 100; i++)
-            {
-               if (!started || started && i % 2 == 0)
-               {
-                  ClientMessage msg = cons.receive(10000);
-
-                  Assert.assertEquals(i, msg.getIntProperty("id").intValue());
-               }
-            }
-
-            session.close();
-         }
+      }
    }
 
    @Test
@@ -170,48 +166,48 @@ public class OrderTest extends ServiceTestBase
       int numberOfMessages = 500;
       session.createQueue("queue", "queue", true);
 
-         ClientProducer prod = session.createProducer("queue");
+      ClientProducer prod = session.createProducer("queue");
 
-         for (int i = 0; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = session.createMessage(i % 2 == 0);
+         msg.putIntProperty("id", i);
+         prod.send(msg);
+      }
+
+      session.close();
+
+      for (int i = 0; i < numberOfMessages; )
+      {
+         session = sf.createSession();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer("queue");
+
+         int max = i + 10;
+
+         for (; i < max; i++)
          {
-            ClientMessage msg = session.createMessage(i % 2 == 0);
-            msg.putIntProperty("id", i);
-            prod.send(msg);
+            ClientMessage msg = consumer.receive(1000);
+
+            msg.acknowledge();
+
+            Assert.assertEquals(i, msg.getIntProperty("id").intValue());
          }
 
+         // Receive a few more messages but don't consume them
+         for (int j = 0; j < 10 && i < numberOfMessages; j++)
+         {
+            ClientMessage msg = consumer.receiveImmediate();
+            if (msg == null)
+            {
+               break;
+            }
+         }
          session.close();
 
-         for (int i = 0; i < numberOfMessages;)
-         {
-            session = sf.createSession();
-
-            session.start();
-
-            ClientConsumer consumer = session.createConsumer("queue");
-
-            int max = i + 10;
-
-            for (; i < max; i++)
-            {
-               ClientMessage msg = consumer.receive(1000);
-
-               msg.acknowledge();
-
-               Assert.assertEquals(i, msg.getIntProperty("id").intValue());
-            }
-
-            // Receive a few more messages but don't consume them
-            for (int j = 0; j < 10 && i < numberOfMessages; j++)
-            {
-               ClientMessage msg = consumer.receiveImmediate();
-               if (msg == null)
-               {
-                  break;
-               }
-            }
-            session.close();
-
-         }
+      }
    }
 
    @Test
@@ -249,50 +245,50 @@ public class OrderTest extends ServiceTestBase
 
       session.createQueue("queue", "queue", true);
 
-         ClientProducer prod = session.createProducer("queue");
+      ClientProducer prod = session.createProducer("queue");
 
-         for (int i = 0; i < numberOfMessages; i++)
-         {
-            ClientMessage msg = session.createMessage(i % 2 == 0);
-            msg.putIntProperty("id", i);
-            prod.send(msg);
-         }
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = session.createMessage(i % 2 == 0);
+         msg.putIntProperty("id", i);
+         prod.send(msg);
+      }
 
-         session.close();
+      session.close();
 
-         session = sf.createSession(false, false);;
+      session = sf.createSession(false, false);
 
-         session.start();
+      session.start();
 
-         ClientConsumer cons = session.createConsumer("queue");
+      ClientConsumer cons = session.createConsumer("queue");
 
-         for (int i = 0 ; i < numberOfMessages; i++)
-         {
-            ClientMessage msg = cons.receive(5000);
-            msg.acknowledge();
-            assertEquals(i, msg.getIntProperty("id").intValue());
-         }
-         session.close();
-
-
-         session = sf.createSession(false, false);;
-
-         session.start();
-
-         cons = session.createConsumer("queue");
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = cons.receive(5000);
+         msg.acknowledge();
+         assertEquals(i, msg.getIntProperty("id").intValue());
+      }
+      session.close();
 
 
-         for (int i = 0 ; i < numberOfMessages; i++)
-         {
-            ClientMessage msg = cons.receive(5000);
-            assertNotNull(msg);
-            msg.acknowledge();
-            assertEquals(i, msg.getIntProperty("id").intValue());
-         }
+      session = sf.createSession(false, false);
 
-         // receive again
-         session.commit();
-         session.close();
+      session.start();
+
+      cons = session.createConsumer("queue");
+
+
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = cons.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertEquals(i, msg.getIntProperty("id").intValue());
+      }
+
+      // receive again
+      session.commit();
+      session.close();
    }
 
    // Package protected ---------------------------------------------

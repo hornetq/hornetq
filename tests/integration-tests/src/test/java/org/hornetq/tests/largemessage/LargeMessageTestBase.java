@@ -12,9 +12,9 @@
  */
 
 package org.hornetq.tests.largemessage;
-import org.junit.After;
 
-import java.io.FileNotFoundException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
@@ -22,32 +22,33 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
+import org.junit.After;
+import org.junit.Assert;
 
 /**
  * A LargeMessageTestBase
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created Oct 29, 2008 11:43:52 AM
- *
- *
+ *         <p/>
+ *         Created Oct 29, 2008 11:43:52 AM
  */
 public abstract class LargeMessageTestBase extends ServiceTestBase
 {
@@ -322,7 +323,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            {
 
                               @Override
-                              public void write(final byte b[]) throws IOException
+                              public void write(final byte[] b) throws IOException
                               {
                                  if (b[0] == UnitTestCase.getSamplebyte(bytesRead.get()))
                                  {
@@ -358,7 +359,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            buffer.resetReaderIndex();
                            for (long b = 0; b < numberOfBytes; b++)
                            {
-                              if (b % (1024l * 1024l) == 0)
+                              if (b % (1024L * 1024L) == 0)
                               {
                                  LargeMessageTestBase.log.debug("Read " + b + " bytes");
                               }
@@ -441,7 +442,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      {
 
                         @Override
-                        public void write(final byte b[]) throws IOException
+                        public void write(final byte[] b) throws IOException
                         {
                            if (b[0] == UnitTestCase.getSamplebyte(bytesRead.get()))
                            {
@@ -457,7 +458,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                         @Override
                         public void write(final int b) throws IOException
                         {
-                           if (bytesRead.get() % (1024l * 1024l) == 0)
+                           if (bytesRead.get() % (1024L * 1024L) == 0)
                            {
                               LargeMessageTestBase.log.debug("Read " + bytesRead.get() + " bytes");
                            }
@@ -481,7 +482,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                      for (long b = 0; b < numberOfBytes; b++)
                      {
-                        if (b % (1024l * 1024l) == 0l)
+                        if (b % (1024L * 1024L) == 0L)
                         {
                            LargeMessageTestBase.log.debug("Read " + b + " bytes");
                         }
@@ -546,11 +547,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    }
 
    /**
-    * @param useFile
     * @param numberOfMessages
-    * @param numberOfIntegers
+    * @param numberOfBytes
     * @param delayDelivery
-    * @param testTime
     * @param session
     * @param producer
     * @throws FileNotFoundException
@@ -619,7 +618,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
       return createLargeClientMessage(session, numberOfBytes, true);
    }
 
-   protected ClientMessage createLargeClientMessage (final ClientSession session, final byte[] buffer, final boolean durable) throws Exception
+   protected ClientMessage createLargeClientMessage(final ClientSession session, final byte[] buffer, final boolean durable) throws Exception
    {
       ClientMessage msgs = session.createMessage(durable);
       msgs.getBodyBuffer().writeBytes(buffer);
@@ -641,14 +640,13 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    /**
     * @param session
     * @param queueToRead
-    * @param numberOfIntegers
+    * @param numberOfBytes
     * @throws HornetQException
     * @throws FileNotFoundException
     * @throws IOException
     */
    protected void readMessage(final ClientSession session, final SimpleString queueToRead, final int numberOfBytes) throws HornetQException,
-                                                                                                                   FileNotFoundException,
-                                                                                                                   IOException
+      IOException
    {
       session.start();
 

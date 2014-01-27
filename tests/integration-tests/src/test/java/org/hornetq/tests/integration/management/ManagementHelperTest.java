@@ -13,26 +13,21 @@
 
 package org.hornetq.tests.integration.management;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A ManagementHelperTest
  *
  * @author jmesnil
- *
- *
  */
 public class ManagementHelperTest extends Assert
 {
@@ -55,7 +50,7 @@ public class ManagementHelperTest extends Assert
       String resource = RandomUtil.randomString();
       String operationName = RandomUtil.randomString();
       String param = RandomUtil.randomString();
-      String[] params = new String[] { RandomUtil.randomString(), RandomUtil.randomString(), RandomUtil.randomString() };
+      String[] params = new String[]{RandomUtil.randomString(), RandomUtil.randomString(), RandomUtil.randomString()};
       Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, param, params);
 
@@ -135,15 +130,15 @@ public class ManagementHelperTest extends Assert
       map3.put(key3_4, value3_4);
       map3.put(key3_5, value3_5);
 
-      Map[] maps = new Map[] { map2, map3 };
+      Map[] maps = new Map[]{map2, map3};
 
       String strElem0 = RandomUtil.randomString();
       String strElem1 = RandomUtil.randomString();
       String strElem2 = RandomUtil.randomString();
 
-      String[] strArray = new String[] { strElem0, strElem1, strElem2 };
+      String[] strArray = new String[]{strElem0, strElem1, strElem2};
 
-      Object[] params = new Object[] { i, s, d, b, l, map, strArray, maps };
+      Object[] params = new Object[]{i, s, d, b, l, map, strArray, maps};
 
       Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, params);
@@ -198,19 +193,19 @@ public class ManagementHelperTest extends Assert
 
       Map<String, Object> map = new HashMap<String, Object>();
       String key1 = RandomUtil.randomString();
-      String[] val1 = new String[] { "a", "b", "c" };
+      String[] val1 = new String[]{"a", "b", "c"};
 
       ManagementHelperTest.log.info("val1 type is " + val1);
 
       String key2 = RandomUtil.randomString();
-      Integer[] val2 = new Integer[] { 1, 2, 3, 4, 5 };
+      Integer[] val2 = new Integer[]{1, 2, 3, 4, 5};
 
       ManagementHelperTest.log.info("val2 type is " + val2);
 
       map.put(key1, val1);
       map.put(key2, val2);
 
-      Object[] params = new Object[] { "hello", map };
+      Object[] params = new Object[]{"hello", map};
 
       Message msg = new ClientMessageImpl((byte)0, false, 0, 0, (byte)4, 1000);
       ManagementHelper.putOperationInvocation(msg, resource, operationName, params);

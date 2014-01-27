@@ -17,16 +17,18 @@ import org.hornetq.core.config.Configuration;
 
 /**
  * A RemoteServerConfiguration.
- * <p>
+ * <p/>
  * These classes are initialized through their class name through {@link Class#newInstance()}.
  * Therefore they must have a no argument constructor, and if they are inner classes they must be
  * static.
+ *
  * @author jmesnil
  */
 public abstract class RemoteServerConfiguration
 {
 
-   public RemoteServerConfiguration() {
+   public RemoteServerConfiguration()
+   {
    }
 
    public abstract Configuration getConfiguration();

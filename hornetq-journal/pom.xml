@@ -5,30 +5,34 @@
    <parent>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>hornetq-journal</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Journal</name>
 
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging-processor</artifactId>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
       </dependency>
 
-        <!--
-            JBoss Logging
-        -->
+      <!--
+          JBoss Logging
+      -->
       <dependency>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging</artifactId>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
       </dependency>
       <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
-            <scope>test</scope>
+         <groupId>org.jboss.logmanager</groupId>
+         <artifactId>jboss-logmanager</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>

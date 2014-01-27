@@ -34,7 +34,7 @@ public class StompFrameFactoryV12 implements StompFrameFactory
    public void printByteHeader(String headers)
    {
       StringBuffer buffer = new StringBuffer();
-      
+
       for (int i = 0; i < headers.length(); i++)
       {
          char c = headers.charAt(i);

@@ -30,5 +30,5 @@ import java.io.Serializable;
 // XXX no Javadocs
 public interface BroadcastEndpointFactoryConfiguration extends Serializable
 {
-    BroadcastEndpointFactory createBroadcastEndpointFactory();
+   BroadcastEndpointFactory createBroadcastEndpointFactory();
 }

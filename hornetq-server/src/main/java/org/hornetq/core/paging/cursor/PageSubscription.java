@@ -26,8 +26,6 @@ import org.hornetq.utils.LinkedListIterator;
  * A PageCursor
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
- *
  */
 public interface PageSubscription
 {
@@ -39,7 +37,9 @@ public interface PageSubscription
    // To be called before the server is down
    void stop();
 
-   /** This is a callback to inform the PageSubscription that something was routed, so the empty flag can be cleared */
+   /**
+    * This is a callback to inform the PageSubscription that something was routed, so the empty flag can be cleared
+    */
    void notEmpty();
 
    void bookmark(PagePosition position) throws Exception;
@@ -52,10 +52,12 @@ public interface PageSubscription
 
    boolean isPersistent();
 
-   /** Used as a delegate method to {@link PagingStore#isPaging()} */
+   /**
+    * Used as a delegate method to {@link PagingStore#isPaging()}
+    */
    boolean isPaging();
 
-   public LinkedListIterator<PagedReference> iterator();
+   LinkedListIterator<PagedReference> iterator();
 
    // To be called when the cursor is closed for good. Most likely when the queue is deleted
    void destroy() throws Exception;
@@ -81,7 +83,6 @@ public interface PageSubscription
    void confirmPosition(Transaction tx, PagePosition position) throws Exception;
 
    /**
-    *
     * @return the first page in use or MAX_LONG if none is in use
     */
    long getFirstPage();
@@ -108,6 +109,7 @@ public interface PageSubscription
 
    /**
     * To be used to avoid a redelivery of a prepared ACK after load
+    *
     * @param position
     */
    void reloadPreparedACK(Transaction tx, PagePosition position);
@@ -118,6 +120,7 @@ public interface PageSubscription
 
    /**
     * To be used on redeliveries
+    *
     * @param position
     */
    void redeliver(PagePosition position);
@@ -125,12 +128,14 @@ public interface PageSubscription
    void printDebug();
 
    /**
-    * @param minPage
+    * @param page
     * @return
     */
    boolean isComplete(long page);
 
-   /** wait all the scheduled runnables to finish their current execution */
+   /**
+    * wait all the scheduled runnables to finish their current execution
+    */
    void flushExecutors();
 
    void setQueue(Queue queue);
@@ -139,6 +144,7 @@ public interface PageSubscription
 
    /**
     * To be used to requery the reference case the Garbage Collection removed it from the PagedReference as it's using WeakReferences
+    *
     * @param pos
     * @return
     */

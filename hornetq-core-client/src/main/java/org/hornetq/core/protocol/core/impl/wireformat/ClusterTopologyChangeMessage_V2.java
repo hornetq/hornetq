@@ -19,7 +19,6 @@ import org.hornetq.api.core.TransportConfiguration;
 
 /**
  * Clebert Suconic
- *
  */
 public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessage
 {
@@ -114,7 +113,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       {
          boolean hasLive = buffer.readBoolean();
          TransportConfiguration a;
-         if(hasLive)
+         if (hasLive)
          {
             a = new TransportConfiguration();
             a.decode(buffer);
@@ -137,8 +136,9 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
          pair = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
          last = buffer.readBoolean();
       }
-      if(buffer.readableBytes() > 0) {
-        nodeName = buffer.readNullableString();
+      if (buffer.readableBytes() > 0)
+      {
+         nodeName = buffer.readNullableString();
       }
    }
 

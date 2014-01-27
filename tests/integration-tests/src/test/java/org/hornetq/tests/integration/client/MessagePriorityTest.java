@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -35,6 +30,9 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessagePriorityTest
@@ -285,7 +283,7 @@ public class MessagePriorityTest extends UnitTestCase
 
       ClientProducer producer = session.createProducer(address);
 
-      for (int i = 0 ; i < 777; i++)
+      for (int i = 0; i < 777; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.setPriority((byte)5);
@@ -293,7 +291,7 @@ public class MessagePriorityTest extends UnitTestCase
          producer.send(msg);
       }
 
-      for (int i = 0 ; i < 333; i++)
+      for (int i = 0; i < 333; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.setPriority((byte)6);
@@ -306,7 +304,7 @@ public class MessagePriorityTest extends UnitTestCase
       session.start();
 
 
-      for (int i = 0 ; i < 333; i++)
+      for (int i = 0; i < 333; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -314,7 +312,7 @@ public class MessagePriorityTest extends UnitTestCase
          assertTrue(msg.getBooleanProperty("fast"));
       }
 
-      for (int i = 0 ; i < 777; i++)
+      for (int i = 0; i < 777; i++)
       {
          ClientMessage msg = consumer.receive(5000);
          assertNotNull(msg);
@@ -346,8 +344,8 @@ public class MessagePriorityTest extends UnitTestCase
       server = addServer(HornetQServers.newHornetQServer(config, false));
       server.start();
       locator =
-               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
+         addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+            ServiceTestBase.INVM_CONNECTOR_FACTORY)));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       sf = createSessionFactory(locator);

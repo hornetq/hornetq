@@ -96,7 +96,7 @@ public final class RecoveryManager
 
    private void locateRecoveryRegistry()
    {
-      String locatorClasses[] = RESOURCE_RECOVERY_CLASS_NAMES.split(";");
+      String[] locatorClasses = RESOURCE_RECOVERY_CLASS_NAMES.split(";");
 
       for (String locatorClasse : locatorClasses)
       {

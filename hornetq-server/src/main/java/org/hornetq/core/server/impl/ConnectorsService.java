@@ -30,9 +30,10 @@ import org.hornetq.utils.ConfigurationHelper;
 /**
  * ConnectorsService will pool some resource for updates, e.g. Twitter, then the changes are picked
  * and converted into a ServerMessage for a given destination (queue).
- * <p>
+ * <p/>
  * It may also listen to a queue, and forward them (e.g. messages arriving at the queue are picked
  * and tweeted to some Twitter account).
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> Created Jun 29, 2010
  */
 public final class ConnectorsService implements HornetQComponent
@@ -75,7 +76,7 @@ public final class ConnectorsService implements HornetQComponent
          if (info.getParams() != null)
          {
             Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), info.getParams()
-                                                                                                      .keySet());
+               .keySet());
 
             if (!invalid.isEmpty())
             {
@@ -85,7 +86,7 @@ public final class ConnectorsService implements HornetQComponent
             }
          }
          Set<String> invalid = ConfigurationHelper.checkKeysExist(factory.getRequiredProperties(), info.getParams()
-                                                                                                      .keySet());
+            .keySet());
 
          if (!invalid.isEmpty())
          {
@@ -113,7 +114,7 @@ public final class ConnectorsService implements HornetQComponent
 
    public void stop() throws Exception
    {
-      if(!isStarted)
+      if (!isStarted)
       {
          return;
       }

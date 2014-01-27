@@ -350,7 +350,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      Queue queue = (Queue)binding.getBindable();
 
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                                 .toString());
+                                                                                             .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
@@ -420,7 +420,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      Queue queue = (Queue)binding.getBindable();
 
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                                 .toString());
+                                                                                             .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
@@ -634,11 +634,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-        // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
-        if (HornetQServerLogger.LOGGER.isDebugEnabled())
-        {
-           HornetQServerLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
-        }
+         // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+         {
+            HornetQServerLogger.LOGGER.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
+         }
       }
 
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
@@ -771,7 +771,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (routed)
          {
-            return new Pair<RoutingContext, ServerMessage> (context, copyRedistribute);
+            return new Pair<RoutingContext, ServerMessage>(context, copyRedistribute);
          }
       }
 
@@ -923,11 +923,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          for (SimpleString removal : valuesToRemove)
          {
-           message.removeProperty(removal);
+            message.removeProperty(removal);
          }
       }
    }
-
 
 
    private void setPagingStore(final ServerMessage message) throws Exception
@@ -1130,6 +1129,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    /**
     * This will kick a delivery async on the queue, so the queue may have a chance to depage messages
+    *
     * @param tx
     * @param entry
     */
@@ -1281,7 +1281,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   /** The expiry scanner can't be started until the whole server has been started other wise you may get races */
+   /**
+    * The expiry scanner can't be started until the whole server has been started other wise you may get races
+    */
    public synchronized void startExpiryScanner()
    {
       if (reaperPeriod > 0)

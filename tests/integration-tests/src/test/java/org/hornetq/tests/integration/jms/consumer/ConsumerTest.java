@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms.consumer;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -29,7 +25,6 @@ import javax.jms.TextMessage;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -41,6 +36,10 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.utils.ReusableLatch;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -139,7 +138,7 @@ public class ConsumerTest extends JMSTestBase
             continue;
          }
 
-         TextMessage m = (TextMessage) consumer.receive(1000);
+         TextMessage m = (TextMessage)consumer.receive(1000);
          assertNotNull(m);
          m.acknowledge();
          assertEquals("m" + i, m.getText());
@@ -192,7 +191,7 @@ public class ConsumerTest extends JMSTestBase
                   msg.acknowledge();
                }
 
-               count ++;
+               count++;
             }
             catch (Exception e)
             {
@@ -224,7 +223,7 @@ public class ConsumerTest extends JMSTestBase
             continue;
          }
 
-         TextMessage m = (TextMessage) consumer.receive(1000);
+         TextMessage m = (TextMessage)consumer.receive(1000);
          assertNotNull(m);
          m.acknowledge();
          assertEquals("m" + i, m.getText());
@@ -349,7 +348,7 @@ public class ConsumerTest extends JMSTestBase
       }
 
       conn.start();
-      for (int i = 0 ; i < noOfMessages; i++)
+      for (int i = 0; i < noOfMessages; i++)
       {
          TextMessage msg = (TextMessage)enumMessages.nextElement();
          assertNotNull(msg);
@@ -398,7 +397,7 @@ public class ConsumerTest extends JMSTestBase
       QueueBrowser browser = session.createBrowser(jBossQueue);
       Enumeration enumMessages = browser.getEnumeration();
 
-      for (int i = 0 ; i < noOfMessages; i++)
+      for (int i = 0; i < noOfMessages; i++)
       {
          TextMessage msg = (TextMessage)enumMessages.nextElement();
          assertNotNull(msg);
@@ -436,7 +435,7 @@ public class ConsumerTest extends JMSTestBase
       QueueBrowser browser = session.createBrowser(jBossQueue);
       Enumeration enumMessages = browser.getEnumeration();
 
-      for (int i = 0 ; i < noOfMessages; i++)
+      for (int i = 0; i < noOfMessages; i++)
       {
          assertTrue(enumMessages.hasMoreElements());
          TextMessage msg = (TextMessage)enumMessages.nextElement();

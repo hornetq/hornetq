@@ -12,22 +12,18 @@
  */
 
 package org.hornetq.tests.unit.core.remoting.impl.ssl;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 
-import org.junit.Assert;
-
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class SSLSupportTest extends UnitTestCase
 {
@@ -62,17 +58,17 @@ public class SSLSupportTest extends UnitTestCase
    }
 
    @Test
-    public void testContextWithRightParameters() throws Exception
-    {
-        SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
-    }
+   public void testContextWithRightParameters() throws Exception
+   {
+      SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
+   }
 
-    // This is valid as it will create key and trust managers with system defaults
+   // This is valid as it will create key and trust managers with system defaults
    @Test
-    public void testContextWithNullParameters() throws Exception
-    {
-        SSLSupport.createContext(null, null, null, null);
-    }
+   public void testContextWithNullParameters() throws Exception
+   {
+      SSLSupport.createContext(null, null, null, null);
+   }
 
    @Test
    public void testContextWithKeyStorePathAsURL() throws Exception
@@ -90,30 +86,30 @@ public class SSLSupportTest extends UnitTestCase
    }
 
    @Test
-    public void testContextWithBadKeyStorePath() throws Exception
-    {
-        try
-        {
-            SSLSupport.createContext("not a keystore", keyStorePassword, trustStorePath, trustStorePassword);
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-        }
-    }
+   public void testContextWithBadKeyStorePath() throws Exception
+   {
+      try
+      {
+         SSLSupport.createContext("not a keystore", keyStorePassword, trustStorePath, trustStorePassword);
+         Assert.fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
 
    @Test
-    public void testContextWithNullKeyStorePath() throws Exception
-    {
-        try
-        {
-            SSLSupport.createContext(null, keyStorePassword, trustStorePath, trustStorePassword);
-        }
-        catch (Exception e)
-        {
-            Assert.fail();
-        }
-    }
+   public void testContextWithNullKeyStorePath() throws Exception
+   {
+      try
+      {
+         SSLSupport.createContext(null, keyStorePassword, trustStorePath, trustStorePassword);
+      }
+      catch (Exception e)
+      {
+         Assert.fail();
+      }
+   }
 
    @Test
    public void testContextWithKeyStorePathAsRelativePath() throws Exception

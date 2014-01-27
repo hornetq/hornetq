@@ -423,13 +423,14 @@ public final class HornetQDefaultConfiguration
 
    public static int getDefaultBridgeConnectSameNode()
    {
-       return DEFAULT_BRIDGE_CONNECT_SAME_NODE;
+      return DEFAULT_BRIDGE_CONNECT_SAME_NODE;
    }
 
    public static int getDefaultMaxSavedReplicatedJournalsSize()
    {
       return DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE;
    }
+
    public static long getDefaultGroupTimeout()
    {
       return DEFAULT_GROUP_TIMEOUT;
@@ -447,16 +448,26 @@ public final class HornetQDefaultConfiguration
    private static long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
    private static String DEFAULT_JMX_DOMAIN = "org.hornetq";
-   /** Used by the JBoss-AS integration code. */
+   /**
+    * Used by the JBoss-AS integration code.
+    */
    private static boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
-   /** Used by the JBoss-AS integration code. */
+   /**
+    * Used by the JBoss-AS integration code.
+    */
    private static boolean DEFAULT_BACKUP = false;
-   /** Used by the JBoss-AS integration code. */
+   /**
+    * Used by the JBoss-AS integration code.
+    */
    private static boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
-   /** Used by the JBoss-AS integration code. */
+   /**
+    * Used by the JBoss-AS integration code.
+    */
    private static boolean DEFAULT_SHARED_STORE = true;
    private static boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
-   /** Used by the JBoss-AS integration code. */
+   /**
+    * Used by the JBoss-AS integration code.
+    */
    private static boolean DEFAULT_PERSISTENCE_ENABLED = true;
    private static long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
    private static int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -29,15 +27,14 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Test;
 
 /**
  * A PagingOrderTest.
- *
+ * <p/>
  * PagingTest has a lot of tests already. I decided to create a newer one more specialized on Ordering and counters
  *
  * @author clebertsuconic
- *
- *
  */
 public class PagingSyncTest extends ServiceTestBase
 {
@@ -69,51 +66,51 @@ public class PagingSyncTest extends ServiceTestBase
 
       final int numberOfMessages = 500;
 
-         ServerLocator locator = createInVMNonHALocator();
+      ServerLocator locator = createInVMNonHALocator();
 
-         locator.setClientFailureCheckPeriod(1000);
-         locator.setConnectionTTL(2000);
-         locator.setReconnectAttempts(0);
+      locator.setClientFailureCheckPeriod(1000);
+      locator.setConnectionTTL(2000);
+      locator.setReconnectAttempts(0);
 
-         locator.setBlockOnNonDurableSend(false);
-         locator.setBlockOnDurableSend(false);
-         locator.setBlockOnAcknowledge(false);
-         locator.setConsumerWindowSize(1024 * 1024);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+      locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSessionFactory sf = createSessionFactory(locator);
 
-         ClientSession session = sf.createSession(false, false, false);
+      ClientSession session = sf.createSession(false, false, false);
 
       server.createQueue(ADDRESS, ADDRESS, null, true, false);
 
-         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+      ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         byte[] body = new byte[messageSize];
+      byte[] body = new byte[messageSize];
 
-         ByteBuffer bb = ByteBuffer.wrap(body);
+      ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
-         {
-            bb.put(getSamplebyte(j));
-         }
+      for (int j = 1; j <= messageSize; j++)
+      {
+         bb.put(getSamplebyte(j));
+      }
 
-         for (int i = 0; i < numberOfMessages; i++)
-         {
-            ClientMessage message = session.createMessage(persistentMessages);
+      for (int i = 0; i < numberOfMessages; i++)
+      {
+         ClientMessage message = session.createMessage(persistentMessages);
 
-            HornetQBuffer bodyLocal = message.getBodyBuffer();
+         HornetQBuffer bodyLocal = message.getBodyBuffer();
 
-            bodyLocal.writeBytes(body);
+         bodyLocal.writeBytes(body);
 
-            message.putIntProperty(new SimpleString("id"), i);
+         message.putIntProperty(new SimpleString("id"), i);
 
-            producer.send(message);
-         }
+         producer.send(message);
+      }
 
-         session.commit();
+      session.commit();
 
-         session.close();
-         }
+      session.close();
+   }
 
    // Package protected ---------------------------------------------
 
