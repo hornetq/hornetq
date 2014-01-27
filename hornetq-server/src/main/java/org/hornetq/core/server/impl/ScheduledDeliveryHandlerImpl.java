@@ -156,6 +156,10 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
       if (delay < 0)
       {
+         if (ScheduledDeliveryHandlerImpl.trace)
+         {
+            HornetQServerLogger.LOGGER.trace("calling another scheduler now as deliverTime " + deliveryTime + " < now=" + now);
+         }
          // if delay == 0 we will avoid races between adding the scheduler and finishing it
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
          scheduledExecutor.schedule(runnable, 0, TimeUnit.MILLISECONDS);
@@ -165,8 +169,20 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       {
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
 
+         if (ScheduledDeliveryHandlerImpl.trace)
+         {
+            HornetQServerLogger.LOGGER.trace("Setting up scheduler for " + deliveryTime + " with a delay of " + delay + " as now=" + now);
+         }
+
          runnables.put(deliveryTime, runnable);
          scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+      }
+      else
+      {
+         if (ScheduledDeliveryHandlerImpl.trace)
+         {
+            HornetQServerLogger.LOGGER.trace("Couldn't make another scheduler as " + deliveryTime + " is already set, now is " + now);
+         }
       }
    }
 
@@ -184,6 +200,11 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          HashMap<Queue, LinkedList<MessageReference>> refs = new HashMap<Queue, LinkedList<MessageReference>>();
 
          runnables.remove(deliveryTime);
+
+         if (ScheduledDeliveryHandlerImpl.trace)
+         {
+            HornetQServerLogger.LOGGER.trace("Is it " + System.currentTimeMillis() + " now and we are running deliveryTime = " + deliveryTime);
+         }
 
          synchronized (scheduledReferences)
          {
@@ -208,6 +229,11 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
                {
                   references = new LinkedList<MessageReference>();
                   refs.put(reference.getQueue(), references);
+               }
+
+               if (ScheduledDeliveryHandlerImpl.trace)
+               {
+                  HornetQServerLogger.LOGGER.trace("sending message " + reference + " to delivery, deliveryTime =  " + deliveryTime);
                }
 
                references.addFirst(reference);
