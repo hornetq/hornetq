@@ -49,7 +49,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -109,7 +108,6 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.FutureLatch;
-import org.hornetq.utils.HornetQThreadFactory;
 
 import static org.hornetq.utils.Base64.encodeBytes;
 
@@ -221,12 +219,7 @@ public class NettyConnector extends AbstractConnector
 
    private ScheduledFuture<?> batchFlusherFuture;
 
-   private static EventLoopGroup nioEventLoopGroup;
    private EventLoopGroup group;
-
-   private static final Object nioWorkerPoolGuard = new Object();
-
-   private static final AtomicInteger nioChannelFactoryCount = new AtomicInteger(0);
 
    private int connectTimeoutMillis;
 
@@ -417,17 +410,8 @@ public class NettyConnector extends AbstractConnector
 
       if (useNioGlobalWorkerPool)
       {
-         synchronized (nioWorkerPoolGuard)
-         {
-            if (nioEventLoopGroup == null)
-            {
-               nioEventLoopGroup = new NioEventLoopGroup(threadsToUse, new HornetQThreadFactory("HornetQ-client-netty-threads", true, getThisClassLoader()));
-            }
-
-            channelClazz = NioSocketChannel.class;
-            group = nioEventLoopGroup;
-            nioChannelFactoryCount.incrementAndGet();
-         }
+          channelClazz = NioSocketChannel.class;
+          group = SharedNioEventLoopGroup.getInstance(threadsToUse);
       }
       else
       {
@@ -635,23 +619,11 @@ public class NettyConnector extends AbstractConnector
 
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
-      // if using shared pools only release them once there are no references
-      if (useNioGlobalWorkerPool)
-      {
-         synchronized (nioWorkerPoolGuard)
-         {
-            if (nioChannelFactoryCount.decrementAndGet() == 0)
-            {
-               closePools();
-            }
-         }
-      }
-      else
-      {
-         // Shutdown the EventLoopGroup if no new task was added for 100ms or if
-         // 3000ms elapsed.
-         group.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
-      }
+
+      // Shutdown the EventLoopGroup if no new task was added for 100ms or if
+      // 3000ms elapsed.
+      group.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
+
       channelClazz = null;
 
       for (Connection connection : connections.values())
@@ -1161,17 +1133,6 @@ public class NettyConnector extends AbstractConnector
       return result;
    }
 
-   private void closePools()
-   {
-      if (nioEventLoopGroup != null)
-      {
-         // Shutdown the EventLoopGroup if no new task was added for 100ms or if
-         // 3000ms elapsed.
-         nioEventLoopGroup.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
-         nioEventLoopGroup = null;
-      }
-   }
-
    public void finalize() throws Throwable
    {
       close();
@@ -1186,16 +1147,7 @@ public class NettyConnector extends AbstractConnector
 
    public static void clearThreadPools()
    {
-      synchronized (nioWorkerPoolGuard)
-      {
-         if (nioEventLoopGroup != null)
-         {
-            // Shutdown the EventLoopGroup if no new task was added for 100ms or if
-            // 3000ms elapsed.
-            nioEventLoopGroup.shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
-            nioEventLoopGroup = null;
-         }
-      }
+      SharedNioEventLoopGroup.forceShutdown();
    }
 
    private static ClassLoader getThisClassLoader()
