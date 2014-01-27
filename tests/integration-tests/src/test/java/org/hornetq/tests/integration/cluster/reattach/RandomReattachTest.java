@@ -11,10 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.reattach;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,9 +19,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
-
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -49,6 +42,10 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A RandomFailoverSoakTest
@@ -259,7 +256,7 @@ public class RandomReattachTest extends UnitTestCase
          locator.setReconnectAttempts(-1);
          locator.setConfirmationWindowSize(1024 * 1024);
 
-         ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) createSessionFactory(locator);
+         ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)createSessionFactory(locator);
 
 
          ClientSession session = sf.createSession(false, false, false);
@@ -325,10 +322,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -442,10 +439,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -559,10 +556,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -572,10 +569,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -607,7 +604,7 @@ public class RandomReattachTest extends UnitTestCase
             catch (HornetQException e)
             {
                e.printStackTrace();
-               throw new RuntimeException (e.getMessage(), e);
+               throw new RuntimeException(e.getMessage(), e);
             }
 
             if (count == numMessages)
@@ -723,10 +720,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -736,10 +733,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -886,10 +883,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -973,10 +970,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -1074,10 +1071,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -1087,10 +1084,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -1207,10 +1204,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -1220,10 +1217,10 @@ public class RandomReattachTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = sessSend.createMessage(HornetQTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
+                                                        false,
+                                                        0,
+                                                        System.currentTimeMillis(),
+                                                        (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          producer.send(message);
       }
@@ -1328,10 +1325,10 @@ public class RandomReattachTest extends UnitTestCase
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+                                                 false,
+                                                 0,
+                                                 System.currentTimeMillis(),
+                                                 (byte)1);
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
@@ -1362,10 +1359,10 @@ public class RandomReattachTest extends UnitTestCase
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+                                                 false,
+                                                 0,
+                                                 System.currentTimeMillis(),
+                                                 (byte)1);
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RandomReattachTest.RECEIVE_TIMEOUT);
@@ -1435,10 +1432,10 @@ public class RandomReattachTest extends UnitTestCase
       ClientProducer producer = sess.createProducer(RandomReattachTest.ADDRESS);
 
       ClientMessage message = sess.createMessage(HornetQTextMessage.TYPE,
-                                                       false,
-                                                       0,
-                                                       System.currentTimeMillis(),
-                                                       (byte)1);
+                                                 false,
+                                                 0,
+                                                 System.currentTimeMillis(),
+                                                 (byte)1);
       producer.send(message);
 
       sess.start();
@@ -1501,7 +1498,7 @@ public class RandomReattachTest extends UnitTestCase
       Configuration liveConf = createDefaultConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+         .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
       liveService = HornetQServers.newHornetQServer(liveConf, false);
       liveService.start();
    }
@@ -1559,7 +1556,7 @@ public class RandomReattachTest extends UnitTestCase
 
       public void checkAssertions()
       {
-         for (AssertionError e: errors)
+         for (AssertionError e : errors)
          {
             // it will throw the first error
             throw e;

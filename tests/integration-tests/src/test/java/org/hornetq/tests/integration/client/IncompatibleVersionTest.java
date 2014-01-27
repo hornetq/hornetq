@@ -70,7 +70,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    @Override
    @Before
-   public void setUp () throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
       server = createServer(false, false);
@@ -85,7 +85,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    @Override
    @After
-   public void tearDown ()
+   public void tearDown()
    {
       connection.destroy();
 
@@ -95,54 +95,54 @@ public class IncompatibleVersionTest extends ServiceTestBase
    }
 
    @Test
-   public void testCompatibleClientVersion () throws Exception
+   public void testCompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(true);
    }
 
    @Test
-   public void testIncompatibleClientVersion () throws Exception
+   public void testIncompatibleClientVersion() throws Exception
    {
       doTestClientVersionCompatibility(false);
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection1 () throws Exception
+   public void testCompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 1));
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection2 () throws Exception
+   public void testCompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 5));
    }
 
    @Test
-   public void testCompatibleClientVersionWithRealConnection3 () throws Exception
+   public void testCompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 10));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection1 () throws Exception
+   public void testIncompatibleClientVersionWithRealConnection1() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 0));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection2 () throws Exception
+   public void testIncompatibleClientVersionWithRealConnection2() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 4));
    }
 
    @Test
-   public void testIncompatibleClientVersionWithRealConnection3 () throws Exception
+   public void testIncompatibleClientVersionWithRealConnection3() throws Exception
    {
       assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10", 100));
    }
 
-   private void doTestClientVersionCompatibility (boolean compatible) throws Exception
+   private void doTestClientVersionCompatibility(boolean compatible) throws Exception
    {
       Channel channel1 = connection.getChannel(1, -1);
       long sessionChannelID = connection.generateChannelID();
@@ -199,7 +199,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
    }
 
-   private boolean doTestClientVersionCompatibilityWithRealConnection (String verList, int ver) throws Exception
+   private boolean doTestClientVersionCompatibilityWithRealConnection(String verList, int ver) throws Exception
    {
       String propFileName = "compatibility-test-hornetq-version.properties";
       String serverStartedString = "IncompatibleVersionTest---server---started";
@@ -250,7 +250,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    private static class ServerStarter
    {
-      public void perform (String startedString) throws Exception
+      public void perform(String startedString) throws Exception
       {
          Configuration conf = new ConfigurationImpl();
          conf.setSecurityEnabled(false);
@@ -264,7 +264,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    private static class ClientStarter
    {
-      public void perform () throws Exception
+      public void perform() throws Exception
       {
          ServerLocator locator = null;
          ClientSessionFactory sf = null;
@@ -284,7 +284,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
    }
 
-   public static void main (String[] args) throws Exception
+   public static void main(String[] args) throws Exception
    {
       if (args[0].equals("server"))
       {

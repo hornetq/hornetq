@@ -12,13 +12,6 @@
  */
 package org.hornetq.jms.tests.selector;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -27,6 +20,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.HornetQServerTestCase;
@@ -35,16 +31,18 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class SelectorTest extends HornetQServerTestCase
 {
 
    /**
     * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-105
-    *
+    * <p/>
     * Two Messages are sent to a queue. There is one receiver on the queue. The receiver only
     * receives one of the messages due to a message selector only matching one of them. The receiver
     * is then closed. A new receiver is now attached to the queue. Redelivery of the remaining
@@ -1001,7 +999,7 @@ public class SelectorTest extends HornetQServerTestCase
       try
       {
          ConnectionFactory factory = getConnectionFactory();
-         HornetQConnectionFactory hcf = (HornetQConnectionFactory) factory;
+         HornetQConnectionFactory hcf = (HornetQConnectionFactory)factory;
 
          hcf.setConsumerWindowSize(0);
 
@@ -1021,45 +1019,45 @@ public class SelectorTest extends HornetQServerTestCase
          tm.setText("1");
          tm.setStringProperty("PROP1", "VALUE1");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
 
          tm = session.createTextMessage();
          tm.setText("2");
          tm.setStringProperty("PROP1", "VALUE1");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
 
          tm = session.createTextMessage();
          tm.setText("3");
          tm.setStringProperty("PROP2", "VALUE2");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
 
          tm = session.createTextMessage();
          tm.setText("4");
          tm.setStringProperty("PROP2", "VALUE2");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
 
          tm = session.createTextMessage();
          tm.setText("5");
          tm.setStringProperty("PROP1", "VALUE1");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
 
          tm = session.createTextMessage();
          tm.setText("6");
          tm.setStringProperty("PROP1", "VALUE1");
          tm.setStringProperty("PROP2", "VALUE2");
          msgProducer.send(tm);
-         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         System.out.println("Sent message with id [" + tm.getJMSMessageID() + "]");
          msgProducer.close();
          msgProducer = null;
 
 
          MessageConsumer msgConsumer = session.createConsumer(queue1, "PROP2 = 'VALUE2'");
 
-         tm = (TextMessage) msgConsumer.receive(5000);
+         tm = (TextMessage)msgConsumer.receive(5000);
 
          assertNotNull(tm);
 

@@ -93,7 +93,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+         HornetQServerLogger.LOGGER.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception("trace"));
       }
 
       if (activeCursors.containsKey(cursorID))

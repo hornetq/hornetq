@@ -313,7 +313,7 @@ public interface HornetQClientLogger extends BasicLogger
    @Message(id = 212054,
          value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
          format = Message.Format.MESSAGE_FORMAT)
-   void outOfCreditOnFlowControl (String address);
+   void outOfCreditOnFlowControl(String address);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212055, value = "Unable to close consumer", format = Message.Format.MESSAGE_FORMAT)

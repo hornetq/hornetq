@@ -70,7 +70,7 @@ public class LastValueQueue extends QueueImpl
             storageManager,
             addressSettingsRepository,
             executor);
-      new Exception ("LastValueQeue " + this ).toString();
+      new Exception("LastValueQeue " + this ).toString();
    }
 
    @Override
