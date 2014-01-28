@@ -51,10 +51,6 @@ public interface HornetQJournalLogger extends BasicLogger
    void runningJournalBlast(Integer numIts);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 141001, value = "moving next file:  {0}", format = Message.Format.MESSAGE_FORMAT)
-   void movingNextFile(JournalFile currentFile);
-
-   @LogMessage(level = Logger.Level.INFO)
    @Message(id = 141002, value = "starting thread for sync speed test", format = Message.Format.MESSAGE_FORMAT)
    void startingThread();
 
