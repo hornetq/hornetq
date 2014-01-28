@@ -12,10 +12,9 @@
  */
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
 import java.util.List;
 import java.util.Map;
-
-import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -148,7 +147,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
          }
          else
          {
-         return configuration.getStaticConnectors().toArray(new String[0]);
+            return configuration.getStaticConnectors().toArray(new String[0]);
          }
       }
       finally
@@ -221,6 +220,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
          blockOnIO();
       }
    }
+
    public Map<String, String> getNodes() throws Exception
    {
       clearIO();

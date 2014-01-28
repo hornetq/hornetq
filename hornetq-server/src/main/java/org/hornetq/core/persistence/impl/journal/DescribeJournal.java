@@ -12,26 +12,7 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADDRESS_SETTING_RECORD;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE_PENDING;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.DUPLICATE_ID;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.HEURISTIC_COMPLETION;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ID_COUNTER_RECORD;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COMPLETE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_INC;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SECURITY_RECORD;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
-import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_PENDING_COUNTER;
-
+import javax.transaction.xa.Xid;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,8 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -65,22 +44,42 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager.DeliveryC
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.DuplicateIDEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.HeuristicCompletionEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.LargeMessageEncoding;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountPendingImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountRecord;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountRecordInc;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageUpdateTXEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PendingLargeMessageEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.RefEncoding;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ScheduledDeliveryEncoding;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager.PageCountPendingImpl;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.Base64;
 import org.hornetq.utils.XidCodecSupport;
 
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_CURSOR;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ACKNOWLEDGE_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADDRESS_SETTING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_LARGE_MESSAGE_PENDING;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_MESSAGE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ADD_REF;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.DUPLICATE_ID;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.HEURISTIC_COMPLETION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.ID_COUNTER_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COMPLETE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_INC;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_COUNTER_VALUE;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_CURSOR_PENDING_COUNTER;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.PAGE_TRANSACTION;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.QUEUE_BINDING_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SECURITY_RECORD;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCHEDULED_DELIVERY_TIME;
+import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.UPDATE_DELIVERY_COUNT;
+
 /**
  * Outputs a String description of the Journals contents.
- * <p>
+ * <p/>
  * Meant to be used in debugging.
  */
 public final class DescribeJournal
@@ -103,13 +102,13 @@ public final class DescribeJournal
       ConfigurationImpl defaultValues = new ConfigurationImpl();
 
       JournalImpl messagesJournal = new JournalImpl(defaultValues.getJournalFileSize(),
-         defaultValues.getJournalMinFiles(),
-         0,
-         0,
-         messagesFF,
-         "hornetq-data",
-         "hq",
-         1);
+                                                    defaultValues.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
 
       describeJournal(messagesFF, messagesJournal, messagesDir);
    }
@@ -119,8 +118,7 @@ public final class DescribeJournal
     * @param journal
     * @throws Exception
     */
-   private static void
-            describeJournal(SequentialFileFactory fileFactory, JournalImpl journal, final String path) throws Exception
+   private static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal, final String path) throws Exception
    {
       List<JournalFile> files = journal.orderFiles();
 
@@ -154,13 +152,11 @@ public final class DescribeJournal
                out.println("operation@Rollback;txID=" + transactionID);
             }
 
-            public
-                     void
-                     onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords)
-                                                                                                                     throws Exception
+            public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords)
+               throws Exception
             {
                out.println("operation@Prepare,txID=" + transactionID + ",numberOfRecords=" + numberOfRecords +
-                        ",extraData=" + encode(extraData) + ", xid=" + toXid(extraData));
+                              ",extraData=" + encode(extraData) + ", xid=" + toXid(extraData));
             }
 
             public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
@@ -228,7 +224,7 @@ public final class DescribeJournal
 
                   subsCounter.loadInc(info.id, (int)encoding.value);
                   subsCounter.processReload();
-                  out.print("#Counter queue " + queueIDForCounter +  " value=" + subsCounter.getValue() + " increased by " + encoding.value);
+                  out.print("#Counter queue " + queueIDForCounter + " value=" + subsCounter.getValue() + " increased by " + encoding.value);
                   if (subsCounter.getValue() < 0)
                   {
                      out.println(" #NegativeCounter!!!!");
@@ -425,7 +421,7 @@ public final class DescribeJournal
 
    protected static void printCounters(final PrintStream out, final Map<Long, PageSubscriptionCounterImpl> counters)
    {
-      for (Map.Entry<Long, PageSubscriptionCounterImpl> entry: counters.entrySet())
+      for (Map.Entry<Long, PageSubscriptionCounterImpl> entry : counters.entrySet())
       {
          out.println("Queue " + entry.getKey() + " value=" + entry.getValue().getValue());
       }
@@ -446,8 +442,7 @@ public final class DescribeJournal
 
    private static String describeRecord(RecordInfo info)
    {
-      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" +
-               newObjectEncoding(info);
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + newObjectEncoding(info);
    }
 
    private static String describeRecord(RecordInfo info, Object o)
@@ -644,7 +639,7 @@ public final class DescribeJournal
       }
    }
 
-   private static final  class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
+   private static final class PageCompleteCursorAckRecordEncoding extends CursorAckRecordEncoding
    {
 
       @Override

@@ -12,10 +12,6 @@
  */
 package org.hornetq.rest.queue.push;
 
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.queue.push.xml.PushRegistration;
-import org.hornetq.rest.topic.PushTopicRegistration;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -24,6 +20,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.queue.push.xml.PushRegistration;
+import org.hornetq.rest.topic.PushTopicRegistration;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -48,7 +48,7 @@ public class FilePushStore implements PushStore
             PushRegistration reg = null;
             try
             {
-               reg = (PushRegistration) ctx.createUnmarshaller().unmarshal(file);
+               reg = (PushRegistration)ctx.createUnmarshaller().unmarshal(file);
                reg.setLoadedFrom(file);
                HornetQRestLogger.LOGGER.addingPushRegistration(reg.getId());
                map.put(reg.getId(), reg);
@@ -88,11 +88,11 @@ public class FilePushStore implements PushStore
    }
 
    protected void save(PushRegistration reg)
-           throws JAXBException
+      throws JAXBException
    {
       Marshaller marshaller = ctx.createMarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-      marshaller.marshal(reg, (File) reg.getLoadedFrom());
+      marshaller.marshal(reg, (File)reg.getLoadedFrom());
    }
 
    public synchronized void add(PushRegistration reg) throws Exception
@@ -109,7 +109,7 @@ public class FilePushStore implements PushStore
    {
       map.remove(reg.getId());
       if (reg.getLoadedFrom() == null) return;
-      File fp = (File) reg.getLoadedFrom();
+      File fp = (File)reg.getLoadedFrom();
       fp.delete();
    }
 

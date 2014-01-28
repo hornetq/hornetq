@@ -12,11 +12,11 @@
  */
 package org.hornetq.rest.topic;
 
-import org.hornetq.rest.queue.push.FilePushStore;
-import org.hornetq.rest.queue.push.xml.PushRegistration;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hornetq.rest.queue.push.FilePushStore;
+import org.hornetq.rest.queue.push.xml.PushRegistration;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -25,7 +25,7 @@ import java.util.List;
 public class FileTopicPushStore extends FilePushStore implements TopicPushStore
 {
    public FileTopicPushStore(String dirname)
-           throws Exception
+      throws Exception
    {
       super(dirname);
    }
@@ -36,7 +36,7 @@ public class FileTopicPushStore extends FilePushStore implements TopicPushStore
       List<PushTopicRegistration> list = new ArrayList<PushTopicRegistration>();
       for (PushRegistration reg : map.values())
       {
-         PushTopicRegistration topicReg = (PushTopicRegistration) reg;
+         PushTopicRegistration topicReg = (PushTopicRegistration)reg;
          if (topicReg.getTopic().equals(topic))
          {
             list.add(topicReg);

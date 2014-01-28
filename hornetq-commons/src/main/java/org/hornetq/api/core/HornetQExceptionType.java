@@ -26,197 +26,197 @@ public enum HornetQExceptionType
    // Error codes -------------------------------------------------
 
    INTERNAL_ERROR(000)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQInternalErrorException(msg);
-         }
-      },
+         return new HornetQInternalErrorException(msg);
+      }
+   },
    UNSUPPORTED_PACKET(001)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQUnsupportedPacketException(msg);
-         }
-      },
+         return new HornetQUnsupportedPacketException(msg);
+      }
+   },
    NOT_CONNECTED(002)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQNotConnectedException(msg);
-         }
-      },
+         return new HornetQNotConnectedException(msg);
+      }
+   },
    CONNECTION_TIMEDOUT(003)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQConnectionTimedOutException(msg);
-         }
-      },
+         return new HornetQConnectionTimedOutException(msg);
+      }
+   },
    DISCONNECTED(004)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQDisconnectedException(msg);
-         }
-      },
+         return new HornetQDisconnectedException(msg);
+      }
+   },
    UNBLOCKED(005)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQUnBlockedException(msg);
-         }
-      },
+         return new HornetQUnBlockedException(msg);
+      }
+   },
    IO_ERROR(006)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQIOErrorException(msg);
-         }
-      },
+         return new HornetQIOErrorException(msg);
+      }
+   },
    QUEUE_DOES_NOT_EXIST(100)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQNonExistentQueueException(msg);
-         }
-      },
+         return new HornetQNonExistentQueueException(msg);
+      }
+   },
    QUEUE_EXISTS(101)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQQueueExistsException(msg);
-         }
-      },
+         return new HornetQQueueExistsException(msg);
+      }
+   },
    OBJECT_CLOSED(102)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQObjectClosedException(msg);
-         }
-      },
+         return new HornetQObjectClosedException(msg);
+      }
+   },
    INVALID_FILTER_EXPRESSION(103)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQInvalidFilterExpressionException(msg);
-         }
-      },
+         return new HornetQInvalidFilterExpressionException(msg);
+      }
+   },
    ILLEGAL_STATE(104)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQIllegalStateException(msg);
-         }
-      },
+         return new HornetQIllegalStateException(msg);
+      }
+   },
    SECURITY_EXCEPTION(105)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQSecurityException(msg);
-         }
-      },
+         return new HornetQSecurityException(msg);
+      }
+   },
    ADDRESS_EXISTS(107)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQAddressExistsException(msg);
-         }
-      },
+         return new HornetQAddressExistsException(msg);
+      }
+   },
    INCOMPATIBLE_CLIENT_SERVER_VERSIONS(108)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQIncompatibleClientServerException(msg);
-         }
-      },
+         return new HornetQIncompatibleClientServerException(msg);
+      }
+   },
    LARGE_MESSAGE_ERROR_BODY(110)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQLargeMessageException(msg);
-         }
-      },
+         return new HornetQLargeMessageException(msg);
+      }
+   },
    TRANSACTION_ROLLED_BACK(111)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQTransactionRolledBackException(msg);
-         }
-      },
+         return new HornetQTransactionRolledBackException(msg);
+      }
+   },
    SESSION_CREATION_REJECTED(112)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQSessionCreationException(msg);
-         }
-      },
+         return new HornetQSessionCreationException(msg);
+      }
+   },
    DUPLICATE_ID_REJECTED(113)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQDuplicateIdException(msg);
-         }
-      },
+         return new HornetQDuplicateIdException(msg);
+      }
+   },
    DUPLICATE_METADATA(114)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQDuplicateMetaDataException(msg);
-         }
-      },
+         return new HornetQDuplicateMetaDataException(msg);
+      }
+   },
    TRANSACTION_OUTCOME_UNKNOWN(115)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQTransactionOutcomeUnknownException(msg);
-         }
-      },
+         return new HornetQTransactionOutcomeUnknownException(msg);
+      }
+   },
    ALREADY_REPLICATING(116)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQAlreadyReplicatingException(msg);
-         }
-      },
+         return new HornetQAlreadyReplicatingException(msg);
+      }
+   },
    INTERCEPTOR_REJECTED_PACKET(117)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQInterceptorRejectedPacketException(msg);
-         }
-      },
+         return new HornetQInterceptorRejectedPacketException(msg);
+      }
+   },
    INVALID_TRANSIENT_QUEUE_USE(118)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQInvalidTransientQueueUseException(msg);
-         }
-      },
+         return new HornetQInvalidTransientQueueUseException(msg);
+      }
+   },
 
    GENERIC_EXCEPTION(999),
    NATIVE_ERROR_INTERNAL(200),
@@ -230,22 +230,22 @@ public enum HornetQExceptionType
    NATIVE_ERROR_ALLOCATE_MEMORY(209),
    ADDRESS_FULL(210),
    LARGE_MESSAGE_INTERRUPTED(211)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQLargeMessageInterruptedException(msg);
-         }
-      },
+         return new HornetQLargeMessageInterruptedException(msg);
+      }
+   },
    CLUSTER_SECURITY_EXCEPTION(212)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQClusterSecurityException(msg);
-         }
+         return new HornetQClusterSecurityException(msg);
+      }
 
-      };
+   };
 
    private static final Map<Integer, HornetQExceptionType> TYPE_MAP;
 
