@@ -68,14 +68,13 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void serverRunningCachedCommand(Runnable run);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121004, value = "JMS Server Manager Caching command for {0} since the JMS Server is not active yet" ,
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 121004, value = "JMS Server Manager Caching command for {0} since the JMS Server is not active yet",
+            format = Message.Format.MESSAGE_FORMAT)
    void serverCachingCommand(Object runnable);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121005, value = "Invalid \"host\" value \"0.0.0.0\" detected for \"{0}\" connector. Switching to \"{1}\"." +
-         " If this new address is incorrect please manually configure the connector to use the proper one." ,
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 121005, value = "Invalid \"host\" value \"0.0.0.0\" detected for \"{0}\" connector. Switching to \"{1}\". If this new address is incorrect please manually configure the connector to use the proper one.",
+            format = Message.Format.MESSAGE_FORMAT)
    void invalidHostForConnector(String name, String newHost);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -122,7 +121,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
    @Message(id = 122010, value = "Failed to connect JMS Bridge", format = Message.Format.MESSAGE_FORMAT)
    void bridgeConnectError(@Cause Exception e);
 
-      @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122011, value = "error unbinding {0} from JNDI" , format = Message.Format.MESSAGE_FORMAT)
    void jndiUnbindError(@Cause Exception e, String key);
 
@@ -135,13 +134,13 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void xaRecoverError(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122014, value = "Notified of connection failure in xa recovery connectionFactory for provider {0} will attempt reconnect on next pass" ,
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 122014, value = "Notified of connection failure in xa recovery connectionFactory for provider {0} will attempt reconnect on next pass",
+            format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverConnectionError(@Cause Exception e, ClientSessionFactory csf);
 
-      @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122015, value = "Can not connect to {0} on auto-generated resource recovery" ,
-         format = Message.Format.MESSAGE_FORMAT)
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 122015, value = "Can not connect to {0} on auto-generated resource recovery",
+            format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverAutoConnectionError(@Cause Throwable e, XARecoveryConfig csf);
 
    @LogMessage(level = Logger.Level.DEBUG)
@@ -150,12 +149,12 @@ public interface HornetQJMSServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122017, value = "Tried to correct invalid \"host\" value \"0.0.0.0\" for \"{0}\" connector, but received an exception.",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void failedToCorrectHost(@Cause Exception e, String name);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122018, value = "Could not start recovery discovery on {0}, we will retry every recovery scan until the server is available",
-           format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void xaRecoveryStartError(XARecoveryConfig e);
 
    @LogMessage(level = Logger.Level.ERROR)

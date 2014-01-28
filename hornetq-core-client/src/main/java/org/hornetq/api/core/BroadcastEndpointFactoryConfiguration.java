@@ -19,8 +19,7 @@ import java.io.Serializable;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         9/25/12
  */
-// XXX no Javadocs
 public interface BroadcastEndpointFactoryConfiguration extends Serializable
 {
-    BroadcastEndpointFactory createBroadcastEndpointFactory();
+   BroadcastEndpointFactory createBroadcastEndpointFactory();
 }
