@@ -272,6 +272,10 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221044, value = "Backup Server has recovered journal to live server, restarting as backup", format = Message.Format.MESSAGE_FORMAT)
    void backupServerRecovered();
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221045, value = "libaio is not available, switching the configuration into NIO", format = Message.Format.MESSAGE_FORMAT)
+   void switchingNIO();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
          format = Message.Format.MESSAGE_FORMAT)
