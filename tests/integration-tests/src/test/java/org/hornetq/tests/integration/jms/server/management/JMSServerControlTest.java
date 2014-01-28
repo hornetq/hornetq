@@ -363,6 +363,62 @@ public class JMSServerControlTest extends ManagementTestBase
       }
    }
 
+
+   @Test
+   public void testDestroyTopicWithConsumers() throws Exception
+   {
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      JMSServerControl control = createManagementControl();
+      control.createTopic(topicName, topicJNDIBinding);
+
+      UnitTestCase.checkBinding(context, topicJNDIBinding);
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      HornetQConnectionFactory cf =
+         new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      HornetQConnection connection = (HornetQConnection) cf.createConnection();
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         // create a consumer will create a Core queue bound to the topic address
+         HornetQMessageConsumer cons = (HornetQMessageConsumer) session.createConsumer(HornetQJMSClient.createTopic(topicName));
+
+         control.destroyTopic(topicName, true);
+
+         UnitTestCase.checkNoBinding(context, topicJNDIBinding);
+         checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+         long time = System.currentTimeMillis();
+         while (!cons.isClosed() && time + 5000 > System.currentTimeMillis())
+         {
+            Thread.sleep(100);
+         }
+         assertTrue(cons.isClosed());
+
+         try
+         {
+            cons.receive(5000);
+            fail("should throw exception");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            assertTrue(e.getCause() instanceof HornetQObjectClosedException);
+         }
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
    @Test
    public void testDestroyQueueWithConsumersNetty() throws Exception
    {

@@ -168,6 +168,17 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if a problem occurred destroying the topic
     */
+   boolean destroyTopic(String name, boolean removeConsumers) throws Exception;
+
+   /**
+    * destroys a topic and removes it from JNDI  or BindingRegistry
+    *
+    * @param name
+    *           the name of the topic to destroy
+    * @return true if the topic was destroyed
+    * @throws Exception
+    *            if a problem occurred destroying the topic
+    */
    boolean destroyTopic(String name) throws Exception;
 
    /** Call this method to have a CF rebound to JNDI and stored on the Journal

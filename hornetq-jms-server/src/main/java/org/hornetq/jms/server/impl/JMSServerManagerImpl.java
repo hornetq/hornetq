@@ -895,20 +895,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized boolean destroyQueue(final String name) throws Exception
    {
-      checkInitialised();
-
-      removeFromJNDI(queues, queueJNDI, name);
-
-      queues.remove(name);
-      queueJNDI.remove(name);
-
-      jmsManagementService.unregisterQueue(name);
-
-      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null, true);
-
-      storage.deleteDestination(PersistedType.Queue, name);
-
-      return true;
+      return destroyQueue(name, true);
    }
 
    public synchronized boolean destroyQueue(final String name, final boolean removeConsumers) throws Exception
@@ -930,6 +917,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    }
 
    public synchronized boolean destroyTopic(final String name) throws Exception
+   {
+      return destroyTopic(name, true);
+   }
+
+   public synchronized boolean destroyTopic(final String name, final boolean removeConsumers) throws Exception
    {
       checkInitialised();
 
@@ -956,7 +948,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             // We can't remove the remote binding. As this would be the bridge associated with the topic on this case
             if (binding.getType() != BindingType.REMOTE_QUEUE)
             {
-               server.destroyQueue(SimpleString.toSimpleString(queueName), null, true);
+               server.destroyQueue(SimpleString.toSimpleString(queueName), null, !removeConsumers, removeConsumers);
             }
          }
       }
