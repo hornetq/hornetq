@@ -63,88 +63,88 @@ public class SharedNioEventLoopGroup extends NioEventLoopGroup
       {
          public ClassLoader run()
          {
-           return ClientSessionFactoryImpl.class.getClassLoader();
+            return ClientSessionFactoryImpl.class.getClassLoader();
          }
       });
-    }
+   }
 
-    public static synchronized void forceShutdown()
-    {
-       if (instance != null)
-       {
-          instance.shutdown();
-          instance.nioChannelFactoryCount.set(0);
-          instance = null;
-       }
-    }
+   public static synchronized void forceShutdown()
+   {
+      if (instance != null)
+      {
+         instance.shutdown();
+         instance.nioChannelFactoryCount.set(0);
+         instance = null;
+      }
+   }
 
-    public static synchronized SharedNioEventLoopGroup getInstance(int numThreads)
-    {
-       if (instance != null)
-       {
-          ScheduledFuture f = instance.shutdown.getAndSet(null);
-          if (f != null)
-          {
-              f.cancel(false);
-          }
-       }
-       else
-       {
-          instance = new SharedNioEventLoopGroup(numThreads, new HornetQThreadFactory("HornetQ-client-netty-threads", true, getThisClassLoader()));
-       }
-       instance.nioChannelFactoryCount.incrementAndGet();
-       return instance;
-    }
+   public static synchronized SharedNioEventLoopGroup getInstance(int numThreads)
+   {
+      if (instance != null)
+      {
+         ScheduledFuture f = instance.shutdown.getAndSet(null);
+         if (f != null)
+         {
+            f.cancel(false);
+         }
+      }
+      else
+      {
+         instance = new SharedNioEventLoopGroup(numThreads, new HornetQThreadFactory("HornetQ-client-netty-threads", true, getThisClassLoader()));
+      }
+      instance.nioChannelFactoryCount.incrementAndGet();
+      return instance;
+   }
 
-    @Override
-    public Future<?> terminationFuture()
-    {
-       return terminationPromise;
-    }
+   @Override
+   public Future<?> terminationFuture()
+   {
+      return terminationPromise;
+   }
 
-    @Override
-    public Future<?> shutdownGracefully()
-    {
-       return shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
-    }
+   @Override
+   public Future<?> shutdownGracefully()
+   {
+      return shutdownGracefully(100, 3000, TimeUnit.MILLISECONDS);
+   }
 
-    @Override
-    public Future<?> shutdownGracefully(final long l, final long l2, final TimeUnit timeUnit)
-    {
-       if (nioChannelFactoryCount.decrementAndGet() == 0)
-       {
-          shutdown.compareAndSet(null, next().scheduleAtFixedRate(new Runnable()
-          {
-             @Override
-             public void run()
-             {
-                synchronized (SharedNioEventLoopGroup.class)
-                {
-                   if (shutdown.get() != null)
-                   {
-                      Future<?> future = SharedNioEventLoopGroup.super.shutdownGracefully(l, l2, timeUnit);
-                      future.addListener(new FutureListener<Object>()
-                      {
-                         @Override
-                         public void operationComplete(Future future) throws Exception
-                         {
-                            if (future.isSuccess())
-                            {
-                                terminationPromise.setSuccess(null);
-                            }
-                            else
-                            {
-                                terminationPromise.setFailure(future.cause());
-                            }
-                         }
-                      });
-                      instance = null;
-                   }
-                }
-             }
+   @Override
+   public Future<?> shutdownGracefully(final long l, final long l2, final TimeUnit timeUnit)
+   {
+      if (nioChannelFactoryCount.decrementAndGet() == 0)
+      {
+         shutdown.compareAndSet(null, next().scheduleAtFixedRate(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               synchronized (SharedNioEventLoopGroup.class)
+               {
+                  if (shutdown.get() != null)
+                  {
+                     Future<?> future = SharedNioEventLoopGroup.super.shutdownGracefully(l, l2, timeUnit);
+                     future.addListener(new FutureListener<Object>()
+                     {
+                        @Override
+                        public void operationComplete(Future future) throws Exception
+                        {
+                           if (future.isSuccess())
+                           {
+                              terminationPromise.setSuccess(null);
+                           }
+                           else
+                           {
+                              terminationPromise.setFailure(future.cause());
+                           }
+                        }
+                     });
+                     instance = null;
+                  }
+               }
+            }
 
-          }, 10, 10, TimeUnit.SECONDS));
-       }
-       return terminationPromise;
-    }
+         }, 10, 10, TimeUnit.SECONDS));
+      }
+      return terminationPromise;
+   }
 }

@@ -164,8 +164,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
          scheduledExecutor.schedule(runnable, 0, TimeUnit.MILLISECONDS);
       }
-      else
-      if (!runnables.containsKey(deliveryTime))
+      else if (!runnables.containsKey(deliveryTime))
       {
          ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(deliveryTime);
 

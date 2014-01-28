@@ -410,8 +410,8 @@ public class NettyConnector extends AbstractConnector
 
       if (useNioGlobalWorkerPool)
       {
-          channelClazz = NioSocketChannel.class;
-          group = SharedNioEventLoopGroup.getInstance(threadsToUse);
+         channelClazz = NioSocketChannel.class;
+         group = SharedNioEventLoopGroup.getInstance(threadsToUse);
       }
       else
       {

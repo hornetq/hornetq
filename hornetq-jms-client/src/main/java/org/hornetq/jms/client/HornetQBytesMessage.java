@@ -26,7 +26,8 @@ import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * HornetQ implementation of a JMS {@link BytesMessage}.
- * <p>
+ * <p/>
+ *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -442,7 +443,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c)
+                                     Class c)
    {
       return c.isAssignableFrom(byte[].class);
    }

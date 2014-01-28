@@ -12,15 +12,14 @@
  */
 package org.hornetq.jms.client;
 
+import javax.jms.JMSException;
+import javax.jms.MessageFormatException;
+import javax.jms.ObjectMessage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
-import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
-import javax.jms.ObjectMessage;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -31,15 +30,12 @@ import org.hornetq.api.core.client.ClientSession;
  * HornetQ implementation of a JMS ObjectMessage.
  * <br>
  * Don't used ObjectMessage if you want good performance!
- *
+ * <p/>
  * Serialization is slooooow!
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
- * @version $Revision: 3412 $
- *
  */
 public class HornetQObjectMessage extends HornetQMessage implements ObjectMessage
 {
@@ -190,7 +186,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c)
+                                     Class c)
    {
       if (data == null) // we have no body
          return true;

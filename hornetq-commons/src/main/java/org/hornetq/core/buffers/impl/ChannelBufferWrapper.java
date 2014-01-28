@@ -24,12 +24,14 @@ import org.hornetq.utils.UTF8Util;
 
 /**
  * A ChannelBufferWrapper
+ *
  * @author Tim Fox
  */
 public class ChannelBufferWrapper implements HornetQBuffer
 {
    protected ByteBuf buffer; // NO_UCD (use final)
    private final boolean releasable;
+
    public ChannelBufferWrapper(final ByteBuf buffer)
    {
       this(buffer, false);
@@ -37,16 +39,17 @@ public class ChannelBufferWrapper implements HornetQBuffer
 
    public ChannelBufferWrapper(final ByteBuf buffer, boolean releasable)
    {
-       if (!releasable)
-       {
-          this.buffer = Unpooled.unreleasableBuffer(buffer);
-       }
-       else
-       {
-          this.buffer = buffer;
-       }
-       this.releasable = releasable;
+      if (!releasable)
+      {
+         this.buffer = Unpooled.unreleasableBuffer(buffer);
+      }
+      else
+      {
+         this.buffer = buffer;
+      }
+      this.releasable = releasable;
    }
+
    public boolean readBoolean()
    {
       return readByte() != 0;
