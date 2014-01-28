@@ -12,32 +12,39 @@
  */
 package org.hornetq.ra;
 
-import java.util.Arrays;
-import java.util.Enumeration;
-
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import java.util.Arrays;
+import java.util.Enumeration;
 
 
 /**
  * A wrapper for a message
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class HornetQRAMessage implements Message
 {
-   /** Whether trace is enabled */
+   /**
+    * Whether trace is enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** The message */
+   /**
+    * The message
+    */
    protected Message message;
 
-   /** The session */
+   /**
+    * The session
+    */
    protected HornetQRASession session;
 
    /**
     * Create a new wrapper
+    *
     * @param message the message
     * @param session the session
     */
@@ -54,7 +61,8 @@ public class HornetQRAMessage implements Message
 
    /**
     * Acknowledge
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    public void acknowledge() throws JMSException
    {
@@ -69,7 +77,8 @@ public class HornetQRAMessage implements Message
 
    /**
     * Clear body
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    public void clearBody() throws JMSException
    {
@@ -83,7 +92,8 @@ public class HornetQRAMessage implements Message
 
    /**
     * Clear properties
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    public void clearProperties() throws JMSException
    {
@@ -97,9 +107,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public boolean getBooleanProperty(final String name) throws JMSException
    {
@@ -113,9 +124,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public byte getByteProperty(final String name) throws JMSException
    {
@@ -129,9 +141,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public double getDoubleProperty(final String name) throws JMSException
    {
@@ -145,9 +158,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public float getFloatProperty(final String name) throws JMSException
    {
@@ -161,9 +175,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public int getIntProperty(final String name) throws JMSException
    {
@@ -177,8 +192,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get correlation id
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public String getJMSCorrelationID() throws JMSException
    {
@@ -192,8 +208,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get correlation id
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
@@ -207,8 +224,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get delivery mode
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public int getJMSDeliveryMode() throws JMSException
    {
@@ -222,8 +240,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get destination
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Destination getJMSDestination() throws JMSException
    {
@@ -237,8 +256,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get expiration
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public long getJMSExpiration() throws JMSException
    {
@@ -252,8 +272,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get message id
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public String getJMSMessageID() throws JMSException
    {
@@ -267,8 +288,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get priority
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public int getJMSPriority() throws JMSException
    {
@@ -282,8 +304,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get redelivered status
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public boolean getJMSRedelivered() throws JMSException
    {
@@ -297,8 +320,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get reply to destination
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Destination getJMSReplyTo() throws JMSException
    {
@@ -312,8 +336,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get timestamp
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public long getJMSTimestamp() throws JMSException
    {
@@ -327,8 +352,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get type
+    *
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public String getJMSType() throws JMSException
    {
@@ -342,9 +368,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public long getLongProperty(final String name) throws JMSException
    {
@@ -358,9 +385,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Object getObjectProperty(final String name) throws JMSException
    {
@@ -374,8 +402,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property names
+    *
     * @return The values
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    @SuppressWarnings("rawtypes")
    public Enumeration getPropertyNames() throws JMSException
@@ -390,9 +419,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public short getShortProperty(final String name) throws JMSException
    {
@@ -406,9 +436,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Get property
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public String getStringProperty(final String name) throws JMSException
    {
@@ -422,9 +453,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Do property exist
+    *
     * @param name The name
     * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public boolean propertyExists(final String name) throws JMSException
    {
@@ -438,9 +470,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
@@ -454,9 +487,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setByteProperty(final String name, final byte value) throws JMSException
    {
@@ -470,9 +504,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setDoubleProperty(final String name, final double value) throws JMSException
    {
@@ -486,9 +521,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setFloatProperty(final String name, final float value) throws JMSException
    {
@@ -502,9 +538,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setIntProperty(final String name, final int value) throws JMSException
    {
@@ -518,8 +555,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set correlation id
+    *
     * @param correlationID The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSCorrelationID(final String correlationID) throws JMSException
    {
@@ -533,8 +571,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set correlation id
+    *
     * @param correlationID The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSCorrelationIDAsBytes(final byte[] correlationID) throws JMSException
    {
@@ -548,8 +587,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set delivery mode
+    *
     * @param deliveryMode The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSDeliveryMode(final int deliveryMode) throws JMSException
    {
@@ -563,8 +603,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set destination
+    *
     * @param destination The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSDestination(final Destination destination) throws JMSException
    {
@@ -578,8 +619,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set expiration
+    *
     * @param expiration The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSExpiration(final long expiration) throws JMSException
    {
@@ -593,8 +635,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set message id
+    *
     * @param id The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSMessageID(final String id) throws JMSException
    {
@@ -608,8 +651,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set priority
+    *
     * @param priority The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSPriority(final int priority) throws JMSException
    {
@@ -623,8 +667,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set redelivered status
+    *
     * @param redelivered The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSRedelivered(final boolean redelivered) throws JMSException
    {
@@ -638,8 +683,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set reply to
+    *
     * @param replyTo The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSReplyTo(final Destination replyTo) throws JMSException
    {
@@ -653,8 +699,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set timestamp
+    *
     * @param timestamp The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSTimestamp(final long timestamp) throws JMSException
    {
@@ -668,8 +715,9 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set type
+    *
     * @param type The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setJMSType(final String type) throws JMSException
    {
@@ -683,9 +731,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setLongProperty(final String name, final long value) throws JMSException
    {
@@ -699,9 +748,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
@@ -715,9 +765,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setShortProperty(final String name, final short value) throws JMSException
    {
@@ -731,9 +782,10 @@ public class HornetQRAMessage implements Message
 
    /**
     * Set property
-    * @param name The name
+    *
+    * @param name  The name
     * @param value The value
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setStringProperty(final String name, final String value) throws JMSException
    {
@@ -778,7 +830,7 @@ public class HornetQRAMessage implements Message
 
    @Override
    public boolean isBodyAssignableTo(@SuppressWarnings("rawtypes")
-   Class c) throws JMSException
+                                     Class c) throws JMSException
    {
       if (HornetQRAMessage.trace)
       {
@@ -787,8 +839,9 @@ public class HornetQRAMessage implements Message
       return message.isBodyAssignableTo(c);
    }
 
-    /**
+   /**
     * Return the hash code
+    *
     * @return The hash code
     */
    @Override
@@ -804,6 +857,7 @@ public class HornetQRAMessage implements Message
 
    /**
     * Check for equality
+    *
     * @param object The other object
     * @return True / false
     */
@@ -827,6 +881,7 @@ public class HornetQRAMessage implements Message
 
    /**
     * Return string representation
+    *
     * @return The string
     */
    @Override

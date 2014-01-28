@@ -36,8 +36,6 @@ import org.hornetq.journal.HornetQJournalLogger;
  * A AbstractSequentialFile
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public abstract class AbstractSequentialFile implements SequentialFile
 {
@@ -54,11 +52,15 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    protected TimedBuffer timedBuffer;
 
-   /** Instead of having AIOSequentialFile implementing the Observer, I have done it on an inner class.
-    *  This is the class returned to the factory when the file is being activated. */
+   /**
+    * Instead of having AIOSequentialFile implementing the Observer, I have done it on an inner class.
+    * This is the class returned to the factory when the file is being activated.
+    */
    protected final TimedBufferObserver timedBufferObserver = new LocalBufferObserver();
 
-   /** Used for asynchronous writes */
+   /**
+    * Used for asynchronous writes
+    */
    protected final Executor writerExecutor;
 
    /**
@@ -106,32 +108,32 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       try
       {
-      HornetQJournalLogger.LOGGER.debug("Copying "  + this + " as " + newFileName);
-      if (!newFileName.isOpen())
-      {
-         newFileName.open();
-      }
-
-      if (!isOpen())
-      {
-         this.open();
-      }
-
-
-      ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-
-      for (;;)
-      {
-         buffer.rewind();
-         int size = this.read(buffer);
-         newFileName.writeDirect(buffer, false);
-         if (size < 10 * 1024)
+         HornetQJournalLogger.LOGGER.debug("Copying " + this + " as " + newFileName);
+         if (!newFileName.isOpen())
          {
-            break;
+            newFileName.open();
          }
-      }
-      newFileName.close();
-      this.close();
+
+         if (!isOpen())
+         {
+            this.open();
+         }
+
+
+         ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
+
+         for (;;)
+         {
+            buffer.rewind();
+            int size = this.read(buffer);
+            newFileName.writeDirect(buffer, false);
+            if (size < 10 * 1024)
+            {
+               break;
+            }
+         }
+         newFileName.close();
+         this.close();
       }
       catch (IOException e)
       {
@@ -155,7 +157,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
    }
 
    public final void renameTo(final String newFileName) throws IOException, InterruptedException,
- HornetQException
+      HornetQException
    {
       try
       {
@@ -180,7 +182,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
    }
 
    /**
-    * @throws IOException we declare throwing IOException because sub-classes need to do it
+    * @throws IOException      we declare throwing IOException because sub-classes need to do it
     * @throws HornetQException
     */
    public synchronized void close() throws IOException, InterruptedException, HornetQException
@@ -249,7 +251,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
    }
 
    public void write(final HornetQBuffer bytes, final boolean sync) throws IOException, InterruptedException,
-                                                                   HornetQException
+      HornetQException
    {
       if (sync)
       {

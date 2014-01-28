@@ -159,8 +159,7 @@ class CoreProtocolManager implements ProtocolManager
          buffer.getByte(3) == 'N' &&
          buffer.getByte(4) == 'E' &&
          buffer.getByte(5) == 'T' &&
-         buffer.getByte(6) == 'Q'
-         )
+         buffer.getByte(6) == 'Q')
       {
          //todo add some handshaking
          buffer.readBytes(7);
@@ -195,7 +194,7 @@ class CoreProtocolManager implements ProtocolManager
       {
          if (packet.getType() == PacketImpl.PING)
          {
-            Ping ping = (Ping) packet;
+            Ping ping = (Ping)packet;
 
             if (config.getConnectionTTLOverride() == -1)
             {
@@ -208,11 +207,11 @@ class CoreProtocolManager implements ProtocolManager
          }
          else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
          {
-            SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage) packet;
+            SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
 
             if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
-               channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2) msg).getClientVersion());
+               channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
             }
 
             final ClusterTopologyListener listener = new ClusterTopologyListener()
@@ -327,7 +326,7 @@ class CoreProtocolManager implements ProtocolManager
          }
          else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
          {
-            NodeAnnounceMessage msg = (NodeAnnounceMessage) packet;
+            NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
             Pair<TransportConfiguration, TransportConfiguration> pair;
             if (msg.isBackup())
@@ -362,7 +361,7 @@ class CoreProtocolManager implements ProtocolManager
          }
          else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
          {
-            BackupRegistrationMessage msg = (BackupRegistrationMessage) packet;
+            BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
             ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
 
             if (!config.isSecurityEnabled() || clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
