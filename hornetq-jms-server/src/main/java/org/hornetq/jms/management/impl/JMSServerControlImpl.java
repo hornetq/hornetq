@@ -494,13 +494,19 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
    public boolean destroyTopic(final String name) throws Exception
    {
+      return destroyTopic(name, true);
+   }
+
+
+   public boolean destroyTopic(final String name, final boolean removeConsumers) throws Exception
+   {
       checkStarted();
 
       clearIO();
 
       try
       {
-         boolean destroyed = server.destroyTopic(name);
+         boolean destroyed = server.destroyTopic(name, removeConsumers);
          if (destroyed)
          {
             sendNotification(NotificationType.TOPIC_DESTROYED, name);

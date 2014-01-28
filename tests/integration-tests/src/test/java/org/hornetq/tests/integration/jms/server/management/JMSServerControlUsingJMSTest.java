@@ -225,6 +225,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (Boolean)proxy.invokeOperation("destroyTopic", name);
          }
 
+         public boolean destroyTopic(final String name, boolean removeConsumers) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("destroyTopic", name, removeConsumers);
+         }
+
          public String getVersion()
          {
             return (String)proxy.retrieveAttributeValue("version");

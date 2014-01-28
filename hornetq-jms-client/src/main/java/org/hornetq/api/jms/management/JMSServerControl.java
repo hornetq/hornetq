@@ -131,6 +131,14 @@ public interface JMSServerControl
     * @return {@code true} if the topic was destroyed, {@code false} else
     */
    @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
+   boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name, @Parameter(name = "removeConsumers", desc = "disconnect any consumers connected to this queue") boolean removeConsumers) throws Exception;
+
+   /**
+    * Destroys a JMS Topic with the specified name.
+    *
+    * @return {@code true} if the topic was destroyed, {@code false} else
+    */
+   @Operation(desc = "Destroy a JMS Topic", impact = MBeanOperationInfo.ACTION)
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
 
    /**
