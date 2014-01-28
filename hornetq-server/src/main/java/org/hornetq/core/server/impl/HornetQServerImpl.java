@@ -74,6 +74,7 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.paging.PagingManager;
@@ -1506,6 +1507,13 @@ public class HornetQServerImpl implements HornetQServer
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
                                                         false,
                                                         getThisClassLoader());
+
+
+      if (configuration.getJournalType() == JournalType.ASYNCIO && !AIOSequentialFileFactory.isSupported())
+      {
+         HornetQServerLogger.LOGGER.switchingNIO();
+         configuration.setJournalType(JournalType.NIO);
+      }
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
