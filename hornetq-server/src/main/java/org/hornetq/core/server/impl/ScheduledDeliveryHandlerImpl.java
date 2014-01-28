@@ -201,6 +201,25 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
          runnables.remove(deliveryTime);
 
+         final long now = System.currentTimeMillis();
+
+         if (now < deliveryTime)
+         {
+            // Ohhhh... blame it on the OS
+            // on some OSes (so far Windows only) the precision of the scheduled executor could eventually give
+            // an executor call earlier than it was supposed...
+            // for that reason we will schedule it again so no messages are lost!
+            // we can't just assume deliveryTime here as we could deliver earlier than what we are supposed to
+            // this is basically a hack to work around an OS or JDK bug!
+            if (trace)
+            {
+               HornetQServerLogger.LOGGER.trace("Scheduler is working around OS imprecisions on " +
+                                                 "timing and re-scheduling an executor. now=" + now +
+                                                 " and deliveryTime=" + deliveryTime);
+            }
+            ScheduledDeliveryHandlerImpl.this.scheduleDelivery(deliveryTime);
+         }
+
          if (ScheduledDeliveryHandlerImpl.trace)
          {
             HornetQServerLogger.LOGGER.trace("Is it " + System.currentTimeMillis() + " now and we are running deliveryTime = " + deliveryTime);
@@ -213,7 +232,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             while (iter.hasNext())
             {
                MessageReference reference = iter.next().getRef();
-               if (reference.getScheduledDeliveryTime() > System.currentTimeMillis())
+               if (reference.getScheduledDeliveryTime() > now)
                {
                   // We will delivery as long as there are messages to be delivered
                   break;
@@ -238,11 +257,22 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
                references.addFirst(reference);
             }
+            if (ScheduledDeliveryHandlerImpl.trace)
+            {
+               HornetQServerLogger.LOGGER.trace("Finished loop on deliveryTime = " + deliveryTime);
+            }
          }
 
          for (Map.Entry<Queue, LinkedList<MessageReference>> entry : refs.entrySet())
          {
-            entry.getKey().addHead(entry.getValue());
+
+            Queue queue = entry.getKey();
+            LinkedList<MessageReference> list = entry.getValue();
+            if (trace)
+            {
+               HornetQServerLogger.LOGGER.trace("Delivering " + list.size() + " elements on list to queue " + queue);
+            }
+            queue.addHead(list);
          }
 
          // Just to speed up GC

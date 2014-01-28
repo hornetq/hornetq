@@ -3219,7 +3219,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       if (trace)
       {
-         HornetQJournalLogger.LOGGER.movingNextFile(currentFile);
+         HornetQJournalLogger.LOGGER.trace("Moving next file " + currentFile);
       }
 
       fileFactory.activateBuffer(currentFile.getFile());
