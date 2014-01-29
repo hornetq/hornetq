@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;

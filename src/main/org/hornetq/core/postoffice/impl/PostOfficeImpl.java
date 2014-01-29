@@ -1433,6 +1433,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          return refs;
       }
+
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
    }
 
    public Bindings createBindings(final SimpleString address) throws Exception

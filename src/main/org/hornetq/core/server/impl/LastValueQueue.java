@@ -161,6 +161,8 @@ public class LastValueQueue extends QueueImpl
 
       private volatile MessageReference ref;
 
+      private Long consumerId;
+
       HolderReference(final SimpleString prop, final MessageReference ref)
       {
          this.prop = prop;
@@ -254,19 +256,29 @@ public class LastValueQueue extends QueueImpl
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-       */
-      public void acknowledge(Transaction tx) throws Exception
-      {
-         ref.getQueue().acknowledge(tx, this);
-      }
-
-      /* (non-Javadoc)
        * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
        */
       public int getMessageMemoryEstimate()
       {
          return ref.getMessage().getMemoryEstimate();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#setConsumerId(java.lang.Long)
+       */
+      @Override
+      public void setConsumerId(Long consumerID)
+      {
+         this.consumerId = consumerID;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#getConsumerId()
+       */
+      @Override
+      public Long getConsumerId()
+      {
+         return this.consumerId;
       }
    }
 }

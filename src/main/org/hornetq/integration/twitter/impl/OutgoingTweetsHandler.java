@@ -20,9 +20,11 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.*;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.utils.ConfigurationHelper;
+
 import twitter4j.*;
 import twitter4j.http.AccessToken;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -235,5 +237,14 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    public String toManagementString()
    {
       return toString();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      return Collections.emptyList();
    }
 }

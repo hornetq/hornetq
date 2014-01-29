@@ -21,6 +21,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -2924,9 +2925,14 @@ public class JournalStorageManager implements StorageManager
 
       public List<MessageReference> getRelatedMessageReferences()
       {
-         return null;
+         return Collections.emptyList();
       }
 
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
    }
 
    private static final class PageCountRecord implements EncodingSupport
@@ -4001,7 +4007,13 @@ public class JournalStorageManager implements StorageManager
        */
       public List<MessageReference> getRelatedMessageReferences()
       {
-         return null;
+         return Collections.emptyList();
+      }
+      
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
       }
 
    }
