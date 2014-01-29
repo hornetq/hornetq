@@ -12,6 +12,9 @@
  */
 package org.hornetq.core.client.impl;
 
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -23,10 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -122,7 +121,9 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private volatile CoreRemotingConnection remotingConnection;
 
-   /** All access to producers are guarded (i.e. synchronized) on itself. */
+   /**
+    * All access to producers are guarded (i.e. synchronized) on itself.
+    */
    private final Set<ClientProducerInternal> producers = new HashSet<ClientProducerInternal>();
 
    // Consumers must be an ordered map so if we fail we recreate them in the same order with the same ids
@@ -202,33 +203,33 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    // Constructors ----------------------------------------------------------------------------
 
    ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
-                            final String name,
-                            final String username,
-                            final String password,
-                            final boolean xa,
-                            final boolean autoCommitSends,
-                            final boolean autoCommitAcks,
-                            final boolean preAcknowledge,
-                            final boolean blockOnAcknowledge,
-                            final boolean autoGroup,
-                            final int ackBatchSize,
-                            final int consumerWindowSize,
-                            final int consumerMaxRate,
-                            final int confirmationWindowSize,
-                            final int producerWindowSize,
-                            final int producerMaxRate,
-                            final boolean blockOnNonDurableSend,
-                            final boolean blockOnDurableSend,
-                            final boolean cacheLargeMessageClient,
-                            final int minLargeMessageSize,
-                            final boolean compressLargeMessages,
-                            final int initialMessagePacketSize,
-                            final String groupID,
-                            final CoreRemotingConnection remotingConnection,
-                            final int version,
-                            final Channel channel,
-                            final Executor executor,
-                            final Executor flowControlExecutor) throws HornetQException
+                     final String name,
+                     final String username,
+                     final String password,
+                     final boolean xa,
+                     final boolean autoCommitSends,
+                     final boolean autoCommitAcks,
+                     final boolean preAcknowledge,
+                     final boolean blockOnAcknowledge,
+                     final boolean autoGroup,
+                     final int ackBatchSize,
+                     final int consumerWindowSize,
+                     final int consumerMaxRate,
+                     final int confirmationWindowSize,
+                     final int producerWindowSize,
+                     final int producerMaxRate,
+                     final boolean blockOnNonDurableSend,
+                     final boolean blockOnDurableSend,
+                     final boolean cacheLargeMessageClient,
+                     final int minLargeMessageSize,
+                     final boolean compressLargeMessages,
+                     final int initialMessagePacketSize,
+                     final String groupID,
+                     final CoreRemotingConnection remotingConnection,
+                     final int version,
+                     final Channel channel,
+                     final Executor executor,
+                     final Executor flowControlExecutor) throws HornetQException
    {
       this.sessionFactory = sessionFactory;
 
@@ -387,11 +388,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          SessionQueueQueryResponseMessage response = (SessionQueueQueryResponseMessage)channel.sendBlocking(request, PacketImpl.SESS_QUEUEQUERY_RESP);
 
          return new QueueQueryImpl(response.isDurable(),
-            response.getConsumerCount(),
-            response.getMessageCount(),
-            response.getFilterString(),
-            response.getAddress(),
-            response.isExists());
+                                   response.getConsumerCount(),
+                                   response.getMessageCount(),
+                                   response.getFilterString(),
+                                   response.getAddress(),
+                                   response.isExists());
       }
       finally
       {
@@ -471,7 +472,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    /**
     * Note, we DO NOT currently support direct consumers (i.e. consumers where delivery occurs on
     * the remoting thread).
-    * <p>
+    * <p/>
     * Direct consumers have issues with blocking and failover. E.g. if direct then inside
     * MessageHandler call a blocking method like rollback or acknowledge (blocking) This can block
     * until failover completes, which disallows the thread to be used to deliver any responses to
@@ -498,7 +499,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    public ClientProducer createProducer() throws HornetQException
    {
-      return createProducer((SimpleString) null);
+      return createProducer((SimpleString)null);
    }
 
    public ClientProducer createProducer(final SimpleString address) throws HornetQException
@@ -560,7 +561,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       * if we have failed over whilst flushing the acks then we should rollback and throw exception before attempting to
       * commit as committing might actually commit something but we we wouldn't know and rollback after the commit
       * */
-      if(rollbackOnly)
+      if (rollbackOnly)
       {
          rollbackOnFailover(true);
       }
@@ -585,7 +586,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
 
       //oops, we have failed over during the commit and dont know what happened
-      if(rollbackOnly)
+      if (rollbackOnly)
       {
          rollbackOnFailover(false);
       }
@@ -747,12 +748,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    public void addFailoverListener(FailoverEventListener listener)
    {
-     sessionFactory.addFailoverListener(listener);
+      sessionFactory.addFailoverListener(listener);
    }
 
    public boolean removeFailoverListener(FailoverEventListener listener)
    {
-     return sessionFactory.removeFailoverListener(listener);
+      return sessionFactory.removeFailoverListener(listener);
    }
 
    public int getVersion()
@@ -786,7 +787,9 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       return name;
    }
 
-   /** Acknowledges all messages received by the consumer so far. */
+   /**
+    * Acknowledges all messages received by the consumer so far.
+    */
    public void acknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       // if we're pre-acknowledging then we don't need to do anything
@@ -1075,7 +1078,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                   preAcknowledge,
                                                                   confirmationWindowSize,
                                                                   defaultAddress == null ? null
-                                                                                        : defaultAddress.toString());
+                                                                     : defaultAddress.toString());
                   boolean retry = false;
                   do
                   {
@@ -1125,11 +1128,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
                      SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
                                                                                                            entry.getValue()
-                                                                                                                .getQueueName(),
+                                                                                                              .getQueueName(),
                                                                                                            entry.getValue()
-                                                                                                                .getFilterString(),
+                                                                                                              .getFilterString(),
                                                                                                            entry.getValue()
-                                                                                                                .isBrowseOnly(),
+                                                                                                              .isBrowseOnly(),
                                                                                                            false);
 
                      sendPacketWithoutLock(createConsumerRequest);
@@ -1327,7 +1330,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    {
       if (concurrentCall.incrementAndGet() > 1)
       {
-         HornetQClientLogger.LOGGER.invalidConcurrentSessionUsage(new Exception ("trace"));
+         HornetQClientLogger.LOGGER.invalidConcurrentSessionUsage(new Exception("trace"));
       }
    }
 
@@ -1348,7 +1351,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       else if (packet.getType() == PacketImpl.SESS_SEND_CONTINUATION)
       {
-         SessionSendContinuationMessage scm = (SessionSendContinuationMessage) packet;
+         SessionSendContinuationMessage scm = (SessionSendContinuationMessage)packet;
          if (!scm.isContinues())
          {
             sendAckHandler.sendAcknowledged(scm.getMessage());
@@ -1836,15 +1839,15 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
 
       return "ClientSessionImpl [name=" + name +
-             ", username=" +
-             username +
-             ", closed=" +
-             closed +
-             ", factory = " + this.sessionFactory +
-             ", metaData=(" +
-             buffer +
-             ")]@" +
-             Integer.toHexString(hashCode());
+         ", username=" +
+         username +
+         ", closed=" +
+         closed +
+         ", factory = " + this.sessionFactory +
+         ", metaData=(" +
+         buffer +
+         ")]@" +
+         Integer.toHexString(hashCode());
    }
 
    private int calcWindowSize(final int windowSize)
@@ -1920,7 +1923,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                ackBatchSize,
                                                                consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
                                                                                                                 false)
-                                                                                  : null,
+                                                                  : null,
                                                                executor,
                                                                flowControlExecutor,
                                                                channel,
@@ -1948,7 +1951,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       ClientProducerInternal producer = new ClientProducerImpl(this,
                                                                address,
                                                                maxRate == -1 ? null
-                                                                            : new TokenBucketLimiterImpl(maxRate, false),
+                                                                  : new TokenBucketLimiterImpl(maxRate, false),
                                                                autoCommitSends && blockOnNonDurableSend,
                                                                autoCommitSends && blockOnDurableSend,
                                                                autoGroup,
@@ -2214,7 +2217,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
     * If you ever tried to debug XIDs you will know what this is about.
     * This will serialize and deserialize the XID to the same way it's going to be printed on server logs
     * or print-data.
-    *
+    * <p/>
     * This will convert to the same XID deserialized on the Server, hence we will be able to debug eventual stuff
     *
     * @param xid
@@ -2244,8 +2247,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          return "TMFAIL";
       }
-      else
-      if (flags == XAResource.TMJOIN)
+      else if (flags == XAResource.TMJOIN)
       {
          return "TMJOIN";
       }

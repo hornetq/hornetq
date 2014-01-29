@@ -38,13 +38,12 @@ import org.jgroups.ReceiverAdapter;
  * This is useful when HornetQ needs to get a JChannel from a running JGroups service as in the
  * case of AS7 integration.
  * </ol>
- * <p>
+ * <p/>
  * Note only one JChannel is needed in a VM. To avoid the channel being prematurely disconnected
  * by any party, a wrapper class is used.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  * @see JChannelWrapper, JChannelManager
  */
 public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
@@ -55,9 +54,11 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
    public JGroupsBroadcastGroupConfiguration(final String jgroupsFile, final String channelName)
    {
-      factory = new BroadcastEndpointFactory() {
+      factory = new BroadcastEndpointFactory()
+      {
          @Override
-         public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
+         public BroadcastEndpoint createBroadcastEndpoint() throws Exception
+         {
             JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint();
             endpoint.initChannel(jgroupsFile, channelName);
             return endpoint;
@@ -67,9 +68,11 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
    public JGroupsBroadcastGroupConfiguration(final JChannel channel, final String channelName)
    {
-      factory = new BroadcastEndpointFactory() {
+      factory = new BroadcastEndpointFactory()
+      {
          @Override
-         public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
+         public BroadcastEndpoint createBroadcastEndpoint() throws Exception
+         {
             JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint();
             endpoint.initChannel(channel, channelName);
             return endpoint;
@@ -80,7 +83,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
    @Override
    public BroadcastEndpointFactory createBroadcastEndpointFactory()
    {
-       return factory;
+      return factory;
    }
 
    @Override
@@ -112,9 +115,10 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
    /**
     * This class is the implementation of HornetQ members discovery that will use JGroups.
+    *
     * @author Howard Gao
     */
-   private final static class JGroupsBroadcastEndpoint implements BroadcastEndpoint
+   private static final class JGroupsBroadcastEndpoint implements BroadcastEndpoint
    {
       private boolean clientOpened;
 
@@ -243,8 +247,9 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
        * Because we have two ways to get a JChannel (by configuration
        * or by passing in a JChannel instance), the key needs to take
        * this into consideration when doing comparison.
+       *
        * @param <T> : either being a JChannel or a URL representing the JGroups
-       * configuration file.
+       *            configuration file.
        */
       private static class ChannelKey<T>
       {
@@ -280,6 +285,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
        * This class wraps a JChannel with a reference counter. The reference counter
        * controls the life of the JChannel. When reference count is zero, the channel
        * will be disconnected.
+       *
        * @param <T>
        */
       private static class JChannelWrapper<T>
@@ -320,7 +326,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
          public void removeReceiver(JGroupsReceiver receiver)
          {
-            synchronized(receivers)
+            synchronized (receivers)
             {
                receivers.remove(receiver);
             }
@@ -329,12 +335,13 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
          public synchronized void connect() throws Exception
          {
             if (channel.isConnected()) return;
-            channel.setReceiver(new ReceiverAdapter() {
+            channel.setReceiver(new ReceiverAdapter()
+            {
 
                @Override
                public void receive(Message msg)
                {
-                  synchronized(receivers)
+                  synchronized (receivers)
                   {
                      for (JGroupsReceiver r : receivers)
                      {
@@ -348,7 +355,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
          public void setReceiver(JGroupsReceiver jGroupsReceiver)
          {
-            synchronized(receivers)
+            synchronized (receivers)
             {
                receivers.add(jGroupsReceiver);
             }
@@ -375,7 +382,7 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
       /**
        * This class maintain a global Map of JChannels wrapped in JChannelWrapper for
        * the purpose of reference counting.
-       *
+       * <p/>
        * Whereever a JChannel is needed it should only get it by calling the getChannel()
        * method of this class. The real disconnect of channels are also done here only.
        */

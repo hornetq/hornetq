@@ -13,13 +13,9 @@
 
 package org.hornetq.tests.integration.transports.netty;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import org.junit.Assert;
 
 import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.tests.util.UnitTestCase;
@@ -27,6 +23,8 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.handler.codec.embedder.DecoderEmbedder;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A HornetQFrameDecoder2Test
@@ -59,7 +57,7 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
       }
 
       List<ChannelBuffer> packets = new ArrayList<ChannelBuffer>();
-      for (int i = 0; i < src.capacity();)
+      for (int i = 0; i < src.capacity(); )
       {
          int length = Math.min(HornetQFrameDecoder2Test.rand.nextInt(HornetQFrameDecoder2Test.FRAGMENT_MAX_LEN),
                                src.capacity() - i);
@@ -95,21 +93,21 @@ public class HornetQFrameDecoder2Test extends UnitTestCase
    {
       final DecoderEmbedder<ChannelBuffer> decoder = new DecoderEmbedder<ChannelBuffer>(new HornetQFrameDecoder2());
 
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 0 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{0}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 4 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{4}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 5 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{5}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 6 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{6}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 7 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{7}));
       Assert.assertNull(decoder.poll());
-      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[] { 8 }));
+      decoder.offer(ChannelBuffers.wrappedBuffer(new byte[]{8}));
 
       ChannelBuffer frame = decoder.poll();
       Assert.assertTrue("Produced frame must be a dynamic buffer", frame instanceof DynamicChannelBuffer);

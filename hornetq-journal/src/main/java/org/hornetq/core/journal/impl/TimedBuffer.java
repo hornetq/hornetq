@@ -226,7 +226,7 @@ public class TimedBuffer
       if (sizeChecked > bufferSize)
       {
          throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
-            ") on the journal");
+                                            ") on the journal");
       }
 
       if (bufferLimit == 0 || buffer.writerIndex() + sizeChecked > bufferLimit)
@@ -373,9 +373,9 @@ public class TimedBuffer
 
             if (lastExecution != 0)
             {
-               double rate = 1000 * (double) (bytesF - lastBytesFlushed) / (now - lastExecution);
-               HornetQJournalLogger.LOGGER.writeRate(rate, (long) (rate / (1024 * 1024)));
-               double flushRate = 1000 * (double) (flushesD - lastFlushesDone) / (now - lastExecution);
+               double rate = 1000 * (double)(bytesF - lastBytesFlushed) / (now - lastExecution);
+               HornetQJournalLogger.LOGGER.writeRate(rate, (long)(rate / (1024 * 1024)));
+               double flushRate = 1000 * (double)(flushesD - lastFlushesDone) / (now - lastExecution);
                HornetQJournalLogger.LOGGER.flushRate(flushRate);
             }
 
@@ -425,10 +425,9 @@ public class TimedBuffer
                {
                   // if using sleep, we will always flush
                   flush();
-               lastFlushTime = System.nanoTime();
+                  lastFlushTime = System.nanoTime();
                }
-               else
-               if (bufferObserver != null && System.nanoTime() > lastFlushTime + timeout)
+               else if (bufferObserver != null && System.nanoTime() > lastFlushTime + timeout)
                {
                   // if not using flush we will spin and do the time checks manually
                   flush();

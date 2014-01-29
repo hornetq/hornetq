@@ -16,7 +16,7 @@ public class AcknowledgedSubscriptionResource extends AcknowledgedQueueConsumer 
    private boolean deleteWhenIdle;
 
    public AcknowledgedSubscriptionResource(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector, boolean durable, Long timeout)
-           throws HornetQException
+      throws HornetQException
    {
       super(factory, destination, id, serviceManager, selector);
       this.timeout = timeout;

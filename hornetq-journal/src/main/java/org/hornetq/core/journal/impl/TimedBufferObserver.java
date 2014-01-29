@@ -22,8 +22,6 @@ import org.hornetq.core.journal.IOAsyncTask;
  * A TimedBufferObserver
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public interface TimedBufferObserver
 {
@@ -38,12 +36,14 @@ public interface TimedBufferObserver
 
    // Public --------------------------------------------------------
 
-   public void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOAsyncTask> callbacks);
+   void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOAsyncTask> callbacks);
 
-   /** Return the number of remaining bytes that still fit on the observer (file) */
-   public int getRemainingBytes();
+   /**
+    * Return the number of remaining bytes that still fit on the observer (file)
+    */
+   int getRemainingBytes();
 
-   public ByteBuffer newBuffer(int size, int limit);
+   ByteBuffer newBuffer(int size, int limit);
 
    // Package protected ---------------------------------------------
 

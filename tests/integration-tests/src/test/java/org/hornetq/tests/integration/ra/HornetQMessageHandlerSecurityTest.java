@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -23,7 +21,7 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.security.Role;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

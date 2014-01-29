@@ -16,34 +16,33 @@ package org.hornetq.core.paging;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.paging.impl.Page;
-import org.hornetq.core.postoffice.Address;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 
 /**
  * <PRE>
- *
+ * <p/>
  * +------------+      1  +-------------+       N +------------+       N +-------+       1 +----------------+
  * | {@link PostOffice} |-------&gt; |{@link PagingManager}|-------&gt; |{@link PagingStore} | ------&gt; | {@link Page}  | ------&gt; | {@link SequentialFile} |
  * +------------+         +-------------+         +------------+         +-------+         +----------------+
- *                               |                       1 ^
- *                               |                         |
- *                               |                         |
- *                               |                         | 1
- *                               |        N +---------+   /
- *                               +--------&gt; | {@link Address} |
- *                                          +---------+
+ * |                       1 ^
+ * |                         |
+ * |                         |
+ * |                         | 1
+ * |        N +---------+   /
+ * +--------&gt; | {@link Address} |
+ * +---------+
  * </PRE>
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
 public interface PagingManager extends HornetQComponent, HierarchicalRepositoryChangeListener
 {
-   /** Returns the PageStore associated with the address. A new page store is created if necessary. */
+   /**
+    * Returns the PageStore associated with the address. A new page store is created if necessary.
+    */
    PagingStore getPageStore(SimpleString address) throws Exception;
 
    /**
@@ -53,7 +52,7 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
 
    /**
     * Point to inform/restoring Transactions used when the messages were added into paging
-    * */
+    */
    PageTransactionInfo getTransaction(long transactionID);
 
    /**
@@ -65,6 +64,7 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
 
    /**
     * Reload previously created PagingStores into memory
+    *
     * @throws Exception
     */
    void reloadStores() throws Exception;
@@ -86,6 +86,7 @@ public interface PagingManager extends HornetQComponent, HierarchicalRepositoryC
 
    /**
     * Unlock the manager.
+    *
     * @see #lock()
     */
    void unlock();

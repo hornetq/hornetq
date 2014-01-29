@@ -13,20 +13,16 @@
 
 package org.hornetq.tests.unit.util;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
-
-import org.junit.Assert;
 
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ReusableLatch;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class ReusableLatchTest extends UnitTestCase
 {
@@ -65,7 +61,6 @@ public class ReusableLatchTest extends UnitTestCase
    }
 
    /**
-    *
     * This test will open numberOfThreads threads, and add numberOfAdds on the
     * VariableLatch After those addthreads are finished, the latch count should
     * be numberOfThreads * numberOfAdds Then it will open numberOfThreads
@@ -144,7 +139,7 @@ public class ReusableLatchTest extends UnitTestCase
       CountDownLatch latchStart = new CountDownLatch(1);
 
       ThreadAdd[] threadAdds = new ThreadAdd[numberOfThreads];
-      ThreadWait waits[] = new ThreadWait[numberOfThreads];
+      ThreadWait[] waits = new ThreadWait[numberOfThreads];
 
       for (int i = 0; i < numberOfThreads; i++)
       {
@@ -205,7 +200,7 @@ public class ReusableLatchTest extends UnitTestCase
       latchReady = new CountDownLatch(numberOfThreads);
       latchStart = new CountDownLatch(1);
 
-      ThreadDown down[] = new ThreadDown[numberOfThreads];
+      ThreadDown[] down = new ThreadDown[numberOfThreads];
 
       for (int i = 0; i < numberOfThreads; i++)
       {
@@ -247,7 +242,7 @@ public class ReusableLatchTest extends UnitTestCase
    public void testReuseLatch() throws Exception
    {
       final ReusableLatch latch = new ReusableLatch(5);
-      for (int i = 0 ; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          latch.countDown();
       }

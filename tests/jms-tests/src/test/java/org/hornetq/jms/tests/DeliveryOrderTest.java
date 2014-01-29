@@ -13,12 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.CountDownLatch;
-
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,11 +21,14 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * 
  * A DeliveryOrderTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -108,7 +105,7 @@ public class DeliveryOrderTest extends JMSTestCase
       private volatile boolean failed;
 
       private String error;
-      
+
       private final Session sess;
 
       MyListener(final CountDownLatch latch, final Session sess, final int num)
@@ -139,7 +136,7 @@ public class DeliveryOrderTest extends JMSTestCase
             }
 
             c++;
-            
+
             if (c % 500 == 0)
             {
                sess.commit();

@@ -13,42 +13,41 @@
 
 package org.hornetq.jms.server.recovery;
 
+import javax.transaction.xa.XAResource;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.transaction.xa.XAResource;
-
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
-
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.HornetQJMSServerLogger;
 
 /**
  * A XAResourceRecovery instance that can be used to recover any JMS provider.
- * <p>
+ * <p/>
  * In reality only recover, rollback and commit will be called but we still need to be implement all
  * methods just in case.
- * <p>
+ * <p/>
  * To enable this add the following to the jbossts-properties file
- * 
+ * <p/>
  * <pre>
  * <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
  *                 value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
  * </pre>
- * 
+ * <p/>
  * you'll need something like this if the HornetQ Server is remote
- * 
+ * <p/>
  * <pre>
  *      <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
  *                  value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/>-->
  * </pre>
- * 
+ * <p/>
  * you'll need something like this if the HornetQ Server is remote and has failover configured-->
- * 
+ * <p/>
  * <pre>
  *             <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
  *                       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost2,port=5446"/>-->
  * </pre>
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -89,7 +88,6 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
          TransportConfiguration transportConfiguration = new TransportConfiguration(connectorFactoryClassName, connectorParams);
          xaRecoveryConfigs[i] = new XARecoveryConfig(false, new TransportConfiguration[]{transportConfiguration}, username, password);
       }
-
 
 
       res = new HornetQXAResourceWrapper(xaRecoveryConfigs);
@@ -140,7 +138,7 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
 
    public XAResource[] getXAResources()
    {
-      return new XAResource[] { res };
+      return new XAResource[]{res};
    }
 
    @Override

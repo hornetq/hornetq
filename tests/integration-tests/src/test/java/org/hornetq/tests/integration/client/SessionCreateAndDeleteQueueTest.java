@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -28,6 +23,9 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.LastValueQueue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -141,7 +139,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
          session.deleteQueue(queueName);
          Assert.fail("should throw exception");
       }
-      catch(HornetQNonExistentQueueException neqe)
+      catch (HornetQNonExistentQueueException neqe)
       {
          //ok
       }

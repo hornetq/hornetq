@@ -12,11 +12,6 @@
  */
 package org.hornetq.tests.unit.util;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
@@ -24,11 +19,16 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 import org.jboss.util.naming.Util;
 
 /**
  * used by the default context when running in embedded local configuration
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class NonSerializableFactory implements ObjectFactory
@@ -89,10 +89,8 @@ public class NonSerializableFactory implements ObjectFactory
       return NonSerializableFactory.getWrapperMap().get(name);
    }
 
-   public
-            Object
-            getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> env)
-                                                                                                                  throws Exception
+   public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> env)
+      throws Exception
    {
       Reference ref = (Reference)obj;
       RefAddr addr = ref.get("nns");

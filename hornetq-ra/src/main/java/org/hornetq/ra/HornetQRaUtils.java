@@ -12,6 +12,8 @@
  */
 package org.hornetq.ra;
 
+import javax.naming.Context;
+import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -20,9 +22,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-
-import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import org.jgroups.JChannel;
 
@@ -43,7 +42,8 @@ public final class HornetQRaUtils
 
    /**
     * Compare two strings.
-    * @param me First value
+    *
+    * @param me  First value
     * @param you Second value
     * @return True if object equals else false.
     */
@@ -67,7 +67,8 @@ public final class HornetQRaUtils
 
    /**
     * Compare two integers.
-    * @param me First value
+    *
+    * @param me  First value
     * @param you Second value
     * @return True if object equals else false.
     */
@@ -91,7 +92,8 @@ public final class HornetQRaUtils
 
    /**
     * Compare two longs.
-    * @param me First value
+    *
+    * @param me  First value
     * @param you Second value
     * @return True if object equals else false.
     */
@@ -115,7 +117,8 @@ public final class HornetQRaUtils
 
    /**
     * Compare two doubles.
-    * @param me First value
+    *
+    * @param me  First value
     * @param you Second value
     * @return True if object equals else false.
     */
@@ -139,7 +142,8 @@ public final class HornetQRaUtils
 
    /**
     * Compare two booleans.
-    * @param me First value
+    *
+    * @param me  First value
     * @param you Second value
     * @return True if object equals else false.
     */
@@ -163,9 +167,10 @@ public final class HornetQRaUtils
 
    /**
     * Lookup an object in the default initial context
+    *
     * @param context The context to use
-    * @param name the name to lookup
-    * @param clazz the expected type
+    * @param name    the name to lookup
+    * @param clazz   the expected type
     * @return the object
     * @throws Exception for any error
     */
@@ -176,18 +181,19 @@ public final class HornetQRaUtils
 
    /**
     * Used on parsing JNDI Configuration
+    *
     * @param config
     * @return hash-table with configuration option pairs
     */
    public static Hashtable<String, String> parseHashtableConfig(final String config)
    {
-      Hashtable<String,String> hashtable = new Hashtable<String, String>();
+      Hashtable<String, String> hashtable = new Hashtable<String, String>();
 
       String[] topElements = config.split(";");
 
       for (String element : topElements)
       {
-         String expression[] = element.split("=");
+         String[] expression = element.split("=");
 
          if (expression.length != 2)
          {
@@ -202,7 +208,7 @@ public final class HornetQRaUtils
 
    public static List<Map<String, Object>> parseConfig(final String config)
    {
-      List<Map<String, Object>> result =new ArrayList<Map<String, Object>>();
+      List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 
       String[] topElements = config.split(",");
 
@@ -211,11 +217,11 @@ public final class HornetQRaUtils
          HashMap<String, Object> map = new HashMap<String, Object>();
          result.add(map);
 
-         String elements[] = topElement.split(";");
+         String[] elements = topElement.split(";");
 
          for (String element : elements)
          {
-            String expression[] = element.split("=");
+            String[] expression = element.split("=");
 
             if (expression.length != 2)
             {
@@ -245,14 +251,15 @@ public final class HornetQRaUtils
    }
 
 
-   /** The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
-    *  transaction manager during startup.
-    *
-    *
-    *  TODO: https://jira.jboss.org/browse/HORNETQ-417
-    *        We should use a proper SPI instead of reflection
-    *        We would need to define a proper SPI package for this.
-    *  */
+   /**
+    * The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
+    * transaction manager during startup.
+    * <p/>
+    * <p/>
+    * TODO: https://jira.jboss.org/browse/HORNETQ-417
+    * We should use a proper SPI instead of reflection
+    * We would need to define a proper SPI package for this.
+    */
    public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
    {
       return AccessController.doPrivileged(new PrivilegedAction<TransactionManager>()
@@ -292,7 +299,7 @@ public final class HornetQRaUtils
                ClassLoader loader = Thread.currentThread().getContextClassLoader();
                Class<?> aClass = loader.loadClass(locatorClass);
                Object o = aClass.newInstance();
-               Method m = aClass.getMethod("locateChannel", new Class[] {String.class});
+               Method m = aClass.getMethod("locateChannel", new Class[]{String.class});
                return (JChannel)m.invoke(o, name);
             }
             catch (Throwable e)
@@ -304,9 +311,10 @@ public final class HornetQRaUtils
       });
    }
 
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+   /**
+    * This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    * utility class, as it would be a door to load anything you like in a safe VM.
+    * For that reason any class trying to do a privileged block should do with the AccessController directly.
     */
    private static Object safeInitNewInstance(final String className)
    {
@@ -322,21 +330,21 @@ public final class HornetQRaUtils
             }
             catch (Throwable t)
             {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
+               try
+               {
+                  loader = Thread.currentThread().getContextClassLoader();
+                  if (loader != null)
+                     return loader.loadClass(className).newInstance();
+               }
+               catch (RuntimeException e)
+               {
+                  throw e;
+               }
+               catch (Exception e)
+               {
+               }
 
-                throw new IllegalArgumentException("Could not find class " + className);
+               throw new IllegalArgumentException("Could not find class " + className);
             }
          }
       });

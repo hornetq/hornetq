@@ -41,12 +41,13 @@ public class QueueDeployer extends XmlDeployer
 
    /**
     * the names of the elements to deploy
+    *
     * @return the names of the elements todeploy
     */
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { "queue" };
+      return new String[]{"queue"};
    }
 
    @Override
@@ -57,6 +58,7 @@ public class QueueDeployer extends XmlDeployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception
     */
@@ -86,7 +88,7 @@ public class QueueDeployer extends XmlDeployer
    @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };
+      return new String[]{"hornetq-configuration.xml", "hornetq-queues.xml"};
    }
 
 }

@@ -28,8 +28,6 @@ import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSConnectionFactoryControlImpl extends StandardMBean implements ConnectionFactoryControl
 {
@@ -464,7 +462,7 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       }
       catch (Exception e)
       {
-         throw new RuntimeException (e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
       }
    }
 

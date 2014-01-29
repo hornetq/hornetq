@@ -55,9 +55,10 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * adds a URL to the already configured set of url's this deployer is handling
-    * @param url The URL to add
+    *
+    * @param url  The URL to add
     * @param name the name of the element
-    * @param e .
+    * @param e    .
     */
    public synchronized void addToConfiguration(final URI url, final String name, final Node e)
    {
@@ -72,6 +73,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * Redeploys a URL if changed
+    *
     * @param url The resource to redeploy
     * @throws Exception
     */
@@ -84,7 +86,7 @@ public abstract class XmlDeployer implements Deployer
 
       List<String> added = new ArrayList<String>();
       // pull out the elements that need deploying
-      String elements[] = getElementTagName();
+      String[] elements = getElementTagName();
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);
@@ -133,6 +135,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * Undeploys a resource that has been removed
+    *
     * @param uri The Resource that was deleted
     * @throws Exception
     */
@@ -149,6 +152,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * Deploy the URL for the first time
+    *
     * @param url The resource to deploy
     * @throws Exception
     */
@@ -167,7 +171,7 @@ public abstract class XmlDeployer implements Deployer
       }
 
       // find all thenodes to deploy
-      String elements[] = getElementTagName();
+      String[] elements = getElementTagName();
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);
@@ -194,6 +198,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * The key attribute for the element, usually 'name' but can be overridden
+    *
     * @return the key attribute
     */
    public String getKeyAttribute()
@@ -259,6 +264,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * the names of the elements to deploy
+    *
     * @return the names of the elements todeploy
     */
    public abstract String[] getElementTagName();
@@ -267,6 +273,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception
     */
@@ -279,6 +286,7 @@ public abstract class XmlDeployer implements Deployer
 
    /**
     * undeploys an element
+    *
     * @param node the element to undeploy
     * @throws Exception
     */
@@ -310,7 +318,7 @@ public abstract class XmlDeployer implements Deployer
          try
          {
             Node keyNode = node.getAttributes().getNamedItem(
-                  getKeyAttribute());
+               getKeyAttribute());
 
             name = keyNode.getNodeValue();
          }

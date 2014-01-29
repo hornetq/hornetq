@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
@@ -32,12 +27,14 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SessionClosedOnRemotingConnectionFailureTest
  *
  * @author Tim Fox
-
  */
 public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBase
 {
@@ -50,64 +47,64 @@ public class SessionClosedOnRemotingConnectionFailureTest extends ServiceTestBas
    {
       ClientSession session = addClientSession(sf.createSession());
 
-         session.createQueue("fooaddress", "fooqueue");
+      session.createQueue("fooaddress", "fooqueue");
 
-         ClientProducer prod = session.createProducer("fooaddress");
+      ClientProducer prod = session.createProducer("fooaddress");
 
-         ClientConsumer cons = session.createConsumer("fooqueue");
+      ClientConsumer cons = session.createConsumer("fooqueue");
 
-         session.start();
+      session.start();
 
+      prod.send(session.createMessage(false));
+
+      Assert.assertNotNull(cons.receive());
+
+      // Now fail the underlying connection
+
+      RemotingConnection connection = ((ClientSessionInternal)session).getConnection();
+
+      connection.fail(new HornetQNotConnectedException());
+
+      Assert.assertTrue(session.isClosed());
+
+      Assert.assertTrue(prod.isClosed());
+
+      Assert.assertTrue(cons.isClosed());
+
+      // Now try and use the producer
+
+      try
+      {
          prod.send(session.createMessage(false));
 
-         Assert.assertNotNull(cons.receive());
+         Assert.fail("Should throw exception");
+      }
+      catch (HornetQObjectClosedException oce)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         // Now fail the underlying connection
+      try
+      {
+         cons.receive();
 
-         RemotingConnection connection = ((ClientSessionInternal)session).getConnection();
+         Assert.fail("Should throw exception");
+      }
+      catch (HornetQObjectClosedException oce)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
 
-         connection.fail(new HornetQNotConnectedException());
-
-         Assert.assertTrue(session.isClosed());
-
-         Assert.assertTrue(prod.isClosed());
-
-         Assert.assertTrue(cons.isClosed());
-
-         // Now try and use the producer
-
-         try
-         {
-            prod.send(session.createMessage(false));
-
-            Assert.fail("Should throw exception");
-         }
-         catch(HornetQObjectClosedException oce)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
-
-         try
-         {
-            cons.receive();
-
-            Assert.fail("Should throw exception");
-         }
-         catch(HornetQObjectClosedException oce)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
-
-         session.close();
-         }
+      session.close();
+   }
 
    @Override
    @Before

@@ -12,14 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.cluster;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -29,8 +21,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -57,16 +50,18 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A JMSFailoverTest
- *
+ * <p/>
  * A simple test to test setFailoverListener when using the JMS API.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
- *
  */
 public class JMSFailoverListenerTest extends ServiceTestBase
 {
@@ -193,22 +188,22 @@ public class JMSFailoverListenerTest extends ServiceTestBase
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
       HornetQConnectionFactory jbcfBackup =
-               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY,
-                                                                                            backupParams));
+         HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                           new TransportConfiguration(INVM_CONNECTOR_FACTORY,
+                                                                                      backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);
       jbcfBackup.setInitialConnectAttempts(-1);
       jbcfBackup.setReconnectAttempts(-1);
 
-      HornetQConnection connLive = (HornetQConnection) jbcfLive.createConnection();
+      HornetQConnection connLive = (HornetQConnection)jbcfLive.createConnection();
 
       MyFailoverListener listener = new MyFailoverListener();
 
@@ -387,18 +382,18 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
    private static class MyFailoverListener implements FailoverEventListener
    {
-   private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
+      private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
 
-   public ArrayList<FailoverEventType> getEventTypeList()
-   {
-      return eventTypeList;
-   }
+      public ArrayList<FailoverEventType> getEventTypeList()
+      {
+         return eventTypeList;
+      }
 
-   public void failoverEvent(FailoverEventType eventType)
-   {
-      eventTypeList.add(eventType);
-      log.info("Failover event just happen : "+eventType.toString());
-   }
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         eventTypeList.add(eventType);
+         log.info("Failover event just happen : " + eventType.toString());
+      }
 
    }
 }

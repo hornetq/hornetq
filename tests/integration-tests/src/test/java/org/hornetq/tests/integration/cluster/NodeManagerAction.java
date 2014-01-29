@@ -23,18 +23,18 @@ import org.hornetq.core.server.impl.FileLockNodeManager;
  */
 public class NodeManagerAction
 {
-   public final static int START_LIVE = 0;
-   public final static int START_BACKUP = 1;
-   public final static int CRASH_LIVE = 2;
-   public final static int PAUSE_LIVE = 3;
-   public final static int STOP_BACKUP = 4;
-   public final static int AWAIT_LIVE = 5;
-   public final static int RELEASE_BACKUP = 6;
+   public static final int START_LIVE = 0;
+   public static final int START_BACKUP = 1;
+   public static final int CRASH_LIVE = 2;
+   public static final int PAUSE_LIVE = 3;
+   public static final int STOP_BACKUP = 4;
+   public static final int AWAIT_LIVE = 5;
+   public static final int RELEASE_BACKUP = 6;
 
-   public final static int HAS_LIVE = 10;
-   public final static int HAS_BACKUP = 11;
-   public final static int DOESNT_HAVE_LIVE = 12;
-   public final static int DOESNT_HAVE_BACKUP = 13;
+   public static final int HAS_LIVE = 10;
+   public static final int HAS_BACKUP = 11;
+   public static final int DOESNT_HAVE_LIVE = 12;
+   public static final int DOESNT_HAVE_BACKUP = 13;
 
 
    private final int[] work;

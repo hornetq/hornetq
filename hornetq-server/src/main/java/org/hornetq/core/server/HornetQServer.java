@@ -15,11 +15,9 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -53,8 +51,9 @@ import org.hornetq.utils.ExecutorFactory;
 /**
  * This interface defines the internal interface of the HornetQ Server exposed to other components
  * of the server.
- * <p>
+ * <p/>
  * This is not part of our public API.
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
@@ -63,10 +62,10 @@ public interface HornetQServer extends HornetQComponent
 
    /**
     * Sets the server identity.
-    * <p>
+    * <p/>
     * The identity will be exposed on logs. It may help to debug issues on the log traces and
     * debugs.
-    * <p>
+    * <p/>
     * This method was created mainly for testing but it may be used in scenarios where you need to
     * have more than one Server inside the same VM.
     */
@@ -94,6 +93,7 @@ public interface HornetQServer extends HornetQComponent
 
    /**
     * Returns the resource to manage this HornetQ server.
+    *
     * @throws IllegalStateException if the server is not properly started.
     */
    HornetQServerControlImpl getHornetQServerControl();
@@ -132,7 +132,9 @@ public interface HornetQServer extends HornetQComponent
 
    List<ServerSession> getSessions(String connectionID);
 
-   /** @return a session containing the meta-key and meata-value */
+   /**
+    * @return a session containing the meta-key and meata-value
+    */
    ServerSession lookupSession(String metakey, String metavalue);
 
    ClusterManager getClusterManager();
@@ -143,23 +145,25 @@ public interface HornetQServer extends HornetQComponent
 
    /**
     * Wait for server initialization.
+    *
     * @param timeout
     * @param unit
-    * @see CountDownLatch#await(long, TimeUnit)
     * @return {@code true} if the server was already initialized or if it was initialized within the
-    *         timeout period, {@code false} otherwise.
+    * timeout period, {@code false} otherwise.
     * @throws InterruptedException
+    * @see CountDownLatch#await(long, TimeUnit)
     */
    boolean waitForActivation(long timeout, TimeUnit unit) throws InterruptedException;
 
    /**
     * Wait for backup synchronization when using synchronization
+    *
     * @param timeout
     * @param unit
-    * @see CountDownLatch#await(long, TimeUnit)
     * @return {@code true} if the server was already initialized or if it was initialized within the
-    *         timeout period, {@code false} otherwise.
+    * timeout period, {@code false} otherwise.
     * @throws InterruptedException
+    * @see CountDownLatch#await(long, TimeUnit)
     */
    boolean waitForBackupSync(long timeout, TimeUnit unit) throws InterruptedException;
 
@@ -215,10 +219,11 @@ public interface HornetQServer extends HornetQComponent
 
    /**
     * Starts replication.
-    * <p>
+    * <p/>
     * This will spawn a new thread that will sync all persistent data with the new backup. This
     * method may also trigger fail-back if the backup asks for it and the server configuration
     * allows.
+    *
     * @param rc
     * @param pair
     * @param clusterConnection

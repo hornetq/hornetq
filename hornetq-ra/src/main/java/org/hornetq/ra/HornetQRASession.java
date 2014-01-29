@@ -13,11 +13,6 @@
 
 package org.hornetq.ra;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -49,9 +44,11 @@ import javax.jms.XATopicSession;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ManagedConnection;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
 import javax.transaction.xa.XAResource;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -62,27 +59,40 @@ import javax.transaction.xa.XAResource;
  */
 public final class HornetQRASession implements QueueSession, TopicSession, XAQueueSession, XATopicSession
 {
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
 
-   /** The managed connection */
+   /**
+    * The managed connection
+    */
    private HornetQRAManagedConnection mc;
 
-   /** The connection request info */
+   /**
+    * The connection request info
+    */
    private final HornetQRAConnectionRequestInfo cri;
 
-   /** The session factory */
+   /**
+    * The session factory
+    */
    private HornetQRASessionFactory sf;
 
-   /** The message consumers */
+   /**
+    * The message consumers
+    */
    private final Set<MessageConsumer> consumers;
 
-   /** The message producers */
+   /**
+    * The message producers
+    */
    private final Set<MessageProducer> producers;
 
    /**
     * Constructor
-    * @param mc The managed connection
+    *
+    * @param mc  The managed connection
     * @param cri The connection request info
     */
    public HornetQRASession(final HornetQRAManagedConnection mc, final HornetQRAConnectionRequestInfo cri)
@@ -101,6 +111,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Set the session factory
+    *
     * @param sf The session factory
     */
    public void setHornetQSessionFactory(final HornetQRASessionFactory sf)
@@ -115,8 +126,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Lock
-    * @exception JMSException Thrown if an error occurs
-    * @exception IllegalStateException The session is closed
+    *
+    * @throws JMSException          Thrown if an error occurs
+    * @throws IllegalStateException The session is closed
     */
    protected void lock() throws JMSException
    {
@@ -158,8 +170,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a bytes message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public BytesMessage createBytesMessage() throws JMSException
    {
@@ -175,8 +188,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a map message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MapMessage createMapMessage() throws JMSException
    {
@@ -192,8 +206,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Message createMessage() throws JMSException
    {
@@ -209,8 +224,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create an object message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public ObjectMessage createObjectMessage() throws JMSException
    {
@@ -226,9 +242,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create an object message
+    *
     * @param object The object
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
@@ -244,8 +261,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a stream message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public StreamMessage createStreamMessage() throws JMSException
    {
@@ -261,8 +279,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a text message
+    *
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TextMessage createTextMessage() throws JMSException
    {
@@ -278,9 +297,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a text message
+    *
     * @param string The text
     * @return The message
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TextMessage createTextMessage(final String string) throws JMSException
    {
@@ -296,8 +316,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get transacted
+    *
     * @return True if transacted; otherwise false
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public boolean getTransacted() throws JMSException
    {
@@ -312,8 +333,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the message listener -- throws IllegalStateException
+    *
     * @return The message listener
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MessageListener getMessageListener() throws JMSException
    {
@@ -327,8 +349,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Set the message listener -- Throws IllegalStateException
+    *
     * @param listener The message listener
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void setMessageListener(final MessageListener listener) throws JMSException
    {
@@ -342,7 +365,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Always throws an Error.
-    * @exception Error Method not allowed.
+    *
+    * @throws Error Method not allowed.
     */
    public void run()
    {
@@ -357,7 +381,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
    /**
     * Closes the session. Sends a ConnectionEvent.CONNECTION_CLOSED to the
     * managed connection.
-    * @exception JMSException Failed to close session.
+    *
+    * @throws JMSException Failed to close session.
     */
    public void close() throws JMSException
    {
@@ -372,12 +397,13 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Commit
-    * @exception JMSException Failed to close session.
+    *
+    * @throws JMSException Failed to close session.
     */
    public void commit() throws JMSException
    {
       if (cri.getType() == HornetQRAConnectionFactory.XA_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
       }
@@ -407,12 +433,13 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Rollback
-    * @exception JMSException Failed to close session.
+    *
+    * @throws JMSException Failed to close session.
     */
    public void rollback() throws JMSException
    {
       if (cri.getType() == HornetQRAConnectionFactory.XA_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
       }
@@ -442,7 +469,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Recover
-    * @exception JMSException Failed to close session.
+    *
+    * @throws JMSException Failed to close session.
     */
    public void recover() throws JMSException
    {
@@ -471,9 +499,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a topic
+    *
     * @param topicName The topic name
     * @return The topic
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Topic createTopic(final String topicName) throws JMSException
    {
@@ -501,9 +530,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a topic subscriber
+    *
     * @param topic The topic
     * @return The subscriber
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSubscriber createSubscriber(final Topic topic) throws JMSException
    {
@@ -537,11 +567,12 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a topic subscriber
-    * @param topic The topic
+    *
+    * @param topic           The topic
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection
+    * @param noLocal         If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSubscriber createSubscriber(final Topic topic, final String messageSelector, final boolean noLocal) throws JMSException
    {
@@ -553,12 +584,12 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          if (HornetQRASession.trace)
          {
             HornetQRALogger.LOGGER.trace("createSubscriber " + session +
-                                       " topic=" +
-                                       topic +
-                                       " selector=" +
-                                       messageSelector +
-                                       " noLocal=" +
-                                       noLocal);
+                                            " topic=" +
+                                            topic +
+                                            " selector=" +
+                                            messageSelector +
+                                            " noLocal=" +
+                                            noLocal);
          }
 
          TopicSubscriber result = session.createSubscriber(topic, messageSelector, noLocal);
@@ -581,10 +612,11 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a durable topic subscriber
+    *
     * @param topic The topic
-    * @param name The name
+    * @param name  The name
     * @return The subscriber
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSubscriber createDurableSubscriber(final Topic topic, final String name) throws JMSException
    {
@@ -623,12 +655,13 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a topic subscriber
-    * @param topic The topic
-    * @param name The name
+    *
+    * @param topic           The topic
+    * @param name            The name
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection
+    * @param noLocal         If true inhibits the delivery of messages published by its own connection
     * @return The subscriber
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSubscriber createDurableSubscriber(final Topic topic,
                                                   final String name,
@@ -643,14 +676,14 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          if (HornetQRASession.trace)
          {
             HornetQRALogger.LOGGER.trace("createDurableSubscriber " + session +
-                                       " topic=" +
-                                       topic +
-                                       " name=" +
-                                       name +
-                                       " selector=" +
-                                       messageSelector +
-                                       " noLocal=" +
-                                       noLocal);
+                                            " topic=" +
+                                            topic +
+                                            " name=" +
+                                            name +
+                                            " selector=" +
+                                            messageSelector +
+                                            " noLocal=" +
+                                            noLocal);
          }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name, messageSelector, noLocal);
@@ -673,9 +706,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a topic publisher
+    *
     * @param topic The topic
     * @return The publisher
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicPublisher createPublisher(final Topic topic) throws JMSException
    {
@@ -709,8 +743,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a temporary topic
+    *
     * @return The temporary topic
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TemporaryTopic createTemporaryTopic() throws JMSException
    {
@@ -748,8 +783,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Unsubscribe
+    *
     * @param name The name
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public void unsubscribe(final String name) throws JMSException
    {
@@ -778,9 +814,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a browser
+    *
     * @param queue The queue
     * @return The browser
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueBrowser createBrowser(final Queue queue) throws JMSException
    {
@@ -808,10 +845,11 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a browser
-    * @param queue The queue
+    *
+    * @param queue           The queue
     * @param messageSelector The message selector
     * @return The browser
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueBrowser createBrowser(final Queue queue, final String messageSelector) throws JMSException
    {
@@ -839,9 +877,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a queue
+    *
     * @param queueName The queue name
     * @return The queue
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Queue createQueue(final String queueName) throws JMSException
    {
@@ -869,9 +908,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a queue receiver
+    *
     * @param queue The queue
     * @return The queue receiver
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueReceiver createReceiver(final Queue queue) throws JMSException
    {
@@ -905,10 +945,11 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a queue receiver
-    * @param queue The queue
+    *
+    * @param queue           The queue
     * @param messageSelector
     * @return The queue receiver
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueReceiver createReceiver(final Queue queue, final String messageSelector) throws JMSException
    {
@@ -942,9 +983,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a queue sender
+    *
     * @param queue The queue
     * @return The queue sender
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueSender createSender(final Queue queue) throws JMSException
    {
@@ -978,8 +1020,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a temporary queue
+    *
     * @return The temporary queue
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TemporaryQueue createTemporaryQueue() throws JMSException
    {
@@ -1017,9 +1060,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a message consumer
+    *
     * @param destination The destination
     * @return The message consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MessageConsumer createConsumer(final Destination destination) throws JMSException
    {
@@ -1053,10 +1097,11 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a message consumer
-    * @param destination The destination
+    *
+    * @param destination     The destination
     * @param messageSelector The message selector
     * @return The message consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MessageConsumer createConsumer(final Destination destination, final String messageSelector) throws JMSException
    {
@@ -1068,10 +1113,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          if (HornetQRASession.trace)
          {
             HornetQRALogger.LOGGER.trace("createConsumer " + session +
-                                       " dest=" +
-                                       destination +
-                                       " messageSelector=" +
-                                       messageSelector);
+                                            " dest=" +
+                                            destination +
+                                            " messageSelector=" +
+                                            messageSelector);
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector);
@@ -1094,11 +1139,12 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a message consumer
-    * @param destination The destination
+    *
+    * @param destination     The destination
     * @param messageSelector The message selector
-    * @param noLocal If true inhibits the delivery of messages published by its own connection
+    * @param noLocal         If true inhibits the delivery of messages published by its own connection
     * @return The message consumer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MessageConsumer createConsumer(final Destination destination,
                                          final String messageSelector,
@@ -1112,12 +1158,12 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
          if (HornetQRASession.trace)
          {
             HornetQRALogger.LOGGER.trace("createConsumer " + session +
-                                       " dest=" +
-                                       destination +
-                                       " messageSelector=" +
-                                       messageSelector +
-                                       " noLocal=" +
-                                       noLocal);
+                                            " dest=" +
+                                            destination +
+                                            " messageSelector=" +
+                                            messageSelector +
+                                            " noLocal=" +
+                                            noLocal);
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector, noLocal);
@@ -1140,9 +1186,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Create a message producer
+    *
     * @param destination The destination
     * @return The message producer
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public MessageProducer createProducer(final Destination destination) throws JMSException
    {
@@ -1176,8 +1223,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the acknowledge mode
+    *
     * @return The mode
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public int getAcknowledgeMode() throws JMSException
    {
@@ -1192,8 +1240,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the XA resource
+    *
     * @return The XA resource
-    * @exception IllegalStateException If non XA connection
+    * @throws IllegalStateException If non XA connection
     */
    public XAResource getXAResource()
    {
@@ -1203,7 +1252,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          return null;
       }
@@ -1226,8 +1275,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the session
+    *
     * @return The session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public Session getSession() throws JMSException
    {
@@ -1237,7 +1287,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1255,8 +1305,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the queue session
+    *
     * @return The queue session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public QueueSession getQueueSession() throws JMSException
    {
@@ -1266,7 +1317,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1284,8 +1335,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the topic session
+    *
     * @return The topic session
-    * @exception JMSException Thrown if an error occurs
+    * @throws JMSException Thrown if an error occurs
     */
    public TopicSession getTopicSession() throws JMSException
    {
@@ -1295,7 +1347,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       }
 
       if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
+         cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1313,6 +1365,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Set the managed connection
+    *
     * @param managedConnection The managed connection
     */
    void setManagedConnection(final HornetQRAManagedConnection managedConnection)
@@ -1330,7 +1383,9 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
       mc = managedConnection;
    }
 
-   /** for tests only */
+   /**
+    * for tests only
+    */
    public ManagedConnection getManagedConnection()
    {
       return mc;
@@ -1351,7 +1406,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Start
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    void start() throws JMSException
    {
@@ -1368,7 +1424,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Stop
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    void stop() throws JMSException
    {
@@ -1385,7 +1442,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Check strict
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    void checkStrict() throws JMSException
    {
@@ -1402,7 +1460,8 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Close session
-    * @exception JMSException Thrown if an error occurs
+    *
+    * @throws JMSException Thrown if an error occurs
     */
    void closeSession() throws JMSException
    {
@@ -1421,7 +1480,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
          synchronized (consumers)
          {
-            for (Iterator<MessageConsumer> i = consumers.iterator(); i.hasNext();)
+            for (Iterator<MessageConsumer> i = consumers.iterator(); i.hasNext(); )
             {
                HornetQRAMessageConsumer consumer = (HornetQRAMessageConsumer)i.next();
                try
@@ -1438,7 +1497,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
          synchronized (producers)
          {
-            for (Iterator<MessageProducer> i = producers.iterator(); i.hasNext();)
+            for (Iterator<MessageProducer> i = producers.iterator(); i.hasNext(); )
             {
                HornetQRAMessageProducer producer = (HornetQRAMessageProducer)i.next();
                try
@@ -1463,6 +1522,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Add consumer
+    *
     * @param consumer The consumer
     */
    void addConsumer(final MessageConsumer consumer)
@@ -1480,6 +1540,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Remove consumer
+    *
     * @param consumer The consumer
     */
    void removeConsumer(final MessageConsumer consumer)
@@ -1497,6 +1558,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Add producer
+    *
     * @param producer The producer
     */
    void addProducer(final MessageProducer producer)
@@ -1514,6 +1576,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Remove producer
+    *
     * @param producer The producer
     */
    void removeProducer(final MessageProducer producer)
@@ -1531,9 +1594,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the session and ensure that it is open
+    *
     * @return The session
-    * @exception JMSException Thrown if an error occurs
-    * @exception IllegalStateException The session is closed
+    * @throws JMSException          Thrown if an error occurs
+    * @throws IllegalStateException The session is closed
     */
    Session getSessionInternal() throws JMSException
    {
@@ -1554,9 +1618,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the XA resource and ensure that it is open
+    *
     * @return The XA Resource
-    * @exception JMSException Thrown if an error occurs
-    * @exception IllegalStateException The session is closed
+    * @throws JMSException          Thrown if an error occurs
+    * @throws IllegalStateException The session is closed
     */
    XAResource getXAResourceInternal() throws JMSException
    {
@@ -1586,9 +1651,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the queue session
+    *
     * @return The queue session
-    * @exception JMSException Thrown if an error occurs
-    * @exception IllegalStateException The session is closed
+    * @throws JMSException          Thrown if an error occurs
+    * @throws IllegalStateException The session is closed
     */
    QueueSession getQueueSessionInternal() throws JMSException
    {
@@ -1602,9 +1668,10 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
 
    /**
     * Get the topic session
+    *
     * @return The topic session
-    * @exception JMSException Thrown if an error occurs
-    * @exception IllegalStateException The session is closed
+    * @throws JMSException          Thrown if an error occurs
+    * @throws IllegalStateException The session is closed
     */
    TopicSession getTopicSessionInternal() throws JMSException
    {
@@ -1617,9 +1684,7 @@ public final class HornetQRASession implements QueueSession, TopicSession, XAQue
    }
 
    /**
-    * @throws SystemException
-    * @throws RollbackException
-    *
+    * @throws JMSException
     */
    public void checkState() throws JMSException
    {

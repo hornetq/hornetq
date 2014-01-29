@@ -15,8 +15,6 @@ package org.hornetq.api.core.management;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.Interceptor;
-
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
  */
@@ -322,7 +320,7 @@ public interface HornetQServerControl
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     *
     * @param address address to bind the queue to
-    * @param name name of the queue
+    * @param name    name of the queue
     */
    @Operation(desc = "Create a queue with the specified address", impact = MBeanOperationInfo.ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
@@ -334,8 +332,8 @@ public interface HornetQServerControl
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     *
     * @param address address to bind the queue to
-    * @param name name of the queue
-    * @param filter of the queue
+    * @param name    name of the queue
+    * @param filter  of the queue
     * @param durable whether the queue is durable
     */
    @Operation(desc = "Create a queue", impact = MBeanOperationInfo.ACTION)
@@ -350,7 +348,7 @@ public interface HornetQServerControl
     * This method throws a {@link org.hornetq.api.core.HornetQQueueExistsException}) exception if the queue already exits.
     *
     * @param address address to bind the queue to
-    * @param name name of the queue
+    * @param name    name of the queue
     * @param durable whether the queue is durable
     */
    @Operation(desc = "Create a queue with the specified address, name and durability", impact = MBeanOperationInfo.ACTION)
@@ -364,13 +362,13 @@ public interface HornetQServerControl
     * This method will do nothing if the queue with the given name already exists on the server.
     *
     * @param address address to bind the queue to
-    * @param name name of the queue
-    * @param filter of the queue
+    * @param name    name of the queue
+    * @param filter  of the queue
     */
    @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
-                    @Parameter(name = "filter", desc = "Filter of the queue")String filter) throws Exception;
+                    @Parameter(name = "filter", desc = "Filter of the queue") String filter) throws Exception;
 
    /**
     * Deploy a queue.
@@ -378,8 +376,8 @@ public interface HornetQServerControl
     * This method will do nothing if the queue with the given name already exists on the server.
     *
     * @param address address to bind the queue to
-    * @param name name of the queue
-    * @param filter of the queue
+    * @param name    name of the queue
+    * @param filter  of the queue
     * @param durable whether the queue is durable
     */
    @Operation(desc = "Deploy a queue", impact = MBeanOperationInfo.ACTION)
@@ -459,7 +457,6 @@ public interface HornetQServerControl
     *
     * @param transactionAsBase64 base 64 representation of a prepare transaction
     * @return {@code true} if the transaction was successfully committed, {@code false} else
-    *
     * @see #listPreparedTransactions()
     */
    @Operation(desc = "Commit a prepared transaction")
@@ -470,7 +467,6 @@ public interface HornetQServerControl
     *
     * @param transactionAsBase64 base 64 representation of a prepare transaction
     * @return {@code true} if the transaction was successfully rolled back, {@code false} else
-    *
     * @see #listPreparedTransactions()
     */
    @Operation(desc = "Rollback a prepared transaction")
@@ -513,16 +509,16 @@ public interface HornetQServerControl
     */
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 
-   @Operation(desc= "Add security settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
+   @Operation(desc = "Add security settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
    void addSecuritySettings(
-                            @Parameter(desc="an address match", name="addressMatch") String addressMatch,
-                            @Parameter(desc="a comma-separated list of roles allowed to send messages", name="send") String sendRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to consume messages", name="consume") String consumeRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to create durable queues", name="createDurableQueueRoles") String createDurableQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to delete durable queues", name="deleteDurableQueueRoles") String deleteDurableQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to create non durable queues", name="createNonDurableQueueRoles") String createNonDurableQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to delete non durable queues", name="deleteNonDurableQueueRoles") String deleteNonDurableQueueRoles,
-                            @Parameter(desc="a comma-separated list of roles allowed to send management messages messages", name="manage") String manageRoles) throws Exception;
+      @Parameter(desc = "an address match", name = "addressMatch") String addressMatch,
+      @Parameter(desc = "a comma-separated list of roles allowed to send messages", name = "send") String sendRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to consume messages", name = "consume") String consumeRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to create durable queues", name = "createDurableQueueRoles") String createDurableQueueRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to delete durable queues", name = "deleteDurableQueueRoles") String deleteDurableQueueRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to create non durable queues", name = "createNonDurableQueueRoles") String createNonDurableQueueRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to delete non durable queues", name = "deleteNonDurableQueueRoles") String deleteNonDurableQueueRoles,
+      @Parameter(desc = "a comma-separated list of roles allowed to send management messages messages", name = "manage") String manageRoles) throws Exception;
 
    @Operation(desc = "Remove security settings for an address", impact = MBeanOperationInfo.ACTION)
    void removeSecuritySettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
@@ -533,25 +529,25 @@ public interface HornetQServerControl
    @Operation(desc = "get roles (as a JSON string) for a specific address match", impact = MBeanOperationInfo.INFO)
    String getRolesAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
-      /**
+   /**
     * adds a new address setting for a specific address
     */
-   @Operation(desc= "Add address settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
-   void addAddressSettings(@Parameter(desc="an address match", name="addressMatch") String addressMatch,
-                           @Parameter(desc="the dead letter address setting", name="DLA") String DLA,
-                           @Parameter(desc="the expiry address setting", name="expiryAddress") String expiryAddress,
-                           @Parameter(desc="the expiry delay setting", name="expiryDelay") long expiryDelay,
-                           @Parameter(desc="are any queues created for this address a last value queue", name="lastValueQueue") boolean lastValueQueue,
-                           @Parameter(desc="the delivery attempts", name="deliveryAttempts") int deliveryAttempts,
-                           @Parameter(desc="the max size in bytes", name="maxSizeBytes") long maxSizeBytes,
-                           @Parameter(desc="the page size in bytes", name="pageSizeBytes") int pageSizeBytes,
-                           @Parameter(desc="the max number of pages in the soft memory cache", name="pageMaxCacheSize") int pageMaxCacheSize,
-                           @Parameter(desc="the redelivery delay", name="redeliveryDelay") long redeliveryDelay,
-                           @Parameter(desc="the redelivery delay multiplier", name="redeliveryMultiplier") double redeliveryMultiplier,
-                           @Parameter(desc="the maximum redelivery delay", name="maxRedeliveryDelay") long maxRedeliveryDelay,
-                           @Parameter(desc="the redistribution delay", name="redistributionDelay") long redistributionDelay,
-                           @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
-                           @Parameter(desc="the ploicy to use when the address is full", name="addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
+   @Operation(desc = "Add address settings for addresses matching the addressMatch", impact = MBeanOperationInfo.ACTION)
+   void addAddressSettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch,
+                           @Parameter(desc = "the dead letter address setting", name = "DLA") String DLA,
+                           @Parameter(desc = "the expiry address setting", name = "expiryAddress") String expiryAddress,
+                           @Parameter(desc = "the expiry delay setting", name = "expiryDelay") long expiryDelay,
+                           @Parameter(desc = "are any queues created for this address a last value queue", name = "lastValueQueue") boolean lastValueQueue,
+                           @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts,
+                           @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes,
+                           @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes,
+                           @Parameter(desc = "the max number of pages in the soft memory cache", name = "pageMaxCacheSize") int pageMaxCacheSize,
+                           @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay,
+                           @Parameter(desc = "the redelivery delay multiplier", name = "redeliveryMultiplier") double redeliveryMultiplier,
+                           @Parameter(desc = "the maximum redelivery delay", name = "maxRedeliveryDelay") long maxRedeliveryDelay,
+                           @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
+                           @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
+                           @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
 
    void removeAddressSettings(String addressMatch) throws Exception;
 
@@ -559,45 +555,45 @@ public interface HornetQServerControl
     * returns the address settings as a JSON string
     */
    @Operation(desc = "returns the address settings as a JSON string for an address match", impact = MBeanOperationInfo.INFO)
-   String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
+   String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception;
 
    String[] getDivertNames();
 
-   @Operation(desc= "Create a Divert", impact = MBeanOperationInfo.ACTION)
-   void createDivert(@Parameter(name="name", desc="Name of the divert") String name,
-                     @Parameter(name="routingName", desc="Routing name of the divert") String routingName,
-                     @Parameter(name="address", desc="Address to divert from") String address,
-                     @Parameter(name="forwardingAddress", desc="Adress to divert to") String forwardingAddress,
-                     @Parameter(name="exclusive", desc="Is the divert exclusive?") boolean exclusive,
-                     @Parameter(name="filterString", desc="Filter of the divert") String filterString,
-                     @Parameter(name="transformerClassName", desc="Class name of the divert's transformer") String transformerClassName) throws Exception;
+   @Operation(desc = "Create a Divert", impact = MBeanOperationInfo.ACTION)
+   void createDivert(@Parameter(name = "name", desc = "Name of the divert") String name,
+                     @Parameter(name = "routingName", desc = "Routing name of the divert") String routingName,
+                     @Parameter(name = "address", desc = "Address to divert from") String address,
+                     @Parameter(name = "forwardingAddress", desc = "Adress to divert to") String forwardingAddress,
+                     @Parameter(name = "exclusive", desc = "Is the divert exclusive?") boolean exclusive,
+                     @Parameter(name = "filterString", desc = "Filter of the divert") String filterString,
+                     @Parameter(name = "transformerClassName", desc = "Class name of the divert's transformer") String transformerClassName) throws Exception;
 
-   @Operation(desc= "Destroy a Divert", impact = MBeanOperationInfo.ACTION)
-   void destroyDivert(@Parameter(name="name", desc="Name of the divert") String name) throws Exception;
+   @Operation(desc = "Destroy a Divert", impact = MBeanOperationInfo.ACTION)
+   void destroyDivert(@Parameter(name = "name", desc = "Name of the divert") String name) throws Exception;
 
    String[] getBridgeNames();
 
-   @Operation(desc= "Create a Bridge", impact = MBeanOperationInfo.ACTION)
-   void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
-                     @Parameter(name="queueName", desc="Name of the source queue") String queueName,
-                     @Parameter(name="forwardingAddress", desc="Forwarding address") String forwardingAddress,
-                     @Parameter(name="filterString", desc="Filter of the brdige") String filterString,
-                     @Parameter(name="transformerClassName", desc="Class name of the bridge transformer") String transformerClassName,
-                     @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
-                     @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
-                     @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
-                     @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
-                     @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
-                     @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
-                     @Parameter(name="staticConnectorNames", desc="comma separated list of connector names or name of discovery group if 'useDiscoveryGroup' is set to true") String connectorNames,
-                     @Parameter(name="useDiscoveryGroup", desc="use discovery  group")boolean useDiscoveryGroup,
-                     @Parameter(name="ha", desc="Is it using HA") boolean ha,
-                     @Parameter(name="user", desc="User name") String user,
-                     @Parameter(name="password", desc="User password") String password) throws Exception;
+   @Operation(desc = "Create a Bridge", impact = MBeanOperationInfo.ACTION)
+   void createBridge(@Parameter(name = "name", desc = "Name of the bridge") String name,
+                     @Parameter(name = "queueName", desc = "Name of the source queue") String queueName,
+                     @Parameter(name = "forwardingAddress", desc = "Forwarding address") String forwardingAddress,
+                     @Parameter(name = "filterString", desc = "Filter of the brdige") String filterString,
+                     @Parameter(name = "transformerClassName", desc = "Class name of the bridge transformer") String transformerClassName,
+                     @Parameter(name = "retryInterval", desc = "Connection retry interval") long retryInterval,
+                     @Parameter(name = "retryIntervalMultiplier", desc = "Connection retry interval multiplier") double retryIntervalMultiplier,
+                     @Parameter(name = "reconnectAttempts", desc = "Number of reconnection attempts") int reconnectAttempts,
+                     @Parameter(name = "useDuplicateDetection", desc = "Use duplicate detection") boolean useDuplicateDetection,
+                     @Parameter(name = "confirmationWindowSize", desc = "Confirmation window size") int confirmationWindowSize,
+                     @Parameter(name = "clientFailureCheckPeriod", desc = "Period to check client failure") long clientFailureCheckPeriod,
+                     @Parameter(name = "staticConnectorNames", desc = "comma separated list of connector names or name of discovery group if 'useDiscoveryGroup' is set to true") String connectorNames,
+                     @Parameter(name = "useDiscoveryGroup", desc = "use discovery  group") boolean useDiscoveryGroup,
+                     @Parameter(name = "ha", desc = "Is it using HA") boolean ha,
+                     @Parameter(name = "user", desc = "User name") String user,
+                     @Parameter(name = "password", desc = "User password") String password) throws Exception;
 
 
-   @Operation(desc= "Destroy a bridge", impact = MBeanOperationInfo.ACTION)
-   void destroyBridge(@Parameter(name="name", desc="Name of the bridge") String name) throws Exception;
+   @Operation(desc = "Destroy a bridge", impact = MBeanOperationInfo.ACTION)
+   void destroyBridge(@Parameter(name = "name", desc = "Name of the bridge") String name) throws Exception;
 
    @Operation(desc = "force the server to stop and notify clients to failover", impact = MBeanOperationInfo.UNKNOWN)
    void forceFailover() throws Exception;

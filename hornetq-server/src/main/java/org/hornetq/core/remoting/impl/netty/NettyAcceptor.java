@@ -13,6 +13,8 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
@@ -27,12 +29,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
@@ -40,8 +38,8 @@ import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -53,7 +51,6 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.TypedProperties;
-import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -261,18 +258,18 @@ public class NettyAcceptor implements Acceptor
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
-                                                                  TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
-                                                                  configuration,
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                  HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                    TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
+                                                                    configuration,
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                    HornetQDefaultConfiguration.getPropMaskPassword());
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
                                                                 configuration);
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
-                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
-                                                                    configuration,
-                                                                    HornetQDefaultConfiguration.getPropMaskPassword(),
-                                                                    HornetQDefaultConfiguration.getPropMaskPassword());
+                                                                      TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
+                                                                      configuration,
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword(),
+                                                                      HornetQDefaultConfiguration.getPropMaskPassword());
 
          needClientAuth = ConfigurationHelper.getBooleanProperty(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME,
                                                                  TransportConstants.DEFAULT_NEED_CLIENT_AUTH,
@@ -356,13 +353,13 @@ public class NettyAcceptor implements Acceptor
          {
             if (keyStorePath == null)
                throw new IllegalArgumentException("If \"" + TransportConstants.SSL_ENABLED_PROP_NAME +
-                       "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
+                                                     "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
             context = SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
          }
          catch (Exception e)
          {
             IllegalStateException ise = new IllegalStateException("Unable to create NettyAcceptor for " + host +
-                                                                  ":" + port);
+                                                                     ":" + port);
             ise.initCause(e);
             throw ise;
          }
@@ -649,6 +646,7 @@ public class NettyAcceptor implements Acceptor
 
    /**
     * not allowed
+    *
     * @param defaultHornetQPrincipal
     */
    public void setDefaultHornetQPrincipal(HornetQPrincipal defaultHornetQPrincipal)
@@ -658,6 +656,7 @@ public class NettyAcceptor implements Acceptor
 
    /**
     * only InVM acceptors should allow this
+    *
     * @return
     */
    public boolean isUnsecurable()

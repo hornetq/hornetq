@@ -14,23 +14,21 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
 import org.hornetq.core.client.impl.Topology;
 
 /**
  * The serverLocator locates a server, but beyond that it locates a server based on a list.
- * <p>
+ * <p/>
  * If you are using straight TCP on the configuration, and if you configure your serverLocator to be
  * HA, the locator will always get an updated list of members to the server, the server will send
  * the updated list to the client.
- * <p>
+ * <p/>
  * If you use UDP or JGroups (exclusively JGropus or UDP), the initial discovery is done by the
  * grouping finder, after the initial connection is made the server will always send updates to the
  * client. But the listeners will listen for updates on grouping.
+ *
  * @author Tim Fox
  */
 public interface ServerLocator
@@ -38,6 +36,7 @@ public interface ServerLocator
 
    /**
     * Returns true if close was already called
+    *
     * @return {@code true} if closed, {@code false} otherwise.
     */
    boolean isClosed();
@@ -46,7 +45,7 @@ public interface ServerLocator
     * This method will disable any checks when a GarbageCollection happens
     * leaving connections open. The JMS Layer will make specific usage of this
     * method, since the ConnectionFactory.finalize should release this.
-    *
+    * <p/>
     * Warning: You may leave resources unattended if you call this method and
     * don't take care of cleaning the resources yourself.
     */
@@ -54,6 +53,7 @@ public interface ServerLocator
 
    /**
     * Creates a ClientSessionFactory using whatever load balancing policy is in force
+    *
     * @return The ClientSessionFactory
     * @throws Exception
     */
@@ -63,11 +63,12 @@ public interface ServerLocator
     * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
     * about by this ServerLocator. This method allows the user to make a connection to a specific
     * server bypassing any load balancing policy in force
+    *
     * @param nodeID
     * @return a ClientSessionFactory instance or {@code null} if the node is not present on the
-    *         topology
+    * topology
     * @throws Exception if a failure happened in creating the ClientSessionFactory or the
-    *            ServerLocator does not know about the passed in transportConfiguration
+    *                   ServerLocator does not know about the passed in transportConfiguration
     */
    ClientSessionFactory createSessionFactory(final String nodeID) throws Exception;
 
@@ -75,10 +76,11 @@ public interface ServerLocator
     * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
     * about by this ServerLocator. This method allows the user to make a connection to a specific
     * server bypassing any load balancing policy in force
+    *
     * @param transportConfiguration
     * @return a {@link ClientSessionFactory} instance
     * @throws Exception if a failure happened in creating the ClientSessionFactory or the
-    *            ServerLocator does not know about the passed in transportConfiguration
+    *                   ServerLocator does not know about the passed in transportConfiguration
     */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception;
 
@@ -86,20 +88,22 @@ public interface ServerLocator
     * Creates a {@link ClientSessionFactory} to a specific server. The server must already be known
     * about by this ServerLocator. This method allows the user to make a connection to a specific
     * server bypassing any load balancing policy in force
+    *
     * @param transportConfiguration
-    * @param reconnectAttempts number of attempts of reconnection to perform
+    * @param reconnectAttempts           number of attempts of reconnection to perform
     * @param failoverOnInitialConnection
     * @return a {@link ClientSessionFactory} instance
     * @throws Exception if a failure happened in creating the ClientSessionFactory or the
-    *            ServerLocator does not know about the passed in transportConfiguration
+    *                   ServerLocator does not know about the passed in transportConfiguration
     */
    ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration, int reconnectAttempts, boolean failoverOnInitialConnection) throws Exception;
 
    /**
     * Returns the period used to check if a client has failed to receive pings from the server.
-    * <p>
+    * <p/>
     * Period is in milliseconds, default value is
     * {@link HornetQClient#DEFAULT_CLIENT_FAILURE_CHECK_PERIOD}.
+    *
     * @return the period used to check if a client has failed to receive pings from the server
     */
    long getClientFailureCheckPeriod();
@@ -107,8 +111,9 @@ public interface ServerLocator
    /**
     * Sets the period (in milliseconds) used to check if a client has failed to receive pings from
     * the server.
-    * <p>
+    * <p/>
     * Value must be -1 (to disable) or greater than 0.
+    *
     * @param clientFailureCheckPeriod the period to check failure
     */
    void setClientFailureCheckPeriod(long clientFailureCheckPeriod);
@@ -116,12 +121,13 @@ public interface ServerLocator
    /**
     * When <code>true</code>, consumers created through this factory will create temporary files to
     * cache large messages.
-    * <p>
+    * <p/>
     * There is 1 temporary file created for each large message.
-    * <p>
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_CACHE_LARGE_MESSAGE_CLIENT}.
+    *
     * @return <code>true</code> if consumers created through this factory will cache large messages
-    *         in temporary files, <code>false</code> else
+    * in temporary files, <code>false</code> else
     */
    boolean isCacheLargeMessagesClient();
 
@@ -134,17 +140,18 @@ public interface ServerLocator
 
    /**
     * Returns the connection <em>time-to-live</em>.
-    * <p>
+    * <p/>
     * This TTL determines how long the server will keep a connection alive in the absence of any
     * data arriving from the client. Value is in milliseconds, default value is
     * {@link HornetQClient#DEFAULT_CONNECTION_TTL}.
+    *
     * @return the connection time-to-live in milliseconds
     */
    long getConnectionTTL();
 
    /**
     * Sets this factory's connections <em>time-to-live</em>.
-    *
+    * <p/>
     * Value must be -1 (to disable) or greater or equals to 0.
     *
     * @param connectionTTL period in milliseconds
@@ -153,18 +160,20 @@ public interface ServerLocator
 
    /**
     * Returns the blocking calls timeout.
-    * <p>
+    * <p/>
     * If client's blocking calls to the server take more than this timeout, the call will throw a
     * {@link HornetQException} with the code {@link HornetQExceptionType#CONNECTION_TIMEDOUT}. Value
     * is in milliseconds, default value is {@link HornetQClient#DEFAULT_CALL_TIMEOUT}.
+    *
     * @return the blocking calls timeout
     */
    long getCallTimeout();
 
    /**
     * Sets the blocking call timeout.
-    * <p>
+    * <p/>
     * Value must be greater or equals to 0
+    *
     * @param callTimeout blocking call timeout in milliseconds
     */
    void setCallTimeout(long callTimeout);
@@ -173,34 +182,38 @@ public interface ServerLocator
    /**
     * Returns the blocking calls failover timeout when the client is awaiting failover,
     * this is over and above the normal call timeout.
-    * <p>
+    * <p/>
     * If client is in the process of failing over when a blocking call is called then the client will wait this long before
     * actually trying the send.
+    *
     * @return the blocking calls failover timeout
     */
    long getCallFailoverTimeout();
 
    /**
     * Sets the blocking call failover timeout.
-    * <p>
+    * <p/>
     * When the client is awaiting failover, this is over and above the normal call timeout.
-    * <p>
+    * <p/>
     * Value must be greater or equals to -1, -1 means forever
+    *
     * @param callFailoverTimeout blocking call timeout in milliseconds
     */
    void setCallFailoverTimeout(long callFailoverTimeout);
+
    /**
     * Returns the large message size threshold.
-    * <p>
+    * <p/>
     * Messages whose size is if greater than this value will be handled as <em>large messages</em>.
     * Value is in bytes, default value is {@link HornetQClient#DEFAULT_MIN_LARGE_MESSAGE_SIZE}.
+    *
     * @return the message size threshold to treat messages as large messages.
     */
    int getMinLargeMessageSize();
 
    /**
     * Sets the large message size threshold.
-    *
+    * <p/>
     * Value must be greater than 0.
     *
     * @param minLargeMessageSize large message size threshold in bytes
@@ -209,7 +222,7 @@ public interface ServerLocator
 
    /**
     * Returns the window size for flow control of the consumers created through this factory.
-    *
+    * <p/>
     * Value is in bytes, default value is {@link HornetQClient#DEFAULT_CONSUMER_WINDOW_SIZE}.
     *
     * @return the window size used for consumer flow control
@@ -218,18 +231,19 @@ public interface ServerLocator
 
    /**
     * Sets the window size for flow control of the consumers created through this factory.
-    * <p>
+    * <p/>
     * Value must be -1 (to disable flow control), 0 (to not buffer any messages) or greater than 0
     * (to set the maximum size of the buffer)
+    *
     * @param consumerWindowSize window size (in bytes) used for consumer flow control
     */
    void setConsumerWindowSize(int consumerWindowSize);
 
    /**
     * Returns the maximum rate of message consumption for consumers created through this factory.
-    *
+    * <p/>
     * This value controls the rate at which a consumer can consume messages. A consumer will never consume messages at a rate faster than the rate specified.
-    *
+    * <p/>
     * Value is -1 (to disable) or a positive integer corresponding to the maximum desired message consumption rate specified in units of messages per second.
     * Default value is {@link HornetQClient#DEFAULT_CONSUMER_MAX_RATE}.
     *
@@ -239,7 +253,7 @@ public interface ServerLocator
 
    /**
     * Sets the maximum rate of message consumption for consumers created through this factory.
-    *
+    * <p/>
     * Value must -1 (to disable) or a positive integer corresponding to the maximum desired message consumption rate specified in units of messages per second.
     *
     * @param consumerMaxRate maximum rate of message consumption (in messages per seconds)
@@ -248,7 +262,7 @@ public interface ServerLocator
 
    /**
     * Returns the size for the confirmation window of clients using this factory.
-    *
+    * <p/>
     * Value is in bytes or -1 (to disable the window). Default value is {@link HornetQClient#DEFAULT_CONFIRMATION_WINDOW_SIZE}.
     *
     * @return the size for the confirmation window of clients using this factory
@@ -257,16 +271,16 @@ public interface ServerLocator
 
    /**
     * Sets the size for the confirmation window buffer of clients using this factory.
-    *
+    * <p/>
     * Value must be -1 (to disable the window) or greater than 0.
-
+    *
     * @param confirmationWindowSize size of the confirmation window (in bytes)
     */
    void setConfirmationWindowSize(int confirmationWindowSize);
 
    /**
     * Returns the window size for flow control of the producers created through this factory.
-    *
+    * <p/>
     * Value must be -1 (to disable flow control) or greater than 0 to determine the maximum amount of bytes at any give time (to prevent overloading the connection).
     * Default value is {@link HornetQClient#DEFAULT_PRODUCER_WINDOW_SIZE}.
     *
@@ -276,7 +290,7 @@ public interface ServerLocator
 
    /**
     * Returns the window size for flow control of the producers created through this factory.
-    *
+    * <p/>
     * Value must be -1 (to disable flow control) or greater than 0.
     *
     * @param producerWindowSize window size (in bytest) for flow control of the producers created through this factory.
@@ -285,19 +299,19 @@ public interface ServerLocator
 
    /**
     * Returns the maximum rate of message production for producers created through this factory.
-    *
+    * <p/>
     * This value controls the rate at which a producer can produce messages. A producer will never produce messages at a rate faster than the rate specified.
-    *
+    * <p/>
     * Value is -1 (to disable) or a positive integer corresponding to the maximum desired message production rate specified in units of messages per second.
     * Default value is {@link HornetQClient#DEFAULT_PRODUCER_MAX_RATE}.
     *
-    * @return  maximum rate of message production (in messages per seconds)
+    * @return maximum rate of message production (in messages per seconds)
     */
    int getProducerMaxRate();
 
    /**
     * Sets the maximum rate of message production for producers created through this factory.
-    *
+    * <p/>
     * Value must -1 (to disable) or a positive integer corresponding to the maximum desired message production rate specified in units of messages per second.
     *
     * @param producerMaxRate maximum rate of message production (in messages per seconds)
@@ -307,11 +321,11 @@ public interface ServerLocator
    /**
     * Returns whether consumers created through this factory will block while
     * sending message acknowledgments or do it asynchronously.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
     *
     * @return whether consumers will block while sending message
-    *         acknowledgments or do it asynchronously
+    * acknowledgments or do it asynchronously
     */
    boolean isBlockOnAcknowledge();
 
@@ -319,10 +333,9 @@ public interface ServerLocator
     * Sets whether consumers created through this factory will block while
     * sending message acknowledgments or do it asynchronously.
     *
-    * @param blockOnAcknowledge
-    *            <code>true</code> to block when sending message
-    *            acknowledgments or <code>false</code> to send them
-    *            asynchronously
+    * @param blockOnAcknowledge <code>true</code> to block when sending message
+    *                           acknowledgments or <code>false</code> to send them
+    *                           asynchronously
     */
    void setBlockOnAcknowledge(boolean blockOnAcknowledge);
 
@@ -331,7 +344,7 @@ public interface ServerLocator
     * <br>
     * If the session is configured to send durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
     * to be notified once the message has been handled by the server.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_DURABLE_SEND}.
     *
     * @return whether producers will block while sending persistent messages or do it asynchronously
@@ -350,7 +363,7 @@ public interface ServerLocator
     * <br>
     * If the session is configured to send non-durable message asynchronously, the client can set a SendAcknowledgementHandler on the ClientSession
     * to be notified once the message has been handled by the server.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_NON_DURABLE_SEND}.
     *
     * @return whether producers will block while sending non-durable messages or do it asynchronously
@@ -367,7 +380,7 @@ public interface ServerLocator
    /**
     * Returns whether producers created through this factory will automatically
     * assign a group ID to the messages they sent.
-    *
+    * <p/>
     * if <code>true</code>, a random unique group ID is created and set on each message for the property
     * {@link org.hornetq.api.core.Message#HDR_GROUP_ID}.
     * Default value is {@link HornetQClient#DEFAULT_AUTO_GROUP}.
@@ -386,7 +399,7 @@ public interface ServerLocator
 
    /**
     * Returns the group ID that will be eventually set on each message for the property {@link org.hornetq.api.core.Message#HDR_GROUP_ID}.
-    *
+    * <p/>
     * Default value is is {@code null} and no group ID will be set on the messages.
     *
     * @return the group ID that will be eventually set on each message
@@ -402,7 +415,7 @@ public interface ServerLocator
 
    /**
     * Returns whether messages will pre-acknowledged on the server before they are sent to the consumers or not.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_PRE_ACKNOWLEDGE}
     */
    boolean isPreAcknowledge();
@@ -412,15 +425,14 @@ public interface ServerLocator
     * server before they are sent to consumers, else set to <code>false</code>
     * to let clients acknowledge the message they consume.
     *
-    * @param preAcknowledge
-    *            <code>true</code> to enable pre-acknowledgment,
-    *            <code>false</code> else
+    * @param preAcknowledge <code>true</code> to enable pre-acknowledgment,
+    *                       <code>false</code> else
     */
    void setPreAcknowledge(boolean preAcknowledge);
 
    /**
     * Returns the acknowledgments batch size.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_ACK_BATCH_SIZE}.
     *
     * @return the acknowledgments batch size
@@ -429,17 +441,17 @@ public interface ServerLocator
 
    /**
     * Sets the acknowledgments batch size.
-    *
+    * <p/>
     * Value must be equal or greater than 0.
     *
-    * @param ackBatchSize
-    *            acknowledgments batch size
+    * @param ackBatchSize acknowledgments batch size
     */
    void setAckBatchSize(int ackBatchSize);
 
    /**
     * Returns an array of TransportConfigurations representing the static list of live servers used
     * when creating this object
+    *
     * @return array with all static {@link TransportConfiguration}s
     */
    TransportConfiguration[] getStaticTransportConfigurations();
@@ -452,7 +464,7 @@ public interface ServerLocator
    /**
     * Returns whether this factory will use global thread pools (shared among all the factories in the same JVM)
     * or its own pools.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_USE_GLOBAL_POOLS}.
     *
     * @return <code>true</code> if this factory uses global thread pools, <code>false</code> else
@@ -469,7 +481,7 @@ public interface ServerLocator
 
    /**
     * Returns the maximum size of the scheduled thread pool.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}.
     *
     * @return the maximum size of the scheduled thread pool.
@@ -478,17 +490,17 @@ public interface ServerLocator
 
    /**
     * Sets the maximum size of the scheduled thread pool.
-    *
+    * <p/>
     * This setting is relevant only if this factory does not use global pools.
     * Value must be greater than 0.
     *
-    * @param scheduledThreadPoolMaxSize  maximum size of the scheduled thread pool.
+    * @param scheduledThreadPoolMaxSize maximum size of the scheduled thread pool.
     */
    void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize);
 
    /**
     * Returns the maximum size of the thread pool.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_THREAD_POOL_MAX_SIZE}.
     *
     * @return the maximum size of the thread pool.
@@ -497,17 +509,17 @@ public interface ServerLocator
 
    /**
     * Sets the maximum size of the thread pool.
-    *
+    * <p/>
     * This setting is relevant only if this factory does not use global pools.
     * Value must be -1 (for unlimited thread pool) or greater than 0.
     *
-    * @param threadPoolMaxSize  maximum size of the thread pool.
+    * @param threadPoolMaxSize maximum size of the thread pool.
     */
    void setThreadPoolMaxSize(int threadPoolMaxSize);
 
    /**
     * Returns the time to retry connections created by this factory after failure.
-    *
+    * <p/>
     * Value is in milliseconds, default is {@link HornetQClient#DEFAULT_RETRY_INTERVAL}.
     *
     * @return the time to retry connections created by this factory after failure
@@ -516,7 +528,7 @@ public interface ServerLocator
 
    /**
     * Sets the time to retry connections created by this factory after failure.
-    *
+    * <p/>
     * Value must be greater than 0.
     *
     * @param retryInterval time (in milliseconds) to retry connections created by this factory after failure
@@ -525,7 +537,7 @@ public interface ServerLocator
 
    /**
     * Returns the multiplier to apply to successive retry intervals.
-    *
+    * <p/>
     * Default value is  {@link HornetQClient#DEFAULT_RETRY_INTERVAL_MULTIPLIER}.
     *
     * @return the multiplier to apply to successive retry intervals
@@ -534,7 +546,7 @@ public interface ServerLocator
 
    /**
     * Sets the multiplier to apply to successive retry intervals.
-    *
+    * <p/>
     * Value must be positive.
     *
     * @param retryIntervalMultiplier multiplier to apply to successive retry intervals
@@ -543,7 +555,7 @@ public interface ServerLocator
 
    /**
     * Returns the maximum retry interval (in the case a retry interval multiplier has been specified).
-    *
+    * <p/>
     * Value is in milliseconds, default value is  {@link HornetQClient#DEFAULT_MAX_RETRY_INTERVAL}.
     *
     * @return the maximum retry interval
@@ -552,16 +564,17 @@ public interface ServerLocator
 
    /**
     * Sets the maximum retry interval.
-    * <p>
+    * <p/>
     * Value must be greater than 0.
+    *
     * @param maxRetryInterval maximum retry interval to apply in the case a retry interval multiplier
-    *           has been specified
+    *                         has been specified
     */
    void setMaxRetryInterval(long maxRetryInterval);
 
    /**
     * Returns the maximum number of attempts to retry connection in case of failure.
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_RECONNECT_ATTEMPTS}.
     *
     * @return the maximum number of attempts to retry connection in case of failure.
@@ -570,7 +583,7 @@ public interface ServerLocator
 
    /**
     * Sets the maximum number of attempts to retry connection in case of failure.
-    *
+    * <p/>
     * Value must be -1 (to retry infinitely), 0 (to never retry connection) or greater than 0.
     *
     * @param reconnectAttempts maximum number of attempts to retry connection in case of failure
@@ -579,8 +592,9 @@ public interface ServerLocator
 
    /**
     * Sets the maximum number of attempts to establish an initial connection.
-    * <p>
+    * <p/>
     * Value must be -1 (to retry infinitely), 0 (to never retry connection) or greater than 0.
+    *
     * @param reconnectAttempts maximum number of attempts for the initial connection
     */
    void setInitialConnectAttempts(int reconnectAttempts);
@@ -593,7 +607,7 @@ public interface ServerLocator
    /**
     * Returns true if the client will automatically attempt to connect to the backup server if the initial
     * connection to the live server fails
-    *
+    * <p/>
     * Default value is {@link HornetQClient#DEFAULT_FAILOVER_ON_INITIAL_CONNECTION}.
     */
    boolean isFailoverOnInitialConnection();
@@ -607,7 +621,7 @@ public interface ServerLocator
 
    /**
     * Returns the class name of the connection load balancing policy.
-    *
+    * <p/>
     * Default value is "org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy".
     *
     * @return the class name of the connection load balancing policy
@@ -616,7 +630,7 @@ public interface ServerLocator
 
    /**
     * Sets the class name of the connection load balancing policy.
-    *
+    * <p/>
     * Value must be the name of a class implementing {@link ConnectionLoadBalancingPolicy}.
     *
     * @param loadBalancingPolicyClassName class name of the connection load balancing policy
@@ -625,7 +639,7 @@ public interface ServerLocator
 
    /**
     * Returns the initial size of messages created through this factory.
-    *
+    * <p/>
     * Value is in bytes, default value is  {@link HornetQClient#DEFAULT_INITIAL_MESSAGE_PACKET_SIZE}.
     *
     * @return the initial size of messages created through this factory
@@ -634,7 +648,7 @@ public interface ServerLocator
 
    /**
     * Sets the initial size of messages created through this factory.
-    *
+    * <p/>
     * Value must be greater than 0.
     *
     * @param size initial size of messages created through this factory.
@@ -646,7 +660,6 @@ public interface ServerLocator
     * method is the same as invoking <code>addIncomingInterceptor(Interceptor).</code>
     *
     * @param interceptor an Interceptor
-    *
     * @deprecated As of HornetQ 2.3.0.Final, replaced by
     * {@link #addIncomingInterceptor(Interceptor)} and
     * {@link #addOutgoingInterceptor(Interceptor)}
@@ -673,9 +686,7 @@ public interface ServerLocator
     * <code>removeIncomingInterceptor(Interceptor).</code>
     *
     * @param interceptor interceptor to remove
-    *
     * @return <code>true</code> if the interceptor is removed from this factory, <code>false</code> else
-    *
     * @deprecated As of HornetQ 2.3.0.Final, replaced by
     * {@link #removeIncomingInterceptor(Interceptor)} and
     * {@link #removeOutgoingInterceptor(Interceptor)}
@@ -687,7 +698,6 @@ public interface ServerLocator
     * Removes an incoming interceptor.
     *
     * @param interceptor interceptor to remove
-    *
     * @return <code>true</code> if the incoming interceptor is removed from this factory, <code>false</code> else
     */
    boolean removeIncomingInterceptor(Interceptor interceptor);
@@ -696,7 +706,6 @@ public interface ServerLocator
     * Removes an outgoing interceptor.
     *
     * @param interceptor interceptor to remove
-    *
     * @return <code>true</code> if the outgoing interceptor is removed from this factory, <code>false</code> else
     */
    boolean removeOutgoingInterceptor(Interceptor interceptor);
@@ -708,6 +717,7 @@ public interface ServerLocator
 
    /**
     * Exposes the Topology used by this ServerLocator.
+    *
     * @return topology
     */
    Topology getTopology();
@@ -715,18 +725,21 @@ public interface ServerLocator
    /**
     * Whether this server receives topology notifications from the cluster as servers join or leave
     * the cluster.
+    *
     * @return {@code true} if the locator receives topology updates from the cluster
     */
    boolean isHA();
 
    /**
     * Whether to compress large messages.
+    *
     * @return
     */
    boolean isCompressLargeMessage();
 
    /**
     * Sets whether to compress or not large messages.
+    *
     * @param compressLargeMessages
     */
    void setCompressLargeMessage(boolean compressLargeMessages);

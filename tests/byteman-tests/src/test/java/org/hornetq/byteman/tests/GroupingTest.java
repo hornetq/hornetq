@@ -16,7 +16,6 @@ package org.hornetq.byteman.tests;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -24,9 +23,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.api.core.HornetQNotConnectedException;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 import org.jboss.byteman.contrib.bmunit.BMRule;
@@ -41,7 +38,6 @@ import org.junit.runner.RunWith;
  * GroupingTest
  *
  * @author Andy Taylor
- *
  */
 @RunWith(BMUnitRunner.class)
 public class GroupingTest extends JMSTestBase
@@ -72,20 +68,20 @@ public class GroupingTest extends JMSTestBase
 
 
    @Test
-     @BMRules
-     (
-           rules =
-                 {
-                       @BMRule
-                             (
-                                   name = "trace clientsessionimpl commit",
-                                   targetClass = "org.hornetq.core.server.impl.ServerSessionImpl",
-                                   targetMethod = "rollback",
-                                   targetLocation = "EXIT",
-                                   action = "org.hornetq.byteman.tests.GroupingTest.pause();"
-                             )
-                 }
-     )
+   @BMRules
+      (
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "trace clientsessionimpl commit",
+                     targetClass = "org.hornetq.core.server.impl.ServerSessionImpl",
+                     targetMethod = "rollback",
+                     targetLocation = "EXIT",
+                     action = "org.hornetq.byteman.tests.GroupingTest.pause();"
+                  )
+            }
+      )
    public void testGroupingRollbackOnClose() throws Exception
    {
       Connection sendConnection = null;
@@ -93,7 +89,7 @@ public class GroupingTest extends JMSTestBase
       Connection connection2 = null;
       try
       {
-         HornetQConnectionFactory fact = (HornetQConnectionFactory) getCF();
+         HornetQConnectionFactory fact = (HornetQConnectionFactory)getCF();
          fact.setReconnectAttempts(0);
          //fact.setConsumerWindowSize(1000);
          //fact.setTransactionBatchSize(0);
@@ -134,7 +130,8 @@ public class GroupingTest extends JMSTestBase
 
                      producer.send(message);
                   }
-               } catch (JMSException e)
+               }
+               catch (JMSException e)
                {
                   e.printStackTrace();
                }
@@ -145,7 +142,7 @@ public class GroupingTest extends JMSTestBase
          //consume 5 msgs from 1st first consumer
          for (int j = 0; j < 5; j++)
          {
-            TextMessage tm = (TextMessage) consumer1.receive(10000);
+            TextMessage tm = (TextMessage)consumer1.receive(10000);
 
             assertNotNull(tm);
 
@@ -160,7 +157,7 @@ public class GroupingTest extends JMSTestBase
 
          for (int j = 0; j < 10000; j++)
          {
-            TextMessage tm = (TextMessage) consumer2.receive(5000);
+            TextMessage tm = (TextMessage)consumer2.receive(5000);
 
             assertNotNull(tm);
 
@@ -168,13 +165,14 @@ public class GroupingTest extends JMSTestBase
 
             assertEquals(tm.getStringProperty("JMSXGroupID"), "foo");
          }
-      }  finally
+      }
+      finally
       {
          if (sendConnection != null)
          {
             sendConnection.close();
          }
-         if(connection2 != null)
+         if (connection2 != null)
          {
             connection2.close();
          }
@@ -184,13 +182,14 @@ public class GroupingTest extends JMSTestBase
 
    public static void pause()
    {
-      if(pause)
+      if (pause)
       {
          try
          {
             System.out.println("pausing after rollback");
             Thread.sleep(500);
-         } catch (InterruptedException e)
+         }
+         catch (InterruptedException e)
          {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
          }

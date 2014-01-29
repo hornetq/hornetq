@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.replication.ReplicationManager;
@@ -35,8 +34,9 @@ import org.hornetq.core.transaction.Transaction;
  * The producers will write directly to PagingStore, and the store will decide what Page file should
  * be used based on configured size.
  * </p>
- * @see PagingManager
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @see PagingManager
  */
 public interface PagingStore extends HornetQComponent
 {
@@ -44,7 +44,9 @@ public interface PagingStore extends HornetQComponent
 
    int getNumberOfPages();
 
-   /** Returns the page id of the current page in which the system is writing files. */
+   /**
+    * Returns the page id of the current page in which the system is writing files.
+    */
    int getCurrentWritingPage();
 
    SimpleString getStoreName();
@@ -65,19 +67,24 @@ public interface PagingStore extends HornetQComponent
 
    boolean isPaging();
 
-   /** Schedules sync to the file storage. */
+   /**
+    * Schedules sync to the file storage.
+    */
    void sync() throws Exception;
 
-   /** Performs a real sync on the current IO file. */
+   /**
+    * Performs a real sync on the current IO file.
+    */
    void ioSync() throws Exception;
 
    /**
     * Write message to page if we are paging.
+    *
     * @param readLock a read lock from the storage manager. This is an encapsulation violation made
-    *           to keep the code less complex. If give {@code null} the method will throw a
-    *           {@link NullPointerException}
+    *                 to keep the code less complex. If give {@code null} the method will throw a
+    *                 {@link NullPointerException}
     * @return {@code true} if we are paging and have handled the data, {@code false} if the data
-    *         needs to be sent to the journal
+    * needs to be sent to the journal
     * @throws NullPointerException if {@code readLock} is null
     */
    boolean page(ServerMessage message, Transaction tx, RouteContextList listCtx, ReadLock readLock) throws Exception;
@@ -97,9 +104,7 @@ public interface PagingStore extends HornetQComponent
     * The file will still exist until Page.delete is called,
     * So, case the system is reloaded the same Page will be loaded back if delete is not called.
     *
-    * @throws Exception
-    *
-    * Note: This should still be part of the interface, even though HornetQ only uses through the
+    * @throws Exception Note: This should still be part of the interface, even though HornetQ only uses through the
     */
    Page depage() throws Exception;
 
@@ -108,7 +113,9 @@ public interface PagingStore extends HornetQComponent
 
    Page getCurrentPage();
 
-   /** @return true if paging was started, or false if paging was already started before this call */
+   /**
+    * @return true if paging was started, or false if paging was already started before this call
+    */
    boolean startPaging() throws Exception;
 
    void stopPaging() throws Exception;
@@ -119,8 +126,9 @@ public interface PagingStore extends HornetQComponent
 
    /**
     * Write lock the PagingStore.
+    *
     * @param timeout milliseconds to wait for the lock. If value is {@literal -1} then wait
-    *           indefinitely.
+    *                indefinitely.
     * @return {@code true} if the lock was obtained, {@code false} otherwise
     */
    boolean lock(long timeout);
@@ -128,14 +136,17 @@ public interface PagingStore extends HornetQComponent
    /**
     * Releases locks acquired with {@link PagingStore#lock(long)}.
     */
-    void unlock();
+   void unlock();
 
-    /** This is used mostly by tests.
-     *  We will wait any pending runnable to finish its execution */
-    void flushExecutors();
+   /**
+    * This is used mostly by tests.
+    * We will wait any pending runnable to finish its execution
+    */
+   void flushExecutors();
 
    /**
     * Files to synchronize with a remote backup.
+    *
     * @return a collection of page IDs which must be synchronized with a replicating backup
     * @throws Exception
     */
@@ -143,8 +154,9 @@ public interface PagingStore extends HornetQComponent
 
    /**
     * Sends the pages with given IDs to the {@link ReplicationManager}.
-    * <p>
+    * <p/>
     * Sending is done here to avoid exposing the internal {@link SequentialFile}s.
+    *
     * @param replicator
     * @param pageIds
     * @throws Exception

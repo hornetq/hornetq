@@ -13,12 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -36,9 +32,12 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A JournalCrashTest
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class JournalCrashTest extends ServiceTestBase
@@ -89,7 +88,7 @@ public class JournalCrashTest extends ServiceTestBase
    /**
     * The test needs another VM, that will be "killed" right after commit. This main will do this job.
     */
-   public static void main(final String arg[])
+   public static void main(final String[] arg)
    {
       try
       {
@@ -201,18 +200,16 @@ public class JournalCrashTest extends ServiceTestBase
 
    /**
     * @throws Exception
-    * @throws InterruptedException
     */
-   private void runExternalProcess(final String tempDir, final int start, final int end) throws Exception,
-                                                                                        InterruptedException
+   private void runExternalProcess(final String tempDir, final int start, final int end) throws Exception
    {
       System.err.println("running external process...");
       Process process = SpawnedVMSupport.spawnVM(this.getClass().getCanonicalName(),
                                                  "-Xms128m", "-Xmx128m",
-                                                 new String[] {},
+                                                 new String[]{},
                                                  true,
                                                  true,
- tempDir,
+                                                 tempDir,
                                                  Integer.toString(start),
                                                  Integer.toString(end));
 

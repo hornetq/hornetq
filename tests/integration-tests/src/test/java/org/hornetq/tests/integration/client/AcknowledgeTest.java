@@ -12,12 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -33,6 +29,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -54,33 +52,33 @@ public class AcknowledgeTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
       server.start();
-         ServerLocator locator = createInVMNonHALocator();
-         locator.setAckBatchSize(0);
-         locator.setBlockOnAcknowledge(true);
-         ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createMessage(false));
-         }
-         session.start();
-         ClientMessage cm = null;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cm = cc.receive(5000);
-            Assert.assertNotNull(cm);
-         }
-         cm.acknowledge();
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientConsumer cc = session.createConsumer(queueA);
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(sendSession.createMessage(false));
+      }
+      session.start();
+      ClientMessage cm = null;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cm = cc.receive(5000);
+         Assert.assertNotNull(cm);
+      }
+      cm.acknowledge();
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
 
-         Assert.assertEquals(0, q.getDeliveringCount());
-         session.close();
-         sendSession.close();
+      Assert.assertEquals(0, q.getDeliveringCount());
+      session.close();
+      sendSession.close();
    }
 
    @Test
@@ -88,65 +86,209 @@ public class AcknowledgeTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-         server.start();
-         ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 3;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createMessage(false));
-         }
+      server.start();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientConsumer cc = session.createConsumer(queueA);
+      int numMessages = 3;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(sendSession.createMessage(false));
+      }
 
-         Thread.sleep(500);
-         log.info("woke up");
+      Thread.sleep(500);
+      log.info("woke up");
 
-         final CountDownLatch latch = new CountDownLatch(numMessages);
-         session.start();
-         cc.setMessageHandler(new MessageHandler()
+      final CountDownLatch latch = new CountDownLatch(numMessages);
+      session.start();
+      cc.setMessageHandler(new MessageHandler()
+      {
+         int c = 0;
+
+         public void onMessage(final ClientMessage message)
          {
-            int c = 0;
-            public void onMessage(final ClientMessage message)
-            {
-               log.info("Got message " + c++);
-               latch.countDown();
-            }
-         });
-         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         Assert.assertEquals(numMessages, q.getDeliveringCount());
-         sendSession.close();
-         session.close();
+            log.info("Got message " + c++);
+            latch.countDown();
          }
+      });
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      Assert.assertEquals(numMessages, q.getDeliveringCount());
+      sendSession.close();
+      session.close();
+   }
 
    @Test
    public void testAsyncConsumerAck() throws Exception
    {
       HornetQServer server = createServer(false);
       server.start();
-         ServerLocator locator = createInVMNonHALocator();
-         locator.setBlockOnAcknowledge(true);
-         locator.setAckBatchSize(0);
-         ClientSessionFactory cf = createSessionFactory(locator);
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnAcknowledge(true);
+      locator.setAckBatchSize(0);
+      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSession sendSession = cf.createSession(false, true, true);
+      final ClientSession session = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientConsumer cc = session.createConsumer(queueA);
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(sendSession.createMessage(false));
+      }
+      final CountDownLatch latch = new CountDownLatch(numMessages);
+      session.start();
+      cc.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(final ClientMessage message)
+         {
+            try
+            {
+               message.acknowledge();
+            }
+            catch (HornetQException e)
+            {
+               try
+               {
+                  session.close();
+               }
+               catch (HornetQException e1)
+               {
+                  e1.printStackTrace();
+               }
+            }
+            latch.countDown();
+         }
+      });
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      Assert.assertEquals(0, q.getDeliveringCount());
+      sendSession.close();
+      session.close();
+   }
+
+
+   /**
+    * This is validating a case where a consumer will try to ack a message right after failover, but the consumer at the target server didn't
+    * receive the message yet.
+    * on that case the system should rollback any acks done and redeliver any messages
+    */
+   @Test
+   public void testInvalidACK() throws Exception
+   {
+      HornetQServer server = createServer(false);
+      server.start();
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      locator.setAckBatchSize(0);
+
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory cf = createSessionFactory(locator);
+
+      int numMessages = 100;
+
+      ClientSession sessionConsumer = cf.createSession(true, true, 0);
+
+      sessionConsumer.start();
+
+      sessionConsumer.createQueue(addressA, queueA, true);
+
+      ClientConsumer consumer = sessionConsumer.createConsumer(queueA);
+
+      // sending message
+      {
          ClientSession sendSession = cf.createSession(false, true, true);
-         final ClientSession session = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
+
          ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 100;
+
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createMessage(false));
+            ClientMessage msg = sendSession.createMessage(true);
+            msg.putIntProperty("seq", i);
+            cp.send(msg);
          }
-         final CountDownLatch latch = new CountDownLatch(numMessages);
-         session.start();
-         cc.setMessageHandler(new MessageHandler()
+
+         sendSession.close();
+      }
+
+      {
+
+         ClientMessage msg = consumer.receive(5000);
+
+         // need to way some time before all the possible references are sent to the consumer
+         // as we need to guarantee the order on cancellation on this test
+         Thread.sleep(1000);
+
+         try
          {
-            public void onMessage(final ClientMessage message)
+            // pretending to be an unbehaved client doing an invalid ack right after failover
+            ((ClientSessionInternal)sessionConsumer).acknowledge(0, 12343);
+            fail("supposed to throw an exception here");
+         }
+         catch (Exception e)
+         {
+         }
+
+         try
+         {
+            // pretending to be an unbehaved client doing an invalid ack right after failover
+            ((ClientSessionInternal)sessionConsumer).acknowledge(3, 12343);
+            fail("supposed to throw an exception here");
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+
+         consumer.close();
+
+         consumer = sessionConsumer.createConsumer(queueA);
+
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            msg = consumer.receive(5000);
+            assertNotNull(msg);
+            assertEquals(i, msg.getIntProperty("seq").intValue());
+            msg.acknowledge();
+         }
+      }
+   }
+
+
+   @Test
+   public void testAsyncConsumerAckLastMessageOnly() throws Exception
+   {
+      HornetQServer server = createServer(false);
+      server.start();
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnAcknowledge(true);
+      locator.setAckBatchSize(0);
+      ClientSessionFactory cf = createSessionFactory(locator);
+      ClientSession sendSession = cf.createSession(false, true, true);
+      final ClientSession session = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientConsumer cc = session.createConsumer(queueA);
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(sendSession.createMessage(false));
+      }
+      final CountDownLatch latch = new CountDownLatch(numMessages);
+      session.start();
+      cc.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(final ClientMessage message)
+         {
+            if (latch.getCount() == 1)
             {
                try
                {
@@ -163,159 +305,15 @@ public class AcknowledgeTest extends ServiceTestBase
                      e1.printStackTrace();
                   }
                }
-               latch.countDown();
             }
-         });
-         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         Assert.assertEquals(0, q.getDeliveringCount());
-         sendSession.close();
-         session.close();
-   }
-
-
-   /**
-    * This is validating a case where a consumer will try to ack a message right after failover, but the consumer at the target server didn't
-    * receive the message yet.
-    * on that case the system should rollback any acks done and redeliver any messages
-    */
-   @Test
-   public void testInvalidACK() throws Exception
-   {
-      HornetQServer server = createServer(false);
-         server.start();
-
-         ServerLocator locator = createInVMNonHALocator();
-
-         locator.setAckBatchSize(0);
-
-         locator.setBlockOnAcknowledge(true);
-
-         ClientSessionFactory cf = createSessionFactory(locator);
-
-         int numMessages = 100;
-
-         ClientSession sessionConsumer = cf.createSession(true, true, 0);
-
-         sessionConsumer.start();
-
-         sessionConsumer.createQueue(addressA, queueA, true);
-
-         ClientConsumer consumer = sessionConsumer.createConsumer(queueA);
-
-         // sending message
-         {
-            ClientSession sendSession = cf.createSession(false, true, true);
-
-            ClientProducer cp = sendSession.createProducer(addressA);
-
-            for (int i = 0; i < numMessages; i++)
-            {
-               ClientMessage msg = sendSession.createMessage(true);
-               msg.putIntProperty("seq", i);
-               cp.send(msg);
-            }
-
-            sendSession.close();
+            latch.countDown();
          }
-
-         {
-
-            ClientMessage msg = consumer.receive(5000);
-
-            // need to way some time before all the possible references are sent to the consumer
-            // as we need to guarantee the order on cancellation on this test
-            Thread.sleep(1000);
-
-            try
-            {
-               // pretending to be an unbehaved client doing an invalid ack right after failover
-               ((ClientSessionInternal)sessionConsumer).acknowledge(0, 12343);
-               fail("supposed to throw an exception here");
-            }
-            catch (Exception e)
-            {
-            }
-
-            try
-            {
-               // pretending to be an unbehaved client doing an invalid ack right after failover
-               ((ClientSessionInternal)sessionConsumer).acknowledge(3, 12343);
-               fail("supposed to throw an exception here");
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-
-            consumer.close();
-
-            consumer = sessionConsumer.createConsumer(queueA);
-
-
-            for (int i = 0 ; i < numMessages; i++)
-            {
-               msg = consumer.receive(5000);
-               assertNotNull(msg);
-               assertEquals(i, msg.getIntProperty("seq").intValue());
-               msg.acknowledge();
-            }
-         }
-   }
-
-
-
-   @Test
-   public void testAsyncConsumerAckLastMessageOnly() throws Exception
-   {
-      HornetQServer server = createServer(false);
-      server.start();
-         ServerLocator locator = createInVMNonHALocator();
-         locator.setBlockOnAcknowledge(true);
-         locator.setAckBatchSize(0);
-         ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         final ClientSession session = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createMessage(false));
-         }
-         final CountDownLatch latch = new CountDownLatch(numMessages);
-         session.start();
-         cc.setMessageHandler(new MessageHandler()
-         {
-            public void onMessage(final ClientMessage message)
-            {
-               if (latch.getCount() == 1)
-               {
-                  try
-                  {
-                     message.acknowledge();
-                  }
-                  catch (HornetQException e)
-                  {
-                     try
-                     {
-                        session.close();
-                     }
-                     catch (HornetQException e1)
-                     {
-                        e1.printStackTrace();
-                     }
-                  }
-               }
-               latch.countDown();
-            }
-         });
-         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         Assert.assertEquals(0, q.getDeliveringCount());
-         sendSession.close();
-         session.close();
+      });
+      Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      Assert.assertEquals(0, q.getDeliveringCount());
+      sendSession.close();
+      session.close();
    }
 
 }

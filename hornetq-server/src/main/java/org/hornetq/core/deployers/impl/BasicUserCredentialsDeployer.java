@@ -20,8 +20,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *
  * deployer for adding security loaded from the file "hornetq-users.xml"
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class BasicUserCredentialsDeployer extends XmlDeployer
@@ -57,7 +57,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { MASK_PASSWORD, PASSWORD_CODEC, DEFAULT_USER, USER };
+      return new String[]{MASK_PASSWORD, PASSWORD_CODEC, DEFAULT_USER, USER};
    }
 
    @Override
@@ -97,8 +97,8 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
 
       String username = node.getAttributes().getNamedItem("name").getNodeValue();
       String password = node.getAttributes()
-                            .getNamedItem(BasicUserCredentialsDeployer.PASSWORD_ATTRIBUTE)
-                            .getNodeValue();
+         .getNamedItem(BasicUserCredentialsDeployer.PASSWORD_ATTRIBUTE)
+         .getNodeValue();
 
       if (maskPassword)
       {
@@ -123,8 +123,8 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
          if (BasicUserCredentialsDeployer.ROLES_NODE.equalsIgnoreCase(child.getNodeName()))
          {
             String role = child.getAttributes()
-                               .getNamedItem(BasicUserCredentialsDeployer.ROLE_ATTR_NAME)
-                               .getNodeValue();
+               .getNamedItem(BasicUserCredentialsDeployer.ROLE_ATTR_NAME)
+               .getNodeValue();
             hornetQSecurityManager.addRole(username, role);
          }
       }
@@ -140,6 +140,6 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "hornetq-users.xml" };
+      return new String[]{"hornetq-users.xml"};
    }
 }

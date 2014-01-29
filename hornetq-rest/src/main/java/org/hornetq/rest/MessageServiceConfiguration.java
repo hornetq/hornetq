@@ -88,7 +88,7 @@ public class MessageServiceConfiguration
       this.queuePushStoreDirectory = queuePushStoreDirectory;
    }
 
-   @XmlElement(name="producer-time-to-live")
+   @XmlElement(name = "producer-time-to-live")
    public long getProducerTimeToLive()
    {
       return producerTimeToLive;

@@ -26,14 +26,12 @@ import org.hornetq.utils.DataConstants;
 
 /**
  * This class contains the configuration properties of a connection factory.
- *
+ * <p/>
  * It is also persisted on the journal at the time of management is used to created a connection factory and set to store.
- *
+ * <p/>
  * Every property on this class has to be also set through encoders through EncodingSupport implementation at this class.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConfiguration
 {
@@ -66,7 +64,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-   
+
    private boolean compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
 
    private int consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -121,7 +119,9 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Constructors --------------------------------------------------
 
-   /** To be used on persistence only */
+   /**
+    * To be used on persistence only
+    */
    public ConnectionFactoryConfigurationImpl()
    {
    }
@@ -684,7 +684,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       int size = BufferHelper.sizeOfSimpleString(name) +
 
-      BufferHelper.sizeOfNullableSimpleString(discoveryGroupName);
+         BufferHelper.sizeOfNullableSimpleString(discoveryGroupName);
 
       size += DataConstants.SIZE_INT;
 
@@ -698,95 +698,95 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
       size += BufferHelper.sizeOfNullableSimpleString(clientID) +
 
-              DataConstants.SIZE_BOOLEAN +
-              // ha
+         DataConstants.SIZE_BOOLEAN +
+         // ha
 
-              DataConstants.SIZE_LONG +
-              // clientFailureCheckPeriod
+         DataConstants.SIZE_LONG +
+         // clientFailureCheckPeriod
 
-              DataConstants.SIZE_LONG +
-              // connectionTTL
+         DataConstants.SIZE_LONG +
+         // connectionTTL
 
-              DataConstants.SIZE_LONG +
-              // callTimeout
+         DataConstants.SIZE_LONG +
+         // callTimeout
 
-              DataConstants.SIZE_BOOLEAN +
-              // cacheLargeMessagesClient
+         DataConstants.SIZE_BOOLEAN +
+         // cacheLargeMessagesClient
 
-              DataConstants.SIZE_INT +
-              // minLargeMessageSize
+         DataConstants.SIZE_INT +
+         // minLargeMessageSize
 
-              DataConstants.SIZE_INT +
-              // consumerWindowSize
+         DataConstants.SIZE_INT +
+         // consumerWindowSize
 
-              DataConstants.SIZE_INT +
-              // consumerMaxRate
+         DataConstants.SIZE_INT +
+         // consumerMaxRate
 
-              DataConstants.SIZE_INT +
-              // confirmationWindowSize
+         DataConstants.SIZE_INT +
+         // confirmationWindowSize
 
-              DataConstants.SIZE_INT +
-              // producerWindowSize
+         DataConstants.SIZE_INT +
+         // producerWindowSize
 
-              DataConstants.SIZE_INT +
-              // producerMaxRate
+         DataConstants.SIZE_INT +
+         // producerMaxRate
 
-              DataConstants.SIZE_BOOLEAN +
-              // blockOnAcknowledge
+         DataConstants.SIZE_BOOLEAN +
+         // blockOnAcknowledge
 
-              DataConstants.SIZE_BOOLEAN +
-              // blockOnDurableSend
+         DataConstants.SIZE_BOOLEAN +
+         // blockOnDurableSend
 
-              DataConstants.SIZE_BOOLEAN +
-              // blockOnNonDurableSend
+         DataConstants.SIZE_BOOLEAN +
+         // blockOnNonDurableSend
 
-              DataConstants.SIZE_BOOLEAN +
-              // autoGroup
+         DataConstants.SIZE_BOOLEAN +
+         // autoGroup
 
-              DataConstants.SIZE_BOOLEAN +
-              // preAcknowledge
+         DataConstants.SIZE_BOOLEAN +
+         // preAcknowledge
 
-              BufferHelper.sizeOfSimpleString(loadBalancingPolicyClassName) +
+         BufferHelper.sizeOfSimpleString(loadBalancingPolicyClassName) +
 
-              DataConstants.SIZE_INT +
-              // transactionBatchSize
+         DataConstants.SIZE_INT +
+         // transactionBatchSize
 
-              DataConstants.SIZE_INT +
-              // dupsOKBatchSize
+         DataConstants.SIZE_INT +
+         // dupsOKBatchSize
 
-              DataConstants.SIZE_LONG +
-              // initialWaitTimeout
+         DataConstants.SIZE_LONG +
+         // initialWaitTimeout
 
-              DataConstants.SIZE_BOOLEAN +
-              // useGlobalPools
+         DataConstants.SIZE_BOOLEAN +
+         // useGlobalPools
 
-              DataConstants.SIZE_INT +
-              // scheduledThreadPoolMaxSize
+         DataConstants.SIZE_INT +
+         // scheduledThreadPoolMaxSize
 
-              DataConstants.SIZE_INT +
-              // threadPoolMaxSize
+         DataConstants.SIZE_INT +
+         // threadPoolMaxSize
 
-              DataConstants.SIZE_LONG +
-              // retryInterval
+         DataConstants.SIZE_LONG +
+         // retryInterval
 
-              DataConstants.SIZE_DOUBLE +
-              // retryIntervalMultiplier
+         DataConstants.SIZE_DOUBLE +
+         // retryIntervalMultiplier
 
-              DataConstants.SIZE_LONG +
-              // maxRetryInterval
+         DataConstants.SIZE_LONG +
+         // maxRetryInterval
 
-              DataConstants.SIZE_INT +
-              // reconnectAttempts
+         DataConstants.SIZE_INT +
+         // reconnectAttempts
 
-              DataConstants.SIZE_BOOLEAN +
-              // failoverOnInitialConnection
+         DataConstants.SIZE_BOOLEAN +
+         // failoverOnInitialConnection
 
-              DataConstants.SIZE_BOOLEAN +
-              // compress-large-message
+         DataConstants.SIZE_BOOLEAN +
+         // compress-large-message
 
-              BufferHelper.sizeOfNullableSimpleString(groupID) +
+         BufferHelper.sizeOfNullableSimpleString(groupID) +
 
-              DataConstants.SIZE_INT; // factoryType
+         DataConstants.SIZE_INT; // factoryType
 
       return size;
    }

@@ -35,15 +35,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
  * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
  * If you are running this test in eclipse you should do:
- *   I - Run->Open Run Dialog
- *   II - Find the class on the list (you will find it if you already tried running this testcase before)
- *   III - Add -Djava.library.path=<your project place>/native/src/.libs
+ * I - Run->Open Run Dialog
+ * II - Find the class on the list (you will find it if you already tried running this testcase before)
+ * III - Add -Djava.library.path=<your project place>/native/src/.libs
  *
- *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
- *   */
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
+ */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
    @BeforeClass
@@ -109,7 +108,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       {
          MultiThreadAsynchronousFileTest.debug("Preallocating file");
 
-         jlibAIO.fill(0l,
+         jlibAIO.fill(0L,
                       MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS,
                       MultiThreadAsynchronousFileTest.SIZE * MultiThreadAsynchronousFileTest.NUMBER_OF_LINES,
                       (byte)0);
@@ -141,15 +140,15 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          long endTime = System.currentTimeMillis();
 
          MultiThreadAsynchronousFileTest.debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
-                                               MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
-                                               MultiThreadAsynchronousFileTest.NUMBER_OF_LINES *
-                                               1000 /
-                                               (endTime - startTime) +
-                                               " total time = " +
-                                               (endTime - startTime) +
-                                               " total number of records = " +
-                                               MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
-                                               MultiThreadAsynchronousFileTest.NUMBER_OF_LINES);
+                                                  MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
+                                                     MultiThreadAsynchronousFileTest.NUMBER_OF_LINES *
+                                                     1000 /
+                                                     (endTime - startTime) +
+                                                  " total time = " +
+                                                  (endTime - startTime) +
+                                                  " total number of records = " +
+                                                  MultiThreadAsynchronousFileTest.NUMBER_OF_THREADS *
+                                                     MultiThreadAsynchronousFileTest.NUMBER_OF_LINES);
       }
       finally
       {
@@ -278,7 +277,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    private static void addString(final String str, final ByteBuffer buffer)
    {
-      byte bytes[] = str.getBytes();
+      byte[] bytes = str.getBytes();
       buffer.put(bytes);
    }
 

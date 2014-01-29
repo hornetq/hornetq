@@ -4,12 +4,16 @@
    <parent>
       <groupId>org.hornetq.tests</groupId>
       <artifactId>hornetq-tests-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>unit-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Unit Tests</name>
+
+   <properties>
+      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+   </properties>
 
    <dependencies>
       <dependency>
@@ -62,21 +66,21 @@
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
       </dependency>
-       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging-processor</artifactId>
-       </dependency>
-
-       <!--
-           JBoss Logging
-       -->
-       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging</artifactId>
-       </dependency>
       <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
+      </dependency>
+
+      <!--
+          JBoss Logging
+      -->
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logmanager</groupId>
+         <artifactId>jboss-logmanager</artifactId>
       </dependency>
    </dependencies>
 

@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -108,8 +109,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
          backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
          if (startBackupServer)
          {
-          backupServer.start();
-          waitForRemoteBackupSynchronization(backupServer.getServer());
+            backupServer.start();
+            waitForRemoteBackupSynchronization(backupServer.getServer());
          }
       }
    }
@@ -117,11 +118,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(
-                                          createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
+         createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
    }
 
    /**
     * Large message version of {@link #setBody(int, ClientMessage)}.
+    *
     * @param i
     * @param message
     * @param size
@@ -140,6 +142,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    /**
     * Large message version of {@link #assertMessageBody(int, ClientMessage)}.
+    *
     * @param i
     * @param message
     */
@@ -266,8 +269,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    protected final ClientSessionFactoryInternal
-            createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-           throws Exception
+   createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
+      throws Exception
    {
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
@@ -282,6 +285,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    /**
     * Waits for backup to be in the "started" state and to finish synchronization with its live.
+    *
     * @param sessionFactory
     * @param seconds
     * @throws Exception
@@ -305,10 +309,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
-         ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
       locator.setRetryInterval(50);
       addServerLocator(locator);
-         return (ServerLocatorInternal) locator;
+      return (ServerLocatorInternal)locator;
    }
 
 

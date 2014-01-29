@@ -93,18 +93,18 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
+                  journalImpl.appendAddRecordTransactional(1L, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
                latch.countDown();
                factory.setHoldCallbacks(false, null);
                if (isCommit)
                {
-                  journalImpl.appendCommitRecord(1l, true);
+                  journalImpl.appendCommitRecord(1L, true);
                }
                else
                {
-                  journalImpl.appendRollbackRecord(1l, true);
+                  journalImpl.appendRollbackRecord(1L, true);
                }
             }
             catch (Exception e)
@@ -113,7 +113,7 @@ public class JournalAsyncTest extends UnitTestCase
                this.e = e;
             }
          }
-      };
+      }
 
       LocalThread t = new LocalThread();
       t.start();
@@ -148,7 +148,7 @@ public class JournalAsyncTest extends UnitTestCase
       factory.setHoldCallbacks(true, null);
       factory.setGenerateErrors(true);
 
-      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0));
+      journalImpl.appendAddRecordTransactional(1L, 1, (byte)1, new SimpleEncoding(1, (byte)0));
 
       factory.flushAllCallbacks();
 
@@ -157,7 +157,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0));
+         journalImpl.appendAddRecordTransactional(1L, 2, (byte)1, new SimpleEncoding(1, (byte)0));
          Assert.fail("Exception expected"); // An exception already happened in one
          // of the elements on this transaction.
          // We can't accept any more elements on
@@ -179,7 +179,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0), true);
+         journalImpl.appendAddRecord(1L, (byte)0, new SimpleEncoding(1, (byte)0), true);
          Assert.fail("Exception expected");
       }
       catch (Exception ignored)

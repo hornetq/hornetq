@@ -1,10 +1,4 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
-import org.junit.After;
-
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
-import java.io.Serializable;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -12,6 +6,7 @@ import javax.jms.Destination;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import java.io.Serializable;
 
 import org.hornetq.rest.HttpHeaderProperty;
 import org.hornetq.rest.integration.EmbeddedRestHornetQJMS;
@@ -23,6 +18,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -49,8 +46,8 @@ public class EmbeddedTest
    public static void publish(String destination, Serializable object, String contentType) throws Exception
    {
       BindingRegistry reg = server.getRegistry();
-      Destination dest = (Destination) reg.lookup(destination);
-      ConnectionFactory factory = (ConnectionFactory) reg.lookup("ConnectionFactory");
+      Destination dest = (Destination)reg.lookup(destination);
+      ConnectionFactory factory = (ConnectionFactory)reg.lookup("ConnectionFactory");
       Connection conn = factory.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -99,7 +96,7 @@ public class EmbeddedTest
          order.setAmount("$5.00");
          publish("/queue/exampleQueue", order, null);
 
-        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
+         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/xml").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);
@@ -116,7 +113,7 @@ public class EmbeddedTest
          order.setAmount("$5.00");
          publish("/queue/exampleQueue", order, null);
 
-        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
+         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);
@@ -133,7 +130,7 @@ public class EmbeddedTest
          order.setAmount("$15.00");
          publish("/queue/exampleQueue", order, "application/xml");
 
-        ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
+         ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
          TransformTest.Order order2 = res.getEntity(TransformTest.Order.class);

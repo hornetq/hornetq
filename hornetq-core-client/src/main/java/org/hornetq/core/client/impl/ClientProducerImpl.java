@@ -21,9 +21,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
-import org.hornetq.api.core.HornetQLargeMessageException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.Channel;
@@ -31,7 +31,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.utils.DeflaterReader;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -226,7 +225,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          // If it's a server's message, it means this is being done through the bridge or some special consumer on the
          // server's on which case we can't' convert the message into large at the servers
          if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
-            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && ! msgI.isServerMessage())
+            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && !msgI.isServerMessage())
          {
             isLarge = true;
          }
@@ -389,6 +388,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    /**
     * Used to send serverMessages through the bridges.
     * No need to validate compression here since the message is only compressed at the client
+    *
     * @param sendBlocking
     * @param msgI
     * @throws HornetQException
@@ -407,7 +407,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       try
       {
 
-         for (int pos = 0; pos < bodySize;)
+         for (int pos = 0; pos < bodySize; )
          {
             final boolean lastChunk;
 
@@ -423,7 +423,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(msgI,
                                                                                             bodyBuffer.toByteBuffer()
-                                                                                                      .array(),
+                                                                                               .array(),
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
 
@@ -467,7 +467,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    /**
-    *
     * @param sendBlocking
     * @param msgI
     * @param inputStreamParameter

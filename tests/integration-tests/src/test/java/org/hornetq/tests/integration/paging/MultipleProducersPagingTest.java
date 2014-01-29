@@ -2,11 +2,15 @@
  *
  */
 package org.hornetq.tests.integration.paging;
-import org.junit.Before;
-import org.junit.After;
 
-import org.junit.Test;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,15 +21,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -40,6 +35,9 @@ import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class MultipleProducersPagingTest extends UnitTestCase
 {
@@ -53,7 +51,7 @@ public class MultipleProducersPagingTest extends UnitTestCase
 
    private AtomicLong msgReceived;
    private AtomicLong msgSent;
-   private final Set<Connection> connections=new HashSet<Connection>() ;
+   private final Set<Connection> connections = new HashSet<Connection>();
    private EmbeddedJMS jmsServer;
    private ConnectionFactory cf;
    private Queue queue;
@@ -76,10 +74,10 @@ public class MultipleProducersPagingTest extends UnitTestCase
       config.setJMXManagementEnabled(true);
       config.setAddressesSettings(Collections.singletonMap("#", addressSettings));
       config.setAcceptorConfigurations(Collections.singleton(new TransportConfiguration(
-                                                                                        NettyAcceptorFactory.class.getName())));
+         NettyAcceptorFactory.class.getName())));
       config.setConnectorConfigurations(Collections.singletonMap("netty",
                                                                  new TransportConfiguration(
-                                                                                            NettyConnectorFactory.class.getName())));
+                                                                    NettyConnectorFactory.class.getName())));
 
       final JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getConnectionFactoryConfigurations().add(new ConnectionFactoryConfigurationImpl("cf", false,

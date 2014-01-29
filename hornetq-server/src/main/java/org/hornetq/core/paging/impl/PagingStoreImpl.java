@@ -957,7 +957,7 @@ public class PagingStoreImpl implements PagingStore
    {
       List<org.hornetq.core.server.Queue> durableQueues = ctx.getDurableQueues();
       List<org.hornetq.core.server.Queue> nonDurableQueues = ctx.getNonDurableQueues();
-      long ids[] = new long[durableQueues.size() + nonDurableQueues.size()];
+      long[] ids = new long[durableQueues.size() + nonDurableQueues.size()];
       int i = 0;
 
       for (org.hornetq.core.server.Queue q : durableQueues)

@@ -3,20 +3,20 @@ package org.hornetq.utils;
 import java.net.URL;
 
 /**
-* This class will be used to perform generic class-loader operations,
-* such as load a class first using TCCL, and then the classLoader used by HornetQ (ClassloadingUtil.getClass().getClassLoader()).
-*
-* Is't required to use a Security Block on any calls to this class.
-*
-* @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
-*/
+ * This class will be used to perform generic class-loader operations,
+ * such as load a class first using TCCL, and then the classLoader used by HornetQ (ClassloadingUtil.getClass().getClassLoader()).
+ * <p/>
+ * Is't required to use a Security Block on any calls to this class.
+ *
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
+ */
 
 public final class ClassloadingUtil
 {
    private static final String INSTANTIATION_EXCEPTION_MESSAGE =
-            "Your class must have a constructor without arguments. If it is an inner class, it must be static!";
+      "Your class must have a constructor without arguments. If it is an inner class, it must be static!";
 
-   public static final Object newInstanceFromClassLoader(final String className)
+   public static Object newInstanceFromClassLoader(final String className)
    {
       ClassLoader loader = ClassloadingUtil.class.getClassLoader();
       try
@@ -58,8 +58,8 @@ public final class ClassloadingUtil
       ClassLoader loader = ClassloadingUtil.class.getClassLoader();
       try
       {
-         Class<?>[] parametersType  = new Class<?>[objs.length];
-         for (int i = 0 ; i < objs.length; i++)
+         Class<?>[] parametersType = new Class<?>[objs.length];
+         for (int i = 0; i < objs.length; i++)
          {
             parametersType[i] = objs[i].getClass();
          }

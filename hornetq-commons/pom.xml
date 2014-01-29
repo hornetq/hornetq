@@ -5,22 +5,26 @@
    <parent>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>hornetq-commons</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Commons</name>
 
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-        </dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
       <dependency>
          <groupId>io.netty</groupId>
          <artifactId>netty</artifactId>

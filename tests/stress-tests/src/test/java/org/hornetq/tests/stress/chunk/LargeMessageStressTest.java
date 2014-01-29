@@ -52,7 +52,7 @@ public class LargeMessageStressTest extends LargeMessageTestBase
                  false,
                  true,
                  1,
-                 200 * 1024l * 1024l + 1024l,
+                 200 * 1024L * 1024L + 1024L,
                  120000,
                  0,
                  10 * 1024 * 1024,

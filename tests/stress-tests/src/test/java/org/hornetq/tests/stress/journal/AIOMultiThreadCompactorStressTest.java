@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.stress.journal;
-import org.junit.Before;
 
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.JournalType;
@@ -22,8 +21,6 @@ import org.junit.BeforeClass;
  * A AIOMultiThreadCompactorStressTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class AIOMultiThreadCompactorStressTest extends NIOMultiThreadCompactorStressTest
 {

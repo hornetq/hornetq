@@ -13,16 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -43,15 +33,23 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *          <p/>
+ *         <p/>
  */
 public class MessageConsumerTest extends JMSTestCase
 {
@@ -251,7 +249,6 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer cons2 = sessConsume2.createConsumer(HornetQServerTestCase.queue1);
 
          // this should cancel message and cause delivery to other consumer
-         ;
          sessConsume1.close();
 
          TextMessage tm3 = (TextMessage)cons2.receive(1000);
@@ -4194,7 +4191,6 @@ public class MessageConsumerTest extends JMSTestCase
 
          try
          {
-            ;
             if (count == 1)
             {
                if (!"a".equals(tm.getText()))

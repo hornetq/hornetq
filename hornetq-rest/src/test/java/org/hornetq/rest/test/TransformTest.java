@@ -1,13 +1,9 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
 
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
-
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
@@ -22,6 +18,8 @@ import org.jboss.resteasy.spi.Link;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -73,7 +71,7 @@ public class TransformTest extends MessageTestBase
          if (this == o) return true;
          if (o == null || getClass() != o.getClass()) return false;
 
-         Order order = (Order) o;
+         Order order = (Order)o;
 
          if (!amount.equals(order.amount)) return false;
          if (!name.equals(order.name)) return false;
@@ -141,7 +139,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().accept("application/xml").post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = (Order)response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -158,7 +156,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().accept("application/json").post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/json", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = (Order)response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -175,7 +173,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = (Order)response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");

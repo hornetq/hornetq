@@ -54,7 +54,7 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private final static int TIME_TO_RUN = 60 * 1000;
+   private static final int TIME_TO_RUN = 60 * 1000;
 
    private static final SimpleString ADDRESS = new SimpleString("page-adr");
 

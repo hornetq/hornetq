@@ -150,7 +150,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
    }
 
    /** This methods informs the Compactor about the existence of a pending (non committed) transaction */
-   public void addPendingTransaction(final long transactionID, final long ids[])
+   public void addPendingTransaction(final long transactionID, final long[] ids)
    {
       pendingTransactions.put(transactionID, new PendingTransaction(ids));
    }
@@ -159,10 +159,10 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
    {
       pendingCommands.add(new CommitCompactCommand(liveTransaction, currentFile));
 
-      long ids[] = liveTransaction.getPositiveArray();
+      long[] ids = liveTransaction.getPositiveArray();
 
       PendingTransaction oldTransaction = pendingTransactions.get(liveTransaction.getId());
-      long ids2[] = null;
+      long[] ids2 = null;
 
       if (oldTransaction != null)
       {
@@ -507,7 +507,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       return newTransaction;
    }
 
-   private static abstract class CompactCommand
+   private abstract static class CompactCommand
    {
       abstract void execute() throws Exception;
    }
@@ -541,9 +541,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 
    private static class PendingTransaction
    {
-      long pendingIDs[];
+      long[] pendingIDs;
 
-      PendingTransaction(final long ids[])
+      PendingTransaction(final long[] ids)
       {
          pendingIDs = ids;
       }

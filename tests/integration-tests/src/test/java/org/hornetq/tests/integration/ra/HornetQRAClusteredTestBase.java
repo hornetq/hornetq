@@ -1,17 +1,15 @@
 package org.hornetq.tests.integration.ra;
 
+import java.util.HashMap;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Before;
-
-import java.util.HashMap;
-import java.util.Set;
 
 public class HornetQRAClusteredTestBase extends HornetQRATestBase
 {
@@ -42,7 +40,7 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
    @Override
    public void tearDown() throws Exception
    {
-      if(secondaryJmsServer != null)
+      if (secondaryJmsServer != null)
          secondaryJmsServer.stop();
       super.tearDown();
    }
@@ -63,7 +61,7 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
       configuration.getAcceptorConfigurations().clear();
 
       HashMap invmMap = new HashMap();
-      if(secondary)
+      if (secondary)
       {
          invmMap.put("server-id", "1");
       }
@@ -71,14 +69,14 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
       configuration.getAcceptorConfigurations().add(invmTransportConfig);
 
       HashMap nettyMap = new HashMap();
-      if(secondary)
+      if (secondary)
       {
          nettyMap.put("port", "5545");
       }
       TransportConfiguration nettyTransportConfig = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, nettyMap);
       configuration.getAcceptorConfigurations().add(nettyTransportConfig);
 
-      if(secondary)
+      if (secondary)
       {
          configuration.getConnectorConfigurations().put("invm2", secondaryConnector);
          configuration.getConnectorConfigurations().put("invm", primaryConnector);

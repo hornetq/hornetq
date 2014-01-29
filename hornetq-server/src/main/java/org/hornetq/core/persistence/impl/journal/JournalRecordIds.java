@@ -3,11 +3,9 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
-import org.hornetq.utils.IDGenerator;
-
 /**
  * These record IDs definitions are meant to be public.
- * <p>
+ * <p/>
  * If any other component or any test needs to validate user-record-types from the Journal directly
  * This is where the definitions will exist and this is what these tests should be using to verify
  * the IDs.
@@ -23,6 +21,7 @@ public final class JournalRecordIds
 
    /**
     * Records storing the current recordID number.
+    *
     * @see IDGenerator
     * @see BatchingIDGenerator
     */
@@ -36,7 +35,7 @@ public final class JournalRecordIds
 
    /**
     * This is used when a large message is created but not yet stored on the system.
-    * <p>
+    * <p/>
     * We use this to avoid temporary files missing
     */
    public static final byte ADD_LARGE_MESSAGE_PENDING = 29;

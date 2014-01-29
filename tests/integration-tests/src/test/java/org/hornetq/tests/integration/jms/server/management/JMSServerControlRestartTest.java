@@ -12,12 +12,6 @@
  */
 
 package org.hornetq.tests.integration.jms.server.management;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.io.File;
 
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -25,8 +19,7 @@ import javax.jms.Queue;
 import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-
-import org.junit.Assert;
+import java.io.File;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -47,13 +40,15 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A JMSServerControlRestartTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMSServerControlRestartTest extends ManagementTestBase
 {
@@ -108,7 +103,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       Connection connection = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, config).createConnection();
       connection.start();
       Queue managementQueue = HornetQJMSClient.createQueue("hornetq.management");
-      QueueSession session = (QueueSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      QueueSession session = (QueueSession)connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       QueueRequestor requestor = new QueueRequestor(session, managementQueue);
       Message message = session.createMessage();
       JMSManagementHelper.putOperationInvocation(message, "jms.server", "createQueue", queueName, binding);
@@ -151,7 +146,8 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       serverManager.start();
    }
 
-   private JMSServerManager createJMSServer() throws Exception {
+   private JMSServerManager createJMSServer() throws Exception
+   {
       Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);

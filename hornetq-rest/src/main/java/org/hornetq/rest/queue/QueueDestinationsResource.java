@@ -1,18 +1,5 @@
 package org.hornetq.rest.queue;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQQueue;
-import org.hornetq.jms.server.config.JMSQueueConfiguration;
-import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
-import org.hornetq.rest.HornetQRestLogger;
-import org.hornetq.rest.queue.push.PushConsumerResource;
-import org.hornetq.rest.queue.push.xml.PushRegistration;
-import org.hornetq.rest.util.Constants;
-import org.w3c.dom.Document;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -26,6 +13,19 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.server.config.JMSQueueConfiguration;
+import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
+import org.hornetq.rest.HornetQRestLogger;
+import org.hornetq.rest.queue.push.PushConsumerResource;
+import org.hornetq.rest.queue.push.xml.PushRegistration;
+import org.hornetq.rest.util.Constants;
+import org.w3c.dom.Document;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -78,7 +78,13 @@ public class QueueDestinationsResource
          }
          finally
          {
-            try { session.close(); } catch (Exception ignored) {}
+            try
+            {
+               session.close();
+            }
+            catch (Exception ignored)
+            {
+            }
          }
          if (queue.getBindings() != null && queue.getBindings().length > 0 && manager.getRegistry() != null)
          {
@@ -92,7 +98,7 @@ public class QueueDestinationsResource
       }
       catch (Exception e)
       {
-         if (e instanceof WebApplicationException) throw (WebApplicationException) e;
+         if (e instanceof WebApplicationException) throw (WebApplicationException)e;
          throw new WebApplicationException(e, Response.serverError().type("text/plain").entity("Failed to create queue.").build());
       }
    }
@@ -138,7 +144,13 @@ public class QueueDestinationsResource
       }
       finally
       {
-         try { session.close(); } catch (Exception ignored) {}
+         try
+         {
+            session.close();
+         }
+         catch (Exception ignored)
+         {
+         }
       }
 
    }
@@ -178,7 +190,7 @@ public class QueueDestinationsResource
    }
 
    public QueueResource createQueueResource(String queueName, boolean defaultDurable, int timeoutSeconds, boolean duplicates)
-           throws Exception
+      throws Exception
    {
       QueueResource queueResource = new QueueResource();
       queueResource.setDestination(queueName);

@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -26,13 +23,13 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.utils.DataConstants;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A OldFormatTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class OldFormatTest extends JournalImplTestBase
 {
@@ -61,7 +58,7 @@ public class OldFormatTest extends JournalImplTestBase
 
       byte[] record = new byte[1];
 
-      for (long i = 0 ; i < 10; i++)
+      for (long i = 0; i < 10; i++)
       {
          add(buffer, 1, i, record);
 

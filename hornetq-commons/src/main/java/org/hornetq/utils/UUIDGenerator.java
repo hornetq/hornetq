@@ -35,10 +35,10 @@ import org.hornetq.api.core.SimpleString;
 
 public final class UUIDGenerator
 {
-   private final static UUIDGenerator sSingleton = new UUIDGenerator();
+   private static final UUIDGenerator sSingleton = new UUIDGenerator();
 
    // Windows has some fake adapters that will return the same HARDWARE ADDRESS on any computer. We need to ignore those
-   private static final byte[][] BLACK_LIST = new byte[][] { { 2, 0, 84, 85, 78, 1 } };
+   private static final byte[][] BLACK_LIST = new byte[][]{{2, 0, 84, 85, 78, 1}};
 
    /**
     * Random-generator, used by various UUID-generation methods:
@@ -78,7 +78,7 @@ public final class UUIDGenerator
     * care of it); it might even be good for getting really 'random' stuff to
     * get shared access...
     */
-   public final Random getRandomNumberGenerator()
+   public Random getRandomNumberGenerator()
    {
       /*
        * Could be synchronized, but since side effects are trivial (ie.
@@ -92,7 +92,7 @@ public final class UUIDGenerator
       return mRnd;
    }
 
-   public final UUID generateTimeBasedUUID(final byte[] byteAddr)
+   public UUID generateTimeBasedUUID(final byte[] byteAddr)
    {
       byte[] contents = new byte[16];
       int pos = 10;
@@ -114,7 +114,7 @@ public final class UUIDGenerator
       return new UUID(UUID.TYPE_TIME_BASED, contents);
    }
 
-   public final byte[] generateDummyAddress()
+   public byte[] generateDummyAddress()
    {
       Random rnd = getRandomNumberGenerator();
       byte[] dummy = new byte[6];
@@ -135,7 +135,7 @@ public final class UUIDGenerator
     * If running java 6 or above, returns {@link NetworkInterface#getHardwareAddress()}, else return {@code null}.
     * The first hardware address is returned when iterating all the NetworkInterfaces
     */
-   public final static byte[] getHardwareAddress()
+   public static byte[] getHardwareAddress()
    {
       Method getHardwareAddressMethod;
       Method isUpMethod;
@@ -161,16 +161,18 @@ public final class UUIDGenerator
       {
          List<NetworkInterface> ifaces = getAllNetworkInterfaces();
 
-         if (ifaces.size() == 0) {
+         if (ifaces.size() == 0)
+         {
             return null;
          }
 
          byte[] address = findFirstMatchingHardwareAddress(ifaces,
-                                              getHardwareAddressMethod,
-                                              isUpMethod,
-                                              isLoopbackMethod,
-                                              isVirtualMethod);
-         if (address != null) {
+                                                           getHardwareAddressMethod,
+                                                           isUpMethod,
+                                                           isLoopbackMethod,
+                                                           isVirtualMethod);
+         if (address != null)
+         {
             if (HornetQUtilLogger.LOGGER.isDebugEnabled())
             {
                HornetQUtilLogger.LOGGER.debug("using hardware address " + UUIDGenerator.asString(address));
@@ -178,18 +180,19 @@ public final class UUIDGenerator
             return address;
          }
          return null;
-      } catch(Exception e)
+      }
+      catch (Exception e)
       {
          return null;
       }
    }
 
-   public final SimpleString generateSimpleStringUUID()
+   public SimpleString generateSimpleStringUUID()
    {
       return new SimpleString(generateStringUUID());
    }
 
-   public final UUID generateUUID()
+   public UUID generateUUID()
    {
       byte[] address = getAddressBytes();
 
@@ -198,7 +201,7 @@ public final class UUIDGenerator
       return uid;
    }
 
-   public final String generateStringUUID()
+   public String generateStringUUID()
    {
       byte[] address = getAddressBytes();
 
@@ -212,7 +215,7 @@ public final class UUIDGenerator
       }
    }
 
-   public final static byte[] getZeroPaddedSixBytes(final byte[] bytes)
+   public static byte[] getZeroPaddedSixBytes(final byte[] bytes)
    {
       if (bytes == null)
       {
@@ -241,7 +244,7 @@ public final class UUIDGenerator
 
    // Private -------------------------------------------------------
 
-   private static final boolean isBlackList(final byte[] address)
+   private static boolean isBlackList(final byte[] address)
    {
       for (byte[] blackList : UUIDGenerator.BLACK_LIST)
       {
@@ -253,7 +256,7 @@ public final class UUIDGenerator
       return false;
    }
 
-   private final byte[] getAddressBytes()
+   private byte[] getAddressBytes()
    {
       if (address == null)
       {
@@ -267,7 +270,7 @@ public final class UUIDGenerator
       return address;
    }
 
-   private static final String asString(final byte[] bytes)
+   private static String asString(final byte[] bytes)
    {
       if (bytes == null)
       {
@@ -316,10 +319,10 @@ public final class UUIDGenerator
       for (final NetworkInterface networkInterface : ifaces)
       {
          tasks.add(new Callable<byte[]>()
-                   {
+         {
             public byte[] call() throws Exception
             {
-               boolean up = (Boolean)isUpMethod.invoke(networkInterface );
+               boolean up = (Boolean)isUpMethod.invoke(networkInterface);
                boolean loopback = (Boolean)isLoopbackMethod.invoke(networkInterface);
                boolean virtual = (Boolean)isVirtualMethod.invoke(networkInterface);
 
@@ -329,7 +332,8 @@ public final class UUIDGenerator
                }
 
                Object res = getHardwareAddressMethod.invoke(networkInterface);
-               if (res != null && res instanceof byte[]) {
+               if (res != null && res instanceof byte[])
+               {
 
                   byte[] address = (byte[])res;
                   byte[] paddedAddress = UUIDGenerator.getZeroPaddedSixBytes(address);

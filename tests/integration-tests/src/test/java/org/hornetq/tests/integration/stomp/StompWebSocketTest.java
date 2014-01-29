@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,30 +34,36 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public class StompWebSocketTest extends UnitTestCase {
-    private JMSServerManager server;
+public class StompWebSocketTest extends UnitTestCase
+{
+   private JMSServerManager server;
 
-    /**
-     * to test the Stomp over Web Sockets protocol,
-     * uncomment the sleep call and run the stomp-websockets Javascript test suite
-     * from http://github.com/jmesnil/stomp-websocket
-     */
+   /**
+    * to test the Stomp over Web Sockets protocol,
+    * uncomment the sleep call and run the stomp-websockets Javascript test suite
+    * from http://github.com/jmesnil/stomp-websocket
+    */
    @Test
-    public void testConnect() throws Exception {
-       //Thread.sleep(10000000);
-    }
+   public void testConnect() throws Exception
+   {
+      //Thread.sleep(10000000);
+   }
 
-    // Implementation methods
-    //-------------------------------------------------------------------------
-    @Override
+   // Implementation methods
+   //-------------------------------------------------------------------------
+   @Override
    @Before
-   public void setUp() throws Exception {
-       server = createServer();
-       server.start();
-    }
+   public void setUp() throws Exception
+   {
+      server = createServer();
+      server.start();
+   }
 
-    /**
+   /**
     * @return
     * @throws Exception
     */
@@ -80,19 +82,21 @@ public class StompWebSocketTest extends UnitTestCase {
       config.getQueueConfigurations().add(new CoreQueueConfiguration(getQueueName(), getQueueName(), null, false));
       HornetQServer hornetQServer = addServer(HornetQServers.newHornetQServer(config));
 
-       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
-       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
-       server.setContext(null);
-       return server;
+      JMSConfiguration jmsConfig = new JMSConfigurationImpl();
+      server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
+      server.setContext(null);
+      return server;
    }
 
    @Override
    @After
-   public void tearDown() throws Exception {
-        server.stop();
-    }
+   public void tearDown() throws Exception
+   {
+      server.stop();
+   }
 
-    protected String getQueueName() {
-        return "/queue/test";
-    }
+   protected String getQueueName()
+   {
+      return "/queue/test";
+   }
 }

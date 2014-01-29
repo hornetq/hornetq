@@ -24,21 +24,21 @@ public class Role implements Serializable
 {
    private static final long serialVersionUID = 3560097227776448872L;
 
-   final private String name;
+   private final String name;
 
-   final private boolean send;
+   private final boolean send;
 
-   final private boolean consume;
+   private final boolean consume;
 
-   final private boolean createDurableQueue;
+   private final boolean createDurableQueue;
 
-   final private boolean deleteDurableQueue;
+   private final boolean deleteDurableQueue;
 
-   final private boolean createNonDurableQueue;
+   private final boolean createNonDurableQueue;
 
-   final private boolean deleteNonDurableQueue;
+   private final boolean deleteNonDurableQueue;
 
-   final private boolean manage;
+   private final boolean manage;
 
    public Role(final String name,
                final boolean send,

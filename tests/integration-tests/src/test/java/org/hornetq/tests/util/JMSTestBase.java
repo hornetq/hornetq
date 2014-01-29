@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.util;
-import org.junit.Before;
-import org.junit.After;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -24,7 +19,8 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -34,13 +30,13 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A JMSBaseTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JMSTestBase extends ServiceTestBase
 {
@@ -89,12 +85,12 @@ public class JMSTestBase extends ServiceTestBase
     * @throws Exception
     * @throws NamingException
     */
-   protected Queue createQueue(final String name) throws Exception, NamingException
+   protected Queue createQueue(final String name) throws Exception
    {
       return createQueue(false, name);
    }
 
-   protected Topic createTopic(final String name) throws Exception, NamingException
+   protected Topic createTopic(final String name) throws Exception
    {
       return createTopic(false, name);
    }
@@ -103,14 +99,14 @@ public class JMSTestBase extends ServiceTestBase
     * @throws Exception
     * @throws NamingException
     */
-   protected Queue createQueue(final boolean storeConfig, final String name) throws Exception, NamingException
+   protected Queue createQueue(final boolean storeConfig, final String name) throws Exception
    {
       jmsServer.createQueue(storeConfig, name, null, true, "/jms/" + name);
 
       return (Queue)context.lookup("/jms/" + name);
    }
 
-   protected Topic createTopic(final boolean storeConfig, final String name) throws Exception, NamingException
+   protected Topic createTopic(final boolean storeConfig, final String name) throws Exception
    {
       jmsServer.createTopic(storeConfig, name, "/jms/" + name);
 

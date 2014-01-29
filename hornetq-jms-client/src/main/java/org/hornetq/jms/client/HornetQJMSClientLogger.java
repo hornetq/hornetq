@@ -54,8 +54,7 @@ public interface HornetQJMSClientLogger extends BasicLogger
    HornetQJMSClientLogger LOGGER = Logger.getMessageLogger(HornetQJMSClientLogger.class, HornetQJMSClientLogger.class.getPackage().getName());
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 122000, value = "I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly before letting them go out of scope!" +
-   "see stacktrace to find out where it was created" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 122000, value = "I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly before letting them go out of scope! see stacktrace to find out where it was created", format = Message.Format.MESSAGE_FORMAT)
    void connectionLeftOpen(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)

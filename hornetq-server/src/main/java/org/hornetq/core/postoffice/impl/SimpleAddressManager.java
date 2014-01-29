@@ -22,11 +22,11 @@ import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.BindingsFactory;
+import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.utils.ConcurrentHashSet;
-import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.HornetQMessageBundle;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -46,7 +46,7 @@ public class SimpleAddressManager implements AddressManager
     * HashMap<QueueName, Binding>
     */
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
-   
+
    private final ConcurrentHashSet<SimpleString> pendingDeletes = new ConcurrentHashSet<SimpleString>();
 
    private final BindingsFactory bindingsFactory;
@@ -65,7 +65,7 @@ public class SimpleAddressManager implements AddressManager
 
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Adding binding " + binding + " with address = " + binding.getUniqueName(), new Exception ("trace"));
+         HornetQServerLogger.LOGGER.debug("Adding binding " + binding + " with address = " + binding.getUniqueName(), new Exception("trace"));
       }
 
       return addMappingInternal(binding.getAddress(), binding);
@@ -79,13 +79,13 @@ public class SimpleAddressManager implements AddressManager
       {
          return null;
       }
-      
+
       if (tx != null)
       {
          pendingDeletes.add(uniqueName);
          tx.addOperation(new TransactionOperationAbstract()
          {
-            
+
             @Override
             public void afterCommit(Transaction tx)
             {

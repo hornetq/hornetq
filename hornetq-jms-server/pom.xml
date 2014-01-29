@@ -5,12 +5,16 @@
    <parent>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>hornetq-jms-server</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ JMS Server</name>
+
+   <properties>
+      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+   </properties>
 
    <dependencies>
       <dependency>
@@ -33,28 +37,28 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.spec.javax.jms</groupId>
-          <artifactId>jboss-jms-api_1.1_spec</artifactId>
+         <groupId>org.jboss.spec.javax.jms</groupId>
+         <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
       <dependency>
-          <groupId>org.jboss.spec.javax.transaction</groupId>
-          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+         <groupId>org.jboss.spec.javax.transaction</groupId>
+         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
       </dependency>
       <dependency>
-          <groupId>org.jboss.jbossts.jts</groupId>
-          <artifactId>jbossjts-jacorb</artifactId>
+         <groupId>org.jboss.jbossts.jts</groupId>
+         <artifactId>jbossjts-jacorb</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jboss</groupId>
          <artifactId>jboss-transaction-spi</artifactId>
       </dependency>
-       <dependency>
-           <groupId>org.jboss.naming</groupId>
-           <artifactId>jnpserver</artifactId>
-       </dependency>
+      <dependency>
+         <groupId>org.jboss.naming</groupId>
+         <artifactId>jnpserver</artifactId>
+      </dependency>
    </dependencies>
 
-  <profiles>
+   <profiles>
       <profile>
          <id>release</id>
          <build>

@@ -13,12 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -38,15 +34,15 @@ import org.hornetq.core.persistence.impl.journal.JournalRecordIds;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A RedeliveryConsumerTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- * Created Feb 17, 2009 6:06:11 PM
- *
- *
+ *         <p/>
+ *         Created Feb 17, 2009 6:06:11 PM
  */
 public class RedeliveryConsumerTest extends ServiceTestBase
 {
@@ -264,7 +260,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
 
       int expectedCount = 1;
-      for (int i = 0 ; i < 700; i++)
+      for (int i = 0; i < 700; i++)
       {
          session = factory.createSession(false, false, false);
          session.start();
@@ -287,7 +283,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       setUp(false);
 
-      for (int i = 0 ; i < 700; i++)
+      for (int i = 0; i < 700; i++)
       {
          session = factory.createSession(false, false, false);
          session.start();
@@ -358,7 +354,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
     * @throws Exception
     * @throws HornetQException
     */
-   private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, HornetQException
+   private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception
    {
       Configuration config = createDefaultConfig();
       config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);

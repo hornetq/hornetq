@@ -33,13 +33,13 @@ public class TimeAndCounterIDGenerator implements IDGenerator
     */
    private static final int BITS_TO_MOVE = 20;
 
-   public static final long MASK_TIME = 0x7fffffffff0l;
+   public static final long MASK_TIME = 0x7fffffffff0L;
 
    // 44 bits of time and 20 bits of counter
 
-   public static final long ID_MASK = 0xffffffl;
+   public static final long ID_MASK = 0xffffffL;
 
-   private static final long TIME_ID_MASK = 0x7fffffffff000000l;
+   private static final long TIME_ID_MASK = 0x7fffffffff000000L;
 
    // Attributes ----------------------------------------------------
 
@@ -94,7 +94,7 @@ public class TimeAndCounterIDGenerator implements IDGenerator
          // milliseconds)
          // If this wrapping code starts to happen, it needs revision
          throw new IllegalStateException("The IDGenerator is being overlaped, and it needs revision as the system generated more than " + TimeAndCounterIDGenerator.ID_MASK +
-                                         " ids per 16 milliseconds which exceeded the IDgenerator limit");
+                                            " ids per 16 milliseconds which exceeded the IDgenerator limit");
       }
 
       return idReturn;
@@ -142,11 +142,11 @@ public class TimeAndCounterIDGenerator implements IDGenerator
    {
       long currentCounter = counter.get();
       return "SequenceGenerator(tmMark=" + hex(tmMark) +
-             ", CurrentCounter = " +
-             currentCounter +
-             ", HexCurrentCounter = " +
-             hex(currentCounter) +
-             ")";
+         ", CurrentCounter = " +
+         currentCounter +
+         ", HexCurrentCounter = " +
+         hex(currentCounter) +
+         ")";
    }
 
    // Package protected ---------------------------------------------

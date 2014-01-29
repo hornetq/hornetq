@@ -1,6 +1,7 @@
 package org.hornetq.rest.queue.push;
 
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -30,8 +31,6 @@ import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 import org.jboss.resteasy.specimpl.UriBuilderImpl;
-
-import java.io.IOException;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -74,7 +73,7 @@ public class UriStrategy implements PushStrategy
       {
          if (registration.getAuthenticationMechanism().getType() instanceof BasicAuth)
          {
-            BasicAuth basic = (BasicAuth) registration.getAuthenticationMechanism().getType();
+            BasicAuth basic = (BasicAuth)registration.getAuthenticationMechanism().getType();
             UsernamePasswordCredentials creds = new UsernamePasswordCredentials(basic.getUsername(), basic.getPassword());
             AuthScope authScope = new AuthScope(AuthScope.ANY);
             ((DefaultHttpClient)client).getCredentialsProvider().setCredentials(authScope, creds);
@@ -204,16 +203,19 @@ public class UriStrategy implements PushStrategy
    {
       public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException
       {
-         AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
+         AuthState authState = (AuthState)context.getAttribute(ClientContext.TARGET_AUTH_STATE);
 
          // If no auth scheme available yet, try to initialize it preemptively
-         if (authState.getAuthScheme() == null) {
-            AuthScheme authScheme = (AuthScheme) context.getAttribute("preemptive-auth");
-            CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(ClientContext.CREDS_PROVIDER);
-            HttpHost targetHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
-            if (authScheme != null) {
+         if (authState.getAuthScheme() == null)
+         {
+            AuthScheme authScheme = (AuthScheme)context.getAttribute("preemptive-auth");
+            CredentialsProvider credsProvider = (CredentialsProvider)context.getAttribute(ClientContext.CREDS_PROVIDER);
+            HttpHost targetHost = (HttpHost)context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+            if (authScheme != null)
+            {
                Credentials creds = credsProvider.getCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()));
-               if (creds == null) {
+               if (creds == null)
+               {
                   throw new HttpException("No credentials for preemptive authentication");
                }
                authState.setAuthScheme(authScheme);

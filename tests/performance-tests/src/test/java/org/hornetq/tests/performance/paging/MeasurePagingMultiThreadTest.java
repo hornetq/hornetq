@@ -123,7 +123,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
             }
          }
 
-         Sender senders[] = new Sender[NUMBER_OF_THREADS];
+         Sender[] senders = new Sender[NUMBER_OF_THREADS];
 
          for (int i = 0; i < NUMBER_OF_THREADS; i++)
          {

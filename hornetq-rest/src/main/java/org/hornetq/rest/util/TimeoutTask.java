@@ -23,7 +23,7 @@ public class TimeoutTask implements Runnable
 
    public interface Callback
    {
-      public void testTimeout(String token);
+      void testTimeout(String token);
    }
 
    public synchronized void add(Callback callback, String token)

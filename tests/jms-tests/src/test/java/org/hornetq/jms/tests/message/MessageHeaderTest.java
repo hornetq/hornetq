@@ -13,14 +13,6 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
-import java.io.File;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -35,6 +27,11 @@ import javax.jms.TextMessage;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -56,12 +53,11 @@ import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class MessageHeaderTest extends MessageHeaderTestBase
 {
@@ -1279,10 +1275,10 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public ClientMessage createMessage(final byte type,
-                                               final boolean durable,
-                                               final long expiration,
-                                               final long timestamp,
-                                               final byte priority)
+                                         final boolean durable,
+                                         final long expiration,
+                                         final long timestamp,
+                                         final byte priority)
       {
          return message;
       }
@@ -1310,8 +1306,8 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       }
 
       public void addFailoverListener(FailoverEventListener listener)
-     {
-     }
+      {
+      }
 
       public boolean removeFailureListener(final FailureListener listener)
       {
@@ -1320,7 +1316,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public boolean removeFailoverListener(FailoverEventListener listener)
       {
-       return false;
+         return false;
       }
 
       public int getVersion()

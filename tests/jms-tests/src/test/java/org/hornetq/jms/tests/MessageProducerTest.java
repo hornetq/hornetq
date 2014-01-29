@@ -524,7 +524,7 @@ public class MessageProducerTest extends JMSTestCase
 
          Message m = c.receive(3000);
 
-         ProxyAssertSupport.assertEquals(0l, m.getJMSTimestamp());
+         ProxyAssertSupport.assertEquals(0L, m.getJMSTimestamp());
 
          p.setDisableMessageTimestamp(false);
          ProxyAssertSupport.assertFalse(p.getDisableMessageTimestamp());
@@ -739,8 +739,8 @@ public class MessageProducerTest extends JMSTestCase
          MessageProducer tp = ps.createProducer(HornetQServerTestCase.topic1);
          MessageProducer qp = ps.createProducer(HornetQServerTestCase.queue1);
 
-         ProxyAssertSupport.assertEquals(0l, tp.getTimeToLive());
-         ProxyAssertSupport.assertEquals(0l, qp.getTimeToLive());
+         ProxyAssertSupport.assertEquals(0L, tp.getTimeToLive());
+         ProxyAssertSupport.assertEquals(0L, qp.getTimeToLive());
       }
       finally
       {
@@ -758,11 +758,11 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = ps.createProducer(HornetQServerTestCase.topic1);
 
-         p.setTimeToLive(100l);
-         ProxyAssertSupport.assertEquals(100l, p.getTimeToLive());
+         p.setTimeToLive(100L);
+         ProxyAssertSupport.assertEquals(100L, p.getTimeToLive());
 
-         p.setTimeToLive(0l);
-         ProxyAssertSupport.assertEquals(0l, p.getTimeToLive());
+         p.setTimeToLive(0L);
+         ProxyAssertSupport.assertEquals(0L, p.getTimeToLive());
       }
       finally
       {
@@ -784,7 +784,7 @@ public class MessageProducerTest extends JMSTestCase
 
          try
          {
-            p.setTimeToLive(100l);
+            p.setTimeToLive(100L);
             ProxyAssertSupport.fail("should throw exception");
          }
          catch (javax.jms.IllegalStateException e)

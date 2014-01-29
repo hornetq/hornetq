@@ -130,7 +130,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
    @Message(id = 122010, value = "Failed to connect JMS Bridge", format = Message.Format.MESSAGE_FORMAT)
    void bridgeConnectError(@Cause Exception e);
 
-      @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122011, value = "error unbinding {0} from JNDI" , format = Message.Format.MESSAGE_FORMAT)
    void jndiUnbindError(@Cause Exception e, String key);
 
@@ -147,7 +147,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverConnectionError(@Cause Exception e, ClientSessionFactory csf);
 
-      @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122015, value = "Can not connect to {0} on auto-generated resource recovery" ,
          format = Message.Format.MESSAGE_FORMAT)
    void xaRecoverAutoConnectionError(@Cause Throwable e, XARecoveryConfig csf);

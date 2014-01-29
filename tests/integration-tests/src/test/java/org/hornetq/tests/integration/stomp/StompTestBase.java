@@ -16,16 +16,6 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp;
-import org.junit.Before;
-import org.junit.After;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -36,8 +26,13 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import org.junit.Assert;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -58,6 +53,9 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 public abstract class StompTestBase extends UnitTestCase
 {
@@ -84,7 +82,6 @@ public abstract class StompTestBase extends UnitTestCase
    protected String defPass = "wombats";
 
    protected boolean autoCreateServer = true;
-
 
 
    // Implementation methods
@@ -123,7 +120,7 @@ public abstract class StompTestBase extends UnitTestCase
       HornetQConnectionFactory hqFact = (HornetQConnectionFactory)connectionFactory;
 
       hqFact.setCompressLargeMessage(jmsCompressLarge);
-      
+
       stompSocket = createSocket();
       inputBuffer = new ByteArrayOutputStream();
 
@@ -136,9 +133,9 @@ public abstract class StompTestBase extends UnitTestCase
    }
 
    /**
-   * @return
-   * @throws Exception
-   */
+    * @return
+    * @throws Exception
+    */
    protected JMSServerManager createServer() throws Exception
    {
       Configuration config = createBasicConfig();
@@ -156,7 +153,7 @@ public abstract class StompTestBase extends UnitTestCase
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
-               .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
+         .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
       server.setContext(new InVMContext());

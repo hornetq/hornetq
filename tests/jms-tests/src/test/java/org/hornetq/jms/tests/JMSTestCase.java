@@ -33,7 +33,7 @@ import org.junit.Before;
 public class JMSTestCase extends HornetQServerTestCase
 {
 
-   protected final static ArrayList<String> NETTY_CONNECTOR = new ArrayList<String>();
+   protected static final ArrayList<String> NETTY_CONNECTOR = new ArrayList<String>();
 
    static
    {

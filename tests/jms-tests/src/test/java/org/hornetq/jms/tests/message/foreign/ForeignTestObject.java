@@ -18,10 +18,7 @@ import java.io.Serializable;
 /**
  * A Simple Serializable Object
  *
- *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
- *
- *
  */
 public class ForeignTestObject implements Serializable
 {
@@ -67,6 +64,13 @@ public class ForeignTestObject implements Serializable
          return s1.equals(to.getS1()) && d1 == to.getD1();
       }
       return super.equals(o);
+   }
+
+   @Override
+   public int hashCode()
+   {
+      // TODO
+      return 0;
    }
 
 }

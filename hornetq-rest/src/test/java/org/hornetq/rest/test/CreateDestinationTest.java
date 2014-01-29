@@ -1,5 +1,4 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
 
 import org.hornetq.rest.util.Constants;
 import org.jboss.resteasy.client.ClientRequest;
@@ -9,7 +8,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.jboss.resteasy.test.TestPortProvider.*;
+import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -45,7 +44,7 @@ public class CreateDestinationTest extends MessageTestBase
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       System.out.println("poller: " + consumeNext);
 
-     ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
+      ClientResponse<?> res = sender.request().body("text/plain", Integer.toString(1)).post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
 
@@ -96,7 +95,7 @@ public class CreateDestinationTest extends MessageTestBase
       Link subscriptions = MessageTestBase.getLinkByTitle(manager.getTopicManager().getLinkStrategy(), response, "pull-subscriptions");
 
 
-     ClientResponse<?> res = subscriptions.request().post();
+      ClientResponse<?> res = subscriptions.request().post();
       res.releaseConnection();
       Assert.assertEquals(201, res.getStatus());
       Link sub1 = res.getLocation();

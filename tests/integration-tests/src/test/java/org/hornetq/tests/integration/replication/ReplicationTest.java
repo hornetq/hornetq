@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.replication;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,8 +26,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -85,9 +79,14 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A ReplicationTest
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class ReplicationTest extends ServiceTestBase
@@ -99,7 +98,9 @@ public final class ReplicationTest extends ServiceTestBase
    private ScheduledExecutorService scheduledExecutor;
 
    private HornetQServer backupServer;
-   /** This field is not always used. */
+   /**
+    * This field is not always used.
+    */
    private HornetQServer liveServer;
 
    private ServerLocator locator;
@@ -188,7 +189,7 @@ public final class ReplicationTest extends ServiceTestBase
          manager.start();
          Assert.fail("Exception was expected");
       }
-      catch(HornetQNotConnectedException nce)
+      catch (HornetQNotConnectedException nce)
       {
          // ok
       }
@@ -243,8 +244,8 @@ public final class ReplicationTest extends ServiceTestBase
       blockOnReplication(storage, manager);
 
       PagingManager pagingManager =
-               createPageManager(backupServer.getStorageManager(), backupServer.getConfiguration(),
-                                 backupServer.getExecutorFactory(), backupServer.getAddressSettingsRepository());
+         createPageManager(backupServer.getStorageManager(), backupServer.getConfiguration(),
+                           backupServer.getExecutorFactory(), backupServer.getAddressSettingsRepository());
 
       PagingStore store = pagingManager.getPageStore(dummy);
       store.start();
@@ -586,19 +587,18 @@ public final class ReplicationTest extends ServiceTestBase
       super.tearDown();
    }
 
-   protected
-            PagingManager
-            createPageManager(final StorageManager storageManager,
-                              final Configuration configuration,
-                              final ExecutorFactory executorFactory,
-                              final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+   protected PagingManager
+   createPageManager(final StorageManager storageManager,
+                     final Configuration configuration,
+                     final ExecutorFactory executorFactory,
+                     final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
 
       PagingManager paging =
-               new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
-                                                               1000, null,
- executorFactory, false, null),
-                                     addressSettingsRepository);
+         new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
+                                                         1000, null,
+                                                         executorFactory, false, null),
+                               addressSettingsRepository);
 
       paging.start();
       return paging;
@@ -616,23 +616,21 @@ public final class ReplicationTest extends ServiceTestBase
          return TestInterceptor.value.get();
       }
 
-   };
+   }
 
    static final class FakeJournal implements Journal
    {
 
-      public
-               void
-               appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
+      public void
+      appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
       {
 
       }
 
-      public
-               void appendAddRecord(final long id,
-                                    final byte recordType,
-                                    final EncodingSupport record,
-                                    final boolean sync) throws Exception
+      public void appendAddRecord(final long id,
+                                  final byte recordType,
+                                  final EncodingSupport record,
+                                  final boolean sync) throws Exception
       {
 
       }
@@ -668,9 +666,8 @@ public final class ReplicationTest extends ServiceTestBase
 
       }
 
-      public
-               void
-               appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
+      public void
+      appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
       {
 
       }
@@ -680,16 +677,14 @@ public final class ReplicationTest extends ServiceTestBase
 
       }
 
-      public
-               void
-               appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
+      public void
+      appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
       {
 
       }
 
-      public
-               void
-               appendPrepareRecord(final long txID, final byte[] transactionData, final boolean sync) throws Exception
+      public void
+      appendPrepareRecord(final long txID, final byte[] transactionData, final boolean sync) throws Exception
       {
 
       }
@@ -699,9 +694,8 @@ public final class ReplicationTest extends ServiceTestBase
 
       }
 
-      public
-               void
-               appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
+      public void
+      appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
       {
 
       }
@@ -793,9 +787,8 @@ public final class ReplicationTest extends ServiceTestBase
       {
       }
 
-      public
-               void
-               appendDeleteRecord(final long id, final boolean sync, final IOCompletion completionCallback) throws Exception
+      public void
+      appendDeleteRecord(final long id, final boolean sync, final IOCompletion completionCallback) throws Exception
       {
       }
 
@@ -806,9 +799,8 @@ public final class ReplicationTest extends ServiceTestBase
       {
       }
 
-      public
-               void
-               appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
+      public void
+      appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
       {
       }
 
@@ -834,9 +826,8 @@ public final class ReplicationTest extends ServiceTestBase
       }
 
       @Override
-      public
-               void
-               appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
+      public void
+      appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
       {
 
       }

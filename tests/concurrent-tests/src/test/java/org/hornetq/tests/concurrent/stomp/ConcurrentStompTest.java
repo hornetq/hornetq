@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.concurrent.stomp;
 
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +20,10 @@ import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.tests.integration.stomp.StompTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ConcurrentStompTest extends StompTestBase
 {
@@ -41,63 +39,63 @@ public class ConcurrentStompTest extends StompTestBase
    {
       try
       {
-      String connect = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+         String connect = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
 
-      sendFrame(connect);
-      String connected = receiveFrame(10000);
-      Assert.assertTrue(connected.startsWith("CONNECTED"));
+         sendFrame(connect);
+         String connected = receiveFrame(10000);
+         Assert.assertTrue(connected.startsWith("CONNECTED"));
 
-      stompSocket_2 = createSocket();
-      inputBuffer_2 = new ByteArrayOutputStream();
+         stompSocket_2 = createSocket();
+         inputBuffer_2 = new ByteArrayOutputStream();
 
-      sendFrame(stompSocket_2, connect);
-      connected = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
-      Assert.assertTrue(connected.startsWith("CONNECTED"));
+         sendFrame(stompSocket_2, connect);
+         connected = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
+         Assert.assertTrue(connected.startsWith("CONNECTED"));
 
-      final int count = 1000;
-      final CountDownLatch latch = new CountDownLatch(count);
+         final int count = 1000;
+         final CountDownLatch latch = new CountDownLatch(count);
 
-      String subscribe =
-         "SUBSCRIBE\n" +
-         "destination:" + getQueuePrefix() + getQueueName() + "\n" +
-         "ack:auto\n\n" +
-         Stomp.NULL;
-      sendFrame(stompSocket_2, subscribe);
-      Thread.sleep(2000);
+         String subscribe =
+            "SUBSCRIBE\n" +
+               "destination:" + getQueuePrefix() + getQueueName() + "\n" +
+               "ack:auto\n\n" +
+               Stomp.NULL;
+         sendFrame(stompSocket_2, subscribe);
+         Thread.sleep(2000);
 
-      new Thread()
-      {
-         @Override
-         public void run()
+         new Thread()
          {
-            int i = 0;
-            while (true)
+            @Override
+            public void run()
             {
-               try
+               int i = 0;
+               while (true)
                {
-                  String frame = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
-                  Assert.assertTrue(frame.startsWith("MESSAGE"));
-                  Assert.assertTrue(frame.indexOf("destination:") > 0);
-                  System.out.println("<<< " + i++);
-                  latch.countDown();
+                  try
+                  {
+                     String frame = receiveFrame(stompSocket_2, inputBuffer_2, 10000);
+                     Assert.assertTrue(frame.startsWith("MESSAGE"));
+                     Assert.assertTrue(frame.indexOf("destination:") > 0);
+                     System.out.println("<<< " + i++);
+                     latch.countDown();
+                  }
+                  catch (Exception e)
+                  {
+                     break;
+                  }
                }
-               catch (Exception e)
-               {
-                  break;
-               }
-            }
-         };
-      }.start();
+            };
+         }.start();
 
-      String send = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n";
-      for (int i = 1; i <= count; i++)
-      {
-         // Thread.sleep(1);
-         System.out.println(">>> " + i);
-         sendFrame(send + "count:" + i + "\n\n" + Stomp.NULL);
-      }
+         String send = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n";
+         for (int i = 1; i <= count; i++)
+         {
+            // Thread.sleep(1);
+            System.out.println(">>> " + i);
+            sendFrame(send + "count:" + i + "\n\n" + Stomp.NULL);
+         }
 
-      assertTrue(latch.await(60, TimeUnit.SECONDS));
+         assertTrue(latch.await(60, TimeUnit.SECONDS));
 
       }
       finally
@@ -105,7 +103,6 @@ public class ConcurrentStompTest extends StompTestBase
          stompSocket_2.close();
          inputBuffer_2.close();
       }
-
 
 
    }

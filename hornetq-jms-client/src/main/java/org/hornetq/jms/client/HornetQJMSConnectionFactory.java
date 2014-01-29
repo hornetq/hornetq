@@ -27,10 +27,10 @@ import org.hornetq.api.core.client.ServerLocator;
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implements TopicConnectionFactory,
-         QueueConnectionFactory
+   QueueConnectionFactory
 {
 
-   private final static long serialVersionUID = -2810634789345348326L;
+   private static final long serialVersionUID = -2810634789345348326L;
 
    /**
     *
@@ -46,12 +46,11 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
    public HornetQJMSConnectionFactory(ServerLocator serverLocator)
    {
       super(serverLocator);
-    }
+   }
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQJMSConnectionFactory(boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

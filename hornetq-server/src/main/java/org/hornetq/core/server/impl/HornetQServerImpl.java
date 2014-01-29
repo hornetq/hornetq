@@ -13,10 +13,7 @@
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
-
+import javax.management.MBeanServer;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.PrintWriter;
@@ -43,8 +40,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanServer;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -170,6 +165,10 @@ import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
+import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
+
 /**
  * The HornetQ server implementation
  *
@@ -213,6 +212,7 @@ public class HornetQServerImpl implements HornetQServer
        */
       STOPPED;
    }
+
    private volatile SERVER_STATE state = SERVER_STATE.STOPPED;
 
    private final Version version;
@@ -407,11 +407,11 @@ public class HornetQServerImpl implements HornetQServer
          checkJournalDirectory();
 
          nodeManager =
-                  createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), false);
+            createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), false);
 
          nodeManager.start();
 
-         HornetQServerLogger.LOGGER.serverStarting((configuration.isBackup() ? "backup" : "live"),  configuration);
+         HornetQServerLogger.LOGGER.serverStarting((configuration.isBackup() ? "backup" : "live"), configuration);
 
          if (configuration.isRunSyncSpeedTest())
          {
@@ -447,7 +447,7 @@ public class HornetQServerImpl implements HornetQServer
                assert replicationEndpoint == null;
                nodeManager.stop();
                nodeManager =
-                        createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), true);
+                  createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), true);
                backupUpToDate = false;
                backupSyncLatch.setCount(1);
                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
@@ -461,7 +461,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             state = SERVER_STATE.STARTED;
             HornetQServerLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
-               identity != null ? identity : "");
+                                                     identity != null ? identity : "");
          }
          // start connector service
          connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
@@ -547,6 +547,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       stop(failoverOnServerShutdown, false, false);
    }
+
    /*
    * stops the server
    * @param failoverOnServerShutdown whether we will allow a backup server to become live when the server is stopped normally
@@ -739,7 +740,7 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * Freeze all connections.
-    * <p>
+    * <p/>
     * If replicating, avoid freezing the replication connection. Helper method for
     * {@link #stop(boolean, boolean, boolean)}.
     */
@@ -983,26 +984,26 @@ public class HornetQServerImpl implements HornetQServer
    protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
    {
       return new ServerSessionImpl(name,
-            username,
-            password,
-            minLargeMessageSize,
-            autoCommitSends,
-            autoCommitAcks,
-            preAcknowledge,
-            configuration.isPersistDeliveryCountBeforeDelivery(),
-            xa,
-            connection,
-            storageManager,
-            postOffice,
-            resourceManager,
-            securityStore,
-            managementService,
-            this,
-            configuration.getManagementAddress(),
-            defaultAddress == null ? null
-               : new SimpleString(defaultAddress),
-            callback,
-            context);
+                                   username,
+                                   password,
+                                   minLargeMessageSize,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   preAcknowledge,
+                                   configuration.isPersistDeliveryCountBeforeDelivery(),
+                                   xa,
+                                   connection,
+                                   storageManager,
+                                   postOffice,
+                                   resourceManager,
+                                   securityStore,
+                                   managementService,
+                                   this,
+                                   configuration.getManagementAddress(),
+                                   defaultAddress == null ? null
+                                      : new SimpleString(defaultAddress),
+                                   callback,
+                                   context);
    }
 
    protected SecurityStore getSecurityStore()
@@ -1155,7 +1156,7 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public void destroyQueue(final SimpleString queueName, final ServerSession session, final boolean checkConsumerCount) throws Exception
-    {
+   {
       addressSettingsRepository.clearCache();
 
       Binding binding = postOffice.getBinding(queueName);
@@ -1225,7 +1226,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       synchronized (replicationLock)
       {
-      return replicationManager;
+         return replicationManager;
       }
    }
 
@@ -1273,13 +1274,13 @@ public class HornetQServerImpl implements HornetQServer
       Filter filter = FilterImpl.createFilter(config.getFilterString());
 
       Divert divert = new DivertImpl(new SimpleString(config.getForwardingAddress()),
-         sName,
-         new SimpleString(config.getRoutingName()),
-         config.isExclusive(),
-         filter,
-         transformer,
-         postOffice,
-         storageManager);
+                                     sName,
+                                     new SimpleString(config.getRoutingName()),
+                                     config.isExclusive(),
+                                     filter,
+                                     transformer,
+                                     postOffice,
+                                     storageManager);
 
       Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
 
@@ -1338,6 +1339,7 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * For tests only, don't use this method as it's not part of the API
+    *
     * @param factory
     */
    public void replaceQueueFactory(QueueFactory factory)
@@ -1350,12 +1352,12 @@ public class HornetQServerImpl implements HornetQServer
    {
 
       return new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
-         configuration.getJournalBufferSize_NIO(),
-         scheduledPool,
-         executorFactory,
-         configuration.isJournalSyncNonTransactional(),
-         shutdownOnCriticalIO),
-      addressSettingsRepository);
+                                                             configuration.getJournalBufferSize_NIO(),
+                                                             scheduledPool,
+                                                             executorFactory,
+                                                             configuration.isJournalSyncNonTransactional(),
+                                                             shutdownOnCriticalIO),
+                                   addressSettingsRepository);
    }
 
    /**
@@ -1406,7 +1408,7 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * Starts everything apart from RemotingService and loading the data.
-    * <p>
+    * <p/>
     * After optional intermediary steps, Part 1 is meant to be followed by part 2
     * {@link #initialisePart2()}.
     */
@@ -1417,8 +1419,8 @@ public class HornetQServerImpl implements HornetQServer
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
-         false,
-         getThisClassLoader());
+                                                        false,
+                                                        getThisClassLoader());
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
@@ -1431,16 +1433,16 @@ public class HornetQServerImpl implements HornetQServer
 
       executorFactory = new OrderedExecutorFactory(threadPool);
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-         new HornetQThreadFactory("HornetQ-scheduled-threads",
-            false,
-            getThisClassLoader()));
+                                                      new HornetQThreadFactory("HornetQ-scheduled-threads",
+                                                                               false,
+                                                                               getThisClassLoader()));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
       if (configuration.getMemoryMeasureInterval() != -1)
       {
          memoryManager = new MemoryManager(configuration.getMemoryWarningThreshold(),
-            configuration.getMemoryMeasureInterval());
+                                           configuration.getMemoryMeasureInterval());
 
          memoryManager.start();
       }
@@ -1464,53 +1466,53 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       securityStore = new SecurityStoreImpl(securityRepository,
-         securityManager,
-         configuration.getSecurityInvalidationInterval(),
-         configuration.isSecurityEnabled(),
-         configuration.getClusterUser(),
-         configuration.getClusterPassword(),
-         managementService);
+                                            securityManager,
+                                            configuration.getSecurityInvalidationInterval(),
+                                            configuration.isSecurityEnabled(),
+                                            configuration.getClusterUser(),
+                                            configuration.getClusterPassword(),
+                                            managementService);
 
       queueFactory = new QueueFactoryImpl(executorFactory, scheduledPool, addressSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();
 
       resourceManager = new ResourceManagerImpl((int)(configuration.getTransactionTimeout() / 1000),
-         configuration.getTransactionTimeoutScanPeriod(),
-         scheduledPool);
+                                                configuration.getTransactionTimeoutScanPeriod(),
+                                                scheduledPool);
       postOffice = new PostOfficeImpl(this,
-         storageManager,
-         pagingManager,
-         queueFactory,
-         managementService,
-         configuration.getMessageExpiryScanPeriod(),
-         configuration.getMessageExpiryThreadPriority(),
-         configuration.isWildcardRoutingEnabled(),
-         configuration.getIDCacheSize(),
-         configuration.isPersistIDCache(),
-         addressSettingsRepository);
+                                      storageManager,
+                                      pagingManager,
+                                      queueFactory,
+                                      managementService,
+                                      configuration.getMessageExpiryScanPeriod(),
+                                      configuration.getMessageExpiryThreadPriority(),
+                                      configuration.isWildcardRoutingEnabled(),
+                                      configuration.getIDCacheSize(),
+                                      configuration.isPersistIDCache(),
+                                      addressSettingsRepository);
 
       // This can't be created until node id is set
       clusterManager =
-               new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
-                                  nodeManager, configuration.isBackup(), threadPool);
+         new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
+                            nodeManager, configuration.isBackup(), threadPool);
 
       clusterManager.deploy();
 
       remotingService = new RemotingServiceImpl(clusterManager, configuration, this, managementService, scheduledPool);
 
       messagingServerControl = managementService.registerServer(postOffice,
-         storageManager,
-         configuration,
-         addressSettingsRepository,
-         securityRepository,
-         resourceManager,
-         remotingService,
-         this,
-         queueFactory,
-         scheduledPool,
-         pagingManager,
-         configuration.isBackup());
+                                                                storageManager,
+                                                                configuration,
+                                                                addressSettingsRepository,
+                                                                securityRepository,
+                                                                resourceManager,
+                                                                remotingService,
+                                                                this,
+                                                                queueFactory,
+                                                                scheduledPool,
+                                                                pagingManager,
+                                                                configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
@@ -1616,7 +1618,7 @@ public class HornetQServerImpl implements HornetQServer
          deploymentManager.start();
       }
 
-      if(groupingHandler != null)
+      if (groupingHandler != null)
       {
          groupingHandler.start();
       }
@@ -1702,8 +1704,8 @@ public class HornetQServerImpl implements HornetQServer
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
          boolean isTopicIdentification =
-                  filter != null && filter.getFilterString() != null &&
-                           filter.getFilterString().toString().equals(GENERIC_IGNORED_FILTER);
+            filter != null && filter.getFilterString() != null &&
+               filter.getFilterString().toString().equals(GENERIC_IGNORED_FILTER);
 
          if (postOffice.getBinding(queueBindingInfo.getQueueName()) != null)
          {
@@ -1734,12 +1736,12 @@ public class HornetQServerImpl implements HornetQServer
          }
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-            queueBindingInfo.getAddress(),
-            queueBindingInfo.getQueueName(),
-            filter,
-            subscription,
-            true,
-            false);
+                                                queueBindingInfo.getAddress(),
+                                                queueBindingInfo.getQueueName(),
+                                                filter,
+                                                subscription,
+                                                true,
+                                                false);
 
          Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
 
@@ -1757,8 +1759,8 @@ public class HornetQServerImpl implements HornetQServer
          if (groupingHandler != null)
          {
             groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(),
-               groupingInfo.getGroupId(),
-               groupingInfo.getClusterName()));
+                                                             groupingInfo.getGroupId(),
+                                                             groupingInfo.getClusterName()));
          }
       }
 
@@ -1769,13 +1771,13 @@ public class HornetQServerImpl implements HornetQServer
       List<PageCountPending> pendingNonTXPageCounter = new LinkedList<PageCountPending>();
 
       journalInfo[1] = storageManager.loadMessageJournal(postOffice,
-         pagingManager,
-         resourceManager,
-         queues,
-         queueBindingInfosMap,
-         duplicateIDMap,
-         pendingLargeMessages,
-         pendingNonTXPageCounter);
+                                                         pagingManager,
+                                                         resourceManager,
+                                                         queues,
+                                                         queueBindingInfosMap,
+                                                         duplicateIDMap,
+                                                         pendingLargeMessages,
+                                                         pendingNonTXPageCounter);
 
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
@@ -1817,6 +1819,7 @@ public class HornetQServerImpl implements HornetQServer
 
    /**
     * This method will recover the counters after failures making sure the page counter doesn't get out of sync
+    *
     * @param queues
     * @param pendingNonTXPageCounter
     * @throws Exception
@@ -1837,7 +1840,7 @@ public class HornetQServerImpl implements HornetQServer
          Map<Long, Map<Long, List<PageCountPending>>> perPageMap = perAddressMap.get(address);
 
          // We have already generated this before, so it can't be null
-         assert(perPageMap != null);
+         assert (perPageMap != null);
 
          for (Long pageId : perPageMap.keySet())
          {
@@ -1899,9 +1902,9 @@ public class HornetQServerImpl implements HornetQServer
             {
                // on this case the page file didn't exist, we just remove all the records since the page is already gone
                HornetQServerLogger.LOGGER.debug("Page " + pageId + " didn't exist on address " + address + ", so we are just removing records");
-               for (List<PageCountPending> records: perQueue.values())
+               for (List<PageCountPending> records : perQueue.values())
                {
-                  for (PageCountPending record: records)
+                  for (PageCountPending record : records)
                   {
                      HornetQServerLogger.LOGGER.debug("Removing pending page counter " + record.getID());
                      storageManager.deletePendingPageCounter(txRecoverCounter.getID(), record.getID());
@@ -1916,8 +1919,8 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    /**
-    * 
     * This generates a map for use on the recalculation and recovery of pending maps after reloading it
+    *
     * @param queues
     * @param pendingNonTXPageCounter
     * @param txRecoverCounter
@@ -1925,10 +1928,10 @@ public class HornetQServerImpl implements HornetQServer
     * @throws Exception
     */
    private Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>
-           generateMapsOnPendingCount(Map<Long, Queue> queues, List<PageCountPending>
-                 pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
+   generateMapsOnPendingCount(Map<Long, Queue> queues, List<PageCountPending>
+      pendingNonTXPageCounter, Transaction txRecoverCounter) throws Exception
    {
-      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString,Map<Long, Map<Long, List<PageCountPending>>>>();
+      Map<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>> perAddressMap = new HashMap<SimpleString, Map<Long, Map<Long, List<PageCountPending>>>>();
       for (PageCountPending pgCount : pendingNonTXPageCounter)
       {
          long queueID = pgCount.getQueueID();
@@ -1997,12 +2000,12 @@ public class HornetQServerImpl implements HornetQServer
       for (PersistedRoles roleItem : roles)
       {
          Set<Role> setRoles = SecurityFormatter.createSecurity(roleItem.getSendRoles(),
-            roleItem.getConsumeRoles(),
-            roleItem.getCreateDurableQueueRoles(),
-            roleItem.getDeleteDurableQueueRoles(),
-            roleItem.getCreateNonDurableQueueRoles(),
-            roleItem.getDeleteNonDurableQueueRoles(),
-            roleItem.getManageRoles());
+                                                               roleItem.getConsumeRoles(),
+                                                               roleItem.getCreateDurableQueueRoles(),
+                                                               roleItem.getDeleteDurableQueueRoles(),
+                                                               roleItem.getCreateNonDurableQueueRoles(),
+                                                               roleItem.getDeleteNonDurableQueueRoles(),
+                                                               roleItem.getManageRoles());
 
          securityRepository.addMatch(roleItem.getAddressMatch().toString(), setRoles);
       }
@@ -2031,7 +2034,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Filter filter = FilterImpl.createFilter(filterString);
 
-      long txID = storageManager.generateUniqueID();;
+      long txID = storageManager.generateUniqueID();
       long queueID = storageManager.generateUniqueID();
 
       PageSubscription pageSubscription;
@@ -2048,12 +2051,12 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       final Queue queue = queueFactory.createQueue(queueID,
-         address,
-         queueName,
-         filter,
-         pageSubscription,
-         durable,
-         temporary);
+                                                   address,
+                                                   queueName,
+                                                   filter,
+                                                   pageSubscription,
+                                                   durable,
+                                                   temporary);
 
       binding = new LocalQueueBinding(address, queue, nodeManager.getNodeId());
 
@@ -2130,10 +2133,10 @@ public class HornetQServerImpl implements HornetQServer
          else
          {
             groupingHandler1 =
-                     new RemoteGroupingHandler(managementService,
-               config.getName(),
-               config.getAddress(),
-               config.getTimeout());
+               new RemoteGroupingHandler(managementService,
+                                         config.getName(),
+                                         config.getAddress(),
+                                         config.getTimeout());
          }
 
          this.groupingHandler = groupingHandler1;
@@ -2196,7 +2199,7 @@ public class HornetQServerImpl implements HornetQServer
     */
    private void startFailbackChecker()
    {
-      scheduledPool.scheduleAtFixedRate(new FailbackChecker(), 1000l, 1000l, TimeUnit.MILLISECONDS);
+      scheduledPool.scheduleAtFixedRate(new FailbackChecker(), 1000L, 1000L, TimeUnit.MILLISECONDS);
    }
 
    // Inner classes
@@ -2231,9 +2234,9 @@ public class HornetQServerImpl implements HornetQServer
                               return;
                            configuration.setBackup(true);
                            HornetQServerLogger.LOGGER.debug(HornetQServerImpl.this +
-                                    "::Starting backup node now after failback");
-                        start();
-                     }
+                                                               "::Starting backup node now after failback");
+                           start();
+                        }
                      }
                      catch (Exception e)
                      {
@@ -2490,7 +2493,7 @@ public class HornetQServerImpl implements HornetQServer
                //we use the cluster connection configuration to connect to the cluster to find the live node we want to
                //connect to.
                ClusterConnectionConfiguration config =
-                        ConfigurationUtils.getReplicationClusterConfiguration(configuration);
+                  ConfigurationUtils.getReplicationClusterConfiguration(configuration);
                if (serverLocator0 != null)
                {
                   serverLocator0.close();
@@ -2515,9 +2518,9 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             //use a Node Locator to connect to the cluster
-            LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null?
-                  new AnyLiveNodeLocator(quorumManager):
-                  new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
+            LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null ?
+               new AnyLiveNodeLocator(quorumManager) :
+               new NamedLiveNodeLocator(configuration.getBackupGroupName(), quorumManager);
             serverLocator0.addClusterTopologyListener(nodeLocator);
             do
             {
@@ -2528,7 +2531,7 @@ public class HornetQServerImpl implements HornetQServer
                }
                catch (HornetQException e)
                {
-                  if(closed)
+                  if (closed)
                      return;
                   Thread.sleep(serverLocator0.getRetryInterval());
                }
@@ -2570,7 +2573,7 @@ public class HornetQServerImpl implements HornetQServer
                try
                {
                   liveServerSessionFactory
-                       = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getA(), 0, false);
+                     = (ClientSessionFactoryInternal)serverLocator0.createSessionFactory(possibleLive.getA(), 0, false);
                }
                catch (Exception e)
                {
@@ -2579,8 +2582,9 @@ public class HornetQServerImpl implements HornetQServer
                      try
                      {
                         liveServerSessionFactory
-                          = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getB(), 0, false);
-                     } catch (Exception e1)
+                           = (ClientSessionFactoryInternal)serverLocator0.createSessionFactory(possibleLive.getB(), 0, false);
+                     }
+                     catch (Exception e1)
                      {
                         liveServerSessionFactory = null;
                      }
@@ -2597,11 +2601,11 @@ public class HornetQServerImpl implements HornetQServer
 
                threadPool.execute(endpointConnector);
                /**
-               * Wait for a signal from the the quorum manager, at this point if replication has been successful we can
-               * fail over or if there is an error trying to replicate (such as already replicating) we try the
-               * process again on the next live server.  All the action happens inside
-               * {@link QuorumManager}
-               */
+                * Wait for a signal from the the quorum manager, at this point if replication has been successful we can
+                * fail over or if there is an error trying to replicate (such as already replicating) we try the
+                * process again on the next live server.  All the action happens inside
+                * {@link QuorumManager}
+                */
                signal = quorumManager.waitForStatusChange();
                /**
                 * replicationEndpoint will be holding lots of open files. Make sure they get
@@ -2611,11 +2615,11 @@ public class HornetQServerImpl implements HornetQServer
                // time to give up
                if (!isStarted() || signal == STOP)
                   return;
-               // time to fail over
+                  // time to fail over
                else if (signal == FAIL_OVER)
                   break;
-               // something has gone badly run restart from scratch
-               else if(signal == BACKUP_ACTIVATION.FAILURE_REPLICATING)
+                  // something has gone badly run restart from scratch
+               else if (signal == BACKUP_ACTIVATION.FAILURE_REPLICATING)
                {
                   Thread startThread = new Thread(new Runnable()
                   {
@@ -2730,7 +2734,7 @@ public class HornetQServerImpl implements HornetQServer
       /**
        * Live has notified this server that it is going to stop.
        */
-      public final void failOver(final LiveStopping finalMessage)
+      public void failOver(final LiveStopping finalMessage)
       {
          if (finalMessage == null)
          {
@@ -2826,9 +2830,10 @@ public class HornetQServerImpl implements HornetQServer
 
       /**
        * Determines whether there is another server already running with this server's nodeID.
-       * <p>
+       * <p/>
        * This can happen in case of a successful fail-over followed by the live's restart
        * (attempting a fail-back).
+       *
        * @throws Exception
        */
       private boolean isNodeIdUsed() throws Exception
@@ -2853,7 +2858,7 @@ public class HornetQServerImpl implements HornetQServer
 
          ClientSessionFactoryInternal factory = null;
 
-         NodeIdListener listener=new NodeIdListener(nodeId0);
+         NodeIdListener listener = new NodeIdListener(nodeId0);
 
          locator.addClusterTopologyListener(listener);
          try
@@ -2936,8 +2941,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
    {
-      TransportConfiguration[] tcConfigs = (TransportConfiguration[]) Array.newInstance(TransportConfiguration.class,
-            connectorNames.size());
+      TransportConfiguration[] tcConfigs = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
+                                                                                       connectorNames.size());
       int count = 0;
       for (String connectorName : connectorNames)
       {
@@ -2956,9 +2961,10 @@ public class HornetQServerImpl implements HornetQServer
       return tcConfigs;
    }
 
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+   /**
+    * This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    * utility class, as it would be a door to load anything you like in a safe VM.
+    * For that reason any class trying to do a privileged block should do with the AccessController directly.
     */
    private static Object safeInitNewInstance(final String className)
    {
@@ -2973,7 +2979,7 @@ public class HornetQServerImpl implements HornetQServer
 
    @Override
    public void startReplication(CoreRemotingConnection rc, final ClusterConnection clusterConnection,
-                               final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean isFailBackRequest)
+                                final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean isFailBackRequest)
       throws HornetQException
    {
       if (replicationManager != null)
@@ -3019,12 +3025,13 @@ public class HornetQServerImpl implements HornetQServer
                         try
                         {
                            Thread.sleep(configuration.getFailbackDelay());
-                        } catch (InterruptedException e)
+                        }
+                        catch (InterruptedException e)
                         {
                            //
                         }
                         //if we have to many backups kept just stop, other wise restart as a backup
-                        if(countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
+                        if (countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
                         {
                            stop(true);
                            HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
@@ -3053,7 +3060,7 @@ public class HornetQServerImpl implements HornetQServer
                    * can swallow the exception and ignore the replication request. If (2) the live
                    * will crash shortly.
                    */
-                  HornetQServerLogger.LOGGER.errorStartingReplication(e);
+                     HornetQServerLogger.LOGGER.errorStartingReplication(e);
                   }
                   try
                   {
@@ -3081,10 +3088,11 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * Whether a remote backup server was in sync with its live server. If it was not in sync, it may
     * not take over the live's functions.
-    * <p>
+    * <p/>
     * A local backup server or a live server should always return {@code true}
+    *
     * @return whether the backup is up-to-date, if the server is not a backup it always returns
-    *         {@code true}.
+    * {@code true}.
     */
    public boolean isRemoteBackupUpToDate()
    {
@@ -3105,7 +3113,7 @@ public class HornetQServerImpl implements HornetQServer
       final String fileName = journalDir.getName();
       int numberOfbackupsSaved = 0;
       //fine if it doesn't exist, we aren't using file based persistence so it's no issue
-      if(journalDir.exists())
+      if (journalDir.exists())
       {
          File parentFile = new File(journalDir.getParent());
          String[] backupJournals = parentFile.list(new FilenameFilter()
@@ -3116,7 +3124,7 @@ public class HornetQServerImpl implements HornetQServer
                return name.startsWith(fileName) && !name.matches(fileName);
             }
          });
-         numberOfbackupsSaved = backupJournals != null?backupJournals.length:0;
+         numberOfbackupsSaved = backupJournals != null ? backupJournals.length : 0;
       }
       return numberOfbackupsSaved;
    }
@@ -3156,7 +3164,7 @@ public class HornetQServerImpl implements HornetQServer
    public void remoteFailOver(ReplicationLiveIsStoppingMessage.LiveStopping finalMessage) throws HornetQException
    {
       HornetQServerLogger.LOGGER.trace("Remote fail-over, got message=" + finalMessage + ", backupUpToDate=" +
-               backupUpToDate);
+                                          backupUpToDate);
       if (!configuration.isBackup() || configuration.isSharedStore())
       {
          throw new HornetQInternalErrorException();
@@ -3173,14 +3181,14 @@ public class HornetQServerImpl implements HornetQServer
          {
             replicationActivation.failOver(finalMessage);
          }
-    }
+      }
    }
 
 
    private ServerLocatorInternal getFailbackLocator(ClusterConnectionConfiguration config) throws HornetQException
    {
       ServerLocatorInternal locator;
-      if(config.getDiscoveryGroupName() != null)
+      if (config.getDiscoveryGroupName() != null)
       {
          DiscoveryGroupConfiguration dg = configuration.getDiscoveryGroupConfigurations().get(config.getDiscoveryGroupName());
 
@@ -3188,31 +3196,31 @@ public class HornetQServerImpl implements HornetQServer
          {
             throw HornetQMessageBundle.BUNDLE.noDiscoveryGroupFound(dg);
          }
-         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(dg);
+         locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(dg);
       }
       else
       {
          TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
-                                                                               : null;
+            : null;
 
-         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(tcConfigs);
+         locator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tcConfigs);
       }
       return locator;
    }
 
    /**
     * Move data away before starting data synchronization for fail-back.
-    * <p>
+    * <p/>
     * Use case is a server, upon restarting, finding a former backup running in its place. It will
     * move any older data away and log a warning about it.
     */
    private void moveServerData()
    {
       String[] dataDirs =
-               new String[] { configuration.getBindingsDirectory(),
-                             configuration.getJournalDirectory(),
-                             configuration.getPagingDirectory(),
-                             configuration.getLargeMessagesDirectory() };
+         new String[]{configuration.getBindingsDirectory(),
+            configuration.getJournalDirectory(),
+            configuration.getPagingDirectory(),
+            configuration.getLargeMessagesDirectory()};
       boolean allEmpty = true;
       int lowestSuffixForMovedData = 1;
       boolean redo = true;
@@ -3264,8 +3272,8 @@ public class HornetQServerImpl implements HornetQServer
          * */
 
          File dirToRecreate = new File(dir0);
-          int count = 0;
-         while(!dirToRecreate.exists() && !dirToRecreate.mkdir())
+         int count = 0;
+         while (!dirToRecreate.exists() && !dirToRecreate.mkdir())
          {
             try
             {
@@ -3275,7 +3283,7 @@ public class HornetQServerImpl implements HornetQServer
             {
             }
             count++;
-            if(count == 5)
+            if (count == 5)
             {
                throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
             }

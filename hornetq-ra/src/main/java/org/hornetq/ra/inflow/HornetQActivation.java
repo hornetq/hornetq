@@ -12,11 +12,6 @@
  */
 package org.hornetq.ra.inflow;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -29,6 +24,10 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -99,7 +98,9 @@ public class HornetQActivation
 
    private HornetQDestination destination;
 
-   /** The name of the temporary subscription name that all the sessions will share */
+   /**
+    * The name of the temporary subscription name that all the sessions will share
+    */
    private SimpleString topicTemporaryQueue;
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
@@ -114,7 +115,7 @@ public class HornetQActivation
    {
       try
       {
-         ONMESSAGE = MessageListener.class.getMethod("onMessage", new Class[] { Message.class });
+         ONMESSAGE = MessageListener.class.getMethod("onMessage", new Class[]{Message.class});
       }
       catch (Exception e)
       {
@@ -279,7 +280,6 @@ public class HornetQActivation
    }
 
    /**
-    *
     * @return the list of XAResources for this activation endpoint
     */
    public List<XAResource> getXAResources()
@@ -288,14 +288,15 @@ public class HornetQActivation
       for (HornetQMessageHandler handler : handlers)
       {
          XAResource xares = handler.getXAResource();
-         if (xares != null) {
+         if (xares != null)
+         {
             xaresources.add(xares);
          }
       }
       return xaresources;
    }
 
-    /**
+   /**
     * Stop the activation
     */
    public void stop()
@@ -332,7 +333,7 @@ public class HornetQActivation
          {
             ClientSessionFactory cf = factory.getServerLocator().createSessionFactory();
             session = setupSession(cf);
-            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, cf,  i);
+            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal)session, cf, i);
             handler.setup();
             handlers.add(handler);
          }
@@ -342,7 +343,7 @@ public class HornetQActivation
             {
                session.close();
             }
-            if(firstException == null)
+            if (firstException == null)
             {
                firstException = e;
             }
@@ -350,7 +351,7 @@ public class HornetQActivation
       }
       //if we have any exceptions close all the handlers and throw the first exception.
       //we don't want partially configured activations, i.e. only 8 out of 15 sessions started so best to stop and log the error.
-      if(firstException != null)
+      if (firstException != null)
       {
          for (HornetQMessageHandler handler : handlers)
          {
@@ -377,7 +378,7 @@ public class HornetQActivation
    {
       HornetQRALogger.LOGGER.debug("Tearing down " + spec);
 
-      if(resourceRecovery != null)
+      if (resourceRecovery != null)
       {
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
@@ -389,12 +390,12 @@ public class HornetQActivation
       for (int i = 0; i < handlers.size(); i++)
       {
          // The index here is the complimentary so it's inverting the array
-         handlersCopy[i] = handlers.get(handlers.size()-i-1);
+         handlersCopy[i] = handlers.get(handlers.size() - i - 1);
       }
 
       handlers.clear();
 
-      for (HornetQMessageHandler handler: handlersCopy)
+      for (HornetQMessageHandler handler : handlersCopy)
       {
          handler.interruptConsumer();
       }
@@ -473,6 +474,7 @@ public class HornetQActivation
 
    /**
     * Setup a session
+    *
     * @param cf
     * @return The connection
     * @throws Exception Thrown if an error occurs
@@ -496,7 +498,7 @@ public class HornetQActivation
 
          result.addMetaData("resource-adapter", "inbound");
          result.addMetaData("jms-session", "");
-         String clientID = ra.getClientID() == null?spec.getClientID():ra.getClientID();
+         String clientID = ra.getClientID() == null ? spec.getClientID() : ra.getClientID();
          if (clientID != null)
          {
             result.addMetaData("jms-client-id", clientID);
@@ -540,7 +542,7 @@ public class HornetQActivation
       if (spec.isUseJNDI())
       {
          Context ctx;
-         if(spec.getParsedJndiParams() == null)
+         if (spec.getParsedJndiParams() == null)
          {
             ctx = new InitialContext();
          }
@@ -586,8 +588,8 @@ public class HornetQActivation
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
 
                HornetQRALogger.LOGGER.debug("Unable to retrieve " + destinationName +
-                     " from JNDI. Creating a new " + destinationType.getName() +
-                     " named " + calculatedDestinationName + " to be used by the MDB.");
+                                               " from JNDI. Creating a new " + destinationType.getName() +
+                                               " named " + calculatedDestinationName + " to be used by the MDB.");
 
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
@@ -657,11 +659,11 @@ public class HornetQActivation
     */
    public void handleFailure(Throwable failure)
    {
-      if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
+      if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
       {
          HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
       }
-      else if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
+      else if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
       {
          HornetQRALogger.LOGGER.awaitingJMSServerCreation();
       }
@@ -705,7 +707,7 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
+               if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
                {
                   if (lastException == null || !(t instanceof HornetQNonExistentQueueException))
                   {
@@ -713,7 +715,7 @@ public class HornetQActivation
                      HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
                   }
                }
-               else if(failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
+               else if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
                {
                   if (lastException == null || !(t instanceof HornetQNotConnectedException))
                   {

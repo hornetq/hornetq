@@ -13,11 +13,11 @@
 
 package org.hornetq.utils;
 
-import org.hornetq.api.core.HornetQInterruptedException;
-import org.hornetq.core.client.HornetQClientLogger;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+
+import org.hornetq.api.core.HornetQInterruptedException;
+import org.hornetq.core.client.HornetQClientLogger;
 
 
 /**
@@ -25,8 +25,6 @@ import java.util.concurrent.Executor;
  *
  * @author <a href="david.lloyd@jboss.com">David Lloyd</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public final class OrderedExecutorFactory implements ExecutorFactory
 {
@@ -83,25 +81,25 @@ public final class OrderedExecutorFactory implements ExecutorFactory
             {
                for (;;)
                {
-                   // Optimization, first try without any locks
-                   Runnable task = tasks.poll();
-                   if (task == null)
-                   {
-                      synchronized (tasks)
-                      {
-                         // if it's null we need to retry now holding the lock on tasks
-                         // this is because running=false and tasks.empty must be an atomic operation
-                         // so we have to retry before setting the tasks to false
-                         // this is a different approach to the anti-pattern on synchronize-retry,
-                         // as this is just guaranteeing the running=false and tasks.empty being an atomic operation
-                         task = tasks.poll();
-                         if (task == null)
-                         {
-                            running = false;
-                            return;
-                         }
-                      }
-                   }
+                  // Optimization, first try without any locks
+                  Runnable task = tasks.poll();
+                  if (task == null)
+                  {
+                     synchronized (tasks)
+                     {
+                        // if it's null we need to retry now holding the lock on tasks
+                        // this is because running=false and tasks.empty must be an atomic operation
+                        // so we have to retry before setting the tasks to false
+                        // this is a different approach to the anti-pattern on synchronize-retry,
+                        // as this is just guaranteeing the running=false and tasks.empty being an atomic operation
+                        task = tasks.poll();
+                        if (task == null)
+                        {
+                           running = false;
+                           return;
+                        }
+                     }
+                  }
                   try
                   {
                      task.run();

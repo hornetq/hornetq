@@ -19,27 +19,27 @@ public class LatencyTest extends ServiceTestBase
    * */
    @Test
    @BMRules
-   (
-      rules =
-      {
-         @BMRule
-         (
-            name = "trace ClientBootstrap.connect",
-            targetClass = "org.jboss.netty.bootstrap.ClientBootstrap",
-            targetMethod = "connect",
-            targetLocation = "ENTRY",
-            action = "System.out.println(\"netty connecting\")"
-         ),
-         @BMRule
-         (
-            name = "sleep OioWorker.run",
-            targetClass = "org.jboss.netty.channel.socket.oio.OioWorker",
-            targetMethod = "run",
-            targetLocation = "ENTRY",
-            action = "Thread.sleep(500)"
-         )
-      }
-   )
+      (
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "trace ClientBootstrap.connect",
+                     targetClass = "org.jboss.netty.bootstrap.ClientBootstrap",
+                     targetMethod = "connect",
+                     targetLocation = "ENTRY",
+                     action = "System.out.println(\"netty connecting\")"
+                  ),
+               @BMRule
+                  (
+                     name = "sleep OioWorker.run",
+                     targetClass = "org.jboss.netty.channel.socket.oio.OioWorker",
+                     targetMethod = "run",
+                     targetLocation = "ENTRY",
+                     action = "Thread.sleep(500)"
+                  )
+            }
+      )
    public void testLatency() throws Exception
    {
       HornetQServer server = createServer(createDefaultConfig(true));

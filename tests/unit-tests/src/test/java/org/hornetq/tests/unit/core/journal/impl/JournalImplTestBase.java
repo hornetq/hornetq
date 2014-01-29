@@ -249,7 +249,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       System.out.println("file = " + dir);
 
-      File files[] = dir.listFiles(fnf);
+      File[] files = dir.listFiles(fnf);
 
       for (File file : files)
       {

@@ -21,7 +21,10 @@
 */
 package org.hornetq.byteman.tests;
 
-import org.hornetq.api.core.HornetQException;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.hornetq.api.core.HornetQTransactionOutcomeUnknownException;
 import org.hornetq.api.core.HornetQTransactionRolledBackException;
 import org.hornetq.api.core.SimpleString;
@@ -36,10 +39,7 @@ import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -51,12 +51,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -87,19 +81,19 @@ public class BMFailoverTest extends FailoverTestBase
 
    @Test
    @BMRules
-         (
-               rules =
-                     {
-                           @BMRule
-                                 (
-                                       name = "trace clientsessionimpl commit",
-                                       targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
-                                       targetMethod = "start(javax.transaction.xa.Xid, int)",
-                                       targetLocation = "AT EXIT",
-                                       action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
-                                 )
-                     }
-         )
+      (
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "trace clientsessionimpl commit",
+                     targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
+                     targetMethod = "start(javax.transaction.xa.Xid, int)",
+                     targetLocation = "AT EXIT",
+                     action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
+                  )
+            }
+      )
    public void testFailoverOnCommit2() throws Exception
    {
       serverToStop = liveServer;
@@ -114,13 +108,13 @@ public class BMFailoverTest extends FailoverTestBase
       try
       {
          ClientSession session = sf.createSession(false, true, true);
-          ClientProducer sendInitialProducer = session.createProducer();
+         ClientProducer sendInitialProducer = session.createProducer();
 
          session.createQueue(inQueue, inQueue, null, true);
          session.createQueue(outQueue, outQueue, null, true);
          sendInitialProducer.send(inQueue, createMessage(session, 0, true));
       }
-      catch(Exception ignore)
+      catch (Exception ignore)
       {
       }
 
@@ -137,7 +131,7 @@ public class BMFailoverTest extends FailoverTestBase
 
       //failover is now occurring, receive, ack and end will be called whilst this is happening.
 
-      ClientMessageImpl m = (ClientMessageImpl) consumer.receive(5000);
+      ClientMessageImpl m = (ClientMessageImpl)consumer.receive(5000);
 
       assertNotNull(m);
 
@@ -163,7 +157,7 @@ public class BMFailoverTest extends FailoverTestBase
          ClientProducer sendInitialProducer = session.createProducer();
          sendInitialProducer.send(inQueue, createMessage(session, 0, true));
       }
-      catch(Exception ignore)
+      catch (Exception ignore)
       {
       }
 
@@ -174,9 +168,9 @@ public class BMFailoverTest extends FailoverTestBase
       xaSessionRec.getXAResource().start(xidRec, XAResource.TMNOFLAGS);
 
       Binding binding = backupServer.getServer().getPostOffice().getBinding(inQueue);
-      Queue inQ = (Queue) binding.getBindable();
+      Queue inQ = (Queue)binding.getBindable();
 
-      m = (ClientMessageImpl) consumer.receive(5000);
+      m = (ClientMessageImpl)consumer.receive(5000);
 
       assertNotNull(m);
       //the mdb would ack the message before calling onMessage()
@@ -197,97 +191,97 @@ public class BMFailoverTest extends FailoverTestBase
 
    @Test
    @BMRules
-   (
+      (
          rules =
-               {
-                     @BMRule
-                           (
-                                 name = "trace clientsessionimpl commit",
-                                 targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
-                                 targetMethod = "commit",
-                                 targetLocation = "ENTRY",
-                                 action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
-                           )
-               }
-   )
+            {
+               @BMRule
+                  (
+                     name = "trace clientsessionimpl commit",
+                     targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
+                     targetMethod = "commit",
+                     targetLocation = "ENTRY",
+                     action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
+                  )
+            }
+      )
    public void testFailoverOnCommit() throws Exception
    {
-             serverToStop = liveServer;
-         locator = getServerLocator();
-         locator.setFailoverOnInitialConnection(true);
-         createSessionFactory();
-         ClientSession session = createSessionAndQueue();
+      serverToStop = liveServer;
+      locator = getServerLocator();
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
 
-         ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
+      ClientProducer producer = addClientProducer(session.createProducer(FailoverTestBase.ADDRESS));
 
-         sendMessages(session, producer, 10);
-         try
-         {
-            session.commit();
-            fail("should have thrown an exception");
-         }
-         catch (HornetQTransactionOutcomeUnknownException e)
-         {
-            //pass
-         }
-         sendMessages(session, producer, 10);
+      sendMessages(session, producer, 10);
+      try
+      {
          session.commit();
-         Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
-         assertTrue(bindable.getMessageCount() == 10);
+         fail("should have thrown an exception");
+      }
+      catch (HornetQTransactionOutcomeUnknownException e)
+      {
+         //pass
+      }
+      sendMessages(session, producer, 10);
+      session.commit();
+      Queue bindable = (Queue)backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
+      assertTrue(bindable.getMessageCount() == 10);
    }
 
    @Test
-      @BMRules
+   @BMRules
       (
-            rules =
-                  {
-                        @BMRule
-                              (
-                                    name = "trace clientsessionimpl commit",
-                                    targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
-                                    targetMethod = "commit",
-                                    targetLocation = "ENTRY",
-                                    action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
-                              )
-                  }
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "trace clientsessionimpl commit",
+                     targetClass = "org.hornetq.core.client.impl.ClientSessionImpl",
+                     targetMethod = "commit",
+                     targetLocation = "ENTRY",
+                     action = "org.hornetq.byteman.tests.BMFailoverTest.serverToStop.getServer().stop(true)"
+                  )
+            }
       )
    public void testFailoverOnReceiveCommit() throws Exception
    {
       serverToStop = liveServer;
-         locator = getServerLocator();
-         locator.setFailoverOnInitialConnection(true);
-         createSessionFactory();
-         ClientSession session = createSessionAndQueue();
+      locator = getServerLocator();
+      locator.setFailoverOnInitialConnection(true);
+      createSessionFactory();
+      ClientSession session = createSessionAndQueue();
 
-         ClientSession sendSession = createSession(sf, true, true);
+      ClientSession sendSession = createSession(sf, true, true);
 
-         ClientProducer producer = addClientProducer(sendSession.createProducer(FailoverTestBase.ADDRESS));
+      ClientProducer producer = addClientProducer(sendSession.createProducer(FailoverTestBase.ADDRESS));
 
-         sendMessages(sendSession, producer, 10);
+      sendMessages(sendSession, producer, 10);
 
-         ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
-         session.start();
-         for(int i = 0; i < 10; i++)
-         {
-            ClientMessage m = consumer.receive(500);
-            assertNotNull(m);
-            m.acknowledge();
-         }
-         try
-         {
-            session.commit();
-            fail("should have thrown an exception");
-         }
-         catch (HornetQTransactionOutcomeUnknownException e)
-         {
-            //pass
-         }
-         catch(HornetQTransactionRolledBackException e1)
-         {
-            //pass
-         }
-         Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
-         assertTrue("messager count = " + bindable.getMessageCount(), bindable.getMessageCount() == 10);
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage m = consumer.receive(500);
+         assertNotNull(m);
+         m.acknowledge();
+      }
+      try
+      {
+         session.commit();
+         fail("should have thrown an exception");
+      }
+      catch (HornetQTransactionOutcomeUnknownException e)
+      {
+         //pass
+      }
+      catch (HornetQTransactionRolledBackException e1)
+      {
+         //pass
+      }
+      Queue bindable = (Queue)backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
+      assertTrue("messager count = " + bindable.getMessageCount(), bindable.getMessageCount() == 10);
    }
 
    @Override
@@ -302,7 +296,7 @@ public class BMFailoverTest extends FailoverTestBase
       return getNettyConnectorTransportConfiguration(live);
    }
 
-   private ClientSession createSessionAndQueue() throws Exception, HornetQException
+   private ClientSession createSessionAndQueue() throws Exception
    {
       ClientSession session = createSession(sf, false, false);
 
@@ -310,7 +304,7 @@ public class BMFailoverTest extends FailoverTestBase
       return session;
    }
 
-   private ClientSession createXASessionAndQueue() throws Exception, HornetQException
+   private ClientSession createXASessionAndQueue() throws Exception
    {
       ClientSession session = addClientSession(sf.createSession(true, true, true));
 
@@ -319,10 +313,10 @@ public class BMFailoverTest extends FailoverTestBase
    }
 
    protected ClientSession
-               createSession(ClientSessionFactory sf1, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
-      {
-         return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks));
-      }
+   createSession(ClientSessionFactory sf1, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
+   {
+      return addClientSession(sf1.createSession(autoCommitSends, autoCommitAcks));
+   }
 
    private void createSessionFactory() throws Exception
    {
@@ -332,6 +326,7 @@ public class BMFailoverTest extends FailoverTestBase
 
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
    }
+
    private void createSessionFactory2() throws Exception
    {
       sf2 = createSessionFactoryAndWaitForTopology(locator, 2);

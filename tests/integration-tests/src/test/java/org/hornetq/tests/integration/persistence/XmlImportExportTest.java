@@ -13,28 +13,20 @@
 
 package org.hornetq.tests.integration.persistence;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.persistence.impl.journal.XmlDataConstants;
-import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
-import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
-import org.junit.Test;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -42,22 +34,23 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
-import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
-import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.persistence.impl.journal.XmlDataConstants;
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A test of the XML export/import functionality
@@ -159,9 +152,8 @@ public class XmlImportExportTest extends ServiceTestBase
    /**
     * @return
     * @throws Exception
-    * @throws HornetQException
     */
-   private ClientSession basicSetUp() throws Exception, HornetQException
+   private ClientSession basicSetUp() throws Exception
    {
       server = createServer(true);
       server.getConfiguration().getConnectorConfigurations().put("in-vm1", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
@@ -251,7 +243,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       ClientMessage msg = session.createMessage(Message.BYTES_TYPE, true);
       msg.setExpiration(Long.MAX_VALUE);
-      msg.setPriority((byte) 0);
+      msg.setPriority((byte)0);
       msg.setTimestamp(Long.MAX_VALUE - 1);
       msg.setUserID(UUIDGenerator.getInstance().generateUUID());
       producer.send(msg);
@@ -279,7 +271,7 @@ public class XmlImportExportTest extends ServiceTestBase
 
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertEquals(Long.MAX_VALUE, msg.getExpiration());
-      Assert.assertEquals((byte) 0, msg.getPriority());
+      Assert.assertEquals((byte)0, msg.getPriority());
       Assert.assertEquals(Long.MAX_VALUE - 1, msg.getTimestamp());
       Assert.assertNotNull(msg.getUserID());
    }
@@ -366,41 +358,41 @@ public class XmlImportExportTest extends ServiceTestBase
       ClientSession session = basicSetUp();
 
       jmsServer.createConnectionFactory(name,
-            ha,
-            type,
-            connectors,
-            clientId,
-            clientFailureCheckPeriod,
-            connectionTTl,
-            callTimeout,
-            callFailoverTimeout,
-            cacheLargeMessagesClient,
-            minLargeMessageSize,
-            compressLargeMessages,
-            consumerWindowSize,
-            consumerMaxRate,
-            confirmationWindowSize,
-            producerWindowSize,
-            producerMaxrate,
-            blockOnAcknowledge,
-            blockOnDurableSend,
-            blockOnNonDurableSend,
-            autoGroup,
-            preacknowledge,
-            loadBalancingPolicyClassName,
-            transactionBatchSize,
-            dupsOKBatchSize,
-            useGlobalPools,
-            scheduledThreadPoolMaxSize,
-            threadPoolMaxSize,
-            retryInterval,
-            retryIntervalMultiplier,
-            maxRetryInterval,
-            reconnectAttempts,
-            failoverOnInitialConnection,
-            groupId,
-            jndi_binding1,
-            jndi_binding2);
+                                        ha,
+                                        type,
+                                        connectors,
+                                        clientId,
+                                        clientFailureCheckPeriod,
+                                        connectionTTl,
+                                        callTimeout,
+                                        callFailoverTimeout,
+                                        cacheLargeMessagesClient,
+                                        minLargeMessageSize,
+                                        compressLargeMessages,
+                                        consumerWindowSize,
+                                        consumerMaxRate,
+                                        confirmationWindowSize,
+                                        producerWindowSize,
+                                        producerMaxrate,
+                                        blockOnAcknowledge,
+                                        blockOnDurableSend,
+                                        blockOnNonDurableSend,
+                                        autoGroup,
+                                        preacknowledge,
+                                        loadBalancingPolicyClassName,
+                                        transactionBatchSize,
+                                        dupsOKBatchSize,
+                                        useGlobalPools,
+                                        scheduledThreadPoolMaxSize,
+                                        threadPoolMaxSize,
+                                        retryInterval,
+                                        retryIntervalMultiplier,
+                                        maxRetryInterval,
+                                        reconnectAttempts,
+                                        failoverOnInitialConnection,
+                                        groupId,
+                                        jndi_binding1,
+                                        jndi_binding2);
 
       jmsServer.createConnectionFactory("mySecondConnectionFactoryName", false, JMSFactoryType.CF, Arrays.asList("in-vm1", "in-vm2"), "mySecondConnectionFactoryName1", "mySecondConnectionFactoryName2");
 
@@ -423,9 +415,9 @@ public class XmlImportExportTest extends ServiceTestBase
       XmlDataImporter xmlDataImporter = new XmlDataImporter(xmlInputStream, session);
       xmlDataImporter.processXml();
 
-      ConnectionFactory cf1 = (ConnectionFactory) namingContext.lookup(jndi_binding1);
+      ConnectionFactory cf1 = (ConnectionFactory)namingContext.lookup(jndi_binding1);
       Assert.assertNotNull(cf1);
-      HornetQConnectionFactory hcf1 = (HornetQConnectionFactory) cf1;
+      HornetQConnectionFactory hcf1 = (HornetQConnectionFactory)cf1;
       Assert.assertEquals(ha, hcf1.isHA());
       Assert.assertEquals(type.intValue(), hcf1.getFactoryType());
       Assert.assertEquals(clientId, hcf1.getClientID());
@@ -499,17 +491,17 @@ public class XmlImportExportTest extends ServiceTestBase
 
       jmsServer.createConnectionFactory("test-cf", false, JMSFactoryType.CF, Arrays.asList("in-vm1"), "test-cf");
 
-      ConnectionFactory cf = (ConnectionFactory) namingContext.lookup("test-cf");
+      ConnectionFactory cf = (ConnectionFactory)namingContext.lookup("test-cf");
       Connection connection = cf.createConnection();
       Session jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer producer = jmsSession.createProducer((Destination) namingContext.lookup("myQueueJndiBinding1"));
+      MessageProducer producer = jmsSession.createProducer((Destination)namingContext.lookup("myQueueJndiBinding1"));
       producer.send(jmsSession.createTextMessage());
-      MessageConsumer consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myQueueJndiBinding2"));
+      MessageConsumer consumer = jmsSession.createConsumer((Destination)namingContext.lookup("myQueueJndiBinding2"));
       connection.start();
       Assert.assertNotNull(consumer.receive(3000));
 
-      consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myTopicJndiBinding1"));
-      producer = jmsSession.createProducer((Destination) namingContext.lookup("myTopicJndiBinding2"));
+      consumer = jmsSession.createConsumer((Destination)namingContext.lookup("myTopicJndiBinding1"));
+      producer = jmsSession.createProducer((Destination)namingContext.lookup("myTopicJndiBinding2"));
       producer.send(jmsSession.createTextMessage());
       Assert.assertNotNull(consumer.receive(3000));
 
@@ -551,17 +543,17 @@ public class XmlImportExportTest extends ServiceTestBase
 
       jmsServer.createConnectionFactory("test-cf", false, JMSFactoryType.CF, Arrays.asList("in-vm1"), "test-cf");
 
-      ConnectionFactory cf = (ConnectionFactory) namingContext.lookup("test-cf");
+      ConnectionFactory cf = (ConnectionFactory)namingContext.lookup("test-cf");
       Connection connection = cf.createConnection();
       Session jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer producer = jmsSession.createProducer((Destination) namingContext.lookup("myQueueJndiBinding1"));
+      MessageProducer producer = jmsSession.createProducer((Destination)namingContext.lookup("myQueueJndiBinding1"));
       producer.send(jmsSession.createTextMessage());
-      MessageConsumer consumer = jmsSession.createConsumer((Destination) namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myQueueJndiBinding1"));
+      MessageConsumer consumer = jmsSession.createConsumer((Destination)namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myQueueJndiBinding1"));
       connection.start();
       Assert.assertNotNull(consumer.receive(3000));
 
-      consumer = jmsSession.createConsumer((Destination) namingContext.lookup("myTopicJndiBinding1"));
-      producer = jmsSession.createProducer((Destination) namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myTopicJndiBinding1"));
+      consumer = jmsSession.createConsumer((Destination)namingContext.lookup("myTopicJndiBinding1"));
+      producer = jmsSession.createProducer((Destination)namingContext.lookup(XmlDataConstants.JNDI_COMPATIBILITY_PREFIX + "myTopicJndiBinding1"));
       producer.send(jmsSession.createTextMessage());
       Assert.assertNotNull(consumer.receive(3000));
 
@@ -577,7 +569,7 @@ public class XmlImportExportTest extends ServiceTestBase
       factory = createSessionFactory(locator);
       ClientSession session = factory.createSession(false, false);
 
-      LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager) server.getStorageManager());
+      LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
 
       fileMessage.setMessageID(1005);
       fileMessage.setDurable(true);
@@ -867,7 +859,7 @@ public class XmlImportExportTest extends ServiceTestBase
          producer.send(message);
       }
 
-      LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager) server.getStorageManager());
+      LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
 
       fileMessage.setMessageID(1005);
       fileMessage.setDurable(true);
@@ -1036,7 +1028,7 @@ public class XmlImportExportTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE_NAME);
 
       ClientMessage msg = session.createMessage(true);
-      byte bodyTst[] = new byte[10];
+      byte[] bodyTst = new byte[10];
       for (int i = 0; i < 10; i++)
       {
          bodyTst[i] = (byte)(i + 1);
@@ -1070,7 +1062,7 @@ public class XmlImportExportTest extends ServiceTestBase
       msg = consumer.receive(CONSUMER_TIMEOUT);
       Assert.assertNotNull(msg);
       assertEquals(msg.getBodySize(), bodyTst.length);
-      byte bodyRead[] = new byte[bodyTst.length];
+      byte[] bodyRead = new byte[bodyTst.length];
       msg.getBodyBuffer().readBytes(bodyRead);
       assertEqualsByteArrays(bodyTst, bodyRead);
 

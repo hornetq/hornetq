@@ -13,16 +13,13 @@
 
 package org.hornetq.jms;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import org.junit.Assert;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -36,13 +33,13 @@ import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.SpawnedVMSupport;
+import org.junit.Assert;
 import org.objectweb.jtests.jms.admin.Admin;
 
 /**
  * A HornetQAdmin
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class HornetQAdmin implements Admin
 {
@@ -62,6 +59,7 @@ public class HornetQAdmin implements Admin
     * Determines whether to act or 'no-op' on {@link HornetQAdmin#serverStart()} and
     * {@link HornetQAdmin#serverStop()}. This is used when testing combinations of client and
     * servers with different versions.
+    *
     * @see https://github.com/hornetq/hornetq-version-tests
     */
    private final boolean serverLifeCycleActive;
@@ -248,7 +246,7 @@ public class HornetQAdmin implements Admin
          return;
       }
 
-      String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
+      String[] vmArgs = new String[]{"-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory"};
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
 
@@ -326,10 +324,10 @@ public class HornetQAdmin implements Admin
       if (!ManagementHelper.hasOperationSucceeded(reply))
       {
          throw new IllegalStateException("operation failed when invoking " + operationName +
-                                         " on " +
-                                         resourceName +
-                                         ": " +
-                                         ManagementHelper.getResult(reply));
+                                            " on " +
+                                            resourceName +
+                                            ": " +
+                                            ManagementHelper.getResult(reply));
       }
       return ManagementHelper.getResult(reply);
    }

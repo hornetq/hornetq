@@ -5,14 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * This message may signal start or end of the replication synchronization.
- * <p>
+ * <p/>
  * At start, it sends all fileIDs used in a given journal live server to the backup, so the backup
  * can reserve those IDs.
  */
@@ -146,9 +145,10 @@ public class ReplicationStartSyncMessage extends PacketImpl
    {
       return allowsAutoFailBack;
    }
+
    /**
     * @return {@code true} if the live has finished synchronizing its data and the backup is
-    *         therefore up-to-date, {@code false} otherwise.
+    * therefore up-to-date, {@code false} otherwise.
     */
    public boolean isSynchronizationFinished()
    {

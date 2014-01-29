@@ -13,27 +13,22 @@
 
 package org.hornetq.tests.integration.jms.cluster;
 
-import org.junit.Test;
-
-import java.util.concurrent.CountDownLatch;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSClusteredTestBase;
+import org.junit.Test;
 
 /**
  * A MultipleThreadsOpeningTest
  *
  * @author clebertsuconic
- *
- *
  */
 public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
 {
@@ -41,8 +36,8 @@ public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
    @Test
    public void testMultipleOpen() throws Exception
    {
-      cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                                                             generateInVMParams(0)));
+      cf1 = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                                            generateInVMParams(0)));
 
       final int numberOfOpens = 2000;
       int numberOfThreads = 20;
@@ -62,9 +57,9 @@ public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
                flagAlignSemaphore.countDown();
                flagStartRace.await();
 
-               for (int i = 0 ; i < numberOfOpens; i++)
+               for (int i = 0; i < numberOfOpens; i++)
                {
-                  if (i % 1000 == 0) System.out.println("tests "  + i);
+                  if (i % 1000 == 0) System.out.println("tests " + i);
                   Connection conn = cf1.createConnection();
                   Session sess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
                   sess.close();
@@ -80,9 +75,9 @@ public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
       }
 
 
-      ThreadOpen threads[] = new ThreadOpen[numberOfThreads];
+      ThreadOpen[] threads = new ThreadOpen[numberOfThreads];
 
-      for (int i = 0 ; i < numberOfThreads; i++)
+      for (int i = 0; i < numberOfThreads; i++)
       {
          threads[i] = new ThreadOpen();
          threads[i].start();
@@ -92,9 +87,9 @@ public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
       flagStartRace.countDown();
 
 
-      for (ThreadOpen t: threads)
+      for (ThreadOpen t : threads)
       {
-         // 5 minutes seems long but this may take a bit of time in a slower box 
+         // 5 minutes seems long but this may take a bit of time in a slower box
          t.join(300000);
          assertFalse(t.isAlive());
          assertEquals("There are Errors on the test thread", 0, t.errors);

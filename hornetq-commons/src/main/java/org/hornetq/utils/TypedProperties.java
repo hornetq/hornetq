@@ -13,6 +13,16 @@
 
 package org.hornetq.utils;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQPropertyConversionException;
+import org.hornetq.api.core.SimpleString;
+
 import static org.hornetq.utils.DataConstants.BOOLEAN;
 import static org.hornetq.utils.DataConstants.BYTE;
 import static org.hornetq.utils.DataConstants.BYTES;
@@ -25,24 +35,14 @@ import static org.hornetq.utils.DataConstants.NULL;
 import static org.hornetq.utils.DataConstants.SHORT;
 import static org.hornetq.utils.DataConstants.STRING;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQPropertyConversionException;
-import org.hornetq.api.core.SimpleString;
-
 /**
- *
  * Property Value Conversion.
- * <p>
+ * <p/>
  * This implementation follows section 3.5.4 of the <i>Java Message Service<i> specification
  * (Version 1.1 April 12, 2002).
- * <p>
+ * <p/>
  * TODO - should have typed property getters and do conversions herein
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
@@ -673,7 +673,7 @@ public final class TypedProperties
 
    // Inner classes ------------------------------------------------------------------------------
 
-   private static abstract class PropertyValue
+   private abstract static class PropertyValue
    {
       abstract Object getValue();
 
@@ -1063,7 +1063,8 @@ public final class TypedProperties
    public Map<String, Object> getMap()
    {
       Map<String, Object> m = new HashMap<String, Object>();
-      for (Entry<SimpleString,PropertyValue> entry:properties.entrySet()) {
+      for (Entry<SimpleString, PropertyValue> entry : properties.entrySet())
+      {
          Object val = entry.getValue().getValue();
          if (val instanceof SimpleString)
          {
@@ -1079,13 +1080,13 @@ public final class TypedProperties
 
    /**
     * Helper for {@link MapMessage#setObjectProperty(String, Object)}
-    * @param name
+    *
+    * @param key
     * @param value
-    * @param map
-    * @throws MessageFormatException
+    * @param properties
     */
-   public static final void setObjectProperty(final SimpleString key, final Object value,
-                                              final TypedProperties properties)
+   public static void setObjectProperty(final SimpleString key, final Object value,
+                                       final TypedProperties properties)
    {
       if (value == null)
       {

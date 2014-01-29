@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.persistence;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,9 +26,11 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
+import org.junit.Test;
 
 /**
  * A DeleteMessagesOnStartupTest
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
@@ -47,7 +47,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       Queue theQueue = new FakeQueue(new SimpleString(""));
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
-      queues.put(100l, theQueue);
+      queues.put(100L, theQueue);
 
       ServerMessage msg = new ServerMessageImpl(1, 100);
 

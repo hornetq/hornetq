@@ -14,15 +14,14 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * Ping is sent on the client side at {@link ClientSessionFactoryImpl}. At the server's side it is
  * treated at {@link RemotingServiceImpl}
- * @see RemotingConnection#checkDataReceived()
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @see RemotingConnection#checkDataReceived()
  */
 public final class Ping extends PacketImpl
 {
@@ -58,7 +57,7 @@ public final class Ping extends PacketImpl
    }
 
    @Override
-   public final boolean isRequiresConfirmations()
+   public boolean isRequiresConfirmations()
    {
       return false;
    }

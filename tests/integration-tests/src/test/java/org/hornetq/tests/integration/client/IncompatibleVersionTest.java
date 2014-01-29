@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -45,12 +44,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
 /**
  * A IncompatibleVersionTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class IncompatibleVersionTest extends ServiceTestBase
 {
@@ -179,7 +178,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
             channel1.sendBlocking(request, PacketImpl.CREATESESSION_RESP);
             fail();
          }
-         catch(HornetQIncompatibleClientServerException icsv)
+         catch (HornetQIncompatibleClientServerException icsv)
          {
             //ok
          }
@@ -217,16 +216,16 @@ public class IncompatibleVersionTest extends ServiceTestBase
       try
       {
          serverProcess = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
-                                           new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
-                                           "server",
-                                           serverStartedString);
+                                                  new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                                                  "server",
+                                                  serverStartedString);
          Thread.sleep(2000);
 
          Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
                                                    new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                                    "client");
 
-         if(client.waitFor() == 0)
+         if (client.waitFor() == 0)
          {
             result = true;
          }
@@ -239,7 +238,10 @@ public class IncompatibleVersionTest extends ServiceTestBase
             {
                serverProcess.destroy();
             }
-            catch(Throwable t) {/* ignore */}
+            catch (Throwable t)
+            {
+               /* ignore */
+            }
          }
       }
 
@@ -259,6 +261,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
          log.info("### server: " + startedString);
       }
    }
+
    private static class ClientStarter
    {
       public void perform() throws Exception
@@ -283,12 +286,12 @@ public class IncompatibleVersionTest extends ServiceTestBase
 
    public static void main(String[] args) throws Exception
    {
-      if(args[0].equals("server"))
+      if (args[0].equals("server"))
       {
          ServerStarter ss = new ServerStarter();
          ss.perform(args[1]);
       }
-      else if(args[0].equals("client"))
+      else if (args[0].equals("client"))
       {
          ClientStarter cs = new ClientStarter();
          cs.perform();

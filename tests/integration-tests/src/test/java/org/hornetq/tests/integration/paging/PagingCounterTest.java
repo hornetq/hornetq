@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.integration.paging;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import javax.transaction.xa.Xid;
 
@@ -33,13 +30,13 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A PagingCounterTest
  *
  * @author clebertsuconic
- *
- *
  */
 public class PagingCounterTest extends ServiceTestBase
 {
@@ -107,7 +104,7 @@ public class PagingCounterTest extends ServiceTestBase
 
          Transaction tx = new TransactionImpl(server.getStorageManager());
 
-         for (int i = 0 ; i < 2100; i++)
+         for (int i = 0; i < 2100; i++)
          {
 
             counter.increment(tx, 1);
@@ -171,7 +168,7 @@ public class PagingCounterTest extends ServiceTestBase
 
          Transaction tx = new TransactionImpl(server.getStorageManager());
 
-         for (int i = 0 ; i < 2100; i++)
+         for (int i = 0; i < 2100; i++)
          {
 
             counter.increment(tx, 1);
@@ -263,9 +260,9 @@ public class PagingCounterTest extends ServiceTestBase
    private PageSubscriptionCounter locateCounter(Queue queue) throws Exception
    {
       PageSubscription subscription = server.getPagingManager()
-                                            .getPageStore(new SimpleString("A1"))
-                                            .getCursorProvider()
-                                            .getSubscription(queue.getID());
+         .getPageStore(new SimpleString("A1"))
+         .getCursorProvider()
+         .getSubscription(queue.getID());
 
       PageSubscriptionCounter counter = subscription.getCounter();
       return counter;
@@ -284,7 +281,7 @@ public class PagingCounterTest extends ServiceTestBase
 
       Transaction tx = new TransactionImpl(xid, server.getStorageManager(), 300);
 
-      for (int i = 0 ; i < 2000; i++)
+      for (int i = 0; i < 2000; i++)
       {
          counter.increment(tx, 1);
       }

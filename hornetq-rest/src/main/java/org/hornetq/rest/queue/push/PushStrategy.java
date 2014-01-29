@@ -16,11 +16,11 @@ public interface PushStrategy
     * @param message
     * @return {@code false} if unable to connect
     */
-   public boolean push(ClientMessage message);
+   boolean push(ClientMessage message);
 
-   public void setRegistration(PushRegistration reg);
+   void setRegistration(PushRegistration reg);
 
-   public void start() throws Exception;
+   void start() throws Exception;
 
-   public void stop() throws Exception;
+   void stop() throws Exception;
 }

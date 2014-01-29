@@ -17,40 +17,39 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * BroadcastEndpint is used in BroadcastGroups and DiscoveryGroups for topology updates.
- * <p>
+ * <p/>
  * A BroadcastEndpoint can perform one of the two following tasks:
  * <li>when being used in BroadcastGroups, it broadcasts connector informations</li>
  * <li>when being used in DiscoveryGroups, it receives broadcasts</li>
- * <p>
+ * <p/>
  * The two tasks are mutual exclusive, meaning a BroadcastEndpoint can either be a broadcaster
  * or a receiver, but not both.
- * <p>
+ * <p/>
  * It is an abstraction of various concrete broadcasting mechanisms. Different implementations
- * of this interface may use different broadcasting techniques like UDP multicasting or 
+ * of this interface may use different broadcasting techniques like UDP multicasting or
  * JGroups channels.
- * 
+ *
  * @author Tomohisa
  * @author Howard Gao
- * 
  * @see JGroupsBroadcastEndpoint
  * @see UDPBroadcastEndpoint
  */
 public interface BroadcastEndpoint
 {
    /**
-    * This method initializes a BroadcastEndpoint as 
+    * This method initializes a BroadcastEndpoint as
     * a receiving end for broadcasts. After that data can be
     * received using one of its receiveBroadcast() methods.
-    * 
+    *
     * @throws Exception
     */
    void openClient() throws Exception;
 
    /**
     * This method initializes a BroadcastEndpint as
-    * a broadcaster. After that data can be sent 
+    * a broadcaster. After that data can be sent
     * via its broadcast() method.
-    * 
+    *
     * @throws Exception
     */
    void openBroadcaster() throws Exception;
@@ -58,7 +57,7 @@ public interface BroadcastEndpoint
    /**
     * Close the endpoint. Any related resources should
     * be cleaned up in this method.
-    * 
+    *
     * @param isBroadcast : indicates whether this endpoint serves as a broadcast or not.
     * @throws Exception
     */
@@ -66,7 +65,7 @@ public interface BroadcastEndpoint
 
    /**
     * Broadcasting data to the cluster.
-    * 
+    *
     * @param data : a byte array containing the data.
     * @throws Exception
     */
@@ -75,7 +74,7 @@ public interface BroadcastEndpoint
    /**
     * Receives the broadcast data. It blocks until data is
     * available.
-    * 
+    *
     * @return the received data as byte array.
     * @throws Exception
     */
@@ -84,7 +83,7 @@ public interface BroadcastEndpoint
    /**
     * Receives the broadcast data with a timeout. It blocks until either
     * the data is available or the timeout is reached, whichever comes first.
-    * 
+    *
     * @param time : how long the method should wait for the data to arrive.
     * @param unit : unit of the time.
     * @return a byte array if data is arrived within the timeout, or null if no data

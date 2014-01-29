@@ -11,9 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,8 +19,6 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -43,6 +38,9 @@ import org.hornetq.core.server.impl.ServerConsumerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -329,12 +327,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          session.close();
       }
 
-      Thread threads[] = new Thread[10];
+      Thread[] threads = new Thread[10];
       final AtomicInteger errors = new AtomicInteger(0);
       final CountDownLatch latchStart = new CountDownLatch(1);
       final AtomicInteger received = new AtomicInteger(0);
 
-      for (int i = 0 ; i < threads.length; i++)
+      for (int i = 0; i < threads.length; i++)
       {
          threads[i] = new Thread()
          {
@@ -383,7 +381,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
       ClientMessage sent = senderSession.createMessage(true);
       sent.putStringProperty("hello", "world");
-      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          producer.send(sent);
          senderSession.commit();
@@ -423,14 +421,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       final AtomicInteger received = new AtomicInteger(0);
 
 
-
       ClientSession senderSession = sf.createSession(false, false);
 
       ClientProducer producer = senderSession.createProducer("testWindow");
 
       ClientMessage sent = senderSession.createMessage(true);
       sent.putStringProperty("hello", "world");
-      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          producer.send(sent);
       }
@@ -1066,7 +1063,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         for (int i = 0 ; i < numberOfMessages; i++)
+         for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = session.createMessage(true);
             msg.putIntProperty("count", i);
@@ -1080,7 +1077,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          session.start();
 
-         for (int repeat = 0; repeat < 100; repeat ++)
+         for (int repeat = 0; repeat < 100; repeat++)
          {
             long timeout = System.currentTimeMillis() + 2000;
             // At least 10 messages on the buffer
@@ -1098,7 +1095,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
 
 
-         for (int i = 0 ; i < numberOfMessages; i++)
+         for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);
             assertNotNull(msg);
@@ -1122,7 +1119,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
       }
    }
-
 
 
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
@@ -1547,20 +1543,20 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          while ((!foundA || !foundB) && System.currentTimeMillis() < timeout);
 
          Assert.assertTrue("ConsumerA didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
-                                    ", consB=" +
-                                    consB.getBufferSize() +
-                                    ") foundA = " +
-                                    foundA +
-                                    " foundB = " +
-                                    foundB,
+                              ", consB=" +
+                              consB.getBufferSize() +
+                              ") foundA = " +
+                              foundA +
+                              " foundB = " +
+                              foundB,
                            foundA);
          Assert.assertTrue("ConsumerB didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
-                                    ", consB=" +
-                                    consB.getBufferSize() +
-                                    ") foundA = " +
-                                    foundA +
-                                    " foundB = " +
-                                    foundB,
+                              ", consB=" +
+                              consB.getBufferSize() +
+                              ") foundA = " +
+                              foundA +
+                              " foundB = " +
+                              foundB,
                            foundB);
 
       }

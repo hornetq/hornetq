@@ -22,8 +22,9 @@ import org.hornetq.utils.DataConstants;
 /**
  * A simple String class that can store all characters, and stores as simple {@code byte[]}, this
  * minimises expensive copying between String objects.
- * <p>
+ * <p/>
  * This object is used heavily throughout HornetQ for performance reasons.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public final class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
@@ -44,8 +45,9 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * Returns a SimpleString constructed from the {@code string} parameter.
-    * <p>
+    * <p/>
     * If {@code string} is {@code null}, the return value will be {@code null} too.
+    *
     * @param string String used to instantiate a SimpleString.
     */
    public static SimpleString toSimpleString(final String string)
@@ -59,8 +61,10 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    // Constructors
    // ----------------------------------------------------------------------
+
    /**
     * creates a SimpleString from a conventional String
+    *
     * @param string the string to transform
     */
    public SimpleString(final String string)
@@ -89,6 +93,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * creates a SimpleString from a byte array
+    *
     * @param data the byte array to use
     */
    public SimpleString(final byte[] data)
@@ -146,6 +151,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns the underlying byte array of this SimpleString
+    *
     * @return the byte array
     */
    public byte[] getData()
@@ -155,6 +161,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns true if the SimpleString parameter starts with the same data as this one. false if not.
+    *
     * @param other the SimpelString to look for
     * @return true if this SimpleString starts with the same data
     */
@@ -256,6 +263,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
    /**
     * Splits this SimpleString into an array of SimpleString using the char param as the delimiter.
     * i.e. "a.b" would return "a" and "b" if . was the delimiter
+    *
     * @param delim
     */
    public SimpleString[] split(final char delim)
@@ -289,7 +297,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
       if (all == null)
       {
-         return new SimpleString[] { this };
+         return new SimpleString[]{this};
       }
       else
       {
@@ -327,6 +335,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * Concatenates a SimpleString and a String
+    *
     * @param toAdd the String to concatenate with.
     * @return the concatenated SimpleString
     */
@@ -337,6 +346,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * Concatenates 2 SimpleString's
+    *
     * @param toAdd the SimpleString to concatenate with.
     * @return the concatenated SimpleString
     */
@@ -350,6 +360,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * Concatenates a SimpleString and a char
+    *
     * @param c the char to concate with.
     * @return the concatenated SimpleString
     */
@@ -364,6 +375,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns the size of this SimpleString
+    *
     * @return the size
     */
    public int sizeof()
@@ -373,6 +385,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns the size of a SimpleString
+    *
     * @param str the SimpleString to check
     * @return the size
     */
@@ -383,6 +396,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * returns the size of a SimpleString which could be null
+    *
     * @param str the SimpleString to check
     * @return the size
     */
@@ -407,7 +421,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
     * @param dst
     * @param dstPos
     */
-   public void getChars(final int srcBegin, final int srcEnd, final char dst[], final int dstPos)
+   public void getChars(final int srcBegin, final int srcEnd, final char[] dst, final int dstPos)
    {
       if (srcBegin < 0)
       {

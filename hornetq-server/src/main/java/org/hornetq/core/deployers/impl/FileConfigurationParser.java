@@ -62,6 +62,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Parses an XML document according to the {@literal hornetq-configuration.xsd} schema.
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -186,16 +187,16 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setAllowAutoFailBack(getBoolean(e, "allow-failback", config.isClustered()));
 
       config.setBackupGroupName(getString(e, "backup-group-name", config.getBackupGroupName(),
-                                                               Validators.NO_CHECK));
+                                          Validators.NO_CHECK));
 
       config.setFailbackDelay(getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
 
       config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
-                                                                         config.isFailoverOnServerShutdown()));
+                                                    config.isFailoverOnServerShutdown()));
       config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
 
       config.setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
-            config.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
+                                                         config.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
 
       config.setBackup(getBoolean(e, "backup", config.isBackup()));
 
@@ -205,16 +206,16 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setFileDeploymentEnabled(getBoolean(e, "file-deployment-enabled", config instanceof FileConfiguration));
 
       config.setPersistenceEnabled(getBoolean(e, "persistence-enabled",
-                                                                   config.isPersistenceEnabled()));
+                                              config.isPersistenceEnabled()));
 
       config.setPersistDeliveryCountBeforeDelivery(getBoolean(e, "persist-delivery-count-before-delivery",
-                                                                                   config.isPersistDeliveryCountBeforeDelivery()));
+                                                              config.isPersistDeliveryCountBeforeDelivery()));
 
       config.setScheduledThreadPoolMaxSize(getInteger(e, "scheduled-thread-pool-max-size",
                                                       config.getScheduledThreadPoolMaxSize(), Validators.GT_ZERO));
 
       config.setThreadPoolMaxSize(getInteger(e, "thread-pool-max-size", config.getThreadPoolMaxSize(),
-                                                                  Validators.MINUS_ONE_OR_GT_ZERO));
+                                             Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setSecurityEnabled(getBoolean(e, "security-enabled", config.isSecurityEnabled()));
 
@@ -223,61 +224,61 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setJMXDomain(getString(e, "jmx-domain", config.getJMXDomain(), Validators.NOT_NULL_OR_EMPTY));
 
       config.setSecurityInvalidationInterval(getLong(e, "security-invalidation-interval",
-                                                                          config.getSecurityInvalidationInterval(),
-                                                                          Validators.GT_ZERO));
+                                                     config.getSecurityInvalidationInterval(),
+                                                     Validators.GT_ZERO));
 
       config.setConnectionTTLOverride(getLong(e,
-                                                                   "connection-ttl-override",
-                                                                   config.getConnectionTTLOverride(),
-                                                                   Validators.MINUS_ONE_OR_GT_ZERO));
+                                              "connection-ttl-override",
+                                              config.getConnectionTTLOverride(),
+                                              Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setEnabledAsyncConnectionExecution(getBoolean(e,
-                                                                                "async-connection-execution-enabled",
-                                                                                config.isAsyncConnectionExecutionEnabled()));
+                                                           "async-connection-execution-enabled",
+                                                           config.isAsyncConnectionExecutionEnabled()));
 
       config.setTransactionTimeout(getLong(e,
-                                                                "transaction-timeout",
-                                                                config.getTransactionTimeout(),
-                                                                Validators.GT_ZERO));
+                                           "transaction-timeout",
+                                           config.getTransactionTimeout(),
+                                           Validators.GT_ZERO));
 
       config.setTransactionTimeoutScanPeriod(getLong(e,
-                                                                          "transaction-timeout-scan-period",
-                                                                          config.getTransactionTimeoutScanPeriod(),
-                                                                          Validators.GT_ZERO));
+                                                     "transaction-timeout-scan-period",
+                                                     config.getTransactionTimeoutScanPeriod(),
+                                                     Validators.GT_ZERO));
 
       config.setMessageExpiryScanPeriod(getLong(e,
-                                                                     "message-expiry-scan-period",
-                                                                     config.getMessageExpiryScanPeriod(),
-                                                                     Validators.MINUS_ONE_OR_GT_ZERO));
+                                                "message-expiry-scan-period",
+                                                config.getMessageExpiryScanPeriod(),
+                                                Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setMessageExpiryThreadPriority(getInteger(e,
-                                                                            "message-expiry-thread-priority",
-                                                                            config.getMessageExpiryThreadPriority(),
-                                                                            Validators.THREAD_PRIORITY_RANGE));
+                                                       "message-expiry-thread-priority",
+                                                       config.getMessageExpiryThreadPriority(),
+                                                       Validators.THREAD_PRIORITY_RANGE));
 
       config.setIDCacheSize(getInteger(e,
-                                                            "id-cache-size",
-                                                            config.getIDCacheSize(),
-                                                            Validators.GT_ZERO));
+                                       "id-cache-size",
+                                       config.getIDCacheSize(),
+                                       Validators.GT_ZERO));
 
       config.setPersistIDCache(getBoolean(e, "persist-id-cache", config.isPersistIDCache()));
 
       config.setManagementAddress(new SimpleString(getString(e,
-                                                                                  "management-address",
-                                                                                  config.getManagementAddress()
-                                                                                        .toString(),
-                                                                                  Validators.NOT_NULL_OR_EMPTY)));
+                                                             "management-address",
+                                                             config.getManagementAddress()
+                                                                .toString(),
+                                                             Validators.NOT_NULL_OR_EMPTY)));
 
       config.setManagementNotificationAddress(new SimpleString(getString(e,
-                                                                                              "management-notification-address",
-                                                                                              config.getManagementNotificationAddress()
-                                                                                                    .toString(),
-                                                                                              Validators.NOT_NULL_OR_EMPTY)));
+                                                                         "management-notification-address",
+                                                                         config.getManagementNotificationAddress()
+                                                                            .toString(),
+                                                                         Validators.NOT_NULL_OR_EMPTY)));
 
       config.setMaskPassword(getBoolean(e, "mask-password", false));
 
       config.setPasswordCodec(getString(e, "password-codec", DefaultSensitiveStringCodec.class.getName(),
-                                                                   Validators.NOT_NULL_OR_EMPTY));
+                                        Validators.NOT_NULL_OR_EMPTY));
 
       // parsing cluster password
       String passwordText = getString(e, "cluster-password", null, Validators.NO_CHECK);
@@ -298,9 +299,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
 
       config.setClusterUser(getString(e,
-                                                           "cluster-user",
-                                                           config.getClusterUser(),
-                                                           Validators.NO_CHECK));
+                                      "cluster-user",
+                                      config.getClusterUser(),
+                                      Validators.NO_CHECK));
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
@@ -454,39 +455,39 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       // Persistence config
 
       config.setLargeMessagesDirectory(getString(e,
-                                                                      "large-messages-directory",
-                                                                      config.getLargeMessagesDirectory(),
-                                                                      Validators.NOT_NULL_OR_EMPTY));
+                                                 "large-messages-directory",
+                                                 config.getLargeMessagesDirectory(),
+                                                 Validators.NOT_NULL_OR_EMPTY));
 
       config.setBindingsDirectory(getString(e,
-                                                                 "bindings-directory",
-                                                                 config.getBindingsDirectory(),
-                                                                 Validators.NOT_NULL_OR_EMPTY));
+                                            "bindings-directory",
+                                            config.getBindingsDirectory(),
+                                            Validators.NOT_NULL_OR_EMPTY));
 
       config.setCreateBindingsDir(getBoolean(e,
-                                                                  "create-bindings-dir",
-                                                                  config.isCreateBindingsDir()));
+                                             "create-bindings-dir",
+                                             config.isCreateBindingsDir()));
 
       config.setJournalDirectory(getString(e, "journal-directory", config.getJournalDirectory(),
                                            Validators.NOT_NULL_OR_EMPTY));
 
 
       config.setPageMaxConcurrentIO(getInteger(e,
-                                                                    "page-max-concurrent-io",
-                                                                    config.getPageMaxConcurrentIO(),
-                                                                    Validators.MINUS_ONE_OR_GT_ZERO));
+                                               "page-max-concurrent-io",
+                                               config.getPageMaxConcurrentIO(),
+                                               Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setPagingDirectory(getString(e,
-                                                               "paging-directory",
-                                                               config.getPagingDirectory(),
-                                                               Validators.NOT_NULL_OR_EMPTY));
+                                          "paging-directory",
+                                          config.getPagingDirectory(),
+                                          Validators.NOT_NULL_OR_EMPTY));
 
       config.setCreateJournalDir(getBoolean(e, "create-journal-dir", config.isCreateJournalDir()));
 
       String s = getString(e,
-                                                "journal-type",
-                                                config.getJournalType().toString(),
-                                                Validators.JOURNAL_TYPE);
+                           "journal-type",
+                           config.getJournalType().toString(),
+                           Validators.JOURNAL_TYPE);
 
       if (s.equals(JournalType.NIO.toString()))
       {
@@ -516,35 +517,35 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
 
       config.setJournalSyncTransactional(getBoolean(e,
-                                                                         "journal-sync-transactional",
-                                                                         config.isJournalSyncTransactional()));
+                                                    "journal-sync-transactional",
+                                                    config.isJournalSyncTransactional()));
 
       config.setJournalSyncNonTransactional(getBoolean(e,
-                                                                            "journal-sync-non-transactional",
-                                                                            config.isJournalSyncNonTransactional()));
+                                                       "journal-sync-non-transactional",
+                                                       config.isJournalSyncNonTransactional()));
 
       config.setJournalFileSize(getInteger(e,
-                                                                "journal-file-size",
-                                                                config.getJournalFileSize(),
-                                                                Validators.GT_ZERO));
+                                           "journal-file-size",
+                                           config.getJournalFileSize(),
+                                           Validators.GT_ZERO));
 
       int journalBufferTimeout = getInteger(e,
-                                                                 "journal-buffer-timeout",
-                                                                 config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
-                                                                                                               : JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
-                                                                 Validators.GT_ZERO);
+                                            "journal-buffer-timeout",
+                                            config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
+                                               : JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
+                                            Validators.GT_ZERO);
 
-       int journalBufferSize = getInteger(e,
-                                                              "journal-buffer-size",
-                                                              config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
-                                                                                                            : JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
-                                                              Validators.GT_ZERO);
+      int journalBufferSize = getInteger(e,
+                                         "journal-buffer-size",
+                                         config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
+                                            : JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+                                         Validators.GT_ZERO);
 
       int journalMaxIO = getInteger(e,
-                                                         "journal-max-io",
-                                                         config.getJournalType() == JournalType.ASYNCIO ? HornetQDefaultConfiguration.getDefaultJournalMaxIoAio()
-                                                                                                       : HornetQDefaultConfiguration.getDefaultJournalMaxIoNio(),
-                                                         Validators.GT_ZERO);
+                                    "journal-max-io",
+                                    config.getJournalType() == JournalType.ASYNCIO ? HornetQDefaultConfiguration.getDefaultJournalMaxIoAio()
+                                       : HornetQDefaultConfiguration.getDefaultJournalMaxIoNio(),
+                                    Validators.GT_ZERO);
 
       if (config.getJournalType() == JournalType.ASYNCIO)
       {
@@ -565,18 +566,18 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                   Validators.GE_ZERO));
 
       config.setJournalCompactPercentage(getInteger(e,
-                                                                         "journal-compact-percentage",
-                                                                         config.getJournalCompactPercentage(),
-                                                                         Validators.PERCENTAGE));
+                                                    "journal-compact-percentage",
+                                                    config.getJournalCompactPercentage(),
+                                                    Validators.PERCENTAGE));
 
       config.setLogJournalWriteRate(getBoolean(e,
-                                                                    "log-journal-write-rate",
-                                                                    HornetQDefaultConfiguration.isDefaultJournalLogWriteRate()));
+                                               "log-journal-write-rate",
+                                               HornetQDefaultConfiguration.isDefaultJournalLogWriteRate()));
 
       config.setJournalPerfBlastPages(getInteger(e,
-                                                                      "perf-blast-pages",
-                                                                      HornetQDefaultConfiguration.getDefaultJournalPerfBlastPages(),
-                                                                      Validators.MINUS_ONE_OR_GT_ZERO));
+                                                 "perf-blast-pages",
+                                                 HornetQDefaultConfiguration.getDefaultJournalPerfBlastPages(),
+                                                 Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setRunSyncSpeedTest(getBoolean(e, "run-sync-speed-test", config.isRunSyncSpeedTest()));
 
@@ -586,25 +587,25 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       config.setMessageCounterSamplePeriod(getLong(e, "message-counter-sample-period",
                                                    config.getMessageCounterSamplePeriod(),
-                                                                        Validators.GT_ZERO));
+                                                   Validators.GT_ZERO));
 
       config.setMessageCounterMaxDayHistory(getInteger(e, "message-counter-max-day-history",
-                                                                            config.getMessageCounterMaxDayHistory(),
-                                                                            Validators.GT_ZERO));
+                                                       config.getMessageCounterMaxDayHistory(),
+                                                       Validators.GT_ZERO));
 
       config.setServerDumpInterval(getLong(e, "server-dump-interval", config.getServerDumpInterval(),
                                            Validators.MINUS_ONE_OR_GT_ZERO)); // in
       // milliseconds
 
       config.setMemoryWarningThreshold(getInteger(e,
-                                                                       "memory-warning-threshold",
-                                                                       config.getMemoryWarningThreshold(),
-                                                                       Validators.PERCENTAGE));
+                                                  "memory-warning-threshold",
+                                                  config.getMemoryWarningThreshold(),
+                                                  Validators.PERCENTAGE));
 
       config.setMemoryMeasureInterval(getLong(e,
-                                                                   "memory-measure-interval",
-                                                                   config.getMemoryMeasureInterval(),
-                                                                   Validators.MINUS_ONE_OR_GT_ZERO)); // in
+                                              "memory-measure-interval",
+                                              config.getMemoryMeasureInterval(),
+                                              Validators.MINUS_ONE_OR_GT_ZERO)); // in
 
       parseAddressSettings(e, config);
 
@@ -951,16 +952,16 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = getString(e,
-               "connector-ref",
-               null,
-               Validators.NOT_NULL_OR_EMPTY);
+                                             "connector-ref",
+                                             null,
+                                             Validators.NOT_NULL_OR_EMPTY);
 
             connectorNames.add(connectorName);
          }
       }
 
       long broadcastPeriod =
-               getLong(e, "broadcast-period", HornetQDefaultConfiguration.getDefaultBroadcastPeriod(), Validators.GT_ZERO);
+         getLong(e, "broadcast-period", HornetQDefaultConfiguration.getDefaultBroadcastPeriod(), Validators.GT_ZERO);
 
       String localAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
@@ -998,12 +999,12 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       String name = e.getAttribute("name");
 
       long discoveryInitialWaitTimeout =
-               getLong(e, "initial-wait-timeout", HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
-                       Validators.GT_ZERO);
+         getLong(e, "initial-wait-timeout", HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                 Validators.GT_ZERO);
 
       long refreshTimeout =
-               getLong(e, "refresh-timeout", HornetQDefaultConfiguration.getDefaultBroadcastRefreshTimeout(),
-                       Validators.GT_ZERO);
+         getLong(e, "refresh-timeout", HornetQDefaultConfiguration.getDefaultBroadcastRefreshTimeout(),
+                 Validators.GT_ZERO);
 
       String localBindAddress = getString(e, "local-bind-address", null, Validators.NO_CHECK);
 
@@ -1051,35 +1052,35 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       String connectorName = getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
 
       boolean duplicateDetection =
-               getBoolean(e, "use-duplicate-detection", HornetQDefaultConfiguration.isDefaultClusterDuplicateDetection());
+         getBoolean(e, "use-duplicate-detection", HornetQDefaultConfiguration.isDefaultClusterDuplicateDetection());
 
       boolean forwardWhenNoConsumers =
-               getBoolean(e, "forward-when-no-consumers",
-                          HornetQDefaultConfiguration.isDefaultClusterForwardWhenNoConsumers());
+         getBoolean(e, "forward-when-no-consumers",
+                    HornetQDefaultConfiguration.isDefaultClusterForwardWhenNoConsumers());
 
       int maxHops = getInteger(e, "max-hops",
-                                                    HornetQDefaultConfiguration.getDefaultClusterMaxHops(),
-                                                    Validators.GE_ZERO);
+                               HornetQDefaultConfiguration.getDefaultClusterMaxHops(),
+                               Validators.GE_ZERO);
 
       long clientFailureCheckPeriod =
-               getLong(e, "check-period", HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
-                       Validators.GT_ZERO);
+         getLong(e, "check-period", HornetQDefaultConfiguration.getDefaultClusterFailureCheckPeriod(),
+                 Validators.GT_ZERO);
 
       long connectionTTL =
-               getLong(e, "connection-ttl", HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
-                       Validators.GT_ZERO);
+         getLong(e, "connection-ttl", HornetQDefaultConfiguration.getDefaultClusterConnectionTtl(),
+                 Validators.GT_ZERO);
 
 
       long retryInterval =
-               getLong(e, "retry-interval", HornetQDefaultConfiguration.getDefaultClusterRetryInterval(),
-                       Validators.GT_ZERO);
+         getLong(e, "retry-interval", HornetQDefaultConfiguration.getDefaultClusterRetryInterval(),
+                 Validators.GT_ZERO);
 
       long callTimeout = getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
 
       long callFailoverTimeout = getLong(e, "call-failover-timeout", HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
 
       double retryIntervalMultiplier = getDouble(e, "retry-interval-multiplier",
-                                                                      HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(), Validators.GT_ZERO);
+                                                 HornetQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier(), Validators.GT_ZERO);
 
       int minLargeMessageSize = getInteger(e, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, Validators.GT_ZERO);
 
@@ -1089,8 +1090,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
 
       int confirmationWindowSize =
-               getInteger(e, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                          Validators.GT_ZERO);
+         getInteger(e, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                    Validators.GT_ZERO);
 
       long clusterNotificationInterval = getLong(e, "notification-interval", HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(), Validators.GT_ZERO);
 
@@ -1128,36 +1129,36 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       if (discoveryGroupName == null)
       {
          config =
-                  new ClusterConnectionConfiguration(name, address, connectorName,
-                                                     minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                                                     retryInterval, retryIntervalMultiplier, maxRetryInterval,
-                                                     reconnectAttempts, callTimeout, callFailoverTimeout,
-                                                     duplicateDetection, forwardWhenNoConsumers, maxHops,
-                                                     confirmationWindowSize,
-                                                     staticConnectorNames,
-                                                     allowDirectConnectionsOnly,
-                                                     clusterNotificationInterval,
-                                                     clusterNotificationAttempts);
+            new ClusterConnectionConfiguration(name, address, connectorName,
+                                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
+                                               retryInterval, retryIntervalMultiplier, maxRetryInterval,
+                                               reconnectAttempts, callTimeout, callFailoverTimeout,
+                                               duplicateDetection, forwardWhenNoConsumers, maxHops,
+                                               confirmationWindowSize,
+                                               staticConnectorNames,
+                                               allowDirectConnectionsOnly,
+                                               clusterNotificationInterval,
+                                               clusterNotificationAttempts);
       }
       else
       {
          config =
-                  new ClusterConnectionConfiguration(name, address, connectorName,
-                                                     minLargeMessageSize, clientFailureCheckPeriod,
-                                                     connectionTTL,
-                                                     retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     maxRetryInterval,
-                                                     reconnectAttempts,
-                                                     callTimeout,
-                                                     callFailoverTimeout,
-                                                     duplicateDetection,
-                                                     forwardWhenNoConsumers,
-                                                     maxHops,
-                                                     confirmationWindowSize,
-                                                     discoveryGroupName,
-                                                     clusterNotificationInterval,
-                                                     clusterNotificationAttempts);
+            new ClusterConnectionConfiguration(name, address, connectorName,
+                                               minLargeMessageSize, clientFailureCheckPeriod,
+                                               connectionTTL,
+                                               retryInterval,
+                                               retryIntervalMultiplier,
+                                               maxRetryInterval,
+                                               reconnectAttempts,
+                                               callTimeout,
+                                               callFailoverTimeout,
+                                               duplicateDetection,
+                                               forwardWhenNoConsumers,
+                                               maxHops,
+                                               confirmationWindowSize,
+                                               discoveryGroupName,
+                                               clusterNotificationInterval,
+                                               clusterNotificationAttempts);
       }
 
       mainConfig.getClusterConfigurations().add(config);
@@ -1173,8 +1174,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       Long reaperPeriod = getLong(node, "reaper-period", GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD, Validators.GT_ZERO);
       mainConfiguration.setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString(name),
                                                                                          type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())
-                                                                                                                                                       ? GroupingHandlerConfiguration.TYPE.LOCAL
-                                                                                                                                                       : GroupingHandlerConfiguration.TYPE.REMOTE,
+                                                                                            ? GroupingHandlerConfiguration.TYPE.LOCAL
+                                                                                            : GroupingHandlerConfiguration.TYPE.REMOTE,
                                                                                          new SimpleString(address),
                                                                                          timeout,
                                                                                          groupTimeout,
@@ -1191,45 +1192,45 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       String transformerClassName = getString(brNode, "transformer-class-name", null, Validators.NO_CHECK);
 
-       // Default bridge conf
+      // Default bridge conf
       int confirmationWindowSize =
-               getInteger(brNode, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                          Validators.GT_ZERO);
+         getInteger(brNode, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                    Validators.GT_ZERO);
 
       long retryInterval = getLong(brNode, "retry-interval", HornetQClient.DEFAULT_RETRY_INTERVAL, Validators.GT_ZERO);
 
       long clientFailureCheckPeriod =
-               getLong(brNode, "check-period", HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO);
+         getLong(brNode, "check-period", HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO);
 
       long connectionTTL = getLong(brNode, "connection-ttl", HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO);
 
       int minLargeMessageSize =
-               getInteger(brNode, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                          Validators.GT_ZERO);
+         getInteger(brNode, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                    Validators.GT_ZERO);
 
       long maxRetryInterval = getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
 
 
       double retryIntervalMultiplier =
-               getDouble(brNode, "retry-interval-multiplier", HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                         Validators.GT_ZERO);
+         getDouble(brNode, "retry-interval-multiplier", HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                   Validators.GT_ZERO);
 
       int reconnectAttempts =
-               getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts(),
-                          Validators.MINUS_ONE_OR_GE_ZERO);
+         getInteger(brNode, "reconnect-attempts", HornetQDefaultConfiguration.getDefaultBridgeReconnectAttempts(),
+                    Validators.MINUS_ONE_OR_GE_ZERO);
 
       int reconnectAttemptsSameNode =
-               getInteger(brNode, "reconnect-attempts-same-node", HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
-                          Validators.MINUS_ONE_OR_GE_ZERO);
+         getInteger(brNode, "reconnect-attempts-same-node", HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
+                    Validators.MINUS_ONE_OR_GE_ZERO);
 
       boolean useDuplicateDetection = getBoolean(brNode,
-                                                                      "use-duplicate-detection",
-                                                                      HornetQDefaultConfiguration.isDefaultBridgeDuplicateDetection());
+                                                 "use-duplicate-detection",
+                                                 HornetQDefaultConfiguration.isDefaultBridgeDuplicateDetection());
 
       String user = getString(brNode,
-                                                   "user",
-                                                   HornetQDefaultConfiguration.getDefaultClusterUser(),
-                                                   Validators.NO_CHECK);
+                              "user",
+                              HornetQDefaultConfiguration.getDefaultClusterUser(),
+                              Validators.NO_CHECK);
 
       NodeList clusterPassNodes = brNode.getElementsByTagName("password");
       String password = null;

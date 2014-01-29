@@ -35,12 +35,11 @@ import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.ReusableLatch;
 
 /**
- *
  * AsynchronousFile implementation
  *
  * @author clebert.suconic@jboss.com
- * Warning: Case you refactor the name or the package of this class
- *          You need to make sure you also rename the C++ native calls
+ *         Warning: Case you refactor the name or the package of this class
+ *         You need to make sure you also rename the C++ native calls
  */
 public class AsynchronousFileImpl implements AsynchronousFile
 {
@@ -52,21 +51,25 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /**
     * This definition needs to match Version.h on the native sources.
-    * <p>
+    * <p/>
     * Or else the native module won't be loaded because of version mismatches
     */
    private static final int EXPECTED_NATIVE_VERSION = 51;
 
-   /** Used to determine the next writing sequence */
+   /**
+    * Used to determine the next writing sequence
+    */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
 
-   /** Used to determine the next writing sequence.
-    *  This is accessed from a single thread (the Poller Thread) */
+   /**
+    * Used to determine the next writing sequence.
+    * This is accessed from a single thread (the Poller Thread)
+    */
    private long nextReadSequence = 0;
 
    /**
     * AIO can't guarantee ordering over callbacks.
-    * <p>
+    * <p/>
     * We use this {@link PriorityQueue} to hold values until they are in order
     */
    private final PriorityQueue<CallbackHolder> pendingCallbacks = new PriorityQueue<CallbackHolder>();
@@ -76,7 +79,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
       AsynchronousFileImpl.totalMaxIO.addAndGet(io);
    }
 
-   /** For test purposes */
+   /**
+    * For test purposes
+    */
    public static int getTotalMaxIO()
    {
       return AsynchronousFileImpl.totalMaxIO.get();
@@ -115,7 +120,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    static
    {
-      String libraries[] = new String[] { "HornetQAIO", "HornetQAIO64", "HornetQAIO32", "HornetQAIO_ia64" };
+      String[] libraries = new String[]{"HornetQAIO", "HornetQAIO64", "HornetQAIO32", "HornetQAIO_ia64"};
 
       for (String library : libraries)
       {
@@ -147,8 +152,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private String fileName;
 
-   /** Used while inside the callbackDone and callbackError
-    **/
+   /**
+    * Used while inside the callbackDone and callbackError
+    */
    private final Lock callbackLock = new ReentrantLock();
 
    private final ReusableLatch pollerLatch = new ReusableLatch();
@@ -165,11 +171,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private BufferCallback bufferCallback;
 
-   /** A callback for IO errors when they happen */
+   /**
+    * A callback for IO errors when they happen
+    */
    private final IOExceptionListener ioExceptionListener;
 
    /**
-    *  Warning: Beware of the C++ pointer! It will bite you! :-)
+    * Warning: Beware of the C++ pointer! It will bite you! :-)
     */
    private ByteBuffer handler;
 
@@ -184,10 +192,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
    // AsynchronousFile implementation ---------------------------------------------------
 
    /**
-    * @param writeExecutor It needs to be a single Thread executor. If null it will use the user thread to execute write operations
+    * @param writeExecutor  It needs to be a single Thread executor. If null it will use the user thread to execute write operations
     * @param pollerExecutor The thread pool that will initialize poller handlers
     */
-   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor, final IOExceptionListener ioExceptionListener )
+   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor, final IOExceptionListener ioExceptionListener)
    {
       this.writeExecutor = writeExecutor;
       this.pollerExecutor = pollerExecutor;
@@ -226,8 +234,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
             {
                ex = new HornetQException(e.getType(),
                                          "Can't initialize AIO. Currently AIO in use = " + AsynchronousFileImpl.totalMaxIO.get() +
-                                                  ", trying to allocate more " +
-                                                  maxIOArgument,
+                                            ", trying to allocate more " +
+                                            maxIOArgument,
                                          e);
             }
             else
@@ -346,7 +354,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
                   callbackError(aioCallback,
                                 sequence,
                                 directByteBuffer,
-                        HornetQExceptionType.INTERNAL_ERROR.getCode(),
+                                HornetQExceptionType.INTERNAL_ERROR.getCode(),
                                 e.getMessage());
                }
             }
@@ -415,7 +423,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void fill(final long position, final int blocks, final long size, final byte fillChar) throws HornetQException
    {
       checkOpened();
-      try {
+      try
+      {
          AsynchronousFileImpl.fill(handler, position, blocks, size, fillChar);
       }
       catch (HornetQException e)
@@ -435,7 +444,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     * http://bugs.sun.com/view_bug.do?bug_id=6791815
     * http://mail.openjdk.java.net/pipermail/hotspot-runtime-dev/2009-January/000386.html
     */
-   public synchronized static ByteBuffer newBuffer(final int size)
+   public static synchronized ByteBuffer newBuffer(final int size)
    {
       if (size % 512 != 0)
       {
@@ -450,7 +459,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
       bufferCallback = callback;
    }
 
-   /** Return the JNI handler used on C++ */
+   /**
+    * Return the JNI handler used on C++
+    */
    public ByteBuffer getHandler()
    {
       return handler;
@@ -586,6 +597,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /**
     * This is called by the native layer
+    *
     * @param errorCode
     * @param errorMessage
     */
@@ -681,7 +693,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    public static native void destroyBuffer(ByteBuffer buffer);
 
-   /** Instead of passing the nanoSeconds through the stack call every time, we set it statically inside the native method */
+   /**
+    * Instead of passing the nanoSeconds through the stack call every time, we set it statically inside the native method
+    */
    public static native void setNanoSleepInterval(int nanoseconds);
 
    public static native void nanoSleep();
@@ -699,7 +713,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
                              ByteBuffer buffer,
                              AIOCallback aioPackage) throws HornetQException;
 
-   /** a direct write to the file without the use of libaio's submit. */
+   /**
+    * a direct write to the file without the use of libaio's submit.
+    */
    private native void writeInternal(ByteBuffer handle, long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
 
    private native void read(ByteBuffer handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
@@ -710,17 +726,21 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static native void stopPoller(ByteBuffer handler) throws HornetQException;
 
-   /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
+   /**
+    * A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format
+    */
    private static native int getNativeVersion();
 
-   /** Poll asynchronous events from internal queues */
+   /**
+    * Poll asynchronous events from internal queues
+    */
    private static native void internalPollEvents(ByteBuffer handler);
 
    // Inner classes ---------------------------------------------------------------------
 
    /**
     * Explicitly adding a compare to clause that returns 0 for at least the same object.
-    * <p>
+    * <p/>
     * If {@link Comparable#compareTo(Object)} does not return 0 -for at least the same object- some
     * Collection classes methods will fail (example {@link PriorityQueue#remove(Object)}. If it
     * returns 0, then {@link #equals(Object)} must return {@code true} for the exact same cases,

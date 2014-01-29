@@ -12,23 +12,17 @@
  */
 
 package org.hornetq.tests.integration.cluster.reattach;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.HornetQObjectClosedException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -47,16 +41,17 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A ReattachTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 4 Nov 2008 16:54:50
- *
- *
+ *         <p/>
+ *         Created 4 Nov 2008 16:54:50
  */
 public class ReattachTest extends ServiceTestBase
 {
@@ -170,7 +165,7 @@ public class ReattachTest extends ServiceTestBase
          {
             System.out.println("Intercept..." + packet.getClass().getName());
 
-            if (packet instanceof SessionProducerCreditsMessage )
+            if (packet instanceof SessionProducerCreditsMessage)
             {
                SessionProducerCreditsMessage credit = (SessionProducerCreditsMessage)packet;
 
@@ -497,7 +492,7 @@ public class ReattachTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQObjectClosedException oce)
+      catch (HornetQObjectClosedException oce)
       {
          //ok
       }
@@ -572,7 +567,7 @@ public class ReattachTest extends ServiceTestBase
             }
          }
 
-         CreateSessionThread threads[] = new CreateSessionThread[numberOfThreads];
+         CreateSessionThread[] threads = new CreateSessionThread[numberOfThreads];
          for (int i = 0; i < numberOfThreads; i++)
          {
             threads[i] = new CreateSessionThread();
@@ -676,7 +671,7 @@ public class ReattachTest extends ServiceTestBase
          }
       }
 
-      CreateSessionThread threads[] = new CreateSessionThread[numberOfThreads];
+      CreateSessionThread[] threads = new CreateSessionThread[numberOfThreads];
       for (int i = 0; i < numberOfThreads; i++)
       {
          threads[i] = new CreateSessionThread();

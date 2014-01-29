@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.integration.persistence;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,19 +20,20 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.api.core.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A JMSConnectionFactoryConfigurationStorageTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JMSConnectionFactoryConfigurationStorageTest extends StorageManagerTestBase
 {
@@ -75,14 +72,14 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
 
       List<String> transportConfigs = new ArrayList<String>();
 
-      for (int i = 0 ; i < 5; i++)
+      for (int i = 0; i < 5; i++)
       {
          transportConfigs.add("c1-" + i);
          transportConfigs.add("c2-" + i);
       }
 
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false,  transportConfigs);
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, transportConfigs);
 
       addSetting(new PersistedConnectionFactory(config));
 
@@ -101,10 +98,10 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       assertEquals(10, cf1.getConfig().getConnectorNames().size());
 
       List<String> configs = cf1.getConfig().getConnectorNames();
-      for (int i = 0, j = 0; i < 10; i+=2, j++)
+      for (int i = 0, j = 0; i < 10; i += 2, j++)
       {
          assertEquals(configs.get(i), "c1-" + j);
-         assertEquals(configs.get(i+1), "c2-" + j);
+         assertEquals(configs.get(i + 1), "c2-" + j);
       }
    }
 
@@ -112,13 +109,13 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
    public void testSizeOfCF() throws Exception
    {
 
-      String str[] = new String[5];
+      String[] str = new String[5];
       for (int i = 0; i < 5; i++)
       {
          str[i] = "str" + i;
       }
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, new ArrayList<String>(),  "");
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, new ArrayList<String>(), "");
 
       int size = config.getEncodeSize();
 
@@ -146,7 +143,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
 
       createJMSStorage();
 
-      String str[] = new String[5];
+      String[] str = new String[5];
       for (int i = 0; i < 5; i++)
       {
          str[i] = "str" + i;
@@ -161,8 +158,8 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       liveParams2.put(TransportConstants.PORT_PROP_NAME, 6665);
 
       ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, connectorConfigs, str);
-      config.setConnectorNames(connectorConfigs );
-      List<Pair<String, String>> connectors = new ArrayList<Pair<String,String>>();
+      config.setConnectorNames(connectorConfigs);
+      List<Pair<String, String>> connectors = new ArrayList<Pair<String, String>>();
       connectors.add(new Pair<String, String>(RandomUtil.randomString(), null));
       //config.setConnectorNames(connectors);
       config.setCallTimeout(RandomUtil.randomPositiveLong());

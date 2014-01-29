@@ -11,11 +11,11 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.scheduling;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -175,7 +175,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testPagedMessageDeliveredMultipleConsumersCorrectly() throws Exception
    {
       AddressSettings qs = new AddressSettings();
-      qs.setRedeliveryDelay(5000l);
+      qs.setRedeliveryDelay(5000L);
       server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createSessionFactory(locator);
@@ -229,7 +229,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    {
 
       AddressSettings qs = new AddressSettings();
-      qs.setRedeliveryDelay(5000l);
+      qs.setRedeliveryDelay(5000L);
       server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createSessionFactory(locator);
@@ -527,7 +527,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start();
       ClientConsumer consumer = session.createConsumer(atestq);
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = consumer.receive(15000);
          assertNotNull(message);
@@ -681,7 +681,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(atestq);
 
       long scheduled = System.currentTimeMillis() + 1000;
-      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("value", i);
@@ -692,7 +692,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
 
 
-      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
          Xid xid = newXID();
 
@@ -753,7 +753,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testRedeliveryAfterPrepare() throws Exception
    {
       AddressSettings qs = new AddressSettings();
-      qs.setRedeliveryDelay(5000l);
+      qs.setRedeliveryDelay(5000L);
       server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
 
       ClientSessionFactory sessionFactory = createSessionFactory(locator);

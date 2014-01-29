@@ -33,12 +33,10 @@ import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 
 /**
- *
  * A NIOSequentialFile
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public final class NIOSequentialFile extends AbstractSequentialFile
 {
@@ -46,7 +44,9 @@ public final class NIOSequentialFile extends AbstractSequentialFile
 
    private RandomAccessFile rfile;
 
-   /** The write semaphore here is only used when writing asynchronously */
+   /**
+    * The write semaphore here is only used when writing asynchronously
+    */
    private Semaphore maxIOSemaphore;
 
    private final int defaultMaxIO;
@@ -87,8 +87,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
       return channel != null;
    }
 
-   /** this.maxIO represents the default maxIO.
-    *  Some operations while initializing files on the journal may require a different maxIO */
+   /**
+    * this.maxIO represents the default maxIO.
+    * Some operations while initializing files on the journal may require a different maxIO
+    */
    public synchronized void open() throws IOException
    {
       open(defaultMaxIO, true);
@@ -196,7 +198,7 @@ public final class NIOSequentialFile extends AbstractSequentialFile
    }
 
    public synchronized int read(final ByteBuffer bytes, final IOAsyncTask callback) throws IOException,
-                                                                                   HornetQIllegalStateException
+      HornetQIllegalStateException
    {
       try
       {
@@ -326,9 +328,9 @@ public final class NIOSequentialFile extends AbstractSequentialFile
    }
 
    private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
- throws IOException,
-                                                                                                 HornetQIOErrorException,
-                                                                                                 InterruptedException
+      throws IOException,
+      HornetQIOErrorException,
+      InterruptedException
    {
       if (!isOpen())
       {

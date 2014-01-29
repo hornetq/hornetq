@@ -22,8 +22,6 @@ import org.hornetq.api.core.HornetQBuffer;
  * A StompDecoder
  *
  * @author Tim Fox
- *
- *
  */
 public class StompDecoder
 {
@@ -73,7 +71,9 @@ public class StompDecoder
 
    public static final int COMMAND_UNSUBSCRIBE_LENGTH = COMMAND_UNSUBSCRIBE.length();
 
-   /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+   /**
+    * * added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ***
+    */
    public static final String COMMAND_CONNECTED = "CONNECTED";
 
    public static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
@@ -89,7 +89,9 @@ public class StompDecoder
    public static final String COMMAND_RECEIPT = "RECEIPT";
 
    public static final int COMMAND_RECEIPT_LENGTH = COMMAND_RECEIPT.length();
-   /**** end  ****/
+   /**
+    * * end  ***
+    */
 
    public static final byte A = (byte)'A';
 
@@ -158,7 +160,7 @@ public class StompDecoder
    public String contentType;
 
    public int bodyStart;
-   
+
    //max len of EOL (default is 1 for '\n')
    protected int eolLen = 1;
 
@@ -178,7 +180,7 @@ public class StompDecoder
     * followed by an optional message body
     * terminated with a null character
     *
-    * Note: This is the decoder for 1.0 stomp frames. However to support for stomp 1.1 
+    * Note: This is the decoder for 1.0 stomp frames. However to support for stomp 1.1
     * and 1.2, it is also responsible for giving out an proper exception when it detects
     * unsupported EOLs ("\r\n" valid for 1.2 only). The StompConnection will switch
     * to proper version decoders on catching such exceptions.
@@ -186,7 +188,7 @@ public class StompDecoder
    public synchronized StompFrame decode(final HornetQBuffer buffer) throws HornetQStompException
    {
       int readable = buffer.readableBytes();
-      
+
       if (data + readable >= workingBuffer.length)
       {
          resizeWorking(data + readable);
@@ -213,10 +215,10 @@ public class StompDecoder
             return null;
          }
       }
-      
+
       // Now the body
       StompFrame ret = parseBody();
-      
+
       return ret;
    }
 
@@ -268,8 +270,8 @@ public class StompDecoder
             if (workingBuffer[pos] == NEW_LINE) pos++;
 
             if (data > pos)
-              // More data still in the buffer from the next packet
-              System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
+               // More data still in the buffer from the next packet
+               System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
          }
 
          data = data - pos;
@@ -296,7 +298,8 @@ public class StompDecoder
       }
 
       // Now the headers
-      outer: while (true)
+   outer:
+      while (true)
       {
          byte b = workingBuffer[pos++];
 
@@ -399,7 +402,7 @@ public class StompDecoder
       boolean nextChar = false;
 
       // Some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
-      // STOMP frame this can manifest as an extra \n at the beginning when the 
+      // STOMP frame this can manifest as an extra \n at the beginning when the
       // next STOMP frame is read - we need to deal with this.
       // Besides, Stomp 1.2 allows for extra EOLs after NULL (i.e.
       // either "[\r]\n"s or "\n"s)
@@ -420,7 +423,7 @@ public class StompDecoder
          }
          offset++;
       }
-      
+
       if (nextChar)
       {
          throw new HornetQStompException("Invalid char sequence: There is a CR not followed by an LF");
@@ -486,7 +489,7 @@ public class StompDecoder
                command = COMMAND_COMMIT;
             }
             /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-            else if (workingBuffer[offset+7]==E)
+            else if (workingBuffer[offset + 7] == E)
             {
                if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
                {
@@ -615,9 +618,9 @@ public class StompDecoder
       if (workingBuffer[pos - 1] != NEW_LINE)
       {
          //give a signal to try other versions
-         throw new HornetQStompException(HornetQStompException.INVALID_EOL_V10, "Expect new line char but is " + workingBuffer[pos -1]);
+         throw new HornetQStompException(HornetQStompException.INVALID_EOL_V10, "Expect new line char but is " + workingBuffer[pos - 1]);
       }
-      
+
       return true;
    }
 

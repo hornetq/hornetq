@@ -13,13 +13,12 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.MBeanOperationInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -47,8 +46,6 @@ import org.hornetq.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class QueueControlImpl extends AbstractControl implements QueueControl
 {
@@ -68,45 +65,45 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    // Static --------------------------------------------------------
 
-    private static String toJSON(final Map<String, Object>[] messages)
-    {
-        JSONArray array = toJSONMsgArray(messages);
-        return array.toString();
-    }
+   private static String toJSON(final Map<String, Object>[] messages)
+   {
+      JSONArray array = toJSONMsgArray(messages);
+      return array.toString();
+   }
 
-    private static JSONArray toJSONMsgArray(final Map<String, Object>[] messages)
-    {
-        JSONArray array = new JSONArray();
-        for (Map<String, Object> message : messages)
-        {
-            array.put(new JSONObject(message));
-        }
-        return array;
-    }
+   private static JSONArray toJSONMsgArray(final Map<String, Object>[] messages)
+   {
+      JSONArray array = new JSONArray();
+      for (Map<String, Object> message : messages)
+      {
+         array.put(new JSONObject(message));
+      }
+      return array;
+   }
 
-    private static String toJSON(final  Map<String, Map<String, Object>[]> messages)
-    {
-        try
-        {
-            JSONArray arrayReturn = new JSONArray();
-            for (Map.Entry<String, Map<String, Object>[]> entry: messages.entrySet())
-            {
-                JSONObject objectItem = new JSONObject();
-                objectItem.put("consumerName", entry.getKey());
-                objectItem.put("elements", toJSONMsgArray(entry.getValue()));
-                arrayReturn.put(objectItem);
-            }
+   private static String toJSON(final Map<String, Map<String, Object>[]> messages)
+   {
+      try
+      {
+         JSONArray arrayReturn = new JSONArray();
+         for (Map.Entry<String, Map<String, Object>[]> entry : messages.entrySet())
+         {
+            JSONObject objectItem = new JSONObject();
+            objectItem.put("consumerName", entry.getKey());
+            objectItem.put("elements", toJSONMsgArray(entry.getValue()));
+            arrayReturn.put(objectItem);
+         }
 
-            return arrayReturn.toString();
-        }
-        catch (JSONException e)
-        {
-            return "Invalid conversion " + e.toString();
-        }
-    }
+         return arrayReturn.toString();
+      }
+      catch (JSONException e)
+      {
+         return "Invalid conversion " + e.toString();
+      }
+   }
 
 
-    // Constructors --------------------------------------------------
+   // Constructors --------------------------------------------------
 
    public QueueControlImpl(final Queue queue,
                            final String address,
@@ -376,92 +373,92 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-    public Map<String, Object>[] listScheduledMessages() throws Exception
-    {
-        checkStarted();
+   public Map<String, Object>[] listScheduledMessages() throws Exception
+   {
+      checkStarted();
 
-        clearIO();
-        try
-        {
-            List<MessageReference> refs = queue.getScheduledMessages();
-            return convertMessagesToMaps(refs);
-        }
-        finally
-        {
-            blockOnIO();
-        }
-    }
+      clearIO();
+      try
+      {
+         List<MessageReference> refs = queue.getScheduledMessages();
+         return convertMessagesToMaps(refs);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
 
-    public String listScheduledMessagesAsJSON() throws Exception
-    {
-        checkStarted();
+   public String listScheduledMessagesAsJSON() throws Exception
+   {
+      checkStarted();
 
-        clearIO();
-        try
-        {
-            return QueueControlImpl.toJSON(listScheduledMessages());
-        }
-        finally
-        {
-            blockOnIO();
-        }
-    }
+      clearIO();
+      try
+      {
+         return QueueControlImpl.toJSON(listScheduledMessages());
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
 
-    /**
-     * @param refs
-     * @return
-     */
-    private Map<String, Object>[] convertMessagesToMaps(List<MessageReference> refs)
-    {
-        Map<String, Object>[] messages = new Map[refs.size()];
-        int i = 0;
-        for (MessageReference ref : refs)
-        {
-            Message message = ref.getMessage();
-            messages[i++] = message.toMap();
-        }
-        return messages;
-    }
+   /**
+    * @param refs
+    * @return
+    */
+   private Map<String, Object>[] convertMessagesToMaps(List<MessageReference> refs)
+   {
+      Map<String, Object>[] messages = new Map[refs.size()];
+      int i = 0;
+      for (MessageReference ref : refs)
+      {
+         Message message = ref.getMessage();
+         messages[i++] = message.toMap();
+      }
+      return messages;
+   }
 
 
-    public Map<String, Map<String, Object>[]> listDeliveringMessages()
-    {
-        checkStarted();
+   public Map<String, Map<String, Object>[]> listDeliveringMessages()
+   {
+      checkStarted();
 
-        clearIO();
-        try
-        {
-            Map<String, List<MessageReference>> msgs = queue.getDeliveringMessages();
+      clearIO();
+      try
+      {
+         Map<String, List<MessageReference>> msgs = queue.getDeliveringMessages();
 
-            Map<String, Map<String, Object>[]> msgRet = new HashMap<String, Map<String, Object>[]>();
+         Map<String, Map<String, Object>[]> msgRet = new HashMap<String, Map<String, Object>[]>();
 
-            for (Map.Entry<String, List<MessageReference>> entry: msgs.entrySet())
-            {
-                msgRet.put(entry.getKey(), convertMessagesToMaps(entry.getValue()));
-            }
-            return msgRet;
-        }
-        finally
-        {
-            blockOnIO();
-        }
+         for (Map.Entry<String, List<MessageReference>> entry : msgs.entrySet())
+         {
+            msgRet.put(entry.getKey(), convertMessagesToMaps(entry.getValue()));
+         }
+         return msgRet;
+      }
+      finally
+      {
+         blockOnIO();
+      }
 
-    }
+   }
 
-    public String listDeliveringMessagesAsJSON() throws Exception
-    {
-        checkStarted();
+   public String listDeliveringMessagesAsJSON() throws Exception
+   {
+      checkStarted();
 
-        clearIO();
-        try
-        {
-            return QueueControlImpl.toJSON(listDeliveringMessages());
-        }
-        finally
-        {
-            blockOnIO();
-        }
-    }
+      clearIO();
+      try
+      {
+         return QueueControlImpl.toJSON(listDeliveringMessages());
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
 
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
    {
@@ -801,7 +798,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
-         return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
+         return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[]{counter});
       }
       finally
       {
@@ -831,7 +828,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       clearIO();
       try
       {
-         return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+         return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[]{counter});
       }
       finally
       {

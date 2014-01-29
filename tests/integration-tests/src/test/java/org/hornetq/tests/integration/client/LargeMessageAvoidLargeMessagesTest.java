@@ -103,7 +103,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
 
-         for (int i = 0 ; i < input.getSize(); i++)
+         for (int i = 0; i < input.getSize(); i++)
          {
             byte b = msg1.getBodyBuffer().readByte();
             assertEquals("incorrect char ", input.getChar(i), b);
@@ -125,7 +125,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       server.start();
 
       //reduce the minLargeMessageSize to make the test faster
-      locator.setMinLargeMessageSize(5*1024);
+      locator.setMinLargeMessageSize(5 * 1024);
       ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = addClientSession(sf.createSession(false, false, false));
@@ -161,7 +161,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
 
-         for (int i = 0 ; i < input.getSize(); i++)
+         for (int i = 0; i < input.getSize(); i++)
          {
             byte b = msg1.getBodyBuffer().readByte();
             assertEquals("incorrect char", input.getChar(i), b);
@@ -201,7 +201,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       for (int i = 0; i < num; i++)
       {
          ClientMessage clientFile = session.createMessage(true);
-         if (i%2 == 0)
+         if (i % 2 == 0)
          {
             clientFile.setBodyInputStream(regularInput.clone());
          }
@@ -218,7 +218,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       session.start();
 
       //half the messages are sent as large
-      validateNoFilesOnLargeDir(num/2);
+      validateNoFilesOnLargeDir(num / 2);
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
       for (int j = 0; j < num; j++)
@@ -226,9 +226,9 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
          ClientMessage msg1 = consumer.receive(1000);
          Assert.assertNotNull(msg1);
 
-         if (j%2 == 0)
+         if (j % 2 == 0)
          {
-            for (int i = 0 ; i < regularInput.getSize(); i++)
+            for (int i = 0; i < regularInput.getSize(); i++)
             {
                byte b = msg1.getBodyBuffer().readByte();
                assertEquals("incorrect char ", regularInput.getChar(i), b);
@@ -366,7 +366,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
    @Test
    public void testDLALargeMessage() throws Exception
    {
-      final int messageSize = (int) (3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
       ClientSession session = null;
 
@@ -379,7 +379,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       session = addClientSession(sf.createSession(false, false, false));
 
       session.createQueue(ADDRESS, ADDRESS,
-            true);
+                          true);
       session.createQueue(ADDRESS, ADDRESS.concat("-2"), true);
 
       SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
@@ -394,7 +394,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
 
       ClientProducer producer = session
-.createProducer(ADDRESS);
+         .createProducer(ADDRESS);
 
       Message clientFile = createLargeClientMessage(session, messageSize, true);
 
@@ -407,7 +407,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
 
       ClientConsumer consumerRollback = session
-.createConsumer(ADDRESS);
+         .createConsumer(ADDRESS);
       ClientMessage msg1 = consumerRollback.receive(1000);
       Assert.assertNotNull(msg1);
       msg1.acknowledge();
@@ -421,7 +421,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       for (int i = 0; i < messageSize; i++)
       {
          Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1
-               .getBodyBuffer().readByte());
+            .getBodyBuffer().readByte());
       }
 
       session.close();
@@ -446,7 +446,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       for (int i = 0; i < messageSize; i++)
       {
          Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1
-               .getBodyBuffer().readByte());
+            .getBodyBuffer().readByte());
       }
 
       msg1.acknowledge();
@@ -465,7 +465,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       for (int i = 0; i < messageSize; i++)
       {
          Assert.assertEquals(UnitTestCase.getSamplebyte(i), msg1
-               .getBodyBuffer().readByte());
+            .getBodyBuffer().readByte());
       }
 
       msg1.acknowledge();

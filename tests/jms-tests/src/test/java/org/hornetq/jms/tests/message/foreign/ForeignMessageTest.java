@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message.foreign;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.Message;
 import javax.jms.TextMessage;
@@ -25,14 +21,14 @@ import org.hornetq.jms.tests.message.MessageTestBase;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * Tests the delivery/receipt of a foreign message
  *
- *
  * @author <a href="mailto:a.walker@base2group.com>Aaron Walker</a>
- *
  */
 public class ForeignMessageTest extends MessageTestBase
 {
@@ -77,7 +73,6 @@ public class ForeignMessageTest extends MessageTestBase
    }
 
 
-
    @Test
    public void testForeignMessageCorrelationIDBytesDisabled() throws Exception
    {
@@ -86,7 +81,7 @@ public class ForeignMessageTest extends MessageTestBase
       SimpleJMSMessage msg = new SimpleJMSMessage();
 
       msg.setJMSCorrelationID("mycorrelationid");
-      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      byte[] bytes = new byte[]{1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
 
       queueProd.send(msg);
@@ -107,7 +102,7 @@ public class ForeignMessageTest extends MessageTestBase
       SimpleJMSMessage msg = new SimpleJMSMessage();
 
       msg.setJMSCorrelationID("mycorrelationid");
-      byte[] bytes = new byte[] { 1, 4, 3, 6, 8};
+      byte[] bytes = new byte[]{1, 4, 3, 6, 8};
       msg.setJMSCorrelationIDAsBytes(bytes);
 
       queueProd.send(msg);

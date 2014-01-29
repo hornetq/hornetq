@@ -17,16 +17,15 @@ package org.hornetq.core.protocol.stomp;
  * Stomp Spec Versions
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
- *
  */
 public enum StompVersions
 {
    V1_0("1.0"),
    V1_1("1.1"),
    V1_2("1.2");
-   
+
    private String version;
-   
+
    private StompVersions(String ver)
    {
       this.version = ver;

@@ -68,8 +68,9 @@ import org.hornetq.utils.ExecutorFactory;
 /**
  * Manages replication tasks on the live server (that is the live server side of a "remote backup"
  * use case).
- * <p>
+ * <p/>
  * Its equivalent in the backup server is {@link ReplicationEndpoint}.
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @see ReplicationEndpoint
  */
@@ -136,7 +137,7 @@ public final class ReplicationManager implements HornetQComponent
 
    public void appendUpdateRecord(final byte journalID, final ADD_OPERATION_TYPE operation, final long id,
                                   final byte recordType,
- final EncodingSupport record) throws Exception
+                                  final EncodingSupport record) throws Exception
    {
       if (enabled)
       {
@@ -152,12 +153,11 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public
-            void
-            appendAddRecordTransactional(final byte journalID, final ADD_OPERATION_TYPE operation, final long txID,
-                                         final long id,
-                                            final byte recordType,
-                                            final EncodingSupport record) throws Exception
+   public void
+   appendAddRecordTransactional(final byte journalID, final ADD_OPERATION_TYPE operation, final long txID,
+                                final long id,
+                                final byte recordType,
+                                final EncodingSupport record) throws Exception
    {
       if (enabled)
       {
@@ -193,9 +193,8 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public
-            void
-            appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
+   public void
+   appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
       throws Exception
    {
       if (enabled)
@@ -315,7 +314,7 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Completes any pending operations.
-    * <p>
+    * <p/>
     * This can be necessary in case the live loses connection to the backup (network failure, or
     * backup crashing).
     */
@@ -338,7 +337,9 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   /** A list of tokens that are still waiting for replications to be completed */
+   /**
+    * A list of tokens that are still waiting for replications to be completed
+    */
    public Set<OperationContext> getActiveTokens()
    {
 
@@ -399,8 +400,8 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * @throws IllegalStateException By default, all replicated packets generate a replicated
-    *            response. If your packets are triggering this exception, it may be because the
-    *            packets were not sent with {@link #sendReplicatePacket(Packet)}.
+    *                               response. If your packets are triggering this exception, it may be because the
+    *                               packets were not sent with {@link #sendReplicatePacket(Packet)}.
     */
    private void replicated()
    {
@@ -447,7 +448,7 @@ public final class ReplicationManager implements HornetQComponent
 
    private final class ResponseHandler implements ChannelHandler
    {
-     public void handlePacket(final Packet packet)
+      public void handlePacket(final Packet packet)
       {
          if (packet.getType() == PacketImpl.REPLICATION_RESPONSE)
          {
@@ -477,6 +478,7 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Sends the whole content of the file to be duplicated.
+    *
     * @throws HornetQException
     * @throws Exception
     */
@@ -505,14 +507,14 @@ public final class ReplicationManager implements HornetQComponent
    public Map.Entry<Long, Pair<String, Long>> getNextLargeMessageToSync()
    {
       Iterator<Entry<Long, Pair<String, Long>>> iter = largeMessagesToSync.entrySet().iterator();
-         if (!iter.hasNext())
-         {
-            return null;
-         }
+      if (!iter.hasNext())
+      {
+         return null;
+      }
 
-         Entry<Long, Pair<String, Long>> entry = iter.next();
-         iter.remove();
-         return entry;
+      Entry<Long, Pair<String, Long>> entry = iter.next();
+      iter.remove();
+      return entry;
    }
 
    public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
@@ -531,15 +533,16 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Sends large files in reasonably sized chunks to the backup during replication synchronization.
-    * @param content journal type or {@code null} for large-messages and pages
-    * @param pageStore page store name for pages, or {@code null} otherwise
-    * @param id journal file id or (large) message id
+    *
+    * @param content        journal type or {@code null} for large-messages and pages
+    * @param pageStore      page store name for pages, or {@code null} otherwise
+    * @param id             journal file id or (large) message id
     * @param file
     * @param maxBytesToSend maximum number of bytes to read and send from the file
     * @throws Exception
     */
    private void sendLargeFile(JournalContent content, SimpleString pageStore, final long id, SequentialFile file,
-      long maxBytesToSend) throws Exception
+                              long maxBytesToSend) throws Exception
    {
       if (!enabled)
          return;
@@ -601,6 +604,7 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Reserve the following fileIDs in the backup server.
+    *
     * @param datafiles
     * @param contentType
     * @throws HornetQException
@@ -614,9 +618,10 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Informs backup that data synchronization is done.
-    * <p>
+    * <p/>
     * So if 'live' fails, the (up-to-date) backup now may take over its duties. To do so, it must
     * know which is the live's {@code nodeID}.
+    *
     * @param nodeID
     */
    public void sendSynchronizationDone(String nodeID)
@@ -630,16 +635,17 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Reserves several LargeMessage IDs in the backup.
-    * <p>
+    * <p/>
     * Doing this before hand removes the need of synchronizing large-message deletes with the
     * largeMessageSyncList.
+    *
     * @param largeMessages
     */
    public void sendLargeMessageIdListMessage(Map<Long, Pair<String, Long>> largeMessages)
    {
       ArrayList<Long> idsToSend;
       largeMessagesToSync.putAll(largeMessages);
-         idsToSend = new ArrayList<Long>(largeMessagesToSync.keySet());
+      idsToSend = new ArrayList<Long>(largeMessagesToSync.keySet());
 
       if (enabled)
          sendReplicatePacket(new ReplicationStartSyncMessage(idsToSend));
@@ -647,9 +653,10 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Notifies the backup that the live server is stopping.
-    * <p>
+    * <p/>
     * This notification allows the backup to skip quorum voting (or any other measure to avoid
     * 'split-brain') and do a faster fail-over.
+    *
     * @return
     */
    public OperationContext sendLiveIsStopping(final LiveStopping finalMessage)
@@ -665,6 +672,7 @@ public final class ReplicationManager implements HornetQComponent
 
    /**
     * Used while stopping the server to ensure that we freeze communications with the backup.
+    *
     * @return remoting connection with the backup
     */
    public CoreRemotingConnection getBackupTransportConnection()

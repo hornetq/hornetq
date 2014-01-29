@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.stress.paging;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +20,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -52,13 +46,15 @@ import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.LinkedListIterator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A PageCursorTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class PageCursorStressTest extends ServiceTestBase
 {
@@ -280,9 +276,9 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvider()
-                                           .getSubscription(queue.getID());
+         .getPageStore(ADDRESS)
+         .getCursorProvider()
+         .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
       LinkedListIterator<PagedReference> iterator = cursor.iterator();
@@ -341,9 +337,9 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvider()
-                                           .getSubscription(queue.getID());
+         .getPageStore(ADDRESS)
+         .getCursorProvider()
+         .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
 
@@ -412,9 +408,9 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvider()
-                                           .getSubscription(queue.getID());
+         .getPageStore(ADDRESS)
+         .getCursorProvider()
+         .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
 
@@ -427,7 +423,7 @@ public class PageCursorStressTest extends ServiceTestBase
          // if (i % 100 == 0)
          System.out.println("read/written " + i);
 
-         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1l);
+         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1L);
 
          ServerMessage msg = new ServerMessageImpl(i, buffer.writerIndex());
          msg.putIntProperty("key", i);
@@ -462,7 +458,7 @@ public class PageCursorStressTest extends ServiceTestBase
          if (i >= NUM_MESSAGES)
          {
 
-            HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1l);
+            HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1L);
 
             ServerMessage msg = new ServerMessageImpl(i, buffer.writerIndex());
             msg.putIntProperty("key", i);
@@ -494,7 +490,7 @@ public class PageCursorStressTest extends ServiceTestBase
          if (i >= NUM_MESSAGES * 2 - 1)
          {
 
-            HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1l);
+            HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1L);
 
             ServerMessage msg = new ServerMessageImpl(i, buffer.writerIndex());
             msg.putIntProperty("key", i + 1);
@@ -556,9 +552,9 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvider()
-                                           .getSubscription(queue.getID());
+         .getPageStore(ADDRESS)
+         .getCursorProvider()
+         .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
 
@@ -587,7 +583,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
                   RoutingContext ctx = generateCTX(tx);
 
-                  for (int i = 0 ; i < MSGS_TX; i++)
+                  for (int i = 0; i < MSGS_TX; i++)
                   {
                      //System.out.println("Sending " + count);
                      HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, count);
@@ -620,11 +616,11 @@ public class PageCursorStressTest extends ServiceTestBase
 
       LinkedListIterator<PagedReference> iterator = cursor.iterator();
 
-      for (int i = 0 ; i < TOTAL_MSG; i++ )
+      for (int i = 0; i < TOTAL_MSG; i++)
       {
          assertEquals(0, exceptions.get());
          PagedReference ref = null;
-         for (int repeat = 0 ; repeat < 5; repeat++)
+         for (int repeat = 0; repeat < 5; repeat++)
          {
             ref = iterator.next();
             if (ref == null)
@@ -668,9 +664,8 @@ public class PageCursorStressTest extends ServiceTestBase
 
    /**
     * @throws Exception
-    * @throws InterruptedException
     */
-   private void waitCleanup() throws Exception, InterruptedException
+   private void waitCleanup() throws Exception
    {
       // The cleanup is done asynchronously, so we need to wait some time
       long timeout = System.currentTimeMillis() + 10000;
@@ -699,9 +694,9 @@ public class PageCursorStressTest extends ServiceTestBase
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
-                                           .getPageStore(ADDRESS)
-                                           .getCursorProvider()
-                                           .getSubscription(queue.getID());
+         .getPageStore(ADDRESS)
+         .getCursorProvider()
+         .getSubscription(queue.getID());
       LinkedListIterator<PagedReference> iterator = cursor.iterator();
 
       System.out.println("Cursor: " + cursor);
@@ -835,7 +830,7 @@ public class PageCursorStressTest extends ServiceTestBase
       {
          if (i % 100 == 0)
             System.out.println("Paged " + i);
-         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1l);
+         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1L);
 
          ServerMessage msg = new ServerMessageImpl(i, buffer.writerIndex());
          msg.putIntProperty("key", i);
@@ -947,11 +942,11 @@ public class PageCursorStressTest extends ServiceTestBase
     * @throws Exception
     */
    private Transaction pgMessages(StorageManager storage,
-                           PagingStoreImpl pageStore,
-                           long pgParameter,
-                           int start,
-                           final int NUM_MESSAGES,
-                           final int messageSize) throws Exception
+                                  PagingStoreImpl pageStore,
+                                  long pgParameter,
+                                  int start,
+                                  final int NUM_MESSAGES,
+                                  final int messageSize) throws Exception
    {
 
       TransactionImpl txImpl = new TransactionImpl(pgParameter, null, storage);
@@ -960,7 +955,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       for (int i = start; i < start + NUM_MESSAGES; i++)
       {
-         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1l);
+         HornetQBuffer buffer = RandomUtil.randomBuffer(messageSize, i + 1L);
          ServerMessage msg = new ServerMessageImpl(storage.generateUniqueID(), buffer.writerIndex());
          msg.getBodyBuffer().writeBytes(buffer, 0, buffer.writerIndex());
          msg.putIntProperty("key", i);

@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.client;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -31,8 +32,6 @@ import org.junit.Test;
  * A ExpireTestOnRestartTest
  *
  * @author clebertsuconic
- *
- *
  */
 public class ExpireTestOnRestartTest extends ServiceTestBase
 {
@@ -72,14 +71,14 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
       session.createQueue("exp", "exp", true);
       ClientProducer prod = session.createProducer("test");
 
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeBytes(new byte[1024 * 10]);
          prod.send(message);
       }
 
-      for (int i = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.putIntProperty("i", i);
@@ -107,7 +106,7 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
 
       ClientConsumer cons = session.createConsumer("test");
       session.start();
-      for (int i = 0 ; i < 10; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage msg = cons.receive(5000);
          assertNotNull(msg);
@@ -126,7 +125,7 @@ public class ExpireTestOnRestartTest extends ServiceTestBase
 
 
       cons = session.createConsumer("exp");
-      for (int i  = 0 ; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
+      for (int i = 0; i < NUMBER_OF_EXPIRED_MESSAGES; i++)
       {
          ClientMessage msg = cons.receive(5000);
          assertNotNull(msg);

@@ -13,15 +13,13 @@
 
 package org.hornetq.jms.tests.message;
 
-import org.junit.Test;
-
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 {
@@ -59,7 +57,7 @@ public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 
       // Test with correlation id containing a byte[]
       Message m5 = queueProducerSession.createMessage();
-      final byte[] bytes = new byte[] { -111, 45, 106, 3, -44 };
+      final byte[] bytes = new byte[]{-111, 45, 106, 3, -44};
       m5.setJMSCorrelationIDAsBytes(bytes);
 
       queueProducer.send(m5);

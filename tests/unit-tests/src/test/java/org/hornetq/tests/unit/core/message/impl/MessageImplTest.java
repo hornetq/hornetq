@@ -13,27 +13,23 @@
 
 package org.hornetq.tests.unit.core.message.impl;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
-import org.hornetq.core.server.impl.ServerMessageImpl;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class MessageImplTest extends UnitTestCase
 {
@@ -234,9 +230,9 @@ public class MessageImplTest extends UnitTestCase
    @Test
    public void testMessageCopyIssue() throws Exception
    {
-      for (long i = 0 ; i < 300; i++)
+      for (long i = 0; i < 300; i++)
       {
-         if (i % 10 == 0)System.out.println("#test " + i);
+         if (i % 10 == 0) System.out.println("#test " + i);
          internalMessageCopy();
       }
    }
@@ -257,7 +253,7 @@ public class MessageImplTest extends UnitTestCase
 
       final CountDownLatch latchAlign = new CountDownLatch(T1_number + T2_number);
       final CountDownLatch latchReady = new CountDownLatch(1);
-      class T1 extends  Thread
+      class T1 extends Thread
       {
          @Override
          public void run()
@@ -271,7 +267,7 @@ public class MessageImplTest extends UnitTestCase
             {
             }
 
-            for (int i = 0; i < RUNS; i ++)
+            for (int i = 0; i < RUNS; i++)
             {
                try
                {
@@ -284,12 +280,12 @@ public class MessageImplTest extends UnitTestCase
                }
             }
          }
-      };
+      }
 
       final String bigString;
       {
          StringBuffer buffer = new StringBuffer();
-         for (int i = 0 ; i < 500; i++)
+         for (int i = 0; i < 500; i++)
          {
             buffer.append(" ");
          }
@@ -297,7 +293,7 @@ public class MessageImplTest extends UnitTestCase
       }
 
 
-      class T2 extends  Thread
+      class T2 extends Thread
       {
          @Override
          public void run()
@@ -311,7 +307,7 @@ public class MessageImplTest extends UnitTestCase
             {
             }
 
-            for (int i = 0; i < RUNS; i ++)
+            for (int i = 0; i < RUNS; i++)
             {
                try
                {
@@ -326,19 +322,19 @@ public class MessageImplTest extends UnitTestCase
                }
             }
          }
-      };
+      }
 
 
       ArrayList<Thread> threads = new ArrayList<Thread>();
 
-      for (int i = 0 ; i < T1_number; i++)
+      for (int i = 0; i < T1_number; i++)
       {
          T1 t = new T1();
          threads.add(t);
          t.start();
       }
 
-      for (int i = 0 ; i < T2_number; i++)
+      for (int i = 0; i < T2_number; i++)
       {
          T2 t2 = new T2();
          threads.add(t2);
@@ -358,10 +354,9 @@ public class MessageImplTest extends UnitTestCase
    }
 
 
-
    private void simulateRead(HornetQBuffer buf)
    {
-      buf.setIndex(buf.capacity() /2, buf.capacity() /2);
+      buf.setIndex(buf.capacity() / 2, buf.capacity() / 2);
 
       // ok this is not actually happening during the read process, but changing this shouldn't affect the buffer on copy
       // this is to exagerate the isolation on this test

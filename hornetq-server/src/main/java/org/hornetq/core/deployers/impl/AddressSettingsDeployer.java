@@ -13,14 +13,15 @@
 
 package org.hornetq.core.deployers.impl;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.api.core.Pair;
 import org.w3c.dom.Node;
 
 /**
  * A deployer for creating a set of queue settings and adding them to a repository
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class AddressSettingsDeployer extends XmlDeployer
@@ -38,12 +39,13 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    /**
     * the names of the elements to deploy
+    *
     * @return the names of the elements to deploy
     */
    @Override
    public String[] getElementTagName()
    {
-      return new String[] { "address-setting" };
+      return new String[]{"address-setting"};
    }
 
    @Override
@@ -54,6 +56,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception
     */
@@ -69,11 +72,12 @@ public class AddressSettingsDeployer extends XmlDeployer
    @Override
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };
+      return new String[]{"hornetq-configuration.xml", "hornetq-queues.xml"};
    }
 
    /**
     * Undeploys an element.
+    *
     * @param node the element to undeploy
     * @throws Exception
     */
@@ -87,6 +91,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    /**
     * the key attribute for the element, usually 'name' but can be overridden
+    *
     * @return the key attribute
     */
    @Override

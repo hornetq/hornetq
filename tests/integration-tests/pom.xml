@@ -1,15 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.hornetq.tests</groupId>
       <artifactId>hornetq-tests-pom</artifactId>
-     <version>2.3.16-SNAPSHOT</version>
+      <version>2.3.16-SNAPSHOT</version>
    </parent>
 
    <artifactId>integration-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Integration Tests</name>
+
+   <properties>
+      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+   </properties>
 
    <dependencies>
       <dependency>
@@ -100,28 +104,28 @@
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
       </dependency>
-       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging-processor</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.jboss.logging</groupId>
-           <artifactId>jboss-logging</artifactId>
-       </dependency>
       <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-processor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logmanager</groupId>
+         <artifactId>jboss-logmanager</artifactId>
       </dependency>
    </dependencies>
 
    <build>
-     <testResources>
-       <testResource>
-         <directory>src/test/resources</directory>
-         <filtering>true</filtering>
-       </testResource>
-     </testResources>
-     <plugins>
+      <testResources>
+         <testResource>
+            <directory>src/test/resources</directory>
+            <filtering>true</filtering>
+         </testResource>
+      </testResources>
+      <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
@@ -131,18 +135,6 @@
                   <goals>
                      <goal>test-jar</goal>
                   </goals>
-
-                  <configuration>
-                     <systemProperties>
-                        <!-- This is to make sure that any test using JGroups
-                             e.g org.hornetq.tests.integration.discovery.DiscoveryTest
-                             will use a valid address regardless of the settings you have -->
-                        <property>
-                           <name>jgroups.bind_addr</name>
-                           <value>::1</value>
-                        </property>
-                     </systemProperties>
-                   </configuration>
                </execution>
             </executions>
          </plugin>

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -30,6 +28,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Test;
 
 /**
  * This test will simulate a situation where the Topics used to have an extra queue on startup.
@@ -37,28 +36,26 @@ import org.hornetq.tests.util.JMSTestBase;
  * This test will create the dirty situation where the test should recover from
  *
  * @author clebertsuconic
- *
- *
  */
 public class TopicCleanupTest extends JMSTestBase
 {
-   
+
    protected boolean usePersistence()
    {
       return true;
    }
- 
+
    @Test
    public void testSendTopic() throws Exception
    {
       Topic topic = createTopic("topic");
       Connection conn = cf.createConnection();
 
-      
+
       try
       {
          conn.setClientID("someID");
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageConsumer cons = sess.createDurableSubscriber(topic, "someSub");
@@ -66,36 +63,36 @@ public class TopicCleanupTest extends JMSTestBase
          conn.start();
 
          MessageProducer prod = sess.createProducer(topic);
-         
+
          TextMessage msg1 = sess.createTextMessage("text");
 
          prod.send(msg1);
-         
+
          assertNotNull(cons.receive(5000));
-         
+
          conn.close();
-         
+
          StorageManager storage = server.getStorageManager();
 
-         
-         for (int i = 0 ; i < 100; i++)
+
+         for (int i = 0; i < 100; i++)
          {
             long txid = storage.generateUniqueID();
-            
-            final Queue queue = new QueueImpl(storage.generateUniqueID(), SimpleString.toSimpleString("jms.topic.topic"), SimpleString.toSimpleString("jms.topic.topic"), FilterImpl.createFilter(HornetQServerImpl.GENERIC_IGNORED_FILTER), true, false, server.getScheduledPool(), server.getPostOffice(), 
+
+            final Queue queue = new QueueImpl(storage.generateUniqueID(), SimpleString.toSimpleString("jms.topic.topic"), SimpleString.toSimpleString("jms.topic.topic"), FilterImpl.createFilter(HornetQServerImpl.GENERIC_IGNORED_FILTER), true, false, server.getScheduledPool(), server.getPostOffice(),
                                               storage, server.getAddressSettingsRepository(), server.getExecutorFactory().getExecutor());
-            
+
             LocalQueueBinding binding = new LocalQueueBinding(queue.getAddress(), queue, server.getNodeID());
-   
+
             storage.addQueueBinding(txid, binding);
-            
+
             storage.commitBindings(txid);
          }
- 
+
          jmsServer.stop();
-         
+
          jmsServer.start();
-      
+
       }
       finally
       {

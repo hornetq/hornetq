@@ -12,15 +12,10 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -32,13 +27,14 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessageRateTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class MessageRateTest extends ServiceTestBase
 {
@@ -62,25 +58,25 @@ public class MessageRateTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-         server.start();
+      server.start();
 
-         locator.setProducerMaxRate(10);
-         ClientSessionFactory sf = createSessionFactory(locator);
-         ClientSession session = sf.createSession(false, true, true);
+      locator.setProducerMaxRate(10);
+      ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
-         long start = System.currentTimeMillis();
-         for (int i = 0; i < 10; i++)
-         {
-            producer.send(session.createMessage(false));
-         }
-         long end = System.currentTimeMillis();
+      ClientProducer producer = session.createProducer(ADDRESS);
+      long start = System.currentTimeMillis();
+      for (int i = 0; i < 10; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
+      long end = System.currentTimeMillis();
 
-         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+      Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
 
-         session.close();
+      session.close();
    }
 
    @Test
@@ -90,36 +86,36 @@ public class MessageRateTest extends ServiceTestBase
 
       server.start();
 
-         locator.setConsumerMaxRate(10);
-         ClientSessionFactory sf = createSessionFactory(locator);
+      locator.setConsumerMaxRate(10);
+      ClientSessionFactory sf = createSessionFactory(locator);
 
-         ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
-         for (int i = 0; i < 12; i++)
-         {
-            producer.send(session.createMessage(false));
-         }
+      for (int i = 0; i < 12; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
 
-         session.start();
+      session.start();
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         long start = System.currentTimeMillis();
+      long start = System.currentTimeMillis();
 
-         for (int i = 0; i < 12; i++)
-         {
-            consumer.receive(1000);
-         }
+      for (int i = 0; i < 12; i++)
+      {
+         consumer.receive(1000);
+      }
 
-         long end = System.currentTimeMillis();
+      long end = System.currentTimeMillis();
 
-         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+      Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
 
-         session.close();
+      session.close();
    }
 
    @Test
@@ -129,54 +125,54 @@ public class MessageRateTest extends ServiceTestBase
 
       server.start();
 
-         locator.setConsumerMaxRate(10);
-         ClientSessionFactory sf = createSessionFactory(locator);
+      locator.setConsumerMaxRate(10);
+      ClientSessionFactory sf = createSessionFactory(locator);
 
-         ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(ADDRESS);
+      ClientProducer producer = session.createProducer(ADDRESS);
 
-         for (int i = 0; i < 12; i++)
+      for (int i = 0; i < 12; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      final AtomicInteger failures = new AtomicInteger(0);
+
+      final CountDownLatch messages = new CountDownLatch(12);
+
+      consumer.setMessageHandler(new MessageHandler()
+      {
+
+         public void onMessage(final ClientMessage message)
          {
-            producer.send(session.createMessage(false));
-         }
-
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
-
-         final AtomicInteger failures = new AtomicInteger(0);
-
-         final CountDownLatch messages = new CountDownLatch(12);
-
-         consumer.setMessageHandler(new MessageHandler()
-         {
-
-            public void onMessage(final ClientMessage message)
+            try
             {
-               try
-               {
-                  message.acknowledge();
-                  messages.countDown();
-               }
-               catch (Exception e)
-               {
-                  e.printStackTrace(); // Hudson report
-                  failures.incrementAndGet();
-               }
+               message.acknowledge();
+               messages.countDown();
             }
-
-         });
-
-         long start = System.currentTimeMillis();
-         session.start();
-         Assert.assertTrue(messages.await(5, TimeUnit.SECONDS));
-         long end = System.currentTimeMillis();
-
-         Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
-
-         session.close();
+            catch (Exception e)
+            {
+               e.printStackTrace(); // Hudson report
+               failures.incrementAndGet();
+            }
          }
+
+      });
+
+      long start = System.currentTimeMillis();
+      session.start();
+      Assert.assertTrue(messages.await(5, TimeUnit.SECONDS));
+      long end = System.currentTimeMillis();
+
+      Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+
+      session.close();
+   }
 
    @Override
    @Before

@@ -62,7 +62,7 @@ public class AddressImpl implements Address
 
    public void addLinkedAddress(final Address address)
    {
-      if(!linkedAddresses.contains(address))
+      if (!linkedAddresses.contains(address))
       {
          linkedAddresses.add(address);
       }
@@ -83,7 +83,7 @@ public class AddressImpl implements Address
       int matchPos = 0;
 
       SimpleString nextToMatch;
-      for (; matchPos < add.getAddressParts().length;)
+      for (; matchPos < add.getAddressParts().length; )
       {
          if (pos >= addressParts.length)
          {

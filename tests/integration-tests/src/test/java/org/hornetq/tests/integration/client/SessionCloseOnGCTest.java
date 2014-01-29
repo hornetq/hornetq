@@ -11,13 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.lang.ref.WeakReference;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -26,15 +21,15 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A SessionCloseOnGCTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <mailto:tim.fox@jboss.org">Tim Fox</a>
- *
- *
  */
 public class SessionCloseOnGCTest extends ServiceTestBase
 {
@@ -53,37 +48,39 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   /** Make sure Sessions are not leaking after closed..
-    *  Also... we want to make sure the SessionFactory will close itself when there are not references into it */
+   /**
+    * Make sure Sessions are not leaking after closed..
+    * Also... we want to make sure the SessionFactory will close itself when there are not references into it
+    */
    @Test
    public void testValidateFactoryGC1() throws Exception
    {
-         ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
 
-         ClientSession s1 = factory.createSession();
-         ClientSession s2 = factory.createSession();
+      ClientSession s1 = factory.createSession();
+      ClientSession s2 = factory.createSession();
 
-         s1.close();
-         s2.close();
+      s1.close();
+      s2.close();
 
-         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
-         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+      WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+      WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
 
-         s1 = null;
-         s2 = null;
+      s1 = null;
+      s2 = null;
 
-         locator.close();
+      locator.close();
 
-         locator = null;
-         UnitTestCase.checkWeakReferences(wrs1, wrs2);
+      locator = null;
+      UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
-         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+      WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
-         factory.close();
+      factory.close();
 
-         factory = null;
+      factory = null;
 
-         UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
+      UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
    @Test
@@ -91,61 +88,61 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       locator.setUseGlobalPools(false);
 
-         ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
 
-         ClientSession s1 = factory.createSession();
-         ClientSession s2 = factory.createSession();
+      ClientSession s1 = factory.createSession();
+      ClientSession s2 = factory.createSession();
 
-         s1.close();
-         s2.close();
+      s1.close();
+      s2.close();
 
-         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
-         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+      WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+      WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
 
-         s1 = null;
-         s2 = null;
+      s1 = null;
+      s2 = null;
 
-         locator.close();
+      locator.close();
 
-         locator = null;
-         UnitTestCase.checkWeakReferences(wrs1, wrs2);
+      locator = null;
+      UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
-         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+      WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
-         factory.close();
+      factory.close();
 
-         factory = null;
+      factory = null;
 
-         UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
-         }
+      UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
+   }
 
    @Test
    public void testValidateFactoryGC3() throws Exception
    {
-         ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
 
-         ClientSession s1 = factory.createSession();
-         ClientSession s2 = factory.createSession();
+      ClientSession s1 = factory.createSession();
+      ClientSession s2 = factory.createSession();
 
-         s1.close();
-         s2.close();
+      s1.close();
+      s2.close();
 
-         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
-         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+      WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+      WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
 
-         s1 = null;
-         s2 = null;
+      s1 = null;
+      s2 = null;
 
-         locator.close();
+      locator.close();
 
-         locator = null;
-         UnitTestCase.checkWeakReferences(wrs1, wrs2);
+      locator = null;
+      UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
-         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+      WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
-         factory = null;
+      factory = null;
 
-         UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
+      UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
    @Test
@@ -153,25 +150,25 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       ClientSessionFactory factory = locator.createSessionFactory();
 
-         ClientSession s1 = factory.createSession();
-         ClientSession s2 = factory.createSession();
+      ClientSession s1 = factory.createSession();
+      ClientSession s2 = factory.createSession();
 
-         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
-         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+      WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+      WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
 
-         s1 = null;
-         s2 = null;
+      s1 = null;
+      s2 = null;
 
-         locator.close();
+      locator.close();
 
-         locator = null;
-         UnitTestCase.checkWeakReferences(wrs1, wrs2);
+      locator = null;
+      UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
-         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+      WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
-         factory = null;
+      factory = null;
 
-         UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
+      UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
    }
 
    @Test
@@ -179,20 +176,20 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       ClientSessionFactory factory = locator.createSessionFactory();
 
-         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+      WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
-         factory = null;
+      factory = null;
 
-         locator.close();
+      locator.close();
 
-         locator = null;
-         UnitTestCase.checkWeakReferences(fref);
-         }
+      locator = null;
+      UnitTestCase.checkWeakReferences(fref);
+   }
 
    @Test
    public void testCloseOneSessionOnGC() throws Exception
    {
-      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -212,7 +209,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    @Test
    public void testCloseSeveralSessionOnGC() throws Exception
    {
-      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)locator.createSessionFactory();
 
       ClientSession session1 = sf.createSession(false, true, true);
       ClientSession session2 = sf.createSession(false, true, true);

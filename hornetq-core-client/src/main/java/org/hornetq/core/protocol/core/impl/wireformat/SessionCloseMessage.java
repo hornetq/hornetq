@@ -41,6 +41,13 @@ public class SessionCloseMessage extends PacketImpl
    }
 
    @Override
+   public int hashCode()
+   {
+      // TODO
+      return 0;
+   }
+
+   @Override
    public boolean isAsyncExec()
    {
       return true;

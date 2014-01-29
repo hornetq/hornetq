@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.unit.core.paging.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,8 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -60,6 +54,10 @@ import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -67,7 +65,7 @@ import org.hornetq.utils.ExecutorFactory;
 public class PagingStoreImplTest extends UnitTestCase
 {
 
-   private final static SimpleString destinationTestName = new SimpleString("test");
+   private static final SimpleString destinationTestName = new SimpleString("test");
    private final ReadLock lock = new ReentrantReadWriteLock().readLock();
 
    protected ExecutorService executor;
@@ -114,9 +112,9 @@ public class PagingStoreImplTest extends UnitTestCase
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
-                                   addressSettings, getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
+                             addressSettings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -146,10 +144,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory,
-                                   PagingStoreImplTest.destinationTestName, addressSettings,
-                                   getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory,
+                             PagingStoreImplTest.destinationTestName, addressSettings,
+                             getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -178,9 +176,9 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.sync();
 
       storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
-                                   addressSettings, getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, null, PagingStoreImplTest.destinationTestName,
+                             addressSettings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -200,10 +198,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStoreImpl storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory,
-                                   PagingStoreImplTest.destinationTestName, addressSettings,
-                                   getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory,
+                             PagingStoreImplTest.destinationTestName, addressSettings,
+                             getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -218,7 +216,7 @@ public class PagingStoreImplTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
 
-         HornetQBuffer buffer = createRandomBuffer(i + 1l, 10);
+         HornetQBuffer buffer = createRandomBuffer(i + 1L, 10);
 
          buffers.add(buffer);
 
@@ -273,10 +271,10 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStoreImpl store =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory,
-                                   PagingStoreImplTest.destinationTestName, addressSettings,
-                                   getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory,
+                             PagingStoreImplTest.destinationTestName, addressSettings,
+                             getExecutorFactory().getExecutor(), true);
 
       store.start();
 
@@ -291,7 +289,7 @@ public class PagingStoreImplTest extends UnitTestCase
       for (int i = 0; i < 10; i++)
       {
 
-         HornetQBuffer buffer = createRandomBuffer(i + 1l, 10);
+         HornetQBuffer buffer = createRandomBuffer(i + 1L, 10);
 
          buffers.add(buffer);
 
@@ -358,7 +356,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertFalse(store.isPaging());
 
-      {final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
+      {
+         final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
          Assert.assertFalse(store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()), lock));
       }
 
@@ -377,7 +376,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertEquals(1, msgs.size());
 
-      Assert.assertEquals(1l, msgs.get(0).getMessage().getMessageID());
+      Assert.assertEquals(1L, msgs.get(0).getMessage().getMessageID());
 
       UnitTestCase.assertEqualsBuffers(18, buffers.get(0), msgs.get(0).getMessage().getBodyBuffer());
 
@@ -402,8 +401,7 @@ public class PagingStoreImplTest extends UnitTestCase
    }
 
    protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads)
-                                                                                                      throws Exception,
-                                                                                                      InterruptedException
+      throws Exception
    {
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
@@ -424,9 +422,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
-                                   settings, getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                             settings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -518,7 +516,7 @@ public class PagingStoreImplTest extends UnitTestCase
          }
       }
 
-      WriterThread producerThread[] = new WriterThread[numberOfThreads];
+      WriterThread[] producerThread = new WriterThread[numberOfThreads];
 
       for (int i = 0; i < numberOfThreads; i++)
       {
@@ -582,9 +580,9 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       PagingStore storeImpl2 =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
-                                   settings, getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                             settings, getExecutorFactory().getExecutor(), true);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();
@@ -598,7 +596,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
       ServerMessage lastMsg =
-               createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
+         createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
 
       storeImpl2.forceAnotherPage();
 
@@ -631,8 +629,8 @@ public class PagingStoreImplTest extends UnitTestCase
             Assert.assertNotNull(msgWritten);
             Assert.assertEquals(msg.getMessage().getAddress(), msgWritten.getAddress());
             UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().writerIndex(), msgWritten.getBodyBuffer()
-                                                                                                    .toByteBuffer()
-                                                                                                    .array(),
+               .toByteBuffer()
+               .array(),
                                                 msg.getMessage().getBodyBuffer().toByteBuffer().array());
          }
       }
@@ -665,9 +663,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore storeImpl =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
-                                   settings, getExecutorFactory().getExecutor(), true);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                             settings, getExecutorFactory().getExecutor(), true);
 
       storeImpl.start();
 
@@ -702,9 +700,9 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final PagingStore store =
-               new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
-                                   createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
-                                   settings, getExecutorFactory().getExecutor(), false);
+         new PagingStoreImpl(PagingStoreImplTest.destinationTestName, null, 100, createMockManager(),
+                             createStorageManagerMock(), factory, storeFactory, new SimpleString("test"),
+                             settings, getExecutorFactory().getExecutor(), false);
 
       store.start();
 
@@ -747,7 +745,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
                   final RoutingContextImpl ctx2 = new RoutingContextImpl(null);
                   while (!store.page(msg, ctx2.getTransaction(), ctx2.getContextListing(store.getStoreName()),
-                                         lock))
+                                     lock))
                   {
                      store.startPaging();
                   }
@@ -928,7 +926,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       @Override
       public List<PagingStore>
-               reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+      reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
       {
          return null;
       }

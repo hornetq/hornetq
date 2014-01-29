@@ -12,18 +12,11 @@
  */
 
 package org.hornetq.tests.integration.jms.server;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
-import java.net.URI;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.Context;
-
-import org.junit.Assert;
+import java.net.URI;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -41,14 +34,16 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Element;
 
 /**
  * A JMSServerDeployerTest
  *
  * @author jmesnil
- *
- *
  */
 public class JMSServerDeployerTest extends ServiceTestBase
 {
@@ -123,7 +118,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       String xml =
 
-      "<queue name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</queue>";
+         "<queue name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</queue>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
 
@@ -142,7 +137,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       String xml =
 
-      "<topic name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</topic>";
+         "<topic name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</topic>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
 
@@ -171,12 +166,13 @@ public class JMSServerDeployerTest extends ServiceTestBase
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
-      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
-                                                         "/acme/fullConfigurationConnectionFactory",
-                                                         "java:/xyz/tfullConfigurationConnectionFactory",
-                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
-      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
-      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+      String[] connectionFactoryBindings = new String[]{
+         "/fullConfigurationConnectionFactory",
+         "/acme/fullConfigurationConnectionFactory",
+         "java:/xyz/tfullConfigurationConnectionFactory",
+         "java:/connectionfactories/acme/fullConfigurationConnectionFactory"};
+      String[] queueBindings = new String[]{"/fullConfigurationQueue", "/queue/fullConfigurationQueue"};
+      String[] topicBindings = new String[]{"/fullConfigurationTopic", "/topic/fullConfigurationTopic"};
 
       for (String binding : connectionFactoryBindings)
       {
@@ -257,12 +253,12 @@ public class JMSServerDeployerTest extends ServiceTestBase
       String conf = "hornetq-jms-for-JMSServerDeployerTest2.xml";
       URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
-      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
-                                                         "/acme/fullConfigurationConnectionFactory",
-                                                         "java:/xyz/tfullConfigurationConnectionFactory",
-                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
-      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
-      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+      String[] connectionFactoryBindings = new String[]{"/fullConfigurationConnectionFactory",
+         "/acme/fullConfigurationConnectionFactory",
+         "java:/xyz/tfullConfigurationConnectionFactory",
+         "java:/connectionfactories/acme/fullConfigurationConnectionFactory"};
+      String[] queueBindings = new String[]{"/fullConfigurationQueue", "/queue/fullConfigurationQueue"};
+      String[] topicBindings = new String[]{"/fullConfigurationTopic", "/topic/fullConfigurationTopic"};
 
       for (String binding : connectionFactoryBindings)
       {
@@ -352,7 +348,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup",
                                                                         5432, 5432,
                                                                         new UDPBroadcastGroupConfiguration("243.7.7.7", 12345,
-                                                                        "172.16.8.10", -1));
+                                                                                                           "172.16.8.10", -1));
       config.getDiscoveryGroupConfigurations().put("mygroup", dcg);
       HornetQServer server = createServer(false, config);
 

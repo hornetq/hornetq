@@ -12,22 +12,20 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A test that sends/receives map messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class MapMessageTest extends MessageTestBase
 {
@@ -86,12 +84,12 @@ public class MapMessageTest extends MessageTestBase
 
       mm.setBoolean("boolean", true);
       mm.setByte("byte", (byte)3);
-      mm.setBytes("bytes", new byte[] { (byte)3, (byte)4, (byte)5 });
+      mm.setBytes("bytes", new byte[]{(byte)3, (byte)4, (byte)5});
       mm.setChar("char", (char)6);
       mm.setDouble("double", 7.0);
       mm.setFloat("float", 8.0f);
       mm.setInt("int", 9);
-      mm.setLong("long", 10l);
+      mm.setLong("long", 10L);
       mm.setObject("object", new String("this is an object"));
       mm.setShort("short", (short)11);
       mm.setString("string", "this is a string");
@@ -114,7 +112,7 @@ public class MapMessageTest extends MessageTestBase
       ProxyAssertSupport.assertEquals(new Double(7.0), new Double(mm.getDouble("double")));
       ProxyAssertSupport.assertEquals(new Float(8.0f), new Float(mm.getFloat("float")));
       ProxyAssertSupport.assertEquals(9, mm.getInt("int"));
-      ProxyAssertSupport.assertEquals(10l, mm.getLong("long"));
+      ProxyAssertSupport.assertEquals(10L, mm.getLong("long"));
       ProxyAssertSupport.assertEquals("this is an object", mm.getObject("object"));
       ProxyAssertSupport.assertEquals((short)11, mm.getShort("short"));
       ProxyAssertSupport.assertEquals("this is a string", mm.getString("string"));

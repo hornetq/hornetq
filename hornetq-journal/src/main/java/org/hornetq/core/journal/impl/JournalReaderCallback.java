@@ -75,6 +75,6 @@ public interface JournalReaderCallback
     */
    void onReadRollbackRecord(long transactionID) throws Exception;
 
-   public void markAsDataFile(JournalFile file);
+   void markAsDataFile(JournalFile file);
 
 }

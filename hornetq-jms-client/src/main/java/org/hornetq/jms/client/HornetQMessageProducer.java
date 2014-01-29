@@ -44,7 +44,6 @@ import org.hornetq.utils.UUIDGenerator;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- *
  */
 public class HornetQMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
@@ -345,8 +344,8 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
             if (!destination.equals(defaultDestination))
             {
                throw new UnsupportedOperationException("Where a default destination is specified " + "for the sender and a destination is "
-                                                       + "specified in the arguments to the send, "
-                                                       + "these destinations must be equal");
+                                                          + "specified in the arguments to the send, "
+                                                          + "these destinations must be equal");
             }
          }
 
@@ -431,7 +430,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       ClientMessage coreMessage = msg.getCoreMessage();
 
-         coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
+      coreMessage.putStringProperty(HornetQConnection.CONNECTION_ID_PROPERTY_NAME, connID);
 
       try
       {

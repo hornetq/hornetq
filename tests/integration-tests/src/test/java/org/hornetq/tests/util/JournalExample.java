@@ -24,12 +24,10 @@ import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**
  * A JournalExample: Just an example on how to use the Journal Directly
- *
+ * <p/>
  * TODO: find a better place to store this example
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalExample
 {
@@ -52,7 +50,7 @@ public class JournalExample
 
    // Inner classes -------------------------------------------------
 
-   public static void main(final String arg[])
+   public static void main(final String[] arg)
    {
       TimeAndCounterIDGenerator idgenerator = new TimeAndCounterIDGenerator();
       try
@@ -80,66 +78,68 @@ public class JournalExample
          for (RecordInfo record : committedRecords)
          {
             System.out.println("Record id = " + record.id +
-                               " userType = " +
-                               record.userRecordType +
-                               " with " +
-                               record.data.length +
-                               " bytes is stored on the journal");
+                                  " userType = " +
+                                  record.userRecordType +
+                                  " with " +
+                                  record.data.length +
+                                  " bytes is stored on the journal");
          }
 
          System.out.println("Adding Records:");
 
          for (int i = 0; i < 10; i++)
          {
-            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2,
-                                                                                          0,
-                                                                                          1,
-                                                                                          2 }, false);
+            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[]{
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2}, false);
          }
 
          long tx = idgenerator.generateID(); // some id generation system
 
          for (int i = 0; i < 100; i++)
          {
-            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           0,
-                                                                                                           1,
-                                                                                                           2,
-                                                                                                           5 });
+            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[]{
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               0,
+               1,
+               2,
+               5});
          }
 
          // After this is complete, you're sure the records are there

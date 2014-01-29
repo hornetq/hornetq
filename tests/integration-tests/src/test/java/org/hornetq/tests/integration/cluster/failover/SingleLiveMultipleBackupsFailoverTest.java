@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +29,8 @@ import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  */
@@ -46,7 +45,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
    public void _testLoop() throws Exception
    {
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          log.info("#test " + i);
          testMultipleFailovers();
@@ -54,6 +53,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
          setUp();
       }
    }
+
    @Test
    public void testMultipleFailovers() throws Exception
    {
@@ -139,12 +139,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       for (int node : nodes)
       {
          TransportConfiguration liveConnector =
-                  createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+            createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
          config1.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
          staticConnectors.add(liveConnector.getName());
       }
       TransportConfiguration backupConnector =
-               createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
+         createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
       basicClusterConnectionConfig(config1, backupConnector.getName(), staticConnectors);
       config1.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
 
@@ -159,7 +159,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    protected void createLiveConfig(int liveNode) throws Exception
    {
       TransportConfiguration liveConnector =
-               createTransportConfiguration(isNetty(), false, generateParams(liveNode, isNetty()));
+         createTransportConfiguration(isNetty(), false, generateParams(liveNode, isNetty()));
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,

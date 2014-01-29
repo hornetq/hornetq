@@ -279,7 +279,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    // Remote part of the test =================================================================
 
-   public static void main(final String args[]) throws Exception
+   public static void main(final String[] args) throws Exception
    {
 
       if (args.length != 5)
@@ -353,7 +353,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
          }
       });
 
-      LocalThread threads[] = new LocalThread[numberOfThreads];
+      LocalThread[] threads = new LocalThread[numberOfThreads];
       final AtomicLong sequenceTransaction = new AtomicLong();
 
       for (int i = 0; i < numberOfThreads; i++)

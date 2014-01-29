@@ -30,101 +30,101 @@ public interface Admin
     *
     * @return name of the JMS Provider
     */
-   public String getName();
+   String getName();
 
    /**
     * Returns an <code>Context</code> for the JMS Provider.
     *
     * @return an <code>Context</code> for the JMS Provider.
     */
-   public Context createContext() throws NamingException;
+   Context createContext() throws NamingException;
 
    /**
     * Creates a <code>ConnectionFactory</code> and makes it available
-    *from JNDI with name <code>name</code>.
+    * from JNDI with name <code>name</code>.
     *
-    * @since JMS 1.1
     * @param name JNDI name of the <code>ConnectionFactory</code>
+    * @since JMS 1.1
     */
-   public void createConnectionFactory(String name);
+   void createConnectionFactory(String name);
 
    /**
     * Creates a <code>QueueConnectionFactory</code> and makes it available
-    *from JNDI with name <code>name</code>.
+    * from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>QueueConnectionFactory</code>
     */
-   public void createQueueConnectionFactory(String name);
+   void createQueueConnectionFactory(String name);
 
    /**
     * Creates a <code>TopicConnectionFactory</code> and makes it available
-    *from JNDI with name <code>name</code>.
+    * from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>TopicConnectionFactory</code>
     */
-   public void createTopicConnectionFactory(String name);
+   void createTopicConnectionFactory(String name);
 
    /**
     * Creates a <code>Queue</code> and makes it available
-    *from JNDI with name <code>name</code>.
+    * from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>Queue</code>
     */
-   public void createQueue(String name);
+   void createQueue(String name);
 
    /**
     * Creates a <code>Topic</code> and makes it available
-    *from JNDI with name <code>name</code>.
+    * from JNDI with name <code>name</code>.
     *
     * @param name JNDI name of the <code>Topic</code>
     */
-   public void createTopic(String name);
+   void createTopic(String name);
 
    /**
     * Removes the <code>Queue</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>Queue</code>
     */
-   public void deleteQueue(String name);
+   void deleteQueue(String name);
 
    /**
     * Removes the <code>Topic</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>Topic</code>
     */
-   public void deleteTopic(String name);
+   void deleteTopic(String name);
 
    /**
     * Removes the <code>ConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
-    * @since JMS 1.1
     * @param name JNDI name of the <code>ConnectionFactory</code>
+    * @since JMS 1.1
     */
-   public void deleteConnectionFactory(String name);
+   void deleteConnectionFactory(String name);
 
    /**
     * Removes the <code>QueueConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>QueueConnectionFactory</code>
     */
-   public void deleteQueueConnectionFactory(String name);
+   void deleteQueueConnectionFactory(String name);
 
    /**
     * Removes the <code>TopicConnectionFactory</code> of name <code>name</code> from JNDI and deletes it
     *
     * @param name JNDI name of the <code>TopicConnectionFactory</code>
     */
-   public void deleteTopicConnectionFactory(String name);
+   void deleteTopicConnectionFactory(String name);
 
    /**
     * Optional method to start the server embedded (instead of running an external server)
     */
-   public void startServer() throws Exception;
+   void startServer() throws Exception;
 
    /**
     * Optional method to stop the server embedded (instead of running an external server)
     */
-   public void stopServer() throws Exception;
+   void stopServer() throws Exception;
 
    /**
     * Optional method for processing to be made after the Admin is instantiated and before

@@ -24,8 +24,7 @@ public final class CreateMessage
       return message;
    }
 
-   public static
-            ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
+   public static ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
    {
       ClientMessage message = session.createMessage(HornetQBytesMessage.TYPE,
                                                     durable,

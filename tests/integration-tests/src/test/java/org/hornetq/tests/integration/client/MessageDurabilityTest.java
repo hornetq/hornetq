@@ -12,11 +12,6 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -31,13 +26,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A MessagDurabilityTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class MessageDurabilityTest extends ServiceTestBase
 {
@@ -80,7 +76,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       {
          session.createConsumer(queue);
       }
-      catch(HornetQNonExistentQueueException neqe)
+      catch (HornetQNonExistentQueueException neqe)
       {
          //ok
       }

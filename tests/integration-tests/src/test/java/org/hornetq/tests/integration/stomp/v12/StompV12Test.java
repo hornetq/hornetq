@@ -16,12 +16,6 @@
  * limitations under the License.
  */
 package org.hornetq.tests.integration.stomp.v12;
-import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.charset.Charset;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -31,6 +25,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
+import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
@@ -58,7 +58,7 @@ public class StompV12Test extends StompV11TestBase
    public void setUp() throws Exception
    {
       super.setUp();
-      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
    }
 
    @Override
@@ -110,7 +110,7 @@ public class StompV12Test extends StompV11TestBase
       assertFalse(connection.isConnected());
 
       //new way of connection
-      StompClientConnectionV11 conn = (StompClientConnectionV11) StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      StompClientConnectionV11 conn = (StompClientConnectionV11)StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
       conn.connect1(defUser, defPass);
 
       assertTrue(conn.isConnected());
@@ -156,7 +156,7 @@ public class StompV12Test extends StompV11TestBase
    @Test
    public void testNegotiation() throws Exception
    {
-      StompClientConnection conn = StompClientConnectionFactory.createClientConnection("1.0", hostname, port);;
+      StompClientConnection conn = StompClientConnectionFactory.createClientConnection("1.0", hostname, port);
       // case 1 accept-version absent. It is a 1.0 connect
       ClientStompFrame frame = conn.createFrame("CONNECT");
       frame.addHeader("host", "127.0.0.1");
@@ -699,7 +699,7 @@ public class StompV12Test extends StompV11TestBase
       connV12.disconnect();
 
       //heart-beat (500,1000)
-      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       frame = connV12.createFrame("CONNECT");
       frame.addHeader("host", "127.0.0.1");
       frame.addHeader("login", this.defUser);
@@ -766,7 +766,7 @@ public class StompV12Test extends StompV11TestBase
 
          // subscribe
          newConn = StompClientConnectionFactory.createClientConnection("1.2",
-               hostname, port);
+                                                                       hostname, port);
          newConn.connect(defUser, defPass);
 
          ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
@@ -895,7 +895,7 @@ public class StompV12Test extends StompV11TestBase
 
          // subscribe
          newConn = StompClientConnectionFactory.createClientConnection("1.2",
-               hostname, port);
+                                                                       hostname, port);
          frame = newConn.createFrame("CONNECT");
          frame.addHeader("host", "127.0.0.1");
          frame.addHeader("login", this.defUser);
@@ -1129,7 +1129,6 @@ public class StompV12Test extends StompV11TestBase
       String messageID = frame.getHeader("message-id");
 
 
-
       ClientStompFrame ackFrame = connV12.createFrame("ACK");
       //give it a wrong sub id
       ackFrame.addHeader("subscription", "sub2");
@@ -1166,7 +1165,6 @@ public class StompV12Test extends StompV11TestBase
       ClientStompFrame frame = connV12.receiveFrame();
 
       String messageID = frame.getHeader("message-id");
-
 
 
       ClientStompFrame ackFrame = connV12.createFrame("ACK");
@@ -1356,7 +1354,7 @@ public class StompV12Test extends StompV11TestBase
 
          System.out.println(i + " == received: " + frame);
          //ack on even numbers
-         if (i%2 == 0)
+         if (i % 2 == 0)
          {
             ack(connV12, frame);
          }
@@ -1370,14 +1368,14 @@ public class StompV12Test extends StompV11TestBase
       MessageConsumer consumer = session.createConsumer(queue);
 
       TextMessage message = null;
-      for (int i = 0; i < num/2; i++)
+      for (int i = 0; i < num / 2; i++)
       {
-         message = (TextMessage) consumer.receive(1000);
+         message = (TextMessage)consumer.receive(1000);
          Assert.assertNotNull(message);
          System.out.println("Legal: " + message.getText());
       }
 
-      message = (TextMessage) consumer.receive(1000);
+      message = (TextMessage)consumer.receive(1000);
 
       Assert.assertNull(message);
    }
@@ -1535,9 +1533,11 @@ public class StompV12Test extends StompV11TestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      Thread thr = new Thread() {
+      Thread thr = new Thread()
+      {
          @Override
-         public void run() {
+         public void run()
+         {
             ClientStompFrame sendFrame = connV12.createFrame("SEND");
             sendFrame.addHeader("destination", getQueuePrefix() + getQueueName());
             sendFrame.setBody("Hello World");
@@ -1621,7 +1621,7 @@ public class StompV12Test extends StompV11TestBase
       sendMessage(getName(), topic);
 
       connV12.destroy();
-      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       connV12.connect(defUser, defPass, "myclientid");
 
       this.subscribeTopic(connV12, "sub1", "auto", getName());
@@ -1755,7 +1755,8 @@ public class StompV12Test extends StompV11TestBase
             try
             {
                System.out.println("___> latch now: " + latch.getCount() + " m: " + m.getText());
-            } catch (JMSException e)
+            }
+            catch (JMSException e)
             {
                fail("here failed");
                e.printStackTrace();
@@ -1810,7 +1811,7 @@ public class StompV12Test extends StompV11TestBase
 
       connV12.connect(defUser, defPass);
 
-      byte[] data = new byte[] { 1, 0, 0, 4 };
+      byte[] data = new byte[]{1, 0, 0, 4};
 
       ClientStompFrame frame = connV12.createFrame("SEND");
 
@@ -2079,7 +2080,7 @@ public class StompV12Test extends StompV11TestBase
 
       this.subscribe(connV12, "sub1", "auto");
 
-      byte[] payload = new byte[] { 1, 2, 3, 4, 5 };
+      byte[] payload = new byte[]{1, 2, 3, 4, 5};
       sendMessage(payload, queue);
 
       ClientStompFrame frame = connV12.receiveFrame();
@@ -2342,7 +2343,7 @@ public class StompV12Test extends StompV11TestBase
       sendMessage("second message");
 
       //reconnect
-      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       connV12.connect(defUser, defPass);
 
       frame = connV12.receiveFrame(1000);
@@ -2447,26 +2448,26 @@ public class StompV12Test extends StompV11TestBase
    }
 
    private void subscribe(StompClientConnection conn, String subId,
-         String ack, String durableId) throws IOException, InterruptedException
+                          String ack, String durableId) throws IOException, InterruptedException
    {
       subscribe(conn, subId, ack, durableId, null);
    }
 
    private void subscribe(StompClientConnection conn, String subId,
-         String ack, String durableId, boolean receipt) throws IOException, InterruptedException
+                          String ack, String durableId, boolean receipt) throws IOException, InterruptedException
    {
       subscribe(conn, subId, ack, durableId, null, receipt);
    }
 
    private void subscribe(StompClientConnection conn, String subId, String ack,
-         String durableId, String selector) throws IOException,
-         InterruptedException
+                          String durableId, String selector) throws IOException,
+      InterruptedException
    {
       subscribe(conn, subId, ack, durableId, selector, false);
    }
 
    private void subscribe(StompClientConnection conn, String subId,
-         String ack, String durableId, String selector, boolean receipt) throws IOException, InterruptedException
+                          String ack, String durableId, String selector, boolean receipt) throws IOException, InterruptedException
    {
       ClientStompFrame subFrame = conn.createFrame("SUBSCRIBE");
       subFrame.addHeader("id", subId);
@@ -2497,19 +2498,19 @@ public class StompV12Test extends StompV11TestBase
    }
 
    private void subscribeTopic(StompClientConnection conn, String subId,
-         String ack, String durableId) throws IOException, InterruptedException
+                               String ack, String durableId) throws IOException, InterruptedException
    {
       subscribeTopic(conn, subId, ack, durableId, false);
    }
 
    private void subscribeTopic(StompClientConnection conn, String subId,
-         String ack, String durableId, boolean receipt) throws IOException, InterruptedException
+                               String ack, String durableId, boolean receipt) throws IOException, InterruptedException
    {
       subscribeTopic(conn, subId, ack, durableId, receipt, false);
    }
 
    private void subscribeTopic(StompClientConnection conn, String subId,
-         String ack, String durableId, boolean receipt, boolean noLocal) throws IOException, InterruptedException
+                               String ack, String durableId, boolean receipt, boolean noLocal) throws IOException, InterruptedException
    {
       ClientStompFrame subFrame = conn.createFrame("SUBSCRIBE");
       subFrame.addHeader("id", subId);
@@ -2548,7 +2549,7 @@ public class StompV12Test extends StompV11TestBase
    }
 
    private void unsubscribe(StompClientConnection conn, String subId,
-         boolean receipt) throws IOException, InterruptedException
+                            boolean receipt) throws IOException, InterruptedException
    {
       ClientStompFrame subFrame = conn.createFrame("UNSUBSCRIBE");
       subFrame.addHeader("id", subId);
@@ -2585,12 +2586,12 @@ public class StompV12Test extends StompV11TestBase
       if (sendDisconnect)
       {
          connV12.disconnect();
-         connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+         connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       }
       else
       {
          connV12.destroy();
-         connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+         connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       }
 
       // message should be received since message was not acknowledged
@@ -2605,7 +2606,7 @@ public class StompV12Test extends StompV11TestBase
 
       // now lets make sure we don't see the message again
       connV12.destroy();
-      connV12 = (StompClientConnectionV12) StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
+      connV12 = (StompClientConnectionV12)StompClientConnectionFactory.createClientConnection("1.2", hostname, port);
       connV12.connect(defUser, defPass);
 
       this.subscribe(connV12, "sub1", null, null, true);

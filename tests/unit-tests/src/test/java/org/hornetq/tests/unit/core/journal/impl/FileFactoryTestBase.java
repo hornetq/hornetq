@@ -62,7 +62,7 @@ public abstract class FileFactoryTestBase extends UnitTestCase
 
       bb.rewind();
 
-      byte bytes[] = new byte[size];
+      byte[] bytes = new byte[size];
 
       bb.get(bytes);
 

@@ -48,7 +48,7 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
             buffer.rewind();
             int bytesRead = appendFile.read(buffer);
             if (bytesRead > 0)
-            mainSeqFile.writeInternal(buffer);
+               mainSeqFile.writeInternal(buffer);
             if (bytesRead < buffer.capacity())
             {
                break;

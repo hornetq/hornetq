@@ -26,15 +26,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
-import org.hornetq.api.core.Pair;
 
 /**
  * NamedLiveNodeLocator looks for a live server in the cluster with a specific nodeGroupName
- * @see org.hornetq.core.config.Configuration#getBackupGroupName()
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @see org.hornetq.core.config.Configuration#getBackupGroupName()
  */
 public class NamedLiveNodeLocator extends LiveNodeLocator
 {
@@ -57,7 +58,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         if(liveConfiguration == null)
+         if (liveConfiguration == null)
          {
             try
             {
@@ -84,8 +85,8 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
          if (nodeGroupName.equals(topologyMember.getBackupGroupName()) && topologyMember.getLive() != null)
          {
             liveConfiguration =
-                     new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
-                                                                              topologyMember.getBackup());
+               new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),
+                                                                        topologyMember.getBackup());
             nodeID = topologyMember.getNodeId();
             condition.signal();
          }

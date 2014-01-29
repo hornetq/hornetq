@@ -58,7 +58,7 @@ public class ImportJournal
 
    // Public --------------------------------------------------------
 
-   public static void main(final String arg[])
+   public static void main(final String[] arg)
    {
       if (arg.length != 5)
       {
@@ -143,7 +143,7 @@ public class ImportJournal
       while ((line = buffReader.readLine()) != null)
       {
          lineNumber++;
-         String splitLine[] = line.split(",");
+         String[] splitLine = line.split(",");
          if (splitLine[0].equals("#File"))
          {
             txCounters.clear();

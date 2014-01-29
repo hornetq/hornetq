@@ -1264,12 +1264,12 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
-            id = 224060,
-            value = "Bridge {0} forwarding address {1} has confirmation-window-size ({2}) greater than address' max-size-bytes' ({3})",
-            format = Message.Format.MESSAGE_FORMAT)
-            void
- bridgeConfirmationWindowTooSmall(String bridgeName, String address, int windowConfirmation,
-                                                  long maxSizeBytes);
+      id = 224060,
+      value = "Bridge {0} forwarding address {1} has confirmation-window-size ({2}) greater than address' max-size-bytes' ({3})",
+      format = Message.Format.MESSAGE_FORMAT)
+   void
+   bridgeConfirmationWindowTooSmall(String bridgeName, String address, int windowConfirmation,
+                                    long maxSizeBytes);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
@@ -1301,8 +1301,8 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 224065, value = "Bridge {0} could not find configured connectors",
-       format = Message.Format.MESSAGE_FORMAT)
-    void bridgeCantFindConnectors(String bridgeName);
+            format = Message.Format.MESSAGE_FORMAT)
+   void bridgeCantFindConnectors(String bridgeName);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224066, value = "Stopping ClusterManager. As it failed to authenticate with the cluster: {0}",
@@ -1313,7 +1313,7 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(
       id = 224068,
       value = "A session that was already doing XA work on {0} is replacing the xid by {1} " +
-                               ". This was most likely caused from a previous communication timeout",
+         ". This was most likely caused from a previous communication timeout",
       format = Message.Format.MESSAGE_FORMAT)
    void xidReplacedOnXStart(String xidOriginalToString, String xidReplacedToString);
 }

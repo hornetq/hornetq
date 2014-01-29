@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.journal;
-import org.junit.Before;
 
 import java.io.File;
 
@@ -25,8 +24,6 @@ import org.junit.BeforeClass;
  * A AIOJournalCompactTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
- *
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
 {

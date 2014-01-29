@@ -21,16 +21,16 @@ import org.hornetq.utils.UUID;
 
 /**
  * A Message is a routable instance that has a payload.
- * <p>
+ * <p/>
  * The payload (the "body") is opaque to the messaging system. A Message also has a fixed set of
  * headers (required by the messaging system) and properties (defined by the users) that can be used
  * by the messaging system to route the message (e.g. to ensure it matches a queue filter).
- * <p>
+ * <p/>
  * <h2>Message Properties</h2>
- * <p>
+ * <p/>
  * Message can contain properties specified by the users. It is possible to convert from some types
  * to other types as specified by the following table:
- * 
+ * <p/>
  * <pre>
  * |        | boolean byte short int long float double String byte[]
  * |----------------------------------------------------------------
@@ -45,47 +45,48 @@ import org.hornetq.utils.UUID;
  * |byte[]  |                                                   X
  * |-----------------------------------------------------------------
  * </pre>
- * 
+ * <p/>
  * <br>
  * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a
  * {@code boolean}), a {@link PropertyConversionException} will be thrown.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">ClebertSuconic</a>
  * @version <tt>$Revision: 3341 $</tt> $Id: Message.java 3341 2007-11-19 14:34:57Z timfox $
  */
 public interface Message
 {
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
+   SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
+   SimpleString HDR_ORIGINAL_ADDRESS = new SimpleString("_HQ_ORIG_ADDRESS");
 
-   public static final SimpleString HDR_ORIGINAL_QUEUE = new SimpleString("_HQ_ORIG_QUEUE");
+   SimpleString HDR_ORIGINAL_QUEUE = new SimpleString("_HQ_ORIG_QUEUE");
 
-   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
+   SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
 
-   public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
+   SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
 
-   public static final SimpleString HDR_LARGE_COMPRESSED = new SimpleString("_HQ_LARGE_COMPRESSED");
+   SimpleString HDR_LARGE_COMPRESSED = new SimpleString("_HQ_LARGE_COMPRESSED");
 
-   public static final SimpleString HDR_LARGE_BODY_SIZE = new SimpleString("_HQ_LARGE_SIZE");
+   SimpleString HDR_LARGE_BODY_SIZE = new SimpleString("_HQ_LARGE_SIZE");
 
-   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
+   SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
 
-   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_HQ_DUPL_ID");
+   SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_HQ_DUPL_ID");
 
-   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
+   SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
 
-   public static final byte DEFAULT_TYPE = 0;
+   byte DEFAULT_TYPE = 0;
 
-   public static final byte OBJECT_TYPE = 2;
+   byte OBJECT_TYPE = 2;
 
-   public static final byte TEXT_TYPE = 3;
+   byte TEXT_TYPE = 3;
 
-   public static final byte BYTES_TYPE = 4;
+   byte BYTES_TYPE = 4;
 
-   public static final byte MAP_TYPE = 5;
+   byte MAP_TYPE = 5;
 
-   public static final byte STREAM_TYPE = 6;
+   byte STREAM_TYPE = 6;
 
    /**
     * Returns the messageID.
@@ -97,12 +98,14 @@ public interface Message
    /**
     * Returns the userID - this is an optional user specified UUID that can be set to identify the message
     * and will be passed around with the message
+    *
     * @return the user id
     */
    UUID getUserID();
 
    /**
     * Sets the user ID
+    *
     * @param userID
     */
    void setUserID(UUID userID);
@@ -121,7 +124,7 @@ public interface Message
 
    /**
     * Returns this message type.
-    * <p>
+    * <p/>
     * See fields {@literal *_TYPE} for possible values.
     */
    byte getType();
@@ -172,14 +175,14 @@ public interface Message
 
    /**
     * Returns the message priority.
-    *
+    * <p/>
     * Values range from 0 (less priority) to 9 (more priority) inclusive.
     */
    byte getPriority();
 
    /**
     * Sets the message priority.
-    *
+    * <p/>
     * Value must be between 0 and 9 inclusive.
     *
     * @param priority the new message priority
@@ -213,7 +216,7 @@ public interface Message
    /**
     * Puts a boolean property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putBooleanProperty(SimpleString key, boolean value);
@@ -226,7 +229,7 @@ public interface Message
    /**
     * Puts a byte property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putByteProperty(SimpleString key, byte value);
@@ -239,7 +242,7 @@ public interface Message
    /**
     * Puts a byte[] property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putBytesProperty(SimpleString key, byte[] value);
@@ -252,7 +255,7 @@ public interface Message
    /**
     * Puts a short property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putShortProperty(SimpleString key, short value);
@@ -265,7 +268,7 @@ public interface Message
    /**
     * Puts a int property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putIntProperty(SimpleString key, int value);
@@ -278,7 +281,7 @@ public interface Message
    /**
     * Puts a long property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putLongProperty(SimpleString key, long value);
@@ -291,7 +294,7 @@ public interface Message
    /**
     * Puts a float property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putFloatProperty(SimpleString key, float value);
@@ -304,7 +307,7 @@ public interface Message
    /**
     * Puts a double property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putDoubleProperty(SimpleString key, double value);
@@ -317,7 +320,7 @@ public interface Message
    /**
     * Puts a SimpleString property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putStringProperty(SimpleString key, SimpleString value);
@@ -325,7 +328,7 @@ public interface Message
    /**
     * Puts a String property in this message.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
     */
    void putStringProperty(String key, String value);
@@ -335,22 +338,21 @@ public interface Message
     * <br>
     * Accepted types are:
     * <ul>
-    *   <li>Boolean</li>
-    *   <li>Byte</li>
-    *   <li>Short</li>
-    *   <li>Integer</li>
-    *   <li>Long</li>
-    *   <li>Float</li>
-    *   <li>Double</li>
-    *   <li>String</li>
-    *   <li>SimpleString</li>
+    * <li>Boolean</li>
+    * <li>Byte</li>
+    * <li>Short</li>
+    * <li>Integer</li>
+    * <li>Long</li>
+    * <li>Float</li>
+    * <li>Double</li>
+    * <li>String</li>
+    * <li>SimpleString</li>
     * </ul>
-    *
+    * <p/>
     * Using any other type will throw a PropertyConversionException.
     *
-    * @param key property name
+    * @param key   property name
     * @param value property value
-    *
     * @throws HornetQPropertyConversionException if the value is not one of the accepted property types.
     */
    void putObjectProperty(SimpleString key, Object value) throws HornetQPropertyConversionException;
@@ -362,6 +364,7 @@ public interface Message
 
    /**
     * Removes the property corresponding to the specified key.
+    *
     * @param key property name
     * @return the value corresponding to the specified key or @{code null}
     */

@@ -13,15 +13,10 @@
 
 package org.hornetq.tests.stress.journal;
 
-import org.junit.Test;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -35,13 +30,13 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A CompactingTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class CompactingStressTest extends ServiceTestBase
 {
@@ -415,7 +410,7 @@ public class CompactingStressTest extends ServiceTestBase
       }
    }
 
-   private void setupServer(final JournalType journalType) throws Exception, HornetQException
+   private void setupServer(final JournalType journalType) throws Exception
    {
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);

@@ -12,15 +12,9 @@
  */
 
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -37,6 +31,9 @@ import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.TransportConfigurationUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -59,6 +56,7 @@ public class FailoverListenerTest extends FailoverTestBase
    /**
     * Test if two servers are running and one of them is failing, that we trigger the expected
     * events for {@link FailoverEventListener}
+    *
     * @throws Exception
     */
    @Test
@@ -71,7 +69,7 @@ public class FailoverListenerTest extends FailoverTestBase
       ClientSession session = sendAndConsume(sf, true);
 
       liveServer.crash();
-      assertEquals(FailoverEventType.FAILURE_DETECTED,listener.getFailoverEventType().get(0));
+      assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getFailoverEventType().get(0));
 
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection(null).getTopology().describe());
 
@@ -79,7 +77,7 @@ public class FailoverListenerTest extends FailoverTestBase
 
       Thread.sleep(1000);
       //the backup server should be online by now
-      assertEquals(FailoverEventType.FAILOVER_COMPLETED,listener.getFailoverEventType().get(1));
+      assertEquals(FailoverEventType.FAILOVER_COMPLETED, listener.getFailoverEventType().get(1));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -95,10 +93,10 @@ public class FailoverListenerTest extends FailoverTestBase
       liveServer.start();
       Thread.sleep(1000);
       //starting the live server trigger a failover event
-      assertEquals(FailoverEventType.FAILURE_DETECTED,listener.getFailoverEventType().get(2));
+      assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getFailoverEventType().get(2));
 
       //the life server should be online by now
-      assertEquals(FailoverEventType.FAILOVER_COMPLETED,listener.getFailoverEventType().get(3));
+      assertEquals(FailoverEventType.FAILOVER_COMPLETED, listener.getFailoverEventType().get(3));
 
       System.out.println("After failback: " + locator.getTopology().describe());
 
@@ -113,21 +111,21 @@ public class FailoverListenerTest extends FailoverTestBase
       verifyMessageOnServer(0, 1);
 
       wrapUpSessionFactory();
-      assertEquals("Expected 4 FailoverEvents to be triggered", 4,listener.getFailoverEventType().size());
+      assertEquals("Expected 4 FailoverEvents to be triggered", 4, listener.getFailoverEventType().size());
    }
 
    /**
     * @throws Exception
     * @throws HornetQException
     */
-   private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception, HornetQException
+   private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception
    {
       ServerLocator backupLocator = createInVMLocator(server);
       ClientSessionFactory factorybkp = addSessionFactory(createSessionFactory(backupLocator));
       ClientSession sessionbkp = factorybkp.createSession(false, false);
       sessionbkp.start();
       ClientConsumer consumerbkp = sessionbkp.createConsumer(ADDRESS);
-      for (int i = 0 ; i < numberOfMessages; i++)
+      for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage msg = consumerbkp.receive(1000);
          assertNotNull(msg);
@@ -142,18 +140,19 @@ public class FailoverListenerTest extends FailoverTestBase
    /**
     * Test that if the only server is running and failing we trigger
     * the event FailoverEventType.FAILOVER_FAILED in the end
+    *
     * @throws Exception
     */
    @Test
    public void testFailoverFailed() throws Exception
    {
-     locator.setBlockOnNonDurableSend(true);
-     locator.setBlockOnDurableSend(true);
-     locator.setFailoverOnInitialConnection(true); // unnecessary?
-     locator.setReconnectAttempts(1);
-     sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true); // unnecessary?
+      locator.setReconnectAttempts(1);
+      sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-     //make sure no backup server is running
+      //make sure no backup server is running
       backupServer.stop();
 
       SessionFactoryFailoverListener listener = new SessionFactoryFailoverListener();
@@ -161,9 +160,9 @@ public class FailoverListenerTest extends FailoverTestBase
       ClientSession session = sendAndConsume(sf, true);
 
       liveServer.crash(session);
-      assertEquals(FailoverEventType.FAILURE_DETECTED,listener.getFailoverEventType().get(0));
+      assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getFailoverEventType().get(0));
 
-      assertEquals(FailoverEventType.FAILOVER_FAILED,listener.getFailoverEventType().get(1));
+      assertEquals(FailoverEventType.FAILOVER_FAILED, listener.getFailoverEventType().get(1));
 
       assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getFailoverEventType().size());
       session.close();
@@ -221,13 +220,13 @@ public class FailoverListenerTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-         return TransportConfigurationUtils.getInVMAcceptor(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-         return TransportConfigurationUtils.getInVMConnector(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 
@@ -237,7 +236,7 @@ public class FailoverListenerTest extends FailoverTestBase
 
       if (createQueue)
       {
-          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -247,10 +246,10 @@ public class FailoverListenerTest extends FailoverTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-               false,
-               0,
-               System.currentTimeMillis(),
-               (byte) 1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -281,7 +280,8 @@ public class FailoverListenerTest extends FailoverTestBase
    }
 
 
-   public class SessionFactoryFailoverListener implements FailoverEventListener {
+   public class SessionFactoryFailoverListener implements FailoverEventListener
+   {
 
       private final ArrayList<FailoverEventType> failoverTypeEvent = new ArrayList<FailoverEventType>();
 
@@ -294,7 +294,7 @@ public class FailoverListenerTest extends FailoverTestBase
       public void failoverEvent(FailoverEventType eventType)
       {
          this.failoverTypeEvent.add(eventType);
-         log.info("Failover event just happen : "+eventType.toString());
+         log.info("Failover event just happen : " + eventType.toString());
       }
 
    }

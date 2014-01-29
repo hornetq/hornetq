@@ -7,9 +7,9 @@ public interface HornetQJMSStarterServiceMBean
 {
    void create() throws Exception;
 
-   public void start() throws Exception;
+   void start() throws Exception;
 
-   public void stop() throws Exception;
+   void stop() throws Exception;
 
    void setHornetQServer(HornetQStarterServiceMBean server);
 }

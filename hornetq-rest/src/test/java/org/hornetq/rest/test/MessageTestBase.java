@@ -1,6 +1,5 @@
 package org.hornetq.rest.test;
-import org.junit.Before;
-import org.junit.After;
+
 import java.lang.reflect.Field;
 
 import org.hornetq.rest.MessageServiceManager;
@@ -60,13 +59,13 @@ public class MessageTestBase
       else
       {
          String headerName = "msg-" + title;
-         String href = (String) response.getHeaders().getFirst(headerName);
+         String href = (String)response.getHeaders().getFirst(headerName);
          if (href == null) return null;
          //System.out.println(headerName + ": " + href);
          Link l = new Link(title, null, href, null, null);
          try
          {
-            l.setExecutor((ClientExecutor) executorField.get(response));
+            l.setExecutor((ClientExecutor)executorField.get(response));
          }
          catch (IllegalAccessException e)
          {

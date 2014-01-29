@@ -13,17 +13,17 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.BroadcastGroupConfiguration;
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -40,12 +39,13 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A BridgeWithDiscoveryGroupStartTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 {
@@ -231,7 +231,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }

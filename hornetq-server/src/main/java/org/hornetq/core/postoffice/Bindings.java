@@ -15,7 +15,6 @@ package org.hornetq.core.postoffice;
 
 import java.util.Collection;
 
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -24,10 +23,8 @@ import org.hornetq.core.server.ServerMessage;
  * A Bindings
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 10 Dec 2008 19:10:52
- *
- *
+ *         <p/>
+ *         Created 10 Dec 2008 19:10:52
  */
 public interface Bindings
 {

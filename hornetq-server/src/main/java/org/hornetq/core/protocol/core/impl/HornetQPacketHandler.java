@@ -143,14 +143,14 @@ public class HornetQPacketHandler implements ChannelHandler
 
          HornetQPrincipal hornetQPrincipal = null;
 
-         if(request.getUsername() == null)
+         if (request.getUsername() == null)
          {
             hornetQPrincipal = connection.getDefaultHornetQPrincipal();
          }
 
          ServerSession session = server.createSession(request.getName(),
-                                                      hornetQPrincipal == null?request.getUsername(): hornetQPrincipal.getUserName(),
-                                                      hornetQPrincipal == null?request.getPassword(): hornetQPrincipal.getPassword(),
+                                                      hornetQPrincipal == null ? request.getUsername() : hornetQPrincipal.getUserName(),
+                                                      hornetQPrincipal == null ? request.getPassword() : hornetQPrincipal.getPassword(),
                                                       request.getMinLargeMessageSize(),
                                                       connection,
                                                       request.isAutoCommitSends(),
@@ -177,7 +177,7 @@ public class HornetQPacketHandler implements ChannelHandler
          HornetQServerLogger.LOGGER.failedToCreateSession(e);
          response = new HornetQExceptionMessage(e);
 
-         if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
+         if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
          {
             incompatibleVersion = true;
          }
@@ -214,7 +214,7 @@ public class HornetQPacketHandler implements ChannelHandler
             response = new ReattachSessionResponseMessage(-1, false);
          }
 
-         HornetQServerLogger.LOGGER.debug("Reattaching request from " +  connection.getRemoteAddress());
+         HornetQServerLogger.LOGGER.debug("Reattaching request from " + connection.getRemoteAddress());
 
 
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());

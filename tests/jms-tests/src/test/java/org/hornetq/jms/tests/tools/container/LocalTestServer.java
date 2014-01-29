@@ -13,6 +13,9 @@
 
 package org.hornetq.jms.tests.tools.container;
 
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -21,10 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -217,19 +216,19 @@ public class LocalTestServer implements Server, Runnable
       getJMSServerManager().createTopic(true, name, "/topic/" + (jndiName != null ? jndiName : name));
    }
 
-   public void deployConnectionFactory(final String clientId, final String objectName, final String ... jndiBindings) throws Exception
+   public void deployConnectionFactory(final String clientId, final String objectName, final String... jndiBindings) throws Exception
    {
       deployConnectionFactory(clientId, objectName, -1, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
 
    public void deployConnectionFactory(final String objectName,
                                        final int consumerWindowSize,
-                                       final String ... jndiBindings) throws Exception
+                                       final String... jndiBindings) throws Exception
    {
       deployConnectionFactory(null, objectName, consumerWindowSize, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
 
-   public void deployConnectionFactory(final String objectName, final String ... jndiBindings) throws Exception
+   public void deployConnectionFactory(final String objectName, final String... jndiBindings) throws Exception
    {
       deployConnectionFactory(null, objectName, -1, -1, -1, -1, false, false, -1, false, jndiBindings);
    }
@@ -239,7 +238,7 @@ public class LocalTestServer implements Server, Runnable
                                        final int defaultTempQueueFullSize,
                                        final int defaultTempQueuePageSize,
                                        final int defaultTempQueueDownCacheSize,
-                                       final String ... jndiBindings) throws Exception
+                                       final String... jndiBindings) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
@@ -257,7 +256,7 @@ public class LocalTestServer implements Server, Runnable
    public void deployConnectionFactory(final String objectName,
                                        final boolean supportsFailover,
                                        final boolean supportsLoadBalancing,
-                                       final String ... jndiBindings) throws Exception
+                                       final String... jndiBindings) throws Exception
    {
       this.deployConnectionFactory(null,
                                    objectName,
@@ -282,7 +281,7 @@ public class LocalTestServer implements Server, Runnable
                                        final boolean supportsLoadBalancing,
                                        final int dupsOkBatchSize,
                                        final boolean blockOnAcknowledge,
-                                       final String ... jndiBindings) throws Exception
+                                       final String... jndiBindings) throws Exception
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
       connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
@@ -397,14 +396,14 @@ public class LocalTestServer implements Server, Runnable
    public Long getMessageCountForQueue(final String queueName) throws Exception
    {
       JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
-                                                                 .getResource(ResourceNames.JMS_QUEUE + queueName);
+         .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
          return queue.getMessageCount();
       }
       else
       {
-         return -1l;
+         return -1L;
       }
    }
 
@@ -413,13 +412,13 @@ public class LocalTestServer implements Server, Runnable
       if (isQueue)
       {
          JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
-                                                                    .getResource(ResourceNames.JMS_QUEUE + destination);
+            .getResource(ResourceNames.JMS_QUEUE + destination);
          queue.removeMessages(null);
       }
       else
       {
          TopicControl topic = (TopicControl)getHornetQServer().getManagementService()
-                                                              .getResource(ResourceNames.JMS_TOPIC + destination);
+            .getResource(ResourceNames.JMS_TOPIC + destination);
          topic.removeMessages(null);
       }
    }

@@ -22,14 +22,11 @@ import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.transaction.Transaction;
 
 /**
  * A InternalReference
  *
  * @author clebert
- *
- *
  */
 public class PagedReferenceImpl implements PagedReference
 {
@@ -141,7 +138,7 @@ public class PagedReferenceImpl implements PagedReference
          }
          else
          {
-            deliveryTime = 0l;
+            deliveryTime = 0L;
          }
       }
       return deliveryTime;
@@ -171,7 +168,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.incrementAndGet();
       if (isTrace)
       {
-         HornetQServerLogger.LOGGER.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+         HornetQServerLogger.LOGGER.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception("trace"));
       }
 
    }
@@ -182,7 +179,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.decrementAndGet();
       if (isTrace)
       {
-         HornetQServerLogger.LOGGER.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+         HornetQServerLogger.LOGGER.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception("trace"));
       }
    }
 
@@ -221,17 +218,17 @@ public class PagedReferenceImpl implements PagedReference
          msgToString = "error:" + e.getMessage();
       }
       return "PagedReferenceImpl [position=" + position +
-             ", message=" +
-             msgToString +
-             ", deliveryTime=" +
-             deliveryTime +
-             ", persistedCount=" +
-             persistedCount +
-             ", deliveryCount=" +
-             deliveryCount +
-             ", subscription=" +
-             subscription +
-             "]";
+         ", message=" +
+         msgToString +
+         ", deliveryTime=" +
+         deliveryTime +
+         ", persistedCount=" +
+         persistedCount +
+         ", deliveryCount=" +
+         deliveryCount +
+         ", subscription=" +
+         subscription +
+         "]";
    }
 
    /* (non-Javadoc)

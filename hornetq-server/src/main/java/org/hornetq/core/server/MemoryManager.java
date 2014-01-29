@@ -12,15 +12,14 @@
  */
 package org.hornetq.core.server;
 
-import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.utils.SizeFormatterUtil;
 
 /**
  * A memory usage watcher.
- * <p>
+ * <p/>
  * This class will run a thread monitoring memory usage and log warnings in case we are low on
  * memory.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class MemoryManager implements HornetQComponent
@@ -59,8 +58,8 @@ public class MemoryManager implements HornetQComponent
    public synchronized void start()
    {
       HornetQServerLogger.LOGGER.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval +
-                                  " FREE_MEMORY_PERCENT: " +
-                                  memoryWarningThreshold);
+                                          " FREE_MEMORY_PERCENT: " +
+                                          memoryWarningThreshold);
 
       if (started)
       {

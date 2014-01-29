@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -25,14 +23,12 @@ import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Test;
 
 /**
- *
  * A MessageTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class ExpiryMessageTest extends JMSTestBase
 {
@@ -81,7 +77,7 @@ public class ExpiryMessageTest extends JMSTestBase
       MessageProducer prod = sess.createProducer(topic);
       prod.setTimeToLive(1000);
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          TextMessage txt = sess.createTextMessage("txt");
          prod.send(txt);

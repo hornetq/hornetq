@@ -18,10 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.Role;
@@ -30,31 +28,35 @@ import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- *
  * A Configuration is used to configure HornetQ servers.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public interface Configuration extends Serializable
 {
-   /** To be used on dependency management on the application server */
+   /**
+    * To be used on dependency management on the application server
+    */
    String getName();
 
-   /** To be used on dependency management on the application server */
+   /**
+    * To be used on dependency management on the application server
+    */
    void setName(String name);
 
    /**
     * returns the name used to group of live/backup servers
+    *
     * @return the name of the group
     */
-   public String getBackupGroupName();
+   String getBackupGroupName();
 
    /**
     * Used to configure groups of live/backup servers.
+    *
     * @param nodeGroupName the node group name
     */
-   public void setBackupGroupName(String nodeGroupName);
+   void setBackupGroupName(String nodeGroupName);
 
    /**
     * Returns whether this server is clustered. <br>
@@ -65,15 +67,17 @@ public interface Configuration extends Serializable
    /**
     * Returns whether a backup will automatically stop when a live server is restarting (i.e.
     * failing back).
+    *
     * @return {@code true} if the backup will stop when the live server restarts
     */
-   public boolean isAllowAutoFailBack();
+   boolean isAllowAutoFailBack();
 
    /**
     * whether a backup will automatically stop when a live server is restarting (i.e. failing back).
+    *
     * @param allowAutoFailBack true if allowed
     */
-   public void setAllowAutoFailBack(boolean allowAutoFailBack);
+   void setAllowAutoFailBack(boolean allowAutoFailBack);
 
    /**
     * Returns whether delivery count is persisted before messages are delivered to the consumers. <br>
@@ -206,7 +210,7 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the domain used by JMX MBeans (provided JMX management is enabled).
-    *
+    * <p/>
     * Changing this JMX domain is required if multiple HornetQ servers are run inside
     * the same JVM and all servers are using the same MBeanServer.
     */
@@ -240,11 +244,12 @@ public interface Configuration extends Serializable
     * being delivered to the server from clients). Invoking this method is the same as invoking
     * <code>setIncomingInterceptorClassNames(List)</code> <br />
     * Classes must implement {@link Interceptor}.
-    * <p>
+    * <p/>
     * Deprecated but not immediately deleted, as embedded users may be using this file.
+    *
     * @deprecated As of HornetQ 2.3.0.Final, replaced by
-    *             {@link #setIncomingInterceptorClassNames(List)} and
-    *             {@link #setOutgoingInterceptorClassNames(List)}
+    * {@link #setIncomingInterceptorClassNames(List)} and
+    * {@link #setOutgoingInterceptorClassNames(List)}
     */
    @Deprecated
    void setInterceptorClassNames(List<String> interceptors);
@@ -361,7 +366,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the cluster connections configured for this server.
-    * <p>
+    * <p/>
     * Modifying the returned list will modify the list of {@link ClusterConnectionConfiguration}
     * used by this configuration.
     */
@@ -387,11 +392,11 @@ public interface Configuration extends Serializable
     * Clients can send management messages to this address to manage this server. <br>
     * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MANAGEMENT_ADDRESS}.
     */
-    SimpleString getManagementAddress();
+   SimpleString getManagementAddress();
 
-    /**
-     * Sets the management address of this server.
-     */
+   /**
+    * Sets the management address of this server.
+    */
    void setManagementAddress(SimpleString address);
 
    /**
@@ -426,14 +431,15 @@ public interface Configuration extends Serializable
 
    /**
     * Should we notify any clients on close that they should failover.
-    * @see #setFailoverOnServerShutdown(boolean)
+    *
     * @return true if clients should failover
+    * @see #setFailoverOnServerShutdown(boolean)
     */
    boolean isFailoverOnServerShutdown();
 
    /**
     * Sets whether to allow clients to failover on server shutdown.
-    * <p>
+    * <p/>
     * When a live server is restarted after failover the backup will shutdown if
     * {@link #isAllowAutoFailBack()} is true. This is not regarded as a normal shutdown. In this
     * case {@code failoverOnServerShutdown} is ignored, and the server will behave as if it was set
@@ -483,14 +489,14 @@ public interface Configuration extends Serializable
 
    /**
     * The max number of concurrent reads allowed on paging.
-    * <p>
+    * <p/>
     * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MAX_CONCURRENT_PAGE_IO}.
     */
    int getPageMaxConcurrentIO();
 
    /**
     * The max number of concurrent reads allowed on paging.
-    * <p>
+    * <p/>
     * Default = 5
     */
    void setPageMaxConcurrentIO(int maxIO);
@@ -775,6 +781,7 @@ public interface Configuration extends Serializable
 
    /**
     * Sets the sample period to take message counter snapshot.
+    *
     * @param period value must be greater than 1000ms
     */
    void setMessageCounterSamplePeriod(long period);
@@ -830,25 +837,22 @@ public interface Configuration extends Serializable
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
 
    /**
-    *
     * @return A list of AddressSettings per matching to be deployed to the address settings repository
     */
    Map<String, AddressSettings> getAddressesSettings();
 
    /**
     * @param addressesSettings list of AddressSettings per matching to be deployed to the address
-    *           settings repository
+    *                          settings repository
     */
    void setAddressesSettings(Map<String, AddressSettings> addressesSettings);
 
    /**
-    *
     * @param roles a list of roles per matching
     */
    void setSecurityRoles(Map<String, Set<Role>> roles);
 
    /**
-    *
     * @return a list of roles per matching
     */
    Map<String, Set<Role>> getSecurityRoles();
@@ -882,7 +886,7 @@ public interface Configuration extends Serializable
     *
     * @param checkForLiveServer true if we want to make the check
     */
-   public void setCheckForLiveServer(boolean checkForLiveServer);
+   void setCheckForLiveServer(boolean checkForLiveServer);
 
    /**
     * The default password decoder
@@ -906,31 +910,33 @@ public interface Configuration extends Serializable
 
    /**
     * Name of the cluster configuration to use for replication.
-    * <p>
+    * <p/>
     * Only applicable for servers with more than one cluster configuration. This value is only used
     * by replicating backups and live servers that attempt fail-back.
+    *
     * @param clusterName
     */
    void setReplicationClustername(String clusterName);
 
    /**
-    * @see #setReplicationClustername(String)
     * @return name of the cluster configuration to use
+    * @see #setReplicationClustername(String)
     */
    String getReplicationClustername();
 
    /**
     * How many backup journals to keep after failback occurs.
-    * <p>
+    * <p/>
     * This value is only used by replicating backups after a live server has failed back. Beofre the backup restarts
     * it will copy its journals into another directory to keep.
+    *
     * @param maxSavedReplicatedJournalsSize
     */
    void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize);
 
    /**
-    * @see #setMaxSavedReplicatedJournalSize(int)
     * @return the number of backup journals to keep after failback has occurred
+    * @see #setMaxSavedReplicatedJournalSize(int)
     */
    int getMaxSavedReplicatedJournalsSize();
 }

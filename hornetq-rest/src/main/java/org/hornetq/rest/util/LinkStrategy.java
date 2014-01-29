@@ -8,5 +8,5 @@ import javax.ws.rs.core.Response;
  */
 public interface LinkStrategy
 {
-   public void setLinkHeader(Response.ResponseBuilder builder, String title, String rel, String href, String type);
+   void setLinkHeader(Response.ResponseBuilder builder, String title, String rel, String href, String type);
 }

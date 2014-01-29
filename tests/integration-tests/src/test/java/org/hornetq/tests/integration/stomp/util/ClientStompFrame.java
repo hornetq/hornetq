@@ -24,28 +24,28 @@ import java.nio.ByteBuffer;
 public interface ClientStompFrame
 {
 
-   public ByteBuffer toByteBuffer() throws UnsupportedEncodingException;
+   ByteBuffer toByteBuffer() throws UnsupportedEncodingException;
 
-   public boolean needsReply();
+   boolean needsReply();
 
-   public void setCommand(String command);
+   void setCommand(String command);
 
-   public void addHeader(String string, String string2);
+   void addHeader(String string, String string2);
 
-   public void setBody(String string);
+   void setBody(String string);
 
-   public String getCommand();
+   String getCommand();
 
-   public String getHeader(String header);
+   String getHeader(String header);
 
-   public String getBody();
+   String getBody();
 
-   public ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
+   ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
 
-   public boolean isPing();
+   boolean isPing();
 
-   public void setForceOneway();
+   void setForceOneway();
 
-   public void setPing(boolean b);
+   void setPing(boolean b);
 
 }

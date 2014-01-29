@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.jms.tests.message;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -29,6 +26,9 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
 
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
@@ -37,12 +37,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * A MessageBodyTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class MessageBodyTest extends HornetQServerTestCase
 {
@@ -118,7 +115,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
       log.trace("String is length:" + myString.length());
       char myChar = 'q';
-      byte[] myBytes = new byte[] { -23, 114, -126, -12, 74, 87 };
+      byte[] myBytes = new byte[]{-23, 114, -126, -12, 74, 87};
 
       m.writeBoolean(myBool);
       m.writeByte(myByte);
@@ -1243,7 +1240,7 @@ public class MessageBodyTest extends HornetQServerTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       String myString = "abcdef&^*&!^ghijkl\uD5E2\uCAC7\uD2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
       char myChar = 'q';
-      byte[] myBytes = new byte[] { -23, 114, -126, -12, 74, 87 };
+      byte[] myBytes = new byte[]{-23, 114, -126, -12, 74, 87};
 
       m.writeBoolean(myBool);
       m.writeByte(myByte);

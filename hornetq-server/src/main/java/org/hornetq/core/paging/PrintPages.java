@@ -48,12 +48,11 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.utils.ExecutorFactory;
+
 /**
  * A PrintPage
  *
  * @author clebertsuconic
- *
- *
  */
 public class PrintPages // NO_UCD (unused code)
 {
@@ -68,7 +67,7 @@ public class PrintPages // NO_UCD (unused code)
 
    // Public --------------------------------------------------------
 
-   public static void main(final String arg[])
+   public static void main(final String[] arg)
    {
       if (arg.length != 2)
       {
@@ -94,14 +93,14 @@ public class PrintPages // NO_UCD (unused code)
          };
          final StorageManager sm = new NullStorageManager();
          PagingStoreFactory pageStoreFactory =
-                  new PagingStoreFactoryNIO(sm, arg[0], 1000l, scheduled, execfactory, false, null);
+            new PagingStoreFactoryNIO(sm, arg[0], 1000L, scheduled, execfactory, false, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
          PagingManager manager = new PagingManagerImpl(pageStoreFactory, addressSettingsRepository);
 
          manager.start();
 
-         SimpleString stores[] = manager.getStoreNames();
+         SimpleString[] stores = manager.getStoreNames();
 
          for (SimpleString store : stores)
          {
@@ -128,9 +127,9 @@ public class PrintPages // NO_UCD (unused code)
                for (PagedMessage msg : msgs)
                {
                   msg.initMessage(sm);
-                  System.out.print("pg=" + pgid + ", msg=" + msgID + ",pgTX=" + msg.getTransactionID() + ",userMessageID=" + (msg.getMessage().getUserID() != null? msg.getMessage().getUserID(): "") + ", msg=" + msg.getMessage());
+                  System.out.print("pg=" + pgid + ", msg=" + msgID + ",pgTX=" + msg.getTransactionID() + ",userMessageID=" + (msg.getMessage().getUserID() != null ? msg.getMessage().getUserID() : "") + ", msg=" + msg.getMessage());
                   System.out.print(",Queues = ");
-                  long q[] = msg.getQueueIDs();
+                  long[] q = msg.getQueueIDs();
                   for (int i = 0; i < q.length; i++)
                   {
                      System.out.print(q[i]);
@@ -187,7 +186,7 @@ public class PrintPages // NO_UCD (unused code)
 
       private final Set<Long> pgTXs = new HashSet<Long>();
 
-      private final  Map<Long, Set<Long>> completePages = new HashMap<Long, Set<Long>>();
+      private final Map<Long, Set<Long>> completePages = new HashMap<Long, Set<Long>>();
 
       public PageCursorsInfo()
       {
@@ -215,7 +214,7 @@ public class PrintPages // NO_UCD (unused code)
       /**
        * @return the completePages
        */
-      public  Map<Long, Set<Long>> getCompletePages()
+      public Map<Long, Set<Long>> getCompletePages()
       {
          return completePages;
       }
@@ -248,13 +247,13 @@ public class PrintPages // NO_UCD (unused code)
       ConfigurationImpl defaultValues = new ConfigurationImpl();
 
       JournalImpl messagesJournal = new JournalImpl(defaultValues.getJournalFileSize(),
-         defaultValues.getJournalMinFiles(),
-         0,
-         0,
-         messagesFF,
-         "hornetq-data",
-         "hq",
-         1);
+                                                    defaultValues.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
 
       messagesJournal.start();
 

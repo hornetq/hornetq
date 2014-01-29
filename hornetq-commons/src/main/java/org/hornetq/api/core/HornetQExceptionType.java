@@ -151,7 +151,7 @@ public enum HornetQExceptionType
    },
    SESSION_CREATION_REJECTED(112)
    {
-         @Override
+      @Override
       public HornetQException createException(String msg)
       {
          return new HornetQSessionCreationException(msg);
@@ -209,14 +209,15 @@ public enum HornetQExceptionType
    NATIVE_ERROR_ALLOCATE_MEMORY(209),
    ADDRESS_FULL(210),
    LARGE_MESSAGE_INTERRUPTED(211)
+   {
+      @Override
+      public HornetQException createException(String msg)
       {
-         @Override
-         public HornetQException createException(String msg)
-         {
-            return new HornetQLargeMessageInterruptedException(msg);
-         }
-      },
-      CLUSTER_SECURITY_EXCEPTION(212){
+         return new HornetQLargeMessageInterruptedException(msg);
+      }
+   },
+   CLUSTER_SECURITY_EXCEPTION(212)
+   {
       @Override
       public HornetQException createException(String msg)
       {
@@ -226,6 +227,7 @@ public enum HornetQExceptionType
    };
 
    private static final Map<Integer, HornetQExceptionType> TYPE_MAP;
+
    static
    {
       HashMap<Integer, HornetQExceptionType> map = new HashMap<Integer, HornetQExceptionType>();

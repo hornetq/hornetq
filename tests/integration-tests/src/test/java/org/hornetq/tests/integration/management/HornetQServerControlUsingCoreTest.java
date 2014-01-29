@@ -12,8 +12,6 @@
  */
 
 package org.hornetq.tests.integration.management;
-import org.junit.Before;
-import org.junit.After;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -24,6 +22,8 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A HornetQServerControlUsingCoreTest
@@ -339,14 +339,14 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean)proxy.retrieveAttributeValue("journalSyncTransactional");
          }
 
-         public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)  throws Exception
+         public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown) throws Exception
          {
             proxy.invokeOperation("setFailoverOnServerShutdown", failoverOnServerShutdown);
          }
 
          public boolean isFailoverOnServerShutdown()
          {
-            return  (Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown");
+            return (Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown");
          }
 
          public boolean isMessageCounterEnabled()
@@ -527,10 +527,10 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                         @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts,
                                         @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes,
                                         @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes,
-                                        @Parameter(desc = "the max number of pages in the soft memory cache", name="pageMaxCacheSize") int pageMaxCacheSize,
+                                        @Parameter(desc = "the max number of pages in the soft memory cache", name = "pageMaxCacheSize") int pageMaxCacheSize,
                                         @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay,
-                                        @Parameter(desc = "the redelivery delay multiplier", name="redeliveryMultiplier") double redeliveryMultiplier,
-                                        @Parameter(desc = "the maximum redelivery delay", name="maxRedeliveryDelay") long maxRedeliveryDelay,
+                                        @Parameter(desc = "the redelivery delay multiplier", name = "redeliveryMultiplier") double redeliveryMultiplier,
+                                        @Parameter(desc = "the maximum redelivery delay", name = "maxRedeliveryDelay") long maxRedeliveryDelay,
                                         @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
                                         @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
                                         @Parameter(desc = "the policy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception

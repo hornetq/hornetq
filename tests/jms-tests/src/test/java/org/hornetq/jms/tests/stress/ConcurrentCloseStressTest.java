@@ -79,9 +79,9 @@ public class ConcurrentCloseStressTest extends HornetQServerTestCase
       connectionReader.start();
       connectionProducer.start(); // try with and without this...
 
-      ProducerThread producerThread[] = new ProducerThread[20];
-      ReaderThread readerThread[] = new ReaderThread[20];
-      TestThread threads[] = new TestThread[40];
+      ProducerThread[] producerThread = new ProducerThread[20];
+      ReaderThread[] readerThread = new ReaderThread[20];
+      TestThread[] threads = new TestThread[40];
 
       for (int i = 0; i < 20; i++)
       {

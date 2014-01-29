@@ -12,20 +12,29 @@
  */
 package org.hornetq.integration.twitter.impl;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.ConnectorService;
+import org.hornetq.core.server.Consumer;
+import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.twitter.HornetQTwitterLogger;
 import org.hornetq.utils.ConfigurationHelper;
-import twitter4j.*;
+import twitter4j.GeoLocation;
+import twitter4j.StatusUpdate;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * OutgoingTweetsHandler consumes from configured HornetQ address
@@ -80,24 +89,24 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
     */
    public synchronized void start() throws Exception
    {
-      if(this.isStarted)
+      if (this.isStarted)
       {
          return;
       }
 
-      if(this.connectorName == null || this.connectorName.trim().equals(""))
+      if (this.connectorName == null || this.connectorName.trim().equals(""))
       {
          throw new Exception("invalid connector name: " + this.connectorName);
       }
 
-      if(this.queueName == null || this.queueName.trim().equals(""))
+      if (this.queueName == null || this.queueName.trim().equals(""))
       {
          throw new Exception("invalid queue name: " + queueName);
       }
 
       SimpleString name = new SimpleString(this.queueName);
       Binding b = this.postOffice.getBinding(name);
-      if(b == null)
+      if (b == null)
       {
          throw new Exception(connectorName + ": queue " + queueName + " not found");
       }
@@ -128,7 +137,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
 
    public synchronized void stop() throws Exception
    {
-      if(!this.isStarted)
+      if (!this.isStarted)
       {
          return;
       }
@@ -177,24 +186,24 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
 
          // set optional property
 
-         if(message.containsProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID))
+         if (message.containsProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID))
          {
             status.setInReplyToStatusId(message.getLongProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID));
          }
 
-         if(message.containsProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE))
+         if (message.containsProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE))
          {
             double geolat = message.getDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE);
             double geolong = message.getDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LONGITUDE);
             status.setLocation(new GeoLocation(geolat, geolong));
          }
 
-         if(message.containsProperty(TwitterConstants.KEY_PLACE_ID))
+         if (message.containsProperty(TwitterConstants.KEY_PLACE_ID))
          {
             status.setPlaceId(message.getStringProperty(TwitterConstants.KEY_PLACE_ID));
          }
 
-         if(message.containsProperty(TwitterConstants.KEY_DISPLAY_COODINATES))
+         if (message.containsProperty(TwitterConstants.KEY_DISPLAY_COODINATES))
          {
             status.setDisplayCoordinates(message.getBooleanProperty(TwitterConstants.KEY_DISPLAY_COODINATES));
          }
@@ -206,7 +215,7 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
          }
          catch (TwitterException e)
          {
-            if(e.getStatusCode() == 403 )
+            if (e.getStatusCode() == 403)
             {
                // duplicated message
                HornetQTwitterLogger.LOGGER.error403(connectorName);

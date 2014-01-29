@@ -12,14 +12,9 @@
  */
 
 package org.hornetq.tests.unit.core.journal.impl;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIOErrorException;
@@ -30,14 +25,15 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.tests.unit.UnitTestLogger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.RandomUtil;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A JournalImplTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
@@ -232,7 +228,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          ByteBuffer buffer = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
-         for (int i = 0 ; i < JournalImpl.SIZE_HEADER; i++)
+         for (int i = 0; i < JournalImpl.SIZE_HEADER; i++)
          {
             buffer.put(Byte.MAX_VALUE);
          }
@@ -257,7 +253,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          load();
       }
-      catch(HornetQIOErrorException ioe)
+      catch (HornetQIOErrorException ioe)
       {
          exceptionHappened = true;
       }
@@ -305,7 +301,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       load();
 
-      for (long i = 0 ; i < 100; i++)
+      for (long i = 0; i < 100; i++)
       {
          add(i);
 
@@ -319,7 +315,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       stopJournal();
 
    }
-
 
 
    @Test
@@ -512,9 +507,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    }
 
    /**
-    *
     * Use: calculateNumberOfFiles (fileSize, numberOfRecords, recordSize,  numberOfRecords2, recordSize2, , ...., numberOfRecordsN, recordSizeN);
-    * */
+    */
    private int calculateNumberOfFiles(final int fileSize, final int alignment, final int... record) throws Exception
    {
       int headerSize = calculateRecordSize(JournalImpl.SIZE_HEADER, alignment);
@@ -781,7 +775,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       // Make sure there is one record per file
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
-                                                                            getAlignment()), true);
+                                                                                                  getAlignment()), true);
       createJournal();
       startJournal();
       load();
@@ -821,7 +815,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       // Make sure there is one record per file
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
-                                                                            getAlignment()), true);
+                                                                                                  getAlignment()), true);
 
       createJournal();
       startJournal();
@@ -1533,7 +1527,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1644,7 +1638,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1762,7 +1756,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1799,7 +1793,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
                                                                                                   getAlignment()) +
-               512, true);
+         512, true);
       createJournal();
       startJournal();
       load();
@@ -1845,7 +1839,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Move on to another file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 3); // in file 2
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 3); // in file 2
 
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
@@ -1863,7 +1857,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 4); // in file 3
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 4); // in file 3
 
       List<String> files7 = fileFactory.listFiles(fileExtension);
 

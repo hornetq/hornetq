@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.core.message.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -26,11 +22,12 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * @author Francisco Borges
- *
  */
 public class MessagePropertyTest extends ServiceTestBase
 {
@@ -98,7 +95,7 @@ public class MessagePropertyTest extends ServiceTestBase
 
    private byte[] byteArray(int i)
    {
-      return new byte[] { (byte)i, (byte)(i / 2) };
+      return new byte[]{(byte)i, (byte)(i / 2)};
    }
 
    @Test

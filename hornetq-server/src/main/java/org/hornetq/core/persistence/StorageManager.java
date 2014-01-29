@@ -13,18 +13,16 @@
 
 package org.hornetq.core.persistence;
 
+import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import javax.transaction.xa.Xid;
-
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
@@ -37,7 +35,6 @@ import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.PageCountPending;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -48,38 +45,39 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.utils.IDGenerator;
 
 /**
- *
  * A StorageManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- *
  */
 public interface StorageManager extends HornetQComponent
 {
 
-   /** Get the context associated with the thread for later reuse */
+   /**
+    * Get the context associated with the thread for later reuse
+    */
    OperationContext getContext();
 
    void lineUpContext();
 
-   /** It just creates an OperationContext without associating it */
+   /**
+    * It just creates an OperationContext without associating it
+    */
    OperationContext newContext(Executor executor);
 
    OperationContext newSingleThreadContext();
 
-   /** Set the context back to the thread */
+   /**
+    * Set the context back to the thread
+    */
    void setContext(OperationContext context);
 
    /**
-    *
     * @param ioCriticalError is the server being stopped due to an IO critical error
     */
    void stop(boolean ioCriticalError) throws Exception;
@@ -94,22 +92,29 @@ public interface StorageManager extends HornetQComponent
 
    void afterCompleteOperations(IOAsyncTask run);
 
-   /** Block until the operations are done.
-    *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
-    *           in case of the pools are full
-    * @throws Exception */
+   /**
+    * Block until the operations are done.
+    * Warning: Don't use it inside an ordered executor, otherwise the system may lock up
+    * in case of the pools are full
+    *
+    * @throws Exception
+    */
    boolean waitOnOperations(long timeout) throws Exception;
 
-   /** Block until the operations are done.
-    *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
-    *           in case of the pools are full
-    * @throws Exception */
+   /**
+    * Block until the operations are done.
+    * Warning: Don't use it inside an ordered executor, otherwise the system may lock up
+    * in case of the pools are full
+    *
+    * @throws Exception
+    */
    void waitOnOperations() throws Exception;
 
    /**
     * We need a safeguard in place to avoid too much concurrent IO happening on Paging, otherwise
     * the system may become unresponsive if too many destinations are reading all the same time.
     * This is called before we read, so we can limit concurrent reads
+    *
     * @throws Exception
     */
    void beforePageRead() throws Exception;
@@ -118,19 +123,24 @@ public interface StorageManager extends HornetQComponent
     * We need a safeguard in place to avoid too much concurrent IO happening on Paging, otherwise
     * the system may become unresponsive if too many destinations are reading all the same time.
     * This is called after we read, so we can limit concurrent reads
+    *
     * @throws Exception
     */
    void afterPageRead() throws Exception;
 
 
-   /** AIO has an optimized buffer which has a method to release it
-       instead of the way NIO will release data based on GC.
-       These methods will use that buffer if the inner method supports it */
+   /**
+    * AIO has an optimized buffer which has a method to release it
+    * instead of the way NIO will release data based on GC.
+    * These methods will use that buffer if the inner method supports it
+    */
    ByteBuffer allocateDirectBuffer(int size);
 
-   /** AIO has an optimized buffer which has a method to release it
-       instead of the way NIO will release data based on GC.
-       These methods will use that buffer if the inner method supports it */
+   /**
+    * AIO has an optimized buffer which has a method to release it
+    * instead of the way NIO will release data based on GC.
+    * These methods will use that buffer if the inner method supports it
+    */
    void freeDirectBuffer(ByteBuffer buffer);
 
    void clearContext();
@@ -139,10 +149,14 @@ public interface StorageManager extends HornetQComponent
 
    long getCurrentUniqueID();
 
-   /** Confirms that a large message was finished */
+   /**
+    * Confirms that a large message was finished
+    */
    void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception;
 
-   /** Confirms that a large message was finished */
+   /**
+    * Confirms that a large message was finished
+    */
    void confirmPendingLargeMessage(long recordID) throws Exception;
 
    void storeMessage(ServerMessage message) throws Exception;
@@ -191,9 +205,10 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * Creates a new LargeMessage with the given id.
+    *
     * @param id
     * @param message This is a temporary message that holds the parsed properties. The remoting
-    *           layer can't create a ServerMessage directly, then this will be replaced.
+    *                layer can't create a ServerMessage directly, then this will be replaced.
     * @return a large message object
     * @throws Exception
     */
@@ -203,6 +218,7 @@ public interface StorageManager extends HornetQComponent
    {
       DURABLE(".msg"), TEMPORARY(".tmp"), SYNC(".sync");
       final String extension;
+
       private LargeMessageExtension(String extension)
       {
          this.extension = extension;
@@ -216,6 +232,7 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * Instantiates a SequentialFile to be used for storing a {@link LargeServerMessage}.
+    *
     * @param messageID the id of the message
     * @param extension the extension to add to the file
     * @return
@@ -236,10 +253,12 @@ public interface StorageManager extends HornetQComponent
 
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
 
-   void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
+   void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception;
 
-   /** FIXME Unused */
-   void updatePageTransaction(PageTransactionInfo pageTransaction,  int depage) throws Exception;
+   /**
+    * FIXME Unused
+    */
+   void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception;
 
    void deletePageTransactional(long recordID) throws Exception;
 
@@ -251,7 +270,7 @@ public interface StorageManager extends HornetQComponent
                                              final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
                                              final Set<Pair<Long, Long>> pendingLargeMessages,
                                              List<PageCountPending> pendingNonTXPageCounter
-                                             ) throws Exception;
+   ) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
 
@@ -319,27 +338,28 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * @see JournalStorageManager#startReplication(ReplicationManager, PagingManager, String,
-    *      boolean)
+    * boolean)
     */
    void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
                          boolean autoFailBack) throws Exception;
 
    /**
     * Write message to page if we are paging.
-    * <p>
+    * <p/>
     * This is primarily a {@link PagingStore} call, but as with any other call writing persistent
     * data, it must go through here. Both for the sake of replication, and also to ensure that it
     * takes the locks (storage manager and pagingStore) in the right order. Avoiding thus the
     * creation of dead-locks.
+    *
     * @return {@code true} if we are paging and have handled the data, {@code false} if the data
-    *         needs to be sent to the journal
+    * needs to be sent to the journal
     * @throws Exception
     */
    boolean addToPage(PagingStore store, ServerMessage msg, Transaction tx, RouteContextList listCtx) throws Exception;
 
    /**
     * Stops the replication of data from the live to the backup.
-    * <p>
+    * <p/>
     * Typical scenario is a broken connection.
     */
    void stopReplication();
@@ -353,6 +373,7 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * Stores the given journalID in the bindingsJournal.
+    *
     * @param journalID
     * @param id
     * @throws Exception
@@ -361,7 +382,7 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * Read lock the StorageManager. USE WITH CARE!
-    * <p>
+    * <p/>
     * The main lock is used to write lock the whole manager when starting replication. Sub-systems,
     * say Paging classes, that use locks of their own AND also write through the StorageManager MUST
     * first read lock the storageManager before taking their own locks. Otherwise, we may dead-lock
@@ -371,13 +392,14 @@ public interface StorageManager extends HornetQComponent
 
    /**
     * Unlock the manager.
+    *
     * @see StorageManager#readLock()
     */
    void readUnLock();
 
    /**
     * Closes the {@link IDGenerator} persisting the current record ID.
-    * <p>
+    * <p/>
     * Effectively a "pre-stop" method. Necessary due to the "stop"-order at
     * {@link HornetQServerImpl}
     */

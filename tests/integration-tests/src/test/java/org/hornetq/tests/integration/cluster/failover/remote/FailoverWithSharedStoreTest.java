@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover.remote;
 
-import org.junit.Test;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -22,9 +20,11 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.junit.Test;
 
 /**
  * A ServerTest
+ *
  * @author jmesnil
  */
 public class FailoverWithSharedStoreTest extends ClusterTestBase
@@ -39,7 +39,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
          createSessionFactory(locator);
          fail();
       }
-      catch(HornetQNotConnectedException nce)
+      catch (HornetQNotConnectedException nce)
       {
          //ok
       }

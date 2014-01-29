@@ -41,13 +41,14 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * A StompConnection
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public final class StompConnection implements RemotingConnection
 {
    protected static final String CONNECTION_ID_PROP = "__HQ_CID";
    private static final String SERVER_NAME = "HornetQ/" + VersionLoader.getVersion().getFullVersion() +
-            " HornetQ Messaging Engine";
+      " HornetQ Messaging Engine";
 
    private final StompProtocolManager manager;
 
@@ -102,22 +103,22 @@ public final class StompConnection implements RemotingConnection
       {
          switch (e.getCode())
          {
-         case HornetQStompException.INVALID_EOL_V10:
-            if (version != null) throw e;
-            frameHandler = new StompFrameHandlerV12(this);
-            buffer.resetReaderIndex();
-            frame = decode(buffer);
-            break;
-         case HornetQStompException.INVALID_COMMAND:
-            frameHandler.onError(e);
-            break;
-         default:
-            throw e;
+            case HornetQStompException.INVALID_EOL_V10:
+               if (version != null) throw e;
+               frameHandler = new StompFrameHandlerV12(this);
+               buffer.resetReaderIndex();
+               frame = decode(buffer);
+               break;
+            case HornetQStompException.INVALID_COMMAND:
+               frameHandler.onError(e);
+               break;
+            default:
+               throw e;
          }
       }
       return frame;
    }
-   
+
    public boolean hasBytes()
    {
       return frameHandler.hasBytes();
@@ -136,11 +137,11 @@ public final class StompConnection implements RemotingConnection
       this.acceptorUsed = acceptorUsed;
 
       this.enableMessageID = ConfigurationHelper.getBooleanProperty(TransportConstants.STOMP_ENABLE_MESSAGE_ID,
-                                                                 false,
-                                                                 acceptorUsed.getConfiguration());
+                                                                    false,
+                                                                    acceptorUsed.getConfiguration());
       this.minLargeMessageSize = ConfigurationHelper.getIntProperty(TransportConstants.STOMP_MIN_LARGE_MESSAGE_SIZE,
-                                                                                 HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                                 acceptorUsed.getConfiguration());
+                                                                    HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                    acceptorUsed.getConfiguration());
    }
 
    @Override
@@ -265,7 +266,7 @@ public final class StompConnection implements RemotingConnection
 
       internalClose();
 
-      synchronized(sendLock)
+      synchronized (sendLock)
       {
          callClosingListeners();
       }
@@ -464,7 +465,7 @@ public final class StompConnection implements RemotingConnection
             throw error;
          }
       }
-      
+
 
       if (this.version != (StompVersions.V1_0))
       {
@@ -512,14 +513,14 @@ public final class StompConnection implements RemotingConnection
          }
          if (!initialized)
          {
-            if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
+            if (!(Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
             {
                throw new HornetQStompException("Connection hasn't been established.");
             }
             //decide version
             negotiateVersion(request);
          }
-         
+
          reply = frameHandler.handleFrame(request);
       }
       catch (HornetQStompException e)
@@ -600,7 +601,7 @@ public final class StompConnection implements RemotingConnection
       if (enableMessageID())
       {
          message.putStringProperty("hqMessageId",
-               "STOMP" + message.getMessageID());
+                                   "STOMP" + message.getMessageID());
       }
       try
       {
@@ -670,7 +671,7 @@ public final class StompConnection implements RemotingConnection
    }
 
    void subscribe(String destination, String selector, String ack,
-         String id, String durableSubscriptionName, boolean noLocal) throws HornetQStompException
+                  String id, String durableSubscriptionName, boolean noLocal) throws HornetQStompException
    {
       if (noLocal)
       {
@@ -761,7 +762,7 @@ public final class StompConnection implements RemotingConnection
    }
 
    public StompFrame createStompMessage(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount) throws Exception
+                                        StompSubscription subscription, int deliveryCount) throws Exception
    {
       return frameHandler.createMessageFrame(serverMessage, subscription, deliveryCount);
    }

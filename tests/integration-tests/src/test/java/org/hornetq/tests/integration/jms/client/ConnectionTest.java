@@ -13,27 +13,23 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Test;
 
 /**
  * A ConnectionTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ConnectionTest extends JMSTestBase
 {
@@ -66,7 +62,7 @@ public class ConnectionTest extends JMSTestBase
       //first try cf without any connection being created
       ConnectionFactory newCF = getCFThruSerialization(cf);
       testCreateConnection(newCF);
-      
+
       //now serialize a cf after a connection has been created
       //https://issues.jboss.org/browse/WFLY-327
       Connection aConn = null;
@@ -94,7 +90,7 @@ public class ConnectionTest extends JMSTestBase
       oos.writeObject(cf);
       ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
       ObjectInputStream ois = new ObjectInputStream(bis);
-      ConnectionFactory newCF = (ConnectionFactory) ois.readObject();
+      ConnectionFactory newCF = (ConnectionFactory)ois.readObject();
       oos.close();
       ois.close();
 

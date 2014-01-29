@@ -21,12 +21,8 @@
 */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -35,6 +31,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -94,7 +92,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
       ServerLocator locator1 = getBackupServerLocator(1);
 
       ClientSessionFactory factory0 = createSessionFactory(locator0);
-      ClientSessionFactory factory1 = createSessionFactory(locator1) ;
+      ClientSessionFactory factory1 = createSessionFactory(locator1);
 
       ClientSession session0 = factory0.createSession(false, true, true);
       ClientSession session1 = factory1.createSession(false, true, true);
@@ -120,7 +118,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
       List<TestableServer> toCrash = new ArrayList<TestableServer>();
       for (TestableServer backupServer : backupServers)
       {
-         if(!backupServer.getServer().getConfiguration().isBackup())
+         if (!backupServer.getServer().getConfiguration().isBackup())
          {
             toCrash.add(backupServer);
          }

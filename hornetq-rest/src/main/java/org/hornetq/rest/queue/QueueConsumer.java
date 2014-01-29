@@ -1,7 +1,5 @@
 package org.hornetq.rest.queue;
 
-import java.net.URI;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -12,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -134,7 +133,7 @@ public class QueueConsumer
       {
          UriBuilder builder = info.getBaseUriBuilder();
          builder.path(info.getMatchedURIs().get(1))
-                 .path("consume-next");
+            .path("consume-next");
          String uri = builder.build().toString();
 
          // redirect to another consume-next
@@ -220,7 +219,7 @@ public class QueueConsumer
       ClientMessage m = null;
       if (timeoutSecs <= 0)
       {
-          m = consumer.receive(1);
+         m = consumer.receive(1);
       }
       else
       {
@@ -262,7 +261,7 @@ public class QueueConsumer
       if (index == null) throw new IllegalArgumentException("index cannot be null");
       UriBuilder builder = info.getBaseUriBuilder();
       builder.path(basePath)
-              .path("consume-next" + index);
+         .path("consume-next" + index);
       String uri = builder.build().toString();
       linkStrategy.setLinkHeader(response, "consume-next", "consume-next", uri, MediaType.APPLICATION_FORM_URLENCODED);
    }

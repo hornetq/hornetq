@@ -22,12 +22,11 @@ import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompFrame;
 
 /**
- *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class StompFrameV11 extends StompFrame
 {
-   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
+   private static final byte[] END_OF_FRAME = new byte[]{0, '\n'};
 
    //stomp 1.1 talks about repetitive headers.
    private final List<Header> allHeaders = new ArrayList<Header>();

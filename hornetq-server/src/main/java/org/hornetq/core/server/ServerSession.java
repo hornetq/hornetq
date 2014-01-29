@@ -13,10 +13,9 @@
 
 package org.hornetq.core.server;
 
+import javax.transaction.xa.Xid;
 import java.util.List;
 import java.util.Set;
-
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
@@ -25,12 +24,10 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.json.JSONArray;
 
 /**
- *
  * A ServerSession
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
- *
  */
 public interface ServerSession
 {
@@ -89,10 +86,10 @@ public interface ServerSession
    void stop();
 
    void createQueue(SimpleString address,
-                          SimpleString name,
-                          SimpleString filterString,
-                          boolean temporary,
-                          boolean durable) throws Exception;
+                    SimpleString name,
+                    SimpleString filterString,
+                    boolean temporary,
+                    boolean durable) throws Exception;
 
    void deleteQueue(SimpleString name) throws Exception;
 
@@ -135,6 +132,7 @@ public interface ServerSession
    /**
     * Add all the producers detail to the JSONArray object.
     * This is a method to be used by the management layer.
+    *
     * @param objs
     * @throws Exception
     */
@@ -146,5 +144,5 @@ public interface ServerSession
 
    OperationContext getSessionContext();
 
-    List<MessageReference> getInTXMessagesForConsumer(long consumerId);
+   List<MessageReference> getInTXMessagesForConsumer(long consumerId);
 }

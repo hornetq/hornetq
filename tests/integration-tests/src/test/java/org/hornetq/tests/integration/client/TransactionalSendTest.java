@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
@@ -25,6 +20,9 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -53,58 +51,58 @@ public class TransactionalSendTest extends ServiceTestBase
    public void testSendWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
-         server.start();
+      server.start();
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession session = cf.createSession(false, false, false);
-         session.createQueue(addressA, queueA, false);
-         ClientProducer cp = session.createProducer(addressA);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(session.createMessage(false));
-         }
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         Assert.assertEquals(q.getMessageCount(), 0);
-         session.commit();
-         Assert.assertEquals(q.getMessageCount(), numMessages);
-         // now send some more
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(session.createMessage(false));
-         }
-         Assert.assertEquals(q.getMessageCount(), numMessages);
-         session.commit();
-         Assert.assertEquals(q.getMessageCount(), numMessages * 2);
-         session.close();
-         }
+      ClientSession session = cf.createSession(false, false, false);
+      session.createQueue(addressA, queueA, false);
+      ClientProducer cp = session.createProducer(addressA);
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(session.createMessage(false));
+      }
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      Assert.assertEquals(q.getMessageCount(), 0);
+      session.commit();
+      Assert.assertEquals(q.getMessageCount(), numMessages);
+      // now send some more
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(session.createMessage(false));
+      }
+      Assert.assertEquals(q.getMessageCount(), numMessages);
+      session.commit();
+      Assert.assertEquals(q.getMessageCount(), numMessages * 2);
+      session.close();
+   }
 
    @Test
    public void testSendWithRollback() throws Exception
    {
       HornetQServer server = createServer(false);
-         server.start();
+      server.start();
       ClientSessionFactory cf = createSessionFactory(locator);
-         ClientSession session = cf.createSession(false, false, false);
-         session.createQueue(addressA, queueA, false);
-         ClientProducer cp = session.createProducer(addressA);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(session.createMessage(false));
-         }
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         Assert.assertEquals(q.getMessageCount(), 0);
-         session.rollback();
-         Assert.assertEquals(q.getMessageCount(), 0);
-         // now send some more
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(session.createMessage(false));
-         }
-         Assert.assertEquals(q.getMessageCount(), 0);
-         session.commit();
-         Assert.assertEquals(q.getMessageCount(), numMessages);
-         session.close();
-         }
+      ClientSession session = cf.createSession(false, false, false);
+      session.createQueue(addressA, queueA, false);
+      ClientProducer cp = session.createProducer(addressA);
+      int numMessages = 100;
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(session.createMessage(false));
+      }
+      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      Assert.assertEquals(q.getMessageCount(), 0);
+      session.rollback();
+      Assert.assertEquals(q.getMessageCount(), 0);
+      // now send some more
+      for (int i = 0; i < numMessages; i++)
+      {
+         cp.send(session.createMessage(false));
+      }
+      Assert.assertEquals(q.getMessageCount(), 0);
+      session.commit();
+      Assert.assertEquals(q.getMessageCount(), numMessages);
+      session.close();
+   }
 
 }

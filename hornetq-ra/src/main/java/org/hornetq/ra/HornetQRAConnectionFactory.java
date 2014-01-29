@@ -13,11 +13,10 @@
 
 package org.hornetq.ra;
 
-import java.io.Serializable;
-
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
 import javax.resource.Referenceable;
+import java.io.Serializable;
 
 /**
  * An aggregate interface for the JMS connection factories
@@ -25,24 +24,35 @@ import javax.resource.Referenceable;
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.com">Jesper Pedersen</a>
  */
-public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory,
-         XATopicConnectionFactory, Serializable, Referenceable
+public interface HornetQRAConnectionFactory extends XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable
 {
-   /** Connection factory capable of handling connections */
-   public static final int CONNECTION = 0;
+   /**
+    * Connection factory capable of handling connections
+    */
+   int CONNECTION = 0;
 
-   /** Connection factory capable of handling queues */
-   public static final int QUEUE_CONNECTION = 1;
+   /**
+    * Connection factory capable of handling queues
+    */
+   int QUEUE_CONNECTION = 1;
 
-   /** Connection factory capable of handling topics */
-   public static final int TOPIC_CONNECTION = 2;
+   /**
+    * Connection factory capable of handling topics
+    */
+   int TOPIC_CONNECTION = 2;
 
-   /** Connection factory capable of handling XA connections */
-   public static final int XA_CONNECTION = 3;
+   /**
+    * Connection factory capable of handling XA connections
+    */
+   int XA_CONNECTION = 3;
 
-   /** Connection factory capable of handling XA queues */
-   public static final int XA_QUEUE_CONNECTION = 4;
+   /**
+    * Connection factory capable of handling XA queues
+    */
+   int XA_QUEUE_CONNECTION = 4;
 
-   /** Connection factory capable of handling XA topics */
-   public static final int XA_TOPIC_CONNECTION = 5;
+   /**
+    * Connection factory capable of handling XA topics
+    */
+   int XA_TOPIC_CONNECTION = 5;
 }

@@ -40,7 +40,6 @@ import org.hornetq.utils.TypedProperties;
  * A InVMAcceptor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public final class InVMAcceptor implements Acceptor
 {
@@ -278,13 +277,13 @@ public final class InVMAcceptor implements Acceptor
 
             listener.connectionDestroyed(connectionID);
 
-              // Execute on different thread after all the packets are sent, to avoid deadlocks
+            // Execute on different thread after all the packets are sent, to avoid deadlocks
             connection.getExecutor().execute(new Runnable()
             {
                public void run()
                {
-                 // Remove on the other side too
-                   connector.disconnect((String)connectionID);
+                  // Remove on the other side too
+                  connector.disconnect((String)connectionID);
                }
             });
          }

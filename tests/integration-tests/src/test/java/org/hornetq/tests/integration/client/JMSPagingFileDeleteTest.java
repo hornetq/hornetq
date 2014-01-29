@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.client;
+
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -30,12 +31,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * This will perform cleanup tests on paging while using JMS topics
  *
  * @author clebertsuconic
- *
- *
  */
 public class JMSPagingFileDeleteTest extends JMSTestBase
 {
@@ -95,6 +93,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
 
    /**
     * Test replicating issue JBPAPP-9603
+    *
     * @throws Exception
     */
    @Test
@@ -104,7 +103,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
 
       try
       {
-         for (int repeat = 0 ; repeat < 2; repeat++)
+         for (int repeat = 0; repeat < 2; repeat++)
          {
             connection = cf.createConnection();
             connection.setClientID("cid");

@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import org.junit.Test;
-
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -24,21 +22,16 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 
-import org.junit.Assert;
-
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.core.postoffice.impl.WildcardAddressManager;
-import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.JMSTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A MessageTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class MessageTest extends JMSTestBase
 {
@@ -71,9 +64,9 @@ public class MessageTest extends JMSTestBase
       Connection conn = cf.createConnection();
       try
       {
-      Queue queue = createQueue("testQueue");
+         Queue queue = createQueue("testQueue");
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue);
 
@@ -208,7 +201,7 @@ public class MessageTest extends JMSTestBase
       }
       finally
       {
-      conn.close();
+         conn.close();
       }
    }
 
@@ -219,38 +212,38 @@ public class MessageTest extends JMSTestBase
 
       Queue queue = createQueue("testQueue");
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue);
 
-         conn.start();
+      conn.start();
 
-         Message msg = sess.createMessage();
+      Message msg = sess.createMessage();
 
-         msg.setStringProperty("Test", "SomeValue");
+      msg.setStringProperty("Test", "SomeValue");
 
-         assertEquals("SomeValue", msg.getStringProperty("Test"));
+      assertEquals("SomeValue", msg.getStringProperty("Test"));
 
-         msg.setStringProperty("Test", null);
+      msg.setStringProperty("Test", null);
 
-         assertEquals(null, msg.getStringProperty("Test"));
+      assertEquals(null, msg.getStringProperty("Test"));
 
-         msg.setObjectProperty(MessageTest.propName1, null);
+      msg.setObjectProperty(MessageTest.propName1, null);
 
-         msg.setStringProperty(MessageTest.propName2, null);
+      msg.setStringProperty(MessageTest.propName2, null);
 
-         msg.getStringProperty(MessageTest.propName1);
+      msg.getStringProperty(MessageTest.propName1);
 
-         msg.setStringProperty("Test", null);
+      msg.setStringProperty("Test", null);
 
-         Message received = sendAndConsumeMessage(msg, prod, cons);
+      Message received = sendAndConsumeMessage(msg, prod, cons);
 
-         Assert.assertNotNull(received);
+      Assert.assertNotNull(received);
 
-         checkProperties(received);
-         }
+      checkProperties(received);
+   }
 
    // Package protected ---------------------------------------------
 
@@ -322,11 +315,13 @@ public class MessageTest extends JMSTestBase
 
    // https://issues.jboss.org/browse/HORNETQ-988
    @Test
-   public void testShouldNotThrowException() throws Exception {
+   public void testShouldNotThrowException() throws Exception
+   {
       Connection conn = null;
 
       createTopic(true, "Topic1");
-      try {
+      try
+      {
          conn = cf.createConnection();
 
          conn.start();
@@ -356,8 +351,11 @@ public class MessageTest extends JMSTestBase
 
          assertNotNull(consGeral.receive(5000));
 
-      } finally {
-         if (conn != null) {
+      }
+      finally
+      {
+         if (conn != null)
+         {
             conn.close();
          }
       }

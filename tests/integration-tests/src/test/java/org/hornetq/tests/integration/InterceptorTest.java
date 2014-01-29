@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -43,14 +38,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- *
  * A InterceptorTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
- *
- *
  */
 public class InterceptorTest extends ServiceTestBase
 {
@@ -100,13 +95,12 @@ public class InterceptorTest extends ServiceTestBase
          if (packet.getType() == PacketImpl.CREATE_QUEUE)
          {
             String userName = getUsername(packet, connection);
-            CreateQueueMessage createQueue = (CreateQueueMessage) packet;
+            CreateQueueMessage createQueue = (CreateQueueMessage)packet;
             createQueue.setFilterString(new SimpleString("userName='" + userName + "'"));
 
             System.out.println("userName = " + userName);
          }
-         else
-         if (packet.getType() == PacketImpl.SESS_SEND)
+         else if (packet.getType() == PacketImpl.SESS_SEND)
          {
             String userName = getUsername(packet, connection);
             MessagePacket msgPacket = (MessagePacket)packet;
@@ -122,12 +116,13 @@ public class InterceptorTest extends ServiceTestBase
       public String getUsername(final Packet packet, final RemotingConnection connection)
       {
          RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
-         ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
-         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
+         ChannelImpl channel = (ChannelImpl)impl.getChannel(packet.getChannelID(), -1);
+         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler)channel.getHandler();
          return sessionHandler.getSession().getUsername();
       }
 
    }
+
    private class InterceptUserOnCreateConsumer implements Interceptor
    {
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
@@ -135,13 +130,12 @@ public class InterceptorTest extends ServiceTestBase
          if (packet.getType() == PacketImpl.SESS_CREATECONSUMER)
          {
             String userName = getUsername(packet, connection);
-            SessionCreateConsumerMessage createQueue = (SessionCreateConsumerMessage) packet;
+            SessionCreateConsumerMessage createQueue = (SessionCreateConsumerMessage)packet;
             createQueue.setFilterString(new SimpleString("userName='" + userName + "'"));
 
             System.out.println("userName = " + userName);
          }
-         else
-         if (packet.getType() == PacketImpl.SESS_SEND)
+         else if (packet.getType() == PacketImpl.SESS_SEND)
          {
             String userName = getUsername(packet, connection);
             MessagePacket msgPacket = (MessagePacket)packet;
@@ -157,8 +151,8 @@ public class InterceptorTest extends ServiceTestBase
       public String getUsername(final Packet packet, final RemotingConnection connection)
       {
          RemotingConnectionImpl impl = (RemotingConnectionImpl)connection;
-         ChannelImpl channel = (ChannelImpl) impl.getChannel(packet.getChannelID(), -1);
-         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler) channel.getHandler();
+         ChannelImpl channel = (ChannelImpl)impl.getChannel(packet.getChannelID(), -1);
+         ServerSessionPacketHandler sessionHandler = (ServerSessionPacketHandler)channel.getHandler();
          return sessionHandler.getSession().getUsername();
       }
 
@@ -287,6 +281,7 @@ public class InterceptorTest extends ServiceTestBase
       }
 
    }
+
    /**
     * @param packet
     */
@@ -294,7 +289,7 @@ public class InterceptorTest extends ServiceTestBase
    {
       if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
       {
-         SessionReceiveMessage msg = (SessionReceiveMessage) packet;
+         SessionReceiveMessage msg = (SessionReceiveMessage)packet;
          if (msg.getMessage().containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
          {
             return true;

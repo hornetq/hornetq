@@ -24,7 +24,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
  */
 public final class Validators
 {
-   public static interface Validator
+   public interface Validator
    {
       void validate(String name, Object value);
    }
@@ -41,7 +41,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         String str = (String) value;
+         String str = (String)value;
          if (str == null || str.length() == 0)
          {
             throw HornetQMessageBundle.BUNDLE.emptyOrNull(name);
@@ -53,7 +53,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val.doubleValue() > 0)
          {
             // OK
@@ -69,7 +69,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val == null || (val.intValue() < 0 || val.intValue() > 100))
          {
             throw HornetQMessageBundle.BUNDLE.notPercent(name, val);
@@ -81,7 +81,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val.doubleValue() >= 0)
          {
             // OK
@@ -97,7 +97,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val.doubleValue() == -1 || val.doubleValue() > 0)
          {
             // OK
@@ -113,7 +113,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val.doubleValue() == -1 || val.doubleValue() >= 0)
          {
             // OK
@@ -129,7 +129,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         Number val = (Number) value;
+         Number val = (Number)value;
          if (val.intValue() >= Thread.MIN_PRIORITY && val.intValue() <= Thread.MAX_PRIORITY)
          {
             // OK
@@ -145,7 +145,7 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         String val = (String) value;
+         String val = (String)value;
          if (val == null || !val.equals(JournalType.NIO.toString()) && !val.equals(JournalType.ASYNCIO.toString()))
          {
             throw HornetQMessageBundle.BUNDLE.invalidJournalType(val);
@@ -157,11 +157,11 @@ public final class Validators
    {
       public void validate(final String name, final Object value)
       {
-         String val = (String) value;
+         String val = (String)value;
          if (val == null || !val.equals(AddressFullMessagePolicy.PAGE.toString()) &&
-               !val.equals(AddressFullMessagePolicy.DROP.toString()) &&
-               !val.equals(AddressFullMessagePolicy.BLOCK.toString()) &&
-               !val.equals(AddressFullMessagePolicy.FAIL.toString()))
+            !val.equals(AddressFullMessagePolicy.DROP.toString()) &&
+            !val.equals(AddressFullMessagePolicy.BLOCK.toString()) &&
+            !val.equals(AddressFullMessagePolicy.FAIL.toString()))
          {
             throw HornetQMessageBundle.BUNDLE.invalidAddressFullPolicyType(val);
          }

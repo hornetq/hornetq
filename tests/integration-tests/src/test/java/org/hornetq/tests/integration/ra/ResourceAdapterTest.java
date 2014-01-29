@@ -12,6 +12,9 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import javax.jms.Connection;
+import javax.resource.ResourceException;
+import javax.resource.spi.endpoint.MessageEndpoint;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -19,10 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-
-import javax.jms.Connection;
-import javax.resource.ResourceException;
-import javax.resource.spi.endpoint.MessageEndpoint;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
@@ -163,19 +162,19 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testuser = "testuser";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       testParams(b,
-         l,
-         i,
-         d,
-         className,
-         backupConn,
-         testConfig,
-         testid,
-         testBalancer,
-         testParams,
-         testaddress,
-         testpass,
-         testuser,
-         qResourceAdapter);
+                 l,
+                 i,
+                 d,
+                 className,
+                 backupConn,
+                 testConfig,
+                 testid,
+                 testBalancer,
+                 testParams,
+                 testaddress,
+                 testpass,
+                 testuser,
+                 qResourceAdapter);
    }
 
    @Test
@@ -197,19 +196,19 @@ public class ResourceAdapterTest extends HornetQRATestBase
       String testuser = "testuser2";
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       testParams(b,
-         l,
-         i,
-         d,
-         className,
-         backupConn,
-         testConfig,
-         testid,
-         testBalancer,
-         testParams,
-         testaddress,
-         testpass,
-         testuser,
-         qResourceAdapter);
+                 l,
+                 i,
+                 d,
+                 className,
+                 backupConn,
+                 testConfig,
+                 testid,
+                 testBalancer,
+                 testParams,
+                 testaddress,
+                 testpass,
+                 testuser,
+                 qResourceAdapter);
    }
 
    private void testParams(Boolean b,
@@ -309,45 +308,45 @@ public class ResourceAdapterTest extends HornetQRATestBase
       int port = ((UDPBroadcastGroupConfiguration)factory.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getGroupPort();
 
       // defaults
-      assertEquals(10000l, refresh);
-      assertEquals(10000l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(10000L, initWait);
       assertEquals(9876, port);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryRefreshTimeout(1234l);
+      adapter.setDiscoveryRefreshTimeout(1234L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override refresh timeout
-      assertEquals(1234l, refresh);
-      assertEquals(10000l, initWait);
+      assertEquals(1234L, refresh);
+      assertEquals(10000L, initWait);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      adapter.setDiscoveryInitialWaitTimeout(9999L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override initial wait
-      assertEquals(10000l, refresh);
-      assertEquals(9999l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(9999L, initWait);
 
       adapter = new HornetQResourceAdapter();
       adapter.setDiscoveryAddress("231.1.1.1");
       adapter.setDiscoveryPort(9876);
-      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      adapter.setDiscoveryInitialWaitTimeout(9999L);
       factory = adapter.getDefaultHornetQConnectionFactory();
       initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
       refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
 
       // override initial wait
-      assertEquals(10000l, refresh);
-      assertEquals(9999l, initWait);
+      assertEquals(10000L, refresh);
+      assertEquals(9999L, initWait);
 
    }
 
@@ -439,8 +438,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setDiscoveryAddress("231.6.6.6");
       qResourceAdapter.setDiscoveryPort(1234);
-      qResourceAdapter.setDiscoveryRefreshTimeout(1l);
-      qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
+      qResourceAdapter.setDiscoveryRefreshTimeout(1L);
+      qResourceAdapter.setDiscoveryInitialWaitTimeout(1L);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
 
       qResourceAdapter.setTransactionManagerLocatorClass("");
@@ -452,11 +451,11 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestination(MDBQUEUE);
       HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
       DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
-      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
+      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
       assertEquals(udpDg.getGroupPort(), 1234);
-      assertEquals(dc.getRefreshTimeout(), 1l);
-      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
+      assertEquals(dc.getRefreshTimeout(), 1L);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1L);
       qResourceAdapter.stop();
    }
 
@@ -480,15 +479,15 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setSetupAttempts(0);
       spec.setDiscoveryAddress("231.6.6.6");
       spec.setDiscoveryPort(1234);
-      spec.setDiscoveryInitialWaitTimeout(1l);
-      spec.setDiscoveryRefreshTimeout(1l);
+      spec.setDiscoveryInitialWaitTimeout(1L);
+      spec.setDiscoveryRefreshTimeout(1L);
       HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
       DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
-      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration) dc.getBroadcastEndpointFactoryConfiguration();
+      UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
       assertEquals(udpDg.getGroupPort(), 1234);
-      assertEquals(dc.getRefreshTimeout(), 1l);
-      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1l);
+      assertEquals(dc.getRefreshTimeout(), 1L);
+      assertEquals(dc.getDiscoveryInitialWaitTimeout(), 1L);
       qResourceAdapter.stop();
    }
 
@@ -727,7 +726,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       Set<RecoveryDiscovery> discoverySet = new HashSet<RecoveryDiscovery>();
       String factClass = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
       TransportConfiguration transportConfig = new TransportConfiguration(factClass, null, "netty");
-      XARecoveryConfig config = new XARecoveryConfig(false, new TransportConfiguration[] {transportConfig},
+      XARecoveryConfig config = new XARecoveryConfig(false, new TransportConfiguration[]{transportConfig},
                                                      null, null);
 
       RecoveryDiscovery discovery1 = new RecoveryDiscovery(config);

@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.junit.Test;
-
 import java.util.Collection;
 
 import org.hornetq.api.core.Message;
@@ -24,6 +22,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,52 +57,52 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       servers[2].getConfiguration().setBackupGroupName("group1");
 
       startServers(0, 1, 2);
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, false);
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForTopology(servers[1], 2, 1);
+      waitForTopology(servers[1], 2, 1);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAll(10, 0);
+      verifyReceiveAll(10, 0);
 
       if (!isSharedStore())
-         {
-            waitForBackupTopologyAnnouncement(sfs[0]);
-         }
+      {
+         waitForBackupTopologyAnnouncement(sfs[0]);
+      }
 
-         Thread.sleep(1000);
+      Thread.sleep(1000);
 
-         closeSessionFactory(0);
+      closeSessionFactory(0);
 
-         servers[0].stop(true);
+      servers[0].stop(true);
 
-         waitForServerRestart(2);
+      waitForServerRestart(2);
 
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
-         verifyReceiveAll(10, 2);
+      verifyReceiveAll(10, 2);
    }
 
    public void waitForBackupTopologyAnnouncement(ClientSessionFactory sf) throws Exception
@@ -116,7 +115,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
          for (TopologyMemberImpl member : members)
          {
-            if(member.getBackup() != null)
+            if (member.getBackup() != null)
             {
                return;
             }
@@ -156,69 +155,69 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       startServers(0, 1, 2);
 
-         setupSessionFactory(0, isNetty());
+      setupSessionFactory(0, isNetty());
 
-         setupSessionFactory(1, isNetty());
+      setupSessionFactory(1, isNetty());
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
 
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
 
-         createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
 
-         waitForBindings(1, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 0, true);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, false);
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForTopology(servers[1], 2);
+      waitForTopology(servers[1], 2);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
-         sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
+      sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
-         verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1);
+      verifyReceiveAllWithGroupIDRoundRobin(0, 30, 0, 1);
 
       if (!isSharedStore())
-         {
-            waitForBackupTopologyAnnouncement(sfs[0]);
-         }
+      {
+         waitForBackupTopologyAnnouncement(sfs[0]);
+      }
 
-         closeSessionFactory(0);
+      closeSessionFactory(0);
 
-         servers[0].stop(true);
+      servers[0].stop(true);
 
-         waitForServerRestart(2);
+      waitForServerRestart(2);
 
-         setupSessionFactory(2, isNetty());
+      setupSessionFactory(2, isNetty());
 
-         addConsumer(2, 2, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(2, "queues.testaddress", 1, 1, false);
+      waitForBindings(2, "queues.testaddress", 1, 1, false);
 
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
-         sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id4"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
+      sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
-         verifyReceiveAllWithGroupIDRoundRobin(2, 30, 1, 2);
+      verifyReceiveAllWithGroupIDRoundRobin(2, 30, 1, 2);
    }
 
    public boolean isNetty()

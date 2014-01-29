@@ -13,10 +13,6 @@
 
 package org.hornetq.tests.integration.client;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -25,13 +21,13 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * A BlockingSendTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class BlockingSendTest extends ServiceTestBase
 {
@@ -55,34 +51,34 @@ public class BlockingSendTest extends ServiceTestBase
 
       ServerLocator locator = null;
 
-         server.getConfiguration().setJournalSyncNonTransactional(false);
-         server.getConfiguration().setJournalBufferTimeout_AIO(15000);
+      server.getConfiguration().setJournalSyncNonTransactional(false);
+      server.getConfiguration().setJournalBufferTimeout_AIO(15000);
 
-         server.start();
+      server.start();
 
-         System.out.println("sync = " + server.getConfiguration().isJournalSyncNonTransactional());
-         locator = createFactory(false);
-         locator.setBlockOnDurableSend(true);
-         factory = createSessionFactory(locator);
+      System.out.println("sync = " + server.getConfiguration().isJournalSyncNonTransactional());
+      locator = createFactory(false);
+      locator.setBlockOnDurableSend(true);
+      factory = createSessionFactory(locator);
 
-         session = factory.createSession();
+      session = factory.createSession();
 
-         session.createQueue("address", "queue");
+      session.createQueue("address", "queue");
 
-         ClientProducer prod = session.createProducer("address");
+      ClientProducer prod = session.createProducer("address");
 
-         ClientMessage message = session.createMessage(true);
+      ClientMessage message = session.createMessage(true);
 
-         prod.send(message);
+      prod.send(message);
 
-         ClientConsumer consumer = session.createConsumer("queue");
+      ClientConsumer consumer = session.createConsumer("queue");
 
-         session.start();
+      session.start();
 
-         ClientMessage msg = consumer.receive(5000);
+      ClientMessage msg = consumer.receive(5000);
 
-         Assert.assertNotNull(msg);
+      Assert.assertNotNull(msg);
 
-         msg.acknowledge();
+      msg.acknowledge();
    }
 }

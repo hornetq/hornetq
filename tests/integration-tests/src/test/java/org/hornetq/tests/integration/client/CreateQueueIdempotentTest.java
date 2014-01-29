@@ -12,13 +12,8 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQQueueExistsException;
@@ -31,6 +26,9 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CreateQueueIdempotentTest extends ServiceTestBase
 {
@@ -69,7 +67,7 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
          session.createQueue(QUEUE, QUEUE, null, true);
          fail("Expected exception, queue already exists");
       }
-      catch(HornetQQueueExistsException qee)
+      catch (HornetQQueueExistsException qee)
       {
          //ok
       }
@@ -80,99 +78,105 @@ public class CreateQueueIdempotentTest extends ServiceTestBase
    }
 
    @Test
-    public void testConcurrentCreateQueueIdempotency() throws Exception
-    {
-        final String QUEUE = "ConcurrentCreateQueueIdempotency";
-        AtomicInteger queuesCreated = new AtomicInteger(0);
-        AtomicInteger failedAttempts = new AtomicInteger(0);
+   public void testConcurrentCreateQueueIdempotency() throws Exception
+   {
+      final String QUEUE = "ConcurrentCreateQueueIdempotency";
+      AtomicInteger queuesCreated = new AtomicInteger(0);
+      AtomicInteger failedAttempts = new AtomicInteger(0);
 
-        final int NUM_THREADS = 5;
+      final int NUM_THREADS = 5;
 
-        QueueCreator[] queueCreators = new QueueCreator[NUM_THREADS];
+      QueueCreator[] queueCreators = new QueueCreator[NUM_THREADS];
 
 
-        for(int i = 0; i < NUM_THREADS; i++)
-        {
-            QueueCreator queueCreator = new QueueCreator(QUEUE, queuesCreated, failedAttempts);
-            queueCreators[i] = queueCreator;
-        }
+      for (int i = 0; i < NUM_THREADS; i++)
+      {
+         QueueCreator queueCreator = new QueueCreator(QUEUE, queuesCreated, failedAttempts);
+         queueCreators[i] = queueCreator;
+      }
 
-        for(int i = 0; i < NUM_THREADS; i++)
-        {
-            queueCreators[i].start();
-        }
+      for (int i = 0; i < NUM_THREADS; i++)
+      {
+         queueCreators[i].start();
+      }
 
-        for(int i = 0; i < NUM_THREADS; i++)
-        {
-            queueCreators[i].join();
-        }
+      for (int i = 0; i < NUM_THREADS; i++)
+      {
+         queueCreators[i].join();
+      }
 
-        server.stop();
+      server.stop();
 
-        // re-starting the server appears to be an unreliable guide
+      // re-starting the server appears to be an unreliable guide
       server.start();
 
       Assert.assertEquals(1, queuesCreated.intValue());
-        Assert.assertEquals(NUM_THREADS - 1, failedAttempts.intValue());
-    }
+      Assert.assertEquals(NUM_THREADS - 1, failedAttempts.intValue());
+   }
 
-    // Package protected ---------------------------------------------
+   // Package protected ---------------------------------------------
 
-    // Protected -----------------------------------------------------
+   // Protected -----------------------------------------------------
 
-    // Private -------------------------------------------------------
+   // Private -------------------------------------------------------
 
-    // Inner classes -------------------------------------------------
+   // Inner classes -------------------------------------------------
 
-    class QueueCreator extends Thread
-    {
-        private String queueName = null;
-        private AtomicInteger queuesCreated = null;
-        private AtomicInteger failedAttempts = null;
+   class QueueCreator extends Thread
+   {
+      private String queueName = null;
+      private AtomicInteger queuesCreated = null;
+      private AtomicInteger failedAttempts = null;
 
 
-        QueueCreator(String queueName, AtomicInteger queuesCreated, AtomicInteger failedAttempts)
-        {
-            this.queueName = queueName;
-            this.queuesCreated = queuesCreated;
-            this.failedAttempts = failedAttempts;
-        }
-        @Override
-        public void run()
-        {
-            ServerLocator locator = null;
-            ClientSession session = null;
+      QueueCreator(String queueName, AtomicInteger queuesCreated, AtomicInteger failedAttempts)
+      {
+         this.queueName = queueName;
+         this.queuesCreated = queuesCreated;
+         this.failedAttempts = failedAttempts;
+      }
 
-            try
-            {
+      @Override
+      public void run()
+      {
+         ServerLocator locator = null;
+         ClientSession session = null;
+
+         try
+         {
             locator = createInVMNonHALocator();
             ClientSessionFactory sf = createSessionFactory(locator);
-                session = sf.createSession(false, true, true);
-                final SimpleString QUEUE = new SimpleString(queueName);
-                session.createQueue(QUEUE, QUEUE, null, true);
-                queuesCreated.incrementAndGet();
-            }
-            catch(HornetQQueueExistsException qne)
+            session = sf.createSession(false, true, true);
+            final SimpleString QUEUE = new SimpleString(queueName);
+            session.createQueue(QUEUE, QUEUE, null, true);
+            queuesCreated.incrementAndGet();
+         }
+         catch (HornetQQueueExistsException qne)
+         {
+            failedAttempts.incrementAndGet();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+         finally
+         {
+            if (locator != null)
             {
-               failedAttempts.incrementAndGet();
+               locator.close();
             }
-            catch (Exception e)
+            if (session != null)
             {
-                e.printStackTrace();
+               try
+               {
+                  session.close();
+               }
+               catch (HornetQException e)
+               {
+                  e.printStackTrace();
+               }
             }
-            finally
-            {
-                if (locator != null) {
-                    locator.close();
-                }
-                if (session != null) {
-                    try {
-                        session.close();
-                    } catch (HornetQException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
+         }
+      }
+   }
 }

@@ -12,20 +12,19 @@
  */
 
 package org.hornetq.jms.tests.message;
-import org.junit.Before;
-import org.junit.After;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A test that sends/receives bytes messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  */
 public class BytesMessageTest extends MessageTestBase
 {
@@ -66,12 +65,12 @@ public class BytesMessageTest extends MessageTestBase
 
       bm.writeBoolean(true);
       bm.writeByte((byte)3);
-      bm.writeBytes(new byte[] { (byte)4, (byte)5, (byte)6 });
+      bm.writeBytes(new byte[]{(byte)4, (byte)5, (byte)6});
       bm.writeChar((char)7);
       bm.writeDouble(8.0);
       bm.writeFloat(9.0f);
       bm.writeInt(10);
-      bm.writeLong(11l);
+      bm.writeLong(11L);
       bm.writeShort((short)12);
       bm.writeUTF("this is an UTF String");
       bm.reset();
@@ -95,7 +94,7 @@ public class BytesMessageTest extends MessageTestBase
       ProxyAssertSupport.assertEquals(new Double(8.0), new Double(bm.readDouble()));
       ProxyAssertSupport.assertEquals(new Float(9.0), new Float(bm.readFloat()));
       ProxyAssertSupport.assertEquals(10, bm.readInt());
-      ProxyAssertSupport.assertEquals(11l, bm.readLong());
+      ProxyAssertSupport.assertEquals(11L, bm.readLong());
       ProxyAssertSupport.assertEquals((short)12, bm.readShort());
       ProxyAssertSupport.assertEquals("this is an UTF String", bm.readUTF());
    }

@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.impl.Page;
@@ -103,6 +102,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    /**
     * This is used only on non transactional paging
+    *
     * @param page
     * @param increment
     * @param context
@@ -138,6 +138,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    /**
     * Cleanup temporary page counters on non transactional paged messages
+    *
     * @param pageID
     */
    public void cleanupNonTXCounters(final long pageID) throws Exception
@@ -203,6 +204,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    /**
     * This method will install the TXs
+    *
     * @param tx
     * @param recordID1
     * @param add
@@ -322,14 +324,18 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       }
    }
 
-   /** used on testing only */
+   /**
+    * used on testing only
+    */
    public void setPersistent(final boolean persistent)
    {
       this.persistent = persistent;
    }
 
 
-   /** This method should always be called from a single threaded executor */
+   /**
+    * This method should always be called from a single threaded executor
+    */
    protected void cleanup()
    {
       ArrayList<Long> deleteList;
@@ -367,7 +373,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
          if (isTrace)
          {
-            HornetQServerLogger.LOGGER.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());
+            HornetQServerLogger.LOGGER.trace("Replacing page-counter record = " + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());
          }
 
          storage.commit(txCleanup);

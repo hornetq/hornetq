@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
@@ -32,6 +31,7 @@ public final class ReplicationSyncFileMessage extends PacketImpl
    private byte[] byteArray;
    private SimpleString pageStoreName;
    private FileType fileType;
+
    public enum FileType
    {
       JOURNAL(0), PAGE(1), LARGE_MESSAGE(2);
@@ -264,6 +264,6 @@ public final class ReplicationSyncFileMessage extends PacketImpl
    public String toString()
    {
       return ReplicationSyncFileMessage.class.getSimpleName() + "(" + fileType +
-               (journalType != null ? ", " + journalType : "") + ", id=" + fileId + ")";
+         (journalType != null ? ", " + journalType : "") + ", id=" + fileId + ")";
    }
 }

@@ -11,11 +11,6 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-
-import org.junit.Test;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
@@ -26,6 +21,9 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,70 +56,70 @@ public class SessionCreateConsumerTest extends ServiceTestBase
    @Test
    public void testCreateConsumer() throws Exception
    {
-         clientSession.createQueue(queueName, queueName, false);
-         ClientConsumer consumer = clientSession.createConsumer(queueName);
-         Assert.assertNotNull(consumer);
+      clientSession.createQueue(queueName, queueName, false);
+      ClientConsumer consumer = clientSession.createConsumer(queueName);
+      Assert.assertNotNull(consumer);
    }
 
    @Test
    public void testCreateConsumerNoQ() throws Exception
    {
-         try
-         {
-            clientSession.createConsumer(queueName);
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQNonExistentQueueException neqe)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      try
+      {
+         clientSession.createConsumer(queueName);
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQNonExistentQueueException neqe)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
    }
 
    @Test
    public void testCreateConsumerWithFilter() throws Exception
    {
-         clientSession.createQueue(queueName, queueName, false);
-         ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
-         Assert.assertNotNull(consumer);
+      clientSession.createQueue(queueName, queueName, false);
+      ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
+      Assert.assertNotNull(consumer);
    }
 
    @Test
    public void testCreateConsumerWithInvalidFilter() throws Exception
    {
-         clientSession.createQueue(queueName, queueName, false);
-         try
-         {
-            clientSession.createConsumer(queueName, "this is not valid filter");
-            Assert.fail("should throw exception");
-         }
-         catch(HornetQInvalidFilterExpressionException ifee)
-         {
-            //ok
-         }
-         catch (HornetQException e)
-         {
-            fail("Invalid Exception type:" + e.getType());
-         }
+      clientSession.createQueue(queueName, queueName, false);
+      try
+      {
+         clientSession.createConsumer(queueName, "this is not valid filter");
+         Assert.fail("should throw exception");
+      }
+      catch (HornetQInvalidFilterExpressionException ifee)
+      {
+         //ok
+      }
+      catch (HornetQException e)
+      {
+         fail("Invalid Exception type:" + e.getType());
+      }
    }
 
    @Test
    public void testCreateConsumerWithBrowseOnly() throws Exception
    {
-         clientSession.createQueue(queueName, queueName, false);
-         ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
-         Assert.assertNotNull(consumer);
+      clientSession.createQueue(queueName, queueName, false);
+      ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
+      Assert.assertNotNull(consumer);
    }
 
    @Test
    public void testCreateConsumerWithOverrides() throws Exception
    {
-         clientSession.createQueue(queueName, queueName, false);
-         ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);
-         Assert.assertNotNull(consumer);
+      clientSession.createQueue(queueName, queueName, false);
+      ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);
+      Assert.assertNotNull(consumer);
    }
 
 }

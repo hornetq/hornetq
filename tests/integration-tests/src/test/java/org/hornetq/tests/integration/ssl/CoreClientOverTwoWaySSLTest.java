@@ -12,12 +12,10 @@
  */
 
 package org.hornetq.tests.integration.ssl;
-import org.junit.Before;
 
-import org.junit.Test;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.junit.Assert;
-import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNotConnectedException;
 import org.hornetq.api.core.Message;
@@ -35,15 +33,13 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
  * @version <tt>$Revision: 3716 $</tt>
- *
  */
 public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
 {
@@ -102,7 +98,7 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
          createSessionFactory(locator);
          Assert.fail();
       }
-      catch(HornetQNotConnectedException se)
+      catch (HornetQNotConnectedException se)
       {
          //ok
       }

@@ -1,17 +1,15 @@
 package org.hornetq.tests.integration.cluster.failover;
-import org.junit.Before;
-
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BackupSyncPagingTest extends BackupSyncJournalTest
 {
@@ -26,7 +24,7 @@ public class BackupSyncPagingTest extends BackupSyncJournalTest
 
    @Override
    protected HornetQServer createInVMFailoverServer(final boolean realFiles, final Configuration configuration,
-            final NodeManager nodeManager, int id)
+                                                    final NodeManager nodeManager, int id)
    {
       Map<String, AddressSettings> conf = new HashMap<String, AddressSettings>();
       AddressSettings as = new AddressSettings();

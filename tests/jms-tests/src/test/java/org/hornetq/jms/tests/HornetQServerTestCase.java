@@ -12,12 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -31,9 +25,14 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
@@ -57,15 +56,17 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 {
    // Constants -----------------------------------------------------
 
-   public final static int MAX_TIMEOUT = 1000 * 10 /* seconds */;
+   public static final int MAX_TIMEOUT = 1000 * 10 /* seconds */;
 
-   public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
+   public static final int MIN_TIMEOUT = 1000 * 1 /* seconds */;
 
    protected final JmsTestLogger log = JmsTestLogger.LOGGER;
 
    // Static --------------------------------------------------------
 
-   /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
+   /**
+    * Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios
+    */
    public static void forceGC()
    {
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
@@ -108,7 +109,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
       protected void starting(Description description)
       {
          log.info(String.format("#*#*# Starting test: %s()...", description.getMethodName()));
-      };
+      }
 
       @Override
       protected void finished(Description description)
@@ -120,7 +121,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
       protected void failed(Throwable e, Description description)
       {
          HornetQServerTestCase.tearDownAllServers();
-      };
+      }
    };
 
    @Before
@@ -274,7 +275,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
    // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
    public String[] getContainerConfig()
    {
-      return new String[] { "test-beans.xml" };
+      return new String[]{"test-beans.xml"};
    }
 
    protected HornetQServer getJmsServer() throws Exception
@@ -443,35 +444,35 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
    protected static void assertActiveConnectionsOnTheServer(final int expectedSize) throws Exception
    {
       ProxyAssertSupport.assertEquals(expectedSize, HornetQServerTestCase.servers.get(0)
-                                                                                 .getHornetQServer()
-                                                                                 .getHornetQServerControl()
-                                                                                 .getConnectionCount());
+         .getHornetQServer()
+         .getHornetQServerControl()
+         .getConnectionCount());
    }
 
    public static void deployConnectionFactory(final String clientId,
                                               final String objectName,
-                                              final String ... jndiBindings) throws Exception
+                                              final String... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId, objectName, jndiBindings);
    }
 
    public static void deployConnectionFactory(final String objectName,
                                               final int prefetchSize,
-                                              final String ... jndiBindings) throws Exception
+                                              final String... jndiBindings) throws Exception
    {
-      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName,  prefetchSize, jndiBindings);
+      HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName, prefetchSize, jndiBindings);
    }
 
 
    public static void deployConnectionFactory(final int server,
                                               final String objectName,
                                               final int prefetchSize,
-                                              final String ... jndiBindings) throws Exception
+                                              final String... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, prefetchSize, jndiBindings);
    }
 
-   public static void deployConnectionFactory(final int server, final String objectName, final String ... jndiBindings) throws Exception
+   public static void deployConnectionFactory(final int server, final String objectName, final String... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(server).deployConnectionFactory(objectName, jndiBindings);
    }
@@ -486,7 +487,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
                                        final boolean supportsLoadBalancing,
                                        final int dupsOkBatchSize,
                                        final boolean blockOnAcknowledge,
-                                       final String ... jndiBindings) throws Exception
+                                       final String... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(clientId,
                                                                    objectName,
@@ -506,7 +507,7 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
                                               final int defaultTempQueueFullSize,
                                               final int defaultTempQueuePageSize,
                                               final int defaultTempQueueDownCacheSize,
-                                              final String ... jndiBindings) throws Exception
+                                              final String... jndiBindings) throws Exception
    {
       HornetQServerTestCase.servers.get(0).deployConnectionFactory(objectName,
                                                                    prefetchSize,

@@ -1,17 +1,16 @@
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.junit.Test;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
-import org.hornetq.api.core.Pair;
+import org.junit.Test;
 
 public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 {
@@ -31,7 +30,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
    @Test
    public void testQuorumVoting() throws Exception
    {
-      int[] liveServerIDs = new int[] { 0, 1, 2 };
+      int[] liveServerIDs = new int[]{0, 1, 2};
       setupCluster();
       startServers(0, 1, 2);
       new BackupSyncDelay(servers[4], servers[1], PacketImpl.REPLICATION_SCHEDULED_FAILOVER);
@@ -91,7 +90,8 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
    {
       final String prefix;
       final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
-               new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
+         new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
+
       public TopologyListener(String string)
       {
          prefix = string;
@@ -101,7 +101,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       public void nodeUP(TopologyMember topologyMember, boolean last)
       {
          Pair<TransportConfiguration, TransportConfiguration> connectorPair =
-                  new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
+            new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
          nodes.put(topologyMember.getBackupGroupName(), connectorPair);
       }
 

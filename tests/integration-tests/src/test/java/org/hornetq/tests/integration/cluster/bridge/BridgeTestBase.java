@@ -12,7 +12,6 @@
  */
 
 package org.hornetq.tests.integration.cluster.bridge;
-import org.junit.After;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,15 +24,14 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
 
 /**
  * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 21 Nov 2008 10:32:23
- *
- *
+ *         <p/>
+ *         Created 21 Nov 2008 10:32:23
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
@@ -52,7 +50,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       return createHornetQServer(id, params, netty, null);
    }
 
-    protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params, NodeManager nodeManager) throws Exception
+   protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params, NodeManager nodeManager) throws Exception
    {
       return createHornetQServer(id, params, netty, nodeManager);
    }
@@ -87,7 +85,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params));
       }
       HornetQServer service;
-      if(nodeManager == null)
+      if (nodeManager == null)
       {
          service = HornetQServers.newHornetQServer(serviceConf, true);
       }
@@ -99,10 +97,10 @@ public abstract class BridgeTestBase extends UnitTestCase
    }
 
    protected HornetQServer createBackupHornetQServer(final int id,
-                                               final Map<String, Object> params,
-                                               final boolean netty,
-                                               final int liveId,
-                                               final NodeManager nodeManager) throws Exception
+                                                     final Map<String, Object> params,
+                                                     final boolean netty,
+                                                     final int liveId,
+                                                     final NodeManager nodeManager) throws Exception
    {
       Configuration serviceConf = createBasicConfig();
       serviceConf.setSecurityEnabled(false);
@@ -130,7 +128,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          serviceConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params));
       }
       HornetQServer service;
-      if(nodeManager == null)
+      if (nodeManager == null)
       {
          service = HornetQServers.newHornetQServer(serviceConf, true);
       }

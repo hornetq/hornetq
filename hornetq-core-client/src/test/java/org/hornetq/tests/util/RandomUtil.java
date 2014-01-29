@@ -13,10 +13,9 @@
 
 package org.hornetq.tests.util;
 
+import javax.transaction.xa.Xid;
 import java.util.Random;
 import java.util.UUID;
-
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -25,8 +24,6 @@ import org.hornetq.core.transaction.impl.XidImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public final class RandomUtil
 {
@@ -83,15 +80,13 @@ public final class RandomUtil
          buffer.writeLong(d);
       }
 
-      for (int i = 0 ; i < size; i++)
+      for (int i = 0; i < size; i++)
       {
          buffer.writeByte(randomByte());
       }
 
       return buffer;
    }
-
-
 
 
    public static int randomInterval(final int min, final int max)

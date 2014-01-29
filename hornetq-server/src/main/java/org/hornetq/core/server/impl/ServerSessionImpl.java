@@ -12,8 +12,8 @@
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
-
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,9 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -79,8 +76,11 @@ import org.hornetq.utils.UUID;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
+
 /**
  * Server side Session implementation
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -157,10 +157,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
 
    private final long creationTime = System.currentTimeMillis();
-   
+
    // to prevent session from being closed twice.
    // this can happen when a session close from client just
-   // arrives while the connection failure is detected at the 
+   // arrives while the connection failure is detected at the
    // server. Both the request and failure listener will
    // try to close one session from different threads
    // concurrently.
@@ -186,7 +186,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final HornetQServer server,
                             final SimpleString managementAddress,
                             final SimpleString defaultAddress,
- final SessionCallback callback,
+                            final SessionCallback callback,
                             final OperationContext context) throws Exception
    {
       this.username = username;
@@ -237,6 +237,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
+
    /**
     * @return the sessionContext
     */
@@ -286,7 +287,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private void doClose(final boolean failed) throws Exception
    {
-      synchronized(this)
+      synchronized (this)
       {
          if (closed) return;
 
@@ -410,9 +411,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
             HornetQServerLogger.LOGGER.debug("Session with user=" + username +
-                                       ", connection=" + this.remotingConnection +
-                                       " created a consumer on queue " + queueName +
-                                       ", filter = " + filterString);
+                                                ", connection=" + this.remotingConnection +
+                                                " created a consumer on queue " + queueName +
+                                                ", filter = " + filterString);
          }
 
          managementService.sendNotification(notification);
@@ -456,8 +457,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug("Queue " + name + " created on address " + name +
-            " with filter=" + filterString + " temporary = " +
-            temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
+                                             " with filter=" + filterString + " temporary = " +
+                                             temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
       }
 
    }
@@ -657,9 +658,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
-          // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
-          // have these messages to be stuck on the limbo until the server is restarted
-          // The tx has already timed out, so we need to ack and rollback immediately
+         // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
+         // have these messages to be stuck on the limbo until the server is restarted
+         // The tx has already timed out, so we need to ack and rollback immediately
          Transaction newTX = newTransaction();
          consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
          newTX.rollback();
@@ -703,8 +704,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    /**
-    *
-    * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
+    * @param clientFailed                   If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
     * @param considerLastMessageAsDelivered
     * @throws Exception
     */
@@ -816,8 +816,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             throw new HornetQXAException(XAException.XAER_PROTO, msg);
          }
-         else
-         if (tx.getState() == Transaction.State.ROLLEDBACK)
+         else if (tx.getState() == Transaction.State.ROLLEDBACK)
          {
             final String msg = "Cannot end, transaction is rolled back";
 
@@ -980,7 +979,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
                try
                {
-                 // jbpapp-8845
+                  // jbpapp-8845
                   // This could have happened because the TX timed out,
                   // at this point we would be better on rolling back this session as a way to prevent consumers from holding their messages
                   this.rollback(false);
@@ -1133,7 +1132,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (isTrace)
          {
-            HornetQServerLogger.LOGGER.trace("xaprepare into " + ", xid=" + xid + ", tx= " + tx );
+            HornetQServerLogger.LOGGER.trace("xaprepare into " + ", xid=" + xid + ", tx= " + tx);
          }
 
          if (theTx == null)
@@ -1219,6 +1218,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          public void onError(int errorCode, String errorMessage)
          {
          }
+
          public void done()
          {
             try
@@ -1378,7 +1378,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             callback.sendProducerCreditsMessage(credits, address);
          }
-      })) {
+      }))
+      {
          callback.sendProducerCreditsFailMessage(credits, address);
       }
    }

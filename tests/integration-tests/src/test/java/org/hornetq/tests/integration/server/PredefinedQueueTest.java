@@ -13,12 +13,8 @@
 
 package org.hornetq.tests.integration.server;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQQueueExistsException;
@@ -38,16 +34,15 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * A PredefinedQueueTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- * Created 19 Jan 2009 15:44:52
- *
- *
+ *         <p/>
+ *         Created 19 Jan 2009 15:44:52
  */
 public class PredefinedQueueTest extends ServiceTestBase
 {
@@ -96,7 +91,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQQueueExistsException se)
+      catch (HornetQQueueExistsException se)
       {
          //ok
       }
@@ -110,7 +105,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQQueueExistsException se)
+      catch (HornetQQueueExistsException se)
       {
          //ok
       }
@@ -124,7 +119,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch(HornetQQueueExistsException se)
+      catch (HornetQQueueExistsException se)
       {
          //ok
       }

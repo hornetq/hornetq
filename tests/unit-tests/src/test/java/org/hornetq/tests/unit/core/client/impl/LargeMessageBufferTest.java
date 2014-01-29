@@ -12,10 +12,6 @@
  */
 
 package org.hornetq.tests.unit.core.client.impl;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,8 +25,6 @@ import java.io.PipedOutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -48,13 +42,15 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQBufferInputStream;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A LargeMessageBufferUnitTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class LargeMessageBufferTest extends UnitTestCase
 {
@@ -302,9 +298,9 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       final LargeMessageControllerImpl buffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 10, 10);
 
-      buffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, true));
+      buffer.addPacket(new FakePacket(-1, new byte[]{0, 1, 2, 3, 4}, true, true));
 
-      byte bytes[] = new byte[30];
+      byte[] bytes = new byte[30];
       buffer.readBytes(bytes, 0, 5);
 
       for (byte i = 0; i < 5; i++)
@@ -357,9 +353,9 @@ public class LargeMessageBufferTest extends UnitTestCase
    @Test
    public void testInterruptData() throws Exception
    {
-      LargeMessageControllerImpl readBuffer = splitBuffer(3, new byte[] { 0, 1, 2, 3, 4 });
+      LargeMessageControllerImpl readBuffer = splitBuffer(3, new byte[]{0, 1, 2, 3, 4});
 
-      byte bytes[] = new byte[30];
+      byte[] bytes = new byte[30];
       readBuffer.readBytes(bytes, 0, 5);
 
       for (byte i = 0; i < 5; i++)
@@ -372,17 +368,17 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testSplitBufferOnFile() throws Exception
    {
       LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
-                                                                    1024 * 1024,
-                                                                    1,
-                                                                    getTestFile(),
-                                                                    1024);
+                                                                            1024 * 1024,
+                                                                            1,
+                                                                            getTestFile(),
+                                                                            1024);
       try
       {
 
          long count = 0;
          for (int i = 0; i < 10; i++)
          {
-            byte buffer[] = new byte[10240];
+            byte[] buffer = new byte[10240];
             for (int j = 0; j < 10240; j++)
             {
                buffer[j] = getSamplebyte(count++);
@@ -415,8 +411,8 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testStreamData() throws Exception
    {
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(),
-                                                                          1024 * 11 + 123,
-                                                                          1000);
+                                                                                  1024 * 11 + 123,
+                                                                                  1000);
 
       final PipedOutputStream output = new PipedOutputStream();
       final PipedInputStream input = new PipedInputStream(output);
@@ -439,7 +435,7 @@ public class LargeMessageBufferTest extends UnitTestCase
             try
             {
 
-               byte line[] = new byte[1024];
+               byte[] line = new byte[1024];
                int dataRead = 0;
                while (dataRead >= 0)
                {
@@ -598,11 +594,11 @@ public class LargeMessageBufferTest extends UnitTestCase
             try
             {
                Thread.sleep(200);
-               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               outBuffer.addPacket(new FakePacket(-1, new byte[]{0}, true, false));
                Thread.sleep(1000);
-               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, true, false));
+               outBuffer.addPacket(new FakePacket(-1, new byte[]{0}, true, false));
                Thread.sleep(1000);
-               outBuffer.addPacket(new FakePacket(-1, new byte[] { 0 }, false, false));
+               outBuffer.addPacket(new FakePacket(-1, new byte[]{0}, false, false));
             }
             catch (Exception e)
             {
@@ -621,7 +617,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       long start = System.currentTimeMillis();
       final LargeMessageControllerImpl outBuffer = new LargeMessageControllerImpl(new FakeConsumerInternal(), 5, 30000);
 
-      outBuffer.addPacket(new FakePacket(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
+      outBuffer.addPacket(new FakePacket(-1, new byte[]{0, 1, 2, 3, 4}, true, false));
 
       final CountDownLatch latchBytesWritten1 = new CountDownLatch(5);
       final CountDownLatch latchBytesWritten2 = new CountDownLatch(10);
@@ -671,7 +667,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       for (int i = 100; i < byteArray.length; i += 10)
       {
-         byte readBytes[] = new byte[10];
+         byte[] readBytes = new byte[10];
 
          int size = is.read(readBytes);
 
@@ -688,7 +684,7 @@ public class LargeMessageBufferTest extends UnitTestCase
     */
    private LargeMessageControllerImpl create15BytesSample() throws Exception
    {
-      return splitBuffer(5, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+      return splitBuffer(5, new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
    }
 
    private LargeMessageControllerImpl createBufferWithIntegers(final int splitFactor, final int... values) throws Exception
@@ -771,8 +767,8 @@ public class LargeMessageBufferTest extends UnitTestCase
    }
 
    /**
-       * @param bytes
-       */
+    * @param bytes
+    */
    private void validateAgainstSample(final byte[] bytes)
    {
       for (int i = 1; i <= 15; i++)

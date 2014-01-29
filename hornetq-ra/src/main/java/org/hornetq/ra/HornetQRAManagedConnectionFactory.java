@@ -13,10 +13,6 @@
 
 package org.hornetq.ra;
 
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.jms.ConnectionMetaData;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
@@ -26,6 +22,9 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
@@ -125,8 +124,8 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
       if (HornetQRAManagedConnectionFactory.trace)
       {
          HornetQRALogger.LOGGER.trace("Created connection factory: " + cf +
-                                                     ", using connection manager: " +
-                                                     cm);
+                                         ", using connection manager: " +
+                                         cm);
       }
       return cf;
    }
@@ -179,7 +178,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
          resourceRecovery = ra.getRecoveryManager().register(recoveryConnectionFactory, null, null);
       }
    }
-   
+
    public XARecoveryConfig getResourceRecovery()
    {
       return resourceRecovery;
@@ -187,8 +186,9 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
 
    /**
     * Returns a matched connection from the candidate set of connections.
+    *
     * @param connectionSet The candidate connection set
-    * @param subject Caller's security information
+    * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
     * @return The managed connection
     * @throws ResourceException Thrown if the managed connection can not be found
@@ -200,11 +200,11 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
       if (HornetQRAManagedConnectionFactory.trace)
       {
          HornetQRALogger.LOGGER.trace("matchManagedConnections(" + connectionSet +
-                                                     ", " +
-                                                     subject +
-                                                     ", " +
-                                                     cxRequestInfo +
-                                                     ")");
+                                         ", " +
+                                         subject +
+                                         ", " +
+                                         cxRequestInfo +
+                                         ")");
       }
 
       HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo)cxRequestInfo);
@@ -227,7 +227,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
             ManagedConnectionFactory mcf = mc.getManagedConnectionFactory();
 
             if ((mc.getUserName() == null || mc.getUserName() != null && mc.getUserName()
-                                                                           .equals(credential.getUserName())) && mcf.equals(this))
+               .equals(credential.getUserName())) && mcf.equals(this))
             {
                if (cri.equals(mc.getCRI()))
                {
@@ -297,7 +297,7 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
 
    /**
     * Set the resource adapter
-    *
+    * <p/>
     * This should ensure that when the RA is stopped, this MCF will be stopped as well.
     *
     * @param ra The resource adapter
@@ -794,12 +794,12 @@ public final class HornetQRAManagedConnectionFactory implements ManagedConnectio
    // this should be called when HornetQResourceAdapter.stop() is called since this MCF is registered with it
    public void stop()
    {
-      if(resourceRecovery != null)
+      if (resourceRecovery != null)
       {
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
 
-      if(recoveryConnectionFactory != null)
+      if (recoveryConnectionFactory != null)
       {
          recoveryConnectionFactory.close();
          recoveryConnectionFactory = null;

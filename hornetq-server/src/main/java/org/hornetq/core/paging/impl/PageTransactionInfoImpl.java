@@ -33,9 +33,7 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public final class PageTransactionInfoImpl implements PageTransactionInfo
 {
@@ -182,9 +180,9 @@ public final class PageTransactionInfoImpl implements PageTransactionInfo
     * @param tx
     */
    protected UpdatePageTXOperation internalUpdatePageManager(final StorageManager storageManager,
-                                            final PagingManager pagingManager,
-                                            final Transaction tx,
-                                            final int increment)
+                                                             final PagingManager pagingManager,
+                                                             final Transaction tx,
+                                                             final int increment)
    {
       UpdatePageTXOperation pgtxUpdate = (UpdatePageTXOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION_UPDATE);
 
@@ -236,11 +234,11 @@ public final class PageTransactionInfoImpl implements PageTransactionInfo
    public String toString()
    {
       return "PageTransactionInfoImpl(transactionID=" + transactionID +
-             ",id=" +
-             recordID +
-             ",numberOfMessages=" +
-             numberOfMessages +
-             ")";
+         ",id=" +
+         recordID +
+         ",numberOfMessages=" +
+         numberOfMessages +
+         ")";
    }
 
    @Override
@@ -252,13 +250,11 @@ public final class PageTransactionInfoImpl implements PageTransactionInfo
          cursor.redeliver(cursorPos);
          return true;
       }
-      else
-      if (committed)
+      else if (committed)
       {
          return false;
       }
-      else
-      if (rolledback)
+      else if (rolledback)
       {
          cursor.positionIgnored(cursorPos);
          return true;
@@ -351,7 +347,6 @@ public final class PageTransactionInfoImpl implements PageTransactionInfo
             }
          }
       }
-
 
 
    }

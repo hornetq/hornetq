@@ -40,7 +40,7 @@ public class JournalFilesRepository
 
    /**
     * Used to debug the consistency of the journal ordering.
-    * <p>
+    * <p/>
     * This is meant to be false as these extra checks would cause performance issues
     */
    private static final boolean CHECK_CONSISTENCE = false;
@@ -48,7 +48,7 @@ public class JournalFilesRepository
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
    // Journal
-   private static final void trace(final String message)
+   private static void trace(final String message)
    {
       HornetQJournalLogger.LOGGER.trace(message);
    }
@@ -184,9 +184,10 @@ public class JournalFilesRepository
    /**
     * Set the {link #nextFileID} value to {@code targetUpdate} if the current value is less than
     * {@code targetUpdate}.
-    * <p>
+    * <p/>
     * Notice that {@code nextFileID} is incremented before being used, see
     * {@link JournalFilesRepository#generateFileID()}.
+    *
     * @param targetUpdate
     */
    public void setNextFileID(final long targetUpdate)
@@ -281,7 +282,7 @@ public class JournalFilesRepository
    {
       StringBuilder buffer = new StringBuilder();
 
-      buffer.append("**********\nCurrent File = "  + journal.getCurrentFile() + "\n");
+      buffer.append("**********\nCurrent File = " + journal.getCurrentFile() + "\n");
       buffer.append("**********\nDataFiles:\n");
       for (JournalFile file : dataFiles)
       {
@@ -313,14 +314,14 @@ public class JournalFilesRepository
             HornetQJournalLogger.LOGGER.checkFiles();
             HornetQJournalLogger.LOGGER.info(debugFiles());
             HornetQJournalLogger.LOGGER.currentFile(file.getFileID(), journal.getCurrentFile().getFileID(),
-                  file.getFileID(), (journal.getCurrentFile() == file));
+                                                    file.getFileID(), (journal.getCurrentFile() == file));
 
-           // throw new RuntimeException ("Check failure!");
+            // throw new RuntimeException ("Check failure!");
          }
 
          if (journal.getCurrentFile() == file)
          {
-            throw new RuntimeException ("Check failure! Current file listed as data file!");
+            throw new RuntimeException("Check failure! Current file listed as data file!");
          }
 
          seq = file.getFileID();
@@ -335,10 +336,10 @@ public class JournalFilesRepository
             HornetQJournalLogger.LOGGER.info(debugFiles());
             HornetQJournalLogger.LOGGER.fileIdOutOfOrder();
 
-            throw new RuntimeException ("Check failure!");
+            throw new RuntimeException("Check failure!");
          }
 
-         lastFreeId= file.getFileID();
+         lastFreeId = file.getFileID();
 
          if (file.getFileID() < seq)
          {
@@ -346,7 +347,7 @@ public class JournalFilesRepository
             HornetQJournalLogger.LOGGER.info(debugFiles());
             HornetQJournalLogger.LOGGER.fileTooSmall();
 
-           // throw new RuntimeException ("Check failure!");
+            // throw new RuntimeException ("Check failure!");
          }
       }
    }
@@ -367,6 +368,7 @@ public class JournalFilesRepository
    {
       return freeFiles.size();
    }
+
    /**
     * @param file
     * @throws Exception
@@ -378,7 +380,7 @@ public class JournalFilesRepository
 
    /**
     * @param file
-    * @param renameTmp - should rename the file as it's being added to free files
+    * @param renameTmp   - should rename the file as it's being added to free files
     * @param checkDelete - should delete the file if max condition has been met
     * @throws Exception
     */
@@ -401,40 +403,40 @@ public class JournalFilesRepository
          file.getFile().delete();
       }
       else
-      // FIXME - size() involves a scan!!!
-      if (!checkDelete || (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles))
-      {
-         // Re-initialise it
-
-         if (JournalFilesRepository.trace)
+         // FIXME - size() involves a scan!!!
+         if (!checkDelete || (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles))
          {
-            JournalFilesRepository.trace("Adding free file " + file);
+            // Re-initialise it
+
+            if (JournalFilesRepository.trace)
+            {
+               JournalFilesRepository.trace("Adding free file " + file);
+            }
+
+            JournalFile jf = reinitializeFile(file);
+
+            if (renameTmp)
+            {
+               jf.getFile().renameTo(JournalImpl.renameExtensionFile(jf.getFile().getFileName(), ".tmp"));
+            }
+
+            freeFiles.add(jf);
          }
-
-         JournalFile jf = reinitializeFile(file);
-
-         if (renameTmp)
+         else
          {
-            jf.getFile().renameTo(JournalImpl.renameExtensionFile(jf.getFile().getFileName(), ".tmp"));
+            if (trace)
+            {
+               HornetQJournalLogger.LOGGER.trace("DataFiles.size() = " + dataFiles.size());
+               HornetQJournalLogger.LOGGER.trace("openedFiles.size() = " + openedFiles.size());
+               HornetQJournalLogger.LOGGER.trace("minfiles = " + minFiles);
+               HornetQJournalLogger.LOGGER.trace("Free Files = " + freeFiles.size());
+               HornetQJournalLogger.LOGGER.trace("File " + file +
+                                                    " being deleted as freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() (" +
+                                                    (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size()) +
+                                                    ") < minFiles (" + minFiles + ")");
+            }
+            file.getFile().delete();
          }
-
-         freeFiles.add(jf);
-      }
-      else
-      {
-         if (trace)
-         {
-            HornetQJournalLogger.LOGGER.trace("DataFiles.size() = " + dataFiles.size());
-            HornetQJournalLogger.LOGGER.trace("openedFiles.size() = " + openedFiles.size());
-            HornetQJournalLogger.LOGGER.trace("minfiles = " + minFiles);
-            HornetQJournalLogger.LOGGER.trace("Free Files = "  + freeFiles.size());
-            HornetQJournalLogger.LOGGER.trace("File " + file +
-                      " being deleted as freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() (" +
-                      (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size()) +
-                      ") < minFiles (" + minFiles + ")" );
-         }
-         file.getFile().delete();
-      }
 
       if (CHECK_CONSISTENCE)
       {
@@ -463,7 +465,7 @@ public class JournalFilesRepository
     * <p>This method will instantly return the opened file, and schedule opening and reclaiming.</p>
     * <p>In case there are no cached opened files, this method will block until the file was opened,
     * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as HornetQ).</p>
-    * */
+    */
    public JournalFile openFile() throws InterruptedException
    {
       if (JournalFilesRepository.trace)
@@ -500,9 +502,8 @@ public class JournalFilesRepository
    }
 
    /**
-    *
     * Open a file and place it into the openedFiles queue
-    * */
+    */
    public void pushOpenedFile() throws Exception
    {
       JournalFile nextOpenedFile = takeFile(true, true, true, false);
@@ -527,6 +528,7 @@ public class JournalFilesRepository
 
    /**
     * This will get a File from freeFile without initializing it
+    *
     * @return uninitialized JournalFile
     * @throws Exception
     * @see {@link JournalImpl#initFileHeader(SequentialFileFactory, SequentialFile, int, long)}
@@ -562,9 +564,10 @@ public class JournalFilesRepository
 
    /**
     * Creates files for journal synchronization of a replicated backup.
-    * <p>
+    * <p/>
     * In order to simplify synchronization, the file IDs in the backup match those in the live
     * server.
+    *
     * @param fileID the fileID to use when creating the file.
     */
    public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
@@ -574,6 +577,7 @@ public class JournalFilesRepository
 
    /**
     * This method will create a new file on the file system, pre-fill it with FILL_CHARACTER
+    *
     * @param keepOpened
     * @return an initialized journal file
     * @throws Exception
@@ -657,7 +661,9 @@ public class JournalFilesRepository
       return nextFileID.incrementAndGet();
    }
 
-   /** Get the ID part of the name */
+   /**
+    * Get the ID part of the name
+    */
    private long getFileNameID(final String fileName)
    {
       try
@@ -695,6 +701,6 @@ public class JournalFilesRepository
    public String toString()
    {
       return "JournalFilesRepository(dataFiles=" + dataFiles + ", freeFiles=" + freeFiles + ", openedFiles=" +
-               openedFiles + ")";
+         openedFiles + ")";
    }
 }

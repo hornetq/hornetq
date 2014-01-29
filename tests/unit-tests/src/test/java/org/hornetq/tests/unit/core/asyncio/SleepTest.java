@@ -25,8 +25,6 @@ import org.junit.Test;
  * A SleepTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class SleepTest extends UnitTestCase
 {
@@ -56,7 +54,7 @@ public class SleepTest extends UnitTestCase
 
       long end = System.currentTimeMillis();
 
-      long expectedTime = timeInterval * nloops / 1000000l;
+      long expectedTime = timeInterval * nloops / 1000000L;
 
       System.out.println("TotalTime = " + (end - time) + " expected = " + expectedTime);
 

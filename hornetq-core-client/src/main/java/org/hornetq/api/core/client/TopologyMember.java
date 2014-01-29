@@ -26,43 +26,43 @@ public interface TopologyMember extends Serializable
     * This value does not apply to "shared-storage" backup and live pairs.
     * @return the {@code backup-group-name}
     */
-   public String getBackupGroupName();
+   String getBackupGroupName();
 
    /**
     * @return configuration relative to the live server
     */
-   public TransportConfiguration getLive();
+   TransportConfiguration getLive();
 
    /**
     * Returns the TransportConfiguration relative to the backup server if any.
     * @return a {@link TransportConfiguration} for the backup, or null} if the live server has no
     *         backup server.
     */
-   public TransportConfiguration getBackup();
+   TransportConfiguration getBackup();
 
    /**
     * Returns the nodeId of the server.
     * @return the nodeId
     */
-   public String getNodeId();
+   String getNodeId();
 
    /**
     * @return long value representing a unique event ID
     */
-   public long getUniqueEventID();
+   long getUniqueEventID();
 
    /**
     * Returns true if this TopologyMember is the target of this remoting connection
     * @param connection
     * @return
     */
-   public boolean isMember(RemotingConnection connection);
+   boolean isMember(RemotingConnection connection);
 
    /**
     * Returns true if this configuration is the target of this remoting connection
     * @param configuration
     * @return
     */
-   public boolean isMember(TransportConfiguration configuration);
+   boolean isMember(TransportConfiguration configuration);
 
 }
