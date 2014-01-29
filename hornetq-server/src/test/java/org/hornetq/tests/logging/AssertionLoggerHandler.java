@@ -13,8 +13,8 @@
 package org.hornetq.tests.logging;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import org.jboss.logmanager.ExtHandler;
@@ -27,7 +27,7 @@ import org.junit.Assert;
 public class AssertionLoggerHandler extends ExtHandler
 {
 
-   private static final Map<String, ExtLogRecord> messages = new HashMap<String, ExtLogRecord>();
+   private static final Map<String, ExtLogRecord> messages = new ConcurrentHashMap<>();
    private static boolean capture = false;
 
    /**
@@ -69,6 +69,35 @@ public class AssertionLoggerHandler extends ExtHandler
       {
          throw new AssertionError(Arrays.toString(messages.keySet().toArray()));
       }
+   }
+
+   /**
+    * Find a line that contains the parameters passed as an argument
+    * @param text
+    * @return
+    */
+   public static boolean findText(final String...text)
+   {
+      for (String key : messages.keySet())
+      {
+         boolean found = true;
+
+         for (String txtCheck : text)
+         {
+            found = key.contains(txtCheck);
+            if (!found)
+            {
+               break;
+            }
+         }
+
+         if (found)
+         {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public static void assertMessageWasLoggedWithLevel(String expectedMessage, Level expectedLevel)
