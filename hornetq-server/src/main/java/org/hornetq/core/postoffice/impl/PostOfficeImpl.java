@@ -542,6 +542,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return binding;
    }
 
+   @Override
+   public boolean isAddressBound(final SimpleString address) throws Exception
+   {
+      Bindings bindings = getBindingsForAddress(address);
+      return bindings != null && !bindings.getBindings().isEmpty();
+   }
+
+
    public Bindings getBindingsForAddress(final SimpleString address) throws Exception
    {
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);

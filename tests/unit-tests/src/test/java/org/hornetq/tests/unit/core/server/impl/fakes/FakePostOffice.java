@@ -105,6 +105,12 @@ public class FakePostOffice implements PostOffice
    }
 
    @Override
+   public boolean isAddressBound(SimpleString address) throws Exception
+   {
+      return false;
+   }
+
+   @Override
    public Binding removeBinding(final SimpleString uniqueName, final Transaction tx) throws Exception
    {
 
