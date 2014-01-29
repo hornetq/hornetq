@@ -116,11 +116,6 @@ public class Redistributor implements Consumer
       }
    }
 
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-      // noop
-   }
-
    public synchronized void close()
    {
       boolean ok = flushExecutor();

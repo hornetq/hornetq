@@ -13,7 +13,7 @@
 package org.hornetq.core.server.cluster.impl;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -226,7 +226,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    @Override
    public List<MessageReference> getDeliveringMessages()
    {
-      return Collections.emptyList();
+      synchronized (this)
+      {
+         return new ArrayList<MessageReference>(refs);
+      }
    }
 
    private static void cleanUpSessionFactory(ClientSessionFactoryInternal factory)
@@ -304,14 +307,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // There isn't much we can do besides log an error
             HornetQServerLogger.LOGGER.errorCancellingRefOnBridge(e, ref2);
          }
-      }
-   }
-
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-      synchronized (this)
-      {
-         refList.addAll(refs);
       }
    }
 

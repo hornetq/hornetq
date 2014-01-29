@@ -29,7 +29,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.transaction.Transaction;
 
 /**
  * A queue that will discard messages if a newer message with the same
@@ -266,17 +265,10 @@ public class LastValueQueue extends QueueImpl
       /* (non-Javadoc)
        * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.server.MessageReference)
        */
+      @Override
       public void acknowledge() throws Exception
       {
          ref.getQueue().acknowledge(this);
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
-       */
-      public void acknowledge(Transaction tx) throws Exception
-      {
-         ref.getQueue().acknowledge(tx, this);
       }
 
       /* (non-Javadoc)
