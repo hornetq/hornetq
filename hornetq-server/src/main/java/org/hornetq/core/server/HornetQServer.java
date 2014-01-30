@@ -215,6 +215,13 @@ public interface HornetQServer extends HornetQComponent
 
    void threadDump(String reason);
 
+   /**
+    * return true if there is a binding for this address (i.e. if there is a created queue)
+    * @param address
+    * @return
+    */
+   boolean isAddressBound(String address) throws Exception;
+
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
    /**

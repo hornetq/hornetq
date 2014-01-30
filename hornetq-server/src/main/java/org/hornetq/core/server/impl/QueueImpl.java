@@ -307,7 +307,8 @@ public class QueueImpl implements Queue
 
       if (addressSettingsRepository != null)
       {
-         expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+         SimpleString localexpiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+         setExpiryAddress(localexpiryAddress);
          addressSettingsRepositoryListener = new AddressSettingsRepositoryListener();
          addressSettingsRepository.registerListener(addressSettingsRepositoryListener);
       }
@@ -1078,9 +1079,29 @@ public class QueueImpl implements Queue
       }
    }
 
-   public void setExpiryAddress(final SimpleString expiryAddress)
+   public void setExpiryAddress(final SimpleString expiryAddressArgument)
    {
-      this.expiryAddress = expiryAddress;
+
+      if ((this.expiryAddress == null && expiryAddressArgument != null) ||
+          (this.expiryAddress != null && expiryAddressArgument != null && !this.expiryAddress.equals(expiryAddressArgument)))
+      {
+         this.expiryAddress = expiryAddressArgument;
+         // We will only do the check when there's an actual change
+         try
+         {
+            if (!postOffice.isAddressBound(expiryAddress))
+            {
+               HornetQServerLogger.LOGGER.unboudExpiry(expiryAddress);
+            }
+         }
+         catch (Exception e)
+         {
+            // if an exception happened here, it's really a Runtime error.. nothing to be treated on this case
+            throw new RuntimeException(e.getMessage(), e);
+         }
+      }
+
+      this.expiryAddress = expiryAddressArgument;
    }
 
    public void referenceHandled()
@@ -2939,7 +2960,7 @@ public class QueueImpl implements Queue
       @Override
       public void onChange()
       {
-         expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+         setExpiryAddress(addressSettingsRepository.getMatch(address.toString()).getExpiryAddress());
       }
    }
 }

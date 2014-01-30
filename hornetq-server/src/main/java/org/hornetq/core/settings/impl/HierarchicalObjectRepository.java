@@ -97,6 +97,26 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       addMatch(match, value, false);
    }
 
+   public List<T> values()
+   {
+      lock.readLock().lock();
+      try
+      {
+         ArrayList<T> values = new ArrayList<T>(matches.size());
+
+         for (Match<T> matchValue : matches.values())
+         {
+            values.add(matchValue.getValue());
+         }
+
+         return values;
+      }
+      finally
+      {
+         lock.readLock().unlock();
+      }
+   }
+
 
    /**
     * Add a new match to the repository
@@ -119,12 +139,14 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
          Match<T> match1 = new Match<T>(match);
          match1.setValue(value);
          matches.put(match, match1);
-         onChange();
       }
       finally
       {
          lock.writeLock().unlock();
       }
+
+      // Calling the onChange outside of the wrieLock as some listeners may be doing reads on the matches
+      onChange();
    }
 
    public int getCacheSize()
