@@ -301,9 +301,14 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       public List<MessageReference> getRelatedMessageReferences()
       {
-         return null;
+         return Collections.emptyList();
       }
-
+      
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return Collections.emptyList();
+      }
    }
 
    private static final class ByteArrayHolder

@@ -62,10 +62,12 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.impl.QueueImpl.RefsOperation;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.impl.TransactionImpl;
@@ -1618,5 +1620,27 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       routingContext.clear();
+   }
+
+   @Override
+   public List<MessageReference> getInTXMessagesForConsumer(long consumerId)
+   {
+      if (this.tx != null)
+      {
+         RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+         
+         if (oper == null)
+         {
+            return Collections.emptyList();
+         }
+         else
+         {
+            return oper.getListOnConsumer(consumerId);
+         }
+      }
+      else
+      {
+         return Collections.emptyList();
+      }
    }
 }

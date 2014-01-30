@@ -49,6 +49,8 @@ public class PagedReferenceImpl implements PagedReference
    private int persistedCount;
 
    private int messageEstimate;
+   
+   private Long consumerId;
 
    private AtomicInteger deliveryCount = new AtomicInteger(0);
 
@@ -265,6 +267,24 @@ public class PagedReferenceImpl implements PagedReference
              ", subscription=" +
              subscription +
              "]";
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#setConsumerId(java.lang.Long)
+    */
+   @Override
+   public void setConsumerId(Long consumerID)
+   {
+      this.consumerId = consumerID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#getConsumerId()
+    */
+   @Override
+   public Long getConsumerId()
+   {
+      return this.consumerId;
    }
 
 }

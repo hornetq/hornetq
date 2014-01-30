@@ -923,9 +923,8 @@ public class QueueImpl implements Queue
       
       for (ConsumerHolder holder : consumerListClone)
       {
-         LinkedList<MessageReference> msgs = new LinkedList<MessageReference>();
-         holder.consumer.getDeliveringMessages(msgs);
-         if (msgs.size() > 0)
+         List<MessageReference> msgs = holder.consumer.getDeliveringMessages();
+         if (msgs != null && msgs.size() > 0)
          {
             mapReturn.put(holder.consumer.toManagementString(), msgs);
          }
@@ -2585,9 +2584,9 @@ public class QueueImpl implements Queue
       LinkedListIterator<MessageReference> iter;
    }
 
-   private final class RefsOperation implements TransactionOperation
+   public final class RefsOperation implements TransactionOperation
    {
-      List<MessageReference> refsToAck = new ArrayList<MessageReference>();
+      List<MessageReference> refsToAck = new LinkedList<MessageReference>();
 
       List<ServerMessage> pagedMessagesToPostACK = null;
 
@@ -2616,6 +2615,20 @@ public class QueueImpl implements Queue
             pagedMessagesToPostACK.add(ref.getMessage());
          }
       }
+      
+      public synchronized List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         List<MessageReference> list = new LinkedList<MessageReference>();
+         for (MessageReference ref : refsToAck)
+         {
+            if (ref.getConsumerId() != null && ref.getConsumerId().equals(consumerID))
+            {
+               list.add(ref);
+            }
+         }
+         
+         return list;
+      }
 
       public void beforeCommit(final Transaction tx) throws Exception
       {
@@ -2642,6 +2655,8 @@ public class QueueImpl implements Queue
                // if ignore redelivery check, we just perform redelivery straight
                if (ref.getQueue().checkRedelivery(ref, timeBase, ignoreRedeliveryCheck))
                {
+                  ref.setConsumerId(null);
+                  
                   LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 
                   if (toCancel == null)

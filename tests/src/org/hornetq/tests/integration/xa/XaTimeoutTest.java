@@ -784,5 +784,14 @@ public class XaTimeoutTest extends UnitTestCase
       {
          return null;
       }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#getListOnConsumer(long)
+       */
+      @Override
+      public List<MessageReference> getListOnConsumer(long consumerID)
+      {
+         return null;
+      }
    }
 }

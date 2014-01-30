@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.cluster.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -113,11 +114,6 @@ public class Redistributor implements Consumer
       }
    }
 
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-      // noop
-   }
-   
    public synchronized void close()
    {
       Future future = new Future();
@@ -267,5 +263,14 @@ public class Redistributor implements Consumer
             queue.deliverAsync();
          }
       }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      return Collections.emptyList();
    }
 }

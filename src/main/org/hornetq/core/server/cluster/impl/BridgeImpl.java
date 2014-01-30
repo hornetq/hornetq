@@ -14,6 +14,8 @@
 package org.hornetq.core.server.cluster.impl;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -275,14 +277,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
    
-   public void getDeliveringMessages(List<MessageReference> refList)
-   {
-      synchronized(this)
-      {
-         refList.addAll(refs);
-      }
-   }
-
    public void flushExecutor()
    {
       // Wait for any create objects runnable to complete
@@ -534,6 +528,18 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       bb.putLong(messageID);
 
       return bytes;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Consumer#getDeliveringMessages()
+    */
+   @Override
+   public List<MessageReference> getDeliveringMessages()
+   {
+      synchronized (this)
+      {
+         return new ArrayList<MessageReference>(refs);
+      }
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
