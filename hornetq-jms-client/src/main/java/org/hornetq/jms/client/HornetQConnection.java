@@ -43,6 +43,7 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.version.Version;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
@@ -80,6 +81,8 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    private final Set<HornetQSession> sessions = new org.hornetq.utils.ConcurrentHashSet<HornetQSession>();
 
    private final Set<SimpleString> tempQueues = new org.hornetq.utils.ConcurrentHashSet<SimpleString>();
+
+   private final Set<SimpleString> knownDestinations = new ConcurrentHashSet<SimpleString>();
 
    private volatile boolean hasNoLocal;
 
@@ -531,11 +534,22 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    public void addTemporaryQueue(final SimpleString queueAddress)
    {
       tempQueues.add(queueAddress);
+      knownDestinations.add(queueAddress);
    }
 
    public void removeTemporaryQueue(final SimpleString queueAddress)
    {
       tempQueues.remove(queueAddress);
+   }
+
+   public void addKnownDestination(final SimpleString address)
+   {
+      knownDestinations.add(address);
+   }
+
+   public boolean containsKnownDestination(final SimpleString address)
+   {
+      return knownDestinations.contains(address);
    }
 
    public boolean containsTemporaryQueue(final SimpleString queueAddress)
