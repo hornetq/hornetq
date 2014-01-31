@@ -1087,10 +1087,6 @@ public class QueueImpl implements Queue
 
          resetAllIterators();
       }
-      else
-      {
-         decDelivering();
-      }
    }
 
    public void expire(final MessageReference ref) throws Exception
