@@ -86,4 +86,6 @@ public interface PostOffice extends HornetQComponent
    // we can't start expiry scanner until the system is load otherwise we may get weird races - https://issues.jboss.org/browse/HORNETQ-1142
    void startExpiryScanner();
 
+   boolean isAddressBound(final SimpleString address) throws Exception;
+
 }
