@@ -40,8 +40,10 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
       FileConfigurationParser parser = new FileConfigurationParser();
       ByteArrayInputStream input = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
       parser.parseMainConfig(input);
-      AssertionLoggerHandler.assertMessageWasLogged("HQ222177: Wrong configuration for role, create-durable-queue is not a valid permission");
-      AssertionLoggerHandler.assertMessageWasLogged("HQ222177: Wrong configuration for role, delete-durable-queue is not a valid permission");
+
+      // Using the code only because I don't want a test failing just for someone editing Log text
+      AssertionLoggerHandler.findText("HQ222177");
+      AssertionLoggerHandler.findText("HQ222177");
    }
 
    @AfterClass

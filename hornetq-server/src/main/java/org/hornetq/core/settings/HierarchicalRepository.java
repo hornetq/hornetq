@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.settings;
 
+import java.util.List;
+
 /**
  * allows objects to be mapped against a regex pattern and held in order in a list
  *
@@ -34,6 +36,12 @@ public interface HierarchicalRepository<T>
     * @return the value
     */
    T getMatch(String match);
+
+   /**
+    * Return a list of Values being added
+    * @return
+    */
+   List<T> values();
 
    /**
     * set the default value to fallback to if none found

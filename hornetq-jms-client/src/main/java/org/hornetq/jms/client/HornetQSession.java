@@ -326,6 +326,8 @@ public class HornetQSession implements QueueSession, TopicSession
             {
                throw new InvalidDestinationException("Destination " + jbd.getName() + " does not exist");
             }
+
+            connection.addKnownDestination(jbd.getSimpleAddress());
          }
 
          ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
@@ -729,6 +731,8 @@ public class HornetQSession implements QueueSession, TopicSession
                throw new InvalidDestinationException("Queue " + dest.getName() + " does not exist");
             }
 
+            connection.addKnownDestination(dest.getSimpleAddress());
+
             consumer = session.createConsumer(dest.getSimpleAddress(), coreFilterString, false);
          }
          else
@@ -739,6 +743,8 @@ public class HornetQSession implements QueueSession, TopicSession
             {
                throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
             }
+
+            connection.addKnownDestination(dest.getSimpleAddress());
 
             SimpleString queueName;
 

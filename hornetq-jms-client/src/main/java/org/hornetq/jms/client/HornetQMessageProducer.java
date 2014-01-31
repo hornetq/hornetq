@@ -38,7 +38,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
-
 /**
  * HornetQ implementation of a JMS MessageProducer.
  *
@@ -406,6 +405,26 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          }
 
          address = destination.getSimpleAddress();
+
+         if (!connection.containsKnownDestination(address))
+         {
+            try
+            {
+               ClientSession.BindingQuery query = clientSession.bindingQuery(address);
+               if (!query.isExists())
+               {
+                  throw new InvalidDestinationException("Destination " + address + " does not exist");
+               }
+               else
+               {
+                  connection.addKnownDestination(address);
+               }
+            }
+            catch (HornetQException e)
+            {
+               throw JMSExceptionHelper.convertFromHornetQException(e);
+            }
+         }
       }
 
       HornetQMessage hqJmsMessage;
