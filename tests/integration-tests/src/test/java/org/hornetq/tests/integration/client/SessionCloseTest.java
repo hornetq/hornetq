@@ -150,7 +150,7 @@ public class SessionCloseTest extends UnitTestCase
       {
          public void run() throws HornetQException
          {
-            session.bindingQuery(RandomUtil.randomSimpleString());
+            session.addressQuery(RandomUtil.randomSimpleString());
          }
       });
 

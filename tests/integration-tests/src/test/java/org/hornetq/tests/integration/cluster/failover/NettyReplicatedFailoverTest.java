@@ -10,10 +10,10 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -45,7 +45,7 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
       {
          for (ClientSession session : sessions)
          {
-            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+            waitForRemoteBackup(session.getSessionFactory(), 5, true, backupServer.getServer());
          }
       }
       else

@@ -13,7 +13,6 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.junit.Test;
 
 public class ReplicatedFailoverTest extends FailoverTest
@@ -88,6 +87,7 @@ public class ReplicatedFailoverTest extends FailoverTest
          sf.close();
       }
    }
+
    @Override
    protected void createConfigs() throws Exception
    {
@@ -101,7 +101,7 @@ public class ReplicatedFailoverTest extends FailoverTest
       {
          for (ClientSession session : sessions)
          {
-            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+            waitForRemoteBackup(session.getSessionFactory(), 5, true, backupServer.getServer());
          }
       }
       else
@@ -118,7 +118,7 @@ public class ReplicatedFailoverTest extends FailoverTest
       {
          for (ClientSession session : sessions)
          {
-            waitForRemoteBackup(((ClientSessionInternal)session).getSessionFactory(), 5, true, backupServer.getServer());
+            waitForRemoteBackup(session.getSessionFactory(), 5, true, backupServer.getServer());
          }
       }
       else

@@ -114,7 +114,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+      Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
       clientFile.setExpiration(System.currentTimeMillis());
 
@@ -159,7 +159,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+      Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
       producer.send(clientFile);
 
@@ -240,7 +240,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
          producer.send(clientFile);
       }
@@ -309,7 +309,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
          producer.send(clientFile);
       }
@@ -401,7 +401,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
          clientFile.putIntProperty("txid", 1);
          producer.send(clientFile);
       }
@@ -413,7 +413,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
          clientFile.putIntProperty("txid", 2);
          clientFile.putIntProperty("i", i);
          producer.send(clientFile);
@@ -616,7 +616,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
          producer.send(clientFile);
       }
@@ -679,7 +679,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         Message clientFile = createLargeClientMessage(session, LARGE_MESSAGE_SIZE, true);
+         Message clientFile = createLargeClientMessageStreaming(session, LARGE_MESSAGE_SIZE, true);
 
          producer.send(clientFile);
       }

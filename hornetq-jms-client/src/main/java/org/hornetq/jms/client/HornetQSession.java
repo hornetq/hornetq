@@ -52,7 +52,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClientSession.AddressQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.core.filter.impl.FilterParser;
 import org.hornetq.core.filter.impl.Identifier;
@@ -320,7 +320,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
          if (jbd != null)
          {
-            BindingQuery response = session.bindingQuery(jbd.getSimpleAddress());
+            ClientSession.AddressQuery response = session.addressQuery(jbd.getSimpleAddress());
 
             if (!response.isExists())
             {
@@ -620,7 +620,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
          SimpleString autoDeleteQueueName = null;
 
-         BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
+         AddressQuery response = session.addressQuery(dest.getSimpleAddress());
 
          if (!response.isExists())
          {
@@ -724,7 +724,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
          if (dest.isQueue())
          {
-            BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
+            AddressQuery response = session.addressQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
             {
@@ -737,7 +737,7 @@ public class HornetQSession implements QueueSession, TopicSession
          }
          else
          {
-            BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
+            AddressQuery response = session.addressQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
             {
@@ -900,7 +900,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
       try
       {
-         BindingQuery message = session.bindingQuery(new SimpleString(jbq.getAddress()));
+         AddressQuery message = session.addressQuery(new SimpleString(jbq.getAddress()));
          if (!message.isExists())
          {
             throw new InvalidDestinationException(jbq.getAddress() + " does not exist");
@@ -1104,7 +1104,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
       try
       {
-         BindingQuery response = session.bindingQuery(tempTopic.getSimpleAddress());
+         AddressQuery response = session.addressQuery(tempTopic.getSimpleAddress());
 
          if (!response.isExists())
          {
@@ -1261,7 +1261,7 @@ public class HornetQSession implements QueueSession, TopicSession
          topic = HornetQDestination.createTopic(topicName);
       }
 
-      BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
+      AddressQuery query = session.addressQuery(topic.getSimpleAddress());
 
       if (!query.isExists())
       {

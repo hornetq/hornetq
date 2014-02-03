@@ -135,6 +135,11 @@ public class InVMConnector extends AbstractConnector
          return null;
       }
 
+      if (acceptor == null)
+      {
+         return null;
+      }
+
       Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener(), acceptor.getExecutorFactory()
                                                                                                 .getExecutor());
 

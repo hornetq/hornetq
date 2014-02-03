@@ -28,7 +28,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
@@ -898,11 +898,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (forwardingAddress != null)
             {
-               BindingQuery query = null;
+               ClientSession.AddressQuery query = null;
 
                try
                {
-                  query = session.bindingQuery(forwardingAddress);
+                  query = session.addressQuery(forwardingAddress);
                }
                catch (Throwable e)
                {

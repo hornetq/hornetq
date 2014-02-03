@@ -80,7 +80,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       locator = createInVMNonHALocator();
       ClientSessionFactory csf = createSessionFactory(locator);
 
-      connection = csf.getConnection();
+      connection = (CoreRemotingConnection)csf.getConnection();
    }
 
    @Override

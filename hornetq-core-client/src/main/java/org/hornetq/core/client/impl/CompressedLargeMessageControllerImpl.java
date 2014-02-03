@@ -23,7 +23,6 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.InflaterReader;
@@ -54,12 +53,10 @@ final class CompressedLargeMessageControllerImpl implements LargeMessageControll
 
    /**
     * Add a buff to the List, or save it to the OutputStream if set
-    *
-    * @param packet
     */
-   public void addPacket(final SessionReceiveContinuationMessage packet)
+   public void addPacket(byte[] chunk, int flowControlSize, boolean isContinues)
    {
-      bufferDelegate.addPacket(packet);
+      bufferDelegate.addPacket(chunk, flowControlSize, isContinues);
    }
 
    public synchronized void cancel()

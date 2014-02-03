@@ -31,9 +31,9 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Information returned by a binding query
     *
-    * @see ClientSession#bindingQuery(SimpleString)
+    * @see ClientSession#addressQuery(SimpleString)
     */
-   public interface BindingQuery
+   public interface AddressQuery
    {
       /**
        * Returns <code>true</code> if the binding exists, <code>false</code> else.
@@ -47,6 +47,15 @@ public interface ClientSession extends XAResource, AutoCloseable
    }
 
    /**
+    * @deprecated Use {@link org.hornetq.api.core.client.ClientSession.AddressQuery} instead
+    */
+   @Deprecated
+   public interface BindingQuery extends AddressQuery
+   {
+
+   }
+
+   /**
     * Information returned by a queue query
     *
     * @see ClientSession#queueQuery(SimpleString)
@@ -57,6 +66,11 @@ public interface ClientSession extends XAResource, AutoCloseable
        * Returns <code>true</code> if the queue exists, <code>false</code> else.
        */
       boolean isExists();
+
+      /**
+       * Return <code>true</code> if the queue is temporary, <code>false</code> else.
+       */
+      boolean isTemporary();
 
       /**
        * Returns <code>true</code> if the queue is durable, <code>false</code> else.
@@ -82,6 +96,13 @@ public interface ClientSession extends XAResource, AutoCloseable
        * Returns the address that the queue is bound to.
        */
       SimpleString getAddress();
+
+      /**
+       * Return the name of the queue
+       *
+       * @return
+       */
+      SimpleString getName();
    }
 
    // Lifecycle operations ------------------------------------------
@@ -544,10 +565,10 @@ public interface ClientSession extends XAResource, AutoCloseable
     * Queries information on a binding.
     *
     * @param address the address of the biding to query
-    * @return a BindingQuery containing information on the binding attached to the given address
+    * @return a AddressQuery containing information on the binding attached to the given address
     * @throws HornetQException if an exception occurs while querying the binding
     */
-   BindingQuery bindingQuery(SimpleString address) throws HornetQException;
+   AddressQuery addressQuery(SimpleString address) throws HornetQException;
 
    // Transaction operations ----------------------------------------
 
@@ -639,4 +660,11 @@ public interface ClientSession extends XAResource, AutoCloseable
     * @throws HornetQException
     */
    void addUniqueMetaData(String key, String data) throws HornetQException;
+
+   /**
+    * Return the sessionFactory used to created this Session.
+    *
+    * @return
+    */
+   ClientSessionFactory getSessionFactory();
 }

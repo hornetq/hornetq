@@ -15,13 +15,9 @@ package org.hornetq.core.client.impl;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
-import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -33,9 +29,9 @@ public interface ClientSessionInternal extends ClientSession
 {
    String getName();
 
-   void acknowledge(long consumerID, long messageID) throws HornetQException;
+   void acknowledge(ClientConsumer consumer, Message message) throws HornetQException;
 
-   void individualAcknowledge(long consumerID, long messageID) throws HornetQException;
+   void individualAcknowledge(final ClientConsumer consumer, final Message message) throws HornetQException;
 
    boolean isCacheLargeMessageClient();
 
@@ -43,7 +39,7 @@ public interface ClientSessionInternal extends ClientSession
 
    boolean isCompressLargeMessages();
 
-   void expire(long consumerID, long messageID) throws HornetQException;
+   void expire(ClientConsumer consumer, Message message) throws HornetQException;
 
    void addConsumer(ClientConsumerInternal consumer);
 
@@ -53,33 +49,25 @@ public interface ClientSessionInternal extends ClientSession
 
    void removeProducer(ClientProducerInternal producer);
 
-   void handleReceiveMessage(long consumerID, SessionReceiveMessage message) throws Exception;
+   void handleReceiveMessage(long consumerID, ClientMessageInternal message) throws Exception;
 
-   void handleReceiveLargeMessage(long consumerID, SessionReceiveLargeMessage message) throws Exception;
+   void handleReceiveLargeMessage(long consumerID, ClientLargeMessageInternal clientLargeMessage, long largeMessageSize) throws Exception;
 
-   void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
+   void handleReceiveContinuation(long consumerID, byte[] chunk, int flowControlSize, boolean isContinues) throws Exception;
 
    void handleConsumerDisconnect(long consumerID) throws HornetQException;
 
-   void preHandleFailover(CoreRemotingConnection connection);
+   void preHandleFailover(RemotingConnection connection);
 
-   void handleFailover(CoreRemotingConnection backupConnection);
+   void handleFailover(RemotingConnection backupConnection);
 
    RemotingConnection getConnection();
 
-   Channel getChannel();
-
    void cleanUp(boolean failingOver) throws HornetQException;
-
-   void returnBlocking();
 
    void setForceNotSameRM(boolean force);
 
-   ClientSessionFactoryInternal getSessionFactory();
-
    void workDone();
-
-   void forceDelivery(long consumerID, long sequence) throws HornetQException;
 
    void sendProducerCreditsMessage(int credits, SimpleString address);
 
@@ -99,13 +87,14 @@ public interface ClientSessionInternal extends ClientSession
 
    void resetIfNeeded() throws HornetQException;
 
-   /** This is used internally to control and educate the user
-    *  about using the thread boundaries properly.
-    *  if more than one thread is using the session simultaneously
-    *  this will generate a big warning on the docs.
-    *  There are a limited number of places where we can call this such as acks and sends. otherwise we
-    *  could get false warns
-    *  */
+   /**
+    * This is used internally to control and educate the user
+    * about using the thread boundaries properly.
+    * if more than one thread is using the session simultaneously
+    * this will generate a big warning on the docs.
+    * There are a limited number of places where we can call this such as acks and sends. otherwise we
+    * could get false warns
+    */
    void startCall();
 
    /**
@@ -124,4 +113,7 @@ public interface ClientSessionInternal extends ClientSession
     * @param handler
     */
    void scheduleConfirmation(SendAcknowledgementHandler handler, Message message);
+
+   boolean isClosing();
+
 }
