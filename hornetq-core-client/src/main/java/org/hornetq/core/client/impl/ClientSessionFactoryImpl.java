@@ -40,6 +40,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.FailoverEventType;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.HornetQClientLogger;
@@ -216,9 +217,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       this.callFailoverTimeout = callFailoverTimeout;
 
-      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
-
-      this.connectionTTL = connectionTTL;
+      // HORNETQ-1314 - if this in an in-vm connection then disable connection monitoring
+      if (connectorFactory.isReliable() &&
+         clientFailureCheckPeriod == HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD &&
+         connectionTTL == HornetQClient.DEFAULT_CONNECTION_TTL)
+      {
+         this.clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD_INVM;
+         this.connectionTTL = HornetQClient.DEFAULT_CONNECTION_TTL_INVM;
+      }
+      else
+      {
+         this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+         this.connectionTTL = connectionTTL;
+      }
 
       this.retryInterval = retryInterval;
 
@@ -1396,25 +1407,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             channel0.setHandler(new Channel0Handler(connection));
 
-            if (clientFailureCheckPeriod != -1)
+            if (pingerFuture == null)
             {
-               if (pingerFuture == null)
-               {
-                  pingRunnable = new PingRunnable();
+               pingRunnable = new PingRunnable();
 
+               if (clientFailureCheckPeriod != -1)
+               {
                   pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduledPinger(pingRunnable),
                                                                             0,
                                                                             clientFailureCheckPeriod,
                                                                             TimeUnit.MILLISECONDS);
-                  // To make sure the first ping will be sent
-                  pingRunnable.send();
                }
-               // send a ping every time we create a new remoting connection
-               // to set up its TTL on the server side
-               else
-               {
-                  pingRunnable.run();
-               }
+
+               // To make sure the first ping will be sent
+               pingRunnable.send();
+            }
+            // send a ping every time we create a new remoting connection
+            // to set up its TTL on the server side
+            else
+            {
+               pingRunnable.run();
             }
 
             if (serverLocator.getTopology() != null)

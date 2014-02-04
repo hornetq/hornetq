@@ -52,4 +52,12 @@ public interface ConnectorFactory
     * @return the allowable properties.
     */
    Set<String> getAllowableProperties();
+
+   /**
+    * Indicates if connectors from this factory are reliable or not. If a connector is reliable then connection
+    * monitoring (i.e. pings/pongs) will be disabled.
+    *
+    * @return whether or not connectors from this factory are reliable
+    */
+   boolean isReliable();
 }

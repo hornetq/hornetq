@@ -108,7 +108,9 @@ finally
             instance, or if you're deploying JMS connection factory instances direct into JNDI on
             the server side, you can specify it in the xml config, using the parameter <literal
                 >connection-ttl</literal>.</para>
-        <para>The default value for connection ttl is <literal>60000</literal>ms, i.e. 1 minute. A
+        <para>The default value for connection ttl on an "unreliable" connection (e.g. a Netty
+            connection) is <literal>60000</literal>ms, i.e. 1 minute. The default value for connection
+            ttl on a "reliable" connection (e.g. an in-vm connection) is <literal>-1</literal>. A
             value of <literal>-1</literal> for <literal>ConnectionTTL</literal> means the server
             will never time out the connection on the server side.</para>
         <para id="connection-ttl.override">If you do not wish clients to be able to specify their own connection TTL, you can
@@ -156,8 +158,10 @@ java.lang.Exception
             deploying JMS connection factory instances direct into JNDI on the server side, you can
             specify it in the <literal>hornetq-jms.xml </literal> configuration file, using the
             parameter <literal>client-failure-check-period</literal>.</para>
-        <para>The default value for client failure check period is <literal>30000</literal>ms, i.e.
-            30 seconds. A value of <literal>-1</literal> means the client will never fail the
+        <para>The default value for client failure check period on an "unreliable" connection (e.g.
+            a Netty connection) is <literal>30000</literal>ms, i.e. 30 seconds. The default value
+            for client failure check period on a "reliable" connection (e.g. an in-vm connection)
+            is <literal>-1</literal>. A value of <literal>-1</literal> means the client will never fail the
             connection on the client side if no data is received from the server. Typically this is
             much lower than connection TTL to allow clients to reconnect in case of transitory
             failure.</para>

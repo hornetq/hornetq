@@ -25,8 +25,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.remoting.impl.netty.NettyConnector;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -61,7 +61,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testDefaultConnectionFactory() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
       Assert.assertEquals(factory.getCallTimeout(), HornetQClient.DEFAULT_CALL_TIMEOUT);
       Assert.assertEquals(factory.getClientFailureCheckPeriod(), HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
@@ -95,7 +95,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void test2DefaultConnectionFactorySame() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
       HornetQConnectionFactory factory2 = ra.getDefaultHornetQConnectionFactory();
       Assert.assertEquals(factory, factory2);
@@ -105,7 +105,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testCreateConnectionFactoryNoOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(new ConnectionFactoryProperties());
       Assert.assertEquals(factory.getCallTimeout(), HornetQClient.DEFAULT_CALL_TIMEOUT);
       Assert.assertEquals(factory.getClientFailureCheckPeriod(), HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
@@ -139,7 +139,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testDefaultConnectionFactoryOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       ra.setAutoGroup(!HornetQClient.DEFAULT_AUTO_GROUP);
       ra.setBlockOnAcknowledge(!HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
       ra.setBlockOnNonDurableSend(!HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND);
@@ -195,7 +195,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testCreateConnectionFactoryOverrides() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setAutoGroup(!HornetQClient.DEFAULT_AUTO_GROUP);
       connectionFactoryProperties.setBlockOnAcknowledge(!HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
@@ -252,10 +252,10 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testCreateConnectionFactoryOverrideConnector() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       ArrayList<String> value = new ArrayList<String>();
-      value.add(NettyConnector.class.getName());
+      value.add(NettyConnectorFactory.class.getName());
       connectionFactoryProperties.setParsedConnectorClassNames(value);
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
@@ -266,7 +266,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testCreateConnectionFactoryOverrideDiscovery() throws Exception
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setConnectorClassName(InVMConnectorFactory.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setDiscoveryAddress("myhost");
       connectionFactoryProperties.setDiscoveryPort(5678);
