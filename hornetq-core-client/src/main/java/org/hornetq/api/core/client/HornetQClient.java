@@ -32,9 +32,13 @@ public final class HornetQClient
 
    public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = HornetQDefaultConfiguration.getDefaultClientFailureCheckPeriod();
 
+   public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD_INVM = -1;
+
    // 1 minute - this should be higher than ping period
 
    public static final long DEFAULT_CONNECTION_TTL = HornetQDefaultConfiguration.getDefaultConnectionTtl();
+
+   public static final long DEFAULT_CONNECTION_TTL_INVM = -1;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
 

@@ -44,4 +44,9 @@ public class NettyConnectorFactory implements ConnectorFactory
       return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
    }
 
+   @Override
+   public boolean isReliable()
+   {
+      return false;
+   }
 }

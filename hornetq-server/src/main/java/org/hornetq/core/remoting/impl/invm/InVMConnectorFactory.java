@@ -54,4 +54,9 @@ public class InVMConnectorFactory implements ConnectorFactory
       return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
    }
 
+   @Override
+   public boolean isReliable()
+   {
+      return true;
+   }
 }
