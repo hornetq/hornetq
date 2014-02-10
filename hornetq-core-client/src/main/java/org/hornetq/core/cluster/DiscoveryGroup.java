@@ -194,9 +194,7 @@ public final class DiscoveryGroup implements HornetQComponent
 
    public synchronized List<DiscoveryEntry> getDiscoveryEntries()
    {
-      List<DiscoveryEntry> list = new ArrayList<DiscoveryEntry>();
-
-      list.addAll(connectors.values());
+      List<DiscoveryEntry> list = new ArrayList<DiscoveryEntry>(connectors.values());
 
       return list;
    }
