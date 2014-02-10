@@ -482,7 +482,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public synchronized Set<RemotingConnection> getConnections()
    {
-      Set<RemotingConnection> conns = new HashSet<RemotingConnection>();
+      Set<RemotingConnection> conns = new HashSet<RemotingConnection>(connections.size());
 
       for (ConnectionEntry entry : connections.values())
       {

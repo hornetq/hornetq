@@ -2565,8 +2565,7 @@ public class QueueImpl implements Queue
 
       synchronized (this)
       {
-         consumerListClone = new ArrayList<ConsumerHolder>(consumerList.size());
-         consumerListClone.addAll(consumerList);
+         consumerListClone = new ArrayList<ConsumerHolder>(consumerList);
       }
       return consumerListClone;
    }

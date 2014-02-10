@@ -348,9 +348,10 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
 
    public Enumeration getMapNames() throws JMSException
    {
-      Set<String> propNames = new HashSet<String>();
+      Set<SimpleString> simplePropNames = map.getPropertyNames();
+      Set<String> propNames = new HashSet<String>(simplePropNames.size());
 
-      for (SimpleString str : map.getPropertyNames())
+      for (SimpleString str : simplePropNames)
       {
          propNames.add(str.toString());
       }

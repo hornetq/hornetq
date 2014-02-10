@@ -201,7 +201,7 @@ public class JSONArray
 
    public JSONArray(final Collection collection, final boolean includeSuperClass)
    {
-      myArrayList = new ArrayList<Object>();
+      myArrayList = collection == null ? new ArrayList<Object>() : new ArrayList<Object>(collection.size());
       if (collection != null)
       {
          Iterator<Object> iter = collection.iterator();
