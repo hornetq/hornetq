@@ -122,8 +122,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
    @Override
    public List<PersistedConnectionFactory> recoverConnectionFactories()
    {
-      List<PersistedConnectionFactory> cfs = new ArrayList<PersistedConnectionFactory>(mapFactories.size());
-      cfs.addAll(mapFactories.values());
+      List<PersistedConnectionFactory> cfs = new ArrayList<PersistedConnectionFactory>(mapFactories.values());
       return cfs;
    }
 
@@ -149,8 +148,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
    @Override
    public List<PersistedDestination> recoverDestinations()
    {
-      List<PersistedDestination> destinations = new ArrayList<PersistedDestination>(this.destinations.size());
-      destinations.addAll(this.destinations.values());
+      List<PersistedDestination> destinations = new ArrayList<PersistedDestination>(this.destinations.values());
       return destinations;
    }
 
@@ -166,10 +164,7 @@ public final class JMSJournalStorageManagerImpl implements JMSStorageManager
 
    public List<PersistedJNDI> recoverPersistedJNDI() throws Exception
    {
-      ArrayList<PersistedJNDI> list = new ArrayList<PersistedJNDI>();
-
-      list.addAll(mapJNDI.values());
-
+      ArrayList<PersistedJNDI> list = new ArrayList<PersistedJNDI>(mapJNDI.values());
       return list;
    }
 

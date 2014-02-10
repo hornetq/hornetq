@@ -672,9 +672,10 @@ public final class HornetQJMSProducer implements JMSProducer
    {
       try
       {
-         Set<String> propNames = new HashSet<String>();
+         Set<SimpleString> simplePropNames = properties.getPropertyNames();
+         Set<String> propNames = new HashSet<String>(simplePropNames.size());
 
-         for (SimpleString str : properties.getPropertyNames())
+         for (SimpleString str : simplePropNames)
          {
             propNames.add(str.toString());
          }

@@ -40,7 +40,7 @@ public class SecurityFormatter
       allRoles.addAll(consume);
       allRoles.addAll(manage);
 
-      Set<Role> roles = new HashSet<Role>();
+      Set<Role> roles = new HashSet<Role>(allRoles.size());
       for (String role : allRoles)
       {
          roles.add(new Role(role,

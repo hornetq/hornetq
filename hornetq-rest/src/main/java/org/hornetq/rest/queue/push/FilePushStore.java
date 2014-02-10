@@ -63,8 +63,7 @@ public class FilePushStore implements PushStore
 
    public synchronized List<PushRegistration> getRegistrations()
    {
-      List<PushRegistration> list = new ArrayList<PushRegistration>();
-      list.addAll(map.values());
+      List<PushRegistration> list = new ArrayList<PushRegistration>(map.values());
       return list;
    }
 
@@ -115,8 +114,7 @@ public class FilePushStore implements PushStore
 
    public synchronized void removeAll() throws Exception
    {
-      ArrayList<PushRegistration> copy = new ArrayList<PushRegistration>();
-      copy.addAll(map.values());
+      ArrayList<PushRegistration> copy = new ArrayList<PushRegistration>(map.values());
       for (PushRegistration reg : copy) remove(reg);
       this.dir.delete();
    }

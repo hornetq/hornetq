@@ -436,8 +436,8 @@ public final class StompConnection implements RemotingConnection
       }
       else
       {
-         Set<String> requestVersions = new HashSet<String>();
          StringTokenizer tokenizer = new StringTokenizer(acceptVersion, ",");
+         Set<String> requestVersions = new HashSet<String>(tokenizer.countTokens());
          while (tokenizer.hasMoreTokens())
          {
             requestVersions.add(tokenizer.nextToken());
