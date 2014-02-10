@@ -36,6 +36,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -341,6 +342,32 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (!server.isInitialised())
       {
          fail("Server didn't initialize");
+      }
+   }
+
+   public static final void waitForRemoteBackup(ClientSessionFactory sessionFactory, int seconds)
+   {
+      ClientSessionFactoryInternal factoryInternal = (ClientSessionFactoryInternal) sessionFactory;
+      final long toWait = seconds * 1000;
+      final long time = System.currentTimeMillis();
+      while (true)
+      {
+         if (factoryInternal.getBackupConnector() != null)
+         {
+            break;
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("Backup wasn't located");
+         }
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            fail(e.getMessage());
+         }
       }
    }
 

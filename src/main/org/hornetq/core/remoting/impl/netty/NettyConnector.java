@@ -456,13 +456,13 @@ public class NettyConnector extends AbstractConnector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
-      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
-      {
-         NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
-                                                                                          .getNettyVersion() +
-                                 " using " +
-                                 Version.ID);
-      }
+//      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+//      {
+//         NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
+//                                                                                          .getNettyVersion() +
+//                                 " using " +
+//                                 Version.ID);
+//      }
       NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
    }
 
