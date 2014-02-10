@@ -620,7 +620,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       message.onReceipt(this);
 
-      if (message.getPriority() != 4)
+      if (!ackIndividually && message.getPriority() != 4 && !message.containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
       {
          // We have messages of different priorities so we need to ack them individually since the order
          // of them in the ServerConsumerImpl delivery list might not be the same as the order they are

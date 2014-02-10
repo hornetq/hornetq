@@ -3254,13 +3254,14 @@ public class JournalStorageManager implements StorageManager
              info.userRecordType +
              ";isUpdate=" +
              info.isUpdate +
-             ";" +
+             ";compactCount=" + info.compactCount + ";" +
              newObjectEncoding(info);
    }
 
    private static String describeRecord(RecordInfo info, Object o)
    {
-      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + 
+               ";compactCount=" + info.compactCount + ";" + o;
    }
 
    public static Object newObjectEncoding(RecordInfo info)
