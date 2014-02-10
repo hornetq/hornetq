@@ -719,57 +719,54 @@ public class NettyConnector extends AbstractConnector
             }
 
          }
-         else
+         if (httpUpgradeEnabled)
          {
-            if (httpUpgradeEnabled)
+            // Send a HTTP GET + Upgrade request that will be handled by the http-upgrade handler.
+            try
             {
-               // Send a HTTP GET + Upgrade request that will be handled by the http-upgrade handler.
-               try
+               //get this first incase it removes itself
+               HttpUpgradeHandler httpUpgradeHandler = (HttpUpgradeHandler) ch.pipeline().get("http-upgrade");
+               URI uri = new URI("http", null, host, port, null, null, null);
+               HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+               request.headers().set(HttpHeaders.Names.HOST, host);
+               request.headers().set(HttpHeaders.Names.UPGRADE, HORNETQ_REMOTING);
+               request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
+
+               final String endpoint = ConfigurationHelper.getStringProperty(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME,
+                       null,
+                       configuration);
+               if (endpoint != null)
                {
-                  //get this first incase it removes itself
-                  HttpUpgradeHandler httpUpgradeHandler = (HttpUpgradeHandler) ch.pipeline().get("http-upgrade");
-                  URI uri = new URI("http", null, host, port, null, null, null);
-                  HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
-                  request.headers().set(HttpHeaders.Names.HOST, host);
-                  request.headers().set(HttpHeaders.Names.UPGRADE, HORNETQ_REMOTING);
-                  request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
-
-                  final String endpoint = ConfigurationHelper.getStringProperty(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME,
-                                                                                null,
-                                                                                configuration);
-                  if (endpoint != null)
-                  {
-                     request.headers().set(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, endpoint);
-                  }
-
-                  // Get 16 bit nonce and base 64 encode it
-                  byte[] nonce = randomBytes(16);
-                  String key = base64(nonce);
-                  request.headers().set(SEC_HORNETQ_REMOTING_KEY, key);
-                  ch.attr(REMOTING_KEY).set(key);
-
-                  HornetQClientLogger.LOGGER.debugf("Sending HTTP request %s", request);
-
-                  // Send the HTTP request.
-                  ch.writeAndFlush(request);
-
-                  if (!httpUpgradeHandler.awaitHandshake())
-                  {
-                     return null;
-                  }
+                  request.headers().set(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, endpoint);
                }
-               catch (URISyntaxException e)
+
+               // Get 16 bit nonce and base 64 encode it
+               byte[] nonce = randomBytes(16);
+               String key = base64(nonce);
+               request.headers().set(SEC_HORNETQ_REMOTING_KEY, key);
+               ch.attr(REMOTING_KEY).set(key);
+
+               HornetQClientLogger.LOGGER.debugf("Sending HTTP request %s", request);
+
+               // Send the HTTP request.
+               ch.writeAndFlush(request);
+
+               if (!httpUpgradeHandler.awaitHandshake())
                {
-                  HornetQClientLogger.LOGGER.errorCreatingNettyConnection(e);
                   return null;
                }
             }
-            else
+            catch (URISyntaxException e)
             {
-               ChannelPipeline channelPipeline = ch.pipeline();
-               HornetQChannelHandler channelHandler = channelPipeline.get(HornetQChannelHandler.class);
-               channelHandler.active = true;
+               HornetQClientLogger.LOGGER.errorCreatingNettyConnection(e);
+               return null;
             }
+         }
+         else
+         {
+            ChannelPipeline channelPipeline = ch.pipeline();
+            HornetQChannelHandler channelHandler = channelPipeline.get(HornetQChannelHandler.class);
+            channelHandler.active = true;
          }
 
          // No acceptor on a client connection
