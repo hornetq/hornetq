@@ -578,8 +578,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    private synchronized ArrayList<PageSubscription> cloneSubscriptions()
    {
-      ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
-      cursorList.addAll(activeCursors.values());
+      ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>(activeCursors.values());
       return cursorList;
    }
 

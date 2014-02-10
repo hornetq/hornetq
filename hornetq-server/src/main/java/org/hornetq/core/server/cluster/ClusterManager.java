@@ -884,8 +884,7 @@ public final class ClusterManager implements HornetQComponent
 
    private synchronized Collection<ClusterConnection> cloneClusterConnections()
    {
-      ArrayList<ClusterConnection> list = new ArrayList<ClusterConnection>(clusterConnections.size());
-      list.addAll(clusterConnections.values());
+      ArrayList<ClusterConnection> list = new ArrayList<ClusterConnection>(clusterConnections.values());
       return list;
    }
 

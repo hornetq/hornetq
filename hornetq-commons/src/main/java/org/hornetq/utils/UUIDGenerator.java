@@ -314,7 +314,7 @@ public final class UUIDGenerator
                                                           final Method isVirtualMethod)
    {
       ExecutorService executor = Executors.newFixedThreadPool(ifaces.size());
-      Collection<Callable<byte[]>> tasks = new ArrayList<Callable<byte[]>>();
+      Collection<Callable<byte[]>> tasks = new ArrayList<Callable<byte[]>>(ifaces.size());
 
       for (final NetworkInterface networkInterface : ifaces)
       {

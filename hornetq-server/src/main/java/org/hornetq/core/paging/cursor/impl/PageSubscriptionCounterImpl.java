@@ -340,8 +340,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
             return;
          }
          valueReplace = value.get();
-         deleteList = new ArrayList<Long>(incrementRecords.size());
-         deleteList.addAll(incrementRecords);
+         deleteList = new ArrayList<Long>(incrementRecords);
          incrementRecords.clear();
       }
 

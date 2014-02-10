@@ -1436,15 +1436,13 @@ public class JournalStorageManager implements StorageManager
 
    public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
    {
-      ArrayList<PersistedAddressSetting> list = new ArrayList<PersistedAddressSetting>(mapPersistedAddressSettings.size());
-      list.addAll(mapPersistedAddressSettings.values());
+      ArrayList<PersistedAddressSetting> list = new ArrayList<PersistedAddressSetting>(mapPersistedAddressSettings.values());
       return list;
    }
 
    public List<PersistedRoles> recoverPersistedRoles() throws Exception
    {
-      ArrayList<PersistedRoles> list = new ArrayList<PersistedRoles>(mapPersistedRoles.size());
-      list.addAll(mapPersistedRoles.values());
+      ArrayList<PersistedRoles> list = new ArrayList<PersistedRoles>(mapPersistedRoles.values());
       return list;
    }
 

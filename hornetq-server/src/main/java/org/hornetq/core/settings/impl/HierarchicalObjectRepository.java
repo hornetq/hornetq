@@ -222,7 +222,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    {
       List<String> keys = new ArrayList<String>(possibleMatches.keySet());
       Collections.sort(keys, matchComparator);
-      List<Match<T>> matches1 = new ArrayList<Match<T>>();
+      List<Match<T>> matches1 = new ArrayList<Match<T>>(possibleMatches.size());
       for (String key : keys)
       {
          matches1.add(possibleMatches.get(key));
