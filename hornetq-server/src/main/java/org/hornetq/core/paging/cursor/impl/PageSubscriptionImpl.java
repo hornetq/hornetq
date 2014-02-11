@@ -901,7 +901,17 @@ final class PageSubscriptionImpl implements PageSubscription
       }
       PageCursorInfo info = getPageInfo(pos);
 
-      info.addACK(pos);
+      // This could be null if the page file was removed
+      if (info == null)
+      {
+         // This could become null if the page file was deleted, or if the queue was removed maybe?
+         // it's better to diagnose it (based on support tickets) instead of NPE
+         HornetQServerLogger.LOGGER.warn("PageCursorInfo == null on address " + this.getPagingStore().getAddress() + ", pos = " + pos + ", queue = " + cursorId);
+      }
+      else
+      {
+         info.addACK(pos);
+      }
 
       return info;
    }
