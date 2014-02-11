@@ -111,6 +111,15 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
    
    class TestThread extends Thread
    {
+      public TestThread()
+      {
+      }
+      
+      public TestThread(String name)
+      {
+         super(name);
+      }
+      
       boolean running = true;
       Object waitNotify = new Object();
       private boolean failed = false;
@@ -265,6 +274,11 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
    class MonitorThread extends TestThread
    {
       
+      public MonitorThread()
+      {
+         super("Monitor-thread");
+      }
+      
       public void run()
       {
 
@@ -273,7 +287,37 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
          {
             waitForServer(server);
             
-            Thread.sleep(1000);
+            // The best to way to validate if the server is ready and operating is to send and consume at least one message
+            // before we could do valid monitoring
+            try
+            {
+               ServerLocator locator = PagingWithFailoverServer.createLocator(PORT2);
+               locator.setInitialConnectAttempts(100);
+               locator.setRetryInterval(100);
+               ClientSessionFactory factory = locator.createSessionFactory();
+               ClientSession session = factory.createSession();
+               
+               session.createQueue("new-queue", "new-queue");
+               
+               System.out.println("created queue");
+               
+               session.start();
+               ClientProducer prod = session.createProducer("new-queue");
+               prod.send(session.createMessage(true));
+               ClientConsumer cons = session.createConsumer("new-queue");
+               cons.receive(500).acknowledge();
+               cons.close();
+               session.deleteQueue("new-queue");
+               locator.close();
+
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               fail(e.getMessage());
+            }
+            System.out.println("Started monitoring");
+            
             Queue queue2 = inProcessBackup.getServer().locateQueue(SimpleString.toSimpleString("cons2"));
 
             while (isRunning(1))
@@ -281,7 +325,8 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
                long count = queue2.getMessageCount();
                if (count < 0)
                {
-                  failed("count < 0.. being " + count);
+                  System.err.println("count < 0.. being " + count);
+                  fail("count < 0 .... being " + count);
                }
             }
          }
@@ -325,8 +370,8 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
 
       long i = 0;
 
-      long timeRun = System.currentTimeMillis() + 3000;
-      long timeKill = System.currentTimeMillis() + 1000;
+      long timeRun = System.currentTimeMillis() + 5000;
+      long timeKill = System.currentTimeMillis() + 2000;
       while (System.currentTimeMillis() < timeRun)
       {
          i++;
@@ -401,6 +446,7 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
       {
          session.close();
          factory.close();
+         locator.close();
          server.stop();
       }
    }
