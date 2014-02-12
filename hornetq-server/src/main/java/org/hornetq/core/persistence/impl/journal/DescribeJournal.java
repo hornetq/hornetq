@@ -431,13 +431,12 @@ public final class DescribeJournal
 
    private static String describeRecord(RecordInfo info)
    {
-      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" +
-         newObjectEncoding(info);
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";compactCount=" + info.compactCount + ";" + newObjectEncoding(info);
    }
 
    private static String describeRecord(RecordInfo info, Object o)
    {
-      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";compactCount=" + info.compactCount + ";" + o;
    }
 
    private static String encode(final byte[] data)

@@ -420,6 +420,32 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+   public static final void waitForRemoteBackup(ClientSessionFactory sessionFactory, int seconds)
+   {
+      ClientSessionFactoryInternal factoryInternal = (ClientSessionFactoryInternal) sessionFactory;
+      final long toWait = seconds * 1000;
+      final long time = System.currentTimeMillis();
+      while (true)
+      {
+         if (factoryInternal.getBackupConnector() != null)
+         {
+            break;
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("Backup wasn't located");
+         }
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            fail(e.getMessage());
+         }
+      }
+   }
+
    protected final HornetQServer
    createServer(final boolean realFiles,
                 final Configuration configuration,

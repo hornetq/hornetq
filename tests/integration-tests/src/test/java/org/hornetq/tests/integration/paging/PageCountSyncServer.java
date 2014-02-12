@@ -13,13 +13,8 @@
 
 package org.hornetq.tests.integration.paging;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.SpawnedVMSupport;
 
 /**
  * This is a sub process of the test {@link org.hornetq.tests.integration.paging.PageCountSyncOnNonTXTest}
@@ -28,8 +23,12 @@ import org.hornetq.tests.util.ServiceTestBase;
  * @author Clebert Suconic
  */
 
-public class PageCountSyncServer
+public class PageCountSyncServer extends SpawnedServerSupport
 {
+   public static Process spawnVM(final String testDir, final long timeToRun) throws Exception
+   {
+      return SpawnedVMSupport.spawnVM(PageCountSyncServer.class.getName(), testDir, "" + timeToRun);
+   }
 
    public void perform(final String folder, final long timeToRun) throws Exception
    {
@@ -54,27 +53,6 @@ public class PageCountSyncServer
          System.exit(-1);
       }
    }
-
-   static HornetQServer createServer(String folder)
-   {
-      Configuration conf = createConfig(folder);
-      return HornetQServers.newHornetQServer(conf, true);
-   }
-
-   static Configuration createConfig(String folder)
-   {
-      Configuration conf = ServiceTestBase.createBasicConfig(folder, 0);
-      conf.setSecurityEnabled(false);
-      conf.setPersistenceEnabled(true);
-      AddressSettings settings = new AddressSettings();
-      settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      settings.setPageSizeBytes(10 * 1024);
-      settings.setMaxSizeBytes(100 * 1024);
-      conf.getAddressesSettings().put("#", settings);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
-      return conf;
-   }
-
 
    public static void main(String[] args) throws Exception
    {
