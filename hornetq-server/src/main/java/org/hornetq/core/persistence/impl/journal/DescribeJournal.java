@@ -222,7 +222,7 @@ public final class DescribeJournal
 
                   PageSubscriptionCounterImpl subsCounter = lookupCounter(counters, queueIDForCounter);
 
-                  subsCounter.loadInc(info.id, (int)encoding.value);
+                  subsCounter.loadInc(info.id, encoding.value);
                   subsCounter.processReload();
                   out.print("#Counter queue " + queueIDForCounter + " value=" + subsCounter.getValue() + " increased by " + encoding.value);
                   if (subsCounter.getValue() < 0)
@@ -335,7 +335,7 @@ public final class DescribeJournal
 
             subsCounter = lookupCounter(counters, queueIDForCounter);
 
-            subsCounter.loadInc(info.id, (int)encoding.value);
+            subsCounter.loadInc(info.id, encoding.value);
             subsCounter.processReload();
          }
 

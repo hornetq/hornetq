@@ -35,7 +35,7 @@ public class MultipleThreadsOpeningTest extends JMSClusteredTestBase
    @Test
    public void testMultipleOpen() throws Exception
    {
-      cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
+      cf1 = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                                                              generateInVMParams(0)));
 
       final int numberOfOpens = 2000;

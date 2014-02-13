@@ -151,7 +151,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().accept("application/xml").post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -168,7 +168,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().accept("application/json").post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/json", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
@@ -185,7 +185,7 @@ public class TransformTest extends MessageTestBase
          response = consumeNext.request().post(String.class);
          Assert.assertEquals(200, response.getStatus());
          Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) response.getEntity(Order.class);
+         Order order2 = response.getEntity(Order.class);
          response.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");

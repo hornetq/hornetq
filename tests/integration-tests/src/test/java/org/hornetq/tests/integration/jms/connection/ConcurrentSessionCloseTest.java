@@ -100,7 +100,7 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
                      failed.set(true);
                   }
 
-               };
+               }
             };
             threads[i].start();
          }
