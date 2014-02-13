@@ -472,7 +472,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       sourceConn.close();
 
-      JMSQueueControl jmsQueueControl = (JMSQueueControl) MBeanServerInvocationHandler.newProxyInstance(
+      JMSQueueControl jmsQueueControl = MBeanServerInvocationHandler.newProxyInstance(
          ManagementFactory.getPlatformMBeanServer(),
          ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(JMSBridgeImplTest.SOURCE),
          JMSQueueControl.class,

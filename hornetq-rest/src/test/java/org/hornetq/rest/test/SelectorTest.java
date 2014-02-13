@@ -325,7 +325,7 @@ public class SelectorTest extends MessageTestBase
       ClientResponse<?> response = consumeNext.request().header("Accept-Wait", "4").accept("application/xml").post(String.class);
       Assert.assertEquals(200, response.getStatus());
       Assert.assertEquals("application/xml", response.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-      Order order2 = (Order) response.getEntity(Order.class);
+      Order order2 = response.getEntity(Order.class);
       Assert.assertEquals(order, order2);
       consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "consume-next");
       Assert.assertNotNull(consumeNext);

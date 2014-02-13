@@ -221,7 +221,7 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
                HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF,
                                                                                             liveConnector);
                cf.getServerLocator().setReconnectAttempts(-1);
-               return (ConnectionFactory) cf;
+               return cf;
             }
          };
 

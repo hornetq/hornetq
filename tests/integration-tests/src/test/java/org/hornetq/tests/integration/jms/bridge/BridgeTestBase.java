@@ -237,7 +237,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             cf.setCacheLargeMessagesClient(true);
             cf.setProducerWindowSize(100);
 
-            return (ConnectionFactory) cf;
+            return cf;
          }
 
       };
@@ -257,7 +257,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             cf.setBlockOnDurableSend(true);
             cf.setCacheLargeMessagesClient(true);
 
-            return (ConnectionFactory) cf;
+            return cf;
          }
 
       };

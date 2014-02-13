@@ -13,7 +13,6 @@
 package org.hornetq.tests.integration.jms.consumer;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -75,7 +74,7 @@ public class ConsumerTest extends JMSTestBase
       jmsServer.createQueue(false, ConsumerTest.Q_NAME, null, true, ConsumerTest.Q_NAME);
       jmsServer.createTopic(true, T_NAME, "/topic/" + T_NAME);
       jmsServer.createTopic(true, T2_NAME, "/topic/" + T2_NAME);
-      cf = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 
    @Override
