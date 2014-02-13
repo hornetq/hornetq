@@ -1514,7 +1514,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            AtomicInteger msgCount = receivedMsg.get((Integer) i);
+            AtomicInteger msgCount = receivedMsg.get(Integer.valueOf(i));
             if (msgCount == null)
             {
                System.err.println("Msg " + i + " wasn't received");

@@ -573,14 +573,14 @@ public class JmsContextTest extends JMSTestBase
          BytesMessage bMsg = context.createBytesMessage();
          bMsg.setStringProperty("COM_SUN_JMS_TESTNAME", "sendAndRecvMsgOfEachTypeCLTest");
          bMsg.writeByte((byte) 1);
-         bMsg.writeInt((int) 22);
+         bMsg.writeInt(22);
          CountDownLatch latch = new CountDownLatch(1);
          SimpleCompletionListener listener = new SimpleCompletionListener(latch);
          producer.setAsync(listener);
          producer.send(queue1, bMsg);
          assertTrue(latch.await(5, TimeUnit.SECONDS));
          assertEquals(listener.message.readByte(), (byte) 1);
-         assertEquals(listener.message.readInt(), (int) 22);
+         assertEquals(listener.message.readInt(), 22);
       }
       finally
       {
