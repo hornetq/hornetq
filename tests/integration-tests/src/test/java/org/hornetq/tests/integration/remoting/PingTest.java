@@ -93,7 +93,7 @@ public class PingTest extends ServiceTestBase
       public void beforeReconnect(final HornetQException exception)
       {
       }
-   };
+   }
 
    /*
     * Test that no failure listeners are triggered in a non failure case with pinging going on

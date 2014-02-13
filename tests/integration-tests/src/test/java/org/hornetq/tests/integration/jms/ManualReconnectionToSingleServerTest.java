@@ -299,6 +299,6 @@ public class ManualReconnectionToSingleServerTest extends ServiceTestBase
             allMessagesReceived.countDown();
          }
       }
-   };
+   }
 
 }
