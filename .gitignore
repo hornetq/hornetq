@@ -34,6 +34,7 @@ org.maven.ide.eclipse.prefs
 tests/*-tests/hs_err_pid*.log
 tests/**/server.lock
 hornetq-core/*.log
+.checkstyle
 
 # /
 /build
@@ -709,6 +710,10 @@ examples/pom-template.xml
 
 # /examples/soak/tx-restarts/
 /examples/soak/tx-restarts/build
+
+# /hornetq-protocols/
+/hornetq-protocols/hornetq-amqp-protocol/.project
+/hornetq-protocols/hornetq-stomp-protocol/.project
 
 # /hornetq-ra/hornetq-ra-jar/
 /hornetq-ra/hornetq-ra-jar/target
