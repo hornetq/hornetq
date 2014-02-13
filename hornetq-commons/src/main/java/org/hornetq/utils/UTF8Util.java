@@ -35,8 +35,6 @@ public final class UTF8Util
       // utility class
    }
 
-   static boolean optimizeStrings = true;
-
    private static final boolean isTrace = HornetQUtilLogger.LOGGER.isTraceEnabled();
 
    private static final ThreadLocal<SoftReference<StringUtilBuffer>> currenBuffer =
