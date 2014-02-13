@@ -24,7 +24,7 @@ import javax.jms.Topic;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -157,8 +157,8 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected void addChannelHandlers(SocketChannel ch) throws URISyntaxException
    {
-      ch.pipeline().addLast("decoder", new StringDecoder(Charset.forName("UTF-8")));
-      ch.pipeline().addLast("encoder", new StringEncoder(Charset.forName("UTF-8")));
+      ch.pipeline().addLast("decoder", new StringDecoder(StandardCharsets.UTF_8));
+      ch.pipeline().addLast("encoder", new StringEncoder(StandardCharsets.UTF_8));
       ch.pipeline().addLast(new StompClientHandler());
    }
 
@@ -329,7 +329,7 @@ public abstract class StompTestBase extends UnitTestCase
 
    public void sendMessage(String msg, String propertyName, String propertyValue) throws Exception
    {
-      sendMessage(msg.getBytes("UTF-8"), propertyName, propertyValue, queue);
+      sendMessage(msg.getBytes(StandardCharsets.UTF_8), propertyName, propertyValue, queue);
    }
 
    public void sendMessage(byte[] data, String propertyName, String propertyValue, Destination destination) throws Exception

@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.protocol.stomp.v10;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.hornetq.core.protocol.stomp.FrameEventListener;
@@ -74,14 +73,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          //not valid
          response = new StompFrameV10(Stomp.Responses.ERROR);
          response.addHeader(Stomp.Headers.Error.MESSAGE, "Failed to connect");
-         try
-         {
-            response.setBody("The login account is not valid.");
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            HornetQServerLogger.LOGGER.errorEncodingStompPacket(e);
-         }
+         response.setBody("The login account is not valid.");
       }
       return response;
    }

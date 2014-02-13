@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +28,6 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
@@ -207,15 +205,8 @@ public class StompSession implements SessionCallback
       if (stompSubscription != null)
       {
          StompFrame frame = connection.getFrameHandler().createStompFrame(StompCommands.ERROR.toString());
-         try
-         {
-            frame.setBody("consumer with ID " + consumerId + " disconnected by server");
-            connection.sendFrame(frame);
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            HornetQServerLogger.LOGGER.errorEncodingStompPacket(e);
-         }
+         frame.setBody("consumer with ID " + consumerId + " disconnected by server");
+         connection.sendFrame(frame);
       }
    }
 

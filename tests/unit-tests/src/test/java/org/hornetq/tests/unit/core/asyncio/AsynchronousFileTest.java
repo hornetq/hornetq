@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
@@ -61,7 +61,7 @@ public class AsynchronousFileTest extends AIOTestBase
       org.junit.Assume.assumeTrue("Test case needs AIO to run", AIOSequentialFileFactory.isSupported());
    }
 
-   private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
+   private static CharsetEncoder UTF_8_ENCODER = StandardCharsets.UTF_8.newEncoder();
 
    byte[] commonBuffer = null;
 

@@ -12,7 +12,6 @@
  */
 package org.hornetq.tests.integration.stomp.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -24,7 +23,7 @@ import java.nio.ByteBuffer;
 public interface ClientStompFrame
 {
 
-   ByteBuffer toByteBuffer() throws UnsupportedEncodingException;
+   ByteBuffer toByteBuffer();
 
    boolean needsReply();
 
@@ -40,7 +39,7 @@ public interface ClientStompFrame
 
    String getBody();
 
-   ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
+   ByteBuffer toByteBufferWithExtra(String str);
 
    boolean isPing();
 

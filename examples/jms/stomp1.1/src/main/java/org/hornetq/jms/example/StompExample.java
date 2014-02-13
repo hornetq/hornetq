@@ -15,6 +15,7 @@ package org.hornetq.jms.example;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -126,7 +127,7 @@ public class StompExample extends HornetQExample
 
    private static void sendFrame(Socket socket, String data) throws Exception
    {
-      byte[] bytes = data.getBytes("UTF-8");
+      byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
       OutputStream outputStream = socket.getOutputStream();
       for (int i = 0; i < bytes.length; i++)
       {
@@ -144,7 +145,7 @@ public class StompExample extends HornetQExample
       byte[] data = new byte[size];
       System.arraycopy(buffer, 0, data, 0, size);
 
-      String frame = new String(data, "UTF-8");
+      String frame = new String(data, StandardCharsets.UTF_8);
       return frame;
 
    }

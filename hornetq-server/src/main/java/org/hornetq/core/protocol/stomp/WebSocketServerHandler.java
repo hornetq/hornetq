@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.nio.charset.StandardCharsets;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -32,7 +34,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
-import io.netty.util.CharsetUtil;
 
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
@@ -141,7 +142,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object>
       // Generate an error page if response status code is not OK (200).
       if (res.getStatus().code() != 200)
       {
-         res.content().writeBytes(res.getStatus().toString().getBytes(CharsetUtil.UTF_8));
+         res.content().writeBytes(res.getStatus().toString().getBytes(StandardCharsets.UTF_8));
          setContentLength(res, res.content().readableBytes());
       }
 

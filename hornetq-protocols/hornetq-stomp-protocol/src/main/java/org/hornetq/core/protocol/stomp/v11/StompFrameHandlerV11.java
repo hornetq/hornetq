@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.protocol.stomp.v11;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -111,11 +110,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       catch (HornetQStompException e)
       {
          response = e.getFrame();
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         HornetQServerLogger.LOGGER.errorEncodingStompPacket(e);
-         response = BUNDLE.encodingError().getFrame();
       }
 
       return response;
@@ -271,7 +265,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
    }
 
-   public StompFrame createPingFrame() throws UnsupportedEncodingException
+   public StompFrame createPingFrame()
    {
       StompFrame frame = new StompFrame(Stomp.Commands.STOMP);
       frame.setPing(true);
@@ -329,14 +323,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       public void run()
       {
          lastAccepted.set(System.currentTimeMillis());
-         try
-         {
-            pingFrame = createPingFrame();
-         }
-         catch (UnsupportedEncodingException e1)
-         {
-            HornetQServerLogger.LOGGER.errorOnStompPingFrame(e1);
-         }
+         pingFrame = createPingFrame();
 
          synchronized (this)
          {
@@ -753,14 +740,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   {
                      if (inHeaderName)
                      {
-                        try
-                        {
-                           headerName = holder.getString();
-                        }
-                        catch (UnsupportedEncodingException e)
-                        {
-                           throw BUNDLE.encodingErrorWithCause(e);
-                        }
+                        headerName = holder.getString();
 
                         holder.reset();
 
@@ -797,15 +777,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                      break outer;
                   }
 
-                  String headerValue;
-                  try
-                  {
-                     headerValue = holder.getString();
-                  }
-                  catch (UnsupportedEncodingException e)
-                  {
-                     throw BUNDLE.encodingErrorWithCause(e);
-                  }
+                  String headerValue = holder.getString();
                   holder.reset();
 
                   headers.put(headerName, headerValue);

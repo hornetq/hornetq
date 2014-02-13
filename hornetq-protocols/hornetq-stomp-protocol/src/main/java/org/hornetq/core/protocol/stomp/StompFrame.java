@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -130,7 +130,7 @@ public class StompFrame
          // Add a newline to separate the headers from the content.
          head.append(Stomp.NEWLINE);
 
-         buffer.writeBytes(head.toString().getBytes("UTF-8"));
+         buffer.writeBytes(head.toString().getBytes(StandardCharsets.UTF_8));
          if (bytesBody != null)
          {
             buffer.writeBytes(bytesBody);
@@ -220,10 +220,10 @@ public class StompFrame
       return new String(total);
    }
 
-   public void setBody(String body) throws UnsupportedEncodingException
+   public void setBody(String body)
    {
       this.body = body;
-      this.bytesBody = body.getBytes("UTF-8");
+      this.bytesBody = body.getBytes(StandardCharsets.UTF_8);
    }
 
    public boolean hasHeader(String key)
@@ -231,20 +231,20 @@ public class StompFrame
       return headers.containsKey(key);
    }
 
-   public String getBody() throws UnsupportedEncodingException
+   public String getBody()
    {
       if (body == null)
       {
          if (bytesBody != null)
          {
-            body = new String(bytesBody, "UTF-8");
+            body = new String(bytesBody, StandardCharsets.UTF_8);
          }
       }
       return body;
    }
 
    //Since 1.1, there is a content-type header that needs to take care of
-   public byte[] getBodyAsBytes() throws UnsupportedEncodingException
+   public byte[] getBodyAsBytes()
    {
       return bytesBody;
    }

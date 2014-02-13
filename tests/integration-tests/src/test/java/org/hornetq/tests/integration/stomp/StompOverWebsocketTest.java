@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.stomp;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -34,7 +34,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.string.StringDecoder;
-import io.netty.util.CharsetUtil;
 
 public class StompOverWebsocketTest extends StompTest
 {
@@ -48,7 +47,7 @@ public class StompOverWebsocketTest extends StompTest
       ch.pipeline().addLast("http-codec", new HttpClientCodec());
       ch.pipeline().addLast("aggregator", new HttpObjectAggregator(8192));
       ch.pipeline().addLast(new WebsocketHandler(WebSocketClientHandshakerFactory.newHandshaker(new URI("ws://localhost:8080/websocket"), WebSocketVersion.V13, null, false, null)));
-      ch.pipeline().addLast("decoder", new StringDecoder(Charset.forName("UTF-8")));
+      ch.pipeline().addLast("decoder", new StringDecoder(StandardCharsets.UTF_8));
       ch.pipeline().addLast(new StompClientHandler());
    }
 
@@ -102,7 +101,7 @@ public class StompOverWebsocketTest extends StompTest
          {
             FullHttpResponse response = (FullHttpResponse) msg;
             throw new Exception("Unexpected FullHttpResponse (getStatus=" + response.getStatus() + ", content="
-                                   + response.content().toString(CharsetUtil.UTF_8) + ')');
+                                   + response.content().toString(StandardCharsets.UTF_8) + ')');
          }
 
          WebSocketFrame frame = (WebSocketFrame) msg;

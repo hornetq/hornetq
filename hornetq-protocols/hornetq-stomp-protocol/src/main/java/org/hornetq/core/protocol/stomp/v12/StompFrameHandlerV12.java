@@ -12,8 +12,6 @@
  */
 package org.hornetq.core.protocol.stomp.v12;
 
-import java.io.UnsupportedEncodingException;
-
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
@@ -178,14 +176,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
                   {
                      if (inHeaderName)
                      {
-                        try
-                        {
-                           headerName = holder.getString();
-                        }
-                        catch (UnsupportedEncodingException e)
-                        {
-                           throw new HornetQStompException("Encoding exception", e);
-                        }
+                        headerName = holder.getString();
 
                         holder.reset();
 
@@ -244,15 +235,7 @@ public class StompFrameHandlerV12 extends StompFrameHandlerV11 implements FrameE
                      break outer;
                   }
 
-                  String headerValue;
-                  try
-                  {
-                     headerValue = holder.getString();
-                  }
-                  catch (UnsupportedEncodingException e)
-                  {
-                     throw BUNDLE.encodingErrorWithCause(e);
-                  }
+                  String headerValue = holder.getString();
                   holder.reset();
 
                   if (!headers.containsKey(headerName))

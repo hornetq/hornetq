@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
@@ -39,7 +40,7 @@ public class CompressionUtilTest extends Assert
    public void testDeflaterReader() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
-      byte[] input = inputString.getBytes("UTF-8");
+      byte[] input = inputString.getBytes(StandardCharsets.UTF_8);
 
       ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
 
@@ -77,7 +78,7 @@ public class CompressionUtilTest extends Assert
    public void testDeflaterReader2() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
-      byte[] input = inputString.getBytes("UTF-8");
+      byte[] input = inputString.getBytes(StandardCharsets.UTF_8);
 
       ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
       AtomicLong counter = new AtomicLong(0);
@@ -119,7 +120,7 @@ public class CompressionUtilTest extends Assert
    public void testInflaterReader() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
-      byte[] input = inputString.getBytes("UTF-8");
+      byte[] input = inputString.getBytes(StandardCharsets.UTF_8);
       byte[] output = new byte[30];
       Deflater compresser = new Deflater();
       compresser.setInput(input);
@@ -158,7 +159,7 @@ public class CompressionUtilTest extends Assert
    public void testInflaterWriter() throws Exception
    {
       String inputString = "blahblahblah??blahblahblahblahblah??blablahblah??blablahblah??bla";
-      byte[] input = inputString.getBytes("UTF-8");
+      byte[] input = inputString.getBytes(StandardCharsets.UTF_8);
       byte[] output = new byte[30];
       Deflater compresser = new Deflater();
       compresser.setInput(input);

@@ -12,7 +12,7 @@
  */
 package org.hornetq.tests.integration.stomp;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
@@ -39,8 +39,8 @@ public class StompOverHttpTest extends StompTest
       ch.pipeline().addLast(new HttpRequestEncoder());
       ch.pipeline().addLast(new HttpResponseDecoder());
       ch.pipeline().addLast(new HttpHandler());
-      ch.pipeline().addLast("decoder", new StringDecoder(Charset.forName("UTF-8")));
-      ch.pipeline().addLast("encoder", new StringEncoder(Charset.forName("UTF-8")));
+      ch.pipeline().addLast("decoder", new StringDecoder(StandardCharsets.UTF_8));
+      ch.pipeline().addLast("encoder", new StringEncoder(StandardCharsets.UTF_8));
       ch.pipeline().addLast(new StompClientHandler());
    }
 

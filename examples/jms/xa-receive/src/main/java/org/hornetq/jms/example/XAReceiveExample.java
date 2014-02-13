@@ -12,6 +12,8 @@
  */
 package org.hornetq.jms.example;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -27,7 +29,6 @@ import javax.transaction.xa.Xid;
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
-import io.netty.util.CharsetUtil;
 
 /**
  * A simple JMS example showing the usage of XA support in JMS.
@@ -86,7 +87,7 @@ public class XAReceiveExample extends HornetQExample
 
          // Step 12. create a transaction
          Xid xid1 =
-                  new DummyXid("xa-example1".getBytes(CharsetUtil.US_ASCII), 1, UUIDGenerator.getInstance()
+                  new DummyXid("xa-example1".getBytes(StandardCharsets.US_ASCII), 1, UUIDGenerator.getInstance()
                                                                            .generateStringUUID()
                                                                            .getBytes());
 

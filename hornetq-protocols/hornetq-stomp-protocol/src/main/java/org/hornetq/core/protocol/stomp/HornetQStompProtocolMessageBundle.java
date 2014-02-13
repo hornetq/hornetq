@@ -144,14 +144,8 @@ public interface HornetQStompProtocolMessageBundle
    @Message(id = 339035, value = "Must specify the subscription's id or the destination you are unsubscribing from", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException needIDorDestination();
 
-   @Message(id = 339036, value = "Encoding error.", format = Message.Format.MESSAGE_FORMAT)
-   HornetQStompException encodingError();
-
    @Message(id = 339037, value = "Must specify the subscription's id", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException needSubscriptionID();
-
-   @Message(id = 339038, value = "Encoding error", format = Message.Format.MESSAGE_FORMAT)
-   HornetQStompException encodingErrorWithCause(@Cause Exception e);
 
    @Message(id = 339039, value = "No id header in ACK/NACK frame.", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException noIDInAck();

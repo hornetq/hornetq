@@ -12,6 +12,7 @@
  */
 package org.hornetq.jms.example;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -39,7 +40,6 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
-import io.netty.util.CharsetUtil;
 
 /**
  * A simple JMS example showing how to administer un-finished transactions.
@@ -103,7 +103,7 @@ public class XAHeuristicExample extends HornetQExample
 
          // Step 12. create a transaction
          Xid xid1 =
-                  new DummyXid("xa-example1".getBytes(CharsetUtil.ISO_8859_1), 1, UUIDGenerator.getInstance()
+                  new DummyXid("xa-example1".getBytes(StandardCharsets.ISO_8859_1), 1, UUIDGenerator.getInstance()
                                                                            .generateStringUUID()
                                                                            .getBytes());
 

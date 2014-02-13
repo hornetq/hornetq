@@ -13,6 +13,7 @@
 package org.hornetq.core.config.impl;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.hornetq.core.deployers.impl.FileConfigurationParser;
 import org.hornetq.tests.logging.AssertionLoggerHandler;
@@ -38,7 +39,7 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
    public void testParsingDefaultServerConfig() throws Exception
    {
       FileConfigurationParser parser = new FileConfigurationParser();
-      ByteArrayInputStream input = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
+      ByteArrayInputStream input = new ByteArrayInputStream(configuration.getBytes(StandardCharsets.UTF_8));
       parser.parseMainConfig(input);
 
       // Using the code only because I don't want a test failing just for someone editing Log text

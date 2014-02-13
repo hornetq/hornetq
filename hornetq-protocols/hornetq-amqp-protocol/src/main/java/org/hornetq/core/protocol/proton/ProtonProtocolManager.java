@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.proton;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 
 import io.netty.channel.ChannelPipeline;
@@ -110,7 +111,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    @Override
    public boolean isProtocol(byte[] array)
    {
-      String startFrame = new String(array);
+      String startFrame = new String(array, StandardCharsets.US_ASCII);
       return startFrame.startsWith("AMQP");
    }
 

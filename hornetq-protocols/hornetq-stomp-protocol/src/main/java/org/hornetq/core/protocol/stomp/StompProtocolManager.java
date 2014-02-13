@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -171,7 +172,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    @Override
    public boolean isProtocol(byte[] array)
    {
-      String frameStart = new String(array);
+      String frameStart = new String(array, StandardCharsets.US_ASCII);
       return frameStart.startsWith(StompCommands.CONNECT.name()) || frameStart.startsWith(StompCommands.STOMP.name());
    }
 

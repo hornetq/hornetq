@@ -14,6 +14,7 @@ package org.hornetq.tests.integration.stomp.v11;
 import org.junit.Before;
 import org.junit.After;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -178,7 +179,7 @@ public abstract class StompV11TestBase extends UnitTestCase
 
    public void sendMessage(String msg, String propertyName, String propertyValue) throws Exception
    {
-      sendMessage(msg.getBytes("UTF-8"), propertyName, propertyValue, queue);
+      sendMessage(msg.getBytes(StandardCharsets.UTF_8), propertyName, propertyValue, queue);
    }
 
    public void sendMessage(byte[] data, String propertyName, String propertyValue, Destination destination) throws Exception
