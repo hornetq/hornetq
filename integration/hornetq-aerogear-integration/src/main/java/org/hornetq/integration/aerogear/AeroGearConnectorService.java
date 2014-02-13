@@ -363,7 +363,7 @@ public class AeroGearConnectorService implements ConnectorService, Consumer, Mes
       }
    }
 
-
+   @Override
    public List<MessageReference> getDeliveringMessages()
    {
       return Collections.emptyList();
