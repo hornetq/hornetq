@@ -21,7 +21,7 @@ import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -307,7 +307,7 @@ public class StompV11Test extends StompV11TestBase
       ClientStompFrame frame = connV11.createFrame("SEND");
 
       String body = "Hello World 1!";
-      String cLen = String.valueOf(body.getBytes(Charset.forName("UTF-8")).length);
+      String cLen = String.valueOf(body.getBytes(StandardCharsets.UTF_8).length);
 
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
       frame.addHeader("content-type", "application/xml");
@@ -349,7 +349,7 @@ public class StompV11Test extends StompV11TestBase
       ClientStompFrame frame = connV11.createFrame("SEND");
 
       String body = "Hello World 1!";
-      String cLen = String.valueOf(body.getBytes("UTF-8").length);
+      String cLen = String.valueOf(body.getBytes(StandardCharsets.UTF_8).length);
 
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
       frame.addHeader("content-type", "application/xml");
@@ -1591,7 +1591,7 @@ public class StompV11Test extends StompV11TestBase
       ClientStompFrame frame = connV11.createFrame("SEND");
 
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
-      frame.setBody(new String(data, "UTF-8"));
+      frame.setBody(new String(data, StandardCharsets.UTF_8));
 
       frame.addHeader("content-length", String.valueOf(data.length));
 
@@ -1868,7 +1868,7 @@ public class StompV11Test extends StompV11TestBase
 
       assertEquals(null, frame.getHeader("type"));
 
-      assertEquals(frame.getBody(), new String(payload, "UTF-8"));
+      assertEquals(frame.getBody(), new String(payload, StandardCharsets.UTF_8));
 
       connV11.disconnect();
    }
@@ -1939,7 +1939,7 @@ public class StompV11Test extends StompV11TestBase
       message.setIntProperty("i", 10);
       message.setLongProperty("l", 121);
       message.setShortProperty("s", (short) 12);
-      message.writeBytes("Hello World".getBytes("UTF-8"));
+      message.writeBytes("Hello World".getBytes(StandardCharsets.UTF_8));
       producer.send(message);
 
       ClientStompFrame frame = connV11.receiveFrame();

@@ -12,8 +12,8 @@
  */
 package org.hornetq.tests.integration.stomp.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,7 +83,7 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
    }
 
    @Override
-   public ByteBuffer toByteBuffer() throws UnsupportedEncodingException
+   public ByteBuffer toByteBuffer()
    {
       if (isPing())
       {
@@ -108,7 +108,7 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
 
       String data = sb.toString();
 
-      byte[] byteValue = data.getBytes("UTF-8");
+      byte[] byteValue = data.getBytes(StandardCharsets.UTF_8);
 
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);
       buffer.put(byteValue);
@@ -118,7 +118,7 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
    }
 
    @Override
-   public ByteBuffer toByteBufferWithExtra(String str) throws UnsupportedEncodingException
+   public ByteBuffer toByteBufferWithExtra(String str)
    {
       StringBuffer sb = new StringBuffer();
       sb.append(command + EOL);
@@ -137,7 +137,7 @@ public abstract class AbstractClientStompFrame implements ClientStompFrame
 
       String data = sb.toString();
 
-      byte[] byteValue = data.getBytes("UTF-8");
+      byte[] byteValue = data.getBytes(StandardCharsets.UTF_8);
 
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);
       buffer.put(byteValue);

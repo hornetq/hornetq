@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,13 +90,7 @@ public class HornetQStompException extends Exception
 
       if (body != null)
       {
-         try
-         {
-            frame.setByteBody(body.getBytes("UTF-8"));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-         }
+         frame.setByteBody(body.getBytes(StandardCharsets.UTF_8));
       }
       else
       {

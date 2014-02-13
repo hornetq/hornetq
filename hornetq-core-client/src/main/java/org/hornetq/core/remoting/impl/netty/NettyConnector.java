@@ -36,6 +36,7 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -89,7 +90,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.AttributeKey;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -1163,7 +1163,7 @@ public class NettyConnector extends AbstractConnector
    {
       ByteBuf encodedData = Unpooled.wrappedBuffer(data);
       ByteBuf encoded = Base64.encode(encodedData);
-      String encodedString = encoded.toString(CharsetUtil.UTF_8);
+      String encodedString = encoded.toString(StandardCharsets.UTF_8);
       encoded.release();
       return encodedString;
    }
@@ -1198,7 +1198,7 @@ public class NettyConnector extends AbstractConnector
          final String concat = secretKey + magicNumber;
          final MessageDigest digest = MessageDigest.getInstance("SHA1");
 
-         digest.update(concat.getBytes("UTF-8"));
+         digest.update(concat.getBytes(StandardCharsets.UTF_8));
          final byte[] bytes = digest.digest();
          return encodeBytes(bytes);
       }

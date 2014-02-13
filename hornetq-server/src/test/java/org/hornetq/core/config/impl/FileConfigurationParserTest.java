@@ -13,6 +13,7 @@
 package org.hornetq.core.config.impl;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class FileConfigurationParserTest extends UnitTestCase
       FileConfigurationParser parser = new FileConfigurationParser();
 
       String configStr = firstPart + lastPart;
-      ByteArrayInputStream input = new ByteArrayInputStream(configStr.getBytes("UTF-8"));
+      ByteArrayInputStream input = new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8));
 
       Configuration config = parser.parseMainConfig(input);
 
@@ -88,7 +89,7 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       configStr = firstPart + clusterPasswordPart + lastPart;
 
-      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
+      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8)));
 
       assertEquals("helloworld", config.getClusterPassword());
 
@@ -101,7 +102,7 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + lastPart;
 
-      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
+      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8)));
 
       assertEquals("helloworld", config.getClusterPassword());
 
@@ -120,7 +121,7 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + codecPart + lastPart;
 
-      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes("UTF-8")));
+      config = parser.parseMainConfig(new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8)));
 
       assertEquals("newpassword", config.getClusterPassword());
 

@@ -13,10 +13,10 @@
 package org.hornetq.tests.integration.stomp.util;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -165,7 +165,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    }
 
    //put bytes to byte array.
-   private void receiveBytes(int n) throws UnsupportedEncodingException
+   private void receiveBytes(int n)
    {
       readBuffer.rewind();
       for (int i = 0; i < n; i++)
@@ -182,7 +182,7 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
                {
                   frameBytes[j] = receiveList.get(j);
                }
-               ClientStompFrame frame = factory.createFrame(new String(frameBytes, "UTF-8"));
+               ClientStompFrame frame = factory.createFrame(new String(frameBytes, StandardCharsets.UTF_8));
 
                if (validateFrame(frame))
                {
@@ -224,13 +224,13 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       serverPingCounter++;
    }
 
-   private boolean validateFrame(ClientStompFrame f) throws UnsupportedEncodingException
+   private boolean validateFrame(ClientStompFrame f)
    {
       String h = f.getHeader("content-length");
       if (h != null)
       {
          int len = Integer.valueOf(h);
-         if (f.getBody().getBytes("UTF-8").length < len)
+         if (f.getBody().getBytes(StandardCharsets.UTF_8).length < len)
          {
             return false;
          }

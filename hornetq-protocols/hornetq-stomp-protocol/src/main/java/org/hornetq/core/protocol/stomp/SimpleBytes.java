@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 
 public class SimpleBytes
@@ -28,13 +28,13 @@ public class SimpleBytes
       index = 0;
    }
 
-   public String getString() throws UnsupportedEncodingException
+   public String getString()
    {
       if (index == 0) return "";
       byte[] realData = new byte[index];
       System.arraycopy(contents, 0, realData, 0, realData.length);
 
-      return new String(realData, "UTF-8");
+      return new String(realData, StandardCharsets.UTF_8);
    }
 
    public void reset()

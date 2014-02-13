@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.stomp.v11;
 
+import java.nio.charset.StandardCharsets;
+
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
@@ -63,7 +65,7 @@ public class ExtraStompTest extends StompV11TestBase
 
       ClientStompFrame frame = connV10.createFrame("SEND");
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
-      frame.addHeader("content-length", String.valueOf(msg1.getBytes("UTF-8").length));
+      frame.addHeader("content-length", String.valueOf(msg1.getBytes(StandardCharsets.UTF_8).length));
       frame.addHeader("persistent", "true");
       frame.setBody(msg1);
 
@@ -71,7 +73,7 @@ public class ExtraStompTest extends StompV11TestBase
 
       ClientStompFrame frame2 = connV10.createFrame("SEND");
       frame2.addHeader("destination", getQueuePrefix() + getQueueName());
-      frame2.addHeader("content-length", String.valueOf(msg2.getBytes("UTF-8").length));
+      frame2.addHeader("content-length", String.valueOf(msg2.getBytes(StandardCharsets.UTF_8).length));
       frame2.addHeader("persistent", "true");
       frame2.setBody(msg2);
 
@@ -127,7 +129,7 @@ public class ExtraStompTest extends StompV11TestBase
 
       ClientStompFrame frame = connV11.createFrame("SEND");
       frame.addHeader("destination", getQueuePrefix() + getQueueName());
-      frame.addHeader("content-length", String.valueOf(msg1.getBytes("UTF-8").length));
+      frame.addHeader("content-length", String.valueOf(msg1.getBytes(StandardCharsets.UTF_8).length));
       frame.addHeader("persistent", "true");
       frame.setBody(msg1);
 
@@ -135,7 +137,7 @@ public class ExtraStompTest extends StompV11TestBase
 
       ClientStompFrame frame2 = connV11.createFrame("SEND");
       frame2.addHeader("destination", getQueuePrefix() + getQueueName());
-      frame2.addHeader("content-length", String.valueOf(msg2.getBytes("UTF-8").length));
+      frame2.addHeader("content-length", String.valueOf(msg2.getBytes(StandardCharsets.UTF_8).length));
       frame2.addHeader("persistent", "true");
       frame2.setBody(msg2);
 

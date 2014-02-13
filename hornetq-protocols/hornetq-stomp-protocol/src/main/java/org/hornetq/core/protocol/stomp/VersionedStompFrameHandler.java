@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.nio.charset.StandardCharsets;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -370,7 +372,7 @@ public abstract class VersionedStompFrameHandler
          SimpleString text = buffer.readNullableSimpleString();
          if (text != null)
          {
-            data = text.toString().getBytes("UTF-8");
+            data = text.toString().getBytes(StandardCharsets.UTF_8);
          }
          else
          {

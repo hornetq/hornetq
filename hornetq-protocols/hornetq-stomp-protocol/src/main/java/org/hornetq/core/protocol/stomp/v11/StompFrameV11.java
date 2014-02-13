@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp.v11;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class StompFrameV11 extends StompFrame
          // Add a newline to separate the headers from the content.
          head.append(Stomp.NEWLINE);
 
-         buffer.writeBytes(head.toString().getBytes("UTF-8"));
+         buffer.writeBytes(head.toString().getBytes(StandardCharsets.UTF_8));
          if (bytesBody != null)
          {
             buffer.writeBytes(bytesBody);

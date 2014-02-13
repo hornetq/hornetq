@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -134,7 +135,7 @@ public class StompStressTest extends UnitTestCase
 
    public void sendFrame(String data) throws Exception
    {
-      byte[] bytes = data.getBytes("UTF-8");
+      byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
       OutputStream outputStream = stompSocket.getOutputStream();
       for (byte b : bytes)
       {
@@ -171,12 +172,12 @@ public class StompStressTest extends UnitTestCase
             if (c != '\n')
             {
                byte[] ba = inputBuffer.toByteArray();
-               System.out.println(new String(ba, "UTF-8"));
+               System.out.println(new String(ba, StandardCharsets.UTF_8));
             }
             Assert.assertEquals("Expecting stomp frame to terminate with \0\n", c, '\n');
             byte[] ba = inputBuffer.toByteArray();
             inputBuffer.reset();
-            return new String(ba, "UTF-8");
+            return new String(ba, StandardCharsets.UTF_8);
          }
          else
          {

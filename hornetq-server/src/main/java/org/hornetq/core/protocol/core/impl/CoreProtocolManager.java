@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.core.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -145,7 +146,7 @@ class CoreProtocolManager implements ProtocolManager
    @Override
    public boolean isProtocol(byte[] array)
    {
-      String frameStart = new String(array);
+      String frameStart = new String(array, StandardCharsets.US_ASCII);
       return frameStart.startsWith("HORNETQ");
    }
 

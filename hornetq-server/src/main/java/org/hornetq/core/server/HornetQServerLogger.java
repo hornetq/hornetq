@@ -1169,10 +1169,6 @@ public interface HornetQServerLogger extends BasicLogger
    void stompErrorTXExists(String txID);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224025, value = "Error encoding stomp packet", format = Message.Format.MESSAGE_FORMAT)
-   void errorEncodingStompPacket(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224026, value = "Cannot create stomp ping frame due to encoding problem.", format = Message.Format.MESSAGE_FORMAT)
    void errorOnStompPingFrame(@Cause Exception e);
 

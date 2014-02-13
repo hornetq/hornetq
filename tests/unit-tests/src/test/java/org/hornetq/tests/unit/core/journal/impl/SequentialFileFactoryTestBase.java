@@ -17,6 +17,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -223,15 +224,15 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       sf.open();
 
       String s1 = "aardvark";
-      byte[] bytes1 = s1.getBytes("UTF-8");
+      byte[] bytes1 = s1.getBytes(StandardCharsets.UTF_8);
       HornetQBuffer bb1 = wrapBuffer(bytes1);
 
       String s2 = "hippopotamus";
-      byte[] bytes2 = s2.getBytes("UTF-8");
+      byte[] bytes2 = s2.getBytes(StandardCharsets.UTF_8);
       HornetQBuffer bb2 = wrapBuffer(bytes2);
 
       String s3 = "echidna";
-      byte[] bytes3 = s3.getBytes("UTF-8");
+      byte[] bytes3 = s3.getBytes(StandardCharsets.UTF_8);
       HornetQBuffer bb3 = wrapBuffer(bytes3);
 
       long initialPos = sf.position();
@@ -297,12 +298,12 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          sf.fill(0, 3 * 512, (byte)0);
 
          String s1 = "orange";
-         byte[] bytes1 = s1.getBytes("UTF-8");
+         byte[] bytes1 = s1.getBytes(StandardCharsets.UTF_8);
 
-         byte[] bytes2 = s1.getBytes("UTF-8");
+         byte[] bytes2 = s1.getBytes(StandardCharsets.UTF_8);
 
          String s3 = "lemon";
-         byte[] bytes3 = s3.getBytes("UTF-8");
+         byte[] bytes3 = s3.getBytes(StandardCharsets.UTF_8);
 
          long initialPos = sf.position();
          sf.write(wrapBuffer(bytes1), true);
@@ -379,7 +380,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       sf.fill(0, 512, (byte)0);
 
       String s1 = "cheesecake";
-      byte[] bytes1 = s1.getBytes("UTF-8");
+      byte[] bytes1 = s1.getBytes(StandardCharsets.UTF_8);
 
       long initialPos = sf.position();
       sf.write(wrapBuffer(bytes1), true);

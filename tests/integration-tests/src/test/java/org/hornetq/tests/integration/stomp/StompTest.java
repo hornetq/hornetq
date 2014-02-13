@@ -20,6 +20,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -238,7 +239,7 @@ public class StompTest extends StompTestBase
          data.length +
          "\n\n";
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baos.write(frame.getBytes("UTF-8"));
+      baos.write(frame.getBytes(StandardCharsets.UTF_8));
       baos.write(data);
       baos.write('\0');
       baos.flush();
@@ -490,7 +491,7 @@ public class StompTest extends StompTestBase
       message.setIntProperty("i", 10);
       message.setLongProperty("l", 121);
       message.setShortProperty("s", (short) 12);
-      message.writeBytes("Hello World".getBytes("UTF-8"));
+      message.writeBytes("Hello World".getBytes(StandardCharsets.UTF_8));
       producer.send(message);
 
       frame = receiveFrame(10000);
