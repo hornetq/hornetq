@@ -122,7 +122,7 @@ public class HornetQBufferInputStream extends InputStream
 
       int size = Math.min(remainingBytes(), (int) len);
 
-      bb.skipBytes((int)size);
+      bb.skipBytes(size);
 
       return size;
    }

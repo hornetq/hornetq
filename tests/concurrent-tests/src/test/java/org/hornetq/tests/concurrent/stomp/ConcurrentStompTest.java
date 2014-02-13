@@ -85,7 +85,7 @@ public class ConcurrentStompTest extends StompTestBase
                      break;
                   }
                }
-            };
+            }
          }.start();
 
          String send = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n";

@@ -271,7 +271,7 @@ public class JMSTest extends MessageTestBase
          ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").accept("application/json").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/json", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         Order order2 = res.getEntity(Order.class);
          res.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");
@@ -288,7 +288,7 @@ public class JMSTest extends MessageTestBase
          ClientResponse<?> res = consumeNext.request().header("Accept-Wait", "2").post(String.class);
          Assert.assertEquals(200, res.getStatus());
          Assert.assertEquals("application/xml", res.getHeaders().getFirst("Content-Type").toString().toLowerCase());
-         Order order2 = (Order) res.getEntity(Order.class);
+         Order order2 = res.getEntity(Order.class);
          res.releaseConnection();
          Assert.assertEquals(order, order2);
          consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consume-next");

@@ -75,13 +75,13 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
-      Assert.assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("name"));
+      Assert.assertEquals(bridgeConfig.getName(), proxy.retrieveAttributeValue("name"));
       Assert.assertEquals(bridgeConfig.getDiscoveryGroupName(),
-                          (String)proxy.retrieveAttributeValue("discoveryGroupName"));
-      Assert.assertEquals(bridgeConfig.getQueueName(), (String)proxy.retrieveAttributeValue("queueName"));
+                          proxy.retrieveAttributeValue("discoveryGroupName"));
+      Assert.assertEquals(bridgeConfig.getQueueName(), proxy.retrieveAttributeValue("queueName"));
       Assert.assertEquals(bridgeConfig.getForwardingAddress(),
-                          (String)proxy.retrieveAttributeValue("forwardingAddress"));
-      Assert.assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("filterString"));
+                          proxy.retrieveAttributeValue("forwardingAddress"));
+      Assert.assertEquals(bridgeConfig.getFilterString(), proxy.retrieveAttributeValue("filterString"));
       Assert.assertEquals(bridgeConfig.getRetryInterval(),
                           ((Long)proxy.retrieveAttributeValue("retryInterval")).longValue());
       Assert.assertEquals(bridgeConfig.getRetryIntervalMultiplier(),

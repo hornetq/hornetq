@@ -384,7 +384,7 @@ public class RepostingQueueTest extends MessageTestBase
       System.out.println("create: " + sender);
       Link consumers = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "pull-consumers");
       System.out.println("pull: " + consumers);
-      response = response = Util.setAutoAck(consumers, false);
+      response = Util.setAutoAck(consumers, false);
       Link consumeNext = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "acknowledge-next");
       System.out.println("resource acknowledge-next: " + consumeNext);
 
