@@ -1921,7 +1921,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                browseOnly,
                                                                clientWindowSize,
                                                                ackBatchSize,
-                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
+                                                               maxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
                                                                                                                 false)
                                                                   : null,
                                                                executor,

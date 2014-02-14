@@ -118,6 +118,45 @@ public class MessageRateTest extends ServiceTestBase
       session.close();
    }
 
+
+   @Test
+   public void testConsumeRate2() throws Exception
+   {
+      HornetQServer server = createServer(false);
+
+      server.start();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      for (int i = 0; i < 12; i++)
+      {
+         producer.send(session.createMessage(false));
+      }
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS, null, 1024 * 1024, 10, false);
+
+      long start = System.currentTimeMillis();
+
+      for (int i = 0; i < 12; i++)
+      {
+         consumer.receive(1000);
+      }
+
+      long end = System.currentTimeMillis();
+
+      Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
+
+      session.close();
+   }
+
    @Test
    public void testConsumeRateListener() throws Exception
    {
