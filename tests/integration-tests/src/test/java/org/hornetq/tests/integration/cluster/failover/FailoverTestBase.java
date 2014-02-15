@@ -254,8 +254,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    protected final ClientSessionFactoryInternal
-   createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-      throws Exception
+   createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers) throws Exception
    {
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 

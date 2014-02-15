@@ -173,8 +173,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageiD)
-      throws Exception
+   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageiD) throws Exception
    {
    }
 
@@ -439,8 +438,7 @@ public class NullStorageManager implements StorageManager
 
    @Override
    public void
-   updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depage)
-      throws Exception
+   updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depage) throws Exception
    {
    }
 
@@ -527,8 +525,7 @@ public class NullStorageManager implements StorageManager
 
    @Override
    public void
-   confirmPendingLargeMessageTX(final Transaction transaction, final long messageID, final long recordID)
-      throws Exception
+   confirmPendingLargeMessageTX(final Transaction transaction, final long messageID, final long recordID) throws Exception
    {
    }
 
@@ -562,8 +559,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public boolean addToPage(PagingStore s, ServerMessage msg, Transaction tx, RouteContextList listCtx)
-      throws Exception
+   public boolean addToPage(PagingStore s, ServerMessage msg, Transaction tx, RouteContextList listCtx) throws Exception
    {
       return false;
    }

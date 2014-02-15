@@ -2886,8 +2886,7 @@ public class HornetQServerImpl implements HornetQServer
 
    @Override
    public void startReplication(CoreRemotingConnection rc, final ClusterConnection clusterConnection,
-                                final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean isFailBackRequest)
-      throws HornetQException
+                                final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean isFailBackRequest) throws HornetQException
    {
       if (replicationManager != null)
       {

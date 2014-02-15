@@ -546,8 +546,7 @@ public class JournalStorageManager implements StorageManager
     * @param pageFilesToSync
     * @throws Exception
     */
-   private void sendPagesToBackup(Map<SimpleString, Collection<Integer>> pageFilesToSync, PagingManager manager)
-      throws Exception
+   private void sendPagesToBackup(Map<SimpleString, Collection<Integer>> pageFilesToSync, PagingManager manager) throws Exception
    {
       for (Entry<SimpleString, Collection<Integer>> entry : pageFilesToSync.entrySet())
       {
@@ -563,8 +562,7 @@ public class JournalStorageManager implements StorageManager
     * @return
     * @throws Exception
     */
-   private Map<SimpleString, Collection<Integer>> getPageInformationForSync(PagingManager pagingManager)
-      throws Exception
+   private Map<SimpleString, Collection<Integer>> getPageInformationForSync(PagingManager pagingManager) throws Exception
    {
       Map<SimpleString, Collection<Integer>> info = new HashMap<SimpleString, Collection<Integer>>();
       for (SimpleString storeName : pagingManager.getStoreNames())
@@ -1093,8 +1091,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depages)
-      throws Exception
+   public void updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depages) throws Exception
    {
       readLock();
       try
@@ -1140,8 +1137,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID)
-      throws Exception
+   public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       readLock();
       try
@@ -3793,8 +3789,7 @@ public class JournalStorageManager implements StorageManager
 
    @Override
    public boolean
-   addToPage(PagingStore store, ServerMessage msg, Transaction tx, RouteContextList listCtx)
-      throws Exception
+   addToPage(PagingStore store, ServerMessage msg, Transaction tx, RouteContextList listCtx) throws Exception
    {
       /**
        * Exposing the read-lock here is an encapsulation violation done in order to keep the code

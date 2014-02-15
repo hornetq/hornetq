@@ -92,8 +92,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
       Assert.assertEquals(null, ((UDPBroadcastGroupConfiguration) y.getDiscoveryGroupConfiguration().getBroadcastEndpointFactoryConfiguration()).getLocalBindAddress());
    }
 
-   private static <T extends Serializable> byte[] serialize(T obj)
-      throws IOException
+   private static <T extends Serializable> byte[] serialize(T obj) throws IOException
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -102,8 +101,7 @@ public class ConnectionFactorySerializationTest extends JMSTestBase
       return baos.toByteArray();
    }
 
-   private static <T extends Serializable> T deserialize(byte[] b, Class<T> cl)
-      throws IOException, ClassNotFoundException
+   private static <T extends Serializable> T deserialize(byte[] b, Class<T> cl) throws IOException, ClassNotFoundException
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
       ObjectInputStream ois = new ObjectInputStream(bais);

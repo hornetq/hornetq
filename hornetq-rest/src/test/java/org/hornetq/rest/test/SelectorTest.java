@@ -319,8 +319,7 @@ public class SelectorTest extends MessageTestBase
       }
    }
 
-   private Link consumeOrder(Order order, Link consumeNext)
-      throws Exception
+   private Link consumeOrder(Order order, Link consumeNext) throws Exception
    {
       ClientResponse<?> response = consumeNext.request().header("Accept-Wait", "4").accept("application/xml").post(String.class);
       Assert.assertEquals(200, response.getStatus());

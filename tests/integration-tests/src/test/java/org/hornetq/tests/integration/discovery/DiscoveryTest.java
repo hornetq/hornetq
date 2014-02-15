@@ -889,8 +889,7 @@ public class DiscoveryTest extends UnitTestCase
     * @param discoveryGroup
     * @throws Exception
     */
-   private static void verifyNonBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup)
-      throws Exception
+   private static void verifyNonBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup) throws Exception
    {
       broadcastGroup.broadcastConnectors();
       Assert.assertFalse("NO broadcast received", discoveryGroup.waitForBroadcast(2000));

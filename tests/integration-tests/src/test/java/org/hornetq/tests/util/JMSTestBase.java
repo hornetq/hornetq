@@ -229,8 +229,7 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings)
-      throws Exception
+   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
    {
       final int retryInterval = 1000;
       final double retryIntervalMultiplier = 1.0;

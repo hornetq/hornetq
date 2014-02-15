@@ -153,8 +153,7 @@ public class QueueDestinationsResource
       return queue;
    }
 
-   public QueueResource createQueueResource(String queueName, boolean defaultDurable, int timeoutSeconds, boolean duplicates)
-      throws Exception
+   public QueueResource createQueueResource(String queueName, boolean defaultDurable, int timeoutSeconds, boolean duplicates) throws Exception
    {
       QueueResource queueResource = new QueueResource();
       queueResource.setQueueDestinationsResource(this);

@@ -87,8 +87,7 @@ public final class FileWrapperJournal extends JournalBase
    // ------------------------
 
    @Override
-   public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
-      throws Exception
+   public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback) throws Exception
    {
       JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
@@ -98,8 +97,7 @@ public final class FileWrapperJournal extends JournalBase
    /**
     * Write the record to the current file.
     */
-   private void writeRecord(JournalInternalRecord encoder, final boolean sync, final IOCompletion callback)
-      throws Exception
+   private void writeRecord(JournalInternalRecord encoder, final boolean sync, final IOCompletion callback) throws Exception
    {
 
       lockAppend.lock();
@@ -143,8 +141,7 @@ public final class FileWrapperJournal extends JournalBase
    }
 
    @Override
-   public void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record)
-      throws Exception
+   public void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception
    {
       count(txID);
       JournalInternalRecord addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
@@ -153,16 +150,14 @@ public final class FileWrapperJournal extends JournalBase
 
    @Override
    public void
-   appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
-      throws Exception
+   appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback) throws Exception
    {
       JournalInternalRecord updateRecord = new JournalAddRecord(false, id, recordType, record);
       writeRecord(updateRecord, sync, callback);
    }
 
    @Override
-   public void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record)
-      throws Exception
+   public void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception
    {
       count(txID);
       JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
@@ -170,8 +165,7 @@ public final class FileWrapperJournal extends JournalBase
    }
 
    @Override
-   public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext)
-      throws Exception
+   public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
    {
       JournalInternalRecord commitRecord = new JournalCompleteRecordTX(TX_RECORD_TYPE.COMMIT, txID, null);
       AtomicInteger value = transactions.remove(Long.valueOf(txID));
@@ -184,8 +178,7 @@ public final class FileWrapperJournal extends JournalBase
    }
 
    @Override
-   public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback)
-      throws Exception
+   public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback) throws Exception
    {
       JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(TX_RECORD_TYPE.PREPARE, txID, transactionData);
       AtomicInteger value = transactions.get(Long.valueOf(txID));
@@ -241,8 +234,7 @@ public final class FileWrapperJournal extends JournalBase
 
    @Override
    public JournalLoadInformation load(List<RecordInfo> committedRecords,
-                                      List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure)
-      throws Exception
+                                      List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception
    {
       throw new HornetQUnsupportedPacketException();
    }

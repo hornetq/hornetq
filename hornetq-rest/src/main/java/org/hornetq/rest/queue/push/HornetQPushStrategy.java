@@ -34,8 +34,7 @@ public class HornetQPushStrategy extends UriTemplateStrategy
       // initialize();
    }
 
-   protected void initialize()
-      throws Exception
+   protected void initialize() throws Exception
    {
       super.start();
       initialized = true;

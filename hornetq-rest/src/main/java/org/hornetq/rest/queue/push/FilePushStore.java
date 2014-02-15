@@ -86,8 +86,7 @@ public class FilePushStore implements PushStore
       save(reg);
    }
 
-   protected void save(PushRegistration reg)
-      throws JAXBException
+   protected void save(PushRegistration reg) throws JAXBException
    {
       Marshaller marshaller = ctx.createMarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

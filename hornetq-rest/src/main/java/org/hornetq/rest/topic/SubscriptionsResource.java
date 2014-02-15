@@ -264,8 +264,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       }
    }
 
-   protected QueueConsumer createConsumer(boolean durable, boolean autoAck, String subscriptionName, String selector, long timeout, boolean deleteWhenIdle)
-      throws HornetQException
+   protected QueueConsumer createConsumer(boolean durable, boolean autoAck, String subscriptionName, String selector, long timeout, boolean deleteWhenIdle) throws HornetQException
    {
       QueueConsumer consumer;
       if (autoAck)
