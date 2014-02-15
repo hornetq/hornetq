@@ -192,8 +192,7 @@ public class ConsumersResource implements TimeoutTask.Callback
       serviceManager.getTimeoutTask().add(this, consumer.getId());
    }
 
-   public QueueConsumer createConsumer(String selector)
-      throws HornetQException
+   public QueueConsumer createConsumer(String selector) throws HornetQException
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new QueueConsumer(sessionFactory, destination, genId, serviceManager, selector);
@@ -201,8 +200,7 @@ public class ConsumersResource implements TimeoutTask.Callback
       return consumer;
    }
 
-   public QueueConsumer createAcknowledgedConsumer(String selector)
-      throws HornetQException
+   public QueueConsumer createAcknowledgedConsumer(String selector) throws HornetQException
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new AcknowledgedQueueConsumer(sessionFactory, destination, genId, serviceManager, selector);

@@ -356,8 +356,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     */
    private void
    largeMessageSend(final boolean sendBlocking, final MessageInternal msgI,
-                    final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-      throws HornetQException
+                    final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
    {
       int headerSize = msgI.getHeadersAndPropertiesEncodeSize();
 
@@ -416,8 +415,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     */
    private void
    largeMessageSendServer(final boolean sendBlocking, final MessageInternal msgI,
-                          final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-      throws HornetQException
+                          final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
    {
       sendInitialLargeMessageHeader(msgI, credits);
 
@@ -482,8 +480,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     */
    private void
    largeMessageSendBuffered(final boolean sendBlocking, final MessageInternal msgI,
-                            final ClientProducerCredits credits, SendAcknowledgementHandler handler)
-      throws HornetQException
+                            final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
    {
       msgI.getBodyBuffer().readerIndex(0);
       largeMessageSendStreamed(sendBlocking, msgI, new HornetQBufferInputStream(msgI.getBodyBuffer()), credits,
@@ -499,8 +496,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     */
    private void largeMessageSendStreamed(final boolean sendBlocking, final MessageInternal msgI,
                                          final InputStream inputStreamParameter, final ClientProducerCredits credits,
-                                         SendAcknowledgementHandler handler)
-      throws HornetQException
+                                         SendAcknowledgementHandler handler) throws HornetQException
    {
       boolean lastPacket = false;
 

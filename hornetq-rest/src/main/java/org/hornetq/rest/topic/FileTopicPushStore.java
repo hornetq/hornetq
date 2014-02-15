@@ -24,8 +24,7 @@ import org.hornetq.rest.queue.push.xml.PushRegistration;
  */
 public class FileTopicPushStore extends FilePushStore implements TopicPushStore
 {
-   public FileTopicPushStore(String dirname)
-      throws Exception
+   public FileTopicPushStore(String dirname) throws Exception
    {
       super(dirname);
    }

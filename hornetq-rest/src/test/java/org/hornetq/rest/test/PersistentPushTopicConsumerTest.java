@@ -244,8 +244,7 @@ public class PersistentPushTopicConsumerTest
       }
    }
 
-   private void deployTopic(String topicName)
-      throws Exception
+   private void deployTopic(String topicName) throws Exception
    {
       TopicDeployment deployment = new TopicDeployment();
       deployment.setDuplicatesAllowed(true);

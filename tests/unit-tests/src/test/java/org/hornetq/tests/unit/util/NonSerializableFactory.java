@@ -89,8 +89,7 @@ public class NonSerializableFactory implements ObjectFactory
       return NonSerializableFactory.getWrapperMap().get(name);
    }
 
-   public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> env)
-      throws Exception
+   public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> env) throws Exception
    {
       Reference ref = (Reference) obj;
       RefAddr addr = ref.get("nns");

@@ -806,8 +806,7 @@ public class PagingStoreImpl implements PagingStore
 
    @Override
    public boolean
-   page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock)
-      throws Exception
+   page(ServerMessage message, final Transaction tx, RouteContextList listCtx, final ReadLock managerLock) throws Exception
    {
 
       if (!running)

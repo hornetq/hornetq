@@ -326,8 +326,7 @@ public final class NIOSequentialFile extends AbstractSequentialFile
       return super.newBuffer(size, limit);
    }
 
-   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
-      throws IOException, HornetQIOErrorException, InterruptedException
+   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws IOException, HornetQIOErrorException, InterruptedException
    {
       if (!isOpen())
       {

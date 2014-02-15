@@ -80,8 +80,7 @@ public class QueueServiceManager extends DestinationServiceManager
       }
    }
 
-   public void deploy(QueueDeployment queueDeployment)
-      throws Exception
+   public void deploy(QueueDeployment queueDeployment) throws Exception
    {
       if (!started)
       {

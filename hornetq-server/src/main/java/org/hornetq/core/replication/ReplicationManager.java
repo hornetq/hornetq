@@ -164,8 +164,7 @@ public final class ReplicationManager implements HornetQComponent
       }
    }
 
-   public void appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp)
-      throws Exception
+   public void appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp) throws Exception
    {
       if (enabled)
       {
@@ -193,8 +192,7 @@ public final class ReplicationManager implements HornetQComponent
    }
 
    public void
-   appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
-      throws Exception
+   appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData) throws Exception
    {
       if (enabled)
       {

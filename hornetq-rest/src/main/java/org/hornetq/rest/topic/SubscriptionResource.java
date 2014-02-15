@@ -27,8 +27,7 @@ public class SubscriptionResource extends QueueConsumer implements Subscription
    protected long timeout;
    private boolean deleteWhenIdle;
 
-   public SubscriptionResource(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector, boolean durable, long timeout)
-      throws HornetQException
+   public SubscriptionResource(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector, boolean durable, long timeout) throws HornetQException
    {
       super(factory, destination, id, serviceManager, selector);
       this.durable = durable;

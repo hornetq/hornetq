@@ -382,8 +382,7 @@ public final class ClusterManager implements HornetQComponent
     * @throws HornetQException
     */
    public void
-   announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack)
-      throws HornetQException
+   announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack) throws HornetQException
    {
       ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
       if (config == null)

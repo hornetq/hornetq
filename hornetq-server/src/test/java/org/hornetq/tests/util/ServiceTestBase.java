@@ -862,8 +862,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    protected final void
-   receiveMessages(ClientConsumer consumer, final int start, final int msgCount, final boolean ack)
-      throws HornetQException
+   receiveMessages(ClientConsumer consumer, final int start, final int msgCount, final boolean ack) throws HornetQException
    {
       for (int i = start; i < msgCount; i++)
       {

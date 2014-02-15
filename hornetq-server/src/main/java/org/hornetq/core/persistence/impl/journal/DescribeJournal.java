@@ -152,8 +152,7 @@ public final class DescribeJournal
                out.println("operation@Rollback;txID=" + transactionID);
             }
 
-            public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords)
-               throws Exception
+            public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
             {
                out.println("operation@Prepare,txID=" + transactionID + ",numberOfRecords=" + numberOfRecords +
                               ",extraData=" + encode(extraData) + ", xid=" + toXid(extraData));

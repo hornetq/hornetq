@@ -238,8 +238,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    }
 
    @Override
-   public void send(Destination destination, Message message, CompletionListener completionListener)
-      throws JMSException
+   public void send(Destination destination, Message message, CompletionListener completionListener) throws JMSException
    {
       send(destination, message, defaultDeliveryMode, defaultPriority, defaultTimeToLive, completionListener);
    }
@@ -274,8 +273,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       send(topic, message);
    }
 
-   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive)
-      throws JMSException
+   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       send(message, deliveryMode, priority, timeToLive);
    }

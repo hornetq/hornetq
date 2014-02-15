@@ -366,14 +366,12 @@ public class StompSession implements SessionCallback
       this.noLocal = noLocal;
    }
 
-   public void sendInternal(ServerMessageImpl message, boolean direct)
-      throws Exception
+   public void sendInternal(ServerMessageImpl message, boolean direct) throws Exception
    {
       session.send(message, direct);
    }
 
-   public void sendInternalLarge(ServerMessageImpl message, boolean direct)
-      throws Exception
+   public void sendInternalLarge(ServerMessageImpl message, boolean direct) throws Exception
    {
       int headerSize = message.getHeadersAndPropertiesEncodeSize();
       if (headerSize >= connection.getMinLargeMessageSize())
