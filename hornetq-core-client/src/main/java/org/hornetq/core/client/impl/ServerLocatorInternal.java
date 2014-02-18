@@ -60,7 +60,7 @@ public interface ServerLocatorInternal extends ServerLocator
     */
    ClientSessionFactoryInternal connectNoWarnings() throws HornetQException;
 
-   void notifyNodeUp(long uniqueEventID, String nodeID, String nodeName,
+   void notifyNodeUp(long uniqueEventID, String nodeID, String backupGroupName, String scaleDownGroupName,
                      Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
    /**

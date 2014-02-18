@@ -203,9 +203,14 @@ public final class ClusterManager implements HornetQComponent
       return nodeManager.getNodeId().toString();
    }
 
-   public String getNodeGroupName()
+   public String getBackupGroupName()
    {
       return configuration.getBackupGroupName();
+   }
+
+   public String getScaleDownGroupName()
+   {
+      return configuration.getScaleDownGroupName();
    }
 
    public synchronized void deploy() throws Exception

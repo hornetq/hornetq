@@ -191,9 +191,34 @@ public class MessageReferenceImpl implements MessageReference
    public String toString()
    {
       return "Reference[" + getMessage().getMessageID() +
-             "]:" +
-             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE") +
-             ":" +
-             getMessage();
+         "]:" +
+         (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE") +
+         ":" +
+         getMessage();
+   }
+
+   @Override
+   public boolean equals(Object other)
+   {
+      if (this == other)
+      {
+         return true;
+      }
+
+      if (other instanceof MessageReferenceImpl)
+      {
+         MessageReference reference = (MessageReferenceImpl) other;
+
+         if (this.getMessage().equals(reference.getMessage()))
+            return true;
+      }
+
+      return false;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.getMessage().hashCode();
    }
 }

@@ -140,6 +140,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(HornetQDefaultConfiguration.getDefaultMessageExpiryThreadPriority(),
                           conf.getMessageExpiryThreadPriority());
       Assert.assertEquals("replication cluster name", null, conf.getReplicationClustername());
+      Assert.assertEquals("scale-down cluster name", null, conf.getScaleDownClustername());
    }
 
    // Protected ---------------------------------------------------------------------------------------------

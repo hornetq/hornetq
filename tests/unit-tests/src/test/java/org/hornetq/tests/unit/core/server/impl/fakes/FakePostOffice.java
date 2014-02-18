@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import java.util.Map;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
@@ -69,6 +71,12 @@ public class FakePostOffice implements PostOffice
    public Bindings getBindingsForAddress(final SimpleString address) throws Exception
    {
 
+      return null;
+   }
+
+   @Override
+   public Map<SimpleString, Binding> getAllBindings()
+   {
       return null;
    }
 

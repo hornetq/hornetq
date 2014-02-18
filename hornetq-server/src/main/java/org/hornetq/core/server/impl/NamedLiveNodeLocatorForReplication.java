@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server.impl;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,28 +25,34 @@ import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
 
 /**
- * NamedLiveNodeLocator looks for a live server in the cluster with a specific nodeGroupName
+ * NamedLiveNodeLocatorForReplication looks for a live server in the cluster with a specific backupGroupName
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @see org.hornetq.core.config.Configuration#getBackupGroupName()
  */
-public class NamedLiveNodeLocator extends LiveNodeLocator
+public class NamedLiveNodeLocatorForReplication extends LiveNodeLocator
 {
    private final Lock lock = new ReentrantLock();
    private final Condition condition = lock.newCondition();
-   private final String nodeGroupName;
+   private final String backupGroupName;
    private Pair<TransportConfiguration, TransportConfiguration> liveConfiguration;
 
    private String nodeID;
 
-   public NamedLiveNodeLocator(String nodeGroupName, QuorumManager quorumManager)
+   public NamedLiveNodeLocatorForReplication(String backupGroupName, QuorumManager quorumManager)
    {
       super(quorumManager);
-      this.nodeGroupName = nodeGroupName;
+      this.backupGroupName = backupGroupName;
    }
 
    @Override
    public void locateNode() throws HornetQException
+   {
+      locateNode(-1L);
+   }
+
+   @Override
+   public void locateNode(long timeout) throws HornetQException
    {
       try
       {
@@ -54,7 +61,14 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
          {
             try
             {
-               condition.await();
+               if (timeout != -1L)
+               {
+                  condition.await(timeout, TimeUnit.MILLISECONDS);
+               }
+               else
+               {
+                  condition.await();
+               }
             }
             catch (InterruptedException e)
             {
@@ -74,7 +88,7 @@ public class NamedLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         if (nodeGroupName.equals(topologyMember.getBackupGroupName()) && topologyMember.getLive() != null)
+         if (backupGroupName.equals(topologyMember.getBackupGroupName()) && topologyMember.getLive() != null)
          {
             liveConfiguration =
                new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(),

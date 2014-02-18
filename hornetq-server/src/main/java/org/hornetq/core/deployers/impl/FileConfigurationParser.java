@@ -188,11 +188,17 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setBackupGroupName(getString(e, "backup-group-name", config.getBackupGroupName(),
                                           Validators.NO_CHECK));
 
+      config.setScaleDownGroupName(getString(e, "scale-down-group-name", config.getScaleDownGroupName(),
+                                             Validators.NO_CHECK));
+
       config.setFailbackDelay(getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
 
       config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
                                                     config.isFailoverOnServerShutdown()));
+      config.setScaleDown(getBoolean(e, "scale-down",
+                                     config.isScaleDown()));
       config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
+      config.setScaleDownClustername(getString(e, "scale-down-clustername", null, Validators.NO_CHECK));
 
       config.setResolveProtocols(getBoolean(e, "resolve-protocols", config.isResolveProtocols()));
 

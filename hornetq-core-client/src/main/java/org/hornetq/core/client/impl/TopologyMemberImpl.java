@@ -27,7 +27,9 @@ public final class TopologyMemberImpl implements TopologyMember
 
    private final Pair<TransportConfiguration, TransportConfiguration> connector;
 
-   private final String nodeName;
+   private final String backupGroupName;
+
+   private final String scaleDownGroupName;
 
    /**
     * transient to avoid serialization changes
@@ -36,11 +38,12 @@ public final class TopologyMemberImpl implements TopologyMember
 
    private final String nodeId;
 
-   public TopologyMemberImpl(String nodeId, final String nodeName, final TransportConfiguration a,
+   public TopologyMemberImpl(String nodeId, final String backupGroupName, final String scaleDownGroupName, final TransportConfiguration a,
                              final TransportConfiguration b)
    {
       this.nodeId = nodeId;
-      this.nodeName = nodeName;
+      this.backupGroupName = backupGroupName;
+      this.scaleDownGroupName = scaleDownGroupName;
       this.connector = new Pair<TransportConfiguration, TransportConfiguration>(a, b);
       uniqueEventID = System.currentTimeMillis();
    }
@@ -82,7 +85,13 @@ public final class TopologyMemberImpl implements TopologyMember
    @Override
    public String getBackupGroupName()
    {
-      return nodeName;
+      return backupGroupName;
+   }
+
+   @Override
+   public String getScaleDownGroupName()
+   {
+      return scaleDownGroupName;
    }
 
    /**
@@ -124,6 +133,6 @@ public final class TopologyMemberImpl implements TopologyMember
    @Override
    public String toString()
    {
-      return "TopologyMember[name = " + nodeName + ", connector=" + connector + "]";
+      return "TopologyMember[id = " + nodeId + ", connector=" + connector + ", backupGroupName=" + backupGroupName + ", scaleDownGroupName=" + scaleDownGroupName + "]";
    }
 }

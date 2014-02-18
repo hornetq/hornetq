@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.postoffice;
 
+import java.util.Map;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
@@ -59,6 +61,8 @@ public interface PostOffice extends HornetQComponent
    Binding getBinding(SimpleString uniqueName);
 
    Bindings getMatchingBindings(SimpleString address) throws Exception;
+
+   Map<SimpleString, Binding> getAllBindings();
 
    void route(ServerMessage message, boolean direct) throws Exception;
 

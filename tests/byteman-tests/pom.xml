@@ -13,7 +13,7 @@
 
    <properties>
       <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-      <byteman.version>1.6.0</byteman.version>
+      <byteman.version>2.1.4.1</byteman.version>
       <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
    </properties>
 
@@ -25,25 +25,25 @@
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman</artifactId>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-submit</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-install</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-bmunit</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
          <exclusions>
             <exclusion>
                <groupId>org.testng</groupId>
@@ -54,7 +54,7 @@
       <dependency>
          <groupId>com.sun</groupId>
          <artifactId>tools</artifactId>
-         <version>1.6</version>
+         <version>1.7</version>
          <scope>system</scope>
          <systemPath>${tools.jar}</systemPath>
       </dependency>
@@ -192,18 +192,22 @@
                   <BYTEMAN_HOME></BYTEMAN_HOME>
                </environmentVariables>
                <systemProperties>
+                  <!--
                   <property>
                      <name>org.jboss.byteman.home</name>
                      <value></value>
                   </property>
-                  <!--
                   <property>
-                  <name>org.jboss.byteman.verbose</name>
-                  <value></value>
+                     <name>org.jboss.byteman.verbose</name>
+                     <value>true</value>
                   </property>
                   <property>
-                  <name>org.jboss.byteman.dump.generated.classes</name>
-                  <value></value>
+                     <name>org.jboss.byteman.contrib.bmunit.verbose</name>
+                     <value>true</value>
+                  </property>
+                  <property>
+                     <name>org.jboss.byteman.dump.generated.classes</name>
+                     <value></value>
                   </property>
                   -->
                </systemProperties>
@@ -215,7 +219,8 @@
                -->
                <parallel>false</parallel>
                <!--<argLine>${hornetq-surefire-argline} -Dorg.jboss.byteman.verbose -Dorg.jboss.byteman.contrib.bmunit.verbose</argLine>-->
-               <argLine>${hornetq-surefire-argline}</argLine>
+               <!-- '-noverify' is needed here to fix VerifyErrors on ScaleDownFailoverTest and ScaleDownFailureTest (and their subclasses). I got the tip from https://issues.jboss.org/browse/BYTEMAN-248. -->
+               <argLine>${hornetq-surefire-argline} -noverify</argLine>
             </configuration>
          </plugin>
       </plugins>
