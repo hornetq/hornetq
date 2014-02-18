@@ -71,6 +71,8 @@ public interface PageSubscription
 
    void ack(PagedReference ref) throws Exception;
 
+   boolean contains(PagedReference ref) throws Exception;
+
    // for internal (cursor) classes
    void confirmPosition(PagePosition ref) throws Exception;
 

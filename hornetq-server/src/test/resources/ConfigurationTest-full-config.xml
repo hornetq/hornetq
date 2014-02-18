@@ -15,6 +15,7 @@
       <cluster-user>Frog</cluster-user>
       <cluster-password>Wombat</cluster-password>
       <replication-clustername>cluster-connection1</replication-clustername>
+      <exportation-clustername>cluster-connection2</exportation-clustername>
       <jmx-management-enabled>false</jmx-management-enabled>
       <jmx-domain>gro.qtenroh</jmx-domain>
       <log-delegate-factory-class-name>ocelot</log-delegate-factory-class-name>
@@ -29,6 +30,8 @@
       <id-cache-size>127</id-cache-size>
       <persist-id-cache>true</persist-id-cache>
       <backup>true</backup>
+      <backup-group-name>backupGroupName</backup-group-name>
+      <export-group-name>exportGroupName</export-group-name>
       <shared-store>true</shared-store>
       <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
       <paging-directory>pagingdir</paging-directory>

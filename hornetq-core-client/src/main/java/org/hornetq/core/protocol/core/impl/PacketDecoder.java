@@ -12,66 +12,6 @@
  */
 package org.hornetq.core.protocol.core.impl;
 
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_SHARED_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_CONSUMER;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.NULL_RESPONSE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.PACKETS_CONFIRMED;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.PING;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_COMMIT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_CREDITS;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_FAIL_CREDITS;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_REQUEST_CREDITS;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTINUATION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUATION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_COMMIT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_END;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FORGET;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_JOIN;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_PREPARE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESUME;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
-
 import java.io.Serializable;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -79,14 +19,17 @@ import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSharedQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectConsumerMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
@@ -132,6 +75,69 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V3;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_SHARED_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_V2;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_CONSUMER;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE_V2;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.NULL_RESPONSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.PACKETS_CONFIRMED;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.PING;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_COMMIT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CONSUMER_CLOSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_CREDITS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_FAIL_CREDITS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_PRODUCER_REQUEST_CREDITS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_RECEIVE_CONTINUATION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUATION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_COMMIT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_END;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FORGET;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_JOIN;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_PREPARE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESUME;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
+
 /**
  * A PacketDecoder
  *
@@ -155,6 +161,11 @@ public abstract class PacketDecoder implements Serializable
          case DISCONNECT:
          {
             packet = new DisconnectMessage();
+            break;
+         }
+         case DISCONNECT_V2:
+         {
+            packet = new DisconnectMessage_V2();
             break;
          }
          case DISCONNECT_CONSUMER:
@@ -412,9 +423,19 @@ public abstract class PacketDecoder implements Serializable
             packet = new ClusterTopologyChangeMessage_V2();
             break;
          }
+         case CLUSTER_TOPOLOGY_V3:
+         {
+            packet = new ClusterTopologyChangeMessage_V3();
+            break;
+         }
          case NODE_ANNOUNCE:
          {
             packet = new NodeAnnounceMessage();
+            break;
+         }
+         case NODE_ANNOUNCE_V2:
+         {
+            packet = new NodeAnnounceMessage_V2();
             break;
          }
          case SUBSCRIBE_TOPOLOGY:

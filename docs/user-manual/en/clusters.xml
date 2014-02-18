@@ -972,4 +972,23 @@ locator.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");</prog
                 C which does have consumers.</para>
         </section>
     </section>
+   <section>
+      <title>Scaling Down</title>
+      <para>HornetQ supports scaling down a cluster with no message loss (even for non-durable messages). This is especially
+         useful in certain environments (e.g. the cloud) where the size of a cluster may change relatively frequently.
+         When scaling up a cluster (i.e. adding nodes) there is no risk of message loss, but when scaling down a cluster
+         (i.e. removing nodes) the messages on those nodes would be lost unless the broker sent them to another node in
+         the cluster. HornetQ can be configured to do just that.</para>
+      <para>The simplest way to enable this behavior is to set <literal>export-on-shutdown</literal> to
+         <literal>true</literal>. If the server is clustered and <literal>export-on-shutdown</literal> is
+         <literal>true</literal> then when the server is shutdown gracefully (i.e. it doesn't crash) it will find
+         another node in the cluster and send <emphasis>all</emphasis> of its messages (both durable and non-durable)
+         to that node. The messages are processed in order and go to the <emphasis>back</emphasis> of the respective
+         queues on the other node (just as if the messages were sent from an external client for the first time).</para>
+      <para>If you want more control over where the messages go then specify <literal>export-group-name</literal>.
+         Messages will only be exported to another node in the cluster that uses the same <literal>export-group-name</literal>
+         as the server being shutdown.</para>
+      <para>If the server is using multiple <literal>cluster-connection</literal> then use <literal>exportation-clustername</literal>
+         to identify the name of the <literal>cluster-connection</literal> which should be used for exporting messages.</para>
+   </section>
 </chapter>

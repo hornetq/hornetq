@@ -618,6 +618,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void addConsumer(final int consumerID, final int node, final String queueName, final String filterVal) throws Exception
    {
+      addConsumer(consumerID, node, queueName, filterVal, true);
+   }
+
+   protected void addConsumer(final int consumerID, final int node, final String queueName, final String filterVal, boolean autoCommitAcks) throws Exception
+   {
       try
       {
          if (consumers[consumerID] != null)
@@ -632,7 +637,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No sf at " + node);
          }
 
-         ClientSession session = addClientSession(sf.createSession(false, true, true));
+         ClientSession session = addClientSession(sf.createSession(false, false, autoCommitAcks));
 
          String filterString = null;
 

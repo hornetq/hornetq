@@ -21,10 +21,10 @@ import org.hornetq.api.core.TransportConfiguration;
  */
 public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessage
 {
-   private long uniqueEventID;
-   private String nodeName;
+   protected long uniqueEventID;
+   protected String backupGroupName;
 
-   public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final String nodeName,
+   public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID, final String backupGroupName,
                                           final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
    {
       super(CLUSTER_TOPOLOGY_V2);
@@ -39,7 +39,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
 
       this.uniqueEventID = uniqueEventID;
 
-      this.nodeName = nodeName;
+      this.backupGroupName = backupGroupName;
    }
 
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID)
@@ -58,6 +58,11 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       super(CLUSTER_TOPOLOGY_V2);
    }
 
+   public ClusterTopologyChangeMessage_V2(byte clusterTopologyV3)
+   {
+      super(clusterTopologyV3);
+   }
+
    /**
     * @return the uniqueEventID
     */
@@ -66,9 +71,9 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       return uniqueEventID;
    }
 
-   public String getNodeName()
+   public String getBackupGroupName()
    {
-      return nodeName;
+      return backupGroupName;
    }
 
    @Override
@@ -99,7 +104,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
          }
          buffer.writeBoolean(last);
       }
-      buffer.writeNullableString(nodeName);
+      buffer.writeNullableString(backupGroupName);
    }
 
    @Override
@@ -137,7 +142,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
       }
       if (buffer.readableBytes() > 0)
       {
-         nodeName = buffer.readNullableString();
+         backupGroupName = buffer.readNullableString();
       }
    }
 
@@ -146,10 +151,7 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + (exit ? 1231 : 1237);
-      result = prime * result + (last ? 1231 : 1237);
-      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
-      result = prime * result + ((pair == null) ? 0 : pair.hashCode());
+      result = prime * result + ((backupGroupName == null) ? 0 : backupGroupName.hashCode());
       result = prime * result + (int) (uniqueEventID ^ (uniqueEventID >>> 32));
       return result;
    }
@@ -170,37 +172,18 @@ public class ClusterTopologyChangeMessage_V2 extends ClusterTopologyChangeMessag
          return false;
       }
       ClusterTopologyChangeMessage_V2 other = (ClusterTopologyChangeMessage_V2) obj;
-      if (exit != other.exit)
-      {
-         return false;
-      }
-      if (last != other.last)
-      {
-         return false;
-      }
-      if (nodeID == null)
-      {
-         if (other.nodeID != null)
-         {
-            return false;
-         }
-      }
-      else if (!nodeID.equals(other.nodeID))
-      {
-         return false;
-      }
-      if (pair == null)
-      {
-         if (other.pair != null)
-         {
-            return false;
-         }
-      }
-      else if (!pair.equals(other.pair))
-      {
-         return false;
-      }
       if (uniqueEventID != other.uniqueEventID)
+      {
+         return false;
+      }
+      if (backupGroupName == null)
+      {
+         if (other.backupGroupName != null)
+         {
+            return false;
+         }
+      }
+      else if (!backupGroupName.equals(other.backupGroupName))
       {
          return false;
       }

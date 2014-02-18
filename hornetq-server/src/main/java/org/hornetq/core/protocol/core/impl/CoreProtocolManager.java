@@ -41,7 +41,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
@@ -233,7 +235,14 @@ class CoreProtocolManager implements ProtocolManager
                      {
                         public void run()
                         {
-                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V3))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V3(topologyMember.getUniqueEventID(),
+                                                                                nodeID, topologyMember.getBackupGroupName(),
+                                                                                topologyMember.getExportGroupName(),
+                                                                                connectorPair, last));
+                           }
+                           else if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                            {
                               channel0.send(new ClusterTopologyChangeMessage_V2(topologyMember.getUniqueEventID(),
                                                                                 nodeID, topologyMember.getBackupGroupName(),
@@ -314,7 +323,7 @@ class CoreProtocolManager implements ProtocolManager
                      Pair<TransportConfiguration, TransportConfiguration> emptyConfig = new Pair<TransportConfiguration, TransportConfiguration>(null, null);
                      if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                      {
-                        channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, server.getConfiguration().getName(), emptyConfig, true));
+                        channel0.send(new ClusterTopologyChangeMessage_V2(System.currentTimeMillis(), nodeId, null, emptyConfig, true));
                      }
                      else
                      {
@@ -325,7 +334,7 @@ class CoreProtocolManager implements ProtocolManager
 
             }
          }
-         else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
+         else if (packet.getType() == PacketImpl.NODE_ANNOUNCE || packet.getType() == PacketImpl.NODE_ANNOUNCE_V2)
          {
             NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
@@ -348,7 +357,12 @@ class CoreProtocolManager implements ProtocolManager
                ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
                if (clusterConn != null)
                {
-                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), msg.getNodeName(), pair, msg.isBackup());
+                  String exportGroupName = null;
+                  if (packet.getType() == PacketImpl.NODE_ANNOUNCE_V2)
+                  {
+                     exportGroupName = ((NodeAnnounceMessage_V2)msg).getExportGroupName();
+                  }
+                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), msg.getBackupGroupName(), exportGroupName, pair, msg.isBackup());
                }
                else
                {

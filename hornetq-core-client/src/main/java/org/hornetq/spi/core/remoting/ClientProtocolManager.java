@@ -57,7 +57,7 @@ public interface ClientProtocolManager
 
    void ping(long connectionTTL);
 
-   void sendNodeAnnounce(long currentEventID, String nodeID, String nodeName, boolean backup, TransportConfiguration config, TransportConfiguration backupConfig);
+   void sendNodeAnnounce(long currentEventID, String nodeID, String backupGroupName, String exportGroupName, boolean backup, TransportConfiguration config, TransportConfiguration backupConfig);
 
    SessionContext createSessionContext(final String name,
                                        final String username,

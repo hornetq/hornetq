@@ -1183,12 +1183,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void sendNodeAnnounce(final long currentEventID,
                                 String nodeID,
-                                String nodeName,
+                                String backupGroupName,
+                                String exportGroupName,
                                 boolean isBackup,
                                 TransportConfiguration config,
                                 TransportConfiguration backupConfig)
    {
-      clientProtocolManager.sendNodeAnnounce(currentEventID, nodeID, nodeName, isBackup, config, backupConfig);
+      clientProtocolManager.sendNodeAnnounce(currentEventID, nodeID, backupGroupName, exportGroupName, isBackup, config, backupConfig);
    }
 
    protected Connection openTransportConnection(final Connector connector)
@@ -1550,9 +1551,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       @Override
-      public void notifyNodeUp(long uniqueEventID, String nodeID, String nodeName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean isLast)
+      public void notifyNodeUp(long uniqueEventID, String nodeID, String backupGroupName, String exportGroupName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean isLast)
       {
-         serverLocator.notifyNodeUp(uniqueEventID, nodeID, nodeName, connectorPair, isLast);
+         serverLocator.notifyNodeUp(uniqueEventID, nodeID, backupGroupName, exportGroupName, connectorPair, isLast);
       }
 
       @Override

@@ -492,6 +492,30 @@ final class PageSubscriptionImpl implements PageSubscription
       tx.commit();
    }
 
+   public boolean contains(PagedReference ref) throws Exception
+   {
+      // We first verify if the message was routed to this queue
+      boolean routed = false;
+
+      for (long idRef : ref.getPagedMessage().getQueueIDs())
+      {
+         if (idRef == this.cursorId)
+         {
+            routed = true;
+            break;
+         }
+      }
+      if (!routed)
+      {
+         return false;
+      }
+      else
+      {
+         // if it's been routed here, we have to verify if it was acked
+         return !getPageInfo(ref.getPosition()).isAck(ref.getPosition());
+      }
+   }
+
    public void confirmPosition(final PagePosition position) throws Exception
    {
       // if we are dealing with a persistent cursor
@@ -1008,6 +1032,13 @@ final class PageSubscriptionImpl implements PageSubscription
       // We need a separate counter as the cursor may be ignoring certain values because of incomplete transactions or
       // expressions
       private final AtomicInteger confirmed = new AtomicInteger(0);
+
+
+      public boolean isAck(PagePosition position)
+      {
+         return completePage != null ||
+                acks.contains(position);
+      }
 
       @Override
       public String toString()

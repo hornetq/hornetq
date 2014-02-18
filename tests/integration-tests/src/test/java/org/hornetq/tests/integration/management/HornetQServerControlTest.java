@@ -145,6 +145,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
       Assert.assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
       Assert.assertEquals(conf.isFailoverOnServerShutdown(), serverControl.isFailoverOnServerShutdown());
+      Assert.assertEquals(conf.isExportOnServerShutdown(), serverControl.isExportOnServerShutdown());
    }
 
    @Test

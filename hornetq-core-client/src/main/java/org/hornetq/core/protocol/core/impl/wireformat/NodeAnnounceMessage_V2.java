@@ -13,70 +13,69 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.api.core.TransportConfiguration;
 
-public class DisconnectMessage extends PacketImpl
+/**
+ * @author Justin Bertram
+ */
+public class NodeAnnounceMessage_V2 extends NodeAnnounceMessage
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   protected SimpleString nodeID;
-
-   // Static --------------------------------------------------------
+   private String exportGroupName;
 
    // Constructors --------------------------------------------------
 
-   public DisconnectMessage(final SimpleString nodeID)
+   public NodeAnnounceMessage_V2(final long currentEventID, final String nodeID, final String backupGroupName, final String exportGroupName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
    {
-      super(DISCONNECT);
+      super(NODE_ANNOUNCE_V2);
+
+      this.currentEventID = currentEventID;
 
       this.nodeID = nodeID;
+
+      this.backupGroupName = backupGroupName;
+
+      this.backup = backup;
+
+      this.connector = tc;
+
+      this.backupConnector = backupConnector;
+
+      this.exportGroupName = exportGroupName;
    }
 
-   public DisconnectMessage()
+   public NodeAnnounceMessage_V2()
    {
-      super(DISCONNECT);
-   }
-
-   public DisconnectMessage(byte disconnectV2)
-   {
-      super(disconnectV2);
+      super(NODE_ANNOUNCE_V2);
    }
 
    // Public --------------------------------------------------------
 
-   public SimpleString getNodeID()
+   public String getExportGroupName()
    {
-      return nodeID;
+      return exportGroupName;
    }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeNullableSimpleString(nodeID);
+      super.encodeRest(buffer);
+      buffer.writeNullableString(exportGroupName);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      nodeID = buffer.readNullableSimpleString();
+      super.decodeRest(buffer);
+      exportGroupName = buffer.readNullableString();
    }
 
    @Override
    public String toString()
    {
-      StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", nodeID=" + nodeID);
-      buf.append("]");
-      return buf.toString();
-   }
-
-   @Override
-   public final boolean isRequiresConfirmations()
-   {
-      return false;
+      return "NodeAnnounceMessage_V2 [exportGroupName=" + exportGroupName +
+         ", toString()=" +
+         super.toString() +
+         "]";
    }
 
    @Override
@@ -84,7 +83,7 @@ public class DisconnectMessage extends PacketImpl
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      result = prime * result + ((exportGroupName == null) ? 0 : exportGroupName.hashCode());
       return result;
    }
 
@@ -99,19 +98,19 @@ public class DisconnectMessage extends PacketImpl
       {
          return false;
       }
-      if (!(obj instanceof DisconnectMessage))
+      if (!(obj instanceof NodeAnnounceMessage_V2))
       {
          return false;
       }
-      DisconnectMessage other = (DisconnectMessage)obj;
-      if (nodeID == null)
+      NodeAnnounceMessage_V2 other = (NodeAnnounceMessage_V2) obj;
+      if (exportGroupName == null)
       {
-         if (other.nodeID != null)
+         if (other.exportGroupName != null)
          {
             return false;
          }
       }
-      else if (!nodeID.equals(other.nodeID))
+      else if (!exportGroupName.equals(other.exportGroupName))
       {
          return false;
       }

@@ -12,9 +12,6 @@
  */
 package org.hornetq.core.server.cluster.impl;
 
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -67,8 +64,10 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.TypedProperties;
 
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
+import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
+
 /**
- *
  * A ClusterConnectionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -162,12 +161,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    private final int clusterNotificationAttempts;
 
-   /**
-    * @param staticTranspConfigs notice if {@code null} this is a cluster which won't connect to
-    *           anyone, but that can still accept incoming connections.
-    * @param clusterNotificationInterval
-    */
-   public ClusterConnectionImpl(final ClusterManager manager, final TransportConfiguration[] staticTranspConfigs,
+   public ClusterConnectionImpl(final ClusterManager manager,
+                                final TransportConfiguration[] staticTranspConfigs,
                                 final TransportConfiguration connector,
                                 final SimpleString name,
                                 final SimpleString address,
@@ -273,11 +268,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    }
 
-   /**
-    * @param dg discovery group, notice if {@code null} this is a cluster which won't connect to
-    *           anyone, but that can still accept incoming connections.
-    * @param clusterNotificationInterval
-    */
    public ClusterConnectionImpl(final ClusterManager manager,
                                 DiscoveryGroupConfiguration dg,
                                 final TransportConfiguration connector,
@@ -418,10 +408,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
 
       HornetQServerLogger.LOGGER.debug("Cluster connection being stopped for node" + nodeManager.getNodeId() +
-                ", server = " +
-                this.server +
-                " serverLocator = " +
-                serverLocator);
+                                          ", server = " +
+                                          this.server +
+                                          " serverLocator = " +
+                                          serverLocator);
 
       synchronized (this)
       {
@@ -493,7 +483,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public void nodeAnnounced(final long uniqueEventID,
                              final String nodeID,
-                             final String nodeName,
+                             final String backupGroupName,
+                             final String exportGroupName,
                              final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                              final boolean backup)
    {
@@ -504,11 +495,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       TransportConfiguration live = connectorPair.getA();
       TransportConfiguration backupTC = connectorPair.getB();
-      TopologyMemberImpl newMember = new TopologyMemberImpl(nodeID, nodeName, live, backupTC);
+      TopologyMemberImpl newMember = new TopologyMemberImpl(nodeID, backupGroupName, exportGroupName, live, backupTC);
       newMember.setUniqueEventID(uniqueEventID);
       if (backup)
       {
-         topology.updateBackup(new TopologyMemberImpl(nodeID, nodeName, live, backupTC));
+         topology.updateBackup(new TopologyMemberImpl(nodeID, backupGroupName, exportGroupName, live, backupTC));
       }
       else
       {
@@ -524,7 +515,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          sf.sendNodeAnnounce(localMember.getUniqueEventID(),
                              manager.getNodeId(),
-                             manager.getNodeGroupName(),
+                             manager.getBackupGroupName(),
+                             manager.getExportGroupName(),
                              false,
                              localMember.getLive(), localMember.getBackup());
       }
@@ -727,7 +719,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          if (HornetQServerLogger.LOGGER.isTraceEnabled())
          {
             HornetQServerLogger.LOGGER.trace(this + "::informing about backup to itself, nodeUUID=" +
-                     nodeManager.getNodeId() + ", connectorPair=" + topologyMember + ", this = " + this);
+                                                nodeManager.getNodeId() + ", connectorPair=" + topologyMember + ", this = " + this);
          }
          return;
       }
@@ -750,7 +742,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          if (isTrace)
          {
             HornetQServerLogger.LOGGER.trace(this + " ignoring call with nodeID=" + nodeID + ", topologyMember=" +
-                     topologyMember + ", last=" + last);
+                                                topologyMember + ", last=" + last);
          }
          return;
       }
@@ -766,7 +758,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                if (HornetQServerLogger.LOGGER.isDebugEnabled())
                {
                   HornetQServerLogger.LOGGER.debug(this + "::Creating record for nodeID=" + nodeID + ", topologyMember=" +
-                           topologyMember);
+                                                      topologyMember);
                }
 
                // New node - create a new flow record
@@ -779,7 +771,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
                if (queueBinding != null)
                {
-                  queue = (Queue)queueBinding.getBindable();
+                  queue = (Queue) queueBinding.getBindable();
                }
                else
                {
@@ -795,7 +787,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                if (isTrace)
                {
                   HornetQServerLogger.LOGGER.trace(this + " ignored nodeUp record for " + topologyMember + " on nodeID=" +
-                           nodeID + " as the record already existed");
+                                                      nodeID + " as the record already existed");
                }
             }
          }
@@ -810,7 +802,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    {
       String nodeID = server.getNodeID().toString();
 
-      TopologyMemberImpl localMember = new TopologyMemberImpl(nodeID, null, null, connector);
+      TopologyMemberImpl localMember = new TopologyMemberImpl(nodeID, null, null, null, connector);
 
       topology.updateAsLive(nodeID, localMember);
    }
@@ -872,8 +864,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       }
 
       targetLocator.disableFinalizeCheck();
-      targetLocator.addIncomingInterceptor(new IncomingInterceptorLookingForExceptionMessage(
-                                                                                             manager,
+      targetLocator.addIncomingInterceptor(new IncomingInterceptorLookingForExceptionMessage(manager,
                                                                                              executorFactory.getExecutor()));
       MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetLocator,
                                                                eventUID,
@@ -975,17 +966,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       public String toString()
       {
          return "MessageFlowRecordImpl [nodeID=" + targetNodeID +
-                ", connector=" +
-                connector +
-                ", queueName=" +
-                queueName +
-                ", queue=" +
-                queue +
-                ", isClosed=" +
-                isClosed +
-                ", firstReset=" +
-                firstReset +
-                "]";
+            ", connector=" +
+            connector +
+            ", queueName=" +
+            queueName +
+            ", queue=" +
+            queue +
+            ", isClosed=" +
+            isClosed +
+            ", firstReset=" +
+            firstReset +
+            "]";
       }
 
       public void serverDisconnected()
@@ -1402,8 +1393,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          if (binding == null)
          {
             throw new IllegalStateException("Cannot find binding for " + clusterName +
-                                            " on " +
-                                            ClusterConnectionImpl.this);
+                                               " on " +
+                                               ClusterConnectionImpl.this);
          }
 
          binding.addConsumer(filterString);
@@ -1419,7 +1410,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         Queue theQueue = (Queue)binding.getBindable();
+         Queue theQueue = (Queue) binding.getBindable();
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 
@@ -1477,7 +1468,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         Queue theQueue = (Queue)binding.getBindable();
+         Queue theQueue = (Queue) binding.getBindable();
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 
@@ -1502,15 +1493,15 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    public String toString()
    {
       return "ClusterConnectionImpl@" + System.identityHashCode(this) +
-             "[nodeUUID=" +
-             nodeManager.getNodeId() +
-             ", connector=" +
-             connector +
-             ", address=" +
-             address +
-             ", server=" +
-             server +
-             "]";
+         "[nodeUUID=" +
+         nodeManager.getNodeId() +
+         ", connector=" +
+         connector +
+         ", address=" +
+         address +
+         ", server=" +
+         server +
+         "]";
    }
 
    public String describe()
@@ -1615,7 +1606,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          if (!stopping && started)
          {
             topology.updateAsLive(manager.getNodeId(), new TopologyMemberImpl(manager.getNodeId(),
-               manager.getNodeGroupName(), connector, null));
+                                                                              manager.getBackupGroupName(),
+                                                                              manager.getExportGroupName(),
+                                                                              connector,
+                                                                              null));
          }
       }
 

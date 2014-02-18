@@ -42,6 +42,17 @@ public interface TopologyMember extends Serializable
    String getBackupGroupName();
 
    /**
+    * Returns the {@code export-group-name} of the live server with this Topology entry.
+    * <p/>
+    * This is a server configuration value. a live server will only export to another live server
+    * with matching {@code export-group-name}.
+    * <p/>
+    *
+    * @return the {@code export-group-name}
+    */
+   String getExportGroupName();
+
+   /**
     * @return configuration relative to the live server
     */
    TransportConfiguration getLive();

@@ -35,10 +35,11 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.version.Version;
@@ -249,10 +250,16 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
                                                                     .getIncrementingVersion()));
    }
 
-   public void sendNodeAnnounce(final long currentEventID, final String nodeID, final String nodeName,
-                                final boolean isBackup, final TransportConfiguration config, final TransportConfiguration backupConfig)
+   public void sendNodeAnnounce(final long currentEventID,
+                                String nodeID,
+                                String backupGroupName,
+                                String exportGroupName,
+                                boolean isBackup,
+                                TransportConfiguration config,
+                                TransportConfiguration backupConfig)
    {
-      getChannel0().send(new NodeAnnounceMessage(currentEventID, nodeID, nodeName, isBackup, config, backupConfig));
+      Channel channel0 = connection.getChannel(0, -1);
+      channel0.send(new NodeAnnounceMessage_V2(currentEventID, nodeID, backupGroupName, exportGroupName, isBackup, config, backupConfig));
    }
 
    @Override
@@ -456,7 +463,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       {
          final byte type = packet.getType();
 
-         if (type == PacketImpl.DISCONNECT)
+         if (type == PacketImpl.DISCONNECT || type == PacketImpl.DISCONNECT_V2)
          {
             final DisconnectMessage msg = (DisconnectMessage) packet;
 
@@ -475,6 +482,11 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
             ClusterTopologyChangeMessage_V2 topMessage = (ClusterTopologyChangeMessage_V2) packet;
             notifyTopologyChange(topMessage);
          }
+         else if (type == PacketImpl.CLUSTER_TOPOLOGY_V3)
+         {
+            ClusterTopologyChangeMessage_V3 topMessage = (ClusterTopologyChangeMessage_V3) packet;
+            notifyTopologyChange(topMessage);
+         }
       }
 
       /**
@@ -483,17 +495,25 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       private void notifyTopologyChange(final ClusterTopologyChangeMessage topMessage)
       {
          final long eventUID;
-         final String nodeName;
-
-         if (topMessage instanceof ClusterTopologyChangeMessage_V2)
+         final String backupGroupName;
+         final String exportGroupName;
+         if (topMessage instanceof ClusterTopologyChangeMessage_V3)
+         {
+            eventUID = ((ClusterTopologyChangeMessage_V3) topMessage).getUniqueEventID();
+            backupGroupName = ((ClusterTopologyChangeMessage_V3) topMessage).getBackupGroupName();
+            exportGroupName = ((ClusterTopologyChangeMessage_V3) topMessage).getExportGroupName();
+         }
+         else if (topMessage instanceof ClusterTopologyChangeMessage_V2)
          {
             eventUID = ((ClusterTopologyChangeMessage_V2) topMessage).getUniqueEventID();
-            nodeName = ((ClusterTopologyChangeMessage_V2) topMessage).getNodeName();
+            backupGroupName = ((ClusterTopologyChangeMessage_V2) topMessage).getBackupGroupName();
+            exportGroupName = null;
          }
          else
          {
             eventUID = System.currentTimeMillis();
-            nodeName = null;
+            backupGroupName = null;
+            exportGroupName = null;
          }
 
          if (topMessage.isExit())
@@ -517,7 +537,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
             }
 
             if (callbackHandler != null)
-               callbackHandler.notifyNodeUp(eventUID, topMessage.getNodeID(), nodeName, transportConfig, topMessage.isLast());
+               callbackHandler.notifyNodeUp(eventUID, topMessage.getNodeID(), backupGroupName, exportGroupName, transportConfig, topMessage.isLast());
          }
       }
    }

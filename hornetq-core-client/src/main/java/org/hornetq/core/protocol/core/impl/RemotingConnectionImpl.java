@@ -26,16 +26,18 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage_V2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.security.HornetQPrincipal;
-import org.hornetq.core.client.HornetQClientLogger;
-import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.SimpleIDGenerator;
 
@@ -162,8 +164,6 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    }
 
 
-
-
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
@@ -171,11 +171,11 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    public String toString()
    {
       return "RemotingConnectionImpl [clientID=" + clientID +
-             ", nodeID=" +
-             nodeID +
-             ", transportConnection=" +
-             transportConnection +
-             "]";
+         ", nodeID=" +
+         nodeID +
+         ", transportConnection=" +
+         transportConnection +
+         "]";
    }
 
    public Connection getTransportConnection()
@@ -368,6 +368,11 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    public void disconnect(final boolean criticalError)
    {
+      disconnect(null, criticalError);
+   }
+
+   public void disconnect(TransportConfiguration transportConfiguration, final boolean criticalError)
+   {
       Channel channel0 = getChannel(0, -1);
 
       // And we remove all channels from the connection, this ensures no more packets will be processed after this
@@ -391,13 +396,21 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       if (!criticalError)
       {
-         for (Channel channel: allChannels)
+         for (Channel channel : allChannels)
          {
             channel.flushConfirmations();
          }
       }
+      Packet disconnect;
 
-      Packet disconnect = new DisconnectMessage(nodeID);
+      if (transportConfiguration != null && channel0.supports(PacketImpl.DISCONNECT_V2))
+      {
+         disconnect = new DisconnectMessage_V2(nodeID, transportConfiguration);
+      }
+      else
+      {
+         disconnect = new DisconnectMessage(nodeID);
+      }
       channel0.sendAndFlush(disconnect);
    }
 

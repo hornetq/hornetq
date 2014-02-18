@@ -23,13 +23,14 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 public interface ProtocolResponseHandler
 {
    // This is sent when the server is telling the client the node is being disconnected
-   void nodeDisconnected(RemotingConnection conn,  String nodeID);
+   void nodeDisconnected(RemotingConnection conn, String nodeID);
 
    void notifyNodeUp(long uniqueEventID,
-                               final String nodeID,
-                               final String nodeName,
-                               final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                               final boolean isLast);
+                     final String backupGroupName,
+                     final String exportGroupName,
+                     final String nodeName,
+                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                     final boolean isLast);
 
    // This is sent when any node on the cluster topology is going down
    void notifyNodeDown(final long eventTime, final String nodeID);

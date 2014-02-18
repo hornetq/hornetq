@@ -902,6 +902,34 @@ public abstract class MessageImpl implements MessageInternal
       return this.properties;
    }
 
+   @Override
+   public boolean equals(Object other)
+   {
+
+      if (this == other)
+      {
+         return true;
+      }
+
+      if (other instanceof MessageImpl)
+      {
+         MessageImpl message = (MessageImpl) other;
+
+         if (this.getMessageID() == message.getMessageID())
+            return true;
+      }
+
+      return false;
+   }
+
+
+
+   @Override
+   public int hashCode()
+   {
+      return 31 + (int)(messageID ^ (messageID >>> 32));
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

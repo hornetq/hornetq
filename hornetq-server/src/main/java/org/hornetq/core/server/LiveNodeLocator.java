@@ -22,17 +22,32 @@ import org.hornetq.core.server.impl.QuorumManager;
 
 /**
  * A class that will locate a particular live server running in a cluster. How this live is chosen
- * is a job for the implementation
+ * is a job for the implementation.
+ *
+ * This is used for replication (which needs a QuorumManager) and exportation (which does not need a QuorumManager).
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public abstract class LiveNodeLocator implements ClusterTopologyListener
 {
-   private final QuorumManager quorumManager;
+   private QuorumManager quorumManager;
 
    public LiveNodeLocator(QuorumManager quorumManager)
    {
       this.quorumManager = quorumManager;
    }
+
+   /**
+    * Use this constructor when the LiveNodeLocator is used for exporting messages rather than replicating them
+    */
+   public LiveNodeLocator()
+   {
+   }
+
+   /**
+    * Locates a possible live server in a cluster with a timeout
+    */
+   public abstract void locateNode(long timeout) throws HornetQException;
 
    /**
     * Locates a possible live server in a cluster
@@ -54,13 +69,16 @@ public abstract class LiveNodeLocator implements ClusterTopologyListener
     */
    public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
-      if (alreadyReplicating)
+      if (quorumManager != null)
       {
-         quorumManager.notifyAlreadyReplicating();
-      }
-      else
-      {
-         quorumManager.notifyRegistrationFailed();
+         if (alreadyReplicating)
+         {
+            quorumManager.notifyAlreadyReplicating();
+         }
+         else
+         {
+            quorumManager.notifyRegistrationFailed();
+         }
       }
    }
 
