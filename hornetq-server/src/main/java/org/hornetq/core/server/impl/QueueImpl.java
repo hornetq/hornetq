@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -2964,6 +2965,14 @@ public class QueueImpl implements Queue
       @Override
       public boolean hasNext()
       {
+         if (messagesIterator.hasNext())
+         {
+            return true;
+         }
+         if (interIterator.hasNext())
+         {
+            return true;
+         }
          if (pageIter != null)
          {
             if (pageIter.hasNext())
@@ -2971,17 +2980,21 @@ public class QueueImpl implements Queue
                return true;
             }
          }
-         if (interIterator.hasNext())
-         {
-            return true;
-         }
-         return messagesIterator.hasNext();
 
+         return false;
       }
 
       @Override
       public MessageReference next()
       {
+         if (messagesIterator.hasNext())
+         {
+            return messagesIterator.next();
+         }
+         if (interIterator.hasNext())
+         {
+            return interIterator.next();
+         }
          if (pageIter != null)
          {
             if (pageIter.hasNext())
@@ -2989,11 +3002,8 @@ public class QueueImpl implements Queue
                return pageIter.next();
             }
          }
-         if (interIterator.hasNext())
-         {
-            return interIterator.next();
-         }
-         return messagesIterator.next();
+
+         throw new NoSuchElementException();
       }
 
       @Override
