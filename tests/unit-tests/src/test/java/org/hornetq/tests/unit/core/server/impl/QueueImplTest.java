@@ -22,18 +22,29 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.QueueImpl;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.FutureLatch;
+import org.hornetq.utils.LinkedListIterator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1539,4 +1550,61 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
+   @Test
+   public void testTotalIteratorOrder() throws Exception
+   {
+      final String MY_ADDRESS = "myAddress";
+      final String MY_QUEUE = "myQueue";
+
+      HornetQServer server = HornetQServers.newHornetQServer(createDefaultConfig(false), true);
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(10 * 1024);
+      defaultSetting.setMaxSizeBytes(20 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.start();
+
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory factory = createSessionFactory(locator);
+      ClientSession session = addClientSession(factory.createSession(false, true, true));
+
+      session.createQueue(MY_ADDRESS, MY_QUEUE, true);
+
+      ClientProducer producer = addClientProducer(session.createProducer(MY_ADDRESS));
+
+      for (int i = 0; i < 50; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeBytes(new byte[1024]);
+         message.putIntProperty("order", i);
+         producer.send(message);
+      }
+
+      producer.close();
+      session.close();
+      factory.close();
+      locator.close();
+
+      Queue queue = ((LocalQueueBinding) server.getPostOffice().getBinding(new SimpleString(MY_QUEUE))).getQueue();
+      LinkedListIterator<MessageReference> totalIterator = queue.totalIterator();
+
+      try
+      {
+         int i = 0;
+         while (totalIterator.hasNext())
+         {
+            MessageReference ref = totalIterator.next();
+            Assert.assertEquals(i++, ref.getMessage().getIntProperty("order").intValue());
+         }
+      }
+      finally
+      {
+         totalIterator.close();
+         server.stop();
+      }
+   }
 }
