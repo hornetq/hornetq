@@ -26,9 +26,14 @@ import org.junit.Test;
  */
 public class SSLSupportTest extends UnitTestCase
 {
+
+   private String keyStoreProvider;
+
    private String keyStorePath;
 
    private String keyStorePassword;
+
+   private String trustStoreProvider;
 
    private String trustStorePath;
 
@@ -50,8 +55,10 @@ public class SSLSupportTest extends UnitTestCase
    {
       super.setUp();
 
+      keyStoreProvider = "JKS";
       keyStorePath = "server-side.keystore";
       keyStorePassword = "secureexample";
+      trustStoreProvider = "JKS";
       trustStorePath = "server-side.truststore";
       trustStorePassword = keyStorePassword;
    }
@@ -59,21 +66,21 @@ public class SSLSupportTest extends UnitTestCase
    @Test
    public void testContextWithRightParameters() throws Exception
    {
-      SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
+      SSLSupport.createContext(keyStoreProvider, keyStorePath, keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
    }
 
    // This is valid as it will create key and trust managers with system defaults
    @Test
    public void testContextWithNullParameters() throws Exception
    {
-      SSLSupport.createContext(null, null, null, null);
+      SSLSupport.createContext(null, null, null, null, null, null);
    }
 
    @Test
    public void testContextWithKeyStorePathAsURL() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
-      SSLSupport.createContext(url.toString(), keyStorePassword, trustStorePath, trustStorePassword);
+      SSLSupport.createContext(keyStoreProvider, url.toString(), keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
    }
 
    @Test
@@ -81,7 +88,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(keyStorePath);
       File file = new File(url.toURI());
-      SSLSupport.createContext(file.getAbsolutePath(), keyStorePassword, trustStorePath, trustStorePassword);
+      SSLSupport.createContext(keyStoreProvider, file.getAbsolutePath(), keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
    }
 
    @Test
@@ -89,7 +96,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createContext("not a keystore", keyStorePassword, trustStorePath, trustStorePassword);
+         SSLSupport.createContext(keyStoreProvider, "not a keystore", keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
          Assert.fail();
       }
       catch (Exception e)
@@ -102,7 +109,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createContext(null, keyStorePassword, trustStorePath, trustStorePassword);
+         SSLSupport.createContext(keyStoreProvider, null, keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
       }
       catch (Exception e)
       {
@@ -121,7 +128,7 @@ public class SSLSupportTest extends UnitTestCase
          return;
       }
 
-      SSLSupport.createContext("src/test/resources/server-side.keystore", keyStorePassword, trustStorePath, trustStorePassword);
+      SSLSupport.createContext(keyStoreProvider, "src/test/resources/server-side.keystore", keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
    }
 
    @Test
@@ -129,7 +136,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createContext(keyStorePath, "bad password", trustStorePath, trustStorePassword);
+         SSLSupport.createContext(keyStoreProvider, keyStorePath, "bad password", trustStoreProvider, trustStorePath, trustStorePassword);
          Assert.fail();
       }
       catch (Exception e)
@@ -142,7 +149,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createContext(keyStorePath, keyStorePassword, "not a trust store", trustStorePassword);
+         SSLSupport.createContext(keyStoreProvider, keyStorePath, keyStorePassword, trustStoreProvider, "not a trust store", trustStorePassword);
          Assert.fail();
       }
       catch (Exception e)
@@ -155,7 +162,7 @@ public class SSLSupportTest extends UnitTestCase
    {
       try
       {
-         SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, "bad passord");
+         SSLSupport.createContext(keyStoreProvider, keyStorePath, keyStorePassword, trustStoreProvider, trustStorePath, "bad passord");
          Assert.fail();
       }
       catch (Exception e)
