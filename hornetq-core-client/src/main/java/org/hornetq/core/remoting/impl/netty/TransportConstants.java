@@ -66,9 +66,13 @@ public class TransportConstants
 
    public static final String LOCAL_PORT_PROP_NAME = "local-port";
 
+   public static final String KEYSTORE_PROVIDER_PROP_NAME = "key-store-provider";
+
    public static final String KEYSTORE_PATH_PROP_NAME = "key-store-path";
 
    public static final String KEYSTORE_PASSWORD_PROP_NAME = "key-store-password";
+
+   public static final String TRUSTSTORE_PROVIDER_PROP_NAME = "trust-store-provider";
 
    public static final String TRUSTSTORE_PATH_PROP_NAME = "trust-store-path";
 
@@ -130,9 +134,13 @@ public class TransportConstants
 
    public static final int DEFAULT_STOMP_PORT = 61613;
 
+   public static final String DEFAULT_KEYSTORE_PROVIDER = "JKS";
+
    public static final String DEFAULT_KEYSTORE_PATH = null;
 
    public static final String DEFAULT_KEYSTORE_PASSWORD = null;
+
+   public static final String DEFAULT_TRUSTSTORE_PROVIDER = "JKS";
 
    public static final String DEFAULT_TRUSTSTORE_PATH = null;
 
@@ -197,8 +205,10 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.PROTOCOLS_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.HOST_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.PORT_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
+      allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
       allowableAcceptorKeys.add(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME);
@@ -236,8 +246,10 @@ public class TransportConstants
       allowableConnectorKeys.add(TransportConstants.PORT_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.LOCAL_ADDRESS_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.LOCAL_PORT_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
+      allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
       allowableConnectorKeys.add(TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME);

@@ -389,7 +389,7 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
 
    public static String[] getEnabledCipherSuites() throws Exception
    {
-      SSLContext context = SSLSupport.createContext(SERVER_SIDE_KEYSTORE, PASSWORD, CLIENT_SIDE_TRUSTSTORE, PASSWORD);
+      SSLContext context = SSLSupport.createContext("JKS", SERVER_SIDE_KEYSTORE, PASSWORD, "JKS", CLIENT_SIDE_TRUSTSTORE, PASSWORD);
       SSLEngine engine = context.createSSLEngine();
       return engine.getEnabledCipherSuites();
    }
