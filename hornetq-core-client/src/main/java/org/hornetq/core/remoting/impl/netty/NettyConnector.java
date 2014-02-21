@@ -100,6 +100,9 @@ public class NettyConnector extends AbstractConnector
    public static final String JAVAX_TRUSTSTORE_PATH_PROP_NAME = "javax.net.ssl.trustStore";
    public static final String JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME = "javax.net.ssl.trustStorePassword";
 
+   public static final String HORNETQ_KEYSTORE_PROVIDER_PROP_NAME = "org.hornetq.ssl.keyStoreProvider";
+   public static final String HORNETQ_TRUSTSTORE_PROVIDER_PROP_NAME = "org.hornetq.ssl.trustStoreProvider";
+
    // Attributes ----------------------------------------------------
 
    private ClientSocketChannelFactory channelFactory;
@@ -134,9 +137,13 @@ public class NettyConnector extends AbstractConnector
 
    private final int localPort;
 
+   private final String keyStoreProvider;
+
    private final String keyStorePath;
 
    private final String keyStorePassword;
+
+   private final String trustStoreProvider;
 
    private final String trustStorePath;
 
@@ -266,18 +273,28 @@ public class NettyConnector extends AbstractConnector
                                                      configuration);
       if (sslEnabled)
       {
+         keyStoreProvider = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME,
+                                                                  TransportConstants.DEFAULT_KEYSTORE_PROVIDER,
+                                                                  configuration);
+
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
+
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                     TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
                                                                     configuration,
                                                                     HornetQDefaultConfiguration.getPropMaskPassword(),
                                                                     HornetQDefaultConfiguration.getPropMaskPassword());
 
+         trustStoreProvider = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME,
+                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PROVIDER,
+                                                                    configuration);
+
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
                                                                 configuration);
+
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
                                                                       TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
                                                                       configuration,
@@ -286,8 +303,10 @@ public class NettyConnector extends AbstractConnector
       }
       else
       {
+         keyStoreProvider = null;
          keyStorePath = null;
          keyStorePassword = null;
+         trustStoreProvider = null;
          trustStorePath = null;
          trustStorePassword = null;
       }
@@ -420,6 +439,7 @@ public class NettyConnector extends AbstractConnector
          {
             // HORNETQ-680 - override the server-side config if client-side system properties are set
             String realKeyStorePath = keyStorePath;
+            String realKeyStoreProvider = keyStoreProvider;
             String realKeyStorePassword = keyStorePassword;
             if (System.getProperty(JAVAX_KEYSTORE_PATH_PROP_NAME) != null)
             {
@@ -430,7 +450,13 @@ public class NettyConnector extends AbstractConnector
                realKeyStorePassword = System.getProperty(JAVAX_KEYSTORE_PASSWORD_PROP_NAME);
             }
 
+            if (System.getProperty(HORNETQ_KEYSTORE_PROVIDER_PROP_NAME) != null)
+            {
+               realKeyStoreProvider = System.getProperty(HORNETQ_KEYSTORE_PROVIDER_PROP_NAME);
+            }
+
             String realTrustStorePath = trustStorePath;
+            String realTrustStoreProvider = trustStoreProvider;
             String realTrustStorePassword = trustStorePassword;
             if (System.getProperty(JAVAX_TRUSTSTORE_PATH_PROP_NAME) != null)
             {
@@ -440,7 +466,12 @@ public class NettyConnector extends AbstractConnector
             {
                realTrustStorePassword = System.getProperty(JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME);
             }
-            context = SSLSupport.createContext(realKeyStorePath, realKeyStorePassword, realTrustStorePath, realTrustStorePassword);
+
+            if (System.getProperty(HORNETQ_TRUSTSTORE_PROVIDER_PROP_NAME) != null)
+            {
+               realTrustStoreProvider = System.getProperty(HORNETQ_TRUSTSTORE_PROVIDER_PROP_NAME);
+            }
+            context = SSLSupport.createContext(realKeyStoreProvider, realKeyStorePath, realKeyStorePassword, realTrustStoreProvider, realTrustStorePath, realTrustStorePassword);
          }
          catch (Exception e)
          {

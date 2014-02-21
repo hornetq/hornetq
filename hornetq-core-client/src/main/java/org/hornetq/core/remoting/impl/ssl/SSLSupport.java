@@ -45,11 +45,12 @@ public class SSLSupport
 
    // Public --------------------------------------------------------
 
-   public static SSLContext createContext(final String keystorePath, final String keystorePassword, final String trustStorePath, final String trustStorePassword) throws Exception
+   public static SSLContext createContext(final String keystoreProvider, final String keystorePath, final String keystorePassword,
+                                          final String trustStoreProvider, final String trustStorePath, final String trustStorePassword) throws Exception
    {
       SSLContext context = SSLContext.getInstance("TLS");
-      KeyManager[] keyManagers = SSLSupport.loadKeyManagers(keystorePath, keystorePassword);
-      TrustManager[] trustManagers = SSLSupport.loadTrustManager(trustStorePath, trustStorePassword);
+      KeyManager[] keyManagers = SSLSupport.loadKeyManagers(keystoreProvider, keystorePath, keystorePassword);
+      TrustManager[] trustManagers = SSLSupport.loadTrustManager(trustStoreProvider, trustStorePath, trustStorePassword);
       context.init(keyManagers, trustManagers, new SecureRandom());
       return context;
    }
@@ -60,34 +61,38 @@ public class SSLSupport
 
    // Private -------------------------------------------------------
 
-   private static TrustManager[] loadTrustManager(final String trustStorePath,
+   private static TrustManager[] loadTrustManager(final String trustStoreProvider,
+                                                  final String trustStorePath,
                                                   final String trustStorePassword) throws Exception
    {
-      if (trustStorePath == null)
+      if (trustStorePath == null && ("JKS".equals(trustStoreProvider) || trustStoreProvider == null))
       {
          return null;
       }
       else
       {
          TrustManagerFactory trustMgrFactory;
-         KeyStore trustStore = SSLSupport.loadKeystore(trustStorePath, trustStorePassword);
+         KeyStore trustStore = SSLSupport.loadKeystore(trustStoreProvider, trustStorePath, trustStorePassword);
          trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
          trustMgrFactory.init(trustStore);
          return trustMgrFactory.getTrustManagers();
       }
    }
 
-   private static KeyStore loadKeystore(final String keystorePath, final String keystorePassword) throws Exception
+   private static KeyStore loadKeystore(final String keystoreProvider, final String keystorePath, final String keystorePassword) throws Exception
    {
-      assert keystorePath != null;
+      assert keystorePath != null || "JKS".equals(keystoreProvider) == false;
       assert keystorePassword != null;
 
-      KeyStore ks = KeyStore.getInstance("JKS");
+      KeyStore ks = KeyStore.getInstance(keystoreProvider);
       InputStream in = null;
       try
       {
-         URL keystoreURL = SSLSupport.validateStoreURL(keystorePath);
-         in = keystoreURL.openStream();
+         if ("JKS".equals(keystoreProvider))
+         {
+            URL keystoreURL = SSLSupport.validateStoreURL(keystorePath);
+            in = keystoreURL.openStream();
+         }
          ks.load(in, keystorePassword.toCharArray());
       }
       finally
@@ -106,16 +111,16 @@ public class SSLSupport
       return ks;
    }
 
-   private static KeyManager[] loadKeyManagers(final String keystorePath, final String keystorePassword) throws Exception
+   private static KeyManager[] loadKeyManagers(final String keyStoreProvider, final String keystorePath, final String keystorePassword) throws Exception
    {
-      if (keystorePath == null)
+      if (keystorePath == null && ("JKS".equals(keyStoreProvider) || keyStoreProvider == null))
       {
          return null;
       }
       else
       {
          KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-         KeyStore ks = SSLSupport.loadKeystore(keystorePath, keystorePassword);
+         KeyStore ks = SSLSupport.loadKeystore(keyStoreProvider, keystorePath, keystorePassword);
          kmf.init(ks, keystorePassword.toCharArray());
 
          return kmf.getKeyManagers();
