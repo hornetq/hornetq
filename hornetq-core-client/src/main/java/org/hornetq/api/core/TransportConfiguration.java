@@ -27,7 +27,6 @@ import org.hornetq.utils.UUIDGenerator;
  * Typically the constructors take the class name and parameters for needed to create the
  * connection. These will be different dependent on which connector is being used, i.e. Netty or
  * InVM etc. For example:
- * <p/>
  *
  * <pre>
  * HashMap&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
@@ -281,7 +280,7 @@ public class TransportConfiguration implements Serializable
 
    /**
     * Encodes this TransportConfiguration into a buffer.
-    * <p/>
+    * <p>
     * Note that this is only used internally HornetQ.
     *
     * @param buffer the buffer to encode into
@@ -331,7 +330,7 @@ public class TransportConfiguration implements Serializable
 
    /**
     * Decodes this TransportConfiguration from a buffer.
-    * <p/>
+    * <p>
     * Note this is only used internally by HornetQ
     *
     * @param buffer the buffer to decode from

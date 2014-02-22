@@ -49,7 +49,7 @@ public interface RemotingConnection extends BufferHandler
 
    /**
     * add a failure listener.
-    * <p/>
+    * <p>
     * The listener will be called in the event of connection failure.
     *
     * @param listener the listener
@@ -66,7 +66,7 @@ public interface RemotingConnection extends BufferHandler
 
    /**
     * add a CloseListener.
-    * <p/>
+    * <p>
     * This will be called in the event of the connection being closed.
     *
     * @param listener the listener to add
@@ -98,7 +98,7 @@ public interface RemotingConnection extends BufferHandler
 
    /**
     * set the failure listeners.
-    * <p/>
+    * <p>
     * These will be called in the event of the connection being closed. Any previosuly added listeners will be removed.
     *
     * @param listeners the listeners to add.

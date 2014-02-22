@@ -26,7 +26,6 @@ import org.hornetq.core.message.impl.MessageImpl;
 
 /**
  * HornetQ implementation of a JMS {@link BytesMessage}.
- * <p/>
  *
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>

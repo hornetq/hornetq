@@ -21,9 +21,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public class SessionCommitMessage extends PacketImpl
 {
 
-   /**
-    * @param type
-    */
    public SessionCommitMessage()
    {
       super(SESS_COMMIT);

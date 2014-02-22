@@ -23,7 +23,7 @@ import org.w3c.dom.Node;
 /**
  * A JMSServerConfigParser
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */

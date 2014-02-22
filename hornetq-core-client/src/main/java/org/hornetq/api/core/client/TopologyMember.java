@@ -22,7 +22,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * A member of the topology.
- * <p/>
+ * <p>
  * Each TopologyMember represents a single server and possibly any backup server that may take over
  * its duties (using the nodeId of the original server).
  */
@@ -31,10 +31,10 @@ public interface TopologyMember extends Serializable
    /**
     * Returns the {@code backup-group-name} of the live server and backup servers associated with
     * Topology entry.
-    * <p/>
+    * <p>
     * This is a server configuration value. A (remote) backup will only work with live servers that
     * have a matching {@code backup-group-name}.
-    * <p/>
+    * <p>
     * This value does not apply to "shared-storage" backup and live pairs.
     *
     * @return the {@code backup-group-name}

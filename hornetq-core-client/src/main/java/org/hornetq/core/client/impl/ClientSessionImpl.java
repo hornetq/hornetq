@@ -511,7 +511,7 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
    /**
     * Note, we DO NOT currently support direct consumers (i.e. consumers where delivery occurs on
     * the remoting thread).
-    * <p/>
+    * <p>
     * Direct consumers have issues with blocking and failover. E.g. if direct then inside
     * MessageHandler call a blocking method like rollback or acknowledge (blocking) This can block
     * until failover completes, which disallows the thread to be used to deliver any responses to

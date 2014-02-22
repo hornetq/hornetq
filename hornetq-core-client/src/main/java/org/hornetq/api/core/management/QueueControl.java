@@ -124,7 +124,7 @@ public interface QueueControl
    /**
     * Lists all the messages being deliver per consumer.
     * <br>
-    * The Map's key is a toString representation for the consumer. Each consumer will then return a Map<String,Object>[] same way is returned by {@link #listScheduledMessages()}
+    * The Map's key is a toString representation for the consumer. Each consumer will then return a {@code Map<String,Object>[]} same way is returned by {@link #listScheduledMessages()}
     */
    @Operation(desc = "List all messages being delivered per consumer")
    Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception;

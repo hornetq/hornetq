@@ -22,7 +22,7 @@ import org.hornetq.api.jms.JMSFactoryType;
 
 /**
  * A class that represents a XAConnectionFactory.
- * <p/>
+ * <p>
  * We consider the XAConnectionFactory to be the most complete possible option. It can be casted to any other connection factory since it is fully functional
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>

@@ -14,7 +14,7 @@ package org.hornetq.core.remoting;
 
 /**
  * CloseListeners can be registered with a {@link org.hornetq.spi.core.protocol.RemotingConnection} to get notified when the connection is closed.
- * <p/>
+ * <p>
  * {@link org.hornetq.spi.core.protocol.RemotingConnection#addCloseListener(CloseListener)}
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

@@ -29,15 +29,15 @@ import org.jgroups.ReceiverAdapter;
  * The configuration for creating broadcasting/discovery groups using JGroups channels
  * There are two ways to constructing a JGroups channel (JChannel):
  * <ol>
- * <li> by passing in a JGroups configuration file</li>
+ * <li> by passing in a JGroups configuration file<br>
  * The file must exists in the hornetq classpath. HornetQ creates a JChannel with the
  * configuration file and use it for broadcasting and discovery. In standalone server
- * mode HornetQ uses this way for constructing JChannels.
- * <li> by passing in a JChannel instance </li>
+ * mode HornetQ uses this way for constructing JChannels.</li>
+ * <li> by passing in a JChannel instance<br>
  * This is useful when HornetQ needs to get a JChannel from a running JGroups service as in the
- * case of AS7 integration.
+ * case of AS7 integration.</li>
  * </ol>
- * <p/>
+ * <p>
  * Note only one JChannel is needed in a VM. To avoid the channel being prematurely disconnected
  * by any party, a wrapper class is used.
  *

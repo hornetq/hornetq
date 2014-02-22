@@ -50,7 +50,6 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    /**
     * To be called by things like MDBs during shutdown of the server
-    * @param interrupt
     * @throws HornetQException
     */
    void interruptHandlers() throws HornetQException;

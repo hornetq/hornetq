@@ -19,7 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A ConnectorFactory is used by the client for creating connectors.
- * <p/>
+ * <p>
  * A Connector is used to connect to an {@link org.hornetq.spi.core.remoting.Acceptor}.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -46,7 +46,7 @@ public interface ConnectorFactory
 
    /**
     * Returns the allowable properties for this connector.
-    * <p/>
+    * <p>
     * This will differ between different connector implementations.
     *
     * @return the allowable properties.

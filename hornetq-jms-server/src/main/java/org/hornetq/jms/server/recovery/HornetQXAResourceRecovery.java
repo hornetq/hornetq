@@ -22,29 +22,26 @@ import org.hornetq.jms.server.HornetQJMSServerLogger;
 
 /**
  * A XAResourceRecovery instance that can be used to recover any JMS provider.
- * <p/>
+ * <p>
  * In reality only recover, rollback and commit will be called but we still need to be implement all
  * methods just in case.
- * <p/>
+ * <p>
  * To enable this add the following to the jbossts-properties file
- * <p/>
  * <pre>
- * <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
- *                 value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
+ * &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
+ *                 value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/&gt;
  * </pre>
- * <p/>
+ * <p>
  * you'll need something like this if the HornetQ Server is remote
- * <p/>
  * <pre>
- *      <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
- *                  value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/>-->
+ *      &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+ *                  value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/&gt;
  * </pre>
- * <p/>
- * you'll need something like this if the HornetQ Server is remote and has failover configured-->
- * <p/>
+ * <p>
+ * you'll need something like this if the HornetQ Server is remote and has failover configured
  * <pre>
- *             <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
- *                       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost2,port=5446"/>-->
+ *             &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+ *                       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost2,port=5446"/&gt;
  * </pre>
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

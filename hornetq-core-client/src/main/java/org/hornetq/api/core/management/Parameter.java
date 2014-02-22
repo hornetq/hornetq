@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 
 /**
  * Info for a MBean Operation Parameter.
- * <b>
+ * <p>
  * This annotation is used only for methods which can be invoked
  * through a GUI.
  *

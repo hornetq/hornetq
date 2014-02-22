@@ -20,7 +20,7 @@ import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 /**
  * A PersistedConnectionFactory
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */

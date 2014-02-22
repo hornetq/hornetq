@@ -47,8 +47,7 @@ public class HornetQXAQueueConnectionFactory extends HornetQConnectionFactory im
 
    /**
     * @param ha
-    * @param discoveryAddress
-    * @param discoveryPort
+    * @param groupConfiguration
     */
    public HornetQXAQueueConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {

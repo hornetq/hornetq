@@ -16,7 +16,7 @@ import org.hornetq.api.core.HornetQBuffer;
 
 /**
  * A BufferHandler that will handle buffers received by an acceptor.
- * <p/>
+ * <p>
  * The Buffer Handler will decode the buffer and take the appropriate action, typically forwarding to the correct channel.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -56,7 +56,7 @@ public interface ServerLocatorInternal extends ServerLocator
 
    /**
     * Like {@link #connect()} but it does not log warnings if it fails to connect.
-    * @throws Exception
+    * @throws HornetQException
     */
    ClientSessionFactoryInternal connectNoWarnings() throws HornetQException;
 

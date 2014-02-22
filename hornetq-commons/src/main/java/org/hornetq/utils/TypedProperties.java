@@ -36,10 +36,10 @@ import static org.hornetq.utils.DataConstants.STRING;
 
 /**
  * Property Value Conversion.
- * <p/>
- * This implementation follows section 3.5.4 of the <i>Java Message Service<i> specification
+ * <p>
+ * This implementation follows section 3.5.4 of the <i>Java Message Service</i> specification
  * (Version 1.1 April 12, 2002).
- * <p/>
+ * <p>
  * TODO - should have typed property getters and do conversions herein
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -44,7 +44,7 @@ import org.w3c.dom.NodeList;
 /**
  * JMS Configuration File Parser.
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class JMSServerConfigParserImpl implements JMSServerConfigParser
 {

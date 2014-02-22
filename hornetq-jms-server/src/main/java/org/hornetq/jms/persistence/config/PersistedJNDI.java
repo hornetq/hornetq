@@ -23,7 +23,7 @@ import org.hornetq.utils.DataConstants;
 /**
  * A PersistedJNDI
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class PersistedJNDI implements EncodingSupport
 {

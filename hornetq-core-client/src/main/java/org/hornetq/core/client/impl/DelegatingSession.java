@@ -37,7 +37,7 @@ import org.hornetq.utils.ConcurrentHashSet;
 
 /**
  * A DelegatingSession
- * <p/>
+ * <p>
  * We wrap the real session, so we can add a finalizer on this and close the session
  * on GC if it has not already been closed
  *

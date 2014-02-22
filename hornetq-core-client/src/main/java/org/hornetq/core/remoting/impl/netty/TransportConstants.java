@@ -85,7 +85,7 @@ public class TransportConstants
    public static final String NETTY_VERSION;
 
    /**
-    * Disable Nagle's algorithm.<br/>
+    * Disable Nagle's algorithm.<br>
     * Valid for (client) Sockets.
     *
     * @see <a

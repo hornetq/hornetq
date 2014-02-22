@@ -18,7 +18,7 @@ package org.hornetq.api.core.management;
  * These notifications can be received through:
  * <ul>
  * <li>JMX' MBeans subscriptions
- * <li>Core messages to a notification address (default value is {@value hornetq.notifications})
+ * <li>Core messages to a notification address (default value is {@code hornetq.notifications})
  * <li>JMS messages
  * </ul>
  * @see the HornetQ user manual section on "Management Notifications"

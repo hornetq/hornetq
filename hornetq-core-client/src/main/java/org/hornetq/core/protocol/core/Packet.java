@@ -46,7 +46,7 @@ public interface Packet
 
    /**
     * returns the type of the packet.
-    * <p/>
+    * <p>
     * This is needed when decoding the packet
     *
     * @return the packet type

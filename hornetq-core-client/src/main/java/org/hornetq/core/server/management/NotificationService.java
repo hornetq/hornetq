@@ -26,7 +26,6 @@ public interface NotificationService
     * <li><code>ManagementHelper.HDR_NOTIFICATION_MESSAGE</code> - a message contextual to the notification (SimpleString)</li>
     * <li><code>ManagementHelper.HDR_NOTIFICATION_TIMESTAMP</code> - the timestamp when the notification occurred (long)</li>
     * </ul>
-    * <p/>
     * in addition to the properties defined in <code>props</code>
     *
     * @see ManagementHelper

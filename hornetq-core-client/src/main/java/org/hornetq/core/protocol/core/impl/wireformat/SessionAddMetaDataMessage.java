@@ -20,7 +20,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  *
  * Packet deprecated: It exists only to support old formats
  *
- * @author <a href="mailto:hgao@redhat.com>Howard Gao</a>
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  *
  */

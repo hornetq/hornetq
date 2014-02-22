@@ -40,7 +40,7 @@ public interface Connector
 
    /**
     * Create and return a connection from this connector.
-    * <p/>
+    * <p>
     * This method must NOT throw an exception if it fails to create the connection
     * (e.g. network is not available), in this case it MUST return null
     *

@@ -23,7 +23,7 @@ import org.hornetq.api.core.HornetQExceptionType;
 /**
  * A PasswordMarkingUtil
  *
- * @author <mailto:hgao@redhat.com">Howard Gao</a>
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  *
  */

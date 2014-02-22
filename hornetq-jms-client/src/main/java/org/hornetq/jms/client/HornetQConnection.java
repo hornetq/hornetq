@@ -49,7 +49,7 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * HornetQ implementation of a JMS Connection.
- * <p/>
+ * <p>
  * The flat implementation of {@link TopicConnection} and {@link QueueConnection} is per design,
  * following the common usage of these as one flat API in JMS 1.1.
  *

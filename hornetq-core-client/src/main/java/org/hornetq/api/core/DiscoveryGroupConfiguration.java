@@ -22,11 +22,11 @@ import org.hornetq.utils.UUIDGenerator;
 /**
  * This file represents how we are using Discovery.
  * <p>
- * The discovery configuration could either use plain UDP, or JGroups.<br/>
+ * The discovery configuration could either use plain UDP, or JGroups.<br>
  * If using UDP, all the UDP properties will be filled and the jgroups properties will be
- * {@code null}.<br/>
+ * {@code null}.<br>
  * If using JGroups, all the UDP properties will be -1 or {@code null} and the jgroups properties
- * will be filled.<br/>
+ * will be filled.<br>
  * If by any reason, both properties are filled, the JGroups takes precedence. That means, if
  * {@code jgroupsFile != null} then the Grouping method used will be JGroups.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

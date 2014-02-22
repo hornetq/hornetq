@@ -36,7 +36,7 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Creates a <em>transacted</em> session.
-    * <p/>
+    * <p>
     * It is up to the client to commit when sending and acknowledging messages.
     *
     * @return a transacted ClientSession
@@ -91,7 +91,7 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Creates a session.
-    * <p/>
+    * <p>
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
@@ -107,7 +107,7 @@ public interface ClientSessionFactory extends AutoCloseable
 
    /**
     * Creates an <em>authenticated</em> session.
-    * <p/>
+    * <p>
     * It is possible to <em>pre-acknowledge messages on the server</em> so that the client can avoid additional network trip
     * to the server to acknowledge messages. While this increase performance, this does not guarantee delivery (as messages
     * can be lost after being pre-acknowledged on the server). Use with caution if your application design permits it.
