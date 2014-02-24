@@ -168,7 +168,7 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
-    * <p/>
+    * <p>
     * Notice: you will get an exception if the address or the filter doesn't match to an already existent queue
     *
     * @param address   the queue will be bound to this address
@@ -180,7 +180,7 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a transient queue. A queue that will exist as long as there are consumers. When the last consumer is closed the queue will be deleted
-    * <p/>
+    * <p>
     * Notice: you will get an exception if the address or the filter doesn't match to an already existent queue
     *
     * @param address   the queue will be bound to this address
@@ -337,12 +337,12 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *
@@ -355,12 +355,12 @@ public interface ClientSession extends XAResource, AutoCloseable
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *
@@ -374,12 +374,12 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *
@@ -394,12 +394,12 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *
@@ -414,12 +414,12 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *
@@ -440,12 +440,12 @@ public interface ClientSession extends XAResource, AutoCloseable
    /**
     * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
     * the given name.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
     * from the queue but they will not be consumed (the messages will remain in the queue). Note
     * that paged messages will not be in the queue, and will therefore not be visible if
     * {@code browseOnly} is {@code true}.
-    * <p/>
+    * <p>
     * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
     * the messages from the queue and the messages will effectively be removed from the queue.
     *

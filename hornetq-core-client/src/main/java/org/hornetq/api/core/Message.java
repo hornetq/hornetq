@@ -20,16 +20,14 @@ import org.hornetq.utils.UUID;
 
 /**
  * A Message is a routable instance that has a payload.
- * <p/>
+ * <p>
  * The payload (the "body") is opaque to the messaging system. A Message also has a fixed set of
  * headers (required by the messaging system) and properties (defined by the users) that can be used
  * by the messaging system to route the message (e.g. to ensure it matches a queue filter).
- * <p/>
  * <h2>Message Properties</h2>
- * <p/>
+ * <p>
  * Message can contain properties specified by the users. It is possible to convert from some types
  * to other types as specified by the following table:
- * <p/>
  * <pre>
  * |        | boolean byte short int long float double String byte[]
  * |----------------------------------------------------------------
@@ -44,8 +42,7 @@ import org.hornetq.utils.UUID;
  * |byte[]  |                                                   X
  * |-----------------------------------------------------------------
  * </pre>
- * <p/>
- * <br>
+ * <p>
  * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a
  * {@code boolean}), a {@link PropertyConversionException} will be thrown.
  *
@@ -123,7 +120,7 @@ public interface Message
 
    /**
     * Returns this message type.
-    * <p/>
+    * <p>
     * See fields {@literal *_TYPE} for possible values.
     */
    byte getType();
@@ -174,14 +171,14 @@ public interface Message
 
    /**
     * Returns the message priority.
-    * <p/>
+    * <p>
     * Values range from 0 (less priority) to 9 (more priority) inclusive.
     */
    byte getPriority();
 
    /**
     * Sets the message priority.
-    * <p/>
+    * <p>
     * Value must be between 0 and 9 inclusive.
     *
     * @param priority the new message priority

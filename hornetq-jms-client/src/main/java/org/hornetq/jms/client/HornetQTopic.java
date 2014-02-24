@@ -52,7 +52,6 @@ public class HornetQTopic extends HornetQDestination implements Topic
     * @param address
     * @param name
     * @param temporary
-    * @param queue
     * @param session
     */
    protected HornetQTopic(String address, String name, boolean temporary, HornetQSession session)

@@ -15,7 +15,7 @@ package org.hornetq.jms.persistence.config;
 /**
  * A PersistedType
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public enum PersistedType
 {

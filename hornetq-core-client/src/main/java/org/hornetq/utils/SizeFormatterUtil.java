@@ -15,7 +15,7 @@ package org.hornetq.utils;
 /**
  * A SizeFormatterUtil
  *
- * @author <a href="mailto:jmesnil@gmail.com>Jeff Mesnil</a>
+ * @author <a href="mailto:jmesnil@gmail.com">Jeff Mesnil</a>
  *
  *
  */

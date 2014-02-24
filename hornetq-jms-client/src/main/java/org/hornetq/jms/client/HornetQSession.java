@@ -497,7 +497,7 @@ public class HornetQSession implements QueueSession, TopicSession
     * Validate different filters in different possible scenarios
     *
     * @param topic
-    * @param sharedSubscriptionName
+    * @param name
     * @param messageSelector
     * @return
     * @throws JMSException

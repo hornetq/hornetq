@@ -18,7 +18,7 @@ import org.hornetq.api.core.SimpleString;
 /**
  * Helper methods to read and write from HornetQBuffer.
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */

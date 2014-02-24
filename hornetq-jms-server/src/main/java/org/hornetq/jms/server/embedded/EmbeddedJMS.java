@@ -24,7 +24,7 @@ import org.hornetq.spi.core.naming.BindingRegistry;
 /**
  * Simple bootstrap class that parses hornetq config files (server and jms and security) and starts
  * a HornetQServer instance and populates it with configured JMS endpoints.
- * <p/>
+ * <p>
  * JMS Endpoints are registered with a simple MapBindingRegistry.  If you want to use a different registry
  * you must set the registry property of this class or call the setRegistry() method if you want to use JNDI
  *

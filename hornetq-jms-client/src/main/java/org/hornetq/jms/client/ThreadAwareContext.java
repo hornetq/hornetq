@@ -95,8 +95,8 @@ public class ThreadAwareContext
    }
 
    /**
-    * Asserts a {@link javax.jms.CompletionListener} is not calling from its own {@Link javax.jms.Connection} or from
-    * a {@Link javax.jms.MessageProducer} .
+    * Asserts a {@link javax.jms.CompletionListener} is not calling from its own {@link javax.jms.Connection} or from
+    * a {@link javax.jms.MessageProducer} .
     * <p>
     * Note that the code must work without any need for further synchronization, as there is the
     * requirement that only one CompletionListener be called at a time. In other words,
@@ -132,7 +132,7 @@ public class ThreadAwareContext
 
    /**
     * Asserts a {@link javax.jms.MessageListener} is not calling from its own {@link javax.jms.Connection} or
-    *  {@Link javax.jms.MessageConsumer}.
+    *  {@link javax.jms.MessageConsumer}.
     * <p>
     * Note that the code must work without any need for further synchronization, as there is the
     * requirement that only one MessageListener be called at a time. In other words,

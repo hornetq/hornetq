@@ -170,10 +170,10 @@ public final class XMLUtil
    /**
     * This metod is here because Node.getTextContent() is not available in JDK 1.4 and I would like
     * to have an uniform access to this functionality.
-    * <p/>
+    * <p>
     * Note: if the content is another element or set of elements, it returns a string representation
     * of the hierarchy.
-    * <p/>
+    * <p>
     * TODO implementation of this method is a hack. Implement it properly.
     */
    public static String getTextContent(final Node n)

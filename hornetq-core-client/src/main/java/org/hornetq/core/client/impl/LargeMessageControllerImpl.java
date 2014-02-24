@@ -321,7 +321,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    /**
     * @param timeWait Milliseconds to Wait. 0 means forever
-    * @throws Exception
+    * @throws HornetQException
     */
    public synchronized boolean waitCompletion(final long timeWait) throws HornetQException
    {

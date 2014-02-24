@@ -23,7 +23,7 @@ import org.hornetq.jms.persistence.config.PersistedType;
 /**
  * A JMSPersistence
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */

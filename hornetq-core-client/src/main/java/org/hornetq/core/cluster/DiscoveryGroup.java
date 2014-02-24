@@ -35,16 +35,16 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * This class is used to search for members on the cluster through the opaque interface {@link BroadcastEndpoint}.
- * <p/>
+ * <p>
  * There are two current implementations, and that's probably all we will ever need.
- * <p/>
+ * <p>
  * We will probably keep both interfaces for a while as UDP is a simple solution requiring no extra dependencies which
  * is suitable for users looking for embedded solutions.
+ * <p>
+ * Created 17 Nov 2008 13:21:45
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- *         <p/>
- *         Created 17 Nov 2008 13:21:45
  */
 public final class DiscoveryGroup implements HornetQComponent
 {

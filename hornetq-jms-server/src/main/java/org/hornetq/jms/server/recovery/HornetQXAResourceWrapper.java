@@ -38,7 +38,7 @@ import org.hornetq.jms.server.HornetQJMSServerLogger;
  * to retry on failure without having to manually retry
  *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * @author <a href="tim.fox@jboss.com">Tim Fox/a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *

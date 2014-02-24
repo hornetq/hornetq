@@ -19,11 +19,11 @@ import java.util.zip.Inflater;
 
 /**
  * A InflaterWriter
- * <p/>
+ * <p>
  * This class takes an OutputStream. Compressed bytes
  * can directly be written into this class. The class will
  * decompress the bytes and write them to the output stream.
- * <p/>
+ * <p>
  * Not for concurrent use.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>

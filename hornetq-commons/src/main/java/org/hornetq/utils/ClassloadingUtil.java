@@ -17,7 +17,7 @@ import java.net.URL;
 /**
  * This class will be used to perform generic class-loader operations,
  * such as load a class first using TCCL, and then the classLoader used by HornetQ (ClassloadingUtil.getClass().getClassLoader()).
- * <p/>
+ * <p>
  * Is't required to use a Security Block on any calls to this class.
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>

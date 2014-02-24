@@ -18,12 +18,12 @@ import org.hornetq.api.core.HornetQException;
 
 /**
  * A channel is a way of interleaving data meant for different endpoints over the same {@link org.hornetq.core.protocol.core.CoreRemotingConnection}.
- * <p/>
+ * <p>
  * Any packet sent will have its channel id set to the specific channel sending so it can be routed to its correct channel
  * when received by the {@link org.hornetq.core.protocol.core.CoreRemotingConnection}. see {@link org.hornetq.core.protocol.core.Packet#setChannelID(long)}.
- * <p/>
+ * <p>
  * Each Channel should will forward any packets received to its {@link org.hornetq.core.protocol.core.ChannelHandler}.
- * <p/>
+ * <p>
  * A Channel *does not* support concurrent access by more than one thread!
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -89,14 +89,14 @@ public interface Channel
 
    /**
     * Closes this channel.
-    * <p/>
+    * <p>
     * once closed no packets can be sent.
     */
    void close();
 
    /**
     * Transfers the connection used by this channel to the one specified.
-    * <p/>
+    * <p>
     * All new packets will be sent via this connection.
     * @param newConnection the new connection
     */
@@ -104,7 +104,7 @@ public interface Channel
 
    /**
     * resends any packets that have not received confirmations yet.
-    * <p/>
+    * <p>
     * Typically called after a connection has been transferred.
     *
     * @param lastConfirmedCommandID the last confirmed packet
@@ -120,7 +120,7 @@ public interface Channel
 
    /**
     * locks the channel.
-    * <p/>
+    * <p>
     * While locked no packets can be sent or received
     */
    void lock();
@@ -168,7 +168,7 @@ public interface Channel
 
    /**
     * Called by {@link org.hornetq.core.protocol.core.CoreRemotingConnection} when a packet is received.
-    * <p/>
+    * <p>
     * This method should then call its {@link org.hornetq.core.protocol.core.ChannelHandler} after appropriate processing of
     * the packet
     *

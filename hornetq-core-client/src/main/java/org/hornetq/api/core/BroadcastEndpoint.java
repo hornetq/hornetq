@@ -16,14 +16,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * BroadcastEndpint is used in BroadcastGroups and DiscoveryGroups for topology updates.
- * <p/>
+ * <p>
  * A BroadcastEndpoint can perform one of the two following tasks:
+ * <ul>
  * <li>when being used in BroadcastGroups, it broadcasts connector informations</li>
  * <li>when being used in DiscoveryGroups, it receives broadcasts</li>
- * <p/>
+ * </ul>
+ * <p>
  * The two tasks are mutual exclusive, meaning a BroadcastEndpoint can either be a broadcaster
  * or a receiver, but not both.
- * <p/>
+ * <p>
  * It is an abstraction of various concrete broadcasting mechanisms. Different implementations
  * of this interface may use different broadcasting techniques like UDP multicasting or
  * JGroups channels.

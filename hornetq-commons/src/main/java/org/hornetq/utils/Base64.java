@@ -18,22 +18,18 @@ import java.nio.charset.StandardCharsets;
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>
  * <p>Homepage: <a href="http://iharder.net/base64">http://iharder.net/base64</a>.</p>
- * <p/>
  * <p>The <tt>options</tt> parameter, which appears in a few places, is used to pass
  * several pieces of information to the encoder. In the "higher level" methods such as
  * encodeBytes( bytes, options ) the options parameter can be used to indicate such
  * things as first gzipping the bytes before encoding them, not inserting linefeeds
  * (though that breaks strict Base64 compatibility), and encoding using the URL-safe
  * and Ordered dialects.</p>
- * <p/>
  * <p>The constants defined in Base64 can be OR-ed together to combine options, so you
  * might make a call like this:</p>
- * <p/>
+ * <p>
  * <code>String encoded = Base64.encodeBytes( mybytes, Base64.GZIP | Base64.DONT_BREAK_LINES );</code>
- * <p/>
+ * </p>
  * <p>to compress the data before encoding it and then making the output have no newline characters.</p>
- * <p/>
- * <p/>
  * <p>
  * Change Log:
  * </p>
@@ -42,7 +38,7 @@ import java.nio.charset.StandardCharsets;
  * Base64.InputStream class to encode and decode on the fly which uses
  * less memory than encoding/decoding an entire file into memory before writing.</li>
  * <li>v2.2.1 - Fixed bug using URL_SAFE and ORDERED encodings. Fixed bug
- * when using very small files (~< 40 bytes).</li>
+ * when using very small files (~&lt; 40 bytes).</li>
  * <li>v2.2 - Added some helper methods for encoding/decoding directly from
  * one file to the next. Also added a main() method to support command line
  * encoding/decoding from one file to the next. Also added these Base64 dialects:
@@ -58,7 +54,6 @@ import java.nio.charset.StandardCharsets;
  * Special thanks to Jim Kellerman at <a href="http://www.powerset.com/">http://www.powerset.com/</a>
  * for contributing the new Base64 dialects.
  * </li>
- * <p/>
  * <li>v2.1 - Cleaned up javadoc comments and unused variables and methods. Added
  * some convenience methods for reading and writing to and from files.</li>
  * <li>v2.0.2 - Now specifies UTF-8 encoding in places where the code fails on systems
@@ -86,7 +81,6 @@ import java.nio.charset.StandardCharsets;
  * <li>v1.3.4 - Fixed when "improperly padded stream" error was thrown at the wrong time.</li>
  * <li>v1.3.3 - Fixed I/O streams which were totally messed up.</li>
  * </ul>
- * <p/>
  * <p>
  * I am placing this code in the Public Domain. Do with it as you will.
  * This software comes with no guarantees or warranties but with
@@ -1038,15 +1032,15 @@ public class Base64
     * version of that serialized object. If the object
     * cannot be serialized or there is another error,
     * the method will return <tt>null</tt>.
-    * <p/>
+    * <p>
     * Valid options:<pre>
     *   GZIP: gzip-compresses object before encoding it.
     *   DONT_BREAK_LINES: don't break lines at 76 characters
     *     <i>Note: Technically, this makes your encoding non-compliant.</i>
     * </pre>
-    * <p/>
+    * <p>
     * Example: <code>encodeObject( myObj, Base64.GZIP )</code> or
-    * <p/>
+    * <p>
     * Example: <code>encodeObject( myObj, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
     *
     * @param serializableObject The object to encode
@@ -1142,15 +1136,15 @@ public class Base64
 
    /**
     * Encodes a byte array into Base64 notation.
-    * <p/>
+    * <p>
     * Valid options:<pre>
     *   GZIP: gzip-compresses object before encoding it.
     *   DONT_BREAK_LINES: don't break lines at 76 characters
     *     <i>Note: Technically, this makes your encoding non-compliant.</i>
     * </pre>
-    * <p/>
+    * <p>
     * Example: <code>encodeBytes( myData, Base64.GZIP )</code> or
-    * <p/>
+    * <p>
     * Example: <code>encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
     *
     * @param source  The data to convert
@@ -1180,15 +1174,15 @@ public class Base64
 
    /**
     * Encodes a byte array into Base64 notation.
-    * <p/>
+    * <p>
     * Valid options:<pre>
     *   GZIP: gzip-compresses object before encoding it.
     *   DONT_BREAK_LINES: don't break lines at 76 characters
     *     <i>Note: Technically, this makes your encoding non-compliant.</i>
     * </pre>
-    * <p/>
+    * <p>
     * Example: <code>encodeBytes( myData, Base64.GZIP )</code> or
-    * <p/>
+    * <p>
     * Example: <code>encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
     *
     * @param source  The data to convert
@@ -1935,14 +1929,14 @@ public class Base64
       /**
        * Constructs a {@link Base64.InputStream} in
        * either ENCODE or DECODE mode.
-       * <p/>
+       * <p>
        * Valid options:<pre>
        *   ENCODE or DECODE: Encode or Decode as data is read.
        *   DONT_BREAK_LINES: don't break lines at 76 characters
        *     (only meaningful when encoding)
        *     <i>Note: Technically, this makes your encoding non-compliant.</i>
        * </pre>
-       * <p/>
+       * <p>
        * Example: <code>new Base64.InputStream( in, Base64.DECODE )</code>
        *
        * @param in      the <tt>java.io.InputStream</tt> from which to read data.
@@ -2189,14 +2183,14 @@ public class Base64
       /**
        * Constructs a {@link Base64.OutputStream} in
        * either ENCODE or DECODE mode.
-       * <p/>
+       * <p>
        * Valid options:<pre>
        *   ENCODE or DECODE: Encode or Decode as data is read.
        *   DONT_BREAK_LINES: don't break lines at 76 characters
        *     (only meaningful when encoding)
        *     <i>Note: Technically, this makes your encoding non-compliant.</i>
        * </pre>
-       * <p/>
+       * <p>
        * Example: <code>new Base64.OutputStream( out, Base64.ENCODE )</code>
        *
        * @param out     the <tt>java.io.OutputStream</tt> to which data will be written.

@@ -20,7 +20,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  *
  * This packet replaces {@link SessionAddMetaDataMessage}
  *
- * @author Clebert Suconic</a>
+ * @author Clebert Suconic
  *
  *
  */

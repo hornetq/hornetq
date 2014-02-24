@@ -47,7 +47,7 @@ import java.util.Random;
  * system, file-based locking is used. This works between multiple JVMs and Jug
  * instances.
  * </ul>
- * <p/>
+ * <p>
  * Some additional assumptions about calculating the timestamp:
  * <ul>
  * <li>System.currentTimeMillis() is assumed to give time offset in UTC, or at
@@ -59,7 +59,7 @@ import java.util.Random;
  * of Gregorian calendar is assumed to be correct (which seems to be the case
  * when testing with Java calendars).
  * </ul>
- * <p/>
+ * <p>
  * Note about synchronization: this class is assumed to always be called from a
  * synchronized context (caller locks on either this object, or a similar timer
  * lock), and so has no method synchronization.

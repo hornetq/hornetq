@@ -41,7 +41,7 @@ import org.hornetq.utils.IDGenerator;
 /**
  * A JournalJMSStorageManagerImpl
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public final class JMSJournalStorageManagerImpl implements JMSStorageManager
 {

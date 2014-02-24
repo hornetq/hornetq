@@ -32,7 +32,7 @@ import org.hornetq.utils.UUID;
 
 /**
  * A concrete implementation of a message
- * <p/>
+ * <p>
  * All messages handled by HornetQ core are of this type
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -17,7 +17,7 @@ import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.impl.MessageInternal;
 
 /**
- * A SessionSendContinuationMessage<br/>
+ * A SessionSendContinuationMessage<br>
  * Created Dec 4, 2008 12:25:14 PM
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

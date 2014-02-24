@@ -87,10 +87,10 @@ import org.hornetq.utils.json.JSONObject;
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
  * factories. Typically this would only be used in an app server env.
- * <p/>
- * JMS Connection Factories & Destinations can be configured either
+ * <p>
+ * JMS Connection Factories and Destinations can be configured either
  * using configuration files or using a JMSConfiguration object.
- * <p/>
+ * <p>
  * If configuration files are used, JMS resources are redeployed if the
  * files content is changed.
  * If a JMSConfiguration object is used, the JMS resources can not be
@@ -446,7 +446,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     * Notice that this component has a {@link #startCalled} boolean to control its internal
     * life-cycle, but its {@link #isStarted()} returns the value of {@code server.isStarted()} and
     * not the value of {@link #startCalled}.
-    * <p/>
+    * <p>
     * This method and {@code server.start()} are interdependent in the following way:
     * <ol>
     * <li>{@link JMSServerManagerImpl#start()} is called, it sets {@code start_called=true}, and

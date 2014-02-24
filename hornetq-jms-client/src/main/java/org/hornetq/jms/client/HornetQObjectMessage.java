@@ -30,7 +30,7 @@ import org.hornetq.api.core.client.ClientSession;
  * HornetQ implementation of a JMS ObjectMessage.
  * <br>
  * Don't used ObjectMessage if you want good performance!
- * <p/>
+ * <p>
  * Serialization is slooooow!
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

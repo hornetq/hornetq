@@ -22,7 +22,7 @@ import org.hornetq.utils.DataConstants;
 /**
  * A simple String class that can store all characters, and stores as simple {@code byte[]}, this
  * minimises expensive copying between String objects.
- * <p/>
+ * <p>
  * This object is used heavily throughout HornetQ for performance reasons.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -45,7 +45,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
 
    /**
     * Returns a SimpleString constructed from the {@code string} parameter.
-    * <p/>
+    * <p>
     * If {@code string} is {@code null}, the return value will be {@code null} too.
     *
     * @param string String used to instantiate a SimpleString.
