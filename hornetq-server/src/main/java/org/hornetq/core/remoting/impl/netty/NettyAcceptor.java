@@ -14,6 +14,7 @@ package org.hornetq.core.remoting.impl.netty;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.AccessController;
@@ -46,6 +47,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
+
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -116,9 +118,13 @@ public class NettyAcceptor implements Acceptor
 
    private final int port;
 
+   private final String keyStoreProvider;
+
    private final String keyStorePath;
 
    private final String keyStorePassword;
+
+   private final String trustStoreProvider;
 
    private final String trustStorePath;
 
@@ -202,17 +208,28 @@ public class NettyAcceptor implements Acceptor
                                                 configuration);
       if (sslEnabled)
       {
+         keyStoreProvider = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME,
+                                                                  TransportConstants.DEFAULT_KEYSTORE_PROVIDER,
+                                                                  configuration);
+
          keyStorePath = ConfigurationHelper.getStringProperty(TransportConstants.KEYSTORE_PATH_PROP_NAME,
                                                               TransportConstants.DEFAULT_KEYSTORE_PATH,
                                                               configuration);
+
          keyStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME,
                                                                     TransportConstants.DEFAULT_KEYSTORE_PASSWORD,
                                                                     configuration,
                                                                     HornetQDefaultConfiguration.getPropMaskPassword(),
                                                                     HornetQDefaultConfiguration.getPropMaskPassword());
+
+         trustStoreProvider = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME,
+                                                                    TransportConstants.DEFAULT_TRUSTSTORE_PROVIDER,
+                                                                    configuration);
+
          trustStorePath = ConfigurationHelper.getStringProperty(TransportConstants.TRUSTSTORE_PATH_PROP_NAME,
                                                                 TransportConstants.DEFAULT_TRUSTSTORE_PATH,
                                                                 configuration);
+
          trustStorePassword = ConfigurationHelper.getPasswordProperty(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME,
                                                                       TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD,
                                                                       configuration,
@@ -233,8 +250,10 @@ public class NettyAcceptor implements Acceptor
       }
       else
       {
+         keyStoreProvider = TransportConstants.DEFAULT_KEYSTORE_PROVIDER;
          keyStorePath = TransportConstants.DEFAULT_KEYSTORE_PATH;
          keyStorePassword = TransportConstants.DEFAULT_KEYSTORE_PASSWORD;
+         trustStoreProvider = TransportConstants.DEFAULT_TRUSTSTORE_PROVIDER;
          trustStorePath = TransportConstants.DEFAULT_TRUSTSTORE_PATH;
          trustStorePassword = TransportConstants.DEFAULT_TRUSTSTORE_PASSWORD;
          enabledCipherSuites = TransportConstants.DEFAULT_ENABLED_CIPHER_SUITES;
@@ -306,10 +325,11 @@ public class NettyAcceptor implements Acceptor
       {
          try
          {
-            if (keyStorePath == null)
+            if (keyStorePath == null && TransportConstants.DEFAULT_TRUSTSTORE_PROVIDER.equals(keyStoreProvider))
                throw new IllegalArgumentException("If \"" + TransportConstants.SSL_ENABLED_PROP_NAME +
-                                                     "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null");
-            context = SSLSupport.createContext(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword);
+                                                     "\" is true then \"" + TransportConstants.KEYSTORE_PATH_PROP_NAME + "\" must be non-null " +
+                                                     "unless an alternative \"" + TransportConstants.KEYSTORE_PROVIDER_PROP_NAME + "\" has been specified.");
+            context = SSLSupport.createContext(keyStoreProvider, keyStorePath, keyStorePassword, trustStoreProvider, trustStorePath, trustStorePassword);
          }
          catch (Exception e)
          {
