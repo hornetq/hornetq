@@ -520,17 +520,16 @@ public class FailoverTest extends FailoverTestBase
          producer.send(message);
       }
 
-      int winSize = 0;
-      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS, null, winSize, 100, false);
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
-      final List<ClientMessage> received = new ArrayList<ClientMessage>();
+      final CountDownLatch latch = new CountDownLatch(NUM_MESSAGES);
 
       consumer.setMessageHandler(new MessageHandler()
       {
 
          public void onMessage(ClientMessage message)
          {
-            received.add(message);
+            latch.countDown();
          }
 
       });
@@ -539,19 +538,8 @@ public class FailoverTest extends FailoverTestBase
 
       crash(session);
 
-      int retry = 0;
-      while (received.size() < NUM_MESSAGES)
-      {
-         Thread.sleep(100);
-         retry++;
-         if (retry > 50)
-         {
-            break;
-         }
-      }
-      session.close();
-      final int retryLimit = 5;
-      Assert.assertTrue("Number of retries (" + retry + ") should be <= " + retryLimit, retry <= retryLimit);
+      assertTrue(latch.await(1, TimeUnit.SECONDS));
+
    }
 
    private void createClientSessionFactory() throws Exception
