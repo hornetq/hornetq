@@ -13,6 +13,8 @@
 
    <properties>
       <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+      <vertx.version>2.1RC1</vertx.version>
+      <vertx.testtools.version>2.0.2-final</vertx.testtools.version>
    </properties>
 
    <dependencies>
@@ -74,6 +76,11 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-vertx-integration</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-journal</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -112,6 +119,11 @@
       <dependency>
          <groupId>org.twitter4j</groupId>
          <artifactId>twitter4j-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>com.hazelcast</groupId>
+         <artifactId>hazelcast</artifactId>
+         <version>2.6.6</version>
       </dependency>
       <dependency>
          <groupId>junit</groupId>
@@ -162,6 +174,31 @@
          <groupId>org.jboss.jbossts.jts</groupId>
          <artifactId>jbossjts-jacorb</artifactId>
       </dependency>
+    <!--Vertx provided dependencies-->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-platform</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-hazelcast</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>testtools</artifactId>
+      <version>${vertx.testtools.version}</version>
+      <scope>test</scope>
+    </dependency>
    </dependencies>
 
    <build>
