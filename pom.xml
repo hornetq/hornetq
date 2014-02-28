@@ -33,7 +33,7 @@
    </prerequisites>
 
    <properties>
-      <netty.version>4.0.13.Final</netty.version>
+      <netty.version>4.0.17.Final</netty.version>
       <hornetq.version.versionName>Wild Hornet</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>5</hornetq.version.minorVersion>
@@ -485,6 +485,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>tests</module>
          </modules>
       </profile>
@@ -507,6 +508,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>examples</module>
          </modules>
       </profile>
@@ -529,6 +531,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>examples</module>
             <module>docs</module>
             <module>distribution</module>
@@ -553,6 +556,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>tests</module>
          </modules>
          <properties>
@@ -588,6 +592,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>tests</module>
          </modules>
          <properties>
@@ -619,6 +624,7 @@
             <module>integration/hornetq-spring-integration</module>
             <module>integration/hornetq-twitter-integration</module>
             <module>integration/hornetq-aerogear-integration</module>
+            <module>integration/hornetq-vertx-integration</module>
             <module>tests</module>
             <module>examples</module>
          </modules>
@@ -852,7 +858,7 @@
                <failOnError>false</failOnError>
             </configuration>
          </plugin>
-
+<!--
          <plugin>
             <groupId>com.mycila</groupId>
             <artifactId>license-maven-plugin</artifactId>
@@ -870,7 +876,6 @@
                   <include>**/*.java</include>
                </includes>
                <excludes>
-                  <!--exclude>src/test/**</exclude-->
                   <exclude>**/filter/impl/Identifier.java</exclude>
                   <exclude>**/filter/impl/Operator.java</exclude>
                   <exclude>**/filter/impl/RegExp.java</exclude>
@@ -890,6 +895,7 @@
                </execution>
             </executions>
          </plugin>
+-->
       </plugins>
    </build>
 
