@@ -134,6 +134,8 @@ public class FakeQueue implements Queue
 
    private final long id;
 
+   private long messageCount;
+
    public FakeQueue(final SimpleString name)
    {
       this(name, 0);
@@ -308,8 +310,12 @@ public class FakeQueue implements Queue
    @Override
    public long getMessageCount()
    {
-      // no-op
-      return 0;
+      return messageCount;
+   }
+
+   public void setMessageCount(long messageCount)
+   {
+      this.messageCount = messageCount;
    }
 
    @Override
@@ -590,6 +596,4 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return null;
    }
-
-
 }

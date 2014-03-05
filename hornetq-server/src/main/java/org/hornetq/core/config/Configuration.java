@@ -58,6 +58,20 @@ public interface Configuration extends Serializable
    void setBackupGroupName(String nodeGroupName);
 
    /**
+    * returns the name used to group
+    *
+    * @return the name of the group
+    */
+   String getExportGroupName();
+
+   /**
+    * Used to configure groups of live/backup servers.
+    *
+    * @param nodeGroupName the node group name
+    */
+   void setExportGroupName(String nodeGroupName);
+
+   /**
     * Returns whether this server is clustered. <br>
     * {@code true} if {@link #getClusterConfigurations()} is not empty.
     */
@@ -445,6 +459,19 @@ public interface Configuration extends Serializable
     * to {@code true}.
     */
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
+
+   /**
+    * Should we export our messages when the server is shutdown cleanly.
+    *
+    * @return true if server should export its messages on clean shutdown
+    * @see #setExportOnServerShutdown(boolean)
+    */
+   boolean isExportOnServerShutdown();
+
+   /**
+    * Sets whether to allow the server to export its messages on server shutdown.
+    */
+   void setExportOnServerShutdown(boolean exportOnServerShutdown);
 
    /**
     * Sets the cluster password for this server.
@@ -932,6 +959,21 @@ public interface Configuration extends Serializable
     * @see #setReplicationClustername(String)
     */
    String getReplicationClustername();
+
+   /**
+    * Name of the cluster configuration to use for exportation.
+    * <p/>
+    * Only applicable for servers with more than one cluster configuration.
+    *
+    * @param clusterName
+    */
+   void setExportationClustername(String clusterName);
+
+   /**
+    * @return name of the cluster configuration to use
+    * @see #setExportationClustername(String)
+    */
+   String getExportationClustername();
 
    /*
    * Whether or not that HornetQ should use all protocols available on the classpath. If false only the core protocol will

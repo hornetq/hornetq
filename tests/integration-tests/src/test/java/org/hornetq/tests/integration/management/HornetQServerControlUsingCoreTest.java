@@ -348,6 +348,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean) proxy.retrieveAttributeValue("failoverOnServerShutdown");
          }
 
+         public void setExportOnServerShutdown(boolean exportOnServerShutdown) throws Exception
+         {
+            proxy.invokeOperation("setExportOnServerShutdown", exportOnServerShutdown);
+         }
+
+         public boolean isExportOnServerShutdown()
+         {
+            return (Boolean) proxy.retrieveAttributeValue("exportOnServerShutdown");
+         }
+
          public boolean isMessageCounterEnabled()
          {
             return (Boolean) proxy.retrieveAttributeValue("messageCounterEnabled");

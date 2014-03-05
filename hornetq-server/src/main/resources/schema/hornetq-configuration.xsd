@@ -156,6 +156,15 @@
           </xsd:annotation>
         </xsd:element>
 
+        <xsd:element name="exportation-clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation>
+              Name of the cluster configuration to use for export on shutdown. This setting is only
+              necessary in case you configure multiple cluster connections.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+
         <xsd:element name="max-saved-replicated-journals-size" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:field_name="DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE">
             <xsd:documentation>
@@ -349,6 +358,15 @@
           </xsd:annotation>
         </xsd:element>
 
+        <xsd:element name="export-group-name" type="xsd:string" maxOccurs="1" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation>
+              used for export, if set, a live server will only export to another live server
+              with matching export-group-name
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+
         <xsd:element name="failback-delay" type="xsd:long" default="5000" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)"
                           hq:field_name="DEFAULT_FAILBACK_DELAY">
@@ -360,6 +378,14 @@
           <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN">
             <xsd:documentation>
               Will this backup server come live on a normal server shutdown
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+
+        <xsd:element name="export-on-shutdown" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="ha.export-on-shutdown" hq:field_name="DEFAULT_EXPORT_ON_SERVER_SHUTDOWN">
+            <xsd:documentation>
+              Will this server export its messages to another live server in the cluster
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>

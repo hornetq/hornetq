@@ -13,9 +13,10 @@
 
 package org.hornetq.core.server.impl;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,42 +25,59 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LiveNodeLocator;
 
 /**
  * This implementation looks for any available live node, once tried with no success it is marked as
  * tried and the next available is used.
  *
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author Justin Bertram
  */
-public class AnyLiveNodeLocator extends LiveNodeLocator
+public class AnyLiveNodeLocatorForExport extends LiveNodeLocator
 {
    private final Lock lock = new ReentrantLock();
    private final Condition condition = lock.newCondition();
    private final HornetQServerImpl server;
-   Map<String, Pair<TransportConfiguration, TransportConfiguration>> untriedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
-   Map<String, Pair<TransportConfiguration, TransportConfiguration>> triedConnectors = new HashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
+   Map<String, Pair<TransportConfiguration, TransportConfiguration>> connectors = new TreeMap<>();
 
    private String nodeID;
+   private String myNodeID;
 
-   public AnyLiveNodeLocator(QuorumManager quorumManager, HornetQServerImpl server)
+   public AnyLiveNodeLocatorForExport(HornetQServerImpl server)
    {
-      super(quorumManager);
+      super();
       this.server = server;
+      this.myNodeID = server.getNodeID().toString();
    }
 
    @Override
    public void locateNode() throws HornetQException
    {
-      //first time
+      locateNode(-1L);
+   }
+
+   @Override
+   public void locateNode(long timeout) throws HornetQException
+   {
       try
       {
          lock.lock();
-         if (untriedConnectors.isEmpty())
+         if (connectors.isEmpty())
          {
             try
             {
-               condition.await();
+               if (timeout != -1L)
+               {
+                  if (!condition.await(timeout, TimeUnit.MILLISECONDS))
+                  {
+                     throw new HornetQException("Timeout elapsed while waiting for cluster node");
+                  }
+               }
+               else
+               {
+                  condition.await();
+               }
             }
             catch (InterruptedException e)
             {
@@ -79,11 +97,21 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         Pair<TransportConfiguration, TransportConfiguration> connector =
-            new Pair<TransportConfiguration, TransportConfiguration>(topologyMember.getLive(), topologyMember.getBackup());
+         Pair<TransportConfiguration, TransportConfiguration> connector = new Pair<>(topologyMember.getLive(), topologyMember.getBackup());
+
+         if (topologyMember.getNodeId().equals(myNodeID))
+         {
+            if (HornetQServerLogger.LOGGER.isTraceEnabled())
+            {
+               HornetQServerLogger.LOGGER.trace(this + "::informing node about itself, nodeUUID=" +
+                                                   server.getNodeID() + ", connectorPair=" + topologyMember + ", this = " + this);
+            }
+            return;
+         }
+
          if (server.checkLiveIsNotColocated(topologyMember.getNodeId()))
          {
-            untriedConnectors.put(topologyMember.getNodeId(), connector);
+            connectors.put(topologyMember.getNodeId(), connector);
             condition.signal();
          }
       }
@@ -93,21 +121,14 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       }
    }
 
-   /**
-    * if a node goes down we try all the connectors again as one may now be available for
-    * replication
-    * <p/>
-    * TODO: there will be a better way to do this by finding which nodes backup has gone down.
-    */
    @Override
    public void nodeDown(long eventUID, String nodeID)
    {
       try
       {
          lock.lock();
-         untriedConnectors.putAll(triedConnectors);
-         triedConnectors.clear();
-         if (untriedConnectors.size() > 0)
+         connectors.remove(nodeID);
+         if (connectors.size() > 0)
          {
             condition.signal();
          }
@@ -130,13 +151,13 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         Iterator<String> iterator = untriedConnectors.keySet().iterator();
+         Iterator<String> iterator = connectors.keySet().iterator();
          //sanity check but this should never happen
          if (iterator.hasNext())
          {
             nodeID = iterator.next();
          }
-         return untriedConnectors.get(nodeID);
+         return connectors.get(nodeID);
       }
       finally
       {
@@ -150,18 +171,12 @@ public class AnyLiveNodeLocator extends LiveNodeLocator
       try
       {
          lock.lock();
-         Pair<TransportConfiguration, TransportConfiguration> tc = untriedConnectors.remove(nodeID);
-         //it may have been removed
-         if (tc != null)
-         {
-            triedConnectors.put(nodeID, tc);
-         }
+         connectors.remove(nodeID);
       }
       finally
       {
          lock.unlock();
       }
-      super.notifyRegistrationFailed(alreadyReplicating);
    }
 }
 

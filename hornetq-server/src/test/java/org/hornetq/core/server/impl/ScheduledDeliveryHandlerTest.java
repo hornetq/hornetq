@@ -1472,5 +1472,4 @@ public class ScheduledDeliveryHandlerTest extends Assert
 
       }
    }
-
 }

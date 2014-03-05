@@ -147,6 +147,17 @@ public interface HornetQServerControl
    boolean isFailoverOnServerShutdown();
 
    /**
+    * does the server export its messages on clean shutdown
+    */
+   void setExportOnServerShutdown(boolean exportOnServerShutdown) throws Exception;
+
+
+   /**
+    * returns if server exports messages on clean shutdown
+    */
+   boolean isExportOnServerShutdown();
+
+   /**
     * Returns the minimal number of journal files before compacting.
     */
    int getJournalCompactMinFiles();

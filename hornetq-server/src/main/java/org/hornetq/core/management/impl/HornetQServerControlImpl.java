@@ -306,6 +306,37 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public void setExportOnServerShutdown(boolean exportOnServerShutdown)
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         configuration.setExportOnServerShutdown(exportOnServerShutdown);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+
+   public boolean isExportOnServerShutdown()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         return configuration.isExportOnServerShutdown();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public int getJournalMaxIO()
    {
       checkStarted();

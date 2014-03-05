@@ -13,6 +13,7 @@
 package org.hornetq.core.config;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.core.server.HornetQServerLogger;
 
 public final class ConfigurationUtils
 {
@@ -32,6 +33,22 @@ public final class ConfigurationUtils
          if (replicationCluster.equals(clusterConf.getName()))
             return clusterConf;
       }
-      throw new HornetQIllegalStateException("Missing cluster-configuration for replication-cluster-name '" + replicationCluster + "'.");
+      throw new HornetQIllegalStateException("Missing cluster-configuration for replication-clustername '" + replicationCluster + "'.");
+   }
+
+   public static ClusterConnectionConfiguration getExportationClusterConfiguration(Configuration conf)
+   {
+      final String exportationCluster = conf.getExportationClustername();
+      if (exportationCluster == null || exportationCluster.isEmpty())
+         return conf.getClusterConfigurations().get(0);
+      for (ClusterConnectionConfiguration clusterConf : conf.getClusterConfigurations())
+      {
+         if (exportationCluster.equals(clusterConf.getName()))
+            return clusterConf;
+      }
+
+      HornetQServerLogger.LOGGER.missingClusterConfigForExport(exportationCluster);
+
+      return null;
    }
 }

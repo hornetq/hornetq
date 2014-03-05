@@ -577,6 +577,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return addressManager.getMatchingBindings(address);
    }
 
+   public Map<SimpleString, Binding> getAllBindings()
+   {
+      return addressManager.getBindings();
+   }
+
    public void route(final ServerMessage message, final boolean direct) throws Exception
    {
       route(message, (Transaction) null, direct);
