@@ -135,7 +135,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 20; i++)
       {
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
          clientFile.putIntProperty("value", i);
 
@@ -217,7 +217,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 
@@ -262,7 +262,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(UUID.randomUUID().toString());
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 
@@ -284,7 +284,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       // Send large message which should be dropped and deleted from the filesystem
 
@@ -471,7 +471,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 
@@ -566,7 +566,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
       producer.send(clientFile);
 
       session.commit();
@@ -644,7 +644,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, false);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, false);
       clientFile.setExpiration(System.currentTimeMillis());
 
       producer.send(clientFile);
@@ -761,7 +761,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
       clientFile.setExpiration(System.currentTimeMillis());
 
       producer.send(clientFile);
@@ -874,7 +874,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, true);
+         Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
          clientFile.setExpiration(System.currentTimeMillis());
 
@@ -979,7 +979,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
+            Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
             if (isSimulateBridge)
             {
@@ -1064,7 +1064,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientProducer producer2 = session.createProducer(ADDRESS2);
 
-         Message clientFile = createLargeClientMessage(session, messageSize, false);
+         Message clientFile = createLargeClientMessageStreaming(session, messageSize, false);
 
          producer.send(clientFile);
 
@@ -1144,7 +1144,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         Message originalMsg = createLargeClientMessage(session, messageSize, false);
+         Message originalMsg = createLargeClientMessageStreaming(session, messageSize, false);
 
          producer.send(originalMsg);
 
@@ -2117,7 +2117,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       int numberOfBytes = 400000;
 
-      Message clientFile = createLargeClientMessage(session, numberOfBytes);
+      Message clientFile = createLargeClientMessageStreaming(session, numberOfBytes);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -2187,7 +2187,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       int numberOfBytes = 400000;
 
-      Message clientFile = createLargeClientMessage(session, numberOfBytes);
+      Message clientFile = createLargeClientMessageStreaming(session, numberOfBytes);
 
       ClientProducer producer = session.createProducer(ADDRESS);
       producer.send(clientFile);
@@ -2266,7 +2266,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, 50000, durable);
+      Message clientFile = createLargeClientMessageStreaming(session, 50000, durable);
 
       for (int i = 0; i < 1; i++)
       {
@@ -2339,7 +2339,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       for (int n = 0; n < 10; n++)
       {
-         Message clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
+         Message clientFile = createLargeClientMessageStreaming(session, numberOfBytes, n % 2 == 0);
 
          producer.send(clientFile);
 
@@ -2357,7 +2357,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             session.rollback();
          }
 
-         clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
+         clientFile = createLargeClientMessageStreaming(session, numberOfBytes, n % 2 == 0);
 
          producer.send(clientFile);
 
@@ -2684,7 +2684,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          producer.send(message);
       }
 
-      ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+      ClientMessage clientFile = createLargeClientMessageStreaming(session, numberOfBytesBigMessage);
       clientFile.putBooleanProperty("TestLarge", true);
       producer.send(clientFile);
 
@@ -2830,7 +2830,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+         ClientMessage clientFile = createLargeClientMessageStreaming(session, numberOfBytesBigMessage);
          clientFile.putBooleanProperty("TestLarge", true);
          producer.send(clientFile);
       }
@@ -3153,7 +3153,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          producer.send(message);
       }
 
-      ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+      ClientMessage clientFile = createLargeClientMessageStreaming(session, numberOfBytesBigMessage);
 
       producer.send(clientFile);
 

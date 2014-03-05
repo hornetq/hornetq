@@ -70,6 +70,22 @@ public class ConsumerTest extends ServiceTestBase
    }
 
    @Test
+   public void testStressConnection() throws Exception
+   {
+
+      for (int i = 0; i < 10; i++)
+      {
+         ServerLocator locatorSendx = createFactory(isNetty());
+         locatorSendx.setReconnectAttempts(-1);
+         ClientSessionFactory factoryx = locatorSendx.createSessionFactory();
+         factoryx.close();
+         locatorSendx.close();
+      }
+
+   }
+
+
+   @Test
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
       ClientSessionFactory sf = createSessionFactory(locator);
@@ -492,6 +508,9 @@ public class ConsumerTest extends ServiceTestBase
                   System.out.println("ERROR: Received an extra message");
                   errors.incrementAndGet();
                }
+               sessionSend.close();
+               factory.close();
+               locatorSend.close();
             }
             catch (Exception e)
             {

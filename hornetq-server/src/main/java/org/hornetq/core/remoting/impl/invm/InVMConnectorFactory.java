@@ -10,6 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package org.hornetq.core.remoting.impl.invm;
 
 import java.util.Map;
@@ -39,14 +40,7 @@ public class InVMConnectorFactory implements ConnectorFactory
    {
       InVMConnector connector = new InVMConnector(configuration, handler, listener, closeExecutor, threadPool);
 
-      if (connector.getAcceptor() == null)
-      {
-         return null;
-      }
-      else
-      {
-         return connector;
-      }
+      return connector;
    }
 
    public Set<String> getAllowableProperties()

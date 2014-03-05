@@ -408,7 +408,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          {
             try
             {
-               ClientSession.BindingQuery query = clientSession.bindingQuery(address);
+               ClientSession.AddressQuery query = clientSession.addressQuery(address);
                if (!query.isExists())
                {
                   throw new InvalidDestinationException("Destination " + address + " does not exist");

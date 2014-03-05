@@ -205,12 +205,13 @@ public final class ClientLargeMessageImpl extends ClientMessageImpl implements C
       }
    }
 
-   public void retrieveExistingData(ClientMessageImpl clMessage)
+   public void retrieveExistingData(ClientMessageInternal clMessage)
    {
       this.messageID = clMessage.getMessageID();
       this.address = clMessage.getAddress();
       this.setUserID(clMessage.getUserID());
-
+      this.setFlowControlSize(clMessage.getFlowControlSize());
+      this.setDeliveryCount(clMessage.getDeliveryCount());
       this.type = clMessage.getType();
       this.durable = clMessage.isDurable();
       this.setExpiration(clMessage.getExpiration());

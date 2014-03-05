@@ -56,6 +56,52 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       return locator1;
    }
 
+   @Test
+   public void testSimpleSendOnAvoid() throws Exception
+   {
+      HornetQServer server = createServer(true, isNetty());
+      server.start();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = addClientSession(sf.createSession(false, true, true));
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      int minLargeSize = locator.getMinLargeMessageSize();
+
+      TestLargeMessageInputStream input = new TestLargeMessageInputStream(minLargeSize);
+
+      ClientMessage clientFile = session.createMessage(true);
+      clientFile.setBodyInputStream(input.clone());
+
+      producer.send(clientFile);
+
+      session.start();
+
+      //no file should be in the dir as we send it as regular
+      validateNoFilesOnLargeDir();
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      ClientMessage msg1 = consumer.receive(1000);
+      Assert.assertNotNull(msg1);
+
+      for (int i = 0; i < input.getSize(); i++)
+      {
+         byte b = msg1.getBodyBuffer().readByte();
+         assertEquals("incorrect char ", input.getChar(i), b);
+      }
+      msg1.acknowledge();
+      consumer.close();
+
+      session.close();
+   }
+
+
+
    //send some messages that can be compressed into regular size.
    @Test
    public void testSendRegularAfterCompression() throws Exception
@@ -65,7 +111,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       ClientSessionFactory sf = createSessionFactory(locator);
 
-      ClientSession session = addClientSession(sf.createSession(false, false, false));
+      ClientSession session = addClientSession(sf.createSession(false, true, true));
 
       session.createTemporaryQueue(ADDRESS, ADDRESS);
 
@@ -76,7 +122,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
       TestLargeMessageInputStream input = new TestLargeMessageInputStream(minLargeSize);
       adjustLargeCompression(true, input, 1024);
 
-      int num = 20;
+      int num = 1;
       for (int i = 0; i < num; i++)
       {
          ClientMessage clientFile = session.createMessage(true);
@@ -84,8 +130,6 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
          producer.send(clientFile);
       }
-
-      session.commit();
 
       session.start();
 
@@ -281,7 +325,7 @@ public class LargeMessageAvoidLargeMessagesTest extends LargeMessageTest
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 

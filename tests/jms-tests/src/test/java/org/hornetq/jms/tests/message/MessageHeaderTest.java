@@ -10,7 +10,14 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package org.hornetq.jms.tests.message;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -26,11 +33,6 @@ import javax.jms.TextMessage;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.io.File;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -39,6 +41,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.FailoverEventListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
@@ -1226,7 +1229,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
-      public BindingQuery bindingQuery(final SimpleString address) throws HornetQException
+      public AddressQuery addressQuery(final SimpleString address) throws HornetQException
       {
          return null;
       }
@@ -1447,6 +1450,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
          // TODO Auto-generated method stub
 
+      }
+
+      @Override
+      public ClientSessionFactory getSessionFactory()
+      {
+         return null;
       }
    }
 }

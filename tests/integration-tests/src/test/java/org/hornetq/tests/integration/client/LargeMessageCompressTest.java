@@ -79,7 +79,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 
@@ -124,7 +124,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 
@@ -184,7 +184,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      Message clientFile = createLargeClientMessage(session, messageSize, true);
+      Message clientFile = createLargeClientMessageStreaming(session, messageSize, true);
 
       producer.send(clientFile);
 

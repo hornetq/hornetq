@@ -29,6 +29,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
@@ -255,7 +256,7 @@ public class BackupManager implements HornetQComponent
                   //send the announce message
                   if (backupSessionFactory != null)
                   {
-                     backupSessionFactory.getConnection()
+                     ((CoreRemotingConnection)backupSessionFactory.getConnection())
                         .getChannel(0, -1)
                         .send(new NodeAnnounceMessage(System.currentTimeMillis(),
                                                       nodeManager.getNodeId().toString(),

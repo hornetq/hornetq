@@ -14,6 +14,8 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.QueueQueryImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.QueueQueryResult;
 
@@ -167,6 +169,18 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       result = prime * result + (temporary ? 1231 : 1237);
       return result;
+   }
+
+   public ClientSession.QueueQuery toQueueQuery()
+   {
+      return new QueueQueryImpl(isDurable(),
+                                isTemporary(),
+                                getConsumerCount(),
+                                getMessageCount(),
+                                getFilterString(),
+                                getAddress(),
+                                getName(),
+                                isExists());
    }
 
    @Override

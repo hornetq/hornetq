@@ -10,27 +10,14 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-/**
- *
- */
-package org.hornetq.utils;
+package org.hornetq.spi.core.remoting;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 
 /**
- * TODO: get rid of this
+ * @author Clebert Suconic
  */
-public final class ConfirmationWindowWarning
+public interface ClientProtocolManagerFactory
 {
-   public final boolean disabled;
-   public final AtomicBoolean warningIssued;
-
-   /**
-    *
-    */
-   public ConfirmationWindowWarning(boolean disabled)
-   {
-      this.disabled = disabled;
-      warningIssued = new AtomicBoolean(false);
-   }
+   ClientProtocolManager newProtocolManager(ClientSessionFactoryInternal factoryInternal);
 }

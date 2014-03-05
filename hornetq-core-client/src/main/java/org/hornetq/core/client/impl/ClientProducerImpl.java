@@ -26,11 +26,8 @@ import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
-import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.spi.core.remoting.SessionContext;
 import org.hornetq.utils.DeflaterReader;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -49,7 +46,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private final ClientSessionInternal session;
 
-   private final Channel channel;
+   private final SessionContext sessionContext;
 
    private volatile boolean closed;
 
@@ -79,9 +76,9 @@ public class ClientProducerImpl implements ClientProducerInternal
                              final boolean autoGroup,
                              final SimpleString groupID,
                              final int minLargeMessageSize,
-                             final Channel channel)
+                             final SessionContext sessionContext)
    {
-      this.channel = channel;
+      this.sessionContext = sessionContext;
 
       this.session = session;
 
@@ -239,8 +236,8 @@ public class ClientProducerImpl implements ClientProducerInternal
          // a note about the second check on the writerIndexSize,
          // If it's a server's message, it means this is being done through the bridge or some special consumer on the
          // server's on which case we can't' convert the message into large at the servers
-         if (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
-            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && !msgI.isServerMessage())
+         if (sessionContext.supportsLargeMessage() && (msgI.getBodyInputStream() != null || msgI.isLargeMessage() ||
+            msgI.getBodyBuffer().writerIndex() > minLargeMessageSize && !msgI.isServerMessage()))
          {
             isLarge = true;
          }
@@ -320,23 +317,16 @@ public class ClientProducerImpl implements ClientProducerInternal
          // Not the continuations, but this is ok since we are only interested in limiting the amount of
          // data in *memory* and continuations go straight to the disk
 
-         theCredits.acquireCredits(msgI.getEncodeSize());
+         int creditSize = sessionContext.getCreditsOnSendingFull(msgI);
+
+         theCredits.acquireCredits(creditSize);
       }
       catch (InterruptedException e)
       {
          throw new HornetQInterruptedException(e);
       }
 
-      SessionSendMessage packet = new SessionSendMessage(msgI, sendBlocking, handler);
-
-      if (sendBlocking)
-      {
-         channel.sendBlocking(packet, PacketImpl.NULL_RESPONSE);
-      }
-      else
-      {
-         channel.sendBatched(packet);
-      }
+      sessionContext.sendFullMessage(msgI, sendBlocking, handler);
    }
 
    private void checkClosed() throws HornetQException
@@ -354,9 +344,8 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param handler
     * @throws HornetQException
     */
-   private void
-   largeMessageSend(final boolean sendBlocking, final MessageInternal msgI,
-                    final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
+   private void largeMessageSend(final boolean sendBlocking, final MessageInternal msgI,
+                                 final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
    {
       int headerSize = msgI.getHeadersAndPropertiesEncodeSize();
 
@@ -387,16 +376,16 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
    }
 
-   private void
-   sendInitialLargeMessageHeader(MessageInternal msgI, ClientProducerCredits credits) throws HornetQException
+   private void sendInitialLargeMessageHeader(MessageInternal msgI, ClientProducerCredits credits) throws HornetQException
    {
-      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(msgI);
+      int creditsUsed = sessionContext.sendInitialChunkOnLargeMessage(msgI);
 
-      channel.send(initialChunk);
-
+      // On the case of large messages we tried to send credits before but we would starve otherwise
+      // we may find a way to improve the logic and always acquire the credits before
+      // but that's the way it's been tested and been working ATM
       try
       {
-         credits.acquireCredits(msgI.getHeadersAndPropertiesEncodeSize());
+         credits.acquireCredits(creditsUsed);
       }
       catch (InterruptedException e)
       {
@@ -413,9 +402,8 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param handler
     * @throws HornetQException
     */
-   private void
-   largeMessageSendServer(final boolean sendBlocking, final MessageInternal msgI,
-                          final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
+   private void largeMessageSendServer(final boolean sendBlocking, final MessageInternal msgI,
+                                       final ClientProducerCredits credits, SendAcknowledgementHandler handler) throws HornetQException
    {
       sendInitialLargeMessageHeader(msgI, credits);
 
@@ -440,25 +428,13 @@ public class ClientProducerImpl implements ClientProducerInternal
             pos += chunkLength;
 
             lastChunk = pos >= bodySize;
-            final boolean requiresResponse = lastChunk && sendBlocking;
             SendAcknowledgementHandler messageHandler = lastChunk ? handler : null;
-            final SessionSendContinuationMessage chunk =
-               new SessionSendContinuationMessage(msgI, bodyBuffer.toByteBuffer().array(), !lastChunk,
-                                                  requiresResponse, messageHandler);
 
-            if (requiresResponse)
-            {
-               // When sending it blocking, only the last chunk will be blocking.
-               channel.sendBlocking(chunk, PacketImpl.NULL_RESPONSE);
-            }
-            else
-            {
-               channel.send(chunk);
-            }
+            int creditsUsed = sessionContext.sendLargeMessageChunk(msgI, -1, sendBlocking, lastChunk, bodyBuffer.toByteBuffer().array(), messageHandler);
 
             try
             {
-               credits.acquireCredits(chunk.getPacketSize());
+               credits.acquireCredits(creditsUsed);
             }
             catch (InterruptedException e)
             {
@@ -580,38 +556,42 @@ public class ClientProducerImpl implements ClientProducerInternal
                sendRegularMessage(msgI, sendBlocking, credits, handler);
                return;
             }
-
-            chunk = new SessionSendContinuationMessage(msgI, buff, false, sendBlocking, messageSize.get(), handler);
+            else
+            {
+               if (!headerSent)
+               {
+                  headerSent = true;
+                  sendInitialLargeMessageHeader(msgI, credits);
+               }
+               int creditsSent = sessionContext.sendLargeMessageChunk(msgI, messageSize.get(), sendBlocking, true, buff, handler);
+               try
+               {
+                  credits.acquireCredits(creditsSent);
+               }
+               catch (InterruptedException e)
+               {
+                  throw new HornetQInterruptedException(e);
+               }
+            }
          }
          else
          {
-            chunk = new SessionSendContinuationMessage(msgI, buff, true, false, null);
-         }
-
-         if (!headerSent)
-         {
-            sendInitialLargeMessageHeader(msgI, credits);
-            headerSent = true;
-         }
+            if (!headerSent)
+            {
+               headerSent = true;
+               sendInitialLargeMessageHeader(msgI, credits);
+            }
 
 
-         if (sendBlocking && lastPacket)
-         {
-            // When sending it blocking, only the last chunk will be blocking.
-            channel.sendBlocking(chunk, PacketImpl.NULL_RESPONSE);
-         }
-         else
-         {
-            channel.send(chunk);
-         }
-
-         try
-         {
-            credits.acquireCredits(chunk.getPacketSize());
-         }
-         catch (InterruptedException e)
-         {
-            throw new HornetQInterruptedException(e);
+            int creditsSent = sessionContext.sendLargeMessageChunk(msgI, messageSize.get(), sendBlocking, false, buff, handler);
+            try
+            {
+               credits.acquireCredits(creditsSent);
+            }
+            catch (InterruptedException e)
+            {
+               throw new HornetQInterruptedException(e);
+            }
          }
       }
 

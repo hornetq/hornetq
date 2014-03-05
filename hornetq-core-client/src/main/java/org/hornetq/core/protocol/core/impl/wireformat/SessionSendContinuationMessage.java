@@ -59,24 +59,13 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param requiresResponse
     */
    public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues,
-                                         final boolean requiresResponse, SendAcknowledgementHandler handler)
+                                         final boolean requiresResponse, final long messageBodySize,
+                                         SendAcknowledgementHandler handler)
    {
       super(SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
       this.message = message;
       this.handler = handler;
-   }
-
-   /**
-    * @param body
-    * @param continues
-    * @param requiresResponse
-    */
-   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues,
-                                         final boolean requiresResponse, final long messageBodySize,
-                                         SendAcknowledgementHandler handler)
-   {
-      this(message, body, continues, requiresResponse, handler);
       this.messageBodySize = messageBodySize;
    }
 

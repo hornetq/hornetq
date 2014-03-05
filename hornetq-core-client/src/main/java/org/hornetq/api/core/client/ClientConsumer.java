@@ -32,6 +32,14 @@ import org.hornetq.api.core.HornetQException;
  */
 public interface ClientConsumer extends AutoCloseable
 {
+
+   /**
+    * The server's ID associated with this consumer.
+    * HornetQ implements this as a long but this could be protocol dependent.
+    * @return
+    */
+   Object getId();
+
    /**
     * Receives a message from a queue.
     * <p>

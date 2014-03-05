@@ -591,9 +591,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
    }
 
-   protected ClientMessage createLargeClientMessage(final ClientSession session, final int numberOfBytes) throws Exception
+   protected ClientMessage createLargeClientMessageStreaming(final ClientSession session, final int numberOfBytes) throws Exception
    {
-      return createLargeClientMessage(session, numberOfBytes, true);
+      return createLargeClientMessageStreaming(session, numberOfBytes, true);
    }
 
    protected ClientMessage createLargeClientMessage(final ClientSession session, final byte[] buffer, final boolean durable) throws Exception
@@ -603,9 +603,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
       return msgs;
    }
 
-   protected ClientMessage createLargeClientMessage(final ClientSession session,
-                                                    final long numberOfBytes,
-                                                    final boolean persistent) throws Exception
+   protected ClientMessage createLargeClientMessageStreaming(final ClientSession session,
+                                                             final long numberOfBytes,
+                                                             final boolean persistent) throws Exception
    {
 
       ClientMessage clientMessage = session.createMessage(persistent);

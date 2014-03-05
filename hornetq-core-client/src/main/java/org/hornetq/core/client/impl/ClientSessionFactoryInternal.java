@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.client.impl;
 
+import java.util.concurrent.locks.Lock;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -57,4 +59,7 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    void setReconnectAttempts(int i);
 
    ConfirmationWindowWarning getConfirmationWindowWarning();
+
+
+   Lock lockFailover();
 }
