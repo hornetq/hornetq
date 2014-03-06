@@ -180,6 +180,9 @@ public class QueueControlTest extends ManagementTestBase
 
       Assert.assertEquals(expiryAddress, queueControl.getExpiryAddress());
 
+      Queue serverqueue = server.locateQueue(queue);
+      assertEquals(expiryAddress, serverqueue.getExpiryAddress().toString());
+
       session.deleteQueue(queue);
    }
 
@@ -1885,12 +1888,5 @@ public class QueueControlTest extends ManagementTestBase
       server = null;
 
       super.tearDown();
-   }
-
-   protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
-   {
-      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, queue, mbeanServer);
-
-      return queueControl;
    }
 }

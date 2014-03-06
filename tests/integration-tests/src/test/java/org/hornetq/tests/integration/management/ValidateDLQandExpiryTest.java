@@ -14,12 +14,14 @@
 package org.hornetq.tests.integration.management;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.logging.AssertionLoggerHandler;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Test;
 
 /**
@@ -30,7 +32,7 @@ import org.junit.Test;
  *
  * @author Clebert Suconic
  */
-public class ValidateDLQandExpiryTest extends ServiceTestBase
+public class ValidateDLQandExpiryTest extends ManagementTestBase
 {
 
    public static final SimpleString IDONTEXIST = SimpleString.toSimpleString("IDONTEXIST");
@@ -93,6 +95,194 @@ public class ValidateDLQandExpiryTest extends ServiceTestBase
 
             // It should log on this one.. it's new
             assertTrue(AssertionLoggerHandler.findText("HQ222180", DLQ_NON_EXISTENT.concat("2").toString()));
+
+         }
+         finally
+         {
+            try
+            {
+               server.stop();
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+      finally
+      {
+         AssertionLoggerHandler.stopCapture();
+      }
+   }
+
+   /**
+    * This test is validating for logging output, for that reason the test is starting the server
+    * and doing a full cycle instead of using setUps and tearDowns.
+    */
+   @Test
+   public void testExpiryAndDLQPreLoaded() throws Exception
+   {
+
+      AssertionLoggerHandler.startCapture();
+
+      try
+      {
+         Configuration config = createDefaultConfig(false);
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("PreLoaded", "PreLoadedqueue", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist", "IExist", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist2", "IExist2", null, true));
+
+
+         AddressSettings settings = new AddressSettings();
+         settings.setExpiryAddress(SimpleString.toSimpleString("IExist"));
+         settings.setDeadLetterAddress(SimpleString.toSimpleString("IExist2"));
+         config.getAddressesSettings().put("#", settings);
+         HornetQServer server = HornetQServers.newHornetQServer(config);
+
+         try
+         {
+            server.start();
+            waitForServer(server);
+
+            assertTrue(server.isAddressBound("IExist"));
+
+            // There shouldn't be anything wrong now
+            assertFalse(AssertionLoggerHandler.findText("HQ222179"));
+            assertFalse(AssertionLoggerHandler.findText("HQ222180"));
+
+         }
+         finally
+         {
+            try
+            {
+               server.stop();
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+      finally
+      {
+         AssertionLoggerHandler.stopCapture();
+      }
+   }
+
+   /**
+    * This test is validating for logging output, for that reason the test is starting the server
+    * and doing a full cycle instead of using setUps and tearDowns.
+    */
+   @Test
+   public void testExpiryAndDLQSetThroughManagement() throws Exception
+   {
+
+      AssertionLoggerHandler.startCapture();
+
+      try
+      {
+         Configuration config = createDefaultConfig(false);
+         config.setJMXManagementEnabled(true);
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("PreLoaded", "PreLoadedqueue", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist", "IExist", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist2", "IExist2", null, true));
+
+
+         AddressSettings settings = new AddressSettings();
+         settings.setExpiryAddress(SimpleString.toSimpleString("IExist"));
+         settings.setDeadLetterAddress(SimpleString.toSimpleString("IExist2"));
+         config.getAddressesSettings().put("#", settings);
+
+         HornetQServer server = HornetQServers.newHornetQServer(config, mbeanServer, config.isPersistenceEnabled());
+
+         try
+         {
+            server.start();
+            waitForServer(server);
+
+            assertTrue(server.isAddressBound("IExist"));
+
+            // expiry
+            assertFalse(AssertionLoggerHandler.findText("HQ222179"));
+            // DLQ
+            assertFalse(AssertionLoggerHandler.findText("HQ222180"));
+
+
+            QueueControl control = createManagementControl("PreLoaded", "PreLoadedqueue");
+
+            Queue serverQueue = server.locateQueue(SimpleString.toSimpleString("PreLoadedqueue"));
+
+            control.setDeadLetterAddress("HeyIDontExist");
+
+            // DLQ
+            assertTrue(AssertionLoggerHandler.findText("HQ222180"));
+
+
+            // it should still throw an error, even though it was deployed before
+            control.setExpiryAddress("HeyIDontExist");
+
+            assertEquals("HeyIDontExist", serverQueue.getExpiryAddress().toString());
+
+            // expiry
+            assertTrue(AssertionLoggerHandler.findText("HQ222179"));
+
+            // it should still throw an error, even though it was deployed before
+            control.setExpiryAddress("HeyIDontExistAlso");
+            // expiry
+            assertTrue(AssertionLoggerHandler.findText("HQ222179"));
+
+
+
+         }
+         finally
+         {
+            try
+            {
+               server.stop();
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+      finally
+      {
+         AssertionLoggerHandler.stopCapture();
+      }
+   }
+
+   /**
+    * This test is validating for logging output, for that reason the test is starting the server
+    * and doing a full cycle instead of using setUps and tearDowns.
+    */
+   @Test
+   public void testExpiryAndDLQPreLoadedDontExist() throws Exception
+   {
+
+      AssertionLoggerHandler.startCapture();
+
+      try
+      {
+         Configuration config = createDefaultConfig(false);
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("PreLoaded", "PreLoadedqueue", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist", "IExist", null, true));
+         config.getQueueConfigurations().add(new CoreQueueConfiguration("IExist2", "IExist2", null, true));
+
+
+         AddressSettings settings = new AddressSettings();
+         settings.setExpiryAddress(IDONTEXIST);
+         settings.setDeadLetterAddress(SimpleString.toSimpleString("IDontExist2"));
+         config.getAddressesSettings().put("#", settings);
+         HornetQServer server = HornetQServers.newHornetQServer(config);
+
+         try
+         {
+            server.start();
+            waitForServer(server);
+
+            assertTrue(server.isAddressBound("IExist"));
+
+            // There shouldn't be anything wrong now
+            assertTrue(AssertionLoggerHandler.findText("HQ222179"));
+            assertTrue(AssertionLoggerHandler.findText("HQ222180"));
 
          }
          finally

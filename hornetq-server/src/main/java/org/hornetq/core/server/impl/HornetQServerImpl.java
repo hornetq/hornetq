@@ -3210,7 +3210,8 @@ public class HornetQServerImpl implements HornetQServer
 
    class AddressCheck implements HierarchicalRepositoryChangeListener
    {
-      HashSet<SimpleString> previouslyFailed = new HashSet<SimpleString>();
+      HashSet<SimpleString> previouslyFailedDLQ = new HashSet<SimpleString>();
+      HashSet<SimpleString> previouslyFailedExpired = new HashSet<SimpleString>();
 
       public void onChange()
       {
@@ -3222,11 +3223,16 @@ public class HornetQServerImpl implements HornetQServer
 
          // This will check for the DLQ
          HashSet<SimpleString> distinctDeadLetterAddressSet = new HashSet<SimpleString>();
+         HashSet<SimpleString> distinctExpiryAddressSet = new HashSet<SimpleString>();
          for (AddressSettings settings : addressSettingsRepository.values())
          {
             if (settings.getDeadLetterAddress() != null)
             {
                distinctDeadLetterAddressSet.add(settings.getDeadLetterAddress());
+            }
+            if (settings.getExpiryAddress() != null)
+            {
+               distinctExpiryAddressSet.add(settings.getExpiryAddress());
             }
          }
 
@@ -3236,7 +3242,23 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (!postOffice.isAddressBound(address))
                {
-                  logFailure(address);
+                  logFailureDLQ(address);
+               }
+            }
+            catch (Exception e)
+            {
+               // nothing to be done here
+               throw new RuntimeException(e.getMessage(), e);
+            }
+         }
+
+         for (SimpleString address : distinctExpiryAddressSet)
+         {
+            try
+            {
+               if (!postOffice.isAddressBound(address))
+               {
+                  logFailureExpire(address);
                }
             }
             catch (Exception e)
@@ -3249,12 +3271,21 @@ public class HornetQServerImpl implements HornetQServer
          // no need to check for the DLA as that is done inside QueueImpl.setExpiryQueue
       }
 
-      private synchronized void logFailure(SimpleString address)
+      private synchronized void logFailureDLQ(SimpleString address)
       {
-         if (!previouslyFailed.contains(address))
+         if (!previouslyFailedDLQ.contains(address))
          {
-            previouslyFailed.add(address);
+            previouslyFailedDLQ.add(address);
             HornetQServerLogger.LOGGER.unboundDLQ(address);
+         }
+      }
+
+      private synchronized void logFailureExpire(SimpleString address)
+      {
+         if (!previouslyFailedExpired.contains(address))
+         {
+            previouslyFailedExpired.add(address);
+            HornetQServerLogger.LOGGER.unboudExpiry(address);
          }
       }
    }
