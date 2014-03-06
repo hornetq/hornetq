@@ -181,6 +181,9 @@ public class QueueControlTest extends ManagementTestBase
 
       Assert.assertEquals(expiryAddress, queueControl.getExpiryAddress());
 
+      Queue serverqueue = server.locateQueue(queue);
+      assertEquals(expiryAddress, serverqueue.getExpiryAddress().toString());
+
       session.deleteQueue(queue);
    }
 

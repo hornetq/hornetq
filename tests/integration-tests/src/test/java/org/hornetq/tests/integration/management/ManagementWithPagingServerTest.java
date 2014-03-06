@@ -192,13 +192,6 @@ public class ManagementWithPagingServerTest extends ManagementTestBase
       assertNull(console.getError());
    }
 
-   protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
-   {
-      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, queue, mbeanServer);
-
-      return queueControl;
-   }
-
    @Override
    @Before
    public void setUp() throws Exception

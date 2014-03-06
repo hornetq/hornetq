@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.management;
+import org.hornetq.api.core.management.QueueControl;
 import org.junit.Before;
 import org.junit.After;
 
@@ -108,6 +109,19 @@ public abstract class ManagementTestBase extends ServiceTestBase
    {
       Assert.assertTrue("no resource for " + on, mbeanServer.isRegistered(on));
    }
+
+   protected QueueControl createManagementControl(final String address, final String queue) throws Exception
+   {
+      return createManagementControl(SimpleString.toSimpleString(address), SimpleString.toSimpleString(queue));
+   }
+
+   protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
+   {
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, queue, mbeanServer);
+
+      return queueControl;
+   }
+
 
    // Private -------------------------------------------------------
 

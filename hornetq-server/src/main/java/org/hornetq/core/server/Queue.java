@@ -192,7 +192,7 @@ public interface Queue extends Bindable
 
    LinkedListIterator<MessageReference> totalIterator();
 
-   void setExpiryAddress(SimpleString expiryAddress);
+   SimpleString getExpiryAddress();
 
    /**
     * Pauses the queue. It will receive messages but won't give them to the consumers until resumed.
