@@ -211,6 +211,8 @@ public interface Queue extends Bindable
 
    void setExpiryAddress(SimpleString expiryAddress);
 
+   SimpleString getExpiryAddress();
+
    /**
     * Pauses the queue. It will receive messages but won't give them to the consumers until resumed.
     * If a queue is paused, pausing it again will only throw a warning.

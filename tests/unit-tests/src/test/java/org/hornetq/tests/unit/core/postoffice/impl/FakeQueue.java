@@ -487,6 +487,12 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public SimpleString getExpiryAddress()
+   {
+      return null;
+   }
+
+   @Override
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       // no-op
