@@ -36,7 +36,9 @@ public interface JMSQueueControl extends DestinationControl
 
    /**
     * Sets the expiry address associated to this queue to the specified expiryAddress.
+    * @deprecated: it's non persisted. Use the proper address settings
     */
+   @Deprecated
    void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") String expiryAddress) throws Exception;
 
    /**
