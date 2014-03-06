@@ -231,6 +231,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
 
       Assert.assertEquals(2, conf.getClusterConfigurations().size());
       Assert.assertEquals("replication cluster name", "cluster-connection1", conf.getReplicationClustername());
+      Assert.assertEquals("scale-down cluster name", "cluster-connection2", conf.getScaleDownClustername());
+      Assert.assertEquals("backup group name", "backupGroupName", conf.getBackupGroupName());
+      Assert.assertEquals("scale-down group name", "scaleDownGroupName", conf.getScaleDownGroupName());
 
       for (ClusterConnectionConfiguration ccc : conf.getClusterConfigurations())
       {

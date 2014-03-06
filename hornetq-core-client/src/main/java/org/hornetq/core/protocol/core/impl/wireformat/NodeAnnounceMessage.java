@@ -22,23 +22,23 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class NodeAnnounceMessage extends PacketImpl
 {
-   private String nodeID;
+   protected String nodeID;
 
-   private String nodeName;
+   protected String backupGroupName;
 
-   private boolean backup;
+   protected boolean backup;
 
-   private long currentEventID;
+   protected long currentEventID;
 
-   private TransportConfiguration connector;
+   protected TransportConfiguration connector;
 
-   private TransportConfiguration backupConnector;
+   protected TransportConfiguration backupConnector;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final String nodeName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
+   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final String backupGroupName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
    {
       super(NODE_ANNOUNCE);
 
@@ -46,7 +46,7 @@ public class NodeAnnounceMessage extends PacketImpl
 
       this.nodeID = nodeID;
 
-      this.nodeName = nodeName;
+      this.backupGroupName = backupGroupName;
 
       this.backup = backup;
 
@@ -60,6 +60,11 @@ public class NodeAnnounceMessage extends PacketImpl
       super(NODE_ANNOUNCE);
    }
 
+   public NodeAnnounceMessage(byte nodeAnnounceMessage_V2)
+   {
+      super(nodeAnnounceMessage_V2);
+   }
+
    // Public --------------------------------------------------------
 
 
@@ -68,9 +73,9 @@ public class NodeAnnounceMessage extends PacketImpl
       return nodeID;
    }
 
-   public String getNodeName()
+   public String getBackupGroupName()
    {
-      return nodeName;
+      return backupGroupName;
    }
 
    public boolean isBackup()
@@ -100,7 +105,7 @@ public class NodeAnnounceMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeString(nodeID);
-      buffer.writeNullableString(nodeName);
+      buffer.writeNullableString(backupGroupName);
       buffer.writeBoolean(backup);
       buffer.writeLong(currentEventID);
       if (connector != null)
@@ -127,7 +132,7 @@ public class NodeAnnounceMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       this.nodeID = buffer.readString();
-      this.nodeName = buffer.readNullableString();
+      this.backupGroupName = buffer.readNullableString();
       this.backup = buffer.readBoolean();
       this.currentEventID = buffer.readLong();
       if (buffer.readBoolean())

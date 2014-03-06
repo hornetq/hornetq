@@ -1580,7 +1580,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public void notifyNodeUp(long uniqueEventID,
                             final String nodeID,
-                            final String nodeName,
+                            final String backupGroupName,
+                            final String scaleDownGroupName,
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
@@ -1589,7 +1590,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          HornetQClientLogger.LOGGER.trace("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
-      TopologyMemberImpl member = new TopologyMemberImpl(nodeID, nodeName, connectorPair.getA(), connectorPair.getB());
+      TopologyMemberImpl member = new TopologyMemberImpl(nodeID, backupGroupName, scaleDownGroupName, connectorPair.getA(), connectorPair.getB());
 
       topology.updateMember(uniqueEventID, nodeID, member);
 
@@ -1677,7 +1678,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          if (ha && topology.getMember(entry.getNodeID()) == null)
          {
-            TopologyMemberImpl member = new TopologyMemberImpl(entry.getNodeID(), null, entry.getConnector(), null);
+            TopologyMemberImpl member = new TopologyMemberImpl(entry.getNodeID(), null, null, entry.getConnector(), null);
             // on this case we set it as zero as any update coming from server should be accepted
             topology.updateMember(0, entry.getNodeID(), member);
          }

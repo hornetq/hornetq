@@ -125,7 +125,9 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       assertEquals("newpassword", config.getClusterPassword());
 
-      assertEquals("anodegroupname", config.getBackupGroupName());
+      assertEquals("abackupgroupname", config.getBackupGroupName());
+
+      assertEquals("ascaledowngroupname", config.getScaleDownGroupName());
    }
 
    private static String firstPart =
@@ -133,7 +135,8 @@ public class FileConfigurationParserTest extends UnitTestCase
          "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
          "xsi:schemaLocation=\"urn:hornetq /schema/hornetq-configuration.xsd\">\n" +
          "<name>HornetQ.main.config</name>" + "\n" +
-         "<backup-group-name>anodegroupname</backup-group-name>" + "\n" +
+         "<backup-group-name>abackupgroupname</backup-group-name>" + "\n" +
+         "<scale-down-group-name>ascaledowngroupname</scale-down-group-name>" + "\n" +
          "<log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
          "<bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>" + "\n" +
          "<journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>" + "\n" +

@@ -348,6 +348,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean) proxy.retrieveAttributeValue("failoverOnServerShutdown");
          }
 
+         public void setScaleDown(boolean scaleDown) throws Exception
+         {
+            proxy.invokeOperation("setScaleDown", scaleDown);
+         }
+
+         public boolean isScaleDown()
+         {
+            return (Boolean) proxy.retrieveAttributeValue("scaleDown");
+         }
+
          public boolean isMessageCounterEnabled()
          {
             return (Boolean) proxy.retrieveAttributeValue("messageCounterEnabled");

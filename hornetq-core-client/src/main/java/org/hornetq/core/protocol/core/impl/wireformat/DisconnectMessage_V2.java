@@ -14,54 +14,46 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.api.core.TransportConfiguration;
 
-public class DisconnectMessage extends PacketImpl
+public class DisconnectMessage_V2 extends DisconnectMessage
 {
-   // Constants -----------------------------------------------------
+   private TransportConfiguration scaleDownDestination;
 
-   // Attributes ----------------------------------------------------
-
-   protected SimpleString nodeID;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public DisconnectMessage(final SimpleString nodeID)
+   public DisconnectMessage_V2(final SimpleString nodeID, final TransportConfiguration scaleDownDestination)
    {
-      super(DISCONNECT);
+      super(DISCONNECT_V2);
 
       this.nodeID = nodeID;
+
+      this.scaleDownDestination = scaleDownDestination;
    }
 
-   public DisconnectMessage()
+   public DisconnectMessage_V2()
    {
-      super(DISCONNECT);
-   }
-
-   public DisconnectMessage(byte disconnectV2)
-   {
-      super(disconnectV2);
+      super(DISCONNECT_V2);
    }
 
    // Public --------------------------------------------------------
 
-   public SimpleString getNodeID()
+   public TransportConfiguration getScaleDownDestination()
    {
-      return nodeID;
+      return scaleDownDestination;
    }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeNullableSimpleString(nodeID);
+      super.encodeRest(buffer);
+      scaleDownDestination.encode(buffer);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      nodeID = buffer.readNullableSimpleString();
+      super.decodeRest(buffer);
+      scaleDownDestination = new TransportConfiguration();
+      scaleDownDestination.decode(buffer);
    }
 
    @Override
@@ -69,14 +61,9 @@ public class DisconnectMessage extends PacketImpl
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", nodeID=" + nodeID);
+      buf.append(", scaleDownDestination=" + scaleDownDestination);
       buf.append("]");
       return buf.toString();
-   }
-
-   @Override
-   public final boolean isRequiresConfirmations()
-   {
-      return false;
    }
 
    @Override
@@ -84,7 +71,7 @@ public class DisconnectMessage extends PacketImpl
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      result = prime * result + ((scaleDownDestination == null) ? 0 : scaleDownDestination.hashCode());
       return result;
    }
 
@@ -99,19 +86,19 @@ public class DisconnectMessage extends PacketImpl
       {
          return false;
       }
-      if (!(obj instanceof DisconnectMessage))
+      if (!(obj instanceof DisconnectMessage_V2))
       {
          return false;
       }
-      DisconnectMessage other = (DisconnectMessage)obj;
-      if (nodeID == null)
+      DisconnectMessage_V2 other = (DisconnectMessage_V2) obj;
+      if (scaleDownDestination == null)
       {
-         if (other.nodeID != null)
+         if (other.scaleDownDestination != null)
          {
             return false;
          }
       }
-      else if (!nodeID.equals(other.nodeID))
+      else if (!scaleDownDestination.equals(other.scaleDownDestination))
       {
          return false;
       }

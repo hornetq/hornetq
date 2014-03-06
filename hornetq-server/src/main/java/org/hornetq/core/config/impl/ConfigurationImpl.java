@@ -56,7 +56,9 @@ public class ConfigurationImpl implements Configuration
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
-   private String nodeGroupName = null;
+   private String backupGroupName = null;
+
+   private String scaleDownGroupName = null;
 
    protected boolean backup = HornetQDefaultConfiguration.isDefaultBackup();
 
@@ -193,6 +195,8 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean failoverOnServerShutdown = HornetQDefaultConfiguration.isDefaultFailoverOnServerShutdown();
 
+   protected boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
+
    // percentage of free memory which triggers warning from the memory manager
    private int memoryWarningThreshold = HornetQDefaultConfiguration.getDefaultMemoryWarningThreshold();
 
@@ -215,6 +219,8 @@ public class ConfigurationImpl implements Configuration
    private transient String passwordCodec;
 
    private String replicationClusterName;
+
+   private String scaleDownClusterName;
 
    private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
 
@@ -805,6 +811,16 @@ public class ConfigurationImpl implements Configuration
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
+   public boolean isScaleDown()
+   {
+      return scaleDown;
+   }
+
+   public void setScaleDown(boolean scaleDown)
+   {
+      this.scaleDown = scaleDown;
+   }
+
    public void setClusterPassword(final String theclusterPassword)
    {
       clusterPassword = theclusterPassword;
@@ -988,12 +1004,22 @@ public class ConfigurationImpl implements Configuration
 
    public String getBackupGroupName()
    {
-      return nodeGroupName;
+      return backupGroupName;
    }
 
    public void setBackupGroupName(String nodeGroupName)
    {
-      this.nodeGroupName = nodeGroupName;
+      this.backupGroupName = nodeGroupName;
+   }
+
+   public String getScaleDownGroupName()
+   {
+      return scaleDownGroupName;
+   }
+
+   public void setScaleDownGroupName(String nodeGroupName)
+   {
+      this.scaleDownGroupName = nodeGroupName;
    }
 
    @Override
@@ -1041,6 +1067,18 @@ public class ConfigurationImpl implements Configuration
    public String getReplicationClustername()
    {
       return replicationClusterName;
+   }
+
+   @Override
+   public void setScaleDownClustername(String clusterName)
+   {
+      this.scaleDownClusterName = clusterName;
+   }
+
+   @Override
+   public String getScaleDownClustername()
+   {
+      return scaleDownClusterName;
    }
 
    @Override
@@ -1135,7 +1173,8 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (int)(messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
       result = prime * result + messageExpiryThreadPriority;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + ((nodeGroupName == null) ? 0 : nodeGroupName.hashCode());
+      result = prime * result + ((backupGroupName == null) ? 0 : backupGroupName.hashCode());
+      result = prime * result + ((scaleDownGroupName == null) ? 0 : scaleDownGroupName.hashCode());
       result =
                prime * result +
                         ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
@@ -1145,6 +1184,7 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (persistenceEnabled ? 1231 : 1237);
       result = prime * result + ((queueConfigurations == null) ? 0 : queueConfigurations.hashCode());
       result = prime * result + ((replicationClusterName == null) ? 0 : replicationClusterName.hashCode());
+      result = prime * result + ((scaleDownClusterName == null) ? 0 : scaleDownClusterName.hashCode());
       result = prime * result + (runSyncSpeedTest ? 1231 : 1237);
       result = prime * result + scheduledThreadPoolMaxSize;
       result = prime * result + (securityEnabled ? 1231 : 1237);
@@ -1384,12 +1424,19 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!name.equals(other.name))
          return false;
-      if (nodeGroupName == null)
+      if (backupGroupName == null)
       {
-         if (other.nodeGroupName != null)
+         if (other.backupGroupName != null)
             return false;
       }
-      else if (!nodeGroupName.equals(other.nodeGroupName))
+      else if (!backupGroupName.equals(other.backupGroupName))
+         return false;
+      if (scaleDownGroupName == null)
+      {
+         if (other.scaleDownGroupName != null)
+            return false;
+      }
+      else if (!scaleDownGroupName.equals(other.scaleDownGroupName))
          return false;
       if (outgoingInterceptorClassNames == null)
       {
@@ -1424,6 +1471,13 @@ public class ConfigurationImpl implements Configuration
             return false;
       }
       else if (!replicationClusterName.equals(other.replicationClusterName))
+         return false;
+      if (scaleDownClusterName == null)
+      {
+         if (other.scaleDownClusterName != null)
+            return false;
+      }
+      else if (!scaleDownClusterName.equals(other.scaleDownClusterName))
          return false;
       if (runSyncSpeedTest != other.runSyncSpeedTest)
          return false;

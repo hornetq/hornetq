@@ -216,6 +216,12 @@ public class PacketImpl implements Packet
    public static final byte REPLICATION_START_FINISH_SYNC = 120;
    public static final byte REPLICATION_SCHEDULED_FAILOVER = 121;
 
+   public static final byte CLUSTER_TOPOLOGY_V3 = 122;
+
+   public static final byte NODE_ANNOUNCE_V2 = 123;
+
+   public static final byte DISCONNECT_V2 = 124;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

@@ -164,7 +164,7 @@ public final class Topology implements Serializable
          }
 
          TopologyMemberImpl newMember =
-                  new TopologyMemberImpl(nodeId, currentMember.getBackupGroupName(), currentMember.getLive(),
+                  new TopologyMemberImpl(nodeId, currentMember.getBackupGroupName(), currentMember.getScaleDownGroupName(), currentMember.getLive(),
                                          memberInput.getBackup());
          newMember.setUniqueEventID(System.currentTimeMillis());
          topology.remove(nodeId);
@@ -216,7 +216,7 @@ public final class Topology implements Serializable
          if (uniqueEventID > currentMember.getUniqueEventID())
          {
             TopologyMemberImpl newMember =
-                     new TopologyMemberImpl(nodeId, memberInput.getBackupGroupName(), memberInput.getLive(),
+                     new TopologyMemberImpl(nodeId, memberInput.getBackupGroupName(), memberInput.getScaleDownGroupName(), memberInput.getLive(),
                                             memberInput.getBackup());
 
             if (newMember.getLive() == null && currentMember.getLive() != null)

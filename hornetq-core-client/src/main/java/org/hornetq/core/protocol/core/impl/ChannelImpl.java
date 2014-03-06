@@ -149,6 +149,12 @@ public final class ChannelImpl implements Channel
             return version >= 122;
          case PacketImpl.DISCONNECT_CONSUMER:
             return version >= 124;
+         case PacketImpl.CLUSTER_TOPOLOGY_V3:
+            return version >= 125;
+         case PacketImpl.NODE_ANNOUNCE_V2:
+            return version >= 125;
+         case PacketImpl.DISCONNECT_V2:
+            return version >= 125;
          default:
             return true;
       }
