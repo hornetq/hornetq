@@ -1322,9 +1322,9 @@ public class ScheduledDeliveryHandlerTest extends Assert
       }
 
       @Override
-      public void setExpiryAddress(SimpleString expiryAddress)
+      public SimpleString getExpiryAddress()
       {
-
+         return null;
       }
 
       @Override

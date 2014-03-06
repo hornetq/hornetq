@@ -236,6 +236,8 @@ public class SimpleStringTest extends Assert
    {
       Assert.assertFalse(new SimpleString("abcdef").equals(new Object()));
 
+      Assert.assertFalse(new SimpleString("abcef").equals(null));
+
       Assert.assertEquals(new SimpleString("abcdef"), new SimpleString("abcdef"));
 
       Assert.assertFalse(new SimpleString("abcdef").equals(new SimpleString("abggcdef")));

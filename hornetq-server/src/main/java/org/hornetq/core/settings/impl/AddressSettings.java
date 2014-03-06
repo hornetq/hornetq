@@ -91,6 +91,31 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    private Boolean sendToDLAOnNoRoute = null;
 
+   public AddressSettings(AddressSettings other)
+   {
+      this.addressFullMessagePolicy = other.addressFullMessagePolicy;
+      this.maxSizeBytes = other.maxSizeBytes;
+      this.pageSizeBytes = other.pageSizeBytes;
+      this.pageMaxCache = other.pageMaxCache;
+      this.dropMessagesWhenFull = other.dropMessagesWhenFull;
+      this.maxDeliveryAttempts = other.maxDeliveryAttempts;
+      this.messageCounterHistoryDayLimit = other.messageCounterHistoryDayLimit;
+      this.redeliveryDelay = other.redeliveryDelay;
+      this.redeliveryMultiplier = other.redeliveryMultiplier;
+      this.maxRedeliveryDelay = other.maxRedeliveryDelay;
+      this.deadLetterAddress = other.deadLetterAddress;
+      this.expiryAddress = other.expiryAddress;
+      this.expiryDelay = other.expiryDelay;
+      this.lastValueQueue = other.lastValueQueue;
+      this.redistributionDelay = other.redistributionDelay;
+      this.sendToDLAOnNoRoute = other.sendToDLAOnNoRoute;
+   }
+
+   public AddressSettings()
+   {
+   }
+
+
    public boolean isLastValueQueue()
    {
       return lastValueQueue != null ? lastValueQueue : AddressSettings.DEFAULT_LAST_VALUE_QUEUE;
@@ -417,8 +442,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    }
 
    /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
+       * @see java.lang.Object#hashCode()
+       */
    @Override
    public int hashCode()
    {
