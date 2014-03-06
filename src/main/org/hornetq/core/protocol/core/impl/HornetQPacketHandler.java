@@ -140,14 +140,6 @@ public class HornetQPacketHandler implements ChannelHandler
 
          if (!isCompatibleClient)
          {
-            log.warn("Client with version " + request.getVersion() +
-                     " and address " +
-                     connection.getRemoteAddress() +
-                     " is not compatible with server version " +
-                     version.getFullVersion() +
-                     ". " +
-                     "Please ensure all clients and servers are upgraded to the same version for them to " +
-                     "interoperate properly");
             throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                        "Server and client versions incompatible");
          }
