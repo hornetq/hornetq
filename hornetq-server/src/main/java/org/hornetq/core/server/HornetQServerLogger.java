@@ -1043,16 +1043,6 @@ public interface HornetQServerLogger extends BasicLogger
    void errorRecoveringPageCounter(@Cause Throwable error);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222179, value = "There are no queues bound into expiry address {0}. Messages will be dropped if you use expiration until you deploy a destination on this address",
-            format = Message.Format.MESSAGE_FORMAT)
-   void unboudExpiry(SimpleString expiryAddress);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222180, value = "There are no queues bound into Dead Letter Address {0}. Messages will be dropped if you use the Dead Letter Address until you deploy a destination on this address",
-            format = Message.Format.MESSAGE_FORMAT)
-   void unboundDLQ(SimpleString expiryAddress);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222181, value = "Unable to scaleDown messages", format = Message.Format.MESSAGE_FORMAT)
    void failedToScaleDown(@Cause Throwable e);
 

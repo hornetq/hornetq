@@ -140,7 +140,6 @@ import org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.impl.ManagementServiceImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
@@ -1819,11 +1818,6 @@ public class HornetQServerImpl implements HornetQServer
          groupingHandler.start();
       }
 
-      AddressCheck addressCheck = new AddressCheck();
-      addressCheck.checkAddressSettings();
-
-      addressSettingsRepository.registerListener(addressCheck);
-
       // We do this at the end - we don't want things like MDBs or other connections connecting to a backup server until
       // it is activated
 
@@ -3297,58 +3291,6 @@ public class HornetQServerImpl implements HornetQServer
             {
                throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
             }
-         }
-      }
-   }
-
-
-   class AddressCheck implements HierarchicalRepositoryChangeListener
-   {
-      HashSet<SimpleString> previouslyFailed = new HashSet<SimpleString>();
-
-      public void onChange()
-      {
-         checkAddressSettings();
-      }
-
-      public void checkAddressSettings()
-      {
-
-         // This will check for the DLQ
-         HashSet<SimpleString> distinctDeadLetterAddressSet = new HashSet<SimpleString>();
-         for (AddressSettings settings : addressSettingsRepository.values())
-         {
-            if (settings.getDeadLetterAddress() != null)
-            {
-               distinctDeadLetterAddressSet.add(settings.getDeadLetterAddress());
-            }
-         }
-
-         for (SimpleString address : distinctDeadLetterAddressSet)
-         {
-            try
-            {
-               if (!postOffice.isAddressBound(address))
-               {
-                  logFailure(address);
-               }
-            }
-            catch (Exception e)
-            {
-               // nothing to be done here
-               throw new RuntimeException(e.getMessage(), e);
-            }
-         }
-
-         // no need to check for the DLA as that is done inside QueueImpl.setExpiryQueue
-      }
-
-      private synchronized void logFailure(SimpleString address)
-      {
-         if (!previouslyFailed.contains(address))
-         {
-            previouslyFailed.add(address);
-            HornetQServerLogger.LOGGER.unboundDLQ(address);
          }
       }
    }
