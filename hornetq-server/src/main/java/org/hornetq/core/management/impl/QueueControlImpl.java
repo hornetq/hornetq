@@ -314,10 +314,13 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          AddressSettings addressSettings = addressSettingsRepository.getMatch(address);
 
-         if (deadLetterAddress != null)
+         if (addressSettings != null && deadLetterAddress != null)
          {
-            addressSettings.setDeadLetterAddress(new SimpleString(deadLetterAddress));
+            addressSettings = new AddressSettings(addressSettings);
+            addressSettings.setDeadLetterAddress(SimpleString.toSimpleString(deadLetterAddress));
+            addressSettingsRepository.addMatch(address, addressSettings);
          }
+
       }
       finally
       {
@@ -358,14 +361,13 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          AddressSettings addressSettings = addressSettingsRepository.getMatch(address);
 
-         SimpleString sExpiryAddress = new SimpleString(expiryAddress);
-
-         if (expiryAddress != null)
+         if (addressSettings != null && expiryAddress != null)
          {
-            addressSettings.setExpiryAddress(sExpiryAddress);
+            addressSettings = new AddressSettings(addressSettings);
+            addressSettings.setExpiryAddress(SimpleString.toSimpleString(expiryAddress));
+            addressSettingsRepository.addMatch(address, addressSettings);
          }
 
-         queue.setExpiryAddress(sExpiryAddress);
       }
       finally
       {
