@@ -411,6 +411,7 @@ public final class XmlDataImporter
          {
             HornetQServerLogger.LOGGER.warn("Could not delete: " + tempFileName);
          }
+         tempFileName = "";
       }
    }
 
