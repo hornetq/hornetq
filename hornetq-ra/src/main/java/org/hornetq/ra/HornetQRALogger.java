@@ -15,11 +15,11 @@ package org.hornetq.ra;
 
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Logger Code 15
@@ -100,10 +100,6 @@ public interface HornetQRALogger extends BasicLogger
    @Message(id = 152006, value = "Unable to call after delivery", format = Message.Format.MESSAGE_FORMAT)
    void unableToCallAfterDelivery(@Cause Exception e);
 
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 152007, value = "unable to clear the transaction", format = Message.Format.MESSAGE_FORMAT)
-   void unableToClearTX(@Cause Exception e);
-
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 154000, value = "Error while creating object Reference.", format = Message.Format.MESSAGE_FORMAT)
    void errorCreatingReference(@Cause Exception e);
@@ -111,10 +107,6 @@ public interface HornetQRALogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 154001, value = "Unable to stop HornetQ resource adapter.", format = Message.Format.MESSAGE_FORMAT)
    void errorStoppingRA(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 154002, value = "Could not create session", format = Message.Format.MESSAGE_FORMAT)
-   void errorCreatingSession(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 154003, value = "Unable to reconnect {0}", format = Message.Format.MESSAGE_FORMAT)

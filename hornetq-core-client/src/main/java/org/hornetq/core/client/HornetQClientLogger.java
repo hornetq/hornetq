@@ -10,18 +10,17 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.core.client;
 
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Packet;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.w3c.dom.Node;
 
 /**
@@ -42,6 +41,7 @@ import org.w3c.dom.Node;
  * <p>
  * Once released, methods should not be deleted as they may be referenced by knowledge base
  * articles. Unused methods should be marked as deprecated.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 @MessageLogger(projectCode = "HQ")
@@ -89,18 +89,16 @@ public interface HornetQClientLogger extends BasicLogger
    void waitingForRetry(Long interval, Long retryInterval, Double multiplier);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(
-            id = 212007,
-            value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway."
-               , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 212007,
+            value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway.",
+            format = Message.Format.MESSAGE_FORMAT)
    void createConnectorException(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(
-            id = 212008,
+   @Message(id = 212008,
             value = "I am closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly "
-                     + "before letting them go out of scope! {0}"
-               , format = Message.Format.MESSAGE_FORMAT)
+               + "before letting them go out of scope! {0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void factoryLeftOpen(@Cause Exception e, int i);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -120,10 +118,6 @@ public interface HornetQClientLogger extends BasicLogger
    void failoverDuringCommit();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212013, value = "failover occurred during prepare re-trying", format = Message.Format.MESSAGE_FORMAT)
-   void failoverDuringPrepare();
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212014, value = "failover occurred during prepare rolling back", format = Message.Format.MESSAGE_FORMAT)
    void failoverDuringPrepareRollingBack();
 
@@ -132,8 +126,7 @@ public interface HornetQClientLogger extends BasicLogger
    void errorDuringPrepare(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(
-            id = 212016,
+   @Message(id = 212016,
             value = "I am closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly before letting them go out of scope! {0}",
             format = Message.Format.MESSAGE_FORMAT)
    void clientSessionNotClosed(@Cause Exception e, int identity);
@@ -187,8 +180,7 @@ public interface HornetQClientLogger extends BasicLogger
    void errorStartingLocator(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(
-            id = 212029,
+   @Message(id = 212029,
             value = "Closing a Server Locator left open. Please make sure you close all Server Locators explicitly before letting them go out of scope! {0}",
             format = Message.Format.MESSAGE_FORMAT)
    void serverLocatorNotClosed(@Cause Exception e, int identity);
@@ -210,12 +202,13 @@ public interface HornetQClientLogger extends BasicLogger
    void errorSendingNotifOnDiscoveryStop(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212034, value = "There are more than one servers on the network broadcasting the same node id. "
-                     + "You will see this message exactly once (per node) if a node is restarted, in which case it can be safely "
-                     + "ignored. But if it is logged continuously it means you really do have more than one node on the same network "
-                     + "active concurrently with the same node id. This could occur if you have a backup node active at the same time as "
-                     + "its live node. nodeID={0}",
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 212034,
+            value = "There are more than one servers on the network broadcasting the same node id. "
+               + "You will see this message exactly once (per node) if a node is restarted, in which case it can be safely "
+               + "ignored. But if it is logged continuously it means you really do have more than one node on the same network "
+               + "active concurrently with the same node id. This could occur if you have a backup node active at the same time as "
+               + "its live node. nodeID={0}",
+            format = Message.Format.MESSAGE_FORMAT)
    void multipleServersBroadcastingSameNode(String nodeId);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -225,7 +218,7 @@ public interface HornetQClientLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212036,
             value = "Can not find packet to clear: {0} last received command id first stored command id {1}",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void cannotFindPacketToClear(Integer lastReceivedCommandID, Integer firstStoredCommandID);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -271,48 +264,49 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212048, value = "local-bind-address specified for broadcast group but no local-bind-port specified so socket will NOT be bound to a local address/port",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void broadcastGroupBindError();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 212049, value = "Could not bind to {0} ({1} address); " +
-         "make sure your discovery group-address is of the same type as the IP stack (IPv4 or IPv6)." +
-         "\nIgnoring discovery group-address, but this may lead to cross talking.",
-         format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 212049,
+            value = "Could not bind to {0} ({1} address); " +
+               "make sure your discovery group-address is of the same type as the IP stack (IPv4 or IPv6)." +
+               "\nIgnoring discovery group-address, but this may lead to cross talking.",
+            format = Message.Format.MESSAGE_FORMAT)
    void ioDiscoveryError(String hostAddress, String s);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212050, value = "Compressed large message tried to read {0} bytes from stream {1}",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212051,
-         value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
-         format = Message.Format.MESSAGE_FORMAT)
+            value = "Invalid concurrent session usage. Sessions are not supposed to be used by more than one thread concurrently.",
+            format = Message.Format.MESSAGE_FORMAT)
    void invalidConcurrentSessionUsage(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212052,
-         value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
-         format = Message.Format.MESSAGE_FORMAT)
+            value = "Packet {0} was answered out of sequence due to a previous server timeout and it''s being ignored",
+            format = Message.Format.MESSAGE_FORMAT)
    void packetOutOfOrder(Object obj, @Cause Throwable t);
 
    /**
-    * Warns about usage of {@link SendAcknowledgementHandler} or JMS's {@code CompletionWindow} with
+    * Warns about usage of {@link org.hornetq.api.core.client.SendAcknowledgementHandler} or JMS's {@code CompletionWindow} with
     * confirmations disabled (confirmationWindowSize=-1).
     */
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212053,
-         value = "CompletionListener/SendAcknowledgementHandler used with confirmationWindowSize=-1. Enable confirmationWindowSize to receive acks from server!",
-         format = Message.Format.MESSAGE_FORMAT)
+            value = "CompletionListener/SendAcknowledgementHandler used with confirmationWindowSize=-1. Enable confirmationWindowSize to receive acks from server!",
+            format = Message.Format.MESSAGE_FORMAT)
    void confirmationWindowDisabledWarning();
 
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212054,
-         value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
-         format = Message.Format.MESSAGE_FORMAT)
+            value = "Destination address={0} is blocked. If the system is configured to block make sure you consume messages on this configuration.",
+            format = Message.Format.MESSAGE_FORMAT)
    void outOfCreditOnFlowControl(String address);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -388,15 +382,15 @@ public interface HornetQClientLogger extends BasicLogger
    void errorCreatingNettyConnection(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214017, value =  "Caught unexpected Throwable", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214017, value = "Caught unexpected Throwable", format = Message.Format.MESSAGE_FORMAT)
    void caughtunexpectedThrowable(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214018, value =  "Failed to invoke getTextContent() on node {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214018, value = "Failed to invoke getTextContent() on node {0}", format = Message.Format.MESSAGE_FORMAT)
    void errorOnXMLTransform(@Cause Throwable t, Node n);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214019, value =  "Invalid configuration", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 214019, value = "Invalid configuration", format = Message.Format.MESSAGE_FORMAT)
    void errorOnXMLTransformInvalidConf(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.ERROR)

@@ -10,14 +10,13 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.utils;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -46,6 +45,6 @@ public interface HornetQUtilLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 202000, value = "Missing privileges to set Thread Context Class Loader on Thread Factory. Using current Thread Context Class Loader",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    void missingPrivsForClassloader();
 }

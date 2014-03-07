@@ -10,8 +10,11 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.tools;
+
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author Justin Bertram
@@ -29,11 +32,6 @@ package org.hornetq.tools;
  *
  * so an INFO message would be 241000 to 241999
  */
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
-
 @MessageLogger(projectCode = "HQ")
 public interface HornetQToolsLogger extends BasicLogger
 {

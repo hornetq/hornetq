@@ -13,7 +13,7 @@
 
 package org.hornetq.service;
 
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

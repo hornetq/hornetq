@@ -13,11 +13,10 @@
 package org.hornetq.integration.aerogear;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Logger Code 23
@@ -41,18 +40,9 @@ public interface HornetQAeroGearLogger extends BasicLogger
     */
    HornetQAeroGearLogger LOGGER = Logger.getMessageLogger(HornetQAeroGearLogger.class, HornetQAeroGearLogger.class.getPackage().getName());
 
-
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 231001, value = "aerogear connector connected to {0}", format = Message.Format.MESSAGE_FORMAT)
    void connected(String endpoint);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 232001, value = "failed to ack message {0}", format = Message.Format.MESSAGE_FORMAT)
-   void errorAcking(long id, @Cause Exception cause);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 232002, value = "failed to cancel message {0}", format = Message.Format.MESSAGE_FORMAT)
-   void unableToCancelDelivery(long messageID,@Cause Exception cause);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 232003, value = "removing aerogear connector as credentials are invalid", format = Message.Format.MESSAGE_FORMAT)
@@ -69,7 +59,6 @@ public interface HornetQAeroGearLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 232006, value = "unable to connect to aerogear server, retrying in {0} seconds", format = Message.Format.MESSAGE_FORMAT)
    void sendFailed(int retry);
-
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 232007, value = "removing aerogear connector unable to connect after {0} attempts, giving up", format = Message.Format.MESSAGE_FORMAT)

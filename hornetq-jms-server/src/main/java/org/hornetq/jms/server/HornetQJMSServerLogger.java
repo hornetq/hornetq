@@ -10,7 +10,6 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.jms.server;
 
 import javax.management.ObjectName;
@@ -18,11 +17,11 @@ import javax.management.ObjectName;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.w3c.dom.Node;
 
 /**

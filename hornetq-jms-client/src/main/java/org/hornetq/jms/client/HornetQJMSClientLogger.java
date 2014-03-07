@@ -10,15 +10,14 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.jms.client;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -56,10 +55,6 @@ public interface HornetQJMSClientLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124000, value = "Failed to call JMS exception listener" , format = Message.Format.MESSAGE_FORMAT)
    void errorCallingExcListener(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124001, value = "Consumer Failed to prepare message for delivery", format = Message.Format.MESSAGE_FORMAT)
-   void errorPreparingMessage(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124002, value = "Queue Browser failed to create message" , format = Message.Format.MESSAGE_FORMAT)

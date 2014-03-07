@@ -14,10 +14,10 @@ package org.hornetq.integration.vertx;
 
 import org.hornetq.core.server.ServerMessage;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
@@ -50,5 +50,4 @@ public interface HornetQVertxLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 192002, value = "Invalid vertx type: {0}", format = Message.Format.MESSAGE_FORMAT)
    void invalidVertxType(Integer type);
-
 }

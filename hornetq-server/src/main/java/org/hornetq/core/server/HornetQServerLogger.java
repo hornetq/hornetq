@@ -60,11 +60,11 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.utils.FutureLatch;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.w3c.dom.Node;
 
 @MessageLogger(projectCode = "HQ")
@@ -266,10 +266,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221043, value = "Adding protocol support {0}", format = Message.Format.MESSAGE_FORMAT)
    void addingProtocolSupport(String protocolKey);
-
-   @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221044, value = "Backup Server has recovered journal to live server, restarting as backup", format = Message.Format.MESSAGE_FORMAT)
-   void backupServerRecovered();
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221045, value = "libaio is not available, switching the configuration into NIO", format = Message.Format.MESSAGE_FORMAT)
@@ -584,10 +580,6 @@ public interface HornetQServerLogger extends BasicLogger
    void timedOutFlushingInvmChannel();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222073, value = "Unexpected Netty Version was expecting {0} using {1} Version.ID", format = Message.Format.MESSAGE_FORMAT)
-   void unexpectedNettyVersion(String nettyVersion, String id);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212074, value = "channel group did not completely close", format = Message.Format.MESSAGE_FORMAT)
    void nettyChannelGroupError();
 
@@ -876,10 +868,6 @@ public interface HornetQServerLogger extends BasicLogger
    void remoteQueueAlreadyBoundOnClusterConnection(Object messageFlowRecord, SimpleString clusterName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222140, value = "problem closing backup session factory for cluster connection", format = Message.Format.MESSAGE_FORMAT)
-   void errorClosingBackupFactoryOnClusterConnection(@Cause Exception e);
-
-   @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222141, value = "Node Manager can not open file {0}", format = Message.Format.MESSAGE_FORMAT)
    void nodeManagerCantOpenFile(@Cause Exception e, File file);
 
@@ -1090,10 +1078,6 @@ public interface HornetQServerLogger extends BasicLogger
    void errorUnDeployingURI(@Cause Throwable e, URI a);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224004, value = "key attribute missing for configuration {0}", format = Message.Format.MESSAGE_FORMAT)
-   void keyAttributeMissing(Node node);
-
-   @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224005, value = "Unable to deploy node {0}", format = Message.Format.MESSAGE_FORMAT)
    void unableToDeployNode(@Cause Exception e, Node node);
 
@@ -1168,10 +1152,6 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224024, value = "Stomp Error, tx already exist! {0}", format = Message.Format.MESSAGE_FORMAT)
    void stompErrorTXExists(String txID);
-
-   @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224026, value = "Cannot create stomp ping frame due to encoding problem.", format = Message.Format.MESSAGE_FORMAT)
-   void errorOnStompPingFrame(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224027, value = "Failed to write to handler on invm connector {0}", format = Message.Format.MESSAGE_FORMAT)
