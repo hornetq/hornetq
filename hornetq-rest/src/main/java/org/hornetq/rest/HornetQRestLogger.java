@@ -16,11 +16,11 @@ package org.hornetq.rest;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.rest.queue.push.xml.XmlLink;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

@@ -12,12 +12,11 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -45,12 +44,9 @@ public interface HornetQStompProtocolLogger
     */
    HornetQStompProtocolLogger LOGGER = Logger.getMessageLogger(HornetQStompProtocolLogger.class, HornetQStompProtocolLogger.class.getPackage().getName());
 
-
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222068, value = "connection closed {0}", format = Message.Format.MESSAGE_FORMAT)
    void connectionClosed(StompConnection connection);
-
-
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224023, value = "Unable to send frame {0}", format = Message.Format.MESSAGE_FORMAT)
