@@ -368,6 +368,7 @@ public final class XmlDataImporter
          {
             log.warn("Could not delete: " + tempFileName);
          }
+         tempFile = "";
       }
    }
 
