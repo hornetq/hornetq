@@ -151,13 +151,13 @@
          <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>3.1.0.GA</version>
+            <version>3.1.4.GA</version>
          </dependency>
 
          <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
-            <version>1.2.2.GA</version>
+            <version>1.5.1.Final</version>
          </dependency>
 
          <dependency>
