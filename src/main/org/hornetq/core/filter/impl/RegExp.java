@@ -45,7 +45,7 @@ public class RegExp
    {
       String pat = adjustPattern(pattern, escapeChar);
 
-      re = Pattern.compile(pat);
+      re = Pattern.compile(pat, Pattern.DOTALL);
    }
 
    public boolean isMatch(final Object target)
