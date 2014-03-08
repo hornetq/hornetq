@@ -15,9 +15,8 @@ package org.hornetq.core.protocol.proton;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPIllegalStateException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInternalErrorException;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPInvalidFieldException;
-import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPNotImplementedException;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
@@ -77,9 +76,6 @@ public interface HornetQAMQPProtocolMessageBundle
 
    @Message(id = 219013, value =  "error committing coordinator: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQAMQPIllegalStateException errorCommittingCoordinator(String message);
-
-   @Message(id = 219014, value =  "not implemented: {0}", format = Message.Format.MESSAGE_FORMAT)
-   HornetQAMQPNotImplementedException notImplemented(String message);
 
    @Message(id = 219015, value =  "error decoding AMQP frame", format = Message.Format.MESSAGE_FORMAT)
    String decodeError();

@@ -25,9 +25,9 @@ import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInvalidFilterExpressionException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.SimpleString;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
