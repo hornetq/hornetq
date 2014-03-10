@@ -12,12 +12,14 @@
  */
 
 package org.hornetq.tests.unit.core.settings.impl;
+import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.junit.Before;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 
@@ -165,6 +167,52 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertEquals(0, DummyMergeable.timesMerged);
       DummyMergeable.reset();
    }
+
+
+   @Test
+   public void testAddListener()
+   {
+      HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
+      repository.addMatch("#", "1");
+      repository.addMatch("B", "2");
+
+      final AtomicInteger called = new AtomicInteger(0);
+      repository.registerListener(new HierarchicalRepositoryChangeListener()
+      {
+         @Override
+         public void onChange()
+         {
+            called.incrementAndGet();
+         }
+      });
+
+      assertEquals(1, called.get());
+
+      repository.disableListeners();
+
+      repository.addMatch("C", "3");
+
+      assertEquals(1, called.get());
+
+      repository.enableListeners();
+
+      assertEquals(2, called.get());
+
+      repository.addMatch("D", "4");
+
+      assertEquals(3, called.get());
+
+      repository.removeMatch("D");
+
+      assertEquals(4, called.get());
+
+      repository.disableListeners();
+
+      repository.removeMatch("C");
+
+      assertEquals(4, called.get());
+   }
+
 
    @Test
    public void testIllegalMatches()

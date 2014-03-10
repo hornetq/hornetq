@@ -41,6 +41,7 @@ import org.hornetq.core.settings.Mergeable;
 public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T>
 {
 
+   private boolean listenersEnabled = true;
    /**
     * The default Match to fall back to
     */
@@ -91,6 +92,35 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    private final ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
 
+
+   @Override
+   public void disableListeners()
+   {
+      lock.writeLock().lock();
+      try
+      {
+         this.listenersEnabled = false;
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
+   }
+
+   @Override
+   public void enableListeners()
+   {
+      lock.writeLock().lock();
+      try
+      {
+         this.listenersEnabled = true;
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
+      onChange();
+   }
 
    public void addMatch(final String match, final T value)
    {
@@ -265,12 +295,32 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
 
    public void registerListener(final HierarchicalRepositoryChangeListener listener)
    {
-      listeners.add(listener);
+      lock.writeLock().lock();
+      try
+      {
+         listeners.add(listener);
+         if (listenersEnabled)
+         {
+            listener.onChange();
+         }
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    public void unRegisterListener(final HierarchicalRepositoryChangeListener listener)
    {
-      listeners.remove(listener);
+      lock.writeLock().lock();
+      try
+      {
+         listeners.remove(listener);
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    /**
@@ -311,16 +361,27 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
 
    private void onChange()
    {
-      for (HierarchicalRepositoryChangeListener listener : listeners)
+      lock.readLock().lock();
+      try
       {
-         try
+         if (listenersEnabled)
          {
-            listener.onChange();
+            for (HierarchicalRepositoryChangeListener listener : listeners)
+            {
+               try
+               {
+                  listener.onChange();
+               }
+               catch (Throwable e)
+               {
+                  HornetQServerLogger.LOGGER.errorCallingRepoListener(e);
+               }
+            }
          }
-         catch (Throwable e)
-         {
-            HornetQServerLogger.LOGGER.errorCallingRepoListener(e);
-         }
+      }
+      finally
+      {
+         lock.readLock().unlock();
       }
    }
 

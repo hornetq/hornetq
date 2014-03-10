@@ -22,6 +22,10 @@ import java.util.List;
  */
 public interface HierarchicalRepository<T>
 {
+
+   void disableListeners();
+
+   void enableListeners();
    /**
     * Add a new match to the repository
     * @param match The regex to use to match against
