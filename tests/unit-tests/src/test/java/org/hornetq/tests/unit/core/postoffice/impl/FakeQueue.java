@@ -479,11 +479,11 @@ public class FakeQueue implements Queue
       return 0;
    }
 
-   @Override
-   public void setExpiryAddress(final SimpleString expiryAddress)
-   {
-      // no-op
 
+   @Override
+   public SimpleString getExpiryAddress()
+   {
+      return null;
    }
 
    @Override
