@@ -33,7 +33,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.stomp.Stomp;
@@ -211,13 +210,6 @@ public class ManagementWithStompTest extends ManagementTestBase
       server = null;
 
       super.tearDown();
-   }
-
-   protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
-   {
-      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, queue, mbeanServer);
-
-      return queueControl;
    }
 
    // Private -------------------------------------------------------

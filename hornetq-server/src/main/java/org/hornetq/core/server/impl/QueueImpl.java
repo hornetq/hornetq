@@ -308,8 +308,6 @@ public class QueueImpl implements Queue
 
       if (addressSettingsRepository != null)
       {
-         SimpleString localexpiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
-         setExpiryAddress(localexpiryAddress);
          addressSettingsRepositoryListener = new AddressSettingsRepositoryListener();
          addressSettingsRepository.registerListener(addressSettingsRepositoryListener);
       }
@@ -1080,29 +1078,9 @@ public class QueueImpl implements Queue
       }
    }
 
-   public void setExpiryAddress(final SimpleString expiryAddressArgument)
+   public SimpleString getExpiryAddress()
    {
-
-      if ((this.expiryAddress == null && expiryAddressArgument != null) ||
-          (this.expiryAddress != null && expiryAddressArgument != null && !this.expiryAddress.equals(expiryAddressArgument)))
-      {
-         this.expiryAddress = expiryAddressArgument;
-         // We will only do the check when there's an actual change
-         try
-         {
-            if (!postOffice.isAddressBound(expiryAddress))
-            {
-               HornetQServerLogger.LOGGER.unboudExpiry(expiryAddress);
-            }
-         }
-         catch (Exception e)
-         {
-            // if an exception happened here, it's really a Runtime error.. nothing to be treated on this case
-            throw new RuntimeException(e.getMessage(), e);
-         }
-      }
-
-      this.expiryAddress = expiryAddressArgument;
+      return this.expiryAddress;
    }
 
    public void referenceHandled()
@@ -2964,13 +2942,26 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
    }
 
+   private void configureExpiry(final SimpleString expiryAddressArgument)
+   {
+      this.expiryAddress = expiryAddressArgument;
+   }
+
 
    private class AddressSettingsRepositoryListener implements HierarchicalRepositoryChangeListener
    {
       @Override
       public void onChange()
       {
-         setExpiryAddress(addressSettingsRepository.getMatch(address.toString()).getExpiryAddress());
+         AddressSettings settings = addressSettingsRepository.getMatch(address.toString());
+         if (settings == null)
+         {
+            configureExpiry(null);
+         }
+         else
+         {
+            configureExpiry(settings.getExpiryAddress());
+         }
       }
    }
 }
