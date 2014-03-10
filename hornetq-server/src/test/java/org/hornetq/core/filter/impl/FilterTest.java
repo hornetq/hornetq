@@ -46,6 +46,16 @@ public class FilterTest extends SilentTestCase
    }
 
    @Test
+   public void testNewlineMatch() throws Exception
+   {
+      filter = FilterImpl.createFilter(new SimpleString("fooprop LIKE '%1234%'"));
+
+      message.putStringProperty(new SimpleString("fooprop"), new SimpleString("hello1234\n"));
+
+      Assert.assertTrue(filter.match(message));
+   }
+
+   @Test
    public void testFilterForgets() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("color = 'RED'"));
