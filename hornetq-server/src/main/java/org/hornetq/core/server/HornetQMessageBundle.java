@@ -73,7 +73,7 @@ public interface HornetQMessageBundle
    @Message(id = 119005, value = "connections for {0} closed by management" , format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException connectionsClosedByManagement(String ipAddress);
 
-   @Message(id = 119006, value = "journals are not JournalImpl. You can't set a replicator!" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119006, value = "journals are not JournalImpl. You can''t set a replicator!" , format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException notJournalImpl();
 
    @Message(id = 119007, value = "unhandled error during replication" , format = Message.Format.MESSAGE_FORMAT)
@@ -145,10 +145,10 @@ public interface HornetQMessageBundle
    @Message(id = 119027, value =  "Could not find reference on consumer ID={0}, messageId = {1} queue = {2}", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException consumerNoReference(Long id, Long messageID, SimpleString name);
 
-   @Message(id = 119028, value =  "Consumer {0} doesn't exist on the server" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119028, value =  "Consumer {0} doesn''t exist on the server" , format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException consumerDoesntExist(long consumerID);
 
-   @Message(id = 119029, value =  "No address configured on the Server's Session" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119029, value =  "No address configured on the Server''s Session" , format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException noAddress();
 
    @Message(id = 119030, value =  "large-message not initialized on server", format = Message.Format.MESSAGE_FORMAT)
@@ -157,7 +157,7 @@ public interface HornetQMessageBundle
    @Message(id = 119031, value =  "Unable to validate user: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQSecurityException unableToValidateUser(String user);
 
-   @Message(id = 119032, value =  "User: {0} doesn't have permission='{1}' on address {2}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119032, value =  "User: {0} does not have permission=''{1}'' on address {2}", format = Message.Format.MESSAGE_FORMAT)
    HornetQSecurityException userNoPermissions(String username, CheckType checkType, String saddress);
 
    @Message(id = 119033, value =  "Server and client versions incompatible", format = Message.Format.MESSAGE_FORMAT)
@@ -286,11 +286,11 @@ public interface HornetQMessageBundle
    @Message(id = 119074, value = "Error instantiating transformer class {0}" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException errorCreatingTransformerClass(@Cause Exception e, String transformerClassName);
 
-   @Message(id = 119075, value = "method autoEncode doesn't know how to convert {0} yet", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119075, value = "method autoEncode doesn''t know how to convert {0} yet", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException autoConvertError(Class<? extends Object> aClass);
 
    /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
-   @Message(id = 119076, value = "Executing destroyConnection with {0}={1} through management's request", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119076, value = "Executing destroyConnection with {0}={1} through management''s request", format = Message.Format.MESSAGE_FORMAT)
    String destroyConnectionWithSessionMetadataHeader(String key, String value);
 
    /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
@@ -298,7 +298,7 @@ public interface HornetQMessageBundle
    String destroyConnectionWithSessionMetadataClosingConnection(String serverSessionString);
 
    /** Exception used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */
-   @Message(id = 119078, value = "Disconnected per admin's request on {0}={1}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119078, value = "Disconnected per admin''s request on {0}={1}", format = Message.Format.MESSAGE_FORMAT)
    HornetQDisconnectedException destroyConnectionWithSessionMetadataSendException(String key, String value);
 
    /** Message used on on {@link org.hornetq.core.server.impl.HornetQServerImpl#destroyConnectionWithSessionMetadata(String, String)} */

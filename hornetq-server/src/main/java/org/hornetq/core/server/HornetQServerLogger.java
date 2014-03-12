@@ -235,7 +235,7 @@ public interface HornetQServerLogger extends BasicLogger
    void messageWithDuplicateID(Object duplicateProperty, SimpleString toAddress, SimpleString address, SimpleString simpleString);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221037, value = "{0} to become \''live\''", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 221037, value = "{0} to become ''live''", format = Message.Format.MESSAGE_FORMAT)
    void becomingLive(HornetQServer server);
 
    @LogMessage(level = Logger.Level.INFO)
@@ -989,12 +989,12 @@ public interface HornetQServerLogger extends BasicLogger
    void groupingQueueRemoved(int size, SimpleString clusterName);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222168, value = "The 'protocol' property is deprecated, if you want this Acceptor to support multiple protocols use the 'protocols' property, i.e. 'CORE,AMQP,STOMP'",
+   @Message(id = 222168, value = "The ''protocol'' property is deprecated, if you want this Acceptor to support multiple protocols use the ''protocols'' property, i.e. ''CORE,AMQP,STOMP''",
             format = Message.Format.MESSAGE_FORMAT)
    void warnDeprecatedProtocol();
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222169, value = "You have old legacy clients connected to the queue {0} and we can't disconnect them, these clients may just hang",
+   @Message(id = 222169, value = "You have old legacy clients connected to the queue {0} and we can''t disconnect them, these clients may just hang",
             format = Message.Format.MESSAGE_FORMAT)
    void warnDisconnectOldClient(String queueName);
 
