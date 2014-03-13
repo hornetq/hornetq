@@ -13,6 +13,7 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 
@@ -170,4 +171,12 @@ public interface ClientSessionFactory extends AutoCloseable
     * @return the core connection
     */
    RemotingConnection getConnection();
+
+
+   /**
+    * Return the configuration used
+    * @return
+    */
+   TransportConfiguration getConnectorConfiguration();
+
 }
