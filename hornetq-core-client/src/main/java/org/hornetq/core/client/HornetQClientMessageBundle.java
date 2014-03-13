@@ -126,7 +126,7 @@ public interface HornetQClientMessageBundle
    @Message(id = 119023, value =  "The large message lost connection with its session, either because of a rollback or a closed session", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException largeMessageLostSession();
 
-   @Message(id = 119024, value =  "Couldn't select a TransportConfiguration to create SessionFactory", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119024, value =  "Could not select a TransportConfiguration to create SessionFactory", format = Message.Format.MESSAGE_FORMAT)
    HornetQIllegalStateException noTCForSessionFactory();
 
    @Message(id = 119025, value = "Error saving the message body", format = Message.Format.MESSAGE_FORMAT)
@@ -203,25 +203,25 @@ public interface HornetQClientMessageBundle
    @Message(id = 119048, value = "nodes hava a different number of attributes", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nodeHaveDifferentAttNumber();
 
-   @Message(id = 119049, value = "attribute {0}={1} doesn't match", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119049, value = "attribute {0}={1} does not match", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException attsDontMatch(String name, String value);
 
-   @Message(id = 119050, value = "one node has children and the other doesn't" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119050, value = "one node has children and the other does not" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException oneNodeHasChildren();
 
    @Message(id = 119051, value = "nodes hava a different number of children" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException nodeHasDifferentChildNumber();
 
-   @Message(id = 119052, value = "Element {0} requires a valid Boolean value, but '{1}' cannot be parsed as a Boolean" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119052, value = "Element {0} requires a valid Boolean value, but ''{1}'' cannot be parsed as a Boolean" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException mustBeBoolean(Node elem, String value);
 
-   @Message(id = 119053, value = "Element {0} requires a valid Double value, but '{1}' cannot be parsed as a Double" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119053, value = "Element {0} requires a valid Double value, but ''{1}'' cannot be parsed as a Double" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException mustBeDouble(Node elem, String value);
 
-   @Message(id = 119054, value = "Element {0} requires a valid Integer value, but '{1}' cannot be parsed as a Integer" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119054, value = "Element {0} requires a valid Integer value, but ''{1}'' cannot be parsed as a Integer" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException mustBeInteger(Node elem, String value);
 
-   @Message(id = 119055, value = "Element {0} requires a valid Long value, but '{1}' cannot be parsed as a Long" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119055, value = "Element {0} requires a valid Long value, but ''{1}'' cannot be parsed as a Long" , format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException mustBeLong(Node elem, String value);
 
    @Message(id = 119056, value = "Failed to get decoder" , format = Message.Format.MESSAGE_FORMAT)

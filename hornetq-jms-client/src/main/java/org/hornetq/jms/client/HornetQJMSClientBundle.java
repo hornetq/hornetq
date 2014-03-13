@@ -82,7 +82,7 @@ public interface HornetQJMSClientBundle
             format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException onlyValidForByteOrStreamMessages();
 
-   @Message(id = 129012, value = "The property name \'{0}\' is not a valid java identifier.",
+   @Message(id = 129012, value = "The property name ''{0}'' is not a valid java identifier.",
             format = Message.Format.MESSAGE_FORMAT)
    JMSRuntimeException invalidJavaIdentifier(String propertyName);
 

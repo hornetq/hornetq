@@ -39,7 +39,7 @@ public interface HornetQStompProtocolMessageBundle
    @Message(id = 339000, value = "Stomp Connection TTL cannot be negative: {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException negativeConnectionTTL(Long ttl);
 
-   @Message(id = 339001, value = "Destination doesn't exist: {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339001, value = "Destination does not exist: {0}", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException destinationNotExist(String destination);
 
    @Message(id = 339002, value = "Stomp versions not supported: {0}", format = Message.Format.MESSAGE_FORMAT)
@@ -51,16 +51,16 @@ public interface HornetQStompProtocolMessageBundle
    @Message(id = 339004, value = "Cannot accept null as host", format = Message.Format.MESSAGE_FORMAT)
    String hostCannotBeNull();
 
-   @Message(id = 339005, value = "Header host doesn't match server host", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339005, value = "Header host does not match server host", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException hostNotMatch();
 
-   @Message(id = 339006, value = "host {0} doesn't match server host name", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339006, value = "host {0} does not match server host name", format = Message.Format.MESSAGE_FORMAT)
    String hostNotMatchDetails(String host);
 
    @Message(id = 339007, value = "Connection was destroyed.", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException connectionDestroyed();
 
-   @Message(id = 339008, value = "Connection hasn't been established.", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339008, value = "Connection has not been established.", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException connectionNotEstablished();
 
    @Message(id = 339009, value = "Exception getting session", format = Message.Format.MESSAGE_FORMAT)
@@ -141,10 +141,10 @@ public interface HornetQStompProtocolMessageBundle
    @Message(id = 339034, value = "This method should not be called", format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException invalidCall();
 
-   @Message(id = 339035, value = "Must specify the subscription's id or the destination you are unsubscribing from", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339035, value = "Must specify the subscription''s id or the destination you are unsubscribing from", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException needIDorDestination();
 
-   @Message(id = 339037, value = "Must specify the subscription's id", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 339037, value = "Must specify the subscription''s id", format = Message.Format.MESSAGE_FORMAT)
    HornetQStompException needSubscriptionID();
 
    @Message(id = 339039, value = "No id header in ACK/NACK frame.", format = Message.Format.MESSAGE_FORMAT)
