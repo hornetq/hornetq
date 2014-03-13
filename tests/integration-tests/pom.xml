@@ -174,31 +174,37 @@
          <groupId>org.jboss.jbossts.jts</groupId>
          <artifactId>jbossjts-jacorb</artifactId>
       </dependency>
-    <!--Vertx provided dependencies-->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <version>${vertx.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-platform</artifactId>
-      <version>${vertx.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-hazelcast</artifactId>
-      <version>${vertx.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>testtools</artifactId>
-      <version>${vertx.testtools.version}</version>
-      <scope>test</scope>
-    </dependency>
+      <!--Vertx provided dependencies-->
+      <dependency>
+         <groupId>io.vertx</groupId>
+         <artifactId>vertx-core</artifactId>
+         <version>${vertx.version}</version>
+         <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>io.vertx</groupId>
+         <artifactId>vertx-platform</artifactId>
+         <version>${vertx.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.vertx</groupId>
+         <artifactId>vertx-hazelcast</artifactId>
+         <version>${vertx.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.vertx</groupId>
+         <artifactId>testtools</artifactId>
+         <version>${vertx.testtools.version}</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>
