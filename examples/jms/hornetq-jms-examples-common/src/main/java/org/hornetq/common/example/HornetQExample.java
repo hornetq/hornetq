@@ -21,6 +21,7 @@ import javax.jms.JMSException;
 import javax.naming.InitialContext;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.DelegatingSession;
@@ -183,7 +184,7 @@ public abstract class HornetQExample
 
    protected int getServer(Connection connection)
    {
-      DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
+      ClientSession session = ((HornetQConnection) connection).getInitialSession();
       TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
       String port = (String) transportConfiguration.getParams().get("port");
       return Integer.valueOf(port) - 5445;
@@ -193,7 +194,7 @@ public abstract class HornetQExample
    {
       for (Connection connection : connections)
       {
-         DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
+         ClientSession session = ((HornetQConnection) connection).getInitialSession();
          TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
          String port = (String) transportConfiguration.getParams().get("port");
          if(Integer.valueOf(port) == server + 5445)
