@@ -271,6 +271,10 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221045, value = "libaio is not available, switching the configuration into NIO", format = Message.Format.MESSAGE_FORMAT)
    void switchingNIO();
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221046, value = "Unblocking message production on address ''{0}''; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
+   void unblockingMessageProduction(SimpleString addressName, long currentSize, long maxSize);
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
             format = Message.Format.MESSAGE_FORMAT)
@@ -436,12 +440,12 @@ public interface HornetQServerLogger extends BasicLogger
    void pageStoreStartIOError(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222038, value = "Starting paging on {0}, size = {1}, maxSize={2}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222038, value = "Starting paging on address ''{0}''; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
    void pageStoreStart(SimpleString storeName, long addressSize, long maxSize);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222039, value = "Messages are being dropped on address {0}", format = Message.Format.MESSAGE_FORMAT)
-   void pageStoreDropMessages(SimpleString storeName);
+   @Message(id = 222039, value = "Messages sent to address ''{0}'' are being dropped; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
+   void pageStoreDropMessages(SimpleString storeName, long addressSize, long maxSize);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222040, value = "Server is stopped", format = Message.Format.MESSAGE_FORMAT)
@@ -1049,6 +1053,10 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222182, value = "Missing cluster-configuration for scale-down-clustername {0}", format = Message.Format.MESSAGE_FORMAT)
    void missingClusterConfigForScaleDown(String scaleDownCluster);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222183, value = "Blocking message production on address ''{0}''; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
+   void blockingMessageProduction(SimpleString addressName, long currentSize, long maxSize);
 
 
    @LogMessage(level = Logger.Level.ERROR)

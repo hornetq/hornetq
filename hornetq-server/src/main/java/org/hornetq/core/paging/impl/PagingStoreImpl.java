@@ -50,6 +50,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -113,6 +114,8 @@ public class PagingStoreImpl implements PagingStore
    private volatile boolean running = false;
 
    private final boolean syncNonTransactional;
+
+   private volatile AtomicBoolean blocking = new AtomicBoolean(false);
 
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
@@ -741,6 +744,11 @@ public class PagingStoreImpl implements PagingStore
                // run it now
                ourRunnable.run();
             }
+            else if (!blocking.get())
+            {
+               HornetQServerLogger.LOGGER.blockingMessageProduction(address, sizeInBytes.get(), maxSize);
+               blocking.set(true);
+            }
 
             return true;
          }
@@ -771,6 +779,11 @@ public class PagingStoreImpl implements PagingStore
                if (!onMemoryFreedRunnables.isEmpty())
                {
                   executor.execute(memoryFreedRunnablesExecutor);
+                  if (blocking.get())
+                  {
+                     HornetQServerLogger.LOGGER.unblockingMessageProduction(address, sizeInBytes.get(), maxSize);
+                     blocking.set(false);
+                  }
                }
             }
          }
@@ -787,10 +800,7 @@ public class PagingStoreImpl implements PagingStore
             {
                if (startPaging())
                {
-                  if (PagingStoreImpl.isTrace)
-                  {
-                     HornetQServerLogger.LOGGER.pageStoreStart(storeName, addressSize, maxSize);
-                  }
+                  HornetQServerLogger.LOGGER.pageStoreStart(storeName, addressSize, maxSize);
                }
             }
          }
@@ -824,7 +834,7 @@ public class PagingStoreImpl implements PagingStore
             {
                printedDropMessagesWarning = true;
 
-               HornetQServerLogger.LOGGER.pageStoreDropMessages(storeName);
+               HornetQServerLogger.LOGGER.pageStoreDropMessages(storeName, sizeInBytes.get(), maxSize);
             }
 
             if (message.isLargeMessage())
