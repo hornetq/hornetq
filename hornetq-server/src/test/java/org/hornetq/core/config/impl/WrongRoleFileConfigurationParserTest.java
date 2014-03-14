@@ -19,6 +19,7 @@ import org.hornetq.core.deployers.impl.FileConfigurationParser;
 import org.hornetq.tests.logging.AssertionLoggerHandler;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,6 +37,11 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
    }
 
    @Test
+   /**
+    * When running this test from an IDE add this to the test command line so that the AssertionLoggerHandler works properly:
+    *
+    *   -Djava.util.logging.manager=org.jboss.logmanager.LogManager  -Dlogging.configuration=file:<path_to_source>/tests/config/logging.properties
+    */
    public void testParsingDefaultServerConfig() throws Exception
    {
       FileConfigurationParser parser = new FileConfigurationParser();
@@ -43,8 +49,7 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
       parser.parseMainConfig(input);
 
       // Using the code only because I don't want a test failing just for someone editing Log text
-      AssertionLoggerHandler.findText("HQ222177");
-      AssertionLoggerHandler.findText("HQ222177");
+      Assert.assertTrue("Expected to find \"HQ222177\" twice", AssertionLoggerHandler.findText(2, "HQ222177"));
    }
 
    @AfterClass
