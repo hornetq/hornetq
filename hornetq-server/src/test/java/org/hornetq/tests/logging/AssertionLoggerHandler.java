@@ -73,25 +73,31 @@ public class AssertionLoggerHandler extends ExtHandler
 
    /**
     * Find a line that contains the parameters passed as an argument
+    *
     * @param text
     * @return
     */
-   public static boolean findText(final String...text)
+   public static boolean findText(final String text)
    {
+      return findText(1, text);
+   }
+
+
+   public static boolean findText(int occurrences, final String text)
+   {
+      int foundCount = 0;
+
       for (String key : messages.keySet())
       {
          boolean found = true;
 
-         for (String txtCheck : text)
+         found = key.contains(text);
+         if (found)
          {
-            found = key.contains(txtCheck);
-            if (!found)
-            {
-               break;
-            }
+            foundCount++;
          }
 
-         if (found)
+         if (found && foundCount == occurrences)
          {
             return true;
          }
