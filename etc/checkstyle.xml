@@ -69,6 +69,7 @@
       <module name="Indentation">
          <property name="basicOffset" value="3"/>
          <property name="caseIndent" value="3"/>
+         <property name="throwsIndent" value="3"/>
       </module>
    </module>
 </module>
