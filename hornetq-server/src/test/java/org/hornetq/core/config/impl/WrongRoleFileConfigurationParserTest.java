@@ -23,7 +23,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * A FileConfigurationParserTest
+ * When running this test from an IDE add this to the test command line so that the AssertionLoggerHandler works properly:
+ * -Djava.util.logging.manager=org.jboss.logmanager.LogManager  -Dlogging.configuration=file:<path_to_source>/tests/config/logging.properties
  *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
@@ -35,6 +36,11 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
       AssertionLoggerHandler.startCapture();
    }
 
+   /**
+    *
+    *
+    *
+    */
    @Test
    public void testParsingDefaultServerConfig() throws Exception
    {
@@ -43,8 +49,8 @@ public class WrongRoleFileConfigurationParserTest extends UnitTestCase
       parser.parseMainConfig(input);
 
       // Using the code only because I don't want a test failing just for someone editing Log text
-      AssertionLoggerHandler.findText("HQ222177");
-      AssertionLoggerHandler.findText("HQ222177");
+      assertTrue(AssertionLoggerHandler.findText("HQ222177", "create-durable-queue"));
+      assertTrue(AssertionLoggerHandler.findText("HQ222177", "delete-durable-queue"));
    }
 
    @AfterClass
