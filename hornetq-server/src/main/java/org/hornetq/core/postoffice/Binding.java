@@ -49,6 +49,8 @@ public interface Binding
 
    void route(ServerMessage message, RoutingContext context) throws Exception;
 
+   void routeWithAck(ServerMessage message, RoutingContext context) throws Exception;
+
    void close() throws Exception;
 
    /**

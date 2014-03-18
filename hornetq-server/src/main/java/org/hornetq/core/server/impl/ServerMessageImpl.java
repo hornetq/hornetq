@@ -44,6 +44,9 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    private static final int memoryOffset;
 
+   private boolean persisted = false;
+
+
    static
    {
       // This is an estimate of how much memory a ServerMessageImpl takes up, exclusing body and properties
@@ -359,5 +362,4 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return getObjectProperty(Message.HDR_DUPLICATE_DETECTION_ID);
    }
-
 }

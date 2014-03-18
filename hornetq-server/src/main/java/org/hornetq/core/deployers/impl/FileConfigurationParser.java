@@ -32,6 +32,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -648,20 +649,47 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
    {
       String name = e.getAttribute("name");
       String a = e.getAttribute("port-offset");
+      String backupStrategy = e.getAttribute("backup-strategy");
       int portOffset = a != null && a.length() > 0 ? Integer.valueOf(a) : 100;
       String inheritAttr = e.getAttribute("inherit-configuration");
+      String scaleDownConnector = e.getAttribute("scale-down-connector");
       boolean inheritConfiguration = inheritAttr != null && inheritAttr.length() > 0 ? Boolean.valueOf(inheritAttr) : true;
       Configuration backupConfiguration = inheritConfiguration ? config.copy() : new ConfigurationImpl();
-      backupConfiguration.setName(name);
-      Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
-      for (TransportConfiguration acceptor : acceptors)
+      if (backupStrategy != null && backupStrategy.length() > 0)
       {
-         updatebackupParams(name, portOffset, acceptor.getParams());
+         BackupStrategy strategy = Enum.valueOf(BackupStrategy.class, backupStrategy);
+         backupConfiguration.setBackupStrategy(strategy);
       }
-      Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
-      for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
+      else
       {
-         updatebackupParams(name, portOffset, entry.getValue().getParams());
+         backupConfiguration.setBackupStrategy(BackupStrategy.FULL);
+      }
+      backupConfiguration.setName(name);
+      //we only do this if we are a full server, if recover then our connectors will be the same as the parent
+      if (backupConfiguration.getBackupStrategy() == BackupStrategy.FULL)
+      {
+         Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
+         for (TransportConfiguration acceptor : acceptors)
+         {
+            updatebackupParams(name, portOffset, acceptor.getParams());
+         }
+         Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
+         for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
+         {
+            updatebackupParams(name, portOffset, entry.getValue().getParams());
+         }
+      }
+      else
+      {
+         //use the scale down cluster if set, this gets used when scaling down, typically invm if colocated
+         if (scaleDownConnector != null)
+         {
+            List<ClusterConnectionConfiguration> clusterConfigurations = backupConfiguration.getClusterConfigurations();
+            for (ClusterConnectionConfiguration clusterConfiguration : clusterConfigurations)
+            {
+               clusterConfiguration.setScaleDownConnector(scaleDownConnector);
+            }
+         }
       }
       backupConfiguration.setJournalDirectory(backupConfiguration.getJournalDirectory() + "/" + name);
       backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + "/" + name);
@@ -1171,6 +1199,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       int clusterNotificationAttempts = getInteger(e, "notification-attempts", HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts(), Validators.GT_ZERO);
 
+      String scaleDownConnector = e.getAttribute("scale-down-connector");
+
       String discoveryGroupName = null;
 
       List<String> staticConnectorNames = new ArrayList<String>();
@@ -1212,7 +1242,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                staticConnectorNames,
                                                allowDirectConnectionsOnly,
                                                clusterNotificationInterval,
-                                               clusterNotificationAttempts);
+                                               clusterNotificationAttempts,
+                                               scaleDownConnector);
       }
       else
       {
@@ -1233,7 +1264,8 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                confirmationWindowSize,
                                                discoveryGroupName,
                                                clusterNotificationInterval,
-                                               clusterNotificationAttempts);
+                                               clusterNotificationAttempts,
+                                               scaleDownConnector);
       }
 
       mainConfig.getClusterConfigurations().add(config);

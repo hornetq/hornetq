@@ -1467,7 +1467,25 @@ public class ScheduledDeliveryHandlerTest extends Assert
       }
 
       @Override
+      public void incrementMesssagesAdded()
+      {
+
+      }
+
+      @Override
+      public List<MessageReference> cancelScheduledMessages()
+      {
+         return null;
+      }
+
+      @Override
       public void route(ServerMessage message, RoutingContext context) throws Exception
+      {
+
+      }
+
+      @Override
+      public void routeWithAck(ServerMessage message, RoutingContext context)
       {
 
       }

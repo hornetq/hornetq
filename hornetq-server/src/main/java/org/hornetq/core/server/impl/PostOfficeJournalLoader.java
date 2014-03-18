@@ -57,11 +57,11 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 
 public class PostOfficeJournalLoader implements JournalLoader
 {
-   private final PostOffice postOffice;
-   private final PagingManager pagingManager;
+   protected final PostOffice postOffice;
+   protected final PagingManager pagingManager;
    private StorageManager storageManager;
    private final QueueFactory queueFactory;
-   private final NodeManager nodeManager;
+   protected final NodeManager nodeManager;
    private final ManagementService managementService;
    private final GroupingHandler groupingHandler;
    private Configuration configuration;
@@ -271,7 +271,7 @@ public class PostOfficeJournalLoader implements JournalLoader
    }
 
    @Override
-   public void postLoad(Journal messageJournal) throws Exception
+   public void postLoad(Journal messageJournal, ResourceManager resourceManager, Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       for (Queue queue : queues.values())
       {

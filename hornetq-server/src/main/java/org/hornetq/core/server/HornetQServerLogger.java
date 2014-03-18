@@ -275,6 +275,10 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221046, value = "Unblocking message production on address ''{0}''; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
    void unblockingMessageProduction(SimpleString addressName, long currentSize, long maxSize);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221047, value = "Backup Server has scaled down to live server", format = Message.Format.MESSAGE_FORMAT)
+   void backupServerScaledDown();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
             format = Message.Format.MESSAGE_FORMAT)
@@ -1057,6 +1061,12 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222183, value = "Blocking message production on address ''{0}''; size is currently: {1} bytes; max-size-bytes: {2}", format = Message.Format.MESSAGE_FORMAT)
    void blockingMessageProduction(SimpleString addressName, long currentSize, long maxSize);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222184,
+         value = "Unable to recover group bindings in SCALE_DOWN mode, only FULL backup server can do this",
+         format = Message.Format.MESSAGE_FORMAT)
+   void groupBindingsOnRecovery();
 
 
    @LogMessage(level = Logger.Level.ERROR)

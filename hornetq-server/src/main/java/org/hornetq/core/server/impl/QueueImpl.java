@@ -357,6 +357,12 @@ public class QueueImpl implements Queue
       context.addQueue(address, this);
    }
 
+   @Override
+   public void routeWithAck(ServerMessage message, RoutingContext context)
+   {
+      context.addQueueWithAck(address, this);
+   }
+
    // Queue implementation ----------------------------------------------------------------------------------------
    public synchronized void setConsumersRefCount(final HornetQServer server)
    {
@@ -1121,6 +1127,17 @@ public class QueueImpl implements Queue
    public void referenceHandled()
    {
       incDelivering();
+   }
+
+   public void incrementMesssagesAdded()
+   {
+      messagesAdded++;
+   }
+
+   @Override
+   public List<MessageReference> cancelScheduledMessages()
+   {
+      return scheduledDeliveryHandler.cancel(null);
    }
 
    public long getMessagesAdded()
@@ -2690,6 +2707,10 @@ public class QueueImpl implements Queue
 
          long timeBase = System.currentTimeMillis();
 
+         //add any already acked refs, this means that they have been transferred via a producer.send() and have no
+         // previous state persisted.
+         List<MessageReference> ackedRefs = new ArrayList<>();
+
          for (MessageReference ref : refsToAck)
          {
             ref.setConsumerId(null);
@@ -2700,6 +2721,10 @@ public class QueueImpl implements Queue
             }
             try
             {
+               if (ref.isAlreadyAcked())
+               {
+                  ackedRefs.add(ref);
+               }
                // if ignore redelivery check, we just perform redelivery straight
                if (ref.getQueue().checkRedelivery(ref, timeBase, ignoreRedeliveryCheck))
                {
@@ -2730,6 +2755,41 @@ public class QueueImpl implements Queue
             synchronized (queue)
             {
                queue.postRollback(refs);
+            }
+         }
+
+         if (!ackedRefs.isEmpty())
+         {
+            //since pre acked refs have no previous state we need to actually create this by storing the message and the
+            //message references
+            try
+            {
+               Transaction ackedTX = new TransactionImpl(storageManager);
+               for (MessageReference ref : ackedRefs)
+               {
+                  ServerMessage message = ref.getMessage();
+                  if (message.isDurable())
+                  {
+                     int durableRefCount = message.incrementDurableRefCount();
+
+                     if (durableRefCount == 1)
+                     {
+                        storageManager.storeMessageTransactional(ackedTX.getID(), message);
+                     }
+                     Queue queue = ref.getQueue();
+
+                     storageManager.storeReferenceTransactional(ackedTX.getID(), queue.getID(), message.getMessageID());
+
+                     ackedTX.setContainsPersistent();
+                  }
+
+                  message.incrementRefCount();
+               }
+               ackedTX.commit(true);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
             }
          }
       }
@@ -2784,6 +2844,10 @@ public class QueueImpl implements Queue
          return list;
       }
 
+      public List<MessageReference> getReferencesToAcknowledge()
+      {
+         return refsToAck;
+      }
 
    }
 

@@ -47,6 +47,8 @@ public class PagedReferenceImpl implements PagedReference
 
    private final PageSubscription subscription;
 
+   private boolean alreadyAcked;
+
    public ServerMessage getMessage()
    {
       return getPagedMessage().getMessage();
@@ -192,6 +194,18 @@ public class PagedReferenceImpl implements PagedReference
    public void handled()
    {
       getQueue().referenceHandled();
+   }
+
+   @Override
+   public void setAlreadyAcked()
+   {
+      alreadyAcked = true;
+   }
+
+   @Override
+   public boolean isAlreadyAcked()
+   {
+      return alreadyAcked;
    }
 
    @Override

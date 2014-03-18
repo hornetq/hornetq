@@ -385,6 +385,12 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      @Override
+      public void routeWithAck(ServerMessage message, RoutingContext context)
+      {
+
+      }
+
 
    }
 

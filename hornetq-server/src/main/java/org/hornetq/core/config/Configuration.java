@@ -1007,4 +1007,8 @@ public interface Configuration extends Serializable
    Set<Configuration> getBackupServerConfigurations();
 
    Configuration copy() throws Exception;
+
+   void setBackupStrategy(BackupStrategy strategy);
+
+   BackupStrategy getBackupStrategy();
 }

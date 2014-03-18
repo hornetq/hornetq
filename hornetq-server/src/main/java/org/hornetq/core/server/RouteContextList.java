@@ -32,4 +32,7 @@ public interface RouteContextList
 
    List<Queue> getNonDurableQueues();
 
+   void addAckedQueue(Queue queue);
+
+   boolean isAlreadyAcked(Queue queue);
 }

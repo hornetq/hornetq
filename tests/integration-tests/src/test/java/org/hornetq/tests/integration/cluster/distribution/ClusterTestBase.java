@@ -2007,7 +2007,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          -1, reconnectAttempts, 1000, 1000, true, forwardWhenNoConsumers, maxHops,
          1024, pairs, false,
          HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
-         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts(), null);
 
       conf.getClusterConfigurations().add(clusterConf);
    }

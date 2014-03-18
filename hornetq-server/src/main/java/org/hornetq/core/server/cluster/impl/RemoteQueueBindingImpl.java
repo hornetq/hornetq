@@ -189,6 +189,21 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
    }
 
+   @Override
+   public void routeWithAck(ServerMessage message, RoutingContext context)
+   {
+      addRouteContextToMessage(message);
+
+      List<Queue> durableQueuesOnContext = context.getDurableQueues(storeAndForwardQueue.getAddress());
+
+      if (!durableQueuesOnContext.contains(storeAndForwardQueue))
+      {
+         // There can be many remote bindings for the same node, we only want to add the message once to
+         // the s & f queue for that node
+         context.addQueueWithAck(storeAndForwardQueue.getAddress(), storeAndForwardQueue);
+      }
+   }
+
    public synchronized void addConsumer(final SimpleString filterString) throws Exception
    {
       if (filterString != null)

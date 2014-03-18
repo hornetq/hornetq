@@ -73,6 +73,8 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private final int clusterNotificationAttempts;
 
+   private String scaleDownConnector;
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -104,7 +106,8 @@ public final class ClusterConnectionConfiguration implements Serializable
          staticConnectors,
          allowDirectConnectionsOnly,
          HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
-         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts(),
+         null);
    }
 
 
@@ -128,7 +131,8 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final List<String> staticConnectors,
                                          final boolean allowDirectConnectionsOnly,
                                          final long clusterNotificationInterval,
-                                         final int clusterNotificationAttempts)
+                                         final int clusterNotificationAttempts,
+                                         final String scaleDownConnector)
    {
       this.name = name;
       this.address = address;
@@ -161,6 +165,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.minLargeMessageSize = minLargeMessageSize;
       this.clusterNotificationInterval = clusterNotificationInterval;
       this.clusterNotificationAttempts = clusterNotificationAttempts;
+      this.scaleDownConnector = scaleDownConnector;
    }
 
 
@@ -193,7 +198,8 @@ public final class ClusterConnectionConfiguration implements Serializable
          confirmationWindowSize,
          discoveryGroupName,
          HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(),
-         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts());
+         HornetQDefaultConfiguration.getDefaultClusterNotificationAttempts(),
+         null);
    }
 
 
@@ -216,7 +222,8 @@ public final class ClusterConnectionConfiguration implements Serializable
                                          final int confirmationWindowSize,
                                          final String discoveryGroupName,
                                          final long clusterNotificationInterval,
-                                         final int clusterNotificationAttempts)
+                                         final int clusterNotificationAttempts,
+                                         final String scaleDownConnector)
    {
       this.name = name;
       this.address = address;
@@ -240,6 +247,7 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.minLargeMessageSize = minLargeMessageSize;
       allowDirectConnectionsOnly = false;
+      this.scaleDownConnector = scaleDownConnector;
    }
 
    public String getName()
@@ -585,5 +593,15 @@ public final class ClusterConnectionConfiguration implements Serializable
       else if (!staticConnectors.equals(other.staticConnectors))
          return false;
       return true;
+   }
+
+   public Object getScaleDownConnector()
+   {
+      return scaleDownConnector;
+   }
+
+   public void setScaleDownConnector(String scaleDownConnector)
+   {
+      this.scaleDownConnector = scaleDownConnector;
    }
 }

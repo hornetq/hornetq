@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.server.impl;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -28,6 +31,7 @@ import org.hornetq.api.core.client.ClientRequestor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.ManagementHelper;
+import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -36,20 +40,28 @@ import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.utils.LinkedListIterator;
 
 public class ScaleDownHandler
 {
    final PagingManager pagingManager;
    final PostOffice postOffice;
+   private NodeManager nodeManager;
 
-   public ScaleDownHandler(PagingManager pagingManager, PostOffice postOffice)
+   public ScaleDownHandler(PagingManager pagingManager, PostOffice postOffice, NodeManager nodeManager)
    {
       this.pagingManager = pagingManager;
       this.postOffice = postOffice;
+      this.nodeManager = nodeManager;
    }
 
    public long scaleDown(ClientSessionFactory sessionFactory) throws Exception
@@ -81,6 +93,16 @@ public class ScaleDownHandler
                   if (binding instanceof LocalQueueBinding)
                   {
                      Queue queue = ((LocalQueueBinding) binding).getQueue();
+                     //remove the scheduled messages and reset on the actual message ready for sending
+                     //we may set the time multiple times on a message but it will always be the same.
+                     //set the ref scheduled time to 0 so it is in the queue ready for resending
+                     List<MessageReference> messageReferences = queue.cancelScheduledMessages();
+                     for (MessageReference ref : messageReferences)
+                     {
+                        ref.getMessage().putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, ref.getScheduledDeliveryTime());
+                        ref.setScheduledDeliveryTime(0);
+                     }
+                     queue.addHead(messageReferences);
                      queues.add(queue);
                      queueIterators.put(queue.getName(), queue.totalIterator());
                   }
@@ -136,6 +158,19 @@ public class ScaleDownHandler
 
                         Message message = bigLoopRef.getMessage();
                         message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, buffer.array());
+                        //we need this incase we are sending back to the source server of the message, this basically
+                        //acts like the bridge and ignores dup detection
+                        if (message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+                        {
+                           byte[] bytes = new byte[24];
+
+                           ByteBuffer bb = ByteBuffer.wrap(bytes);
+                           bb.put(nodeManager.getUUID().asBytes());
+                           bb.putLong(messageId);
+
+                           message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bb.array());
+                        }
+
                         ClientProducer producer = session.createProducer(address);
                         producer.send(message);
                         messageCount++;
@@ -161,6 +196,130 @@ public class ScaleDownHandler
       return messageCount;
    }
 
+   public void scaleDownTransactions(ClientSessionFactory sessionFactory, ResourceManager resourceManager) throws Exception
+   {
+      ClientSession session = sessionFactory.createSession(true, false, false);
+      ClientSession queueCreateSession = sessionFactory.createSession(false, true, true);
+      List<Xid> preparedTransactions = resourceManager.getPreparedTransactions();
+      Map<String, Long> queueIDs = new HashMap<>();
+      for (Xid xid : preparedTransactions)
+      {
+         Transaction transaction = resourceManager.getTransaction(xid);
+         session.start(xid, XAResource.TMNOFLAGS);
+         List<TransactionOperation> allOperations = transaction.getAllOperations();
+         Map<ServerMessage, Pair<List<Long>, List<Long>>> queuesToSendTo = new HashMap<>();
+         for (TransactionOperation operation : allOperations)
+         {
+            if (operation instanceof PostOfficeImpl.AddOperation)
+            {
+               PostOfficeImpl.AddOperation addOperation = (PostOfficeImpl.AddOperation) operation;
+               List<MessageReference> refs = addOperation.getRelatedMessageReferences();
+               for (MessageReference ref : refs)
+               {
+                  ServerMessage message = ref.getMessage();
+                  Queue queue = ref.getQueue();
+                  long queueID;
+                  String queueName = queue.getName().toString();
+
+                  if (queueIDs.containsKey(queueName))
+                  {
+                     queueID = queueIDs.get(queueName);
+                  }
+                  else
+                  {
+                     queueID = createQueueIfNecessaryAndGetID(queueCreateSession, queue, message.getAddress());
+                     queueIDs.put(queueName, queueID);  // store it so we don't have to look it up every time
+                  }
+                  Pair<List<Long>, List<Long>> queueIds = queuesToSendTo.get(message);
+                  if (queueIds == null)
+                  {
+                     queueIds = new Pair<List<Long>, List<Long>>(new ArrayList<Long>(), new ArrayList<Long>());
+                     queuesToSendTo.put(message, queueIds);
+                  }
+                  queueIds.getA().add(queueID);
+               }
+            }
+            else if (operation instanceof QueueImpl.RefsOperation)
+            {
+               QueueImpl.RefsOperation refsOperation = (QueueImpl.RefsOperation) operation;
+               List<MessageReference> refs = refsOperation.getReferencesToAcknowledge();
+               for (MessageReference ref : refs)
+               {
+                  ServerMessage message = ref.getMessage();
+                  Queue queue = ref.getQueue();
+                  long queueID;
+                  String queueName = queue.getName().toString();
+
+                  if (queueIDs.containsKey(queueName))
+                  {
+                     queueID = queueIDs.get(queueName);
+                  }
+                  else
+                  {
+                     queueID = createQueueIfNecessaryAndGetID(queueCreateSession, queue, message.getAddress());
+                     queueIDs.put(queueName, queueID);  // store it so we don't have to look it up every time
+                  }
+                  Pair<List<Long>, List<Long>> queueIds = queuesToSendTo.get(message);
+                  if (queueIds == null)
+                  {
+                     queueIds = new Pair<List<Long>, List<Long>>(new ArrayList<Long>(), new ArrayList<Long>());
+                     queuesToSendTo.put(message, queueIds);
+                  }
+                  queueIds.getA().add(queueID);
+                  queueIds.getB().add(queueID);
+               }
+            }
+         }
+         ClientProducer producer = session.createProducer();
+         for (Map.Entry<ServerMessage, Pair<List<Long>, List<Long>>> entry : queuesToSendTo.entrySet())
+         {
+            List<Long> ids = entry.getValue().getA();
+            ByteBuffer buffer = ByteBuffer.allocate(ids.size() * 8);
+            for (Long id : ids)
+            {
+               buffer.putLong(id);
+            }
+            ServerMessage message = entry.getKey();
+            message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, buffer.array());
+            ids = entry.getValue().getB();
+            if (ids.size() > 0)
+            {
+               buffer = ByteBuffer.allocate(ids.size() * 8);
+               for (Long id : ids)
+               {
+                  buffer.putLong(id);
+               }
+               message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_ACK_IDS, buffer.array());
+            }
+            producer.send(message.getAddress(), message);
+         }
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+      }
+   }
+
+
+
+   public void scaleDownDuplicateIDs(Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap, ClientSessionFactory sessionFactory, SimpleString managementAddress) throws Exception
+   {
+      ClientSession session = sessionFactory.createSession(true, false, false);
+      ClientProducer producer = session.createProducer(managementAddress);
+      //todo - https://issues.jboss.org/browse/HORNETQ-1336
+      for (SimpleString address : duplicateIDMap.keySet())
+      {
+         ClientMessage message = session.createMessage(false);
+         List<Pair<byte[], Long>> list = duplicateIDMap.get(address);
+         String[] array = new String[list.size()];
+         for (int i = 0; i < list.size(); i++)
+         {
+            Pair<byte[], Long> pair = list.get(i);
+            array[i] = new String(pair.getA());
+         }
+         ManagementHelper.putOperationInvocation(message, ResourceNames.CORE_SERVER, "updateDuplicateIdCache", address.toString(), array);
+         producer.send(message);
+      }
+      session.close();
+   }
 
    /**
     * Loop through every *other* queue on this address to see if it also contains this message.
