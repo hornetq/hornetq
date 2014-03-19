@@ -645,7 +645,15 @@ public class HornetQServerImpl implements HornetQServer
 
       if (configuration.isScaleDown() && scaleDownClientSessionFactory != null)
       {
-         scaleDown();
+         try
+         {
+            scaleDown();
+         }
+         finally
+         {
+            scaleDownClientSessionFactory.close();
+            scaleDownServerLocator.close();
+         }
       }
 
       closeAllServerSessions(criticalIOError);
