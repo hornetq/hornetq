@@ -67,9 +67,11 @@ public class ScaleDownHandler
    public long scaleDown(ClientSessionFactory sessionFactory) throws Exception
    {
       long messageCount = 0;
+      String targetNodeId = getTargetNodeId(sessionFactory);
 
       ClientSession session = sessionFactory.createSession(false, true, true);
       Map<String, Long> queueIDs = new HashMap<>();
+      ClientProducer producer = session.createProducer();
 
       List<SimpleString> addresses = new ArrayList<>();
       for (Map.Entry<SimpleString, Binding> entry : postOffice.getAllBindings().entrySet())
@@ -77,6 +79,18 @@ public class ScaleDownHandler
          if (entry.getValue() instanceof LocalQueueBinding)
          {
             SimpleString address = entry.getValue().getAddress();
+
+            // There is a special case involving store-and-forward queues used for clustering.
+            // If this queue is supposed to forward messages to the server that I'm scaling down to I need to handle these messages differently.
+            boolean storeAndForward = false;
+            if (address.toString().startsWith("sf."))
+            {
+               if (address.toString().endsWith(targetNodeId))
+               {
+                  // send messages in this queue to the original address
+                  storeAndForward = true;
+               }
+            }
 
             // this means we haven't inspected this address before
             if (!addresses.contains(address))
@@ -123,63 +137,73 @@ public class ScaleDownHandler
                      // loop through every message of this queue
                      while (bigLoopMessageIterator.hasNext())
                      {
-                        List<Queue> queuesWithMessage = new ArrayList<>();
-                        queuesWithMessage.add(bigLoopQueue);
-                        MessageReference bigLoopRef = bigLoopMessageIterator.next();
-                        long messageId = bigLoopRef.getMessage().getMessageID();
-
-                        getQueuesWithMessage(store, queues, queueIterators, checkedQueues, bigLoopQueue, queuesWithMessage, bigLoopRef, messageId);
-
-                        // get the ID for every queue that contains the message
-                        ByteBuffer buffer = ByteBuffer.allocate(queuesWithMessage.size() * 8);
-                        StringBuilder logMessage = new StringBuilder();
-                        logMessage.append("Sending message ").append(messageId).append(" to ");
-                        for (Queue queue : queuesWithMessage)
+                        if (storeAndForward)
                         {
-                           long queueID;
-                           String queueName = queue.getName().toString();
-
-                           if (queueIDs.containsKey(queueName))
-                           {
-                              queueID = queueIDs.get(queueName);
-                           }
-                           else
-                           {
-                              queueID = createQueueIfNecessaryAndGetID(session, queue, address);
-                              queueIDs.put(queueName, queueID);  // store it so we don't have to look it up every time
-                           }
-
-                           logMessage.append(queueName).append("(").append(queueID).append(")").append(", ");
-                           buffer.putLong(queueID);
+                           MessageReference bigLoopRef = bigLoopMessageIterator.next();
+                           Message message = bigLoopRef.getMessage();
+                           producer.send(message.getAddress(), message);
+                           messageCount++;
+                           bigLoopQueue.deleteReference(message.getMessageID());
                         }
-
-                        logMessage.delete(logMessage.length() - 2, logMessage.length());  // trim off the trailing comma and space
-                        HornetQServerLogger.LOGGER.info(logMessage.append(" on address ").append(address));
-
-                        Message message = bigLoopRef.getMessage();
-                        message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, buffer.array());
-                        //we need this incase we are sending back to the source server of the message, this basically
-                        //acts like the bridge and ignores dup detection
-                        if (message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+                        else
                         {
-                           byte[] bytes = new byte[24];
+                           List<Queue> queuesWithMessage = new ArrayList<>();
+                           queuesWithMessage.add(bigLoopQueue);
+                           MessageReference bigLoopRef = bigLoopMessageIterator.next();
+                           long messageId = bigLoopRef.getMessage().getMessageID();
 
-                           ByteBuffer bb = ByteBuffer.wrap(bytes);
-                           bb.put(nodeManager.getUUID().asBytes());
-                           bb.putLong(messageId);
+                           getQueuesWithMessage(store, queues, queueIterators, checkedQueues, bigLoopQueue, queuesWithMessage, bigLoopRef, messageId);
 
-                           message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bb.array());
-                        }
+                           // get the ID for every queue that contains the message
+                           ByteBuffer buffer = ByteBuffer.allocate(queuesWithMessage.size() * 8);
+                           StringBuilder logMessage = new StringBuilder();
+                           logMessage.append("Sending message ").append(messageId).append(" to ");
+                           for (Queue queue : queuesWithMessage)
+                           {
+                              long queueID;
+                              String queueName = queue.getName().toString();
 
-                        ClientProducer producer = session.createProducer(address);
-                        producer.send(message);
-                        messageCount++;
+                              if (queueIDs.containsKey(queueName))
+                              {
+                                 queueID = queueIDs.get(queueName);
+                              }
+                              else
+                              {
+                                 queueID = createQueueIfNecessaryAndGetID(session, queue, address);
+                                 queueIDs.put(queueName, queueID);  // store it so we don't have to look it up every time
+                              }
 
-                        // delete the reference from all queues which contain it
-                        bigLoopQueue.deleteReference(messageId);
-                        for (Queue queue : queuesWithMessage)
-                        {
-                           queue.deleteReference(messageId);
+                              logMessage.append(queueName).append("(").append(queueID).append(")").append(", ");
+                              buffer.putLong(queueID);
+                           }
+
+                           logMessage.delete(logMessage.length() - 2, logMessage.length());  // trim off the trailing comma and space
+                           HornetQServerLogger.LOGGER.info(logMessage.append(" on address ").append(address));
+
+                           Message message = bigLoopRef.getMessage();
+                           message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, buffer.array());
+                           //we need this incase we are sending back to the source server of the message, this basically
+                           //acts like the bridge and ignores dup detection
+                           if (message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+                           {
+                              byte[] bytes = new byte[24];
+
+                              ByteBuffer bb = ByteBuffer.wrap(bytes);
+                              bb.put(nodeManager.getUUID().asBytes());
+                              bb.putLong(messageId);
+
+                              message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bb.array());
+                           }
+
+                           producer.send(address, message);
+                           messageCount++;
+
+                           // delete the reference from all queues which contain it
+                           bigLoopQueue.deleteReference(messageId);
+                           for (Queue queue : queuesWithMessage)
+                           {
+                              queue.deleteReference(messageId);
+                           }
                         }
                      }
                   }
@@ -193,7 +217,15 @@ public class ScaleDownHandler
          }
       }
 
+      producer.close();
+      session.close();
+
       return messageCount;
+   }
+
+   private String getTargetNodeId(ClientSessionFactory sessionFactory)
+   {
+      return sessionFactory.getServerLocator().getTopology().getMember(sessionFactory.getConnectorConfiguration()).getNodeId();
    }
 
    public void scaleDownTransactions(ClientSessionFactory sessionFactory, ResourceManager resourceManager) throws Exception
@@ -297,7 +329,6 @@ public class ScaleDownHandler
          session.prepare(xid);
       }
    }
-
 
 
    public void scaleDownDuplicateIDs(Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap, ClientSessionFactory sessionFactory, SimpleString managementAddress) throws Exception

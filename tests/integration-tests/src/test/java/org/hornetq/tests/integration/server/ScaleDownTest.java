@@ -14,6 +14,7 @@ package org.hornetq.tests.integration.server;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -25,6 +26,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
+import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
@@ -70,8 +72,8 @@ public class ScaleDownTest extends ClusterTestBase
          servers[1].getConfiguration().setScaleDownGroupName("bill");
       }
       servers[0].getConfiguration().setScaleDown(true);
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
+      setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 0, 1);
+      setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 1, 0);
       startServers(0, 1);
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -114,7 +116,7 @@ public class ScaleDownTest extends ClusterTestBase
 
       // consume a message from queue 2
       addConsumer(1, 0, queueName2, null, false);
-      ClientMessage clientMessage = consumers[1].getConsumer().receive();
+      ClientMessage clientMessage = consumers[1].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
       consumers[1].getSession().commit();
@@ -129,10 +131,10 @@ public class ScaleDownTest extends ClusterTestBase
 
       // get the 2 messages from queue 1
       addConsumer(0, 1, queueName1, null);
-      clientMessage = consumers[0].getConsumer().receive();
+      clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
-      clientMessage = consumers[0].getConsumer().receive();
+      clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
 
@@ -148,6 +150,82 @@ public class ScaleDownTest extends ClusterTestBase
       clientMessage.acknowledge();
 
       // ensure there are no more messages on queue 1
+      clientMessage = consumers[0].getConsumer().receive(250);
+      Assert.assertNull(clientMessage);
+      removeConsumer(0);
+   }
+
+   @Test
+   public void testStoreAndForward() throws Exception
+   {
+      final int TEST_SIZE = 50;
+      final String addressName1 = "testAddress1";
+      final String addressName2 = "testAddress2";
+      final String queueName1 = "testQueue1";
+      final String queueName2 = "testQueue2";
+
+      // create queues on each node mapped to 2 addresses
+      createQueue(0, addressName1, queueName1, null, false);
+      createQueue(1, addressName1, queueName1, null, false);
+      createQueue(0, addressName2, queueName2, null, false);
+      createQueue(1, addressName2, queueName2, null, false);
+
+      // add consumers to node 1 to force any messages we send into the sf queue
+      addConsumer(0, 1, queueName1, null);
+      addConsumer(1, 1, queueName2, null);
+
+      // find and pause the sf queue so no messages actually move from node 0 to node 1
+      String sfQueueName = null;
+      for (Map.Entry<SimpleString, Binding> entry : servers[0].getPostOffice().getAllBindings().entrySet())
+      {
+         String temp = entry.getValue().getAddress().toString();
+
+         if (temp.startsWith("sf.") && temp.endsWith(servers[1].getNodeID().toString()))
+         {
+            // we found the sf queue for the other node
+            // need to pause the sfQueue here
+            ((LocalQueueBinding) entry.getValue()).getQueue().pause();
+            sfQueueName = temp;
+         }
+      }
+
+      assertNotNull(sfQueueName);
+
+      // send messages to node 0 that will get stuck in the paused sf queue going to node 1
+      send(0, addressName1, TEST_SIZE, false, null);
+      send(0, addressName2, TEST_SIZE, false, null);
+      removeConsumer(0);
+      removeConsumer(1);
+
+      // at this point on node 0 there should be 0 messages in testQueue and TEST_SIZE messages in the sfQueue
+      Assert.assertEquals(0, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount());
+      Assert.assertEquals(0, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue().getMessageCount());
+      Assert.assertEquals(TEST_SIZE * 2, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(sfQueueName))).getQueue().getMessageCount());
+
+      // trigger scaleDown from node 0 to node 1
+      servers[0].stop();
+
+      // get the messages from node 1
+      addConsumer(0, 1, queueName1, null);
+      for (int i = 0; i < TEST_SIZE; i++)
+      {
+         ClientMessage clientMessage = consumers[0].getConsumer().receive(250);
+         Assert.assertNotNull(clientMessage);
+         clientMessage.acknowledge();
+      }
+
+      ClientMessage clientMessage = consumers[0].getConsumer().receive(250);
+      Assert.assertNull(clientMessage);
+      removeConsumer(0);
+
+      addConsumer(0, 1, queueName2, null);
+      for (int i = 0; i < TEST_SIZE; i++)
+      {
+         clientMessage = consumers[0].getConsumer().receive(250);
+         Assert.assertNotNull(clientMessage);
+         clientMessage.acknowledge();
+      }
+
       clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNull(clientMessage);
       removeConsumer(0);
@@ -171,7 +249,7 @@ public class ScaleDownTest extends ClusterTestBase
 
       // consume a message from node 0
       addConsumer(1, 0, queueName2, null, false);
-      ClientMessage clientMessage = consumers[1].getConsumer().receive();
+      ClientMessage clientMessage = consumers[1].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
       consumers[1].getSession().commit();
@@ -181,10 +259,10 @@ public class ScaleDownTest extends ClusterTestBase
 
       // get the 2 messages from queue 1
       addConsumer(0, 1, queueName1, null);
-      clientMessage = consumers[0].getConsumer().receive();
+      clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
-      clientMessage = consumers[0].getConsumer().receive();
+      clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
 
@@ -195,7 +273,7 @@ public class ScaleDownTest extends ClusterTestBase
 
       // get the 1 message from queue 2
       addConsumer(0, 1, queueName2, null);
-      clientMessage = consumers[0].getConsumer().receive();
+      clientMessage = consumers[0].getConsumer().receive(250);
       Assert.assertNotNull(clientMessage);
       clientMessage.acknowledge();
 
@@ -370,7 +448,7 @@ public class ScaleDownTest extends ClusterTestBase
       addConsumer(0, 1, queueName, null);
       for (int i = 0; i < messageCount; i++)
       {
-         Assert.assertNotNull(consumers[0].getConsumer().receive());
+         Assert.assertNotNull(consumers[0].getConsumer().receive(250));
       }
 
       Assert.assertNull(consumers[0].getConsumer().receive(250));
