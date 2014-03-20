@@ -20,7 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -57,9 +57,9 @@ public class StompOverHttpTest extends StompTest
       @Override
       public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
       {
-         if (msg instanceof DefaultLastHttpContent)
+         if (msg instanceof DefaultHttpContent)
          {
-            DefaultLastHttpContent response = (DefaultLastHttpContent) msg;
+            DefaultHttpContent response = (DefaultHttpContent)msg;
             ctx.fireChannelRead(response.content());
          }
       }
