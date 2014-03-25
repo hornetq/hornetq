@@ -47,11 +47,20 @@ public class FileLockNodeManager extends NodeManager
 
    private FileLock backupLock;
 
+   protected long lockAcquisitionTimeout = -1;
+
    protected boolean interrupted = false;
 
    public FileLockNodeManager(final String directory, boolean replicatedBackup)
    {
       super(replicatedBackup, directory);
+   }
+
+   public FileLockNodeManager(final String directory, boolean replicatedBackup, long lockAcquisitionTimeout)
+   {
+      super(replicatedBackup, directory);
+
+      this.lockAcquisitionTimeout = lockAcquisitionTimeout;
    }
 
    @Override
@@ -171,7 +180,9 @@ public class FileLockNodeManager extends NodeManager
    {
       setFailingBack();
 
-      HornetQServerLogger.LOGGER.waitingToObtainLiveLock();
+      String timeoutMessage = lockAcquisitionTimeout == -1 ? "indefinitely" : lockAcquisitionTimeout + " milliseconds";
+
+      HornetQServerLogger.LOGGER.waitingToObtainLiveLock(timeoutMessage);
 
       liveLock = lock(FileLockNodeManager.LIVE_LOCK_POS);
 
@@ -263,11 +274,21 @@ public class FileLockNodeManager extends NodeManager
 
    protected FileLock tryLock(final int lockPos) throws Exception
    {
-      return channel.tryLock(lockPos, LOCK_LENGTH, false);
+      try
+      {
+         return channel.tryLock(lockPos, LOCK_LENGTH, false);
+      }
+      catch (java.nio.channels.OverlappingFileLockException ex)
+      {
+         // This just means that another object on the same JVM is holding the lock
+         return null;
+      }
    }
 
-   protected FileLock lock(final int liveLockPos) throws IOException
+   protected FileLock lock(final int liveLockPos) throws Exception
    {
+      long start = System.currentTimeMillis();
+
       while (!interrupted)
       {
          FileLock lock = null;
@@ -289,6 +310,11 @@ public class FileLockNodeManager extends NodeManager
             catch (InterruptedException e)
             {
                return null;
+            }
+
+            if (lockAcquisitionTimeout != -1 && (System.currentTimeMillis() - start) > lockAcquisitionTimeout)
+            {
+               throw new Exception("timed out waiting for lock");
             }
          }
          else

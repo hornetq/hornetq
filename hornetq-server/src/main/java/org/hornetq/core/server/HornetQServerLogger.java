@@ -222,8 +222,8 @@ public interface HornetQServerLogger extends BasicLogger
    void gotBackupLock();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221034, value = "Waiting to obtain live lock", format = Message.Format.MESSAGE_FORMAT)
-   void waitingToObtainLiveLock();
+   @Message(id = 221034, value = "Waiting {0} to obtain live lock", format = Message.Format.MESSAGE_FORMAT)
+   void waitingToObtainLiveLock(String timeoutMessage);
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221035, value = "Live Server Obtained live lock", format = Message.Format.MESSAGE_FORMAT)

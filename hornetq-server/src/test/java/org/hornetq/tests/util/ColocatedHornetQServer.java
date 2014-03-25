@@ -67,11 +67,11 @@ public class ColocatedHornetQServer extends HornetQServerImpl
          NodeManager manager;
          if (getConfiguration().getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
          {
-            return new AIOFileLockNodeManager(directory, replicatingBackup);
+            return new AIOFileLockNodeManager(directory, replicatingBackup, getConfiguration().getJournalLockAcquisitionTimeout());
          }
          else
          {
-            return new FileLockNodeManager(directory, replicatingBackup);
+            return new FileLockNodeManager(directory, replicatingBackup, getConfiguration().getJournalLockAcquisitionTimeout());
          }
       }
       else

@@ -42,6 +42,13 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
       super(directory, replicatingBackup);
    }
 
+   public AIOFileLockNodeManager(final String directory, boolean replicatingBackup, long lockAcquisitionTimeout)
+   {
+      super(directory, replicatingBackup);
+
+      this.lockAcquisitionTimeout = lockAcquisitionTimeout;
+   }
+
    @Override
    protected FileLock tryLock(final int lockPos) throws Exception
    {
@@ -66,8 +73,10 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
    }
 
    @Override
-   protected FileLock lock(final int liveLockPos) throws IOException
+   protected FileLock lock(final int liveLockPos) throws Exception
    {
+      long start = System.currentTimeMillis();
+
       File file = newFileForRegionLock(liveLockPos);
 
       while (!interrupted)
@@ -94,6 +103,11 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
             catch (InterruptedException e)
             {
                return null;
+            }
+
+            if (lockAcquisitionTimeout != -1 && (System.currentTimeMillis() - start) > lockAcquisitionTimeout)
+            {
+               throw new Exception("timed out waiting for lock");
             }
          }
       }
