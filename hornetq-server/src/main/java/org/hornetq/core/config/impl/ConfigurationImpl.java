@@ -231,6 +231,8 @@ public class ConfigurationImpl implements Configuration
 
    private BackupStrategy backupStrategy;
 
+   private long journalLockAcquisitionTimeout = HornetQDefaultConfiguration.getDefaultJournalLockAcquisitionTimeout();
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1200,6 +1202,7 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
       result = prime * result + (wildcardRoutingEnabled ? 1231 : 1237);
       result = prime * result + (resolveProtocols ? 1231 : 1237);
+      result = prime * result + (int) (journalLockAcquisitionTimeout ^ (journalLockAcquisitionTimeout >>> 32));
       return result;
    }
 
@@ -1511,6 +1514,8 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (resolveProtocols != other.resolveProtocols)
          return false;
+      if (journalLockAcquisitionTimeout != other.journalLockAcquisitionTimeout)
+         return false;
       return true;
    }
 
@@ -1538,5 +1543,17 @@ public class ConfigurationImpl implements Configuration
    public BackupStrategy getBackupStrategy()
    {
       return backupStrategy;
+   }
+
+   @Override
+   public void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout)
+   {
+      this.journalLockAcquisitionTimeout = journalLockAcquisitionTimeout;
+   }
+
+   @Override
+   public long getJournalLockAcquisitionTimeout()
+   {
+      return journalLockAcquisitionTimeout;
    }
 }

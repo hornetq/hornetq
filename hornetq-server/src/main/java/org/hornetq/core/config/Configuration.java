@@ -1011,4 +1011,8 @@ public interface Configuration extends Serializable
    void setBackupStrategy(BackupStrategy strategy);
 
    BackupStrategy getBackupStrategy();
+
+   void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout);
+
+   long getJournalLockAcquisitionTimeout();
 }

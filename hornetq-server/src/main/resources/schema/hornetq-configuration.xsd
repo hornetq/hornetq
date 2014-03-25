@@ -99,6 +99,13 @@
           </xsd:annotation>
         </xsd:element>
 
+        <xsd:element name="journal-lock-acquisition-timeout" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="using-server.configuration" hq:field_name="DEFAULT_JOURNAL_LOCK_ACQUISITION_TIMEOUT">
+            <xsd:documentation>how long (in ms) to wait to acquire a file lock on the journal
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+
         <xsd:element name="wild-card-routing-enabled" type="xsd:boolean" default="true"
                      maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="wildcard-routing" hq:field_name="DEFAULT_WILDCARD_ROUTING_ENABLED">

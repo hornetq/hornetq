@@ -73,13 +73,15 @@ public class AssertionLoggerHandler extends ExtHandler
 
    /**
     * Find a line that contains the parameters passed as an argument
+    *
     * @param text
     * @return
     */
-   public static boolean findText(final String...text)
+   public static boolean findText(final String... text)
    {
-      for (String key : messages.keySet())
+      for (Map.Entry<String, ExtLogRecord> entry : messages.entrySet())
       {
+         String key = entry.getKey();
          boolean found = true;
 
          for (String txtCheck : text)
@@ -87,7 +89,20 @@ public class AssertionLoggerHandler extends ExtHandler
             found = key.contains(txtCheck);
             if (!found)
             {
-               break;
+               // If the main log message doesn't contain what we're looking for let's look in the message from the exception (if there is one).
+               Throwable throwable = entry.getValue().getThrown();
+               if (throwable != null && throwable.getMessage() != null)
+               {
+                  found = throwable.getMessage().contains(txtCheck);
+                  if (!found)
+                  {
+                     break;
+                  }
+               }
+               else
+               {
+                  break;
+               }
             }
          }
 
