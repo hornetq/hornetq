@@ -694,29 +694,31 @@ public class FilterTest extends SilentTestCase
       Assert.assertTrue(filter.match(message));
    }
 
-   @Test
-   public void testStringLongToken() throws Exception
-   {
-      String largeString;
-
-      {
-         StringBuffer strBuffer = new StringBuffer();
-         strBuffer.append('\'');
-         for (int i = 0; i < 4800; i++)
-         {
-            strBuffer.append('a');
-         }
-         strBuffer.append('\'');
-
-         largeString = strBuffer.toString();
-      }
-
-      FilterParser parse = new FilterParser();
-      SimpleStringReader reader = new SimpleStringReader(new SimpleString(largeString));
-      parse.ReInit(reader);
-      // the server would fail at doing this when HORNETQ-545 wasn't solved
-      parse.getNextToken();
-   }
+// TODO: re-implement this.
+//
+//   @Test
+//   public void testStringLongToken() throws Exception
+//   {
+//      String largeString;
+//
+//      {
+//         StringBuffer strBuffer = new StringBuffer();
+//         strBuffer.append('\'');
+//         for (int i = 0; i < 4800; i++)
+//         {
+//            strBuffer.append('a');
+//         }
+//         strBuffer.append('\'');
+//
+//         largeString = strBuffer.toString();
+//      }
+//
+//      FilterParser parse = new FilterParser();
+//      SimpleStringReader reader = new SimpleStringReader(new SimpleString(largeString));
+//      parse.ReInit(reader);
+//      // the server would fail at doing this when HORNETQ-545 wasn't solved
+//      parse.getNextToken();
+//   }
 
    // Private -----------------------------------------------------------------------------------
 

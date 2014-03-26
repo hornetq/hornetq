@@ -178,6 +178,12 @@
             <version>1.0.0.Final</version>
          </dependency>
 
+         <!-- needed to provide a JMS selector implementation -->
+         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>apollo-selector</artifactId>
+            <version>1.7</version>
+         </dependency>
 
          <!-- needed to provide JMS injection-->
          <dependency>
