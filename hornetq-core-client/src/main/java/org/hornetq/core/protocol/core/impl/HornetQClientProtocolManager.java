@@ -265,6 +265,37 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
                                               boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
                                               boolean preAcknowledge, int minLargeMessageSize, int confirmationWindowSize) throws HornetQException
    {
+      for (Version clientVersion : VersionLoader.getClientVersions())
+      {
+         try
+         {
+            return createSessionContext(clientVersion,
+                                        name,
+                                        username,
+                                        password,
+                                        xa,
+                                        autoCommitSends,
+                                        autoCommitAcks,
+                                        preAcknowledge,
+                                        minLargeMessageSize,
+                                        confirmationWindowSize);
+         }
+         catch (HornetQException e)
+         {
+            if (e.getType() != HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+            {
+               throw e;
+            }
+         }
+      }
+      connection.destroy();
+      throw new HornetQException(HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS);
+   }
+
+   public SessionContext createSessionContext(Version clientVersion, String name, String username, String password,
+                                              boolean xa, boolean autoCommitSends, boolean autoCommitAcks,
+                                              boolean preAcknowledge, int minLargeMessageSize, int confirmationWindowSize) throws HornetQException
+   {
       if (!isAlive())
          throw HornetQClientMessageBundle.BUNDLE.clientSessionClosed();
 
@@ -275,7 +306,6 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       do
       {
          retry = false;
-         Version clientVersion = VersionLoader.getVersion();
 
          Lock lock = null;
 
@@ -316,11 +346,6 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
             }
             catch (HornetQException cause)
             {
-               if (cause.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
-               {
-                  connection.destroy();
-               }
-
                if (!isAlive())
                   throw cause;
 
