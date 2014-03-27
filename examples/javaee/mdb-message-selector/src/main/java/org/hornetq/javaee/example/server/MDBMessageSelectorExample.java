@@ -34,9 +34,6 @@ import javax.jms.TextMessage;
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
                         @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "color = 'RED'")
                      })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSelectorExample implements MessageListener
 {
    public void onMessage(Message message)

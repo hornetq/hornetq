@@ -36,7 +36,6 @@ public class MDBEJBTXRequiredRunnerTest
    @Deployment
    public static Archive getDeployment()
    {
-
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
       ejbJar.addClass(SendMessageBean.class);
       ejbJar.addClass(SendMessageService.class);
@@ -51,6 +50,4 @@ public class MDBEJBTXRequiredRunnerTest
       //give the example time to run
       Thread.sleep(10000);
    }
-
-
 }

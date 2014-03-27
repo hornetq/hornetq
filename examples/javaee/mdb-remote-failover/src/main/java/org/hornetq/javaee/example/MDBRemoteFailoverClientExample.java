@@ -21,8 +21,7 @@ import java.util.Properties;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: 2/24/11
- *         Time: 2:44 PM
+ * @author Justin Bertram
  */
 public class MDBRemoteFailoverClientExample
 {
@@ -41,11 +40,7 @@ public class MDBRemoteFailoverClientExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4547");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8180");
 
          initialContext = new InitialContext(env);
          //Step 2. Perfom a lookup on the queue
@@ -77,7 +72,7 @@ public class MDBRemoteFailoverClientExample
          //Step 16. We create a JMS message consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
-         //Step 17. We start the connedction so we can receive messages
+         //Step 17. We start the connection so we can receive messages
          connection.start();
 
          //Step 18. We receive the message and print it out
@@ -85,26 +80,26 @@ public class MDBRemoteFailoverClientExample
 
          System.out.println("message.getText() = " + message.getText());
 
+         //Step 19. Kill the live server
          System.out.println("Killing Live Server");
          killer.kill();
 
-         //Step 7. Create a Text Message
+         //Step 20. Create a Text Message
          message = session.createTextMessage("This is another text message");
 
          System.out.println("Sent message: " + message.getText());
 
-         //Step 8. Send the Message
+         //Step 21. Send the Message
          producer.send(message);
 
-         //Step 18. We receive the message and print it out
+         //Step 22. We receive the message and print it out
          message = (TextMessage) messageConsumer.receive(20000);
 
          System.out.println("message.getText() = " + message.getText());
-
       }
       finally
       {
-         //Step 19. Be sure to close our JMS resources!
+         //Step 23. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
@@ -115,7 +110,6 @@ public class MDBRemoteFailoverClientExample
          }
       }
    }
-
 
    public static void setKiller(ServerKiller killer)
    {

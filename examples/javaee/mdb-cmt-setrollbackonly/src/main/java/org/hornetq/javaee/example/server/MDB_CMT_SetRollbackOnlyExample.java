@@ -30,11 +30,12 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_SetRollbackOnlyExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                                                                            @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue") })
-@TransactionManagement(value = TransactionManagementType.CONTAINER)
-@TransactionAttribute(value = TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
+@MessageDriven(name = "MDB_CMT_SetRollbackOnlyExample",
+               activationConfig =
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+                  })
 public class MDB_CMT_SetRollbackOnlyExample implements MessageListener
 {
    @Resource

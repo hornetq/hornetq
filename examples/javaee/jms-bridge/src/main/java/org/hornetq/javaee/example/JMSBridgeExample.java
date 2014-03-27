@@ -25,7 +25,7 @@ import java.util.Properties;
 
 /**
  * An example which sends a message to a source queue and consume from a target queue.
- * The source and target queues are bridged by a JMS Bridge configured and running in JBoss AS 5.
+ * The source and target queues are bridged by a JMS Bridge configured and running in WildFly.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
@@ -43,11 +43,7 @@ public class JMSBridgeExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
 
          initialContext = new InitialContext(env);
 
@@ -86,10 +82,6 @@ public class JMSBridgeExample
 
          // Step 10. Receive a message from the *target* queue
          TextMessage messageReceived = (TextMessage)targetConsumer.receive(15000);
-         if(messageReceived == null)
-         {
-            Thread.sleep(1000000);
-         }
          System.out.format("\nReceived from %s: %s\n",
                            ((Queue)messageReceived.getJMSDestination()).getQueueName(),
                            messageReceived.getText());

@@ -8,65 +8,81 @@
   <body onload="prettyPrint()">
      <h1>JMS Bridge Example</h1>
      
-     <p>This example shows how to configure and run a JMS Bridge in JBoss AS 5.<br />
+     <p>This example shows how to configure and run a JMS Bridge in WildFly.<br />
          A bridge receives messages from a <em>source</em> JMS destination and forwards them to a <em>target</em> destination.</p>
      <p>The source and target destinations can be on different servers, even from different JMS providers. For example, you can use this
          JMS Bridge to bridge a legacy JMS provider to HornetQ during migration.</p>
          
      <p>This example will show how to configure and run the simplest bridge:</p>
      <ul>
-         <li>the source and target destinations are hosted by a single JBoss AS 5 instance</li>
-         <li>the bridge is run on the same JBoss AS 5 instance</li>
+         <li>the source and target destinations are hosted by a single WildFly instance</li>
+         <li>the bridge is run on the same WildFly instance</li>
          <li>every time a message is consumed by the bridge from the source, it is forward to the target</li>
          <li>The application client will send a message to the source and consume the "same" message from the target to
              show that the two destinations were indeed bridged.</li>
      </ul>
-     
-     <h2>Example configuration</h2>
-
-     <p>To run the example, you need to download JBoss AS 5.x and create a configuration for HornetQ.</p>
          
-     <h3>JBoss AS configuration</h3>
-     
-     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
-
      <h3>JMS Bridge configuration</h3>
 
-     <p>The JMS Bridge is configured using JBoss microcontainer (<a href="server/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
-         used to configure the bridge).<br />
+     <p>The JMS Bridge is configured in the "messaging" subsystem.<br />
      <p>The Bridge is deployed in the application server when you simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) (it is copied to <code>${JBOSS_HOME}/server/default-with-hornetq/deploy/</code>).</p>
-         
+
      <h2>Example step-by-step</h2>
 
-     <p><em>To deploy and start the server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows)</em>.</p>
-     <p><em>Once the server has started, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) to run the example</em>.</p>
+     <p><i>download WildFly 8.0.0.Final from <a href="http://wildfly.org/downloads/">here</a> and install.</i></p>
+     <p><i>set the JBOSS_HOME property to point to the WildFly install directory</i></p>
+     <p><i>type <code>mvn verify</code> from the example directory to run</i></p>
      
      <p>The example is simple: the application will send a message to the <em>source</em> queue and consume the same message
          from the <em>target</em> queue.</p>
-     <p>The bridge was configured in <a href="server/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> to bridge these two queues.</p>
-         
+     <p>The bridge is configured in the messaging subsystem:</p>
+
+     <pre class="prettyprint">
+             &lt;jms-bridge name="myBridge">
+                 &lt;source>
+                 &lt;connection-factory name="ConnectionFactory" />
+                 &lt;destination name="queue/sourceQueue" />
+                 &lt;/source>
+                 &lt;target>
+                     &lt;connection-factory name="ConnectionFactory" />
+                     &lt;destination name="queue/targetQueue" />
+                 &lt;/target>
+                 &lt;quality-of-service>AT_MOST_ONCE&lt;/quality-of-service>
+                 &lt;failure-retry-interval>1000&lt;/failure-retry-interval>
+                 &lt;max-retries>7890&lt;/max-retries>
+                 &lt;max-batch-size>1&lt;/max-batch-size>
+                 &lt;max-batch-time>1000&lt;/max-batch-time>
+             &lt;/jms-bridge>
+     </pre>
+
      <ol>
          <li>First we need to get an initial context so we can look up the JMS resources
          </li>
          <pre class="prettyprint">
-             initialContext = new InitialContext();
+             final Properties env = new Properties();
+
+             env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+             env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
+
+             initialContext = new InitialContext(env);
          </pre>
 
          <li>We look up the JMS ConnectionFactory</li>
          <pre class="prettyprint">
-             ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+             ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/jms/RemoteConnectionFactory");
          </pre>
 
          <p><em>First, we will send a message to the <em>source</em> queue</em>.</p>
          
          <li>We look up the JMS <em>source</em> queue</li>
          <pre class="prettyprint">
-             Queue sourceQueue = (Queue)initialContext.lookup("/queue/source");
+             Queue sourceQueue = (Queue)initialContext.lookup("jms/queues/sourceQueue");
          </pre>
 
          <li>We create a JMS connection, a session and a message producer for the <em>source</em> queue</li>
          <pre class="prettyprint">
-             sourceConnection = cf.createConnection();
+             sourceConnection = cf.createConnection("guest", "password");
              Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
              MessageProducer sourceProducer = sourceSession.createProducer(sourceQueue);
          </pre>
@@ -93,7 +109,7 @@
              
          <li>We look up the JMS <em>target</em> queue</li>
          <pre class="prettyprint">
-             Queue targetQueue = (Queue)initialContext.lookup("/queue/target");
+             Queue targetQueue = (Queue)initialContext.lookup("jms/queues/targetQueue");
          </pre>
 
          <li>We create a connection, a session and a message consumer for the <em>target</em> queue</li>
@@ -110,9 +126,10 @@
 
          <li>We receive a message from the <em>target</em> queue. It has the same content than the message sent to the <em>source</em> queue</li>
          <pre class="prettyprint">
-             TextMessage messageReceived = (TextMessage)consumer.receive(5000);
-             System.out.println("Received message: " + messageReceived.getText() +
-                                         " (" +  messageReceived.getJMSMessageID() + ")");
+             TextMessage messageReceived = (TextMessage)targetConsumer.receive(15000);
+             System.out.format("\nReceived from %s: %s\n",
+                           ((Queue)messageReceived.getJMSDestination()).getQueueName(),
+                           messageReceived.getText());
              
          </pre>
          
@@ -147,13 +164,5 @@
              }
           </pre>
      </ol>
-     
-     <h2>More information</h2>
-     
-     <ul>
-         <li><a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">HornetQ deployment in JBoss AS 5</a></li>
-         <li><a href="../../../docs/user-manual/en/html_single/index.html#jms-bridge">JMS Bridge configuration</a></li>
-     </ul>
-
   </body>
 </html>

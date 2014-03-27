@@ -10,10 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.javaee.example.server2;
-
-
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.ra.HornetQRAConnectionFactoryImpl;
@@ -27,24 +24,14 @@ import javax.jms.*;
  * A Stateless Bean that will connect to a remote JBM.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 @Remote(StatelessSenderService.class)
 @Stateless
 public class StatelessSender implements StatelessSenderService
 {
-
-   /**
-    *  Resource to be deployed by jms-remote-ds.xml
-    *  */
    @Resource(mappedName="java:/RemoteJmsXA")
    private ConnectionFactory connectionFactory;
 
-
-   /* (non-Javadoc)
-    * @see org.jboss.javaee.example.server.StatelessSenderService#sendHello(java.lang.String)
-    */
    public void sendHello(String message) throws Exception
    {
       // Step 4. Define the destinations that will receive the message (instead of using JNDI to the remote server)
@@ -58,36 +45,11 @@ public class StatelessSender implements StatelessSenderService
       MessageProducer prodA = sess.createProducer(destQueueA);
       prodA.send(sess.createTextMessage(message));
 
-      System.out.println("Step 7 (StatelessSender.java): Sent message \"" + message + "\" to QueueA");
-
-      // Step 6. Send a message to a QueueB on the remote server, which will be received by MDBQueueA
+      // Step 7. Send a message to a QueueB on the remote server, which will be received by MDBQueueA
       MessageProducer prodB = sess.createProducer(destQueueB);
       prodB.send(sess.createTextMessage(message));
 
-      System.out.println("Step 8 (StatelessSender.java): Sent message \"" + message + "\" to QueueB");
-
-      // Step 7. Close the connection. (Since this is a JCA connection, this will just place the connection back to a connection pool)
+      // Step 8. Close the connection. (Since this is a JCA connection, this will just place the connection back to a connection pool)
       conn.close();
-      System.out.println("Step 9 (StatelessSender.java): Closed Connection (sending it back to pool)");
-
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

@@ -19,10 +19,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-//import org.jboss.as.arquillian.api.ServerSetup;
-//import org.jboss.as.arquillian.api.ServerSetupTask;
-//import org.jboss.as.arquillian.container.ManagementClient;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         5/21/12

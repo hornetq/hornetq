@@ -42,11 +42,7 @@ public class JmsContextInjectionClientExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
 
          initialContext = new InitialContext(env);
 
@@ -65,8 +61,6 @@ public class JmsContextInjectionClientExample
             // Step 6. create a JMSProducer and send the message
             context.createProducer().send(queue, "This is a text message");
 
-            System.out.println("Sent message");
-
             // Step 7 start the context
             context.start();
 
@@ -75,8 +69,6 @@ public class JmsContextInjectionClientExample
 
             // Step 9. receive the body of the message as a String
             String text = context.createConsumer(replyQueue).receiveBody(String.class);
-
-            System.out.println("received = " + text);
          }
       }
       finally

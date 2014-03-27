@@ -40,9 +40,6 @@ import javax.jms.TextMessage;
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
                      })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSendTxExample implements MessageListener
 {
    @Resource(mappedName = "java:/JmsXA")

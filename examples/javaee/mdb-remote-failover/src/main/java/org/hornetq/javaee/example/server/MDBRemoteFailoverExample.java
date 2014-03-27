@@ -26,18 +26,16 @@ import javax.jms.*;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: 2/24/11
- *         Time: 2:44 PM
+ * @author Justin Bertram
  */
 @MessageDriven(name = "MDBRemoteFailoverExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/inQueue")      ,
-                        @ActivationConfigProperty(propertyName = "hA", propertyValue = "true")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "inQueue"),
+                        @ActivationConfigProperty(propertyName = "hA", propertyValue = "true"),
+                        @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "false")
                      })
-@TransactionManagement(value= TransactionManagementType.CONTAINER)
-@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
 @ResourceAdapter("hornetq-remote-ra.rar")
 public class MDBRemoteFailoverExample implements MessageListener
 {
@@ -72,7 +70,7 @@ public class MDBRemoteFailoverExample implements MessageListener
          //Step 14. we create a message and send it
          producer.send(sess.createTextMessage("this is a reply"));
 
-         System.out.println("reply sent:");
+         System.out.println("reply sent");
 
       }
       catch (Exception e)

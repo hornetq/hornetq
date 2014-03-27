@@ -26,11 +26,10 @@ import javax.jms.TextMessage;
 //Step 9. The message is received on the MDB, using a local queue.
 @MessageDriven(name = "MDB_QueueA",
                activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
-                     })
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A")
+                  })
 public class MDBQueueA implements MessageListener
 {
    public void onMessage(Message message)

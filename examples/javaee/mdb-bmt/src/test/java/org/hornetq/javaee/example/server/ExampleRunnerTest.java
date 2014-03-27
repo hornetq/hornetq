@@ -10,32 +10,17 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.javaee.example.server;
 
 import org.hornetq.javaee.example.MDB_BMTClientExample;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-//import org.jboss.as.arquillian.api.ServerSetup;
-//import org.jboss.as.arquillian.api.ServerSetupTask;
-//import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.naming.remote.client.cache.ConnectionCache;
-import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.Option;
-import org.xnio.Options;
-import org.xnio.sasl.SaslQop;
-
-import java.io.File;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -62,6 +47,4 @@ public class ExampleRunnerTest
       //give the example time to run
       Thread.sleep(1000);
    }
-
-
 }

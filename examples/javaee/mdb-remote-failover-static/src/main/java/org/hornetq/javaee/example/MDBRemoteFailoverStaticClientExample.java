@@ -22,8 +22,7 @@ import java.util.Properties;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: 2/24/11
- *         Time: 2:44 PM
+ * @author Justin Bertram
  */
 public class MDBRemoteFailoverStaticClientExample
 {
@@ -42,7 +41,7 @@ public class MDBRemoteFailoverStaticClientExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4547");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8180");
 
          env.put(Context.SECURITY_PRINCIPAL, "guest");
 

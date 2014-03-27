@@ -39,14 +39,9 @@ public class MDBMessageSendTxClientExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
 
          initialContext = new InitialContext(env);
-
 
          //Step 2. Perfom a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("jms/queues/testQueue");

@@ -10,7 +10,6 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.javaee.examples;
 
 import org.hornetq.javaee.example.MDBMessageSelectorClientExample;
@@ -35,7 +34,6 @@ public class MDBCMTSetMessageSelectorRunnerTest
    @Deployment
    public static Archive getDeployment()
    {
-
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
       ejbJar.addClass(MDBMessageSelectorExample.class);
       System.out.println(ejbJar.toString(true));
@@ -49,6 +47,4 @@ public class MDBCMTSetMessageSelectorRunnerTest
       //give the example time to run
       Thread.sleep(1000);
    }
-
-
 }
