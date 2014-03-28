@@ -1,4 +1,4 @@
-Running the JEE examples
+Running the Java EE examples
 ========================
 
 To run a javaee example first make sure you have WildFly installed, the examples were tested against against [8.0.0.Final](http://wildfly.org/downloads/).

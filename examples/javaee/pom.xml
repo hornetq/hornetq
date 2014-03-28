@@ -9,9 +9,9 @@
    </parent>
 
    <groupId>org.hornetq.example.javaee</groupId>
-   <artifactId>jee-examples</artifactId>
+   <artifactId>javaee-examples</artifactId>
    <packaging>pom</packaging>
-   <name>HornetQ JEE Examples</name>
+   <name>HornetQ Java EE Examples</name>
    <!-- Properties -->
    <properties>
       <!--
