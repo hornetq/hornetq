@@ -668,7 +668,10 @@ public final class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            HornetQClientLogger.LOGGER.cannotFindPacketToClear(lastReceivedCommandID, firstStoredCommandID);
+            if (lastReceivedCommandID > 0)
+            {
+               HornetQClientLogger.LOGGER.cannotFindPacketToClear(lastReceivedCommandID, firstStoredCommandID);
+            }
             firstStoredCommandID = lastReceivedCommandID + 1;
             return;
          }
