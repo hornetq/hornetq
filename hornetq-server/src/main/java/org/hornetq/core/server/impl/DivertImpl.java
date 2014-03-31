@@ -80,8 +80,6 @@ public class DivertImpl implements Divert
       // We must make a copy of the message, otherwise things like returning credits to the page won't work
       // properly on ack, since the original address will be overwritten
 
-      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
-
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
          HornetQServerLogger.LOGGER.trace("Diverting message " + message + " into " + this);
@@ -89,17 +87,27 @@ public class DivertImpl implements Divert
 
       long id = storageManager.generateUniqueID();
 
-      ServerMessage copy = message.copy(id);
-      copy.finishCopy();
+      ServerMessage copy = null;
 
-      // This will set the original MessageId, and the original address
-      copy.setOriginalHeaders(message, null, false);
-
-      copy.setAddress(forwardAddress);
-
-      if (transformer != null)
+      // Shouldn't copy if it's not routed anywhere else
+      if (!forwardAddress.equals(message.getAddress()))
       {
-         copy = transformer.transform(copy);
+         copy = message.copy(id);
+         copy.finishCopy();
+
+         // This will set the original MessageId, and the original address
+         copy.setOriginalHeaders(message, null, false);
+
+         copy.setAddress(forwardAddress);
+
+         if (transformer != null)
+         {
+            copy = transformer.transform(copy);
+         }
+      }
+      else
+      {
+         copy = message;
       }
 
       postOffice.route(copy, context.getTransaction(), false);
