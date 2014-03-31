@@ -392,7 +392,11 @@ public class HornetQServerImpl implements HornetQServer
    protected NodeManager createNodeManager(final String directory, String nodeGroupName, boolean replicatingBackup)
    {
       NodeManager manager;
-      if (configuration.getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
+      if (!configuration.isPersistenceEnabled())
+      {
+         manager = new InVMNodeManager(replicatingBackup);
+      }
+      else if (configuration.getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
       {
          manager = new AIOFileLockNodeManager(directory, replicatingBackup, configuration.getJournalLockAcquisitionTimeout());
       }
