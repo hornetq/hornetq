@@ -45,8 +45,8 @@ import javax.jms.TopicSubscriber;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
 
-import org.apache.activemq.apollo.filter.FilterException;
-import org.apache.activemq.apollo.selector.SelectorParser;
+import org.hornetq.selector.filter.FilterException;
+import org.hornetq.selector.SelectorParser;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQQueueExistsException;
 import org.hornetq.api.core.SimpleString;

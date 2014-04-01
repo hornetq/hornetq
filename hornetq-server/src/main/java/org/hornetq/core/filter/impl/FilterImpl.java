@@ -12,10 +12,10 @@
  */
 package org.hornetq.core.filter.impl;
 
-import org.apache.activemq.apollo.filter.BooleanExpression;
-import org.apache.activemq.apollo.filter.FilterException;
-import org.apache.activemq.apollo.filter.Filterable;
-import org.apache.activemq.apollo.selector.SelectorParser;
+import org.hornetq.selector.filter.BooleanExpression;
+import org.hornetq.selector.filter.FilterException;
+import org.hornetq.selector.filter.Filterable;
+import org.hornetq.selector.SelectorParser;
 import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;

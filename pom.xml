@@ -178,13 +178,6 @@
             <version>1.0.0.Final</version>
          </dependency>
 
-         <!-- needed to provide a JMS selector implementation -->
-         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>apollo-selector</artifactId>
-            <version>1.7</version>
-         </dependency>
-
          <!-- needed to provide JMS injection-->
          <dependency>
             <groupId>javax.enterprise</groupId>
@@ -480,6 +473,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -503,6 +497,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -526,6 +521,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -551,6 +547,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -587,6 +584,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -619,6 +617,7 @@
          <modules>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
+            <module>hornetq-selector</module>
             <module>hornetq-core-client</module>
             <module>hornetq-server</module>
             <module>hornetq-jms-client</module>
@@ -888,6 +887,7 @@
                   <exclude>**/filter/impl/Operator.java</exclude>
                   <exclude>**/filter/impl/RegExp.java</exclude>
                   <exclude>**/utils/UUID*.java</exclude>
+                  <exclude>**/org/hornetq/selector/**</exclude>
                </excludes>
                <useDefaultExcludes>true</useDefaultExcludes>
                <strictCheck>true</strictCheck>
