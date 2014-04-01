@@ -233,16 +233,8 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
                                                (ackMode == Session.CLIENT_ACKNOWLEDGE |
                                                 ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE) ? session.getCoreSession() : null);
 
-            try
-            {
-               msg.doBeforeReceive();
-            }
-            catch (Throwable e)
-            {
-               HornetQMessageConsumer.log.error("Failed to prepare message for delivery", e);
+            msg.doBeforeReceive();
 
-               return null;
-            }
             // We Do the ack after doBeforeRecive, as in the case of large messages, this may fail so we don't want messages redelivered
             // https://issues.jboss.org/browse/JBPAPP-6110
             if (session.getAcknowledgeMode() == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE)
