@@ -12,9 +12,10 @@
  */
 package org.hornetq.core.filter.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.hornetq.selector.filter.BooleanExpression;
+import org.hornetq.selector.filter.FilterException;
+import org.hornetq.selector.filter.Filterable;
+import org.hornetq.selector.SelectorParser;
 import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -61,11 +62,7 @@ public class FilterImpl implements Filter
 
    private final SimpleString sfilterString;
 
-   private final Map<SimpleString, Identifier> identifiers;
-
-   private final Object result;
-
-   private final Class<? extends Object> resultType;
+   private final BooleanExpression booleanExpression;
 
    // Static ---------------------------------------------------------
 
@@ -89,29 +86,25 @@ public class FilterImpl implements Filter
          return null;
       }
 
-      HashMap<SimpleString, Identifier> identifierMap = new HashMap<SimpleString, Identifier>();
-      Object result0;
+      BooleanExpression booleanExpression;
       try
       {
-         result0 = new FilterParser().parse(filterStr, identifierMap);
+         booleanExpression =  SelectorParser.parse(filterStr.toString());
       }
       catch (Throwable e)
       {
          HornetQServerLogger.LOGGER.invalidFilter(e, filterStr);
          throw HornetQMessageBundle.BUNDLE.invalidFilter(e, filterStr);
       }
-      return new FilterImpl(filterStr, identifierMap, result0);
+      return new FilterImpl(filterStr, booleanExpression);
    }
 
    // Constructors ---------------------------------------------------
 
-   private FilterImpl(final SimpleString str, final HashMap<SimpleString, Identifier> identifierMap,
-                      final Object result0)
+   private FilterImpl(final SimpleString str, final BooleanExpression expression)
    {
       sfilterString = str;
-      identifiers = identifierMap;
-      this.result = result0;
-      resultType = result.getClass();
+      this.booleanExpression = expression;
    }
 
    // Filter implementation ---------------------------------------------------------------------
@@ -125,56 +118,12 @@ public class FilterImpl implements Filter
    {
       try
       {
-         // Set the identifiers values
-
-         for (Identifier id : identifiers.values())
-         {
-            Object val = null;
-
-            if (id.getName().startsWith(FilterConstants.HORNETQ_PREFIX))
-            {
-               // Look it up as header fields
-               val = getHeaderFieldValue(message, id.getName());
-            }
-
-            if (val == null)
-            {
-               val = message.getObjectProperty(id.getName());
-            }
-
-            id.setValue(val);
-
-         }
-
-         if (resultType.equals(Identifier.class))
-         {
-            return (Boolean)((Identifier)result).getValue();
-         }
-         else if (resultType.equals(Operator.class))
-         {
-            Operator op = (Operator)result;
-            Object result = op.apply();
-            if (result == null)
-            {
-               // https://issues.jboss.org/browse/HORNETQ-1188 -
-               // if this was going to NPE anyways, we just return false
-               // invalid properties will just fail the query
-               return false;
-            }
-            else
-            {
-               return (Boolean)result;
-            }
-         }
-         else
-         {
-            throw new Exception("Bad object type: " + result);
-         }
+         boolean result = booleanExpression.matches(new FilterableServerMessage(message));
+         return result;
       }
       catch (Exception e)
       {
          HornetQServerLogger.LOGGER.invalidFilter(e, sfilterString);
-
          return false;
       }
    }
@@ -216,7 +165,7 @@ public class FilterImpl implements Filter
 
    // Private --------------------------------------------------------------------------
 
-   private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
+   private static Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
    {
       if (FilterConstants.HORNETQ_USERID.equals(fieldName))
       {
@@ -245,6 +194,52 @@ public class FilterImpl implements Filter
       }
       else
       {
+         return null;
+      }
+   }
+
+   private static class FilterableServerMessage implements Filterable
+   {
+      private final ServerMessage message;
+
+      public FilterableServerMessage(ServerMessage message)
+      {
+         this.message = message;
+      }
+
+      @Override
+      public Object getProperty(String id)
+      {
+         Object result = null;
+         if (id.startsWith(FilterConstants.HORNETQ_PREFIX.toString()))
+         {
+            result = getHeaderFieldValue(message, new SimpleString(id));
+         }
+         if (result == null)
+         {
+            result = message.getObjectProperty(new SimpleString(id));
+         }
+         if (result != null)
+         {
+            if (result.getClass() == SimpleString.class)
+            {
+               result = result.toString();
+            }
+         }
+         return result;
+      }
+
+      @Override
+      public <T> T getBodyAs(Class<T> type) throws FilterException
+      {
+         // TODO: implement to support content based selection
+         return null;
+      }
+
+      @Override
+      public Object getLocalConnectionId()
+      {
+         // Only needed if the NoLocal
          return null;
       }
    }
