@@ -265,15 +265,19 @@ public final class BindingsImpl implements Bindings
 
       if (!routed)
       {
-         // TODO this is a little inefficient since we do the lookup once to see if the property
-         // is there, then do it again to remove the actual property
-         if (message.containsProperty(MessageImpl.HDR_ROUTE_TO_IDS))
+         // Remove the ids now, in order to avoid double check
+         byte[] ids = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+
+         // Fetch the groupId now, in order to avoid double checking
+         SimpleString groupId = message.getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+         if (ids != null)
          {
-            routeFromCluster(message, context);
+            routeFromCluster(message, context, ids);
          }
-         else if (groupingHandler != null && message.containsProperty(Message.HDR_GROUP_ID))
+         else if (groupingHandler != null && groupId != null)
          {
-            routeUsingStrictOrdering(message, context, groupingHandler);
+            routeUsingStrictOrdering(message, context, groupingHandler, groupId);
          }
          else
          {
@@ -427,10 +431,9 @@ public final class BindingsImpl implements Bindings
 
    private void routeUsingStrictOrdering(final ServerMessage message,
                                          final RoutingContext context,
-                                         final GroupingHandler groupingGroupingHandler) throws Exception
+                                         final GroupingHandler groupingGroupingHandler,
+                                         final SimpleString groupId) throws Exception
    {
-      SimpleString groupId = message.getSimpleStringProperty(Message.HDR_GROUP_ID);
-
       for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
       {
          SimpleString routingName = entry.getKey();
@@ -577,10 +580,8 @@ public final class BindingsImpl implements Bindings
    }
 
 
-   private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception
+   private void routeFromCluster(final ServerMessage message, final RoutingContext context, final byte[] ids) throws Exception
    {
-      byte[] ids = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
-
       byte[] idsToAck = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_ACK_IDS);
 
       List<Long> idsToAckList = new ArrayList<>();
