@@ -26,9 +26,13 @@ import javax.transaction.UserTransaction;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_BMTExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                                                            @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                                                            @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge") })
+@MessageDriven(name = "MDB_BMTExample",
+               activationConfig =
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                     @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
+                  })
 @TransactionManagement(value = TransactionManagementType.BEAN)
 public class MDB_BMTExample implements MessageListener
 {
@@ -58,7 +62,7 @@ public class MDB_BMTExample implements MessageListener
          }
          else
          {
-            System.out.println("something is wrong, I was expecting a transaction");
+            System.out.println("something is wrong, I wasn't expecting a transaction");
          }
       }
       catch (Exception e)

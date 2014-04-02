@@ -29,7 +29,7 @@
         directory. Examples are split into JMS and core examples. JMS examples show how a particular
         feature can be used by a normal JMS client. Core examples show how the equivalent feature
         can be used by a core messaging client.</para>
-    <para>A set of Java EE examples are also provided which need the JBoss Application Server
+    <para>A set of Java EE examples are also provided which need WildFly
         installed to be able to run.</para>
     <section>
         <title>JMS Examples</title>
@@ -642,10 +642,15 @@
     </section>
     <section>
         <title>Java EE Examples</title>
-        <para>Most of the Java EE examples can be run the following way. simply cd into the
-            appropriate example directory and type <literal>mvn test</literal>. This will use Arquillian to run the Application
-            Server and deploy the application. Note that you must have jboss AS 7 installed and the JBOSS_HOME environment
+        <para>Most of the Java EE examples can be run the following way. Simply navigate into the
+            appropriate example directory and type <literal>mvn verify</literal>. This will use Arquillian to run the Application
+            Server and deploy the application. Note that you must have WildFly installed and the JBOSS_HOME environment
             variable set. Please refer to the examples documentation for further instructions.</para>
+        <note>
+           <para>When running the Java EE examples you may see warning messages in the WildFly log about incompatible client and
+           server versions. This is normal if a newer version of the HornetQ project is being used with a version of WildFly that
+           ships an older version of HornetQ. These examples should still complete without any functional errors.</para>
+        </note>
         <section>
             <title>EJB/JMS Transaction</title>
             <para>An example that shows using an EJB and JMS together within a transaction.</para>

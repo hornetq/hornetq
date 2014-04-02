@@ -38,11 +38,13 @@ import java.util.Calendar;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_JMS_CONTEXT", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                                                                       @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                                                                       @ActivationConfigProperty(propertyName = "consumerMaxRate", propertyValue = "1")})
-@TransactionManagement(value = TransactionManagementType.CONTAINER)
-@TransactionAttribute(value = TransactionAttributeType.REQUIRED)
+@MessageDriven(name = "MDB_JMS_CONTEXT",
+               activationConfig =
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                     @ActivationConfigProperty(propertyName = "consumerMaxRate", propertyValue = "1")
+                  })
 public class JmsContextInjectionExample implements MessageListener
 {
    // 1. Inject the JMSContext

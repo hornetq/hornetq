@@ -48,6 +48,4 @@ public class MDBCMTSetLocalTXRunnerTest
       //give the example time to run
       Thread.sleep(1000);
    }
-
-
 }

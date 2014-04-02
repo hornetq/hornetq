@@ -1,11 +1,11 @@
-Running the JEE examples
+Running the Java EE examples
 ========================
 
-To run a javaee example first make sure you have JBoss AS7 installed, the examples were tested against against [7.1.1.Final](http://www.jboss.org/jbossas/downloads/).
+To run a javaee example first make sure you have WildFly installed, the examples were tested against against [8.0.0.Final](http://wildfly.org/downloads/).
 
 Then set the JBOSS_HOME property to your installation, something like:
 
-export JBOSS_HOME=/home/user/jbossas7.1.1
+export JBOSS_HOME=/home/user/wildfly-8.0.0.Final
 
 Then simply cd into the directory of the example you want to run and 'mvn test'.
 

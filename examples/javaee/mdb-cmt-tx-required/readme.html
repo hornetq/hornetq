@@ -9,38 +9,41 @@
      <h1>Java EE MDB Container Managed Transactions Example</h1>
 
      <p>This example shows you how to send a message to an MDB that is delivered within a transaction controlled by the container</p>
-     <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
-     </p>
-     
-     <h2>JBoss AS configuration</h2>
-     
-    <p>The example leverages the JBoss Arquillian framework to run an AS 7 instance and deploy the MDB.</p>
+     <p>The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it</p>
+
+     <p>The example leverages the JBoss Arquillian framework to run a WildFly instance and deploy the MDB.</p>
 
      <h2>Example step-by-step</h2>
-     <p><i>download AS 7.1.1.final from <a href="http://www.jboss.org/jbossas/downloads/">here</a> and install.</i></p>
-     <p><i>set the JBOSS_HOME property to point to AS7 install directory</i></p>
-     <p><i>To run the example simply type <code>mvn test</code>from the example directory</i></p>
+
+     <p><i>download WildFly 8.0.0.Final from <a href="http://wildfly.org/downloads/">here</a> and install.</i></p>
+     <p><i>set the JBOSS_HOME property to point to the WildFly install directory</i></p>
+     <p><i>type <code>mvn verify</code> from the example directory to run</i></p>
 
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
         <pre class="prettyprint">
-           <code>initialContext = new InitialContext();</code>
+           final Properties env = new Properties();
+
+           env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+
+           env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
+
+           initialContext = new InitialContext(env);
         </pre>
 
         <li>We look up the JMS queue object from JNDI</li>
         <pre class="prettyprint">
-           <code>Queue queue = (Queue) initialContext.lookup("/queue/testQueue");</code>
+           Queue queue = (Queue)initialContext.lookup("jms/queues/testQueue");
         </pre>
 
         <li>We look up the JMS connection factory object from JNDI</li>
         <pre class="prettyprint">
-           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+           ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/jms/RemoteConnectionFactory");
         </pre>
 
         <li>We create a JMS connection</li>
         <pre class="prettyprint">
-           <code>connection = cf.createConnection();</code>
+           connection = cf.createConnection("guest", "password");
         </pre>
 
         <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>

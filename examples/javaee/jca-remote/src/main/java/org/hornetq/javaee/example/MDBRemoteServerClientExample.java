@@ -46,16 +46,12 @@ public class MDBRemoteServerClientExample
 
          env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 
-         env.put(Context.PROVIDER_URL, "remote://localhost:4547");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8180");
 
          initialContext = new InitialContext(env);
 
          // Step 2. Look up the MDB's queue
-         Queue queue = (Queue) initialContext.lookup("/queues/mdbQueue");
+         Queue queue = (Queue) initialContext.lookup("queues/mdbQueue");
 
          // Step 3. Look up a Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("jms/RemoteConnectionFactory");
@@ -73,7 +69,7 @@ public class MDBRemoteServerClientExample
          producer.send(session.createTextMessage("a message"));
 
          // Step 15. Look up the reply queue
-         Queue replyQueue = (Queue) initialContext.lookup("/queues/mdbReplyQueue");
+         Queue replyQueue = (Queue) initialContext.lookup("queues/mdbReplyQueue");
 
          // Step 16. Create a message consumer to receive the message
          MessageConsumer consumer = session.createConsumer(replyQueue);

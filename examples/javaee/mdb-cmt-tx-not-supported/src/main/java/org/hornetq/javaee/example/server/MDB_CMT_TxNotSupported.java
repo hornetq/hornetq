@@ -30,12 +30,14 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMT_TxNotSupported", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                                                                    @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                                                                    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
-@TransactionManagement(value = TransactionManagementType.CONTAINER)
+@MessageDriven(name = "MDB_CMT_TxNotSupported",
+               activationConfig =
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                     @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
+                  })
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
-@ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_TxNotSupported implements MessageListener
 {
    @Resource(mappedName = "java:/TransactionManager")

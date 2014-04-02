@@ -10,7 +10,6 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 package org.hornetq.javaee.example;
 
 import org.hornetq.javaee.example.server.MDB_CMT_SetRollbackOnlyExample;
@@ -48,6 +47,4 @@ public class MDBCMTSetRollbackOnlyRunnerTest
       //give the example time to run
       Thread.sleep(1000);
    }
-
-
 }

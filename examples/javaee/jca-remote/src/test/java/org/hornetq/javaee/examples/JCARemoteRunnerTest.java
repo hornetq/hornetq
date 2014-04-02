@@ -23,23 +23,18 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.InputStream;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         5/21/12
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-//@ServerSetup({ExampleRunner2Test.JmsQueueSetup.class})
 public class JCARemoteRunnerTest
 {
    @ArquillianResource
@@ -51,22 +46,14 @@ public class JCARemoteRunnerTest
    @TargetsContainer("node-0")
    public static Archive getDeployment()
    {
-
       final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
       ejbJar.addClass(MDBQueue.class);
-      ejbJar.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            ManifestBuilder builder = ManifestBuilder.newInstance();
-            StringBuffer dependencies = new StringBuffer();
-            dependencies.append("org.hornetq");
-            builder.addManifestHeader("Dependencies", dependencies.toString());
-            return builder.openStream();
-         }
-      });
-      System.out.println(ejbJar.toString(true));
-      return ejbJar;
+
+      final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
+      war.addAsManifestResource("jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+      war.addAsLibrary(ejbJar);
+      System.out.println(war.toString(true));
+      return war;
    }
 
    @Test

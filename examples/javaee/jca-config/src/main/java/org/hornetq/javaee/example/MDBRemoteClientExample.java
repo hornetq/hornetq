@@ -33,23 +33,13 @@ public class MDBRemoteClientExample
       InitialContext initialContext = null;
       try
       {
-         final Properties env = new Properties();
-
-         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-
-         env.put(Context.PROVIDER_URL, "remote://localhost:4547");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
-         env.put("jboss.naming.client.ejb.context", true);
-
-env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         // Step 1. Create an initial context to perform the EJB lookup.
+         Properties env = new Properties();
+         env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
          initialContext = new InitialContext(env);
 
-         //Step 2. Getting a reference to the Stateless Bean
-         StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("mdb2/StatelessSender!org.hornetq.javaee.example.server2.StatelessSenderService");
+         // Step 2. Lookup the EJB
+         StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("ejb:/test//StatelessSender!org.hornetq.javaee.example.server2.StatelessSenderService");
 
          //Step 3. Calling a Stateless Session Bean. You will have more steps on the SessionBean
          sender.sendHello("Hello there MDB!");

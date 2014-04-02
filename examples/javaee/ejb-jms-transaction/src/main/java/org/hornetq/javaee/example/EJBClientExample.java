@@ -20,16 +20,16 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.Properties;
 
 import org.hornetq.javaee.example.server.SendMessageService;
-
-import java.util.Properties;
 
 /**
  * An example showing how to invoke a EJB which sends a JMS message and update a JDBC table in the same transaction.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author Justin Bertram
  */
 public class EJBClientExample
 {
@@ -39,23 +39,13 @@ public class EJBClientExample
       Connection connection = null;
       try
       {
-         // Step 1. Create an initial context to perform the JNDI lookup.
-         final Properties env = new Properties();
-
-         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-
-         env.put(Context.PROVIDER_URL, "remote://localhost:4447");
-
-         env.put(Context.SECURITY_PRINCIPAL, "guest");
-
-         env.put(Context.SECURITY_CREDENTIALS, "password");
-
-         env.put("jboss.naming.client.ejb.context", true);
-
+         // Step 1. Create an initial context to perform the EJB lookup.
+         Properties env = new Properties();
+         env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
          initialContext = new InitialContext(env);
 
          // Step 2. Lookup the EJB
-         SendMessageService service = (SendMessageService)initialContext.lookup("java:ejb/SendMessageBean!org.hornetq.javaee.example.server.SendMessageService");
+         SendMessageService service = (SendMessageService) initialContext.lookup("ejb:/test//SendMessageBean!org.hornetq.javaee.example.server.SendMessageService");
 
          // Step 3. Create the DB table which will be updated
          service.createTable();
@@ -64,30 +54,33 @@ public class EJBClientExample
          service.sendAndUpdate("This is a text message");
          System.out.println("invoked the EJB service");
 
-         // Step 5. Lookup the JMS connection factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("jms/RemoteConnectionFactory");
+         // Step 5. Create a new initial context for the JMS JNDI look-ups.
+         env = new Properties();
+         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+         env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
+         initialContext = new InitialContext(env);
 
-         // Step 6. Lookup the queue
-         Queue queue = (Queue)initialContext.lookup("jms/queues/testQueue");
+         // Step 6. Lookup the JMS connection factory
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("jms/RemoteConnectionFactory");
 
-         // Step 7. Create a connection, a session and a message consumer for the queue
+         // Step 7. Lookup the queue
+         Queue queue = (Queue) initialContext.lookup("jms/queues/testQueue");
+
+         // Step 8. Create a connection, a session and a message consumer for the queue
          connection = cf.createConnection("guest", "password");
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer consumer = session.createConsumer(queue);
 
-         // Step 8. Start the connection
+         // Step 9. Start the connection
          connection.start();
 
-         // Step 9. Receive the message sent by the EJB
-         TextMessage messageReceived = (TextMessage)consumer.receive(5000);
-         System.out.println("Received message: " + messageReceived.getText() +
-                            " (" +
-                            messageReceived.getJMSMessageID() +
-                            ")");
+         // Step 10. Receive the message sent by the EJB
+         TextMessage messageReceived = (TextMessage) consumer.receive(5000);
+         System.out.println("Received message: " + messageReceived.getText() + " (" + messageReceived.getJMSMessageID() + ")");
       }
       finally
       {
-         // Step 10. Be sure to close the resources!
+         // Step 11. Be sure to close the resources!
          if (initialContext != null)
          {
             initialContext.close();

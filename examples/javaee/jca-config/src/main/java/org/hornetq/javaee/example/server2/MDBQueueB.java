@@ -28,11 +28,11 @@ import javax.jms.TextMessage;
 //Step 10. The message is received on the MDB, using a remote queue.
 @MessageDriven(name = "MDB_QueueB",
                activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/B"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
-                     })
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "B"),
+                     @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "false")
+                  })
 @ResourceAdapter("hornetq-ra-remote.rar")
 public class MDBQueueB implements MessageListener
 {

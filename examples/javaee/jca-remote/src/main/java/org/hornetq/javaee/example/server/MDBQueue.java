@@ -21,29 +21,21 @@ import javax.ejb.MessageDriven;
 import javax.jms.*;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         Created May 24, 2010
- */
-
-/**
  * MDB that is connected to the remote queue.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author Justin Bertram
  */
-
-//Step 10. The message is received on the MDB, using a remote queue.
 @MessageDriven(name = "MDB_Queue",
                activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queues/mdbQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
-                     })
-@ResourceAdapter("hornetq-remote-ra.rar")
+                  {
+                     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                     @ActivationConfigProperty(propertyName = "destination", propertyValue = "mdbQueue"),
+                     @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "false")
+                  })
+@ResourceAdapter("hornetq-ra-remote.rar")
 public class MDBQueue implements MessageListener
 {
-   /**
-    *  Resource to be deployed by jms-remote-ds.xml
-    *  */
    @Resource(mappedName="java:/RemoteJmsXA")
    private ConnectionFactory connectionFactory;
 
@@ -56,8 +48,6 @@ public class MDBQueue implements MessageListener
 
          String text = tm.getText();
 
-         System.out.println("Step 11: (MDBQueue.java) Message received using the remote adapter. Message = \"" + text + "\"" );
-
          // Step 9. look up the reply queue
          Queue destQueue = HornetQJMSClient.createQueue("mdbReplyQueue");
 
@@ -69,8 +59,6 @@ public class MDBQueue implements MessageListener
 
          // Step 12. Create a message producer to send the message
          MessageProducer producer = session.createProducer(destQueue);
-
-         System.out.println("sending a reply message");
 
          // Step 13. Create and send a reply text message
          producer.send(session.createTextMessage("A reply message"));
