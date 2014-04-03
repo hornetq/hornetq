@@ -26,6 +26,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 
 /**
  * This implementation looks for any available live node, once tried with no success it is marked as
@@ -43,9 +44,9 @@ public class AnyLiveNodeLocatorForReplication extends LiveNodeLocator
 
    private String nodeID;
 
-   public AnyLiveNodeLocatorForReplication(QuorumManager quorumManager, HornetQServerImpl server)
+   public AnyLiveNodeLocatorForReplication(SharedNothingBackupQuorum backupQuorum, HornetQServerImpl server)
    {
-      super(quorumManager);
+      super(backupQuorum);
       this.server = server;
    }
 

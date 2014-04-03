@@ -60,10 +60,10 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
-import org.hornetq.core.server.impl.QuorumManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -442,7 +442,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          //it should be greater than
          //QuorumManager.WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG (60 sec)
-         waitTimeout = 1000 * (QuorumManager.WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG + 5);
+         waitTimeout = 1000 * (SharedNothingBackupQuorum.WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG + 5);
       }
       if (!servers[node].waitForActivation(waitTimeout, TimeUnit.MILLISECONDS))
       {

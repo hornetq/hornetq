@@ -54,6 +54,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+import org.hornetq.core.server.cluster.qourum.QuorumManager;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -73,6 +74,8 @@ import org.hornetq.utils.FutureLatch;
  */
 public final class ClusterManager implements HornetQComponent
 {
+   private final QuorumManager quorumManager;
+
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap();
 
    private final Map<String, Bridge> bridges = new HashMap();
@@ -90,6 +93,11 @@ public final class ClusterManager implements HornetQComponent
    private final ManagementService managementService;
 
    private final Configuration configuration;
+
+   public QuorumManager getQuorumManager()
+   {
+      return quorumManager;
+   }
 
    enum State
    {
@@ -143,6 +151,8 @@ public final class ClusterManager implements HornetQComponent
       this.configuration = configuration;
 
       this.nodeManager = nodeManager;
+
+      quorumManager = new QuorumManager(server, scheduledExecutor);
    }
 
    public String describe()
@@ -233,6 +243,14 @@ public final class ClusterManager implements HornetQComponent
       {
          deployClusterConnection(config);
       }
+
+      /*
+      * only start if we are actually in a cluster
+      * */
+      if (clusterConnections.size() > 0)
+      {
+         quorumManager.start();
+      }
    }
 
    public synchronized void start() throws Exception
@@ -279,6 +297,7 @@ public final class ClusterManager implements HornetQComponent
             HornetQServerLogger.LOGGER.unableToStartBridge(e, bridge.getName());
          }
       }
+
       state = State.STARTED;
    }
 
@@ -299,6 +318,8 @@ public final class ClusterManager implements HornetQComponent
             return;
          }
          state = State.STOPPING;
+
+         quorumManager.stop();
 
          for (BroadcastGroup group : broadcastGroups.values())
          {
