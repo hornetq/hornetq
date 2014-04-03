@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -705,7 +706,22 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-         processRoute(message, context, direct);
+         try
+         {
+            processRoute(message, context, direct);
+         }
+         catch (HornetQAddressFullException e)
+         {
+            if (startedTX.get())
+            {
+               context.getTransaction().rollback();
+            }
+            else if (context.getTransaction() != null)
+            {
+               context.getTransaction().markAsRollbackOnly(e);
+            }
+            throw e;
+         }
       }
 
       if (startedTX.get())
@@ -922,7 +938,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          // We use properties to establish routing context on clustering.
          // However if the client resends the message after receiving, it needs to be removed
          if ((name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS)) ||
-               name.equals(MessageImpl.HDR_ROUTE_TO_ACK_IDS))
+            name.equals(MessageImpl.HDR_ROUTE_TO_ACK_IDS))
          {
             if (valuesToRemove == null)
             {
@@ -1453,6 +1469,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             message.decrementRefCount();
          }
       }
+
       public List<MessageReference> getRelatedMessageReferences()
       {
          return refs;
