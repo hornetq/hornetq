@@ -69,6 +69,7 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.logging.AssertionLoggerHandler;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Assert;
@@ -5206,7 +5207,108 @@ public class PagingTest extends ServiceTestBase
    }
 
    @Test
-   public void testFailMessages() throws Exception
+   /**
+    * When running this test from an IDE add this to the test command line so that the AssertionLoggerHandler works properly:
+    *
+    *   -Djava.util.logging.manager=org.jboss.logmanager.LogManager  -Dlogging.configuration=file:<path_to_source>/tests/config/logging.properties
+    */
+   public void testFailMessagesNonDurable() throws Exception
+   {
+      AssertionLoggerHandler.startCapture();
+
+      try
+      {
+         clearDataRecreateServerDirs();
+
+         Configuration config = createDefaultConfig();
+
+         HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+
+         AddressSettings set = new AddressSettings();
+         set.setAddressFullMessagePolicy(AddressFullMessagePolicy.FAIL);
+
+         settings.put(PagingTest.ADDRESS.toString(), set);
+
+         server = createServer(true, config, 1024, 5 * 1024, settings);
+
+         server.start();
+
+         locator.setBlockOnNonDurableSend(false);
+         locator.setBlockOnDurableSend(false);
+         locator.setBlockOnAcknowledge(true);
+
+         sf = createSessionFactory(locator);
+         ClientSession session = sf.createSession(true, true, 0);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = session.createMessage(false);
+
+         int biggerMessageSize = 1024;
+         byte[] body = new byte[biggerMessageSize];
+         ByteBuffer bb = ByteBuffer.wrap(body);
+         for (int j = 1; j <= biggerMessageSize; j++)
+         {
+            bb.put(getSamplebyte(j));
+         }
+
+         message.getBodyBuffer().writeBytes(body);
+
+         // Send enough messages to fill up the address, but don't test for an immediate exception because we do not block
+         // on non-durable send. Instead of receiving an exception immediately the exception will be logged on the server.
+         for (int i = 0; i < 32; i++)
+         {
+            producer.send(message);
+         }
+
+         // allow time for the logging to actually happen on the server
+         Thread.sleep(100);
+
+         Assert.assertTrue("Expected to find HQ224016", AssertionLoggerHandler.findText("HQ224016"));
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+         session.start();
+
+         // Once the destination is full and the client has run out of credits then it will receive an exception
+         for (int i = 0; i < 10; i++)
+         {
+            validateExceptionOnSending(producer, message);
+         }
+
+         // Receive a message.. this should release credits
+         ClientMessage msgReceived = consumer.receive(5000);
+         assertNotNull(msgReceived);
+         msgReceived.acknowledge();
+         session.commit(); // to make sure it's on the server (roundtrip)
+
+         boolean exception = false;
+
+         try
+         {
+            for (int i = 0; i < 1000; i++)
+            {
+               // this send will succeed on the server
+               producer.send(message);
+            }
+         }
+         catch (Exception e)
+         {
+            exception = true;
+         }
+
+         assertTrue("Expected to throw an exception", exception);
+      }
+      finally
+      {
+         AssertionLoggerHandler.stopCapture();
+      }
+   }
+
+   @Test
+   public void testFailMessagesDurable() throws Exception
    {
       clearDataRecreateServerDirs();
 
@@ -5234,7 +5336,7 @@ public class PagingTest extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-      ClientMessage message = null;
+      ClientMessage message = session.createMessage(true);
 
       int biggerMessageSize = 1024;
       byte[] body = new byte[biggerMessageSize];
@@ -5244,32 +5346,32 @@ public class PagingTest extends ServiceTestBase
          bb.put(getSamplebyte(j));
       }
 
-      // Send enough messages to fill up the address.
-      // The address will actually fill up after 3 messages or so, but it takes 32 messages for the client's
-      // credits to run out.  The client will finally receive the fail message when it requests more credits
-      // and the address is full.
-      for (int i = 0; i < 32; i++)
+      message.getBodyBuffer().writeBytes(body);
+
+      // Send enough messages to fill up the address and test for an exception.
+      // The address will actually fill up after 3 messages. Also, it takes 32 messages for the client's
+      // credits to run out.
+      for (int i = 0; i < 50; i++)
       {
-         message = session.createMessage(true);
-         message.getBodyBuffer().writeBytes(body);
-         producer.send(message);
+         if (i > 2)
+         {
+            validateExceptionOnSending(producer, message);
+         }
+         else
+         {
+            producer.send(message);
+         }
       }
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       session.start();
 
-      for (int i = 0; i < 10; i++)
-      {
-         validateExceptionOnSending(producer, message);
-      }
-
       // Receive a message.. this should release credits
       ClientMessage msgReceived = consumer.receive(5000);
       assertNotNull(msgReceived);
       msgReceived.acknowledge();
       session.commit(); // to make sure it's on the server (roundtrip)
-
 
       boolean exception = false;
 
@@ -5287,7 +5389,92 @@ public class PagingTest extends ServiceTestBase
       }
 
       assertTrue("Expected to throw an exception", exception);
+   }
 
+   @Test
+   public void testFailMessagesDuplicates() throws Exception
+   {
+      clearDataRecreateServerDirs();
+
+      Configuration config = createDefaultConfig();
+
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+
+      AddressSettings set = new AddressSettings();
+      set.setAddressFullMessagePolicy(AddressFullMessagePolicy.FAIL);
+
+      settings.put(PagingTest.ADDRESS.toString(), set);
+
+      server = createServer(true, config, 1024, 5 * 1024, settings);
+
+      server.start();
+
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      sf = createSessionFactory(locator);
+      ClientSession session = addClientSession(sf.createSession(true, true, 0));
+
+      session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+
+      int biggerMessageSize = 1024;
+      byte[] body = new byte[biggerMessageSize];
+      ByteBuffer bb = ByteBuffer.wrap(body);
+      for (int j = 1; j <= biggerMessageSize; j++)
+      {
+         bb.put(getSamplebyte(j));
+      }
+
+      message.getBodyBuffer().writeBytes(body);
+
+      // Send enough messages to fill up the address.
+      producer.send(message);
+      producer.send(message);
+      producer.send(message);
+
+      Queue q = (Queue) server.getPostOffice().getBinding(ADDRESS).getBindable();
+      Assert.assertEquals(3, q.getMessageCount());
+
+      // send a message with a dup ID that should fail b/c the address is full
+      SimpleString dupID1 = new SimpleString("abcdefg");
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID1.getData());
+      message.putStringProperty("key", dupID1.toString());
+
+      validateExceptionOnSending(producer, message);
+
+      Assert.assertEquals(3, q.getMessageCount());
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      // Receive a message...this should open space for another message
+      ClientMessage msgReceived = consumer.receive(5000);
+      assertNotNull(msgReceived);
+      msgReceived.acknowledge();
+      session.commit(); // to make sure it's on the server (roundtrip)
+      consumer.close();
+
+      Assert.assertEquals(2, q.getMessageCount());
+
+      producer.send(message);
+
+      Assert.assertEquals(3, q.getMessageCount());
+
+      consumer = session.createConsumer(ADDRESS);
+
+      for (int i = 0; i < 3; i++)
+      {
+         msgReceived = consumer.receive(5000);
+         assertNotNull(msgReceived);
+         msgReceived.acknowledge();
+         session.commit();
+      }
    }
 
    /**

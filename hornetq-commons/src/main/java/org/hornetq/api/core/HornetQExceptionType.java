@@ -207,7 +207,14 @@ public enum HornetQExceptionType
    NATIVE_ERROR_CANT_ALLOCATE_QUEUE(206),
    NATIVE_ERROR_PREALLOCATE_FILE(208),
    NATIVE_ERROR_ALLOCATE_MEMORY(209),
-   ADDRESS_FULL(210),
+   ADDRESS_FULL(210)
+   {
+      @Override
+      public HornetQException createException(String msg)
+      {
+         return new HornetQAddressFullException(msg);
+      }
+   },
    LARGE_MESSAGE_INTERRUPTED(211)
    {
       @Override

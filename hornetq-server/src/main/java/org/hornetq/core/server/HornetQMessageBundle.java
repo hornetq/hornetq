@@ -22,6 +22,7 @@
 package org.hornetq.core.server;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQClusterSecurityException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
@@ -328,6 +329,9 @@ public interface HornetQMessageBundle
    IllegalStateException journalDirIsFile(File fDir);
 
    @Message(id = 119101, value = "error trying to backup journal files at directory: {0}",
-         format = Message.Format.MESSAGE_FORMAT)
+            format = Message.Format.MESSAGE_FORMAT)
    IllegalStateException couldNotMoveJournal(File dir);
+
+   @Message(id = 119102, value = "Address \"{0}\" is full.", format = Message.Format.MESSAGE_FORMAT)
+   HornetQAddressFullException addressIsFull(String addressName);
 }
