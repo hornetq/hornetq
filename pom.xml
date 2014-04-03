@@ -538,7 +538,7 @@
             <module>integration/hornetq-aerogear-integration</module>
             <module>integration/hornetq-vertx-integration</module>
             <module>examples</module>
-            <!--module>docs</module-->
+            <module>docs</module>
             <module>distribution</module>
          </modules>
       </profile>
