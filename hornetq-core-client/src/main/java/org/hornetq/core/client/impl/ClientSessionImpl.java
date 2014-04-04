@@ -1200,17 +1200,18 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       startCall();
       try
       {
-
          sessionContext.xaCommit(xid, onePhase);
          workDone = false;
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
          HornetQClientLogger.LOGGER.failoverDuringCommit();
 
          // Any error on commit -> RETRY
          // We can't rollback a Prepared TX for definition
-         throw new XAException(XAException.XA_RETRY);
+         XAException xaException = new XAException(XAException.XA_RETRY);
+         xaException.initCause(t);
+         throw xaException;
       }
       finally
       {
@@ -1235,7 +1236,7 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
             {
                rollback();
             }
-            catch (Exception ignored)
+            catch (Throwable ignored)
             {
                HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
             }
@@ -1256,11 +1257,13 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
                endCall();
             }
          }
-         catch (HornetQException e)
+         catch (Throwable t)
          {
-            HornetQClientLogger.LOGGER.errorCallingEnd(e);
-            // This should never occur
-            throw new XAException(XAException.XAER_RMERR);
+            HornetQClientLogger.LOGGER.errorCallingEnd(t);
+            // This could occur if the TM interrupts the thread
+            XAException xaException = new XAException(XAException.XAER_RMERR);
+            xaException.initCause(t);
+            throw xaException;
          }
       }
       finally
@@ -1277,10 +1280,12 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       {
          sessionContext.xaForget(xid);
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
       finally
       {
@@ -1296,10 +1301,12 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       {
          return sessionContext.recoverSessionTimeout();
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
    }
 
@@ -1311,10 +1318,12 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       {
          return sessionContext.configureTransactionTimeout(seconds);
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
    }
 
@@ -1360,39 +1369,47 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       {
          return sessionContext.xaPrepare(xid);
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
+         if (t instanceof HornetQException)
          {
-            // Unblocked on failover
-            try
+            HornetQException e = (HornetQException) t;
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
             {
-               // will retry once after failover & unblock
-               return sessionContext.xaPrepare(xid);
-            }
-            catch (HornetQException e1)
-            {
-               // ignore and rollback
-            }
-            HornetQClientLogger.LOGGER.failoverDuringPrepareRollingBack();
-            try
-            {
-               rollback(false);
-            }
-            catch (HornetQException e2)
-            {
-               throw new XAException(XAException.XAER_RMERR);
-            }
+               // Unblocked on failover
+               try
+               {
+                  // will retry once after failover & unblock
+                  return sessionContext.xaPrepare(xid);
+               }
+               catch (Throwable t1)
+               {
+                  // ignore and rollback
+               }
+               HornetQClientLogger.LOGGER.failoverDuringPrepareRollingBack();
+               try
+               {
+                  rollback(false);
+               }
+               catch (Throwable t1)
+               {
+                  XAException xaException = new XAException(XAException.XAER_RMERR);
+                  xaException.initCause(t1);
+                  throw xaException;
+               }
 
-            HornetQClientLogger.LOGGER.errorDuringPrepare(e);
+               HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
-            throw new XAException(XAException.XA_RBOTHER);
+               throw new XAException(XAException.XA_RBOTHER);
+            }
          }
 
-         HornetQClientLogger.LOGGER.errorDuringPrepare(e);
+         HornetQClientLogger.LOGGER.errorDuringPrepare(t);
 
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
       finally
       {
@@ -1411,10 +1428,12 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
          {
             return sessionContext.xaScan();
          }
-         catch (HornetQException e)
+         catch (Throwable t)
          {
-            // This should never occur
-            throw new XAException(XAException.XAER_RMERR);
+            // This could occur if the TM interrupts the thread
+            XAException xaException = new XAException(XAException.XAER_RMERR);
+            xaException.initCause(t);
+            throw xaException;
          }
       }
 
@@ -1461,15 +1480,21 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
 
          workDone = false;
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
+         if (t instanceof HornetQException)
          {
-            // Unblocked on failover
-            throw new XAException(XAException.XA_RETRY);
+            HornetQException e = (HornetQException) t;
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
+            {
+               // Unblocked on failover
+               throw new XAException(XAException.XA_RETRY);
+            }
          }
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
    }
 
@@ -1484,28 +1509,35 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
 
       try
       {
-
          sessionContext.xaStart(xid, flags);
 
          this.currentXID = xid;
       }
-      catch (HornetQException e)
+      catch (Throwable t)
       {
-         // we can retry this only because we know for sure that no work would have been done
-         if (e.getType() == HornetQExceptionType.UNBLOCKED)
+         if (t instanceof HornetQException)
          {
-            try
+            HornetQException e = (HornetQException) t;
+            // we can retry this only because we know for sure that no work would have been done
+            if (e.getType() == HornetQExceptionType.UNBLOCKED)
             {
-               sessionContext.xaStart(xid, flags);
-            }
-            catch (HornetQException e1)
-            {
-               // This should never occur
-               throw new XAException(XAException.XAER_RMERR);
+               try
+               {
+                  sessionContext.xaStart(xid, flags);
+               }
+               catch (Throwable t1)
+               {
+                  // This could occur if the TM interrupts the thread
+                  XAException xaException = new XAException(XAException.XAER_RMERR);
+                  xaException.initCause(t1);
+                  throw xaException;
+               }
             }
          }
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // This could occur if the TM interrupts the thread
+         XAException xaException = new XAException(XAException.XAER_RMERR);
+         xaException.initCause(t);
+         throw xaException;
       }
    }
 
