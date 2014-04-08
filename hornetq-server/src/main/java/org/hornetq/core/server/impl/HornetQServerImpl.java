@@ -98,7 +98,6 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl;
@@ -133,11 +132,12 @@ import org.hornetq.core.server.cluster.BackupManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.group.impl.LocalGroupingHandler;
 import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
-import org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum.BACKUP_ACTIVATION;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.impl.ManagementServiceImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -159,9 +159,9 @@ import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
 
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
-import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.STOP;
+import static org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum.BACKUP_ACTIVATION.FAILURE_REPLICATING;
+import static org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum.BACKUP_ACTIVATION.FAIL_OVER;
+import static org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum.BACKUP_ACTIVATION.STOP;
 
 /**
  * The HornetQ server implementation
@@ -2536,8 +2536,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private final class SharedNothingBackupActivation implements Activation
    {
-      private volatile ServerLocatorInternal serverLocator0;
-      private volatile QuorumManager quorumManager;
+      SharedNothingBackupQuorum backupQuorum;
       private final boolean attemptFailBack;
       private String nodeID;
       ClientSessionFactoryInternal liveServerSessionFactory;
@@ -2564,21 +2563,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               //we use the cluster connection configuration to connect to the cluster to find the live node we want to
-               //connect to.
-               ClusterConnectionConfiguration config =
-                  ConfigurationUtils.getReplicationClusterConfiguration(configuration);
-               if (serverLocator0 != null)
-               {
-                  serverLocator0.close();
-               }
-               serverLocator0 = getLocator(config);
             }
-            //if the cluster isn't available we want to hang around until it is
-            serverLocator0.setReconnectAttempts(-1);
-            serverLocator0.setInitialConnectAttempts(-1);
-            //this is used for replication so need to use the server packet decoder
-            serverLocator0.setPacketDecoder(ServerPacketDecoder.INSTANCE);
 
             if (!initialisePart1())
                return;
@@ -2587,37 +2572,25 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(serverLocator0, threadPool, scheduledPool, getIdentity(), nodeManager);
-               serverLocator0.addClusterTopologyListener(quorumManager);
+               backupQuorum = new SharedNothingBackupQuorum(nodeManager, scheduledPool);
+               clusterManager.getQuorumManager().registerQuorum(backupQuorum);
             }
 
             //use a Node Locator to connect to the cluster
             LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null ?
-               new AnyLiveNodeLocatorForReplication(quorumManager, HornetQServerImpl.this) :
-               new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), quorumManager);
-            serverLocator0.addClusterTopologyListener(nodeLocator);
-            do
-            {
-               try
-               {
-                  nodeLocator.connectToCluster(serverLocator0);
-                  break;
-               }
-               catch (HornetQException e)
-               {
-                  if (closed)
-                     return;
-                  Thread.sleep(serverLocator0.getRetryInterval());
-               }
-            } while (true);
+               new AnyLiveNodeLocatorForReplication(backupQuorum, HornetQServerImpl.this) :
+               new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), backupQuorum);
+            clusterManager.getQuorumManager().addClusterTopologyListener(nodeLocator);
+            //todo do we actually need to wait?
+            clusterManager.getQuorumManager().awaitConnectionToCluster();
 
-            serverLocator0.addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
+            clusterManager.getQuorumManager().addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
             // nodeManager.startBackup();
 
             backupManager.start();
 
-            replicationEndpoint.setQuorumManager(quorumManager);
+            replicationEndpoint.setBackupQuorum(backupQuorum);
             replicationEndpoint.setExecutor(executorFactory.getExecutor());
             EndpointConnector endpointConnector = new EndpointConnector();
 
@@ -2646,8 +2619,7 @@ public class HornetQServerImpl implements HornetQServer
 
                try
                {
-                  liveServerSessionFactory
-                     = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getA(), 0, false);
+                  liveServerSessionFactory =  clusterManager.getQuorumManager().connectToNode(possibleLive.getA());
                }
                catch (Exception e)
                {
@@ -2655,8 +2627,7 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      try
                      {
-                        liveServerSessionFactory
-                           = (ClientSessionFactoryInternal) serverLocator0.createSessionFactory(possibleLive.getB(), 0, false);
+                        liveServerSessionFactory = clusterManager.getQuorumManager().connectToNode(possibleLive.getB());
                      }
                      catch (Exception e1)
                      {
@@ -2668,7 +2639,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   //its ok to retry here since we haven't started replication yet
                   //it may just be the server has gone since discovery
-                  Thread.sleep(serverLocator0.getRetryInterval());
+                  Thread.sleep(clusterManager.getQuorumManager().getRetryInterval());
                   signal = BACKUP_ACTIVATION.ALREADY_REPLICATING;
                   continue;
                }
@@ -2677,10 +2648,9 @@ public class HornetQServerImpl implements HornetQServer
                /**
                 * Wait for a signal from the the quorum manager, at this point if replication has been successful we can
                 * fail over or if there is an error trying to replicate (such as already replicating) we try the
-                * process again on the next live server.  All the action happens inside
-                * {@link QuorumManager}
+                * process again on the next live server.  All the action happens inside {@link BackupQuorum}
                 */
-               signal = quorumManager.waitForStatusChange();
+               signal = backupQuorum.waitForStatusChange();
                /**
                 * replicationEndpoint will be holding lots of open files. Make sure they get
                 * closed/sync'ed.
@@ -2716,7 +2686,7 @@ public class HornetQServerImpl implements HornetQServer
                //ok, this live is no good, let's reset and try again
                //close this session factory, we're done with it
                liveServerSessionFactory.close();
-               quorumManager.reset();
+               backupQuorum.reset();
                if (replicationEndpoint.getChannel() != null)
                {
                   replicationEndpoint.getChannel().close();
@@ -2725,6 +2695,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             while (signal == BACKUP_ACTIVATION.ALREADY_REPLICATING);
 
+            clusterManager.getQuorumManager().unRegisterQuorum(backupQuorum);
 
             if (!isRemoteBackupUpToDate())
             {
@@ -2751,23 +2722,14 @@ public class HornetQServerImpl implements HornetQServer
             HornetQServerLogger.LOGGER.initializationError(e);
             e.printStackTrace();
          }
-         finally
-         {
-            if (serverLocator0 != null)
-               serverLocator0.close();
-         }
       }
 
       public void close(final boolean permanently) throws Exception
       {
          synchronized (this)
          {
-            if (quorumManager != null)
-               quorumManager.causeExit(STOP);
-            if (serverLocator0 != null)
-            {
-               serverLocator0.close();
-            }
+            if (backupQuorum != null)
+               backupQuorum.causeExit(STOP);
             closed = true;
          }
 
@@ -2812,11 +2774,11 @@ public class HornetQServerImpl implements HornetQServer
       {
          if (finalMessage == null)
          {
-            quorumManager.causeExit(FAILURE_REPLICATING);
+            backupQuorum.causeExit(FAILURE_REPLICATING);
          }
          else
          {
-            quorumManager.failOver(finalMessage);
+            backupQuorum.failOver(finalMessage);
          }
       }
 
@@ -2829,10 +2791,9 @@ public class HornetQServerImpl implements HornetQServer
             {
                //we should only try once, if its not there we should move on.
                liveServerSessionFactory.setReconnectAttempts(1);
-               quorumManager.setSessionFactory(liveServerSessionFactory);
                //get the connection and request replication to live
                CoreRemotingConnection liveConnection = (CoreRemotingConnection)liveServerSessionFactory.getConnection();
-               quorumManager.addAsFailureListenerOf(liveConnection);
+               backupQuorum.setSessionFactory(liveServerSessionFactory);
                Channel pingChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
                Channel replicationChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.REPLICATION.id, -1);
                connectToReplicationEndpoint(replicationChannel);
@@ -2843,7 +2804,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                //we shouldn't stop the server just mark the connector as tried and unavailable
                HornetQServerLogger.LOGGER.replicationStartProblem(e);
-               quorumManager.causeExit(FAILURE_REPLICATING);
+               backupQuorum.causeExit(FAILURE_REPLICATING);
             }
          }
 

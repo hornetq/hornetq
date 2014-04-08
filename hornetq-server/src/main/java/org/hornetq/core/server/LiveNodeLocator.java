@@ -18,7 +18,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.server.impl.QuorumManager;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 
 /**
  * A class that will locate a particular live server running in a cluster. How this live is chosen
@@ -31,11 +31,11 @@ import org.hornetq.core.server.impl.QuorumManager;
  */
 public abstract class LiveNodeLocator implements ClusterTopologyListener
 {
-   private QuorumManager quorumManager;
+   private SharedNothingBackupQuorum backupQuorum;
 
-   public LiveNodeLocator(QuorumManager quorumManager)
+   public LiveNodeLocator(SharedNothingBackupQuorum backupQuorum)
    {
-      this.quorumManager = quorumManager;
+      this.backupQuorum = backupQuorum;
    }
 
    /**
@@ -70,15 +70,15 @@ public abstract class LiveNodeLocator implements ClusterTopologyListener
     */
    public void notifyRegistrationFailed(boolean alreadyReplicating)
    {
-      if (quorumManager != null)
+      if (backupQuorum != null)
       {
          if (alreadyReplicating)
          {
-            quorumManager.notifyAlreadyReplicating();
+            backupQuorum.notifyAlreadyReplicating();
          }
          else
          {
-            quorumManager.notifyRegistrationFailed();
+            backupQuorum.notifyRegistrationFailed();
          }
       }
    }

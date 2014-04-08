@@ -72,8 +72,8 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.impl.HornetQServerImpl;
-import org.hornetq.core.server.impl.QuorumManager;
 
 /**
  * Handles all the synchronization necessary for replication on the backup side (that is the
@@ -119,7 +119,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
    private boolean deletePages = true;
    private volatile boolean started;
 
-   private QuorumManager quorumManager;
+   private SharedNothingBackupQuorum backupQuorum;
 
    private Executor executor;
 
@@ -480,7 +480,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
       }
 
       journalsHolder = null;
-      quorumManager.setLiveID(liveID);
+      backupQuorum.liveIDSet(liveID);
       server.setRemoteBackupUpToDate();
       HornetQServerLogger.LOGGER.backupServerSynched(server);
       return;
@@ -594,7 +594,7 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
                {
                   // At the start of replication, we still do not know which is the nodeID that the live uses.
                   // This is the point where the backup gets this information.
-                  quorumManager.setLiveID(packet.getNodeID());
+                  backupQuorum.liveIDSet(packet.getNodeID());
                }
                Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(journalContent);
 
@@ -934,11 +934,11 @@ public final class ReplicationEndpoint implements ChannelHandler, HornetQCompone
     * Sets the quorumManager used by the server in the replicationEndpoint. It is used to inform the
     * backup server of the live's nodeID.
     *
-    * @param quorumManager
+    * @param backupQuorum
     */
-   public synchronized void setQuorumManager(QuorumManager quorumManager)
+   public synchronized void setBackupQuorum(SharedNothingBackupQuorum backupQuorum)
    {
-      this.quorumManager = quorumManager;
+      this.backupQuorum = backupQuorum;
    }
 
    /**

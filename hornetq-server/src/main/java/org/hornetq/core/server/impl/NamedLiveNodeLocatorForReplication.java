@@ -23,6 +23,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.core.server.LiveNodeLocator;
+import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 
 /**
  * NamedLiveNodeLocatorForReplication looks for a live server in the cluster with a specific backupGroupName
@@ -39,7 +40,7 @@ public class NamedLiveNodeLocatorForReplication extends LiveNodeLocator
 
    private String nodeID;
 
-   public NamedLiveNodeLocatorForReplication(String backupGroupName, QuorumManager quorumManager)
+   public NamedLiveNodeLocatorForReplication(String backupGroupName, SharedNothingBackupQuorum quorumManager)
    {
       super(quorumManager);
       this.backupGroupName = backupGroupName;
