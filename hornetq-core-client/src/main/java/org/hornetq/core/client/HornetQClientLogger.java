@@ -138,7 +138,7 @@ public interface HornetQClientLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 212015, value = "failover occurred during prepare rolling back", format = Message.Format.MESSAGE_FORMAT)
-   void errorDuringPrepare(@Cause Exception e);
+   void errorDuringPrepare(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(
