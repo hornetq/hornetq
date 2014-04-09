@@ -1652,21 +1652,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          routingContext.setTransaction(tx);
       }
 
-      postOffice.route(msg, routingContext, direct);
-
-      Pair<UUID, AtomicLong> value = targetAddressInfos.get(msg.getAddress());
-
-      if (value == null)
+      try
       {
-         targetAddressInfos.put(msg.getAddress(), new Pair<UUID, AtomicLong>(msg.getUserID(), new AtomicLong(1)));
-      }
-      else
-      {
-         value.setA(msg.getUserID());
-         value.getB().incrementAndGet();
-      }
+         postOffice.route(msg, routingContext, direct);
 
-      routingContext.clear();
+         Pair<UUID, AtomicLong> value = targetAddressInfos.get(msg.getAddress());
+
+         if (value == null)
+         {
+            targetAddressInfos.put(msg.getAddress(), new Pair<UUID, AtomicLong>(msg.getUserID(), new AtomicLong(1)));
+         }
+         else
+         {
+            value.setA(msg.getUserID());
+            value.getB().incrementAndGet();
+         }
+      }
+      finally
+      {
+         routingContext.clear();
+      }
    }
 
 

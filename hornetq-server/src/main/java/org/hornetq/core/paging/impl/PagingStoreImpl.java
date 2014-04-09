@@ -27,6 +27,7 @@ import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -832,6 +833,11 @@ public class PagingStoreImpl implements PagingStore
             if (message.isLargeMessage())
             {
                ((LargeServerMessage)message).deleteFile();
+            }
+
+            if (addressFullMessagePolicy == AddressFullMessagePolicy.FAIL)
+            {
+               throw HornetQMessageBundle.BUNDLE.addressIsFull(address.toString());
             }
 
             // Address is full, we just pretend we are paging, and drop the data

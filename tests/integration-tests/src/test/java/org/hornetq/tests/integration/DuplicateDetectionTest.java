@@ -524,6 +524,52 @@ public class DuplicateDetectionTest extends ServiceTestBase
       locator.close();
    }
 
+   @Test
+   public void testRollbackThenSend() throws Exception
+   {
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, false, false);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID1 = new SimpleString("abcdefg");
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID1.getData());
+      message.putStringProperty("key", dupID1.toString());
+      producer.send(message);
+
+      session.rollback();
+
+      message = createMessage(session, 0);
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID1.getData());
+      message.putStringProperty("key", dupID1.toString());
+      producer.send(message);
+
+      session.commit();
+
+
+
+      message = consumer.receive(5000);
+      assertNotNull(message);
+      assertTrue(message.getStringProperty("key").equals(dupID1.toString()));
+      session.close();
+
+      sf.close();
+
+      locator.close();
+   }
+
    /*
     * Entire transaction should be rejected on duplicate detection
     * Even if not all entries have dupl id header

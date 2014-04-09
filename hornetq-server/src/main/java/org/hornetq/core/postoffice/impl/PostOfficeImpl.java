@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.HornetQNonExistentQueueException;
@@ -701,7 +702,22 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-         processRoute(message, context, direct);
+         try
+         {
+            processRoute(message, context, direct);
+         }
+         catch (HornetQAddressFullException e)
+         {
+            if (startedTX.get())
+            {
+               context.getTransaction().rollback();
+            }
+            else if (context.getTransaction() != null)
+            {
+               context.getTransaction().markAsRollbackOnly(e);
+            }
+            throw e;
+         }
       }
 
       if (startedTX.get())
