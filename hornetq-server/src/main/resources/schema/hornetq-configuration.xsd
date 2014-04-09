@@ -260,7 +260,7 @@
                      default="true" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="connection-ttl.async-connection-execution"
                           hq:field_name="DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED">
-            <xsd:documentation>Should incoming packets on the server be handed off to a thread from
+            <xsd:documentation>should certain incoming packets on the server be handed off to a thread from
             the thread pool for processing or should they be handled on the remoting thread?
             </xsd:documentation>
           </xsd:annotation>
