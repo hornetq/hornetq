@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -125,6 +126,105 @@ public class DuplicateDetectionTest extends ServiceTestBase
       sf.close();
 
       locator.close();
+   }
+
+   @Test
+   public void testDuplicateIDCacheMemoryRetentionForNonTemporaryQueues() throws Exception
+   {
+      testDuplicateIDCacheMemoryRetention(false);
+   }
+
+   @Test
+   public void testDuplicateIDCacheMemoryRetentionForTemporaryQueues() throws Exception
+   {
+      testDuplicateIDCacheMemoryRetention(true);
+   }
+
+   @Test
+   public void testDuplicateIDCacheJournalRetentionForNonTemporaryQueues() throws Exception
+   {
+      testDuplicateIDCacheMemoryRetention(false);
+
+      messagingService.stop();
+
+      messagingService.start();
+
+      Assert.assertEquals(0, ((PostOfficeImpl) messagingService.getPostOffice()).getDuplicateIDCaches().size());
+   }
+
+   @Test
+   public void testDuplicateIDCacheJournalRetentionForTemporaryQueues() throws Exception
+   {
+      testDuplicateIDCacheMemoryRetention(true);
+
+      messagingService.stop();
+
+      messagingService.start();
+
+      Assert.assertEquals(0, ((PostOfficeImpl) messagingService.getPostOffice()).getDuplicateIDCaches().size());
+   }
+
+   public void testDuplicateIDCacheMemoryRetention(boolean temporary) throws Exception
+   {
+      final int TEST_SIZE = 100;
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.start();
+
+      Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+
+      final SimpleString addressName = new SimpleString("DuplicateDetectionTestAddress");
+
+      for (int i = 0; i < TEST_SIZE; i++)
+      {
+         final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue_" + i);
+
+         if (temporary)
+         {
+            session.createTemporaryQueue(addressName, queueName, null);
+         }
+         else
+         {
+            session.createQueue(addressName, queueName, null, true);
+         }
+
+         ClientProducer producer = session.createProducer(addressName);
+
+         ClientConsumer consumer = session.createConsumer(queueName);
+
+         ClientMessage message = createMessage(session, 1);
+         SimpleString dupID = new SimpleString("abcdefg");
+         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+         producer.send(message);
+         ClientMessage message2 = consumer.receive(1000);
+         Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
+         message = createMessage(session, 2);
+         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+         producer.send(message);
+         message2 = consumer.receiveImmediate();
+         Assert.assertNull(message2);
+
+         producer.close();
+         consumer.close();
+
+         Assert.assertEquals(1, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+         session.deleteQueue(queueName);
+         Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+      }
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+
+      Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
    }
 
    @Test
@@ -557,7 +657,6 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
 
       session.commit();
-
 
 
       message = consumer.receive(5000);

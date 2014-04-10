@@ -34,7 +34,7 @@ import org.hornetq.core.transaction.TransactionOperationAbstract;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- * Created 8 Dec 2008 16:35:55
+ *         Created 8 Dec 2008 16:35:55
  */
 public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
@@ -118,7 +118,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
    }
 
 
-   public void deleteFromCache(byte [] duplicateID) throws Exception
+   public void deleteFromCache(byte[] duplicateID) throws Exception
    {
       ByteArrayHolder bah = new ByteArrayHolder(duplicateID);
 
@@ -242,6 +242,23 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
+   public void clear() throws Exception
+   {
+      synchronized (this)
+      {
+         long tx = storageManager.generateUniqueID();
+         for (Pair<ByteArrayHolder, Long> id : ids)
+         {
+            storageManager.deleteDuplicateIDTransactional(tx, id.getB());
+         }
+         storageManager.commit(tx);
+
+         ids.clear();
+         cache.clear();
+         pos = 0;
+      }
+   }
+
    private final class AddDuplicateIDOperation extends TransactionOperationAbstract
    {
       final byte[] duplID;
@@ -297,7 +314,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
          if (other instanceof ByteArrayHolder)
          {
-            ByteArrayHolder s = (ByteArrayHolder)other;
+            ByteArrayHolder s = (ByteArrayHolder) other;
 
             if (bytes.length != s.bytes.length)
             {
