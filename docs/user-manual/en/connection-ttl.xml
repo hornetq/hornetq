@@ -168,16 +168,36 @@ java.lang.Exception
     </section>
     <section id="connection-ttl.async-connection-execution">
         <title>Configuring Asynchronous Connection Execution</title>
-        <para>By default, packets received on the server side are executed on the remoting
-            thread.</para>
-        <para>It is possible instead to use a thread from a thread pool to handle some packets so
-            that the remoting thread is not tied up for too long. However, please note that
-            processing operations asynchronously on another thread adds a little more latency.
-            Please note that most short running operations are always handled on the remoting thread for performance reasons.
-           
-            To enable asynchronous connection execution, set the parameter <literal
-                >async-connection-execution-enabled</literal> in <literal
-                >hornetq-configuration.xml</literal> to <literal>true</literal> (default value is
-                <literal>true</literal>).</para>
+        <para>Most packets received on the server side are executed on the remoting thread. These packets
+            represent short-running operations and are always executed on the remoting thread for
+            performance reasons.</para>
+        <para>However, by default some kinds of packets are executed using a thread from a
+            thread pool so that the remoting thread is not tied up for too long. Please note that
+            processing operations asynchronously on another thread adds a little more latency. These packets
+            are:</para>
+        <itemizedlist>
+            <listitem>
+                <para><literal>org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage</literal></para>
+            </listitem>
+            <listitem>
+               <para><literal>org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage</literal></para>
+            </listitem>
+            <listitem>
+               <para><literal>org.hornetq.core.protocol.core.impl.wireformat.SessionCommitMessage</literal></para>
+            </listitem>
+            <listitem>
+               <para><literal>org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage</literal></para>
+            </listitem>
+            <listitem>
+                <para><literal>org.hornetq.core.protocol.core.impl.wireformat.SessionXAPrepareMessage</literal></para>
+            </listitem>
+            <listitem>
+               <para><literal>org.hornetq.core.protocol.core.impl.wireformat.SessionXARollbackMessage</literal></para>
+            </listitem>
+        </itemizedlist>
+        <para>To disable asynchronous connection execution, set the parameter
+           <literal>async-connection-execution-enabled</literal> in
+           <literal>hornetq-configuration.xml</literal> to <literal>false</literal> (default value is
+           <literal>true</literal>).</para>
     </section>
 </chapter>

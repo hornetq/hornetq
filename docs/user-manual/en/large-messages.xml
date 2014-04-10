@@ -61,6 +61,13 @@
         <para>Any message larger than a certain size is considered a large message. Large messages
             will be split up and sent in fragments. This is determined by the parameter <literal
                 >min-large-message-size</literal></para>
+        <note>
+           <para>HornetQ messages are encoded using 2 bytes per character so if the message data is filled
+              with ASCII characters (which are 1 byte) the size of the resulting HornetQ message would roughly
+              double. This is important when calculating the size of a "large" message as it may appear to be
+              less than the <literal>min-large-message-size</literal> before it is sent, but it then turns into
+              a "large" message once it is encoded.</para>
+        </note>
         <para>The default value is 100KiB.</para>
         <section id="large-messages.core.config">
             <title>Using Core API</title>

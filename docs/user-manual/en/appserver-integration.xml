@@ -799,13 +799,21 @@ private ConnectionFactory connectionFactory;</programlisting>
                                 <entry>DestinationType</entry>
                                 <entry>String</entry>
                                 <entry>type of the destination, either <literal>javax.jms.Queue</literal> or <literal>javax.jms.Topic</literal>
-                                 (default is javax.jms.Queue)</entry>
+                                   (default is javax.jms.Queue)</entry>
                             </row>
                             <row>
                                 <entry>AcknowledgeMode</entry>
                                 <entry>String</entry>
                                 <entry>The Acknowledgment mode, either <literal>Auto-acknowledge</literal> or <literal>Dups-ok-acknowledge</literal>
-                                (default is Auto-acknowledge). <literal>AUTO_ACKNOWLEDGE</literal> and <literal>DUPS_OK_ACKNOWLEDGE</literal> are acceptable values.</entry>
+                                   (default is Auto-acknowledge). <literal>AUTO_ACKNOWLEDGE</literal> and <literal>DUPS_OK_ACKNOWLEDGE</literal> are acceptable values.</entry>
+                            </row>
+                            <row>
+                                <entry>JndiParams</entry>
+                                <entry>String</entry>
+                                <entry>A semicolon (';') delimited string of name=value pairs which represent the properties to be used for the destination JNDI
+                                   look up. The properties depends on the JNDI implementation of the server hosting HornetQ. Typically only be used when the MDB is
+                                   configured to consume from a remote destination and needs to look up a JNDI reference rather than the HornetQ name of the
+                                   destination. Only relevant when <literal>useJNDI</literal> is <literal>true</literal> (default is an empty string).</entry>
                             </row>
                             <row>
                                 <entry>MaxSession</entry>
