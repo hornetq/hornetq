@@ -82,9 +82,16 @@ public class BackupRecoveryJournalLoader extends PostOfficeJournalLoader
    public void postLoad(Journal messageJournal, ResourceManager resourceManager, Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager);
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
-      scaleDownHandler.scaleDown(sessionFactory);
-      scaleDownHandler.scaleDownTransactions(sessionFactory, resourceManager);
-      scaleDownHandler.scaleDownDuplicateIDs(duplicateIDMap, sessionFactory, parentServer.getConfiguration().getManagementAddress());
+      try (ClientSessionFactory sessionFactory = locator.createSessionFactory())
+      {
+         scaleDownHandler.scaleDown(sessionFactory, resourceManager, duplicateIDMap, parentServer.getConfiguration().getManagementAddress(), parentServer.getNodeID());
+      }
+   }
+
+   @Override
+   public void cleanUp()
+   {
+      super.cleanUp();
+      locator.close();
    }
 }

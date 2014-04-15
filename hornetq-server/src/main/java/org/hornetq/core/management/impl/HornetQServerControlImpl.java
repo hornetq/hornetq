@@ -307,37 +307,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
-   public void setScaleDown(boolean scaleDown)
-   {
-      checkStarted();
-
-      clearIO();
-      try
-      {
-         configuration.setScaleDown(scaleDown);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
-
-   public boolean isScaleDown()
-   {
-      checkStarted();
-
-      clearIO();
-      try
-      {
-         return configuration.isScaleDown();
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
    public int getJournalMaxIO()
    {
       checkStarted();

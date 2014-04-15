@@ -1,7 +1,7 @@
 <configuration
    xmlns="urn:hornetq"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="urn:hornetq ../../src/config/common/schema/hornetq-configuration.xsd">
+   xsi:schemaLocation="urn:hornetq ../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
       <name>SomeNameForUseOnTheApplicationServer</name>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>
       <thread-pool-max-size>54321</thread-pool-max-size>
@@ -171,6 +171,25 @@
              <discovery-group-ref discovery-group-name="dg1"/>
          </bridge>
       </bridges>
+      <ha-policy template="COLOCATED_REPLICATED">
+         <policy-type>COLOCATED_REPLICATED</policy-type>
+         <request-backup>true</request-backup>
+         <backup-request-retries>33</backup-request-retries>
+         <backup-request-retry-interval>1234</backup-request-retry-interval>
+         <max-backups>12</max-backups>
+         <backup-port-offset>1002</backup-port-offset>
+         <backup-strategy>SCALE_DOWN</backup-strategy>
+         <scale-down-discovery-group>wahey!</scale-down-discovery-group>
+         <scale-down-group-name>boo!</scale-down-group-name>
+         <scale-down-connectors>
+            <connector-ref>sd-connector1</connector-ref>
+            <connector-ref>sd-connector2</connector-ref>
+         </scale-down-connectors>
+         <remote-connectors>
+            <connector-ref>remote-connector1</connector-ref>
+            <connector-ref>remote-connector2</connector-ref>
+         </remote-connectors>
+      </ha-policy>
       <cluster-connections>
          <cluster-connection name="cluster-connection1">
          <address>queues1</address>

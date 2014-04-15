@@ -71,6 +71,22 @@ public final class HornetQDefaultConfiguration
       return PROP_PASSWORD_CODEC;
    }
 
+   /**
+    * what kind of HA Policy should we use
+    */
+   public static String getDefaultHapolicyType()
+   {
+     return DEFAULT_HAPOLICY_TYPE;
+   }
+
+   /**
+    * The backup strategy to use if we are a backup or for any colocated backups.
+    */
+   public static String getDefaultHapolicyBackupStrategy()
+   {
+     return DEFAULT_HAPOLICY_BACKUP_STRATEGY;
+   }
+
    //shared by client and core/server
    // XXX not on schema?
    private static long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
@@ -91,3 +107,10 @@ public final class HornetQDefaultConfiguration
    //properties passed to acceptor/connectors.
    private static String PROP_MASK_PASSWORD = "hornetq.usemaskedpassword";
    private static String PROP_PASSWORD_CODEC = "hornetq.passwordcodec";
+
+
+   // what kind of HA Policy should we use
+   private static String DEFAULT_HAPOLICY_TYPE = "LIVE";
+
+   // The backup strategy to use if we are a backup or for any colocated backups.
+   private static String DEFAULT_HAPOLICY_BACKUP_STRATEGY = "FULL";

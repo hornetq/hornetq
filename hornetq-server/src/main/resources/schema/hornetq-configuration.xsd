@@ -569,6 +569,13 @@
           </xsd:complexType>
         </xsd:element>
 
+         <xsd:element name="ha-policy" type="haPolicyType" maxOccurs="1" minOccurs="0">
+            <xsd:annotation hq:linkend="ha-policy">
+               <xsd:documentation>The HA policy of this server
+               </xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
+
         <xsd:element name="cluster-connections" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="clusters">
             <xsd:documentation>a list of cluster connections
@@ -1356,6 +1363,104 @@
 
   </xsd:complexType>
 
+  <xsd:complexType name="haPolicyType">
+    <xsd:all>
+      <xsd:element name="policy-type" minOccurs="0" maxOccurs="1" default="LIVE">
+         <xsd:annotation>
+            <xsd:documentation>what kind of HA Policy should we use</xsd:documentation>
+         </xsd:annotation>
+         <xsd:simpleType>
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="LIVE"/>
+               <xsd:enumeration value="BACKUP_REPLICATED"/>
+               <xsd:enumeration value="BACKUP_SHARED_STORE"/>
+               <xsd:enumeration value="COLOCATED_REPLICATED"/>
+               <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
+            </xsd:restriction>
+         </xsd:simpleType>
+      </xsd:element>
+      <xsd:element name="request-backup" type="xsd:boolean" minOccurs="0" maxOccurs="1" default="false">
+        <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_REQUEST_BACKUP">
+           <xsd:documentation>If true then the server will request a backup on another node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backup-request-retries" type="xsd:int" minOccurs="0" maxOccurs="1" default="-1">
+         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRIES">
+            <xsd:documentation>How many times the live server will try to request a backup, -1 means for ever.</xsd:documentation>
+         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backup-request-retry-interval" type="xsd:long" minOccurs="0" maxOccurs="1" default="5000">
+         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRY_INTERVAL">
+            <xsd:documentation>How long to wait for retries between attempts to request a backup server.</xsd:documentation>
+         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="max-backups" type="xsd:int" minOccurs="0" maxOccurs="1" default="1">
+         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_MAX_BACKUPS">
+            <xsd:documentation>Whether or not this live server will accept backup requests from other live servers.</xsd:documentation>
+         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backup-port-offset" type="xsd:int" minOccurs="0" maxOccurs="1" default="100">
+         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_PORT_OFFSET">
+            <xsd:documentation>The offset to use for the Connectors and Acceptors when creating a new backup server.</xsd:documentation>
+         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backup-strategy" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>The backup strategy to use if we are a backup or for any colocated backups.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleType>
+          <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="FULL" />
+            <xsd:enumeration value="SCALE_DOWN"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+      </xsd:element>
+      <xsd:element name="scale-down-connectors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or first invm connector will be used</xsd:documentation>
+        </xsd:annotation>
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="scale-down-discovery-group" type="xsd:string" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+           <xsd:documentation>The discovery group to use for scale down, if not supplied then the scale-down-connectors or first invm connector will be used</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="scale-down-group-name" type="xsd:string" minOccurs="0" maxOccurs="1">
+         <xsd:annotation>
+            <xsd:documentation>The scale down group to scale down to, a server will only scale down to a server within the same group</xsd:documentation>
+         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
+         <xsd:annotation>
+            <xsd:documentation>the remote connectors that shouldnt have their ports offset, typically remote connectors or the connector used in the cluster connection if scalinmg down</xsd:documentation>
+         </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:all>
+     <xsd:attribute name="template" use="optional">
+        <xsd:annotation>
+           <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleType>
+           <xsd:restriction base="xsd:string">
+             <xsd:enumeration value="LIVE"/>
+             <xsd:enumeration value="BACKUP_REPLICATED"/>
+             <xsd:enumeration value="BACKUP_SHARED_STORE"/>
+             <xsd:enumeration value="COLOCATED_REPLICATED"/>
+             <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
+           </xsd:restriction>
+        </xsd:simpleType>
+     </xsd:attribute>
+  </xsd:complexType>
   <xsd:complexType name="groupingHandlerType">
     <xsd:all>
       <xsd:element name="type" maxOccurs="1" minOccurs="1">
@@ -1592,5 +1697,4 @@
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>
-
 </xsd:schema>

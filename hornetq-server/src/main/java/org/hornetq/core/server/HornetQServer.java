@@ -74,6 +74,8 @@ public interface HornetQServer extends HornetQComponent
 
    String describe();
 
+   void addActivationParam(String key, Object val);
+
    Configuration getConfiguration();
 
    RemotingService getRemotingService();
@@ -262,4 +264,5 @@ public interface HornetQServer extends HornetQComponent
    * */
    void removeProtocolManagerFactory(ProtocolManagerFactory factory);
 
+   HornetQServer createBackupServer(Configuration configuration);
 }

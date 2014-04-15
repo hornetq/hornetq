@@ -23,6 +23,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -56,20 +57,6 @@ public interface Configuration extends Serializable
     * @param nodeGroupName the node group name
     */
    void setBackupGroupName(String nodeGroupName);
-
-   /**
-    * returns the name used to group
-    *
-    * @return the name of the group
-    */
-   String getScaleDownGroupName();
-
-   /**
-    * Used to configure groups of live/backup servers.
-    *
-    * @param nodeGroupName the node group name
-    */
-   void setScaleDownGroupName(String nodeGroupName);
 
    /**
     * Returns whether this server is clustered. <br>
@@ -459,19 +446,6 @@ public interface Configuration extends Serializable
     * to {@code true}.
     */
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
-
-   /**
-    * Should we scaleDown our messages when the server is shutdown cleanly.
-    *
-    * @return true if server should scaleDown its messages on clean shutdown
-    * @see #setScaleDown(boolean)
-    */
-   boolean isScaleDown();
-
-   /**
-    * Sets whether to allow the server to scaleDown its messages on server shutdown.
-    */
-   void setScaleDown(boolean scaleDown);
 
    /**
     * Sets the cluster password for this server.
@@ -1015,4 +989,8 @@ public interface Configuration extends Serializable
    void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout);
 
    long getJournalLockAcquisitionTimeout();
+
+   HAPolicy getHAPolicy();
+
+   void setHAPolicy(HAPolicy haPolicy);
 }

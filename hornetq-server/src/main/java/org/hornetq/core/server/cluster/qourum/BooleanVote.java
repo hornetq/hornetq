@@ -12,16 +12,15 @@
  */
 package org.hornetq.core.server.cluster.qourum;
 
+import org.hornetq.api.core.HornetQBuffer;
+
+import java.util.Map;
 
 /**
- * a simpel yes.no vote
+ * a simple yes.no vote
  */
-public final class BooleanVote implements Vote<Boolean>
+public final class BooleanVote extends Vote<Boolean>
 {
-   public static final BooleanVote TRUE_VOTE = new BooleanVote(true);
-
-   public static final BooleanVote FALSE_VOTE = new BooleanVote(false);
-
    private boolean vote;
 
    public BooleanVote(boolean vote)
@@ -39,4 +38,23 @@ public final class BooleanVote implements Vote<Boolean>
    {
       return vote;
    }
+
+   @Override
+   public Map<String, Object> getVoteMap()
+   {
+      return null;
+   }
+
+   @Override
+   public void encode(HornetQBuffer buff)
+   {
+      buff.writeBoolean(vote);
+   }
+
+   @Override
+   public void decode(HornetQBuffer buff)
+   {
+      vote = buff.readBoolean();
+   }
+
 }

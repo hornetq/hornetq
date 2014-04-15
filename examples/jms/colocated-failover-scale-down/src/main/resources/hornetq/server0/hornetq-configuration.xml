@@ -1,7 +1,7 @@
 <configuration xmlns="urn:hornetq"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
-   
+
 
    <bindings-directory>target/server0/data/messaging/bindings</bindings-directory>
 
@@ -18,7 +18,7 @@
          <param key="port" value="5445"/>
       </connector>
    </connectors>
-   
+
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty-acceptor">
@@ -26,7 +26,7 @@
          <param key="port" value="5445"/>
       </acceptor>
    </acceptors>
-   
+
    <!-- Clustering configuration -->
    <broadcast-groups>
       <broadcast-group name="my-broadcast-group">
@@ -36,7 +36,7 @@
          <connector-ref>netty-connector</connector-ref>
      </broadcast-group>
    </broadcast-groups>
-   
+
    <discovery-groups>
       <discovery-group name="my-discovery-group">
          <group-address>${udp-address:231.7.7.7}</group-address>
@@ -44,7 +44,7 @@
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
    </discovery-groups>
-   
+
    <cluster-connections>
       <cluster-connection name="my-cluster">
          <address>jms</address>
@@ -56,7 +56,7 @@
          <discovery-group-ref discovery-group-name="my-discovery-group"/>
       </cluster-connection>
    </cluster-connections>
-   
+
    <!-- Other config -->
 
    <security-settings>

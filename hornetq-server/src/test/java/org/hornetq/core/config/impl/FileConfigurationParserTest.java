@@ -126,8 +126,6 @@ public class FileConfigurationParserTest extends UnitTestCase
       assertEquals("newpassword", config.getClusterPassword());
 
       assertEquals("abackupgroupname", config.getBackupGroupName());
-
-      assertEquals("ascaledowngroupname", config.getScaleDownGroupName());
    }
 
    private static String firstPart =

@@ -338,4 +338,7 @@ public interface HornetQMessageBundle
 
    @Message(id = 119102, value = "Address \"{0}\" is full.", format = Message.Format.MESSAGE_FORMAT)
    HornetQAddressFullException addressIsFull(String addressName);
+
+   @Message(id = 119103, value = "No Connectors or Discovery Groups configured for Scale Down", format = Message.Format.MESSAGE_FORMAT)
+   HornetQException noConfigurationFoundForScaleDown();
 }

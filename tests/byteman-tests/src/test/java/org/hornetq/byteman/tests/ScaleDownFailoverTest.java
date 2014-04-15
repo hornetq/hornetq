@@ -42,15 +42,19 @@ public class ScaleDownFailoverTest extends ClusterTestBase
       setupServer(2, isFileStorage(), isNetty());
       if (isGrouped())
       {
-         servers[0].getConfiguration().setScaleDownGroupName("bill");
-         servers[1].getConfiguration().setScaleDownGroupName("bill");
-         servers[2].getConfiguration().setScaleDownGroupName("bill");
+         servers[0].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
+         servers[1].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
+         servers[2].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
       }
-      servers[0].getConfiguration().setScaleDown(true);
+      servers[0].getConfiguration().getHAPolicy().setScaleDown(true);
       staticServers = servers;
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
       setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      servers[0].getConfiguration().getHAPolicy().getScaleDownConnectors().addAll(servers[0].getConfiguration().getClusterConfigurations().iterator().next().getStaticConnectors());
+      servers[1].getConfiguration().getHAPolicy().getScaleDownConnectors().addAll(servers[1].getConfiguration().getClusterConfigurations().iterator().next().getStaticConnectors());
+      servers[2].getConfiguration().getHAPolicy().getScaleDownConnectors().addAll(servers[2].getConfiguration().getClusterConfigurations().iterator().next().getStaticConnectors());
+
       startServers(0, 1, 2);
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());

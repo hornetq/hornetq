@@ -64,10 +64,23 @@ public class ScaleDownHandler
       this.nodeManager = nodeManager;
    }
 
-   public long scaleDown(ClientSessionFactory sessionFactory) throws Exception
+   public long scaleDown(ClientSessionFactory sessionFactory,
+                         ResourceManager resourceManager,
+                         Map<SimpleString,
+                         List<Pair<byte[], Long>>> duplicateIDMap,
+                         SimpleString managementAddress,
+                         SimpleString targetNodeId) throws Exception
+   {
+      long num = scaleDownMessages(sessionFactory, targetNodeId);
+      scaleDownTransactions(sessionFactory, resourceManager);
+      scaleDownDuplicateIDs(duplicateIDMap, sessionFactory, managementAddress);
+      return num;
+   }
+
+   private long scaleDownMessages(ClientSessionFactory sessionFactory, SimpleString nodeId) throws Exception
    {
       long messageCount = 0;
-      String targetNodeId = getTargetNodeId(sessionFactory);
+      String targetNodeId = nodeId != null ? nodeId.toString() : getTargetNodeId(sessionFactory);
 
       ClientSession session = sessionFactory.createSession(false, true, true);
       Map<String, Long> queueIDs = new HashMap<>();

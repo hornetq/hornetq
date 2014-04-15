@@ -50,6 +50,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.cluster.ha.HAManager;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
@@ -75,6 +76,8 @@ import org.hornetq.utils.FutureLatch;
 public final class ClusterManager implements HornetQComponent
 {
    private ClusterController clusterController;
+
+   private HAManager haManager;
 
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap();
 
@@ -102,6 +105,11 @@ public final class ClusterManager implements HornetQComponent
    public ClusterController getClusterController()
    {
       return clusterController;
+   }
+
+   public HAManager getHAManager()
+   {
+      return haManager;
    }
 
    public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
@@ -163,6 +171,8 @@ public final class ClusterManager implements HornetQComponent
       this.nodeManager = nodeManager;
 
       clusterController = new ClusterController(server, scheduledExecutor);
+
+      haManager = new HAManager(server.getConfiguration().getHAPolicy(), server.getSecurityManager(), server, server.getConfiguration().getBackupServerConfigurations());
    }
 
    public String describe()
@@ -230,7 +240,7 @@ public final class ClusterManager implements HornetQComponent
 
    public String getScaleDownGroupName()
    {
-      return configuration.getScaleDownGroupName();
+      return haManager.getHAPolicy().getScaleDownGroupName();
    }
 
    public synchronized void deploy() throws Exception
@@ -308,6 +318,9 @@ public final class ClusterManager implements HornetQComponent
          }
       }
 
+      //now start the ha manager
+      haManager.start();
+
       state = State.STARTED;
    }
 
@@ -321,6 +334,7 @@ public final class ClusterManager implements HornetQComponent
 
    public void stop() throws Exception
    {
+      haManager.stop();
       synchronized (this)
       {
          if (state == State.STOPPED || state == State.STOPPING)

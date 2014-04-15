@@ -13,18 +13,21 @@
 package org.hornetq.core.config.impl;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
+import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -233,8 +236,25 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals("replication cluster name", "cluster-connection1", conf.getReplicationClustername());
       Assert.assertEquals("scale-down cluster name", "cluster-connection2", conf.getScaleDownClustername());
       Assert.assertEquals("backup group name", "backupGroupName", conf.getBackupGroupName());
-      Assert.assertEquals("scale-down group name", "scaleDownGroupName", conf.getScaleDownGroupName());
 
+      HAPolicy haPolicy = conf.getHAPolicy();
+      assertEquals(1002, haPolicy.getBackupPortOffset());
+      assertEquals(33, haPolicy.getBackupRequestRetries());
+      assertEquals(1234, haPolicy.getBackupRequestRetryInterval());
+      assertEquals(12, haPolicy.getMaxBackups());
+      assertEquals(HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED, haPolicy.getPolicyType());
+      assertEquals(BackupStrategy.SCALE_DOWN, haPolicy.getBackupStrategy());
+      assertEquals("wahey!", haPolicy.getScaleDownDiscoveryGroup());
+      assertEquals("boo!", haPolicy.getScaleDownGroupName());
+      List<String> scaleDownConnectors = haPolicy.getScaleDownConnectors();
+      assertEquals(2, scaleDownConnectors.size());
+      assertEquals("sd-connector1", scaleDownConnectors.get(0));
+      assertEquals("sd-connector2", scaleDownConnectors.get(1));
+      List<String> remoteConnectors = haPolicy.getRemoteConnectors();
+      assertEquals(2, remoteConnectors.size());
+      assertEquals("remote-connector1", remoteConnectors.get(0));
+      assertEquals("remote-connector2", remoteConnectors.get(1));
+      assertEquals(true, haPolicy.isRequestBackup());
       for (ClusterConnectionConfiguration ccc : conf.getClusterConfigurations())
       {
          if (ccc.getName().equals("cluster-connection1"))

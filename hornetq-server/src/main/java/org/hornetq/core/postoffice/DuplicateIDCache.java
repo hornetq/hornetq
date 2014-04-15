@@ -39,4 +39,6 @@ public interface DuplicateIDCache
    void load(final Transaction tx, final byte[] duplID);
 
    void clear() throws Exception;
+
+   List<Pair<byte[], Long>> getMap();
 }

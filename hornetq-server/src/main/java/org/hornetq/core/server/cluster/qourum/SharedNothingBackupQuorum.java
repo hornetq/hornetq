@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.remoting.FailureListener;
@@ -44,6 +45,7 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
 
    private final NodeManager nodeManager;
 
+   private final StorageManager storageManager;
    private final ScheduledExecutorService scheduledPool;
 
    private CountDownLatch latch;
@@ -61,8 +63,9 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
     */
    public static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
 
-   public SharedNothingBackupQuorum(NodeManager nodeManager, ScheduledExecutorService scheduledPool)
+   public SharedNothingBackupQuorum(StorageManager storageManager, NodeManager nodeManager, ScheduledExecutorService scheduledPool)
    {
+      this.storageManager = storageManager;
       this.scheduledPool = scheduledPool;
       this.latch = new CountDownLatch(1);
       this.nodeManager = nodeManager;
@@ -271,7 +274,7 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
 
       final CountDownLatch voteLatch = new CountDownLatch(1);
 
-      QuorumVoteServerConnect quorumVote = new QuorumVoteServerConnect(voteLatch, size);
+      QuorumVoteServerConnect quorumVote = new QuorumVoteServerConnect(voteLatch, size, storageManager);
 
       quorumManager.vote(quorumVote);
 

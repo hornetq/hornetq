@@ -227,6 +227,15 @@ public class PacketImpl implements Packet
 
    public static final byte CLUSTER_CONNECT_REPLY = 126;
 
+   public static final byte BACKUP_REQUEST = 127;
+
+   //oops ran out of positive bytes
+   public static final byte BACKUP_REQUEST_RESPONSE = -1;
+
+   public static final byte QUORUM_VOTE = -2;
+
+   public static final byte QUORUM_VOTE_REPLY = -3;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

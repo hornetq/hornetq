@@ -89,6 +89,15 @@ public class ColocatedHornetQServer extends HornetQServerImpl
       }
    }
 
+   @Override
+   public HornetQServer createBackupServer(Configuration configuration)
+   {
+      ColocatedHornetQServer backup = new ColocatedHornetQServer(configuration, this, nodeManagerBackup, nodeManagerLive);
+      backup.backup = true;
+      this.backupServer = backup;
+      return backup;
+   }
+
    protected void startBackupServers(Configuration configuration, Map<String, HornetQServer> backupServers)
    {
       Set<Configuration> backupServerConfigurations = configuration.getBackupServerConfigurations();

@@ -34,10 +34,10 @@ public class ScaleDownFailureTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       if (isGrouped())
       {
-         servers[0].getConfiguration().setScaleDownGroupName("bill");
-         servers[1].getConfiguration().setScaleDownGroupName("bill");
+         servers[0].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
+         servers[1].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
       }
-      servers[0].getConfiguration().setScaleDown(true);
+      servers[0].getConfiguration().getHAPolicy().setScaleDown(true);
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
       setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
       startServers(0, 1);
@@ -62,7 +62,7 @@ public class ScaleDownFailureTest extends ClusterTestBase
       closeAllConsumers();
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
-      servers[0].getConfiguration().setScaleDown(false);
+      servers[0].getConfiguration().getHAPolicy().setScaleDown(false);
       stopServers(0, 1);
       super.tearDown();
    }

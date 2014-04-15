@@ -73,8 +73,6 @@ public final class ClusterConnectionConfiguration implements Serializable
 
    private final int clusterNotificationAttempts;
 
-   private String scaleDownConnector;
-
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -165,7 +163,6 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.minLargeMessageSize = minLargeMessageSize;
       this.clusterNotificationInterval = clusterNotificationInterval;
       this.clusterNotificationAttempts = clusterNotificationAttempts;
-      this.scaleDownConnector = scaleDownConnector;
    }
 
 
@@ -247,7 +244,6 @@ public final class ClusterConnectionConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.minLargeMessageSize = minLargeMessageSize;
       allowDirectConnectionsOnly = false;
-      this.scaleDownConnector = scaleDownConnector;
    }
 
    public String getName()
@@ -593,15 +589,5 @@ public final class ClusterConnectionConfiguration implements Serializable
       else if (!staticConnectors.equals(other.staticConnectors))
          return false;
       return true;
-   }
-
-   public Object getScaleDownConnector()
-   {
-      return scaleDownConnector;
-   }
-
-   public void setScaleDownConnector(String scaleDownConnector)
-   {
-      this.scaleDownConnector = scaleDownConnector;
    }
 }

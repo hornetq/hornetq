@@ -147,17 +147,6 @@ public interface HornetQServerControl
    boolean isFailoverOnServerShutdown();
 
    /**
-    * does the server scale down on clean shutdown
-    */
-   void setScaleDown(boolean scaleDown) throws Exception;
-
-
-   /**
-    * returns if server scales down on clean shutdown
-    */
-   boolean isScaleDown();
-
-   /**
     * Returns the minimal number of journal files before compacting.
     */
    int getJournalCompactMinFiles();

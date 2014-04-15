@@ -13,13 +13,18 @@
 
 package org.hornetq.core.server.cluster.qourum;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.persistence.StorageManager;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
  * A Qourum Vote for deciding if a replicated backup should become live.
  */
-public class QuorumVoteServerConnect implements QuorumVote<Boolean>
+public class QuorumVoteServerConnect extends QuorumVote<BooleanVote, Boolean>
 {
+   private static final SimpleString LIVE_FAILOVER_VOTE = new SimpleString("LIVE_FAILOVER)VOTE");
    private final CountDownLatch latch;
 
    private double votesNeeded;
@@ -37,8 +42,9 @@ public class QuorumVoteServerConnect implements QuorumVote<Boolean>
     * 5 remaining nodes would be 4/2 = 3 vote needed
     * 6 remaining nodes would be 5/2 = 3 vote needed
     * */
-   public QuorumVoteServerConnect(CountDownLatch latch, int size)
+   public QuorumVoteServerConnect(CountDownLatch latch, int size, StorageManager storageManager)
    {
+      super(LIVE_FAILOVER_VOTE);
       this.latch = latch;
       //we don't count ourself
       int actualSize = size - 1;
@@ -90,12 +96,11 @@ public class QuorumVoteServerConnect implements QuorumVote<Boolean>
     * @param vote the vote to make.
     */
    @Override
-   public synchronized void vote(Vote vote)
+   public synchronized void vote(BooleanVote vote)
    {
       if (decision)
          return;
-      BooleanVote v = (BooleanVote) vote;
-      if (v.getVote())
+      if (vote.getVote())
       {
          total++;
          if (total >= votesNeeded)
@@ -106,14 +111,21 @@ public class QuorumVoteServerConnect implements QuorumVote<Boolean>
       }
    }
 
-   /**
-    * the decision voted for
-    *
-    * @return the dewcision
-    */
+   @Override
+   public void allVotesCast(Topology voteTopology)
+   {
+
+   }
+
+   @Override
    public Boolean getDecision()
    {
       return decision;
    }
 
+   @Override
+   public SimpleString getName()
+   {
+      return null;
+   }
 }
