@@ -45,6 +45,17 @@
       value of the _HQ_GROUP_ID property.</para>
    <para>This will ensure that all messages for a particular stock will always be processed by the
       same consumer.</para>
+   <note>
+      <para>Grouped messages can impact the concurrent processing of non-grouped messages due to the
+         underlying FIFO semantics of a queue. For example, if there is a chunk of 100 grouped messages at
+         the head of a queue followed by 1,000 non-grouped messages then all the grouped messages will need
+         to be sent to the appropriate client (which is consuming those grouped messages serially) before
+         any of the non-grouped messages can be consumed. The functional impact in this scenario is a
+         temporary suspension of concurrent message processing while all the grouped messages are processed.
+         This can be a performance bottleneck so keep it in mind when determining the size of your message
+         groups, and consider whether or not you should isolate your grouped messages from your non-grouped
+         messages.</para>
+   </note>
    <section>
       <title>Using Core API</title>
       <para>The property name used to identify the message group is <literal
