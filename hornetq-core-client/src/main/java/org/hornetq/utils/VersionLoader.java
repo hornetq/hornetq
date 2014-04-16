@@ -19,10 +19,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -45,7 +41,7 @@ public final class VersionLoader
 
    private static String PROP_FILE_NAME;
 
-   private static Version[] versions;
+   private static Version version;
 
    static
    {
@@ -73,41 +69,31 @@ public final class VersionLoader
             PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
          }
 
-         VersionLoader.versions = VersionLoader.load();
+         VersionLoader.version = VersionLoader.load();
       }
       catch (Throwable e)
       {
-         VersionLoader.versions = null;
+         VersionLoader.version = null;
          HornetQClientLogger.LOGGER.error(e.getMessage(), e);
       }
 
    }
 
-   public static Version[] getClientVersions()
-   {
-      if (VersionLoader.versions == null)
-      {
-         throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
-      }
-
-      return VersionLoader.versions;
-   }
-
    public static Version getVersion()
    {
-      if (VersionLoader.versions == null)
+      if (VersionLoader.version == null)
       {
          throw new RuntimeException(VersionLoader.PROP_FILE_NAME + " is not available");
       }
 
-      return VersionLoader.versions[0];
+      return VersionLoader.version;
    }
 
    public static String getClasspathString()
    {
       StringBuffer classpath = new StringBuffer();
       ClassLoader applicationClassLoader = VersionImpl.class.getClassLoader();
-      URL[] urls = ((URLClassLoader)applicationClassLoader).getURLs();
+      URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
       for (URL url : urls)
       {
          classpath.append(url.getFile()).append("\r\n");
@@ -116,7 +102,7 @@ public final class VersionLoader
       return classpath.toString();
    }
 
-   private static Version[] load()
+   private static Version load()
    {
       Properties versionProps = new Properties();
       final InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
@@ -134,31 +120,17 @@ public final class VersionLoader
             int majorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.majorVersion"));
             int minorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.minorVersion"));
             int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
-            int[] incrementingVersions = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.incrementingVersion"));
+            int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
             int[] compatibleVersionArray = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.compatibleVersionList"));
-            List<Version> definedVersions = new ArrayList<Version>(incrementingVersions.length);
-            for (int incrementingVersion : incrementingVersions)
-            {
-               definedVersions.add(new VersionImpl(versionName,
-                                                   majorVersion,
-                                                   minorVersion,
-                                                   microVersion,
-                                                   incrementingVersion,
-                                                   versionSuffix,
-                                                   compatibleVersionArray));
-            }
-            //We want the higher version to be the first
-            Collections.sort(definedVersions, new Comparator<Version>()
-            {
-               @Override
-               public int compare(Version version1, Version version2)
-               {
-                  return version2.getIncrementingVersion() - version1.getIncrementingVersion();
-               }
 
-            });
-            return definedVersions.toArray(new Version[incrementingVersions.length]);
+            return new VersionImpl(versionName,
+                                   majorVersion,
+                                   minorVersion,
+                                   microVersion,
+                                   incrementingVersion,
+                                   versionSuffix,
+                                   compatibleVersionArray);
          }
          catch (IOException e)
          {
