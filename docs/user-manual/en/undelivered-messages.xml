@@ -116,12 +116,17 @@
       <section>
          <title>Dead Letter Properties</title>
          <para>Dead letter messages which are consumed from a dead letter address have the following
-            property:</para>
+            properties:</para>
          <itemizedlist>
             <listitem>
                <para><literal>_HQ_ORIG_ADDRESS</literal></para>
                <para>a String property containing the <emphasis>original address</emphasis> of
-                  the dead letter message </para>
+                  the dead letter message</para>
+            </listitem>
+            <listitem>
+               <para><literal>_HQ_ORIG_QUEUE</literal></para>
+               <para>a String property containing the <emphasis>original queue</emphasis> of
+                  the dead letter message</para>
             </listitem>
          </itemizedlist>
       </section>
