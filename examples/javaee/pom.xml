@@ -41,6 +41,7 @@
       <module>jca-config</module>
       <module>mdb-bmt</module>
       <module>mdb-cmt-setrollbackonly</module>
+      <module>mdb-cmt-setrollbackonly-with-dlq</module>
       <module>mdb-cmt-tx-local</module>
       <module>mdb-cmt-tx-not-supported</module>
       <module>mdb-cmt-tx-required</module>
