@@ -14,7 +14,6 @@
 package org.hornetq.tests.unit.util;
 
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import org.hornetq.core.version.Version;
 import org.hornetq.tests.util.UnitTestCase;
@@ -47,13 +46,13 @@ public class VersionLoaderTest extends UnitTestCase
       Assert.assertEquals(props.get("hornetq.version.versionName"), version.getVersionName());
       Assert.assertEquals(props.get("hornetq.version.versionSuffix"), version.getVersionSuffix());
 
-      Assert.assertEquals(Integer.parseInt(props.getProperty("hornetq.version.majorVersion")),
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.majorVersion")),
                           version.getMajorVersion());
-      Assert.assertEquals(Integer.parseInt(props.getProperty("hornetq.version.minorVersion")),
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.minorVersion")),
                           version.getMinorVersion());
-      Assert.assertEquals(Integer.parseInt(props.getProperty("hornetq.version.microVersion")),
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.microVersion")),
                           version.getMicroVersion());
-      Assert.assertEquals(Integer.parseInt(new StringTokenizer(props.getProperty("hornetq.version.incrementingVersion"), ",").nextToken()),
+      Assert.assertEquals(Integer.parseInt((String)props.get("hornetq.version.incrementingVersion")),
                           version.getIncrementingVersion());
    }
 
