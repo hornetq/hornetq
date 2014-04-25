@@ -1746,6 +1746,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       this.packetDecoder = packetDecoder;
    }
 
+   @Override
+   public boolean isConnectable()
+   {
+      return getNumInitialConnectors() > 0 || getDiscoveryGroupConfiguration() != null;
+   }
+
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
       topology.addClusterTopologyListener(listener);

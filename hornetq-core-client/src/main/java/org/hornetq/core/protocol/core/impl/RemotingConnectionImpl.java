@@ -373,7 +373,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    public void disconnect(TransportConfiguration transportConfiguration, final boolean criticalError)
    {
-      Channel channel0 = getChannel(0, -1);
+      Channel channel0 = getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
 
       // And we remove all channels from the connection, this ensures no more packets will be processed after this
       // method is

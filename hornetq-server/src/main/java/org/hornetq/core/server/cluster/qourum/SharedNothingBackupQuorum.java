@@ -23,6 +23,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 
@@ -30,7 +31,7 @@ import org.hornetq.core.server.NodeManager;
  * @author Andy Taylor
  */
 
-public class SharedNothingBackupQuorum implements Quorum
+public class SharedNothingBackupQuorum implements Quorum, FailureListener
 {
    public enum BACKUP_ACTIVATION
    {
@@ -151,12 +152,11 @@ public class SharedNothingBackupQuorum implements Quorum
 
    /**
     * if the connection to our replicated live goes down then decide on an action
-    * @param topology
     */
    @Override
-   public void connectionFailed(Topology topology)
+   public void connectionFailed(HornetQException exception, boolean failedOver)
    {
-      decideOnAction(topology);
+      decideOnAction(sessionFactory.getServerLocator().getTopology());
    }
 
    @Override
@@ -169,11 +169,11 @@ public class SharedNothingBackupQuorum implements Quorum
    /**
     * @param sessionFactory the session factory used to connect to the live server
     */
-   public void setSessionFactory(ClientSessionFactoryInternal sessionFactory)
+   public void setSessionFactory(final ClientSessionFactoryInternal sessionFactory)
    {
       this.sessionFactory = sessionFactory;
       this.connection = (CoreRemotingConnection)sessionFactory.getConnection();
-      quorumManager.addAsFailureListenerOf(connection, this);
+      connection.addFailureListener(this);
    }
 
    /**
@@ -219,7 +219,7 @@ public class SharedNothingBackupQuorum implements Quorum
 
    private void removeListener()
    {
-      quorumManager.removeFailureListener(connection, this);
+      connection.removeFailureListener(this);
    }
 
    /**

@@ -34,11 +34,13 @@ public class NodeAnnounceMessage extends PacketImpl
 
    protected TransportConfiguration backupConnector;
 
+   private String scaleDownGroupName;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final String backupGroupName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
+   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final String backupGroupName, final String scaleDownGroupName, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
    {
       super(NODE_ANNOUNCE);
 
@@ -53,6 +55,8 @@ public class NodeAnnounceMessage extends PacketImpl
       this.connector = tc;
 
       this.backupConnector = backupConnector;
+
+      this.scaleDownGroupName = scaleDownGroupName;
    }
 
    public NodeAnnounceMessage()
@@ -93,6 +97,11 @@ public class NodeAnnounceMessage extends PacketImpl
       return backupConnector;
    }
 
+   public String getScaleDownGroupName()
+   {
+      return scaleDownGroupName;
+   }
+
    /**
     * @return the currentEventID
     */
@@ -126,6 +135,7 @@ public class NodeAnnounceMessage extends PacketImpl
       {
          buffer.writeBoolean(false);
       }
+      buffer.writeNullableString(scaleDownGroupName);
    }
 
    @Override
@@ -145,6 +155,7 @@ public class NodeAnnounceMessage extends PacketImpl
          backupConnector = new TransportConfiguration();
          backupConnector.decode(buffer);
       }
+      scaleDownGroupName = buffer.readNullableString();
    }
 
    @Override
@@ -170,6 +181,7 @@ public class NodeAnnounceMessage extends PacketImpl
       result = prime * result + ((connector == null) ? 0 : connector.hashCode());
       result = prime * result + (int)(currentEventID ^ (currentEventID >>> 32));
       result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      result = prime * result + ((scaleDownGroupName == null) ? 0 : scaleDownGroupName.hashCode());
       return result;
    }
 
@@ -227,6 +239,10 @@ public class NodeAnnounceMessage extends PacketImpl
          }
       }
       else if (!nodeID.equals(other.nodeID))
+      {
+         return false;
+      }
+      else if (!scaleDownGroupName.equals(other.scaleDownGroupName))
       {
          return false;
       }

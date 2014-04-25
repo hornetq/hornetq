@@ -39,7 +39,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessa
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.version.Version;
@@ -124,7 +123,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       }
       else
       {
-         return connection.getChannel(0, -1);
+         return connection.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
       }
    }
 
@@ -223,7 +222,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
    @Override
    public void ping(long connectionTTL)
    {
-      Channel channel = connection.getChannel(0, -1);
+      Channel channel = connection.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
 
       Ping ping = new Ping(connectionTTL);
 
@@ -246,18 +245,6 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       getChannel0().send(new SubscribeClusterTopologyUpdatesMessageV2(isServer,
                                                                       VersionLoader.getVersion()
                                                                          .getIncrementingVersion()));
-   }
-
-   public void sendNodeAnnounce(final long currentEventID,
-                                String nodeID,
-                                String backupGroupName,
-                                String scaleDownGroupName,
-                                boolean isBackup,
-                                TransportConfiguration config,
-                                TransportConfiguration backupConfig)
-   {
-      Channel channel0 = connection.getChannel(0, -1);
-      channel0.send(new NodeAnnounceMessage_V2(currentEventID, nodeID, backupGroupName, scaleDownGroupName, isBackup, config, backupConfig));
    }
 
    @Override

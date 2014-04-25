@@ -1068,6 +1068,18 @@ public interface HornetQServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void groupBindingsOnRecovery();
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222185,
+         value = "no cluster connection for specified replication cluster",
+         format = Message.Format.MESSAGE_FORMAT)
+   void noClusterConnectionForReplicationCluster();
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222186,
+         value = "unable to authorise cluster control",
+         format = Message.Format.MESSAGE_FORMAT)
+   void clusterControlAuthfailure();
+
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)

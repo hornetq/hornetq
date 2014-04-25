@@ -218,9 +218,14 @@ public class PacketImpl implements Packet
 
    public static final byte CLUSTER_TOPOLOGY_V3 = 122;
 
-   public static final byte NODE_ANNOUNCE_V2 = 123;
+   //do not reuse
+   //public static final byte NODE_ANNOUNCE_V2 = 123;
 
    public static final byte DISCONNECT_V2 = 124;
+
+   public static final byte CLUSTER_CONNECT = 125;
+
+   public static final byte CLUSTER_CONNECT_REPLY = 126;
 
    // Static --------------------------------------------------------
 

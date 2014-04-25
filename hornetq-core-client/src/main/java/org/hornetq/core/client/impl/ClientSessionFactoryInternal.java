@@ -46,8 +46,6 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
 
    void connect(int reconnectAttempts, boolean failoverOnInitialConnection) throws HornetQException;
 
-   void sendNodeAnnounce(final long currentEventID, String nodeID, String backupGroupName, String scaleDownGroupName, boolean isBackup, TransportConfiguration config, TransportConfiguration backupConfig);
-
    void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp);
 
    Object getConnector();

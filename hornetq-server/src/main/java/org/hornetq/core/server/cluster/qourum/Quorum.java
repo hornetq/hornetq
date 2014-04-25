@@ -41,12 +41,6 @@ public interface Quorum
    void nodeUp(Topology topology);
 
    /**
-   * A quorum can register to receive notifications when a specific connection goes down, at this point this method is called.
-   * see {@link QuorumManager#addAsFailureListenerOf(org.hornetq.core.protocol.core.CoreRemotingConnection, Quorum)}
-   * */
-   void connectionFailed(Topology topology);
-
-   /**
     * called if the quorum manager is stopping so we can clean up
     */
    void close();
