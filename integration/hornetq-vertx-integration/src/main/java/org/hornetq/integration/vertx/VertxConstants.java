@@ -49,8 +49,8 @@ public class VertxConstants
    public static final Set<String> ALLOWABLE_OUTGOING_CONNECTOR_KEYS;
    public static final Set<String> REQUIRED_OUTGOING_CONNECTOR_KEYS;
    public static final int INITIAL_MESSAGE_BUFFER_SIZE = 50;
-   public static final String VERTX_MESSAGE_REPLYADDRESS = "vertx.message.replyaddress";
-   public static final String VERTX_MESSAGE_TYPE = "vertx.message.type";
+   public static final String VERTX_MESSAGE_REPLYADDRESS = "VertxMessageReplyAddress";
+   public static final String VERTX_MESSAGE_TYPE = "VertxMessageType";
 
    static
    {
