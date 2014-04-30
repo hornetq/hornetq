@@ -226,7 +226,8 @@ public class OutgoingVertxEventHandler implements Consumer, ConnectorService
          case VertxConstants.TYPE_PING:
          case VertxConstants.TYPE_STRING:
             bodyBuffer.resetReaderIndex();
-            vertxMsgBody = bodyBuffer.readString();
+            SimpleString simpleString = bodyBuffer.readNullableSimpleString();
+            vertxMsgBody = simpleString.toString();
             break;
          case VertxConstants.TYPE_BUFFER:
             int len = bodyBuffer.readInt();
