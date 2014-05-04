@@ -434,13 +434,12 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    public void onNotification(Notification notification)
    {
       NotificationType type = notification.getType();
+      TypedProperties props = notification.getProperties();
 
       switch (type)
       {
          case BINDING_ADDED:
          {
-            TypedProperties props = notification.getProperties();
-
             if (!props.containsProperty(ManagementHelper.HDR_BINDING_TYPE))
             {
                throw HornetQMessageBundle.BUNDLE.bindingTypeNotSpecified();
@@ -457,6 +456,12 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
             destinations.add(address.toString());
 
+            break;
+         }
+         case BINDING_REMOVED:
+         {
+            SimpleString address = props.getSimpleStringProperty(ManagementHelper.HDR_ADDRESS);
+            destinations.remove(address.toString());
             break;
          }
          default:
