@@ -91,6 +91,10 @@ public class BackupAuthenticationTest extends FailoverTestBase
          {
             latch.countDown();
          }
+         else if (packet.getType() == PacketImpl.CLUSTER_CONNECT)
+         {
+            latch.countDown();
+         }
          return true;
       }
    }

@@ -37,6 +37,16 @@ public class ClientPacketDecoder extends PacketDecoder
    {
       final byte packetType = in.readByte();
 
+      Packet packet = decode(packetType);
+
+      packet.decode(in);
+
+      return packet;
+   }
+
+   @Override
+   public Packet decode(byte packetType)
+   {
       Packet packet;
 
       switch (packetType)
@@ -56,10 +66,6 @@ public class ClientPacketDecoder extends PacketDecoder
             packet = super.decode(packetType);
          }
       }
-
-      packet.decode(in);
-
       return packet;
    }
-
 }

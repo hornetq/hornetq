@@ -18,7 +18,6 @@ import java.util.concurrent.locks.Lock;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -56,8 +55,6 @@ public interface ClientProtocolManager
    void shakeHands();
 
    void ping(long connectionTTL);
-
-   void sendNodeAnnounce(long currentEventID, String nodeID, String backupGroupName, String scaleDownGroupName, boolean backup, TransportConfiguration config, TransportConfiguration backupConfig);
 
    SessionContext createSessionContext(final String name,
                                        final String username,

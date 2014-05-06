@@ -13,6 +13,9 @@
 
 package org.hornetq.core.protocol;
 
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_CONNECT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_CONNECT_REPLY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND_TX;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
@@ -30,10 +33,12 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
@@ -57,7 +62,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         10/12/12
  */
-public class ServerPacketDecoder extends PacketDecoder
+public class ServerPacketDecoder extends ClientPacketDecoder
 {
    private static final long serialVersionUID = 3348673114388400766L;
    public static final ServerPacketDecoder INSTANCE = new ServerPacketDecoder();
@@ -165,6 +170,21 @@ public class ServerPacketDecoder extends PacketDecoder
          case PacketImpl.REPLICATION_SCHEDULED_FAILOVER:
          {
             packet = new ReplicationLiveIsStoppingMessage();
+            break;
+         }
+         case CLUSTER_CONNECT:
+         {
+            packet = new ClusterConnectMessage();
+            break;
+         }
+         case CLUSTER_CONNECT_REPLY:
+         {
+            packet = new ClusterConnectReplyMessage();
+            break;
+         }
+         case NODE_ANNOUNCE:
+         {
+            packet = new NodeAnnounceMessage();
             break;
          }
          default:

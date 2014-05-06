@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -44,6 +45,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
+import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -51,6 +53,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterControl;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.ClusterManager.IncomingInterceptorLookingForExceptionMessage;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
@@ -513,12 +516,21 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       TopologyMember localMember = getLocalMember();
       if (localMember != null)
       {
-         sf.sendNodeAnnounce(localMember.getUniqueEventID(),
-                             manager.getNodeId(),
-                             manager.getBackupGroupName(),
-                             manager.getScaleDownGroupName(),
-                             false,
-                             localMember.getLive(), localMember.getBackup());
+         ClusterControl clusterControl = manager.getClusterController().connectToNodeInReplicatedCluster(sf);
+         try
+         {
+            clusterControl.authorize();
+            clusterControl.sendNodeAnnounce(localMember.getUniqueEventID(),
+                                            manager.getNodeId(),
+                                            manager.getBackupGroupName(),
+                                            manager.getScaleDownGroupName(),
+                                            false,
+                                            localMember.getLive(), localMember.getBackup());
+         }
+         catch (HornetQException e)
+         {
+            HornetQServerLogger.LOGGER.clusterControlAuthfailure();
+         }
       }
       else
       {
@@ -639,6 +651,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          addClusterTopologyListener(this);
 
          serverLocator.setAfterConnectionInternalListener(this);
+
+         serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
 
          serverLocator.start(server.getExecutorFactory().getExecutor());
       }
@@ -853,6 +867,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       targetLocator.setProducerWindowSize(-1);
 
       targetLocator.setAfterConnectionInternalListener(this);
+
+      targetLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
 
       targetLocator.setNodeID(nodeId);
 

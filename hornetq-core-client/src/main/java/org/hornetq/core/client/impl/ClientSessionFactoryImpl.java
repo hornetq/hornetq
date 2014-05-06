@@ -1047,6 +1047,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             connection = establishNewConnection();
 
+            if (connection != null && serverLocator.getAfterConnectInternalListener() != null)
+            {
+               serverLocator.getAfterConnectInternalListener().onConnection(this);
+            }
+
             if (serverLocator.getTopology() != null)
             {
                if (connection != null)
@@ -1179,17 +1184,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public ConfirmationWindowWarning getConfirmationWindowWarning()
    {
       return confirmationWindowWarning;
-   }
-
-   public void sendNodeAnnounce(final long currentEventID,
-                                String nodeID,
-                                String backupGroupName,
-                                String scaleDownGroupName,
-                                boolean isBackup,
-                                TransportConfiguration config,
-                                TransportConfiguration backupConfig)
-   {
-      clientProtocolManager.sendNodeAnnounce(currentEventID, nodeID, backupGroupName, scaleDownGroupName, isBackup, config, backupConfig);
    }
 
    protected Connection openTransportConnection(final Connector connector)
@@ -1495,11 +1489,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       newConnection.addFailureListener(new DelegatingFailureListener(newConnection.getID()));
 
       schedulePing();
-
-      if (serverLocator.getAfterConnectInternalListener() != null)
-      {
-         serverLocator.getAfterConnectInternalListener().onConnection(this);
-      }
 
       if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {

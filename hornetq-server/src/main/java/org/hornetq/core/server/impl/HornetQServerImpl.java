@@ -100,7 +100,6 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.ChannelImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.remoting.CloseListener;
@@ -130,6 +129,8 @@ import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.BackupManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterControl;
+import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
@@ -2539,7 +2540,7 @@ public class HornetQServerImpl implements HornetQServer
       SharedNothingBackupQuorum backupQuorum;
       private final boolean attemptFailBack;
       private String nodeID;
-      ClientSessionFactoryInternal liveServerSessionFactory;
+      ClusterControl clusterControl;
       private boolean closed;
 
       public SharedNothingBackupActivation(boolean attemptFailBack)
@@ -2580,11 +2581,12 @@ public class HornetQServerImpl implements HornetQServer
             LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null ?
                new AnyLiveNodeLocatorForReplication(backupQuorum, HornetQServerImpl.this) :
                new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), backupQuorum);
-            clusterManager.getQuorumManager().addClusterTopologyListener(nodeLocator);
+            ClusterController clusterController = clusterManager.getClusterController();
+            clusterController.addClusterTopologyListenerForReplication(nodeLocator);
             //todo do we actually need to wait?
-            clusterManager.getQuorumManager().awaitConnectionToCluster();
+            clusterController.awaitConnectionToReplicationCluster();
 
-            clusterManager.getQuorumManager().addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
+            clusterController.addIncomingInterceptorForReplication(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
             // nodeManager.startBackup();
 
@@ -2619,7 +2621,7 @@ public class HornetQServerImpl implements HornetQServer
 
                try
                {
-                  liveServerSessionFactory =  clusterManager.getQuorumManager().connectToNode(possibleLive.getA());
+                  clusterControl =  clusterController.connectToNodeInReplicatedCluster(possibleLive.getA());
                }
                catch (Exception e)
                {
@@ -2627,19 +2629,19 @@ public class HornetQServerImpl implements HornetQServer
                   {
                      try
                      {
-                        liveServerSessionFactory = clusterManager.getQuorumManager().connectToNode(possibleLive.getB());
+                        clusterControl = clusterController.connectToNodeInReplicatedCluster(possibleLive.getB());
                      }
                      catch (Exception e1)
                      {
-                        liveServerSessionFactory = null;
+                        clusterControl = null;
                      }
                   }
                }
-               if (liveServerSessionFactory == null)
+               if (clusterControl == null)
                {
                   //its ok to retry here since we haven't started replication yet
                   //it may just be the server has gone since discovery
-                  Thread.sleep(clusterManager.getQuorumManager().getRetryInterval());
+                  Thread.sleep(clusterController.getRetryIntervalForReplicatedCluster());
                   signal = BACKUP_ACTIVATION.ALREADY_REPLICATING;
                   continue;
                }
@@ -2685,7 +2687,7 @@ public class HornetQServerImpl implements HornetQServer
                }
                //ok, this live is no good, let's reset and try again
                //close this session factory, we're done with it
-               liveServerSessionFactory.close();
+               clusterControl.close();
                backupQuorum.reset();
                if (replicationEndpoint.getChannel() != null)
                {
@@ -2790,15 +2792,13 @@ public class HornetQServerImpl implements HornetQServer
             try
             {
                //we should only try once, if its not there we should move on.
-               liveServerSessionFactory.setReconnectAttempts(1);
+               clusterControl.getSessionFactory().setReconnectAttempts(1);
+               backupQuorum.setSessionFactory(clusterControl.getSessionFactory());
                //get the connection and request replication to live
-               CoreRemotingConnection liveConnection = (CoreRemotingConnection)liveServerSessionFactory.getConnection();
-               backupQuorum.setSessionFactory(liveServerSessionFactory);
-               Channel pingChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
-               Channel replicationChannel = liveConnection.getChannel(ChannelImpl.CHANNEL_ID.REPLICATION.id, -1);
-               connectToReplicationEndpoint(replicationChannel);
+               clusterControl.authorize();
+               connectToReplicationEndpoint(clusterControl);
                replicationEndpoint.start();
-               clusterManager.announceReplicatingBackupToLive(pingChannel, attemptFailBack);
+               clusterControl.announceReplicatingBackupToLive(attemptFailBack);
             }
             catch (Exception e)
             {
@@ -2808,7 +2808,7 @@ public class HornetQServerImpl implements HornetQServer
             }
          }
 
-         private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
+         private synchronized ReplicationEndpoint connectToReplicationEndpoint(final ClusterControl control) throws Exception
          {
             if (!isStarted())
                return null;
@@ -2817,14 +2817,16 @@ public class HornetQServerImpl implements HornetQServer
                throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
             }
 
-            channel.setHandler(replicationEndpoint);
+            Channel replicationChannel = control.createReplicationChannel();
+
+            replicationChannel.setHandler(replicationEndpoint);
 
             if (replicationEndpoint.getChannel() != null)
             {
                throw HornetQMessageBundle.BUNDLE.alreadyHaveReplicationServer();
             }
 
-            replicationEndpoint.setChannel(channel);
+            replicationEndpoint.setChannel(replicationChannel);
 
             return replicationEndpoint;
          }

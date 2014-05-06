@@ -36,14 +36,13 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConfigurationUtils;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
@@ -58,6 +57,7 @@ import org.hornetq.core.server.cluster.qourum.QuorumManager;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.FutureLatch;
@@ -74,7 +74,7 @@ import org.hornetq.utils.FutureLatch;
  */
 public final class ClusterManager implements HornetQComponent
 {
-   private final QuorumManager quorumManager;
+   private ClusterController clusterController;
 
    private final Map<String, BroadcastGroup> broadcastGroups = new HashMap();
 
@@ -96,7 +96,17 @@ public final class ClusterManager implements HornetQComponent
 
    public QuorumManager getQuorumManager()
    {
-      return quorumManager;
+      return clusterController.getQuorumManager();
+   }
+
+   public ClusterController getClusterController()
+   {
+      return clusterController;
+   }
+
+   public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
+   {
+      clusterController.addClusterChannelHandler(channel, acceptorUsed, remotingConnection);
    }
 
    enum State
@@ -152,7 +162,7 @@ public final class ClusterManager implements HornetQComponent
 
       this.nodeManager = nodeManager;
 
-      quorumManager = new QuorumManager(server, scheduledExecutor);
+      clusterController = new ClusterController(server, scheduledExecutor);
    }
 
    public String describe()
@@ -249,7 +259,7 @@ public final class ClusterManager implements HornetQComponent
       * */
       if (clusterConnections.size() > 0)
       {
-         quorumManager.start();
+         clusterController.start();
       }
    }
 
@@ -319,7 +329,7 @@ public final class ClusterManager implements HornetQComponent
          }
          state = State.STOPPING;
 
-         quorumManager.stop();
+         clusterController.stop();
 
          for (BroadcastGroup group : broadcastGroups.values())
          {
@@ -398,35 +408,7 @@ public final class ClusterManager implements HornetQComponent
    }
 
 
-   /**
-    * XXX HORNETQ-720
-    *
-    * @param liveChannel        channel for opening connection with live
-    * @param attemptingFailBack if {@code true} then this server wants to trigger a fail-back when
-    *                           up-to-date, that is it wants to take over the role of 'live' from the current 'live'
-    *                           server.
-    * @throws HornetQException
-    */
-   public void
-   announceReplicatingBackupToLive(final Channel liveChannel, final boolean attemptingFailBack) throws HornetQException
-   {
-      ClusterConnectionConfiguration config = ConfigurationUtils.getReplicationClusterConfiguration(configuration);
-      if (config == null)
-      {
-         HornetQServerLogger.LOGGER.announceBackupNoClusterConnections();
-         throw new HornetQException("lacking cluster connection");
 
-      }
-      TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
-
-      if (connector == null)
-      {
-         HornetQServerLogger.LOGGER.announceBackupNoConnector(config.getConnectorName());
-         throw new HornetQException("lacking cluster connection");
-      }
-      liveChannel.send(new BackupRegistrationMessage(connector, configuration.getClusterUser(),
-                                                     configuration.getClusterPassword(), attemptingFailBack));
-   }
 
    public void removeClusterLocator(final ServerLocatorInternal serverLocator)
    {
@@ -774,6 +756,8 @@ public final class ClusterManager implements HornetQComponent
                                                        config.isAllowDirectConnectionsOnly(),
                                                        config.getClusterNotificationInterval(),
                                                        config.getClusterNotificationAttempts());
+
+         clusterController.addClusterConnection(clusterConnection.getName(), dg);
       }
       else
       {
@@ -814,12 +798,16 @@ public final class ClusterManager implements HornetQComponent
                                                        config.isAllowDirectConnectionsOnly(),
                                                        config.getClusterNotificationInterval(),
                                                        config.getClusterNotificationAttempts());
+
+
+         clusterController.addClusterConnection(clusterConnection.getName(), tcConfigs);
       }
 
 
       if (defaultClusterConnection == null)
       {
          defaultClusterConnection = clusterConnection;
+         clusterController.setDefaultClusterConnectionName(defaultClusterConnection.getName());
       }
 
       managementService.registerCluster(clusterConnection, config);

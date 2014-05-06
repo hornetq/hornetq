@@ -12,38 +12,24 @@
  */
 package org.hornetq.core.server.cluster.qourum;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.TopologyMember;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.config.ConfigurationUtils;
-import org.hornetq.core.protocol.ServerPacketDecoder;
-import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServerLogger;
 
 /**
  * A QourumManager can be used to register a {@link org.hornetq.core.server.cluster.qourum.Quorum} to receive notifications
@@ -60,11 +46,6 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
    private Map<String, Quorum> quorums = new HashMap<>();
 
    /**
-    * all the {@link org.hornetq.core.server.cluster.qourum.Quorum}'s that have registered for connection failures
-    */
-   private Map<Quorum, QuorumFailureListener> quorumFailureListeners = new HashMap<>();
-
-   /**
     * any currently running runnables.
     */
    private final Map<QuorumVote, List<VoteRunnable>> voteRunnables = new HashMap<>();
@@ -74,11 +55,9 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
   /**
    * this holds the current state of the cluster
    */
-   private ServerLocatorInternal serverLocator;
+   private ServerLocator serverLocator;
 
    private boolean started = false;
-
-   private CountDownLatch connectedLatch;
 
    /**
     * this is the max size that the cluster has been.
@@ -100,33 +79,7 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
    {
       if (started)
          return;
-      synchronized (this)
-      {
-         connectedLatch = new CountDownLatch(1);
-         //we use the cluster connection configuration to connect to the cluster to find the live node we want to
-         //connect to.
-         ClusterConnectionConfiguration config =
-            ConfigurationUtils.getReplicationClusterConfiguration(server.getConfiguration());
-         if (serverLocator != null)
-         {
-            serverLocator.close();
-         }
-         serverLocator = getLocator(config);
-      }
-
-      synchronized (voteRunnables)
-      {
-         started = true;
-         //if the cluster isn't available we want to hang around until it is
-         serverLocator.setReconnectAttempts(-1);
-         serverLocator.setInitialConnectAttempts(-1);
-         //this is used for replication so need to use the server packet decoder
-         serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
-         //receive topology updates
-         serverLocator.addClusterTopologyListener(this);
-
-         server.getExecutorFactory().getExecutor().execute(new ConnectRunnable());
-      }
+      started = true;
    }
 
    /**
@@ -140,8 +93,6 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
          return;
       synchronized (voteRunnables)
       {
-         serverLocator.close();
-         serverLocator = null;
          started = false;
          for (List<VoteRunnable> runnables : voteRunnables.values())
          {
@@ -156,7 +107,6 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
       {
          quorum.close();
       }
-      quorumFailureListeners.clear();
    }
 
    /**
@@ -231,94 +181,6 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
    }
 
    /**
-    * the current size of the cluster
-    *
-    * @return current size
-    */
-   public int getCurrentClusterSize()
-   {
-      return serverLocator.getTopology().getMembers().size();
-   }
-
-   /**
-    * @param liveConnection the connection to listen to
-    * @param quorum the quorum to notify on failure
-    */
-   public void addAsFailureListenerOf(CoreRemotingConnection liveConnection, Quorum quorum)
-   {
-      QuorumFailureListener listener = new QuorumFailureListener(quorum);
-      quorumFailureListeners.put(quorum, listener);
-      liveConnection.addFailureListener(listener);
-   }
-
-   /**
-    * removes the failure listener
-    * @param connection
-    * @param quorum
-    */
-   public void removeFailureListener(CoreRemotingConnection connection, Quorum quorum)
-   {
-      QuorumFailureListener listener = quorumFailureListeners.remove(quorum);
-      if (connection != null && listener != null)
-      {
-         connection.removeFailureListener(listener);
-      }
-   }
-
-   /**
-    * add a cluster listener
-    *
-    * @param listener
-    */
-   public void addClusterTopologyListener(ClusterTopologyListener listener)
-   {
-      serverLocator.addClusterTopologyListener(listener);
-   }
-
-   /**
-    * wait until we have connected to the cluster.
-    *
-    * @throws InterruptedException
-    */
-   public void awaitConnectionToCluster() throws InterruptedException
-   {
-      connectedLatch.await();
-   }
-
-   /**
-    * add an interceptor
-    *
-    * @param interceptor
-    */
-   public void addIncomingInterceptor(Interceptor interceptor)
-   {
-      serverLocator.addIncomingInterceptor(interceptor);
-   }
-
-   /**
-    * connect to a specific node in the cluster.
-    *
-    * @param transportConfiguration the configuration of the node to connect to.
-    *
-    * @return the ClientSessionFactoryInternal
-    * @throws Exception
-    */
-   public ClientSessionFactoryInternal connectToNode(TransportConfiguration transportConfiguration) throws Exception
-   {
-      return (ClientSessionFactoryInternal) serverLocator.createSessionFactory(transportConfiguration, 0, false);
-   }
-
-   /**
-    * retry interval for connecting to the cluster
-    *
-    * @return the retry interval
-    */
-   public long getRetryInterval()
-   {
-      return serverLocator.getRetryInterval();
-   }
-
-   /**
     * ask the quorum to vote within a specific quorum.
     *
     * @param quorumVote the vote to acquire
@@ -369,50 +231,14 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
       return QuorumManager.class.getSimpleName() + "(server=" + server.getIdentity() + ")";
    }
 
-   private ServerLocatorInternal getLocator(ClusterConnectionConfiguration config) throws HornetQException
+   public void setServerLocator(ServerLocator serverLocator)
    {
-      ServerLocatorInternal locator;
-      if (config.getDiscoveryGroupName() != null)
-      {
-         DiscoveryGroupConfiguration dg = server.getConfiguration().getDiscoveryGroupConfigurations().get(config.getDiscoveryGroupName());
-
-         if (dg == null)
-         {
-            throw HornetQMessageBundle.BUNDLE.noDiscoveryGroupFound(dg);
-         }
-         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(dg);
-      }
-      else
-      {
-         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
-            : null;
-
-         locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(tcConfigs);
-      }
-      return locator;
+      this.serverLocator = serverLocator;
    }
 
-
-   private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
+   public ServerLocator getServerLocator()
    {
-      TransportConfiguration[] tcConfigs = (TransportConfiguration[]) Array.newInstance(TransportConfiguration.class,
-                                                                                        connectorNames.size());
-      int count = 0;
-      for (String connectorName : connectorNames)
-      {
-         TransportConfiguration connector = server.getConfiguration().getConnectorConfigurations().get(connectorName);
-
-         if (connector == null)
-         {
-            HornetQServerLogger.LOGGER.bridgeNoConnector(connectorName);
-
-            return null;
-         }
-
-         tcConfigs[count++] = connector;
-      }
-
-      return tcConfigs;
+      return serverLocator;
    }
 
    /**
@@ -481,41 +307,6 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
          {
             locator.close();
          }
-      }
-   }
-
-   private final class ConnectRunnable implements Runnable
-   {
-      @Override
-      public void run()
-      {
-         try
-         {
-            serverLocator.connect();
-            connectedLatch.countDown();
-         }
-         catch (HornetQException e)
-         {
-            if (!started)
-               return;
-            server.getScheduledPool().schedule(this, serverLocator.getRetryInterval(), TimeUnit.MILLISECONDS);
-         }
-      }
-   }
-
-   private final class QuorumFailureListener implements FailureListener
-   {
-      private final Quorum quorum;
-
-      public QuorumFailureListener(Quorum quorum)
-      {
-         this.quorum = quorum;
-      }
-
-      @Override
-      public void connectionFailed(HornetQException exception, boolean failedOver)
-      {
-         quorum.connectionFailed(serverLocator.getTopology());
       }
    }
 }

@@ -81,4 +81,6 @@ public interface ServerLocatorInternal extends ServerLocator
    Topology getTopology();
 
    void setPacketDecoder(PacketDecoder instance);
+
+   boolean isConnectable();
 }

@@ -23,14 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -220,6 +219,7 @@ public class BackupManager implements HornetQComponent
             backupServerLocator.setIdentity("backupLocatorFor='" + server + "'");
             backupServerLocator.setReconnectAttempts(-1);
             backupServerLocator.setInitialConnectAttempts(-1);
+            backupServerLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
          }
       }
 
@@ -252,18 +252,19 @@ public class BackupManager implements HornetQComponent
                   }
                   announcingBackup = true;
                   //connect to the cluster
-                  ClientSessionFactory backupSessionFactory = localBackupLocator.connect();
+                  ClientSessionFactoryInternal backupSessionFactory = localBackupLocator.connect();
                   //send the announce message
                   if (backupSessionFactory != null)
                   {
-                     ((CoreRemotingConnection)backupSessionFactory.getConnection())
-                        .getChannel(0, -1)
-                        .send(new NodeAnnounceMessage(System.currentTimeMillis(),
+                     ClusterControl clusterControl = clusterManager.getClusterController().connectToNodeInReplicatedCluster(backupSessionFactory);
+                     clusterControl.authorize();
+                     clusterControl.sendNodeAnnounce(System.currentTimeMillis(),
                                                       nodeManager.getNodeId().toString(),
                                                       configuration.getBackupGroupName(),
+                                                      configuration.getScaleDownClustername(),
                                                       true,
                                                       connector,
-                                                      null));
+                                                      null);
                      HornetQServerLogger.LOGGER.backupAnnounced();
                      backupAnnounced = true;
                   }
@@ -371,6 +372,7 @@ public class BackupManager implements HornetQComponent
             }
             ServerLocatorImpl locator = new ServerLocatorImpl(topology, true, tcConfigs);
             locator.setClusterConnection(true);
+            locator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
             return locator;
          }
          return null;

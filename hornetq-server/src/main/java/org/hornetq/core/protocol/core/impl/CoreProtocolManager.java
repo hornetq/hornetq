@@ -20,9 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 import io.netty.channel.ChannelPipeline;
-import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -37,13 +35,9 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
@@ -52,7 +46,6 @@ import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -111,9 +104,11 @@ class CoreProtocolManager implements ProtocolManager
 
       final ConnectionEntry entry = new ConnectionEntry(rc, connectionExecutor, System.currentTimeMillis(), ttl);
 
-      final Channel channel0 = rc.getChannel(0, -1);
+      final Channel channel0 = rc.getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
 
       channel0.setHandler(new LocalChannelHandler(config, entry, channel0, acceptorUsed, rc));
+
+      server.getClusterManager().addClusterChannelHandler(rc.getChannel(CHANNEL_ID.CLUSTER.id, -1), acceptorUsed, rc);
 
       return entry;
    }
@@ -334,82 +329,6 @@ class CoreProtocolManager implements ProtocolManager
 
             }
          }
-         else if (packet.getType() == PacketImpl.NODE_ANNOUNCE || packet.getType() == PacketImpl.NODE_ANNOUNCE_V2)
-         {
-            NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
-
-            Pair<TransportConfiguration, TransportConfiguration> pair;
-            if (msg.isBackup())
-            {
-               pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
-            }
-            else
-            {
-               pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
-            }
-            if (isTrace)
-            {
-               HornetQServerLogger.LOGGER.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
-            }
-
-            if (acceptorUsed != null)
-            {
-               ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
-               if (clusterConn != null)
-               {
-                  String scaleDownGroupName = null;
-                  if (packet.getType() == PacketImpl.NODE_ANNOUNCE_V2)
-                  {
-                     scaleDownGroupName = ((NodeAnnounceMessage_V2)msg).getScaleDownGroupName();
-                  }
-                  clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), msg.getBackupGroupName(), scaleDownGroupName, pair, msg.isBackup());
-               }
-               else
-               {
-                  HornetQServerLogger.LOGGER.debug("Cluster connection is null on acceptor = " + acceptorUsed);
-               }
-            }
-            else
-            {
-               HornetQServerLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
-            }
-         }
-         else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
-         {
-            BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-            ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
-
-            if (!config.isSecurityEnabled() || clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
-            {
-               try
-               {
-                  server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
-                                          msg.isFailBackRequest());
-               }
-               catch (HornetQAlreadyReplicatingException are)
-               {
-                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.ALREADY_REPLICATING));
-               }
-               catch (HornetQException e)
-               {
-                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
-               }
-            }
-            else
-            {
-               channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.AUTHENTICATION));
-            }
-         }
-      }
-
-      private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
-                                                                           boolean isBackup)
-      {
-         if (isBackup)
-         {
-            return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
-         }
-         return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
       }
    }
 }

@@ -58,6 +58,10 @@ public final class ChannelImpl implements Channel
        */
       REPLICATION(2),
       /**
+       * cluster used for controlling nodes in a cluster remotely
+       */
+      CLUSTER(3),
+      /**
        * Channels [0-9] are reserved for the system, user channels must be greater than that.
        */
       USER(10);
@@ -150,8 +154,6 @@ public final class ChannelImpl implements Channel
          case PacketImpl.DISCONNECT_CONSUMER:
             return version >= 124;
          case PacketImpl.CLUSTER_TOPOLOGY_V3:
-            return version >= 125;
-         case PacketImpl.NODE_ANNOUNCE_V2:
             return version >= 125;
          case PacketImpl.DISCONNECT_V2:
             return version >= 125;
