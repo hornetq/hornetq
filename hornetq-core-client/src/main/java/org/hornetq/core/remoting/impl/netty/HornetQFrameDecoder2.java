@@ -34,6 +34,9 @@ public class HornetQFrameDecoder2 extends LengthFieldBasedFrameDecoder
    @Override
    protected ByteBuf extractFrame(ChannelHandlerContext ctx, ByteBuf buffer, int index, int length)
    {
-      return super.extractFrame(ctx, buffer, index, length).skipBytes(DataConstants.SIZE_INT);
+      // Only slice out buffer and retain it to eliminate memory copy
+      ByteBuf frame = buffer.slice(index, length);
+      frame.skipBytes(DataConstants.SIZE_INT);
+      return frame.retain();
    }
 }
