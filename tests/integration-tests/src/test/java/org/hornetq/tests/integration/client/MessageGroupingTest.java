@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import org.junit.Assume;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -53,6 +54,8 @@ public class MessageGroupingTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession clientSession;
+
+   private ClientSessionFactory clientSessionFactory;
 
    private final SimpleString qName = new SimpleString("MessageGroupingTestQueue");
    private ServerLocator locator;
@@ -104,6 +107,61 @@ public class MessageGroupingTest extends UnitTestCase
    {
       doTestMultipleGroupingXARollback();
    }
+
+
+   @Test
+   public void testLoadBalanceGroups() throws Exception
+   {
+      Assume.assumeFalse("only makes sense withOUT auto-group", clientSessionFactory.getServerLocator().isAutoGroup());
+
+      ClientProducer clientProducer = clientSession.createProducer(qName);
+      ClientConsumer consumer1 = clientSession.createConsumer(qName);
+      ClientConsumer consumer2 = clientSession.createConsumer(qName);
+      ClientConsumer consumer3 = clientSession.createConsumer(qName);
+      ClientConsumer[] consumers = new ClientConsumer[]{consumer1, consumer2, consumer3};
+      int[] counts = new int[consumers.length];
+
+      clientSession.start();
+      try
+      {
+         //Add all messages for a particular group before moving onto the next
+         for (int group = 0; group < 10; group++)
+         {
+            for (int messageId = 0; messageId < 3; messageId++)
+            {
+               ClientMessage message = clientSession.createMessage(false);
+               message.putStringProperty("_HQ_GROUP_ID", "" + group);
+               clientProducer.send(message);
+            }
+         }
+
+         for (int c = 0; c < consumers.length; c++)
+         {
+            while (true)
+            {
+               ClientMessage msg = consumers[c].receiveImmediate();
+               if (msg == null)
+               {
+                  break;
+               }
+               counts[c]++;
+            }
+         }
+
+         for (int count : counts)
+         {
+            Assert.assertNotEquals("You shouldn't have all messages bound to a single consumer", 30, count);
+            Assert.assertNotEquals("But you shouldn't have also a single consumer bound to none", 0, count);
+         }
+      }
+      finally
+      {
+         consumer1.close();
+         consumer2.close();
+         consumer3.close();
+      }
+   }
+
 
    private void doTestBasicGrouping() throws Exception
    {
@@ -565,8 +623,8 @@ public class MessageGroupingTest extends UnitTestCase
       locator =
                addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
                                                                                                       UnitTestCase.INVM_CONNECTOR_FACTORY)));
-      ClientSessionFactory sessionFactory = createSessionFactory(locator);
-      clientSession = addClientSession(sessionFactory.createSession(false, true, true));
+      clientSessionFactory = createSessionFactory(locator);
+      clientSession = addClientSession(clientSessionFactory.createSession(false, true, true));
       clientSession.createQueue(qName, qName, null, false);
    }
 
