@@ -26,6 +26,8 @@ public interface GroupingHandler extends NotificationListener, HornetQComponent
 {
    SimpleString getName();
 
+   public void resendPending() throws Exception;
+
    Response propose(Proposal proposal) throws Exception;
 
    void proposed(Response response) throws Exception;
@@ -39,6 +41,8 @@ public interface GroupingHandler extends NotificationListener, HornetQComponent
    Response getProposal(SimpleString fullID);
 
    void awaitBindings() throws Exception;
+
+   void remove(SimpleString groupid, SimpleString clusterName) throws Exception;
 
    void remove(SimpleString groupid, SimpleString clusterName, int distance) throws Exception;
 }

@@ -2032,12 +2032,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public void deleteGrouping(final GroupBinding groupBinding, boolean sync) throws Exception
+   public void deleteGrouping(long tx, final GroupBinding groupBinding) throws Exception
    {
       readLock();
       try
       {
-         bindingsJournal.appendDeleteRecord(groupBinding.getId(), sync);
+         bindingsJournal.appendDeleteRecordTransactional(tx, groupBinding.getId());
       }
       finally
       {

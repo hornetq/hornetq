@@ -849,7 +849,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void setUpGroupHandler(final GroupingHandlerConfiguration.TYPE type, final int node, final int timeout)
    {
-      setUpGroupHandler(type, node, timeout, -1, GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD);
+      setUpGroupHandler(type, node, timeout, 500, GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD);
    }
 
    protected void setUpGroupHandler(final GroupingHandlerConfiguration.TYPE type, final int node, final int timeout, final long groupTimeout,

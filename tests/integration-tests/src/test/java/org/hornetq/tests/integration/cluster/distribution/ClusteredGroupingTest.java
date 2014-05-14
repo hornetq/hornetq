@@ -12,13 +12,28 @@
  */
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -28,6 +43,10 @@ import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationListener;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -260,6 +279,443 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   public void testGroupingSimple2() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, 10000, 500, 750);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
+
+      startServers(0, 1, 2);
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      servers[0].getAddressSettingsRepository().addMatch("#", addressSettings);
+      servers[1].getAddressSettingsRepository().addMatch("#", addressSettings);
+      servers[2].getAddressSettingsRepository().addMatch("#", addressSettings);
+
+      setupSessionFactory(0, isNetty());
+
+      {
+         Map<String, Object> params = generateParams(1, isNetty());
+
+         TransportConfiguration serverTotc;
+
+         if (isNetty())
+         {
+            serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
+         }
+         else
+         {
+            serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
+         }
+
+         locators[1] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
+         locators[1].setReconnectAttempts(-1);
+         addServerLocator(locators[1]);
+         ClientSessionFactory sf = createSessionFactory(locators[1]);
+         ClientSession session = sf.createSession();
+         session.close();
+         sfs[1] = sf;
+      }
+
+//      setupSessionFactory(1, isNetty());
+
+      {
+         Map<String, Object> params = generateParams(2, isNetty());
+
+         TransportConfiguration serverTotc;
+
+         if (isNetty())
+         {
+            serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
+         }
+         else
+         {
+            serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
+         }
+
+         locators[2] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
+         locators[2].setReconnectAttempts(-1);
+         addServerLocator(locators[2]);
+         ClientSessionFactory sf = createSessionFactory(locators[2]);
+         ClientSession session = sf.createSession();
+         session.close();
+         sfs[2] = sf;
+      }
+
+//      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
+
+      final ClientSessionFactory sf0 = sfs[0];
+      final ClientSessionFactory sf1 = sfs[1];
+      final ClientSessionFactory sf2 = sfs[2];
+
+      final ClientSession session = addClientSession(sf1.createSession(false, false, true));
+      final ClientProducer producer = addClientProducer(session.createProducer("queues.testaddress"));
+      List<String> groups = new ArrayList<String>();
+
+      // create a bunch of groups and save a few group IDs for use later
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         String group = UUID.randomUUID().toString();
+         message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+         if (i % 100 == 0)
+         {
+            groups.add(group);
+         }
+         producer.send(message);
+      }
+
+      session.commit();
+      session.close();
+
+      // need thread pool to service both consumers and producers plus a thread to cycle nodes
+      ExecutorService executorService = Executors.newFixedThreadPool(groups.size() * 2 + 1);
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final AtomicInteger producerCounter = new AtomicInteger(0);
+
+      // spin up a bunch of threads to pump messages into some of the groups until one of the producers throws an exception
+      for (final String group : groups)
+      {
+         final Runnable r = new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               ClientSessionFactory factory = null;
+               ClientSession session = null;
+               ClientProducer producer = null;
+
+               try
+               {
+                  synchronized (producerCounter)
+                  {
+                     if (producerCounter.get() % 3 == 0)
+                     {
+                        factory = sf2;
+                        System.out.println("Creating session factory to node 2");
+                     }
+                     else if (producerCounter.get() % 2 == 0)
+                     {
+                        factory = sf1;
+                        System.out.println("Creating session factory to node 1");
+                     }
+                     else
+                     {
+                        factory = sf0;
+                        System.out.println("Creating session factory to node 0");
+                     }
+                     session = addClientSession(factory.createSession(false, true, true));
+                     producer = addClientProducer(session.createProducer("queues.testaddress"));
+                     producerCounter.incrementAndGet();
+                  }
+               }
+               catch (Exception e)
+               {
+                  System.out.println("Producer thread threw exception: " + e.getMessage());
+               }
+
+               while (latch.getCount() == 1)
+               {
+                  ClientMessage message = session.createMessage(true);
+                  message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+                  try
+                  {
+                     producer.send(message);
+//                        session.commit();
+//                     if (count++ % 1000 == 0)
+//                     {
+//                        session.commit();
+//                     }
+                  }
+                  catch (HornetQException e)
+                  {
+                     System.out.println("Producer thread threw exception while sending messages: " + e.getMessage());
+//                     e.printStackTrace();
+//                     latch.countDown();
+                  }
+               }
+            }
+         };
+
+         executorService.execute(r);
+      }
+
+      final AtomicInteger consumerCounter = new AtomicInteger(0);
+
+      // spin up a bunch of threads to consume messages
+      for (final String group : groups)
+      {
+         final Runnable r = new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               System.out.println("Starting consumer thread...");
+               ClientSessionFactory factory = null;
+               ClientSession session = null;
+               ClientConsumer consumer = null;
+
+               try
+               {
+                  synchronized (consumerCounter)
+                  {
+                     if (consumerCounter.get() % 3 == 0)
+                     {
+                        factory = sf2;
+                        System.out.println("Creating session factory to node 2 for consumer");
+                     }
+                     else if (consumerCounter.get() % 2 == 0)
+                     {
+                        factory = sf1;
+                        System.out.println("Creating session factory to node 1 for consumer");
+                     }
+                     else
+                     {
+                        factory = sf0;
+                        System.out.println("Creating session factory to node 0 for consumer");
+                     }
+                     session = addClientSession(factory.createSession(false, true, true));
+                     consumer = addClientConsumer(session.createConsumer("queue0"));
+                     session.start();
+                     consumerCounter.incrementAndGet();
+                  }
+               }
+               catch (Exception e)
+               {
+                  System.out.println("Consumer thread threw exception: " + e.getMessage());
+               }
+
+               while (latch.getCount() == 1)
+               {
+                  try
+                  {
+                     consumer.receive();
+                  }
+                  catch (HornetQException e)
+                  {
+                     System.out.println("Consumer thread threw exception while receiving messages: " + e.getMessage());
+//                     e.printStackTrace();
+                  }
+               }
+            }
+         };
+
+         executorService.execute(r);
+      }
+
+      final Runnable r = new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            int count = 0;
+
+            while (latch.getCount() == 1)
+            {
+               try
+               {
+                  Thread.sleep(30000);
+               }
+               catch (InterruptedException e)
+               {
+                  // ignore
+               }
+
+               if (count % 2 == 0)
+               {
+                  cycleServer(1);
+               }
+               else
+               {
+                  cycleServer(2);
+               }
+            }
+         }
+      };
+
+      executorService.execute(r);
+
+      // wait awhile for the test to fail
+      boolean result = latch.await(150, TimeUnit.SECONDS);
+
+      latch.countDown();
+
+      executorService.shutdownNow();
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+      assertTrue(result);
+   }
+
+   private void cycleServer(int node)
+   {
+      try
+      {
+         stopServers(node);
+         startServers(node);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
+   public void testGroupingSimpleOriginal() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, GroupingHandlerConfiguration.DEFAULT_TIMEOUT, 750, 500);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
+
+      startServers(0, 1);
+
+      servers[0].getAddressSettingsRepository().addMatch("#", addressSettings);
+      servers[1].getAddressSettingsRepository().addMatch("#", addressSettings);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+      final ClientSessionFactory sf = sfs[1];
+      final ClientSession session = addClientSession(sf.createSession(false, false, true));
+      final ClientProducer producer = addClientProducer(session.createProducer("queues.testaddress"));
+      List<String> groups = new ArrayList<String>();
+
+//      Thread.sleep(1000);
+
+      // create a bunch of groups and save a few group IDs for use later
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         String group = UUID.randomUUID().toString();
+         message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+         if (i % 100 == 0)
+         {
+            groups.add(group);
+         }
+         producer.send(message);
+//         IntegrationTestLogger.LOGGER.info("Sent message: " + i);
+      }
+
+      session.commit();
+      session.close();
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch threadsReadyLatch = new CountDownLatch(groups.size());
+      ExecutorService executorService = Executors.newFixedThreadPool(groups.size());
+
+      // spin up a bunch of threads to pump messages into some of the groups until one of the producers throws an exception
+      for (final String group : groups)
+      {
+         final Runnable r = new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               ClientSession session = null;
+               ClientProducer producer = null;
+//               long count = 0;
+
+               try
+               {
+                  session = addClientSession(sf.createSession(false, true, true));
+                  IntegrationTestLogger.LOGGER.info("Creating producer thread's session.");
+                  producer = addClientProducer(session.createProducer("queues.testaddress"));
+               }
+               catch (HornetQException e)
+               {
+                  e.printStackTrace();
+               }
+
+               threadsReadyLatch.countDown();
+               try
+               {
+                  threadsReadyLatch.await(5, TimeUnit.SECONDS);
+               }
+               catch (InterruptedException e)
+               {
+                  e.printStackTrace();
+               }
+
+               while (latch.getCount() == 1)
+               {
+                  ClientMessage message = session.createMessage(true);
+                  message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+                  try
+                  {
+                     producer.send(message);
+//                     if (count++ % 1000 == 0)
+//                     {
+//                        session.commit();
+//                     }
+                  }
+                  catch (HornetQException e)
+                  {
+                     e.printStackTrace();
+                     latch.countDown();
+                  }
+               }
+            }
+         };
+
+         executorService.execute(r);
+      }
+
+      // wait awhile for the test to fail
+      boolean result = latch.await(5, TimeUnit.SECONDS);
+
+      latch.countDown();
+
+      Thread.sleep(500);
+
+      executorService.shutdownNow();
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+      assertTrue(result);
+   }
+
    public void testGroupingBindingNotPresentAtStart() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -440,6 +896,12 @@ public class ClusteredGroupingTest extends ClusterTestBase
             return null;
          }
 
+
+         public void resendPending() throws Exception
+         {
+
+         }
+
          @Override
          public void remove(SimpleString id, SimpleString groupId, int distance)
          {
@@ -503,6 +965,12 @@ public class ClusteredGroupingTest extends ClusterTestBase
          public void awaitBindings()
          {
             //To change body of implemented methods use File | Settings | File Templates.
+         }
+
+         @Override
+         public void remove(SimpleString groupid, SimpleString clusterName) throws Exception
+         {
+
          }
       }, 0);
 

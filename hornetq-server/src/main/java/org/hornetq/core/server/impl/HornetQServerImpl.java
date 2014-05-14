@@ -1932,7 +1932,8 @@ public class HornetQServerImpl implements HornetQServer
                      new RemoteGroupingHandler(managementService,
                config.getName(),
                config.getAddress(),
-               config.getTimeout());
+               config.getTimeout(),
+               config.getGroupTimeout());
          }
 
          this.groupingHandler = groupingHandler1;

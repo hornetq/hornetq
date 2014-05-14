@@ -349,7 +349,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public void deleteGrouping(final GroupBinding groupBinding, boolean sync) throws Exception
+   public void deleteGrouping(final long tx, final GroupBinding groupBinding) throws Exception
    {
    }
 

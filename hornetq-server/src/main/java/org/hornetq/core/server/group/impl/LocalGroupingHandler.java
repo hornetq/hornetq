@@ -77,8 +77,6 @@ public final class LocalGroupingHandler implements GroupingHandler
 
    private boolean started;
 
-   private GroupIdReaper reaperRunnable;
-
    private ScheduledFuture reaperFuture;
 
    private long reaperPeriod;
@@ -120,12 +118,28 @@ public final class LocalGroupingHandler implements GroupingHandler
 
          if (proposal.getClusterName() == null)
          {
+            // TODO: ask Andy when this can be null?
             GroupBinding original = map.get(proposal.getGroupId());
-            return original == null ? null : new Response(proposal.getGroupId(), original.getClusterName());
+            if (original != null)
+            {
+               original.use();
+               return new Response(proposal.getGroupId(), original.getClusterName());
+            }
+            else
+            {
+               return null;
+            }
          }
-         GroupBinding groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
-         if (map.get(groupBinding.getGroupId()) == null)
+         GroupBinding groupBinding = map.get(proposal.getGroupId());
+         if (groupBinding != null)
          {
+            groupBinding.use();
+            return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
+         }
+         else
+         {
+            groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
+
             groupBinding.setId(storageManager.generateUniqueID());
             List<GroupBinding> newList = new ArrayList<GroupBinding>();
             List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
@@ -142,16 +156,17 @@ public final class LocalGroupingHandler implements GroupingHandler
             map.put(groupBinding.getGroupId(), groupBinding);
             return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
          }
-         else
-         {
-            groupBinding = map.get(proposal.getGroupId());
-            return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
-         }
       }
       finally
       {
          storageManager.setContext(originalCtx);
       }
+   }
+
+   public void resendPending() throws Exception
+   {
+      // this only make sense on RemoteGroupingHandler.
+      // this is a no-op on the local one
    }
 
    public void proposed(final Response response) throws Exception
@@ -197,7 +212,16 @@ public final class LocalGroupingHandler implements GroupingHandler
    public Response getProposal(final SimpleString fullID)
    {
       GroupBinding original = map.get(fullID);
-      return original == null ? null : new Response(fullID, original.getClusterName());
+
+      if (original != null)
+      {
+         original.use();
+         return new Response(fullID, original.getClusterName());
+      }
+      else
+      {
+         return null;
+      }
    }
 
    @Override
@@ -237,6 +261,17 @@ public final class LocalGroupingHandler implements GroupingHandler
             waitingForBindings = false;
             lock.unlock();
          }
+      }
+   }
+
+   @Override
+   public void remove(SimpleString groupid, SimpleString clusterName) throws Exception
+   {
+      GroupBinding groupBinding = map.remove(groupid);
+      List<GroupBinding> groupBindings = groupMap.get(clusterName);
+      if (groupBindings != null && groupBinding != null)
+      {
+         groupBindings.remove(groupBinding);
       }
    }
 
@@ -289,9 +324,7 @@ public final class LocalGroupingHandler implements GroupingHandler
             reaperFuture = null;
          }
 
-         reaperRunnable = new GroupIdReaper();
-
-         reaperFuture = scheduledExecutor.scheduleAtFixedRate(reaperRunnable, reaperPeriod,
+         reaperFuture = scheduledExecutor.scheduleAtFixedRate(new GroupReaperScheduler(), reaperPeriod,
                                                               reaperPeriod, TimeUnit.MILLISECONDS);
       }
       started = true;
@@ -326,16 +359,21 @@ public final class LocalGroupingHandler implements GroupingHandler
             @Override
             public void run()
             {
+               long txID = -1;
+
                for (GroupBinding val : list)
                {
                   if (val != null)
                   {
-
                      map.remove(val.getGroupId());
 
                      try
                      {
-                        storageManager.deleteGrouping(val, map.isEmpty());
+                        if (txID < 0)
+                        {
+                           txID = storageManager.generateUniqueID();
+                        }
+                        storageManager.deleteGrouping(txID, val);
                      }
                      catch (Exception e)
                      {
@@ -343,7 +381,21 @@ public final class LocalGroupingHandler implements GroupingHandler
                      }
                   }
                }
-               if(warn)
+
+
+               if (txID >= 0)
+               {
+                  try
+                  {
+                     storageManager.commitBindings(txID);
+                  }
+                  catch (Exception e)
+                  {
+                     HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, SimpleString.toSimpleString("TX:" + txID));
+                  }
+               }
+
+               if (warn)
                {
                   HornetQServerLogger.LOGGER.groupingQueueRemovedComplete(clusterName);
                }
@@ -351,6 +403,16 @@ public final class LocalGroupingHandler implements GroupingHandler
          });
 
       }
+   }
+
+   private final class GroupReaperScheduler implements Runnable
+   {
+      final GroupIdReaper reaper = new GroupIdReaper();
+      public void run()
+      {
+         executor.execute(reaper);
+      }
+
    }
 
    private final class GroupIdReaper implements Runnable
@@ -361,34 +423,36 @@ public final class LocalGroupingHandler implements GroupingHandler
          // This is to avoid leaks on PostOffice between stops and starts
          if (isStarted())
          {
-            if (!isStarted())
-               return;
+            long txID = -1;
+
+            int expiredGroups = 0;
 
             for (GroupBinding groupBinding : map.values())
             {
-               if(groupBinding.getTimeCreated() + groupTimeout > System.currentTimeMillis())
+               if((groupBinding.getTimeUsed() + groupTimeout) < System.currentTimeMillis())
                {
+                  System.out.println("Reaping " + groupBinding.getGroupId());
                   map.remove(groupBinding.getGroupId());
                   List<GroupBinding> groupBindings = groupMap.get(groupBinding.getClusterName());
                   groupBindings.remove(groupBinding);
-                  TypedProperties props = new TypedProperties();
-                  props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, groupBinding.getGroupId());
-                  props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, groupBinding.getClusterName());
-                  props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
-                  props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
-                  props.putIntProperty(ManagementHelper.HDR_DISTANCE, 0);
-                  Notification notification = new Notification(null, NotificationType.UNPROPOSAL, props);
+
+                  sendUnproposal(groupBinding.getGroupId(), groupBinding.getClusterName());
+
+                  expiredGroups ++;
                   try
                   {
-                     managementService.sendNotification(notification);
-                  }
-                  catch (Exception e)
-                  {
-                     HornetQServerLogger.LOGGER.errorHandlingMessage(e);
-                  }
-                  try
-                  {
-                     storageManager.deleteGrouping(groupBinding, true);
+                     if (txID < 0)
+                     {
+                        txID = storageManager.generateUniqueID();
+                     }
+                     storageManager.deleteGrouping(txID, groupBinding);
+
+                     if (expiredGroups >= 1000 && txID >= 0)
+                     {
+                        expiredGroups = 0;
+                        txID = -1;
+                        storageManager.commitBindings(txID);
+                     }
                   }
                   catch (Exception e)
                   {
@@ -396,7 +460,38 @@ public final class LocalGroupingHandler implements GroupingHandler
                   }
                }
             }
+
+            if (txID >= 0)
+            {
+               try
+               {
+                  storageManager.commitBindings(txID);
+               }
+               catch (Exception e)
+               {
+                  HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, SimpleString.toSimpleString("TX:" + txID));
+               }
+            }
          }
+      }
+   }
+
+   private void sendUnproposal(SimpleString groupID, SimpleString clusterName)
+   {
+      TypedProperties props = new TypedProperties();
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, groupID);
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, clusterName);
+      props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putIntProperty(ManagementHelper.HDR_DISTANCE, 0);
+      Notification notification = new Notification(null, NotificationType.UNPROPOSAL, props);
+      try
+      {
+         managementService.sendNotification(notification);
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.errorHandlingMessage(e);
       }
    }
 }

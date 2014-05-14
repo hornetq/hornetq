@@ -30,7 +30,6 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
@@ -275,7 +274,7 @@ public final class BindingsImpl implements Bindings
          }
          else if (groupingHandler != null && message.containsProperty(Message.HDR_GROUP_ID))
          {
-            routeUsingStrictOrdering(message, context, groupingHandler);
+            routeUsingStrictOrdering(message, context, groupingHandler, 0);
          }
          else
          {
@@ -425,7 +424,8 @@ public final class BindingsImpl implements Bindings
 
    private void routeUsingStrictOrdering(final ServerMessage message,
                                          final RoutingContext context,
-                                         final GroupingHandler groupingGroupingHandler) throws Exception
+                                         final GroupingHandler groupingGroupingHandler,
+                                         final int tries) throws Exception
    {
       SimpleString groupId = message.getSimpleStringProperty(Message.HDR_GROUP_ID);
 
@@ -473,15 +473,7 @@ public final class BindingsImpl implements Bindings
                }
             }
 
-            // and lets route it
-            if (theBinding != null)
-            {
-               theBinding.route(message, context);
-            }
-            else
-            {
-               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
-            }
+            routeAndCheckNull(message, context, resp, theBinding, groupId, tries);
          }
          else
          {
@@ -495,17 +487,37 @@ public final class BindingsImpl implements Bindings
                   break;
                }
             }
-            if (chosen != null)
-            {
-               chosen.route(message, context);
-            }
-            else
-            {
-               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
-            }
+
+            routeAndCheckNull(message, context, resp, chosen, groupId, tries);
          }
       }
    }
+
+   private void routeAndCheckNull(ServerMessage message, RoutingContext context, Response resp, Binding theBinding, SimpleString groupId, int tries) throws Exception
+   {
+      // and let's route it
+      if (theBinding != null)
+      {
+         theBinding.route(message, context);
+      }
+      else
+      {
+         groupingHandler.remove(resp.getGroupId(), resp.getClusterName());
+
+         //there may be a chance that the binding has been removed from the post office before it is removed from the grouping handler.
+         //in this case all we can do is remove it and try again.
+         if (tries < 10)
+         {
+            routeUsingStrictOrdering(message, context, groupingHandler, tries + 1);
+         }
+         else
+         {
+
+            route(message, context);
+         }
+      }
+   }
+
 
    private String debugBindings()
    {
@@ -577,7 +589,7 @@ public final class BindingsImpl implements Bindings
 
    private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+      byte[] ids = (byte[]) message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
 
       ByteBuffer buff = ByteBuffer.wrap(ids);
 
