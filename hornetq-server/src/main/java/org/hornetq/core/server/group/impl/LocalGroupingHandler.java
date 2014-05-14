@@ -32,6 +32,7 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
@@ -123,7 +124,7 @@ public final class LocalGroupingHandler implements GroupingHandler
             return original == null ? null : new Response(proposal.getGroupId(), original.getClusterName());
          }
          GroupBinding groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
-         if (map.putIfAbsent(groupBinding.getGroupId(), groupBinding) == null)
+         if (map.get(groupBinding.getGroupId()) == null)
          {
             groupBinding.setId(storageManager.generateUniqueID());
             List<GroupBinding> newList = new ArrayList<GroupBinding>();
@@ -138,6 +139,7 @@ public final class LocalGroupingHandler implements GroupingHandler
             {
                throw HornetQMessageBundle.BUNDLE.ioTimeout();
             }
+            map.put(groupBinding.getGroupId(), groupBinding);
             return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
          }
          else
