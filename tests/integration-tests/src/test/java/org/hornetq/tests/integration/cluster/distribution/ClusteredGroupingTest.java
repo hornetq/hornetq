@@ -14,7 +14,6 @@ package org.hornetq.tests.integration.cluster.distribution;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -27,13 +26,12 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -46,7 +44,7 @@ import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServerLocatorSettingsCallback;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -304,56 +302,22 @@ public class ClusteredGroupingTest extends ClusterTestBase
       servers[2].getAddressSettingsRepository().addMatch("#", addressSettings);
 
       setupSessionFactory(0, isNetty());
-
+      setupSessionFactory(1, isNetty(), new ServerLocatorSettingsCallback()
       {
-         Map<String, Object> params = generateParams(1, isNetty());
-
-         TransportConfiguration serverTotc;
-
-         if (isNetty())
+         @Override
+         public void set(ServerLocator locator)
          {
-            serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
+            locator.setReconnectAttempts(-1);
          }
-         else
-         {
-            serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
-         }
-
-         locators[1] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
-         locators[1].setReconnectAttempts(-1);
-         addServerLocator(locators[1]);
-         ClientSessionFactory sf = createSessionFactory(locators[1]);
-         ClientSession session = sf.createSession();
-         session.close();
-         sfs[1] = sf;
-      }
-
-//      setupSessionFactory(1, isNetty());
-
+      });
+      setupSessionFactory(2, isNetty(), new ServerLocatorSettingsCallback()
       {
-         Map<String, Object> params = generateParams(2, isNetty());
-
-         TransportConfiguration serverTotc;
-
-         if (isNetty())
+         @Override
+         public void set(ServerLocator locator)
          {
-            serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
+            locator.setReconnectAttempts(-1);
          }
-         else
-         {
-            serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
-         }
-
-         locators[2] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
-         locators[2].setReconnectAttempts(-1);
-         addServerLocator(locators[2]);
-         ClientSessionFactory sf = createSessionFactory(locators[2]);
-         ClientSession session = sf.createSession();
-         session.close();
-         sfs[2] = sf;
-      }
-
-//      setupSessionFactory(2, isNetty());
+      });
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
@@ -420,17 +384,17 @@ public class ClusteredGroupingTest extends ClusterTestBase
                      if (producerCounter.get() % 3 == 0)
                      {
                         factory = sf2;
-                        System.out.println("Creating session factory to node 2");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 2");
                      }
                      else if (producerCounter.get() % 2 == 0)
                      {
                         factory = sf1;
-                        System.out.println("Creating session factory to node 1");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 1");
                      }
                      else
                      {
                         factory = sf0;
-                        System.out.println("Creating session factory to node 0");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 0");
                      }
                      session = addClientSession(factory.createSession(false, true, true));
                      producer = addClientProducer(session.createProducer("queues.testaddress"));
@@ -439,7 +403,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                }
                catch (Exception e)
                {
-                  System.out.println("Producer thread threw exception: " + e.getMessage());
+                  IntegrationTestLogger.LOGGER.info("Producer thread threw exception: " + e.getMessage());
                }
 
                while (latch.getCount() == 1)
@@ -457,7 +421,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                   }
                   catch (HornetQException e)
                   {
-                     System.out.println("Producer thread threw exception while sending messages: " + e.getMessage());
+                     IntegrationTestLogger.LOGGER.info("Producer thread threw exception while sending messages: " + e.getMessage());
 //                     e.printStackTrace();
 //                     latch.countDown();
                   }
@@ -478,7 +442,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
             @Override
             public void run()
             {
-               System.out.println("Starting consumer thread...");
+               IntegrationTestLogger.LOGGER.info("Starting consumer thread...");
                ClientSessionFactory factory = null;
                ClientSession session = null;
                ClientConsumer consumer = null;
@@ -490,17 +454,17 @@ public class ClusteredGroupingTest extends ClusterTestBase
                      if (consumerCounter.get() % 3 == 0)
                      {
                         factory = sf2;
-                        System.out.println("Creating session factory to node 2 for consumer");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 2 for consumer");
                      }
                      else if (consumerCounter.get() % 2 == 0)
                      {
                         factory = sf1;
-                        System.out.println("Creating session factory to node 1 for consumer");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 1 for consumer");
                      }
                      else
                      {
                         factory = sf0;
-                        System.out.println("Creating session factory to node 0 for consumer");
+                        IntegrationTestLogger.LOGGER.info("Creating session factory to node 0 for consumer");
                      }
                      session = addClientSession(factory.createSession(false, true, true));
                      consumer = addClientConsumer(session.createConsumer("queue0"));
@@ -510,7 +474,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                }
                catch (Exception e)
                {
-                  System.out.println("Consumer thread threw exception: " + e.getMessage());
+                  IntegrationTestLogger.LOGGER.info("Consumer thread threw exception: " + e.getMessage());
                }
 
                while (latch.getCount() == 1)
@@ -521,7 +485,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                   }
                   catch (HornetQException e)
                   {
-                     System.out.println("Consumer thread threw exception while receiving messages: " + e.getMessage());
+                     IntegrationTestLogger.LOGGER.info("Consumer thread threw exception while receiving messages: " + e.getMessage());
 //                     e.printStackTrace();
                   }
                }
