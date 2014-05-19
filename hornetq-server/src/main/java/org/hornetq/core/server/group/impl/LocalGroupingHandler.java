@@ -447,29 +447,32 @@ public final class LocalGroupingHandler implements GroupingHandler
                   System.out.println("Reaping " + groupBinding.getGroupId());
                   map.remove(groupBinding.getGroupId());
                   List<GroupBinding> groupBindings = groupMap.get(groupBinding.getClusterName());
-                  groupBindings.remove(groupBinding);
-
-                  sendUnproposal(groupBinding.getGroupId(), groupBinding.getClusterName());
-
-                  expiredGroups ++;
-                  try
+                  if (groupBinding != null)
                   {
-                     if (txID < 0)
-                     {
-                        txID = storageManager.generateUniqueID();
-                     }
-                     storageManager.deleteGrouping(txID, groupBinding);
+                     groupBindings.remove(groupBinding);
 
-                     if (expiredGroups >= 1000 && txID >= 0)
+                     sendUnproposal(groupBinding.getGroupId(), groupBinding.getClusterName());
+
+                     expiredGroups++;
+                     try
                      {
-                        expiredGroups = 0;
-                        txID = -1;
-                        storageManager.commitBindings(txID);
+                        if (txID < 0)
+                        {
+                           txID = storageManager.generateUniqueID();
+                        }
+                        storageManager.deleteGrouping(txID, groupBinding);
+
+                        if (expiredGroups >= 1000 && txID >= 0)
+                        {
+                           expiredGroups = 0;
+                           txID = -1;
+                           storageManager.commitBindings(txID);
+                        }
                      }
-                  }
-                  catch (Exception e)
-                  {
-                     HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, groupBinding.getGroupId());
+                     catch (Exception e)
+                     {
+                        HornetQServerLogger.LOGGER.unableToDeleteGroupBindings(e, groupBinding.getGroupId());
+                     }
                   }
                }
             }
