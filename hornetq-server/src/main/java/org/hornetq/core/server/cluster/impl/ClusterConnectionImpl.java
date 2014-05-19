@@ -1398,7 +1398,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          if (server.getGroupingHandler() == null)
          {
-            throw new IllegalStateException("grouping handler is null");
+            throw new IllegalStateException("grouping handler is null while sending response " + response);
          }
 
          server.getGroupingHandler().proposed(response);

@@ -49,6 +49,8 @@ import org.hornetq.core.server.group.impl.Response;
  */
 public final class BindingsImpl implements Bindings
 {
+   private static final int MAX_GROUP_RETRY = 10;
+
    private static boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
@@ -456,11 +458,19 @@ public final class BindingsImpl implements Bindings
             {
                continue;
             }
-            // TODO https://jira.jboss.org/jira/browse/HORNETQ-191
+
             resp = groupingGroupingHandler.propose(new Proposal(fullID, theBinding.getClusterName()));
 
+            if (resp == null)
+            {
+               // it timed out, so we will check it through routeAndcheckNull
+               theBinding = null;
+            }
+
+            // alternativeClusterName will be != null when by the time we looked at the cachedProposed,
+            // another thread already set the proposal, so we use the new alternativeclusterName that's set there
             // if our proposal was declined find the correct binding to use
-            if (resp.getAlternativeClusterName() != null)
+            if (resp != null && resp.getAlternativeClusterName() != null)
             {
                theBinding = null;
                for (Binding binding : bindings)
@@ -502,17 +512,21 @@ public final class BindingsImpl implements Bindings
       }
       else
       {
-         groupingHandler.remove(resp.getGroupId(), resp.getClusterName());
+         if (resp != null)
+         {
+            groupingHandler.remove(resp.getGroupId(), resp.getClusterName());
+         }
 
          //there may be a chance that the binding has been removed from the post office before it is removed from the grouping handler.
          //in this case all we can do is remove it and try again.
-         if (tries < 10)
+         if (tries < MAX_GROUP_RETRY)
          {
             routeUsingStrictOrdering(message, context, groupingHandler, tries + 1);
          }
          else
          {
-
+            // TODO: A Big warning on the logs.. don't merge on master / any permanent branch without finishing this!
+            message.removeProperty(MessageImpl.HDR_GROUP_ID);
             route(message, context);
          }
       }

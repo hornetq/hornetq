@@ -172,7 +172,6 @@ public final class RemoteGroupingHandler implements GroupingHandler
       if (response == null)
       {
          HornetQServerLogger.LOGGER.groupHandlerSendTimeout();
-         throw new IllegalStateException("no response received from group handler for " + proposal.getGroupId());
       }
       return response;
    }

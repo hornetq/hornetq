@@ -585,7 +585,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             managementService.removeNotificationListener(groupingHandler);
             groupingHandler.stop();
-            groupingHandler = null;
          }
          stopComponent(clusterManager);
          freezeConnections();

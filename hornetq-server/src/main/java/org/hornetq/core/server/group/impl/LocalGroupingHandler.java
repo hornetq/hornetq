@@ -130,32 +130,45 @@ public final class LocalGroupingHandler implements GroupingHandler
                return null;
             }
          }
-         GroupBinding groupBinding = map.get(proposal.getGroupId());
-         if (groupBinding != null)
-         {
-            groupBinding.use();
-            return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
-         }
-         else
-         {
-            groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
 
-            groupBinding.setId(storageManager.generateUniqueID());
-            List<GroupBinding> newList = new ArrayList<GroupBinding>();
-            List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
-            if (oldList != null)
+         boolean addRecord = false;
+
+         GroupBinding groupBinding = null;
+         lock.lock();
+         try
+         {
+            groupBinding = map.get(proposal.getGroupId());
+            if (groupBinding != null)
             {
-               newList = oldList;
+               groupBinding.use();
+               // Returning with an alternate cluster name, as it's been already grouped
+               return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
             }
-            newList.add(groupBinding);
-            storageManager.addGrouping(groupBinding);
-            if (!storageManager.waitOnOperations(timeout))
+            else
             {
-               throw HornetQMessageBundle.BUNDLE.ioTimeout();
+               addRecord = true;
+               groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
+               groupBinding.setId(storageManager.generateUniqueID());
+               List<GroupBinding> newList = new ArrayList<GroupBinding>();
+               List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
+               if (oldList != null)
+               {
+                  newList = oldList;
+               }
+               newList.add(groupBinding);
+               map.put(groupBinding.getGroupId(), groupBinding);
             }
-            map.put(groupBinding.getGroupId(), groupBinding);
-            return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
          }
+         finally
+         {
+            lock.unlock();
+         }
+         // Storing the record outside of any locks
+         if (addRecord)
+         {
+            storageManager.addGrouping(groupBinding);
+         }
+         return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
       }
       finally
       {
