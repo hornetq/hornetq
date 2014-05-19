@@ -22,6 +22,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
@@ -131,6 +132,12 @@ public final class RemoteGroupingHandler implements GroupingHandler
       {
          checkTimeout(response);
          return response;
+      }
+
+      if (!started)
+      {
+         // TODO: Use the Logger, don't merge without finishing this!
+         throw new HornetQException("Server is already under stop condition, and you can't use message grouping at this point");
       }
 
       Notification notification = null;
