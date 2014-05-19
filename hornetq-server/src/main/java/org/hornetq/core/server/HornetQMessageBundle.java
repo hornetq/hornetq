@@ -315,4 +315,7 @@ public interface HornetQMessageBundle
 
    @Message(id = 119081, value =  "No Discovery Group configuration named {0} found", format = Message.Format.MESSAGE_FORMAT)
    HornetQException noDiscoveryGroupFound(DiscoveryGroupConfiguration dg);
+
+   @Message(id = 119082, value =  "Server is stopping. Message grouping not allowed", format = Message.Format.MESSAGE_FORMAT)
+   HornetQException groupWhileStopping();
 }

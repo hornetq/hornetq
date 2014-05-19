@@ -1301,6 +1301,12 @@ public interface HornetQServerLogger extends BasicLogger
        format = Message.Format.MESSAGE_FORMAT)
     void bridgeCantFindConnectors(String bridgeName);
 
+   @LogMessage(level = Logger.Level.WARN)
+    @Message(
+       id = 224066,
+       value = "Could not contact group handler coordinator after 10 retries, message being routed without grouping information",
+       format = Message.Format.MESSAGE_FORMAT)
+   void impossibleToRouteGrouped();
 
 
 }

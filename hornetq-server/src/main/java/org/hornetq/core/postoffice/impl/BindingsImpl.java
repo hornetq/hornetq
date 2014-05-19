@@ -526,7 +526,7 @@ public final class BindingsImpl implements Bindings
          }
          else
          {
-            // TODO: A Big warning on the logs.. don't merge on master / any permanent branch without finishing this!
+            HornetQServerLogger.LOGGER.impossibleToRouteGrouped();
             message.removeProperty(MessageImpl.HDR_GROUP_ID);
             route(message, context);
          }

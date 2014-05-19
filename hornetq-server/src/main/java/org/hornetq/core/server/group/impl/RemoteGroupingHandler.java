@@ -27,6 +27,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
@@ -136,8 +137,7 @@ public final class RemoteGroupingHandler implements GroupingHandler
 
       if (!started)
       {
-         // TODO: Use the Logger, don't merge without finishing this!
-         throw new HornetQException("Server is stopping. Message grouping not allowed.");
+         throw HornetQMessageBundle.BUNDLE.groupWhileStopping();
       }
 
       Notification notification = null;
