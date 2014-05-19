@@ -137,7 +137,7 @@ public final class RemoteGroupingHandler implements GroupingHandler
       if (!started)
       {
          // TODO: Use the Logger, don't merge without finishing this!
-         throw new HornetQException("Server is already under stop condition, and you can't use message grouping at this point");
+         throw new HornetQException("Server is stopping. Message grouping not allowed.");
       }
 
       Notification notification = null;
