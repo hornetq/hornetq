@@ -463,6 +463,7 @@ public final class BindingsImpl implements Bindings
 
             if (resp == null)
             {
+               new Exception ("it got a timeout on propose, trying again, number of retries: " + tries).printStackTrace();
                // it timed out, so we will check it through routeAndcheckNull
                theBinding = null;
             }
