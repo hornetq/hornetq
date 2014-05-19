@@ -1,8 +1,0 @@
-
-[3:06pm] clebert: -1 - have apple to revert the patch
-clebert: I - sync properly on LocalGroupingHandler
-[3:05pm] clebert: II - sync properly on removeGrouping (the other place)
-[3:05pm] clebert: III - have the scheduled spawning a new executor
-[3:06pm] clebert: IV - your fix will be moot now… but I will still have it in place
-[3:06pm] clebert: IV (the latest one that is)
-[3:07pm] ataylor: V - a warning "updaTING GROUP ID" it should also remove the journal
