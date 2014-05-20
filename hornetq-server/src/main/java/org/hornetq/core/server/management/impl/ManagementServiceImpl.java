@@ -665,10 +665,10 @@ public class ManagementServiceImpl implements ManagementService
                    ", notificationEnabled=" + notificationsEnabled +
                    " messagingServerControl=" + messagingServerControl);
       }
-      if (messagingServerControl != null && notificationsEnabled)
+      // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
+      synchronized (this)
       {
-         // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
-         synchronized (this)
+         if (messagingServerControl != null && notificationsEnabled)
          {
             // We also need to synchronize on the post office notification lock
             // otherwise we can get notifications arriving in wrong order / missing
