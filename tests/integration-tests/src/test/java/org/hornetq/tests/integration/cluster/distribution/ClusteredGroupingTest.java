@@ -307,7 +307,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void set(ServerLocator locator)
          {
-            locator.setReconnectAttempts(-1);
+            locator.setReconnectAttempts(15);
          }
       });
       setupSessionFactory(2, isNetty(), new ServerLocatorSettingsCallback()
@@ -315,13 +315,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void set(ServerLocator locator)
          {
-            locator.setReconnectAttempts(-1);
+            locator.setReconnectAttempts(15);
          }
       });
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
 
       addConsumer(0, 0, "queue0", null);
       addConsumer(1, 1, "queue0", null);
