@@ -2181,7 +2181,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       public void onException(final JMSException e)
       {
-         HornetQJMSServerLogger.LOGGER.bridgeFailure();
+         HornetQJMSServerLogger.LOGGER.bridgeFailure(e);
 
          synchronized (lock)
          {

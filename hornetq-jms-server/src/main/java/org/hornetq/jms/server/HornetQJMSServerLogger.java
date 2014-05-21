@@ -112,7 +112,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122006, value = "Detected failure on bridge connection" , format = Message.Format.MESSAGE_FORMAT)
-   void bridgeFailure();
+   void bridgeFailure(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 122007, value = "Queue {0} does not exist on the topic {1}. It was deleted manually probably." , format = Message.Format.MESSAGE_FORMAT)
