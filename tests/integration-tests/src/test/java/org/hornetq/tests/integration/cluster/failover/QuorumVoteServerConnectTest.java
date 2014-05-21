@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.core.server.cluster.qourum.BooleanVote;
 import org.hornetq.core.server.cluster.qourum.QuorumVoteServerConnect;
+import org.hornetq.tests.integration.server.FakeStorageManager;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,10 +60,10 @@ public class QuorumVoteServerConnectTest extends UnitTestCase
    public void testClusterSize()
    {
       CountDownLatch latch = new CountDownLatch(1);
-      QuorumVoteServerConnect quorum = new QuorumVoteServerConnect(latch, size);
+      QuorumVoteServerConnect quorum = new QuorumVoteServerConnect(latch, size, new FakeStorageManager());
       for (int i = 0; i < trueVotes - 1; i++)
       {
-         quorum.vote(BooleanVote.TRUE_VOTE);
+         quorum.vote(new BooleanVote(true));
       }
 
       if (size <= 2)
@@ -74,10 +75,10 @@ public class QuorumVoteServerConnectTest extends UnitTestCase
          assertFalse(quorum.getDecision());
       }
       latch = new CountDownLatch(1);
-      quorum = new QuorumVoteServerConnect(latch, size);
+      quorum = new QuorumVoteServerConnect(latch, size, new FakeStorageManager());
       for (int i = 0; i < trueVotes; i++)
       {
-         quorum.vote(BooleanVote.TRUE_VOTE);
+         quorum.vote(new BooleanVote(true));
       }
       assertTrue(quorum.getDecision());
    }

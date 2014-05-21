@@ -68,12 +68,14 @@ public class ScaleDownTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       if (useScaleDownGroupName)
       {
-         servers[0].getConfiguration().setScaleDownGroupName("bill");
-         servers[1].getConfiguration().setScaleDownGroupName("bill");
+         servers[0].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
+         servers[1].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
       }
-      servers[0].getConfiguration().setScaleDown(true);
+      servers[0].getConfiguration().getHAPolicy().setScaleDown(true);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 0, 1);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 1, 0);
+      servers[0].getConfiguration().getHAPolicy().getScaleDownConnectors().addAll(servers[0].getConfiguration().getClusterConfigurations().iterator().next().getStaticConnectors());
+      servers[1].getConfiguration().getHAPolicy().getScaleDownConnectors().addAll(servers[1].getConfiguration().getClusterConfigurations().iterator().next().getStaticConnectors());
       startServers(0, 1);
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -91,8 +93,8 @@ public class ScaleDownTest extends ClusterTestBase
       closeAllConsumers();
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
-      servers[0].getConfiguration().setScaleDown(false);
-      servers[1].getConfiguration().setScaleDown(false);
+      servers[0].getConfiguration().getHAPolicy().setScaleDown(false);
+      servers[1].getConfiguration().getHAPolicy().setScaleDown(false);
       stopServers(0, 1);
       super.tearDown();
    }

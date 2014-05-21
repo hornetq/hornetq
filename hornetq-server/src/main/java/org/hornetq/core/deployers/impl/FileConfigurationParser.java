@@ -47,6 +47,8 @@ import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
+import org.hornetq.core.server.cluster.ha.HAPolicyTemplate;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -175,6 +177,13 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       config.setName(getString(e, "name", config.getName(), Validators.NO_CHECK));
 
+      NodeList haPolicyNodes = e.getElementsByTagName("ha-policy");
+
+      if (haPolicyNodes.getLength() > 0)
+      {
+         parseHAPolicyConfiguration((Element) haPolicyNodes.item(0), config);
+      }
+
       NodeList elems = e.getElementsByTagName("clustered");
       if (elems != null && elems.getLength() > 0)
       {
@@ -187,17 +196,12 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       config.setAllowAutoFailBack(getBoolean(e, "allow-failback", config.isClustered()));
 
       config.setBackupGroupName(getString(e, "backup-group-name", config.getBackupGroupName(),
-                                          Validators.NO_CHECK));
-
-      config.setScaleDownGroupName(getString(e, "scale-down-group-name", config.getScaleDownGroupName(),
-                                             Validators.NO_CHECK));
+            Validators.NO_CHECK));
 
       config.setFailbackDelay(getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
 
       config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
-                                                    config.isFailoverOnServerShutdown()));
-      config.setScaleDown(getBoolean(e, "scale-down",
-                                     config.isScaleDown()));
+            config.isFailoverOnServerShutdown()));
       config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
       config.setScaleDownClustername(getString(e, "scale-down-clustername", null, Validators.NO_CHECK));
 
@@ -679,18 +683,6 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
             updatebackupParams(name, portOffset, entry.getValue().getParams());
          }
       }
-      else
-      {
-         //use the scale down cluster if set, this gets used when scaling down, typically invm if colocated
-         if (scaleDownConnector != null)
-         {
-            List<ClusterConnectionConfiguration> clusterConfigurations = backupConfiguration.getClusterConfigurations();
-            for (ClusterConnectionConfiguration clusterConfiguration : clusterConfigurations)
-            {
-               clusterConfiguration.setScaleDownConnector(scaleDownConnector);
-            }
-         }
-      }
       backupConfiguration.setJournalDirectory(backupConfiguration.getJournalDirectory() + "/" + name);
       backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + "/" + name);
       backupConfiguration.setPagingDirectory(backupConfiguration.getPagingDirectory() + "/" + name);
@@ -1036,7 +1028,99 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       return new TransportConfiguration(clazz, params, name);
    }
+   private void parseHAPolicyConfiguration(final Element e, final Configuration mainConfig)
+   {
+      String policyTemplate = e.getAttribute("template");
+      HAPolicy policy;
+      if (policyTemplate != null)
+      {
+         policy = HAPolicyTemplate.valueOf(policyTemplate).getHaPolicy();
+      }
+      else
+      {
+         policy = new HAPolicy();
+      }
+      mainConfig.setHAPolicy(policy);
 
+      String policyType = getString(e, "policy-type", policy.getPolicyType().toString(), Validators.NOT_NULL_OR_EMPTY);
+
+      policy.setPolicyType(HAPolicy.POLICY_TYPE.valueOf(policyType));
+
+      boolean requestBackup = getBoolean(e, "request-backup", policy.isRequestBackup());
+
+      policy.setRequestBackup(requestBackup);
+
+      int backupRequestRetries = getInteger(e, "backup-request-retries", policy.getBackupRequestRetries(), Validators.MINUS_ONE_OR_GE_ZERO);
+
+      policy.setBackupRequestRetries(backupRequestRetries);
+
+      long backupRequestRetryInterval = getLong(e, "backup-request-retry-interval", policy.getBackupRequestRetryInterval(), Validators.GT_ZERO);
+
+      policy.setBackupRequestRetryInterval(backupRequestRetryInterval);
+
+      int maxBackups = getInteger(e, "max-backups", policy.getMaxBackups(), Validators.GE_ZERO);
+
+      policy.setMaxBackups(maxBackups);
+
+      int backupPortOffset = getInteger(e, "backup-port-offset", policy.getBackupPortOffset(), Validators.GT_ZERO);
+
+      policy.setBackupPortOffset(backupPortOffset);
+
+      String backupStrategy = getString(e, "backup-strategy", policy.getBackupStrategy().toString(), Validators.NOT_NULL_OR_EMPTY);
+
+      policy.setBackupStrategy(BackupStrategy.valueOf(backupStrategy));
+
+      String scaleDownDiscoveryGroup = getString(e, "scale-down-discovery-group", policy.getScaleDownDiscoveryGroup(), Validators.NO_CHECK);
+
+      policy.setScaleDownDiscoveryGroup(scaleDownDiscoveryGroup);
+
+      String scaleDownDiscoveryGroupName = getString(e, "scale-down-group-name", policy.getScaleDownGroupName(), Validators.NO_CHECK);
+
+      policy.setScaleDownGroupName(scaleDownDiscoveryGroupName);
+
+      NodeList scaleDownConnectorNode = e.getElementsByTagName("scale-down-connectors");
+
+      if (scaleDownConnectorNode != null && scaleDownConnectorNode.getLength() > 0)
+      {
+         NodeList scaleDownConnectors = scaleDownConnectorNode.item(0).getChildNodes();
+         for (int i = 0; i < scaleDownConnectors.getLength(); i++)
+         {
+            Node child = scaleDownConnectors.item(i);
+            if (child.getNodeName().equals("connector-ref"))
+            {
+               String connectorName = getTrimmedTextContent(child);
+
+               policy.getScaleDownConnectors().add(connectorName);
+            }
+         }
+      }
+
+      NodeList remoteConnectorNode = e.getElementsByTagName("remote-connectors");
+
+      if (remoteConnectorNode != null && remoteConnectorNode.getLength() > 0)
+      {
+         NodeList remoteConnectors = remoteConnectorNode.item(0).getChildNodes();
+         for (int i = 0; i < remoteConnectors.getLength(); i++)
+         {
+            Node child = remoteConnectors.item(i);
+            if (child.getNodeName().equals("connector-ref"))
+            {
+               String connectorName = getTrimmedTextContent(child);
+               policy.getRemoteConnectors().add(connectorName);
+            }
+         }
+      }
+
+
+
+      Boolean scaleDown = getBoolean(e, "scale-down", policy.isScaleDown());
+
+      policy.setScaleDown(scaleDown);
+
+      String scaleDownGroupName = getString(e, "scale-down-group-name", policy.getScaleDownGroupName(), Validators.NO_CHECK);
+
+      policy.setScaleDownGroupName(scaleDownGroupName);
+   }
    private void parseBroadcastGroupConfiguration(final Element e, final Configuration mainConfig)
    {
       String name = e.getAttribute("name");

@@ -16,6 +16,10 @@ package org.hornetq.core.protocol;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_CONNECT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_CONNECT_REPLY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.BACKUP_REQUEST;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.BACKUP_REQUEST_RESPONSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.QUORUM_VOTE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.QUORUM_VOTE_REPLY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_APPEND_TX;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
@@ -39,6 +43,10 @@ import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFail
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRequestMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
@@ -185,6 +193,26 @@ public class ServerPacketDecoder extends ClientPacketDecoder
          case NODE_ANNOUNCE:
          {
             packet = new NodeAnnounceMessage();
+            break;
+         }
+         case BACKUP_REQUEST:
+         {
+            packet = new BackupRequestMessage();
+            break;
+         }
+         case BACKUP_REQUEST_RESPONSE:
+         {
+            packet = new BackupResponseMessage();
+            break;
+         }
+         case QUORUM_VOTE:
+         {
+            packet = new QuorumVoteMessage();
+            break;
+         }
+         case QUORUM_VOTE_REPLY:
+         {
+            packet = new QuorumVoteReplyMessage();
             break;
          }
          default:

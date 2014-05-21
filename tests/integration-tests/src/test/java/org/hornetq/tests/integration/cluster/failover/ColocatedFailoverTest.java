@@ -33,6 +33,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.server.impl.QueueImpl;
@@ -52,6 +53,7 @@ import org.junit.Test;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -150,7 +152,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
          producer.send(queue, message);
       }
       latch.await(10, TimeUnit.SECONDS);
-
+      System.out.println(locator.getTopology().describe());
       liveServer1.crash(true, session1);
       for (int i = 0; i < numMessages; i++)
       {
@@ -1337,7 +1339,11 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration1.setPagingDirectory(getTestDir() + "/paging2");
       backupConfiguration1.setBackupStrategy(BackupStrategy.SCALE_DOWN);
       backupConfiguration1.setBackup(true);
-      backupConfiguration1.getClusterConfigurations().get(0).setScaleDownConnector(liveConnector1.getName());
+      HAPolicy haPolicy = new HAPolicy();
+      ArrayList<String> scaleDownConnectors = new ArrayList<>();
+      scaleDownConnectors.add(liveConnector1.getName());
+      haPolicy.setScaleDownConnectors(scaleDownConnectors);
+      backupConfiguration1.setHAPolicy(haPolicy);
       liveConfiguration1.getBackupServerConfigurations().add(backupConfiguration1);
 
       liveServer1 = createTestableServer(liveConfiguration1, nodeManagerLive1, nodeManagerLive2, 1);
@@ -1365,7 +1371,11 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration2.setPagingDirectory(getTestDir() + "/paging1");
       backupConfiguration2.setBackupStrategy(BackupStrategy.SCALE_DOWN);
       backupConfiguration2.setBackup(true);
-      backupConfiguration2.getClusterConfigurations().get(0).setScaleDownConnector(liveConnector2.getName());
+      HAPolicy haPolicy2 = new HAPolicy();
+      ArrayList<String> scaleDownConnectors2 = new ArrayList<>();
+      scaleDownConnectors2.add(liveConnector2.getName());
+      haPolicy2.setScaleDownConnectors(scaleDownConnectors2);
+      backupConfiguration2.setHAPolicy(haPolicy2);
       liveConfiguration2.getBackupServerConfigurations().add(backupConfiguration2);
 
       liveServer2 = createTestableServer(liveConfiguration2, nodeManagerLive2, nodeManagerLive1, 2);

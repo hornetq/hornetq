@@ -38,6 +38,7 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -58,8 +59,6 @@ public class ConfigurationImpl implements Configuration
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    private String backupGroupName = null;
-
-   private String scaleDownGroupName = null;
 
    protected boolean backup = HornetQDefaultConfiguration.isDefaultBackup();
 
@@ -196,8 +195,6 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean failoverOnServerShutdown = HornetQDefaultConfiguration.isDefaultFailoverOnServerShutdown();
 
-   protected boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
-
    // percentage of free memory which triggers warning from the memory manager
    private int memoryWarningThreshold = HornetQDefaultConfiguration.getDefaultMemoryWarningThreshold();
 
@@ -232,6 +229,8 @@ public class ConfigurationImpl implements Configuration
    private BackupStrategy backupStrategy;
 
    private long journalLockAcquisitionTimeout = HornetQDefaultConfiguration.getDefaultJournalLockAcquisitionTimeout();
+
+   private HAPolicy haPolicy = new HAPolicy();
 
    // Public -------------------------------------------------------------------------
 
@@ -816,16 +815,6 @@ public class ConfigurationImpl implements Configuration
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
-   public boolean isScaleDown()
-   {
-      return scaleDown;
-   }
-
-   public void setScaleDown(boolean scaleDown)
-   {
-      this.scaleDown = scaleDown;
-   }
-
    public void setClusterPassword(final String theclusterPassword)
    {
       clusterPassword = theclusterPassword;
@@ -1017,16 +1006,6 @@ public class ConfigurationImpl implements Configuration
       this.backupGroupName = nodeGroupName;
    }
 
-   public String getScaleDownGroupName()
-   {
-      return scaleDownGroupName;
-   }
-
-   public void setScaleDownGroupName(String nodeGroupName)
-   {
-      this.scaleDownGroupName = nodeGroupName;
-   }
-
    @Override
    public String toString()
    {
@@ -1179,7 +1158,6 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + messageExpiryThreadPriority;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       result = prime * result + ((backupGroupName == null) ? 0 : backupGroupName.hashCode());
-      result = prime * result + ((scaleDownGroupName == null) ? 0 : scaleDownGroupName.hashCode());
       result =
                prime * result +
                         ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
@@ -1437,13 +1415,6 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!backupGroupName.equals(other.backupGroupName))
          return false;
-      if (scaleDownGroupName == null)
-      {
-         if (other.scaleDownGroupName != null)
-            return false;
-      }
-      else if (!scaleDownGroupName.equals(other.scaleDownGroupName))
-         return false;
       if (outgoingInterceptorClassNames == null)
       {
          if (other.outgoingInterceptorClassNames != null)
@@ -1555,5 +1526,17 @@ public class ConfigurationImpl implements Configuration
    public long getJournalLockAcquisitionTimeout()
    {
       return journalLockAcquisitionTimeout;
+   }
+
+   @Override
+   public HAPolicy getHAPolicy()
+   {
+      return haPolicy;
+   }
+
+   @Override
+   public void setHAPolicy(HAPolicy haPolicy)
+   {
+      this.haPolicy = haPolicy;
    }
 }

@@ -13,19 +13,35 @@
 
 package org.hornetq.core.server.cluster.qourum;
 
+import org.hornetq.api.core.HornetQBuffer;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * the vote itself
  */
-public interface Vote<T>
+public abstract class Vote<T>
 {
+
+   public Map<String,Object> getVoteMap()
+   {
+      HashMap<String, Object> map = new HashMap<>();
+      return map;
+   }
+
+
+   public abstract void encode(final HornetQBuffer buff);
+
+   public abstract void decode(final HornetQBuffer buff);
    //whether or note we should ask the target server for an answer or decide ourselves, for instance if we couldn't
    //connect to the node in the first place.
-   boolean isRequestServerVote();
+   public abstract boolean isRequestServerVote();
 
    /**
     * return the vote
     *
     * @return the vote
     */
-   T getVote();
+   public abstract T getVote();
 }

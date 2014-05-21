@@ -12,18 +12,28 @@
  */
 package org.hornetq.core.server.cluster.qourum;
 
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.impl.Topology;
+
 /**
  * the vote itself. the vote can be decided by the enquirer or sent out to each node in the quorum.
  */
-public interface QuorumVote<T>
+public abstract class QuorumVote<V extends Vote, T>
 {
+   private SimpleString name;
+
+   public QuorumVote(SimpleString name)
+   {
+      this.name = name;
+   }
+
    /**
     * called by the {@link org.hornetq.core.server.cluster.qourum.QuorumManager} when one of teh nodes in the quorum is
     * successfully connected to. The QuorumVote can then decide whether or not a decision can be made with just that information.
     *
     * @return the vote to use
     */
-   Vote connected();
+   public abstract Vote connected();
 
    /**
     * called by the {@link org.hornetq.core.server.cluster.qourum.QuorumManager} fails to connect to a node in the quorum.
@@ -31,7 +41,7 @@ public interface QuorumVote<T>
     * cannot cannot be asked.
     * @return the vote to use
     */
-   Vote notConnected();
+   public abstract Vote notConnected();
 
    /**
     * called by the {@link org.hornetq.core.server.cluster.qourum.QuorumManager} when a vote can be made, either from the
@@ -39,12 +49,29 @@ public interface QuorumVote<T>
     *
     * @param vote the vote to make.
     */
-   void vote(Vote vote);
+   public abstract void vote(V vote);
 
    /**
     * get the decion of the vote
     *
     * @return the voting decision
     */
-   T getDecision();
+   public abstract T getDecision();
+
+   /**
+    * called by the {@link org.hornetq.core.server.cluster.qourum.QuorumManager} when all the votes have been cast and received.
+    *
+    * @param voteTopology the topology of where the votes were sent.
+    */
+   public abstract void allVotesCast(Topology voteTopology);
+
+   /**
+    * the name of this quorum vote, used for identifying the correct {@link org.hornetq.core.server.cluster.qourum.QuorumVoteHandler}
+    *
+    * @return the name of the wuorum vote
+    */
+   public SimpleString getName()
+   {
+      return name;
+   }
 }

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,6 +94,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
@@ -298,14 +300,14 @@ public class HornetQServerImpl implements HornetQServer
 
    private Activation activation;
 
+   private Map<String, Object> activationParams = new HashMap<>();
+
    private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
    private final Object failbackCheckerGuard = new Object();
    private boolean cancelFailBackChecker;
 
    private final HornetQServer parentServer;
-
-   private Map<String, HornetQServer> backupServers = new HashMap<>();
 
    private ClientSessionFactoryInternal scaleDownClientSessionFactory = null;
 
@@ -541,6 +543,10 @@ public class HornetQServerImpl implements HornetQServer
       stop(configuration.isFailoverOnServerShutdown());
    }
 
+   public void addActivationParam(String key, Object val)
+   {
+      activationParams.put(key, val);
+   }
    @Override
    public boolean isAddressBound(String address) throws Exception
    {
@@ -590,11 +596,6 @@ public class HornetQServerImpl implements HornetQServer
     */
    private void stop(boolean failoverOnServerShutdown, final boolean criticalIOError, boolean failingBack) throws Exception
    {
-      for (HornetQServer hornetQServer : backupServers.values())
-      {
-         hornetQServer.stop();
-      }
-      backupServers.clear();
       if (!failingBack)
       {
          synchronized (failbackCheckerGuard)
@@ -641,14 +642,14 @@ public class HornetQServerImpl implements HornetQServer
 
          // connect to the scale-down target first so that when we freeze/disconnect the clients we can tell them where
          // we're sending the messages
-         if (configuration.isScaleDown())
+         if (configuration.getHAPolicy().isScaleDown())
          {
             connectToScaleDownTarget();
          }
          freezeConnections();
       }
 
-      if (configuration.isScaleDown() && scaleDownClientSessionFactory != null)
+      if (configuration.getHAPolicy().isScaleDown() && scaleDownClientSessionFactory != null)
       {
          try
          {
@@ -802,76 +803,66 @@ public class HornetQServerImpl implements HornetQServer
    public long scaleDown() throws Exception
    {
       ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager);
-      return scaleDownHandler.scaleDown(scaleDownClientSessionFactory);
-   }
-
-   public ServerLocatorInternal getScaleDownConnector(ClusterConnectionConfiguration ccc) throws HornetQException
-   {
-      if (ccc.getScaleDownConnector() != null)
+      ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = ((PostOfficeImpl) postOffice).getDuplicateIDCaches();
+      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<>();
+      for (SimpleString address : duplicateIDCaches.keySet())
       {
-         TransportConfiguration transportConfiguration = configuration.getConnectorConfigurations().get(ccc.getScaleDownConnector());
-         return (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(transportConfiguration);
+         DuplicateIDCache duplicateIDCache = postOffice.getDuplicateIDCache(address);
+         duplicateIDMap.put(address, duplicateIDCache.getMap());
       }
-      else
-      {
-         return getLocator(ccc);
-      }
+      return scaleDownHandler.scaleDown(scaleDownClientSessionFactory, resourceManager, duplicateIDMap, configuration.getManagementAddress(), null);
    }
 
    public void connectToScaleDownTarget()
    {
-      ClusterConnectionConfiguration config = ConfigurationUtils.getScaleDownClusterConfiguration(configuration);
-      if (config != null)
+      try
       {
-         try
-         {
-            scaleDownServerLocator = getScaleDownConnector(config);
-            //use a Node Locator to connect to the cluster
-            LiveNodeLocator nodeLocator = configuration.getScaleDownGroupName() == null ?
-               new AnyLiveNodeLocatorForScaleDown(HornetQServerImpl.this) :
-               new NamedLiveNodeLocatorForScaleDown(configuration.getScaleDownGroupName(), HornetQServerImpl.this);
-            scaleDownServerLocator.addClusterTopologyListener(nodeLocator);
+         scaleDownServerLocator = clusterManager.getHAManager().getScaleDownConnector();
+         //use a Node Locator to connect to the cluster
+         LiveNodeLocator nodeLocator = clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName() == null ?
+            new AnyLiveNodeLocatorForScaleDown(HornetQServerImpl.this) :
+            new NamedLiveNodeLocatorForScaleDown(clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), HornetQServerImpl.this);
+         scaleDownServerLocator.addClusterTopologyListener(nodeLocator);
 
-            nodeLocator.connectToCluster(scaleDownServerLocator);
-            // a timeout is necessary here in case we use a NamedLiveNodeLocatorForScaleDown and there's no matching node in the cluster
-            // should the timeout be configurable?
-            nodeLocator.locateNode(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
-            ClientSessionFactoryInternal clientSessionFactory = null;
-            while (clientSessionFactory == null)
-            {
-               Pair<TransportConfiguration, TransportConfiguration> possibleLive = null;
-               try
-               {
-                  possibleLive = nodeLocator.getLiveConfiguration();
-                  if (possibleLive == null)  // we've tried every connector
-                     break;
-                  clientSessionFactory = (ClientSessionFactoryInternal) scaleDownServerLocator.createSessionFactory(possibleLive.getA(), 0, false);
-               }
-               catch (Exception e)
-               {
-                  HornetQServerLogger.LOGGER.trace("Failed to connect to " + possibleLive.getA());
-                  nodeLocator.notifyRegistrationFailed(false);
-                  if (clientSessionFactory != null)
-                  {
-                     clientSessionFactory.close();
-                  }
-                  clientSessionFactory = null;
-                  // should I try the backup (i.e. getB()) from possibleLive?
-               }
-            }
-            if (clientSessionFactory != null)
-            {
-               scaleDownClientSessionFactory = clientSessionFactory;
-            }
-            else
-            {
-               throw new HornetQException("Unable to connect to server for scale-down");
-            }
-         }
-         catch (Exception e)
+         nodeLocator.connectToCluster(scaleDownServerLocator);
+         // a timeout is necessary here in case we use a NamedLiveNodeLocatorForScaleDown and there's no matching node in the cluster
+         // should the timeout be configurable?
+         nodeLocator.locateNode(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+         ClientSessionFactoryInternal clientSessionFactory = null;
+         while (clientSessionFactory == null)
          {
-            HornetQServerLogger.LOGGER.failedToScaleDown(e);
+            Pair<TransportConfiguration, TransportConfiguration> possibleLive = null;
+            try
+            {
+               possibleLive = nodeLocator.getLiveConfiguration();
+               if (possibleLive == null)  // we've tried every connector
+                  break;
+               clientSessionFactory = (ClientSessionFactoryInternal) scaleDownServerLocator.createSessionFactory(possibleLive.getA(), 0, false);
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.trace("Failed to connect to " + possibleLive.getA());
+               nodeLocator.notifyRegistrationFailed(false);
+               if (clientSessionFactory != null)
+               {
+                  clientSessionFactory.close();
+               }
+               clientSessionFactory = null;
+               // should I try the backup (i.e. getB()) from possibleLive?
+            }
          }
+         if (clientSessionFactory != null)
+         {
+            scaleDownClientSessionFactory = clientSessionFactory;
+         }
+         else
+         {
+            throw new HornetQException("Unable to connect to server for scale-down");
+         }
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.failedToScaleDown(e);
       }
    }
 
@@ -1875,36 +1866,10 @@ public class HornetQServerImpl implements HornetQServer
 
          // We can only do this after everything is started otherwise we may get nasty races with expired messages
          postOffice.startExpiryScanner();
-
-
-         //now start any backup servers
-         startBackupServers(configuration, backupServers);
       }
       else
       {
          activationLatch.countDown();
-      }
-   }
-
-   protected void startBackupServers(Configuration configuration, Map<String, HornetQServer> backupServers)
-   {
-      Set<Configuration> backupServerConfigurations = configuration.getBackupServerConfigurations();
-      for (Configuration backupServerConfiguration : backupServerConfigurations)
-      {
-         HornetQServer backup = new HornetQServerImpl(backupServerConfiguration, null, securityManager, this);
-         backupServers.put(backupServerConfiguration.getName(), backup);
-      }
-
-      for (HornetQServer hornetQServer : backupServers.values())
-      {
-         try
-         {
-            hornetQServer.start();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
       }
    }
 
@@ -1942,7 +1907,6 @@ public class HornetQServerImpl implements HornetQServer
 
       if (configuration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
       {
-         ClusterConnectionConfiguration config = ConfigurationUtils.getScaleDownClusterConfiguration(configuration);
          journalLoader = new BackupRecoveryJournalLoader(postOffice,
                                                          pagingManager,
                                                          storageManager,
@@ -1952,7 +1916,7 @@ public class HornetQServerImpl implements HornetQServer
                                                          groupingHandler,
                                                          configuration,
                                                          parentServer,
-                                                         getScaleDownConnector(config));
+                                                         clusterManager.getHAManager().getScaleDownConnector());
       }
       else
       {
@@ -2573,14 +2537,23 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               backupQuorum = new SharedNothingBackupQuorum(nodeManager, scheduledPool);
+               backupQuorum = new SharedNothingBackupQuorum(storageManager, nodeManager, scheduledPool);
                clusterManager.getQuorumManager().registerQuorum(backupQuorum);
             }
 
             //use a Node Locator to connect to the cluster
-            LiveNodeLocator nodeLocator = configuration.getBackupGroupName() == null ?
-               new AnyLiveNodeLocatorForReplication(backupQuorum, HornetQServerImpl.this) :
-               new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), backupQuorum);
+            LiveNodeLocator nodeLocator;
+            if (activationParams.get("REPLICATION_ENDPOINT") != null)
+            {
+               TopologyMember member = (TopologyMember) activationParams.get("REPLICATION_ENDPOINT");
+               nodeLocator = new NamedNodeIdNodeLocator(member.getNodeId(), new Pair<>(member.getLive(), member.getBackup()));
+            }
+            else
+            {
+               nodeLocator = configuration.getBackupGroupName() == null ?
+                     new AnyLiveNodeLocatorForReplication(backupQuorum, HornetQServerImpl.this) :
+                     new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), backupQuorum);
+            }
             ClusterController clusterController = clusterManager.getClusterController();
             clusterController.addClusterTopologyListenerForReplication(nodeLocator);
             //todo do we actually need to wait?
@@ -3048,7 +3021,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
                                                   isFailBackRequest && configuration.isAllowAutoFailBack());
-                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), configuration.getScaleDownGroupName(), pair, true);
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), pair, true);
 
                   backupUpToDate = false;
 
@@ -3150,6 +3123,12 @@ public class HornetQServerImpl implements HornetQServer
    public void removeProtocolManagerFactory(ProtocolManagerFactory factory)
    {
       protocolManagerFactories.remove(factory);
+   }
+
+   @Override
+   public HornetQServer createBackupServer(Configuration configuration)
+   {
+      return new HornetQServerImpl(configuration, null, securityManager, this);
    }
 
    private int countNumberOfCopiedJournals()

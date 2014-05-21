@@ -15,6 +15,7 @@ package org.hornetq.core.server.cluster;
 
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -24,18 +25,24 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRequestMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteReplyMessage;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.cluster.qourum.QuorumVoteHandler;
+import org.hornetq.core.server.cluster.qourum.Vote;
 
 /**
  * handles the communication between a cluster node and the cluster, either the whole cluster or a specific node in the
  * cluster such as a replicating node.
  */
-public class ClusterControl
+public class ClusterControl implements AutoCloseable
 {
    private Channel clusterChannel;
 
@@ -156,4 +163,45 @@ public class ClusterControl
       sessionFactory.close();
    }
 
+   public Vote sendQuorumVote(SimpleString handler, Vote vote)
+   {
+      try
+      {
+         QuorumVoteReplyMessage replyMessage = (QuorumVoteReplyMessage)
+               clusterChannel.sendBlocking(new QuorumVoteMessage(handler, vote), PacketImpl.QUORUM_VOTE_REPLY);
+         QuorumVoteHandler voteHandler = server.getClusterManager().getQuorumManager().getVoteHandler(replyMessage.getHandler());
+         replyMessage.decodeRest(voteHandler);
+         return replyMessage.getVote();
+      }
+      catch (HornetQException e)
+      {
+         return null;
+      }
+   }
+
+   public boolean requestReplicatedBackup(int backupSize, SimpleString nodeID)
+   {
+      BackupRequestMessage backupRequestMessage = new BackupRequestMessage(backupSize, nodeID);
+      return requestBackup(backupRequestMessage);
+   }
+
+   private boolean requestBackup(BackupRequestMessage backupRequestMessage)
+   {
+      BackupResponseMessage packet;
+      try
+      {
+         packet = (BackupResponseMessage) clusterChannel.sendBlocking(backupRequestMessage, PacketImpl.BACKUP_REQUEST_RESPONSE);
+      }
+      catch (HornetQException e)
+      {
+         return false;
+      }
+      return packet.isBackupStarted();
+   }
+
+   public boolean requestSharedStoreBackup(int backupSize, String journalDirectory, String bindingsDirectory, String largeMessagesDirectory, String pagingDirectory)
+   {
+      BackupRequestMessage backupRequestMessage = new BackupRequestMessage(backupSize, journalDirectory, bindingsDirectory, largeMessagesDirectory, pagingDirectory);
+      return requestBackup(backupRequestMessage);
+   }
 }

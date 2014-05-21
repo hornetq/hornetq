@@ -33,6 +33,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
@@ -41,13 +42,20 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRequestMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteReplyMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.qourum.QuorumManager;
+import org.hornetq.core.server.cluster.qourum.QuorumVoteHandler;
+import org.hornetq.core.server.cluster.qourum.Vote;
 import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
@@ -79,7 +87,7 @@ public class ClusterController implements HornetQComponent
    {
       this.server = server;
       executor = server.getExecutorFactory().getExecutor();
-      quorumManager = new QuorumManager(server, scheduledExecutor);
+      quorumManager = new QuorumManager(scheduledExecutor, this);
    }
 
    @Override
@@ -105,8 +113,6 @@ public class ClusterController implements HornetQComponent
       }
       //latch so we know once we are connected
       replicationClusterConnectedLatch = new CountDownLatch(1);
-      //set the server locator for the quorum to the default
-      quorumManager.setServerLocator(defaultLocator);
       //and add the quorum manager as a topology listener
       defaultLocator.addClusterTopologyListener(quorumManager);
       //start the quorum manager
@@ -215,6 +221,21 @@ public class ClusterController implements HornetQComponent
     * @return the Cluster Control
     * @throws Exception
     */
+   public ClusterControl connectToNode(TransportConfiguration transportConfiguration) throws Exception
+   {
+      ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal) defaultLocator.createSessionFactory(transportConfiguration, 0, false);
+
+      return connectToNodeInReplicatedCluster(sessionFactory);
+   }
+
+   /**
+    * connect to a specific node in the cluster used for replication
+    *
+    * @param transportConfiguration the configuration of the node to connect to.
+    *
+    * @return the Cluster Control
+    * @throws Exception
+    */
    public ClusterControl connectToNodeInReplicatedCluster(TransportConfiguration transportConfiguration) throws Exception
    {
       ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal) replicationLocator.createSessionFactory(transportConfiguration, 0, false);
@@ -266,6 +287,26 @@ public class ClusterController implements HornetQComponent
    public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
    {
       channel.setHandler(new ClusterControllerChannelHandler(channel, acceptorUsed, remotingConnection));
+   }
+
+   public int getDefaultClusterSize()
+   {
+      return defaultLocator.getTopology().getMembers().size();
+   }
+
+   public Topology getDefaultClusterTopology()
+   {
+      return defaultLocator.getTopology();
+   }
+
+   public SimpleString getNodeID()
+   {
+      return server.getNodeID();
+   }
+
+   public String getIdentity()
+   {
+      return server.getIdentity();
    }
 
    /**
@@ -362,6 +403,39 @@ public class ClusterController implements HornetQComponent
                {
                   clusterChannel.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
                }
+            }
+            else if (packet.getType() == PacketImpl.QUORUM_VOTE)
+            {
+               QuorumVoteMessage quorumVoteMessage = (QuorumVoteMessage) packet;
+               QuorumVoteHandler voteHandler = quorumManager.getVoteHandler(quorumVoteMessage.getHandler());
+               quorumVoteMessage.decode(voteHandler);
+               Vote vote = quorumManager.vote(quorumVoteMessage.getHandler(), quorumVoteMessage.getVote());
+               clusterChannel.send(new QuorumVoteReplyMessage(quorumVoteMessage.getHandler(), vote));
+            }
+            else if (packet.getType() == PacketImpl.BACKUP_REQUEST)
+            {
+               BackupRequestMessage backupRequestMessage = (BackupRequestMessage) packet;
+               boolean started = false;
+               try
+               {
+                  if (backupRequestMessage.getBackupType() == HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED)
+                  {
+                     started = server.getClusterManager().getHAManager().activateReplicatedBackup(backupRequestMessage.getBackupSize(), backupRequestMessage.getNodeID());
+                  }
+                  else
+                  {
+                     started = server.getClusterManager().getHAManager().activateSharedStoreBackup(backupRequestMessage.getBackupSize(),
+                           backupRequestMessage.getJournalDirectory(),
+                           backupRequestMessage.getBindingsDirectory(),
+                           backupRequestMessage.getLargeMessagesDirectory(),
+                           backupRequestMessage.getPagingDirectory());
+                  }
+               }
+               catch (Exception e)
+               {
+                  //todo log a warning and send false
+               }
+               clusterChannel.send(new BackupResponseMessage(started));
             }
          }
       }

@@ -258,6 +258,17 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
+   @Override
+   public List<Pair<byte[], Long>> getMap()
+   {
+      List<Pair<byte[], Long>> list = new ArrayList<>();
+      for (Pair<ByteArrayHolder, Long> id : ids)
+      {
+         list.add(new Pair<>(id.getA().bytes, id.getB()));
+      }
+      return list;
+   }
+
    private final class AddDuplicateIDOperation extends TransactionOperationAbstract
    {
       final byte[] duplID;

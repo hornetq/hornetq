@@ -20,7 +20,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 import io.netty.channel.ChannelPipeline;
+import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -35,6 +37,8 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
@@ -46,6 +50,7 @@ import org.hornetq.core.remoting.impl.netty.HornetQFrameDecoder2;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -329,6 +334,42 @@ class CoreProtocolManager implements ProtocolManager
 
             }
          }
+         else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
+         {
+            BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
+            ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
+
+            if (!config.isSecurityEnabled() || clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
+            {
+               try
+               {
+                  server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true),
+                                          msg.isFailBackRequest());
+               }
+               catch (HornetQAlreadyReplicatingException are)
+               {
+                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.ALREADY_REPLICATING));
+               }
+               catch (HornetQException e)
+               {
+                  channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
+               }
+            }
+            else
+            {
+               channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.AUTHENTICATION));
+            }
+         }
+      }
+
+      private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
+                                                                           boolean isBackup)
+      {
+         if (isBackup)
+         {
+            return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
+         }
+         return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
       }
    }
 }
