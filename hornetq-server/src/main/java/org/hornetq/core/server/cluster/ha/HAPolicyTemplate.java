@@ -93,7 +93,7 @@ public enum HAPolicyTemplate
       policy.setBackupRequestRetryInterval(5000);
       policy.setMaxBackups(2);
       policy.setRequestBackup(true);
-      policy.setPolicyType(HAPolicy.POLICY_TYPE.COLOCATED_SHARED_STORE);
+      policy.setPolicyType(HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED);
       policy.setBackupStrategy(BackupStrategy.SCALE_DOWN);
       return policy;
    }
