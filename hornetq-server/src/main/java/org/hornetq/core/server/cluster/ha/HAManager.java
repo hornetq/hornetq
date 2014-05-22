@@ -196,7 +196,7 @@ public class HAManager implements HornetQComponent
       catch (Exception e)
       {
          backup.stop();
-         //todo log a warning
+         HornetQServerLogger.LOGGER.activateReplicatedBackupFailed(e);
          return false;
       }
       return true;
