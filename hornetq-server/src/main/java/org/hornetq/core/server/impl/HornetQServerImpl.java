@@ -115,6 +115,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.security.impl.SecurityStoreImpl;
 import org.hornetq.core.server.ActivateCallback;
+import org.hornetq.core.server.ActivationParams;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQComponent;
@@ -2543,9 +2544,9 @@ public class HornetQServerImpl implements HornetQServer
 
             //use a Node Locator to connect to the cluster
             LiveNodeLocator nodeLocator;
-            if (activationParams.get("REPLICATION_ENDPOINT") != null)
+            if (activationParams.get(ActivationParams.REPLICATION_ENDPOINT) != null)
             {
-               TopologyMember member = (TopologyMember) activationParams.get("REPLICATION_ENDPOINT");
+               TopologyMember member = (TopologyMember) activationParams.get(ActivationParams.REPLICATION_ENDPOINT);
                nodeLocator = new NamedNodeIdNodeLocator(member.getNodeId(), new Pair<>(member.getLive(), member.getBackup()));
             }
             else

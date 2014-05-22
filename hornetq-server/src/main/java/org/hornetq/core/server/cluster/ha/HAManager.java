@@ -26,6 +26,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.server.ActivationParams;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
@@ -188,7 +189,7 @@ public class HAManager implements HornetQComponent
          int portOffset = haPolicy.getBackupPortOffset() * (backupServers.size() + 1);
          String name = "colocated_backup_" + backupServers.size() + 1;
          updateReplicatedConfiguration(configuration, haPolicy.getBackupStrategy(), name, portOffset, haPolicy.getRemoteConnectors());
-         backup.addActivationParam("REPLICATION_ENDPOINT", member);
+         backup.addActivationParam(ActivationParams.REPLICATION_ENDPOINT, member);
          backupServers.put(configuration.getName(), backup);
          backup.start();
       }
