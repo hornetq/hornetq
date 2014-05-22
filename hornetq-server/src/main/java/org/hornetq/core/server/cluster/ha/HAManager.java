@@ -276,7 +276,7 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setPagingDirectory(pagingDirectory);
       backupConfiguration.setSharedStore(true);
       backupConfiguration.setBackup(true);
-      updateAcceptorsAndConnectors(backupConfiguration, backupStrategy, name, portOffset, remoteConnectors);
+      updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
 
    }
 
@@ -303,11 +303,11 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + name);
       backupConfiguration.setSharedStore(false);
       backupConfiguration.setBackup(true);
-      updateAcceptorsAndConnectors(backupConfiguration, backupStrategy, name, portOffset, remoteConnectors);
+      updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
 
    }
 
-   private static void updateAcceptorsAndConnectors(Configuration backupConfiguration, BackupStrategy backupStrategy, String name, int portOffset, List<String> remoteConnectors)
+   private static void updateAcceptorsAndConnectors(Configuration backupConfiguration, int portOffset, List<String> remoteConnectors)
    {
       //we only do this if we are a full server, if scale down then our acceptors wont be needed and our connectors will
       // be the same as the parent server
@@ -316,7 +316,7 @@ public class HAManager implements HornetQComponent
          Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
          for (TransportConfiguration acceptor : acceptors)
          {
-            updatebackupParams(name, portOffset, acceptor.getParams());
+            updatebackupParams(backupConfiguration.getName(), portOffset, acceptor.getParams());
          }
          Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
          for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
@@ -324,11 +324,11 @@ public class HAManager implements HornetQComponent
             //check to make sure we aren't a remote connector as this shouldn't be changed
             if (!remoteConnectors.contains(entry.getValue().getName()))
             {
-               updatebackupParams(name, portOffset, entry.getValue().getParams());
+               updatebackupParams(backupConfiguration.getName(), portOffset, entry.getValue().getParams());
             }
          }
       }
-      else if (backupStrategy == BackupStrategy.SCALE_DOWN)
+      else if (backupConfiguration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
       {
          //if we are scaling down then we wont need any acceptors but clear anyway for belts and braces
          backupConfiguration.getAcceptorConfigurations().clear();
