@@ -39,13 +39,7 @@
    
    <!-- HA configuration -->
    <ha-policy template="COLOCATED_REPLICATED">
-      <policy-type>COLOCATED_REPLICATED</policy-type>
-      <request-backup>true</request-backup>
-      <backup-request-retries>-1</backup-request-retries>
-      <backup-request-retry-interval>5000</backup-request-retry-interval>
       <max-backups>1</max-backups>
-      <backup-port-offset>100</backup-port-offset>
-      <backup-strategy>SCALE_DOWN</backup-strategy>
       <scale-down-connectors>
          <connector-ref>invm-connector</connector-ref>
       </scale-down-connectors>
