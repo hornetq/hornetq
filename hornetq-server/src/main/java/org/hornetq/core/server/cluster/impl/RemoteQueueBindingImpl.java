@@ -176,6 +176,12 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       return false;
    }
 
+
+   @Override
+   public void unproposed(SimpleString groupID)
+   {
+   }
+
    public void route(final ServerMessage message, final RoutingContext context)
    {
       addRouteContextToMessage(message);

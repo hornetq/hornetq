@@ -334,4 +334,8 @@ public interface HornetQMessageBundle
 
    @Message(id = 119102, value = "Address \"{0}\" is full.", format = Message.Format.MESSAGE_FORMAT)
    HornetQAddressFullException addressIsFull(String addressName);
+
+   @Message(id = 119103, value =  "Server is stopping. Message grouping not allowed", format = Message.Format.MESSAGE_FORMAT)
+   HornetQException groupWhileStopping();
+
 }

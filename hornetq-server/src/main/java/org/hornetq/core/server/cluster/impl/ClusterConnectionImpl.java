@@ -918,6 +918,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                   queue = server.createQueue(queueName, queueName, null, true, false);
                }
 
+               // There are a few things that will behave differently when it's an internal queue
+               // such as we don't hold groupIDs inside the SnF queue
+               queue.setInternalQueue(true);
+
                createNewRecord(topologyMember.getUniqueEventID(), nodeID, topologyMember.getLive(), queueName, queue, true);
             }
             else
@@ -1262,67 +1266,72 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
             if (!firstReset)
             {
+               HornetQServerLogger.LOGGER.debug("Notification being ignored since first reset wasn't received yet: " + message);
                return;
             }
 
-            // TODO - optimised this by just passing int in header - but filter needs to be extended to support IN with
-            // a list of integers
-            SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
-
-            NotificationType ntype = NotificationType.valueOf(type.toString());
-
-            switch (ntype)
-            {
-               case BINDING_ADDED:
-               {
-                  doBindingAdded(message);
-
-                  break;
-               }
-               case BINDING_REMOVED:
-               {
-                  doBindingRemoved(message);
-
-                  break;
-               }
-               case CONSUMER_CREATED:
-               {
-                  doConsumerCreated(message);
-
-                  break;
-               }
-               case CONSUMER_CLOSED:
-               {
-                  doConsumerClosed(message);
-
-                  break;
-               }
-               case PROPOSAL:
-               {
-                  doProposalReceived(message);
-
-                  break;
-               }
-               case PROPOSAL_RESPONSE:
-               {
-                  doProposalResponseReceived(message);
-
-                  break;
-               }
-               case UNPROPOSAL:
-               {
-                  doUnProposalReceived(message);
-                  break;
-               }
-               default:
-               {
-                  throw HornetQMessageBundle.BUNDLE.invalidType(ntype);
-               }
-            }
+            handleNotificationMessage(message);
          }
          catch (Exception e)
          {
             HornetQServerLogger.LOGGER.errorHandlingMessage(e);
+         }
+      }
+
+      private void handleNotificationMessage(ClientMessage message) throws Exception
+      {
+         // TODO - optimised this by just passing int in header - but filter needs to be extended to support IN with
+         // a list of integers
+         SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
+
+         NotificationType ntype = NotificationType.valueOf(type.toString());
+
+         switch (ntype)
+         {
+            case BINDING_ADDED:
+            {
+               doBindingAdded(message);
+
+               break;
+            }
+            case BINDING_REMOVED:
+            {
+               doBindingRemoved(message);
+
+               break;
+            }
+            case CONSUMER_CREATED:
+            {
+               doConsumerCreated(message);
+
+               break;
+            }
+            case CONSUMER_CLOSED:
+            {
+               doConsumerClosed(message);
+
+               break;
+            }
+            case PROPOSAL:
+            {
+               doProposalReceived(message);
+
+               break;
+            }
+            case PROPOSAL_RESPONSE:
+            {
+               doProposalResponseReceived(message);
+               break;
+            }
+            case UNPROPOSAL:
+            {
+               doUnProposalReceived(message);
+               break;
+            }
+            default:
+            {
+               throw HornetQMessageBundle.BUNDLE.invalidType(ntype);
+            }
          }
       }
 
@@ -1342,11 +1351,16 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
 
+         if (server.getGroupingHandler() == null)
+         {
+            throw new IllegalStateException("grouping handler is null");
+         }
+
          Response response = server.getGroupingHandler().receive(new Proposal(type, val), hops + 1);
 
          if (response != null)
          {
-            server.getGroupingHandler().send(response, 0);
+            server.getGroupingHandler().sendProposalResponse(response, 0);
          }
       }
 
@@ -1365,6 +1379,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
 
          Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
+         if (server.getGroupingHandler() == null)
+         {
+            throw new IllegalStateException("grouping handler is null");
+         }
 
          server.getGroupingHandler().remove(groupId, clusterName, hops + 1);
 
@@ -1386,8 +1405,14 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          SimpleString alt = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE);
          Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
          Response response = new Response(type, val, alt);
+
+         if (server.getGroupingHandler() == null)
+         {
+            throw new IllegalStateException("grouping handler is null while sending response " + response);
+         }
+
          server.getGroupingHandler().proposed(response);
-         server.getGroupingHandler().send(response, hops + 1);
+         server.getGroupingHandler().sendProposalResponse(response, hops + 1);
       }
 
       private synchronized void clearBindings() throws Exception
@@ -1558,7 +1583,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         Queue theQueue = (Queue)binding.getBindable();
+         Queue theQueue = (Queue) binding.getBindable();
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 
@@ -1616,7 +1641,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         Queue theQueue = (Queue)binding.getBindable();
+         Queue theQueue = (Queue) binding.getBindable();
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 

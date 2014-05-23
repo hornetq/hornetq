@@ -24,21 +24,34 @@ import org.hornetq.core.server.management.NotificationListener;
  */
 public interface GroupingHandler extends NotificationListener, HornetQComponent
 {
+   // this method should maintain a WeakHash list, no need to remove the elements
+   void addListener(UnproposalListener listener);
+
    SimpleString getName();
+
+   void resendPending() throws Exception;
 
    Response propose(Proposal proposal) throws Exception;
 
    void proposed(Response response) throws Exception;
 
-   void send(Response response, int distance) throws Exception;
+   void sendProposalResponse(Response response, int distance) throws Exception;
 
    Response receive(Proposal proposal, int distance) throws Exception;
 
    void addGroupBinding(GroupBinding groupBinding);
 
-   Response getProposal(SimpleString fullID);
+   Response getProposal(SimpleString fullID, boolean touchTime);
 
    void awaitBindings() throws Exception;
+
+   /**
+    * this will force a removal of the group everywhere with an unproposal (dinstance=0).
+    * This is for the case where a node goes missing
+    */
+   void forceRemove(SimpleString groupid, SimpleString clusterName) throws Exception;
+
+   void remove(SimpleString groupid, SimpleString clusterName) throws Exception;
 
    void remove(SimpleString groupid, SimpleString clusterName, int distance) throws Exception;
 }

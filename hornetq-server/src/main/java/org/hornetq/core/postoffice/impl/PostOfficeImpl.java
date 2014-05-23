@@ -61,6 +61,7 @@ import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.server.management.ManagementService;
@@ -1459,6 +1460,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public Bindings createBindings(final SimpleString address) throws Exception
    {
-      return new BindingsImpl(address, server.getGroupingHandler(), pagingManager.getPageStore(address));
+      GroupingHandler groupingHandler = server.getGroupingHandler();
+      BindingsImpl bindings = new BindingsImpl(address, groupingHandler, pagingManager.getPageStore(address));
+      if (groupingHandler != null)
+      {
+         groupingHandler.addListener(bindings);
+      }
+      return bindings;
    }
 }

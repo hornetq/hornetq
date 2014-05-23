@@ -602,7 +602,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             managementService.removeNotificationListener(groupingHandler);
             groupingHandler.stop();
-            groupingHandler = null;
          }
          stopComponent(clusterManager);
          freezeConnections();
@@ -1215,7 +1214,17 @@ public class HornetQServerImpl implements HornetQServer
 
    public void setGroupingHandler(final GroupingHandler groupingHandler)
    {
+      if (this.groupingHandler != null && managementService != null)
+      {
+         // Removing old groupNotification
+         managementService.removeNotificationListener(this.groupingHandler);
+      }
       this.groupingHandler = groupingHandler;
+      if (managementService != null)
+      {
+         managementService.addNotificationListener(this.groupingHandler);
+      }
+
    }
 
    public GroupingHandler getGroupingHandler()
@@ -2140,10 +2149,11 @@ public class HornetQServerImpl implements HornetQServer
          else
          {
             groupingHandler1 =
-               new RemoteGroupingHandler(managementService,
-                                         config.getName(),
-                                         config.getAddress(),
-                                         config.getTimeout());
+                     new RemoteGroupingHandler(executorFactory, managementService,
+                        config.getName(),
+                        config.getAddress(),
+                        config.getTimeout(),
+                        config.getGroupTimeout());
          }
 
          this.groupingHandler = groupingHandler1;

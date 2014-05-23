@@ -947,6 +947,11 @@ public class ScheduledDeliveryHandlerTest extends Assert
       final CountDownLatch expectedElements;
       LinkedList<MessageReference> messages = new LinkedList<MessageReference>();
 
+      @Override
+      public void unproposed(SimpleString groupID)
+      {
+
+      }
 
       public FakeQueueForScheduleUnitTest(final int expectedElements)
       {

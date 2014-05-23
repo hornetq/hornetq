@@ -12,32 +12,55 @@
  */
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
+
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.group.UnproposalListener;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationListener;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.util.ServerLocatorSettingsCallback;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author Clebert
+ * @author Justin
  */
 public class ClusteredGroupingTest extends ClusterTestBase
 {
 
    @Test
-   public void testGroupingGroupTimeout() throws Exception
+   public void testGroupingGroupTimeoutWithUnproposal() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());
@@ -49,9 +72,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
 
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, -1, 2000, 500);
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, 2000, 1000, 100);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, 2000, 1000, 100);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, 2000, 1000, 100);
 
       startServers(0, 1, 2);
 
@@ -104,6 +127,22 @@ public class ClusteredGroupingTest extends ClusterTestBase
       sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
 
       verifyReceiveAll(10, 0);
+
+      QueueImpl queue0Server2 = (QueueImpl) servers[2].locateQueue(SimpleString.toSimpleString("queue0"));
+
+      assertEquals(2, queue0Server2.getGroupsUsed().size());
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      long timeLimit = System.currentTimeMillis() + 5000;
+      while (timeLimit > System.currentTimeMillis() && queue0Server2.getGroupsUsed().size() != 0)
+      {
+         Thread.sleep(10);
+      }
+
+
+      assertEquals("Unproposal should cleanup the queue group as well", 0, queue0Server2.getGroupsUsed().size());
+
 
       removeConsumer(0);
 
@@ -264,6 +303,507 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
+   // Fail a node where there's a consumer only.. with messages being sent by a node that is not the local
+   @Test
+   public void testGroupingSimpleFail2nd() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      final int TIMEOUT_GROUPS = 5000;
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, TIMEOUT_GROUPS, -1, -1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, TIMEOUT_GROUPS, -1, -1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, TIMEOUT_GROUPS, -1, -1);
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
+
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+
+      // It should receive one message on each server
+      ClientMessage msg = consumers[0].getConsumer().receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+      assertNull(consumers[0].getConsumer().receiveImmediate());
+
+      msg = consumers[1].getConsumer().receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+      SimpleString groupIDOnConsumer1 = msg.getSimpleStringProperty(Message.HDR_GROUP_ID);
+
+      assertNull(consumers[1].getConsumer().receiveImmediate());
+
+      msg = consumers[2].getConsumer().receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+      assertNull(consumers[2].getConsumer().receiveImmediate());
+
+
+      // it should be bound to server1 as we used the group from server1
+      sendWithProperty(2, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, groupIDOnConsumer1);
+      msg = consumers[1].getConsumer().receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+
+
+      closeAllConsumers();
+      closeAllSessionFactories();
+
+      SimpleString node1ID = servers[1].getNodeID();
+
+      // Validating if it's the right server
+      Response response = servers[0].getGroupingHandler().getProposal(groupIDOnConsumer1.concat(".").concat("queue0"), false);
+      assertTrue(response.getClusterName().toString().equals("queue0" + node1ID));
+
+      stopServers(0, 1, 2);
+
+      long time = System.currentTimeMillis();
+      startServers(2, 0);
+      assertTrue("The group start should have waited the timeout on groups", System.currentTimeMillis() >= time + TIMEOUT_GROUPS);
+
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+
+      waitForBindings(2, "queues.testaddress", 1, 1, false);
+
+      sendWithProperty(2, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, groupIDOnConsumer1);
+
+      // server1 is dead, so either 0 or 2 should receive since the group is now dead
+      msg = consumers[0].getConsumer().receive(500);
+      if (msg == null)
+      {
+         msg = consumers[2].getConsumer().receive(500);
+      }
+
+      response = servers[0].getGroupingHandler().getProposal(groupIDOnConsumer1.concat(".").concat("queue0"), false);
+
+      assertFalse("group should have been reassigned since server is not up yet", response.getClusterName().toString().equals("queue0" + node1ID));
+
+      assertNotNull(msg);
+      msg.acknowledge();
+
+
+   }
+
+   @Test
+   public void testGroupTimeout() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, 1000, 1000, 100);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, 1000, 100, 100);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, 1000, 100, 100);
+
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, true);
+      createQueue(1, "queues.testaddress", "queue0", null, true);
+      createQueue(2, "queues.testaddress", "queue0", null, true);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
+
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
+
+
+      assertNotNull(servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+
+      // Group timeout
+      Thread.sleep(1000);
+
+      long timeLimit = System.currentTimeMillis() + 5000;
+      while (timeLimit > System.currentTimeMillis() && servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false) != null)
+      {
+         Thread.sleep(10);
+      }
+      Thread.sleep(1000);
+
+      assertNull("Group should have timed out", servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+
+      sendWithProperty(0, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+      sendWithProperty(1, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+
+      // Verify why this is failing... whyt it's creating a new one here????
+      assertNotNull(servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+      assertNotNull(servers[1].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+
+
+      timeLimit = System.currentTimeMillis() + 1500;
+
+      // We will keep bothering server1 as it will ping server0 eventually
+      while (timeLimit > System.currentTimeMillis() && servers[1].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), true) != null)
+      {
+         assertNotNull(servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+         Thread.sleep(10);
+      }
+
+      // Group timeout
+      Thread.sleep(1000);
+
+      timeLimit = System.currentTimeMillis() + 5000;
+      while (timeLimit > System.currentTimeMillis() && servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false) != null)
+      {
+         Thread.sleep(10);
+      }
+
+      assertNull("Group should have timed out", servers[0].getGroupingHandler().getProposal(SimpleString.toSimpleString("id1.queue0"), false));
+   }
+
+   @Test
+   public void testGroupingWith3Nodes() throws Exception
+   {
+      final String ADDRESS = "queues.testaddress";
+      final String QUEUE = "queue0";
+
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, 10000, 500, 750);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, 10000, 500, 750);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, 10000, 500, 750);
+
+      startServers(0, 1, 2);
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      servers[0].getAddressSettingsRepository().addMatch("#", addressSettings);
+      servers[1].getAddressSettingsRepository().addMatch("#", addressSettings);
+      servers[2].getAddressSettingsRepository().addMatch("#", addressSettings);
+
+      setupSessionFactory(0, isNetty());
+
+      // need to set up reconnect attempts on this session factory because the test will restart node 1
+      setupSessionFactory(1, isNetty(), new ServerLocatorSettingsCallback()
+      {
+         @Override
+         public void set(ServerLocator locator)
+         {
+            locator.setReconnectAttempts(15);
+         }
+      });
+
+      setupSessionFactory(2, isNetty());
+
+      createQueue(0, ADDRESS, QUEUE, null, true);
+      createQueue(1, ADDRESS, QUEUE, null, true);
+      createQueue(2, ADDRESS, QUEUE, null, true);
+
+      waitForBindings(0, ADDRESS, 1, 0, true);
+      waitForBindings(1, ADDRESS, 1, 0, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
+
+      waitForBindings(0, ADDRESS, 2, 0, false);
+      waitForBindings(1, ADDRESS, 2, 0, false);
+      waitForBindings(2, ADDRESS, 2, 0, false);
+
+      final ClientSessionFactory sf0 = sfs[0];
+      final ClientSessionFactory sf1 = sfs[1];
+      final ClientSessionFactory sf2 = sfs[2];
+
+      final ClientSession session = addClientSession(sf1.createSession(false, false, false));
+      final ClientProducer producer = addClientProducer(session.createProducer(ADDRESS));
+      List<String> groups = new ArrayList<String>();
+
+      final AtomicInteger totalMessageProduced = new AtomicInteger(0);
+
+      // create a bunch of groups and save a few group IDs for use later
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         String group = UUID.randomUUID().toString();
+         message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+         SimpleString dupID = new SimpleString(UUID.randomUUID().toString());
+         message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID);
+         if (i % 100 == 0)
+         {
+            groups.add(group);
+         }
+         producer.send(message);
+         IntegrationTestLogger.LOGGER.info("Sent message to server 1 with dupID: " + dupID);
+      }
+
+      session.commit();
+      totalMessageProduced.addAndGet(500);
+      IntegrationTestLogger.LOGGER.info("Sent block of 500 messages to server 1. Total sent: " + totalMessageProduced.get());
+      session.close();
+
+      // need thread pool to service both consumers and producers plus a thread to cycle nodes
+      ExecutorService executorService = Executors.newFixedThreadPool(groups.size() * 2 + 1);
+
+      final AtomicInteger producerCounter = new AtomicInteger(0);
+      final CountDownLatch okToConsume = new CountDownLatch(groups.size());
+
+      // spin up a bunch of threads to pump messages into some of the groups
+      for (final String group : groups)
+      {
+         final Runnable r = new Runnable()
+         {
+            @Override
+            public void run()
+            {
+
+               String basicID = UUID.randomUUID().toString();
+               IntegrationTestLogger.LOGGER.info("Starting producer thread...");
+               ClientSessionFactory factory;
+               ClientSession session = null;
+               ClientProducer producer = null;
+               int targetServer = 0;
+
+               try
+               {
+                  synchronized (producerCounter)
+                  {
+                     if (producerCounter.get() % 3 == 0)
+                     {
+                        factory = sf2;
+                        targetServer = 2;
+                     }
+                     else if (producerCounter.get() % 2 == 0)
+                     {
+                        factory = sf1;
+                        targetServer = 1;
+                     }
+                     else
+                     {
+                        factory = sf0;
+                     }
+                     IntegrationTestLogger.LOGGER.info("Creating producer session factory to node " + targetServer);
+                     session = addClientSession(factory.createSession(false, true, true));
+                     producer = addClientProducer(session.createProducer(ADDRESS));
+                     producerCounter.incrementAndGet();
+                  }
+               }
+               catch (Exception e)
+               {
+                  IntegrationTestLogger.LOGGER.info("Producer thread couldn't establish connection", e);
+                  return;
+               }
+
+               int messageCount = 0;
+
+               while (messageCount < 100)
+               {
+                  ClientMessage message = session.createMessage(true);
+                  message.putStringProperty(Message.HDR_GROUP_ID, new SimpleString(group));
+                  SimpleString dupID = new SimpleString(basicID + ":" + messageCount);
+                  message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID);
+                  try
+                  {
+                     producer.send(message);
+                     IntegrationTestLogger.LOGGER.info("Sent message to server " + targetServer + " with dupID: " + dupID + ". Total sent: " + totalMessageProduced.incrementAndGet());
+                     messageCount++;
+                  }
+                  catch (HornetQException e)
+                  {
+                     IntegrationTestLogger.LOGGER.info("Producer thread threw exception while sending messages to " + targetServer + ": " + e.getMessage());
+                  }
+                  catch (Exception e)
+                  {
+                     IntegrationTestLogger.LOGGER.info("Producer thread threw unexpected exception while sending messages to " + targetServer + ": " + e.getMessage());
+                     break;
+                  }
+               }
+
+               okToConsume.countDown();
+            }
+         };
+
+         executorService.execute(r);
+      }
+
+      final AtomicInteger consumerCounter = new AtomicInteger(0);
+      final AtomicInteger totalMessagesConsumed = new AtomicInteger(0);
+      final CountDownLatch okToEndTest = new CountDownLatch(groups.size());
+
+      // spin up a bunch of threads to consume messages
+      for (final String group : groups)
+      {
+         final Runnable r = new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               try
+               {
+                  IntegrationTestLogger.LOGGER.info("Waiting to start consumer thread...");
+                  okToConsume.await(20, TimeUnit.SECONDS);
+               }
+               catch (InterruptedException e)
+               {
+                  e.printStackTrace();
+                  return;
+               }
+               IntegrationTestLogger.LOGGER.info("Starting consumer thread...");
+               ClientSessionFactory factory;
+               ClientSession session = null;
+               ClientConsumer consumer = null;
+               int targetServer = 0;
+
+               try
+               {
+                  synchronized (consumerCounter)
+                  {
+                     if (consumerCounter.get() % 3 == 0)
+                     {
+                        factory = sf2;
+                        targetServer = 2;
+                     }
+                     else if (consumerCounter.get() % 2 == 0)
+                     {
+                        factory = sf1;
+                        targetServer = 1;
+                     }
+                     else
+                     {
+                        factory = sf0;
+                     }
+                     IntegrationTestLogger.LOGGER.info("Creating consumer session factory to node " + targetServer);
+                     session = addClientSession(factory.createSession(false, false, true));
+                     consumer = addClientConsumer(session.createConsumer(QUEUE));
+                     session.start();
+                     consumerCounter.incrementAndGet();
+                  }
+               }
+               catch (Exception e)
+               {
+                  IntegrationTestLogger.LOGGER.info("Consumer thread couldn't establish connection", e);
+                  return;
+               }
+
+               while (true)
+               {
+                  try
+                  {
+                     ClientMessage m = consumer.receive(500);
+                     if (m == null)
+                     {
+                        okToEndTest.countDown();
+                        return;
+                     }
+                     m.acknowledge();
+                     IntegrationTestLogger.LOGGER.info("Consumed message " + m.getStringProperty(Message.HDR_DUPLICATE_DETECTION_ID) + " from server " + targetServer + ". Total consumed: " + totalMessagesConsumed.incrementAndGet());
+                  }
+                  catch (HornetQException e)
+                  {
+                     IntegrationTestLogger.LOGGER.info("Consumer thread threw exception while receiving messages from server " + targetServer + ".: " + e.getMessage());
+                  }
+                  catch (Exception e)
+                  {
+                     IntegrationTestLogger.LOGGER.info("Consumer thread threw unexpected exception while receiving messages from server " + targetServer + ".: " + e.getMessage());
+                     return;
+                  }
+               }
+            }
+         };
+
+         executorService.execute(r);
+      }
+
+      final Runnable r = new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(3000);
+            }
+            catch (InterruptedException e)
+            {
+               // ignore
+            }
+            cycleServer(1);
+         }
+      };
+
+      executorService.execute(r);
+
+      // wait for the threads to complete their consuming
+      okToEndTest.await(20, TimeUnit.SECONDS);
+
+      executorService.shutdownNow();
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+      assertEquals(totalMessageProduced.longValue(), totalMessagesConsumed.longValue());
+   }
+
+   private void cycleServer(int node)
+   {
+      try
+      {
+         stopServers(node);
+         startServers(node);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    @Test
    public void testGroupingBindingNotPresentAtStart() throws Exception
    {
@@ -277,7 +817,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
 
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
+      int TIMEOUT = 50000;
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0, TIMEOUT);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
 
@@ -314,9 +855,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       closeSessionFactory(1);
       closeSessionFactory(2);
 
-      stopServers(0);
+      stopServers(0, 1, 2);
 
-      startServers(0);
+      long time = System.currentTimeMillis();
+      startServers(1, 2, 0);
+      assertTrue("Server restart took a long wait even though it wasn't required as the server already had all the bindings", System.currentTimeMillis() - time < TIMEOUT);
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -422,7 +965,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
    }
 
    @Test
-   public void testGroupingTimeout() throws Exception
+   public void testTimeoutOnSending() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());
@@ -434,14 +977,46 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
 
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1, 0);
 
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2, 0);
 
-      startServers(0, 1, 2);
+      final CountDownLatch latch = new CountDownLatch(BindingsImpl.MAX_GROUP_RETRY);
 
       setUpGroupHandler(new GroupingHandler()
       {
+
+
+         @Override
+         public void awaitBindings() throws Exception
+         {
+
+         }
+
+         @Override
+         public void addListener(UnproposalListener listener)
+         {
+
+         }
+
+         @Override
+         public void resendPending() throws Exception
+         {
+
+         }
+
+         @Override
+         public void remove(SimpleString groupid, SimpleString clusterName) throws Exception
+         {
+
+         }
+
+         @Override
+         public void forceRemove(SimpleString groupid, SimpleString clusterName) throws Exception
+         {
+
+         }
+
          public SimpleString getName()
          {
             return null;
@@ -481,19 +1056,20 @@ public class ClusteredGroupingTest extends ClusterTestBase
             System.out.println("ClusteredGroupingTest.proposed");
          }
 
-         public void send(final Response response, final int distance) throws Exception
+         public void sendProposalResponse(final Response response, final int distance) throws Exception
          {
             System.out.println("ClusteredGroupingTest.send");
          }
 
          public Response receive(final Proposal proposal, final int distance) throws Exception
          {
+            latch.countDown();
             return null;
          }
 
          public void onNotification(final Notification notification)
          {
-            System.out.println("ClusteredGroupingTest.onNotification");
+            System.out.println("ClusteredGroupingTest.onNotification " + notification);
          }
 
          public void addGroupBinding(final GroupBinding groupBinding)
@@ -501,17 +1077,14 @@ public class ClusteredGroupingTest extends ClusterTestBase
             System.out.println("ClusteredGroupingTest.addGroupBinding");
          }
 
-         public Response getProposal(final SimpleString fullID)
+         public Response getProposal(final SimpleString fullID, boolean touchTime)
          {
             return null;
          }
 
-         @Override
-         public void awaitBindings()
-         {
-            //To change body of implemented methods use File | Settings | File Templates.
-         }
       }, 0);
+
+      startServers(0, 1, 2);
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -535,8 +1108,10 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       try
       {
-         sendWithProperty(1, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
-         Assert.fail("should timeout");
+         sendWithProperty(1, "queues.testaddress", 1, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
+
+         // it should get the Retries on the latch
+         assertTrue(latch.await(10, TimeUnit.SECONDS));
       }
       catch (Exception e)
       {
@@ -544,6 +1119,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
 
    }
+
 
    @Test
    public void testGroupingSendTo2queues() throws Exception
@@ -1187,7 +1763,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
    }
 
-   @Test
    public void testGroupingMultipleSending() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
