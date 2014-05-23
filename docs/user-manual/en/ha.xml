@@ -71,8 +71,8 @@
                 not be a fully operational backup right after start, but only after it finishes
                 synchronizing the data. The time it will take for this to happen will depend on the
                 amount of data to be synchronized and the connection speed.</para>
-               <note>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
-               current clients.</note>
+               <note><para>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
+               current clients.</para></note>
 
                <para>Replication will create a copy of the data at the backup. One issue to be aware
                of is: in case of a successful fail-over, the backup's data will be newer than
@@ -101,12 +101,12 @@
                       will allow a backup server to connect to any live server</para>
                    </listitem>
                 </itemizedlist>
-                <note>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup servers:
+                <note><para>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup servers:</para>
                 <itemizedlist>
-                <listitem><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></listitem>
-    <listitem><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></listitem>
-    <listitem><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></listitem>
-    <listitem><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></listitem>
+                <listitem><para><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></para></listitem>
+    <listitem><para><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></para></listitem>
+    <listitem><para><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></para></listitem>
+    <listitem><para><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></para></listitem>
 </itemizedlist>
 <para>After joining the cluster the backups with <literal>backup-group-name=fish</literal> will search for live servers with <literal>backup-group-name=fish</literal> to pair with. Since there is one backup too many, the <literal>fish</literal> will remain with one spare backup.</para>
 <para>The 2 backups with <literal>backup-group-name=bird</literal> (<literal>backup5</literal> and <literal>backup6</literal>) will pair with live servers <literal>live4</literal> and <literal>live5</literal>.
@@ -116,14 +116,14 @@
                    replicate with each live server in turn until it finds a live server that has no current backup configured.
                 If no live server is available it will wait until the cluster topology changes and repeats the process.</para>
 
-               <note>This is an important distinction from a shared-store backup, as in that case if
+               <note><para>This is an important distinction from a shared-store backup, as in that case if
                the backup starts and does not find its live server, the server will just activate
                and start to serve client requests. In the replication case, the backup just keeps
                waiting for a live server to pair with. Notice that in replication the backup server
                does not know whether any data it might have is up to date, so it really cannot
                decide to activate automatically. To activate a replicating backup server using the data
                it has, the administrator must change its configuration to make a live server of it,
-               that change <literal>backup=true</literal> to <literal>backup=false</literal>.</note>
+               that change <literal>backup=true</literal> to <literal>backup=false</literal>.</para></note>
 
                 <para>Much like in the shared-store case, when the live server stops or crashes,
                 its replicating backup will become active and take over its duties. Specifically,
