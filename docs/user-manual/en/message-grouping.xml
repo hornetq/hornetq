@@ -180,6 +180,11 @@
                   <para>Always make sure that the node that has the Local Grouping Handler is
                      replicated. These means that on failover grouping will still occur.</para>
                </listitem>
+            <listitem>
+               <para>In case you are using group-timeouts, the remote node should have a smaller group-timeout with at least half
+                     of the value on the main coordinator. This is because this will determine how often the last-time-use
+                     value should be updated with a round trip for a request to the group between the nodes.</para>
+            </listitem>
             </orderedlist></para>
       </section>
       <section>

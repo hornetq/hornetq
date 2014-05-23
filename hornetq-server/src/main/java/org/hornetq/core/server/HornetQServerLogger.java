@@ -250,8 +250,8 @@ public interface HornetQServerLogger extends BasicLogger
    void restartingReplicatedBackupAfterFailback();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221040, value =  "Group Bindings removed from {0}", format = Message.Format.MESSAGE_FORMAT)
-   void groupingQueueRemovedComplete(SimpleString clusterName);
+   @Message(id = 221040, value =  "Remote group coordinators did not start yet", format = Message.Format.MESSAGE_FORMAT)
+   void remoteGroupCoordinatorsNotStarted();
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221041, value = "Cannot find queue {0} while reloading PAGE_CURSOR_COMPLETE, deleting record now",
@@ -1299,4 +1299,10 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224060, value = "Invalid protocol specified. Supported protocols are: {0}", format = Message.Format.MESSAGE_FORMAT)
    void invalidProtocol(String validProtocols);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 224069, value = "Could not contact group handler coordinator after 10 retries, message being routed without grouping information",
+            format = Message.Format.MESSAGE_FORMAT)
+   void impossibleToRouteGrouped();
+
 }

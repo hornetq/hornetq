@@ -28,13 +28,13 @@ public class GroupBinding
 
    private final SimpleString clusterName;
 
-   final long timeCreated;
+   volatile long timeUsed;
 
    public GroupBinding(final SimpleString groupId, final SimpleString clusterName)
    {
       this.groupId = groupId;
       this.clusterName = clusterName;
-      timeCreated = System.currentTimeMillis();
+      use();
    }
 
    public GroupBinding(final long id, final SimpleString groupId, final SimpleString clusterName)
@@ -42,7 +42,7 @@ public class GroupBinding
       this.id = id;
       this.groupId = groupId;
       this.clusterName = clusterName;
-      timeCreated = System.currentTimeMillis();
+      use();
    }
 
    public long getId()
@@ -65,9 +65,14 @@ public class GroupBinding
       return clusterName;
    }
 
-   public long getTimeCreated()
+   public long getTimeUsed()
    {
-      return timeCreated;
+      return timeUsed;
+   }
+
+   public void use()
+   {
+      timeUsed = System.currentTimeMillis();
    }
 
    @Override
