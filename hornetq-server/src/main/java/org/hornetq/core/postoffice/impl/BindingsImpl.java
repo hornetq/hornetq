@@ -30,7 +30,6 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
@@ -48,6 +47,9 @@ import org.hornetq.core.server.group.impl.Response;
  */
 public final class BindingsImpl implements Bindings
 {
+   // This is public as we use on test assertions
+   public static final int MAX_GROUP_RETRY = 10;
+
    private static boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
@@ -81,6 +83,14 @@ public final class BindingsImpl implements Bindings
    public Collection<Binding> getBindings()
    {
       return bindingsMap.values();
+   }
+
+   public void unproposed(SimpleString groupID)
+   {
+      for (Binding binding : bindingsMap.values())
+      {
+         binding.unproposed(groupID);
+      }
    }
 
    public void addBinding(final Binding binding)
@@ -248,6 +258,11 @@ public final class BindingsImpl implements Bindings
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
+      route(message, context, true);
+   }
+
+   private void route(final ServerMessage message, final RoutingContext context, final boolean groupRouting) throws Exception
+   {
       boolean routed = false;
 
       if (!exclusiveBindings.isEmpty())
@@ -275,9 +290,9 @@ public final class BindingsImpl implements Bindings
          {
             routeFromCluster(message, context, ids);
          }
-         else if (groupingHandler != null && groupId != null)
+         else if (groupingHandler != null && groupRouting && groupId != null)
          {
-            routeUsingStrictOrdering(message, context, groupingHandler, groupId);
+            routeUsingStrictOrdering(message, context, groupingHandler, groupId, 0);
          }
          else
          {
@@ -432,7 +447,8 @@ public final class BindingsImpl implements Bindings
    private void routeUsingStrictOrdering(final ServerMessage message,
                                          final RoutingContext context,
                                          final GroupingHandler groupingGroupingHandler,
-                                         final SimpleString groupId) throws Exception
+                                         final SimpleString groupId,
+                                         final int tries) throws Exception
    {
       for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
       {
@@ -448,10 +464,12 @@ public final class BindingsImpl implements Bindings
          }
 
          // concat a full group id, this is for when a binding has multiple bindings
+         // NOTE: In case a dev ever change this rule, QueueImpl::unproposed is using this rule to determine if
+         //       the binding belongs to its Queue before removing it
          SimpleString fullID = groupId.concat(".").concat(routingName);
 
          // see if there is already a response
-         Response resp = groupingGroupingHandler.getProposal(fullID);
+         Response resp = groupingGroupingHandler.getProposal(fullID, true);
 
          if (resp == null)
          {
@@ -461,56 +479,77 @@ public final class BindingsImpl implements Bindings
             {
                continue;
             }
-            // TODO https://jira.jboss.org/jira/browse/HORNETQ-191
+
             resp = groupingGroupingHandler.propose(new Proposal(fullID, theBinding.getClusterName()));
 
-            // if our proposal was declined find the correct binding to use
-            if (resp.getAlternativeClusterName() != null)
+            if (resp == null)
             {
+               HornetQServerLogger.LOGGER.debug("it got a timeout on propose, trying again, number of retries: " + tries);
+               // it timed out, so we will check it through routeAndcheckNull
                theBinding = null;
-               for (Binding binding : bindings)
-               {
-                  if (binding.getClusterName().equals(resp.getAlternativeClusterName()))
-                  {
-                     theBinding = binding;
-                     break;
-                  }
-               }
             }
 
-            // and let's route it
-            if (theBinding != null)
+            // alternativeClusterName will be != null when by the time we looked at the cachedProposed,
+            // another thread already set the proposal, so we use the new alternativeclusterName that's set there
+            // if our proposal was declined find the correct binding to use
+            if (resp != null && resp.getAlternativeClusterName() != null)
             {
-               theBinding.route(message, context);
+               theBinding = locateBinding(resp.getAlternativeClusterName(), bindings);
             }
-            else
-            {
-               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
-            }
+
+            routeAndCheckNull(message, context, resp, theBinding, groupId, tries);
          }
          else
          {
             // ok, we need to find the binding and route it
-            Binding chosen = null;
-            for (Binding binding : bindings)
-            {
-               if (binding.getClusterName().equals(resp.getChosenClusterName()))
-               {
-                  chosen = binding;
-                  break;
-               }
-            }
-            if (chosen != null)
-            {
-               chosen.route(message, context);
-            }
-            else
-            {
-               throw HornetQMessageBundle.BUNDLE.groupingQueueRemoved(resp.getChosenClusterName());
-            }
+            Binding chosen = locateBinding(resp.getChosenClusterName(), bindings);
+
+            routeAndCheckNull(message, context, resp, chosen, groupId, tries);
          }
       }
    }
+
+   private Binding locateBinding(SimpleString clusterName, List<Binding> bindings)
+   {
+      for (Binding binding : bindings)
+      {
+         if (binding.getClusterName().equals(clusterName))
+         {
+            return binding;
+         }
+      }
+
+      return null;
+   }
+
+   private void routeAndCheckNull(ServerMessage message, RoutingContext context, Response resp, Binding theBinding, SimpleString groupId, int tries) throws Exception
+   {
+      // and let's route it
+      if (theBinding != null)
+      {
+         theBinding.route(message, context);
+      }
+      else
+      {
+         if (resp != null)
+         {
+            groupingHandler.forceRemove(resp.getGroupId(), resp.getClusterName());
+         }
+
+         //there may be a chance that the binding has been removed from the post office before it is removed from the grouping handler.
+         //in this case all we can do is remove it and try again.
+         if (tries < MAX_GROUP_RETRY)
+         {
+            routeUsingStrictOrdering(message, context, groupingHandler, groupId, tries + 1);
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.impossibleToRouteGrouped();
+            route(message, context, false);
+         }
+      }
+   }
+
 
    private String debugBindings()
    {
