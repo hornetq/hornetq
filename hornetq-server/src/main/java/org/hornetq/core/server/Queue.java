@@ -75,6 +75,8 @@ public interface Queue extends Bindable
 
    void deliverAsync();
 
+   void unproposed(SimpleString groupID);
+
    /**
     * This method will make sure that any pending message (including paged message) will be delivered
     */

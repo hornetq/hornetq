@@ -108,6 +108,12 @@ public class LocalQueueBinding implements QueueBinding
       return queue.hasMatchingConsumer(message);
    }
 
+   @Override
+   public void unproposed(SimpleString groupID)
+   {
+      queue.unproposed(groupID);
+   }
+
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       queue.route(message, context);

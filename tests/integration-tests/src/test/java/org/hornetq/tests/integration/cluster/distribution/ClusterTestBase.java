@@ -66,6 +66,7 @@ import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.server.impl.QuorumManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.util.ServerLocatorSettingsCallback;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
@@ -1514,10 +1515,20 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void setupSessionFactory(final int node, final boolean netty) throws Exception
    {
-      setupSessionFactory(node, netty, false);
+      setupSessionFactory(node, netty, false, null);
+   }
+
+   protected void setupSessionFactory(final int node, final boolean netty, final ServerLocatorSettingsCallback callback) throws Exception
+   {
+      setupSessionFactory(node, netty, false, callback);
    }
 
    protected void setupSessionFactory(final int node, final boolean netty, boolean ha) throws Exception
+   {
+      setupSessionFactory(node, netty, ha, null);
+   }
+
+   protected void setupSessionFactory(final int node, final boolean netty, boolean ha, final ServerLocatorSettingsCallback callback) throws Exception
    {
       if (sfs[node] != null)
       {

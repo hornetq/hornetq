@@ -1278,7 +1278,7 @@
       <xsd:element name="group-timeout" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:default="(ms)">
           <xsd:documentation>How long a group binding will be used, -1 means for ever. Bindings are removed after this wait
-          elapses. Only valid for LOCAL handlers</xsd:documentation>
+             elapses. On the remote node this is used to determine how often you should re-query the main coordinator in order to update the last time used accordingly.</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="reaper-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">

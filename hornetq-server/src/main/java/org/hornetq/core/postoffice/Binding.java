@@ -18,13 +18,14 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.UnproposalListener;
 
 /**
  * A Binding
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public interface Binding
+public interface Binding extends UnproposalListener
 {
    SimpleString getAddress();
 

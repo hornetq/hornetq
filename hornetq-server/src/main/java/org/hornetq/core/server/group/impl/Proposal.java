@@ -44,6 +44,6 @@ public class Proposal
    @Override
    public String toString()
    {
-      return getGroupId() + ":" + clusterName;
+      return "Proposal:" + getGroupId() + ":" + clusterName;
    }
 }
