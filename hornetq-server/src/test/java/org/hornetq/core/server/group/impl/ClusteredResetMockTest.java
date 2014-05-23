@@ -74,7 +74,7 @@ public class ClusteredResetMockTest extends UnitTestCase
    public void testMultipleSenders() throws Throwable
    {
 
-      int NUMBER_OF_SENDERS = 1000;
+      int NUMBER_OF_SENDERS = 100;
       ReusableLatch latchSends = new ReusableLatch(NUMBER_OF_SENDERS);
 
       FakeManagement fake = new FakeManagement(latchSends);
