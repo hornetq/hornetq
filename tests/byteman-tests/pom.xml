@@ -213,7 +213,6 @@
                <!--
                <debugForkedProcess>true</debugForkedProcess>
                -->
-               <parallel>false</parallel>
                <!--<argLine>${hornetq-surefire-argline} -Dorg.jboss.byteman.verbose -Dorg.jboss.byteman.contrib.bmunit.verbose</argLine>-->
                <argLine>${hornetq-surefire-argline}</argLine>
             </configuration>
