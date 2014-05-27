@@ -25,121 +25,151 @@
     <title>High Availability and Failover</title>
 
     <para>We define high availability as the <emphasis>ability for the system to continue
-    functioning after failure of one or more of the servers</emphasis>.</para>
+       functioning after failure of one or more of the servers</emphasis>.</para>
 
     <para>A part of high availability is <emphasis>failover</emphasis> which we define as the
-    <emphasis>ability for client connections to migrate from one server to another in event of
-    server failure so client applications can continue to operate</emphasis>.</para>
+       <emphasis>ability for client connections to migrate from one server to another in event of
+          server failure so client applications can continue to operate</emphasis>.</para>
 
     <section>
         <title>Live - Backup Groups</title>
 
         <para>HornetQ allows servers to be linked together as <emphasis>live - backup</emphasis>
-        groups where each live server can have 1 or more backup servers. A backup server is owned by
-        only one live server.  Backup servers are not operational until failover occurs, however 1
-        chosen backup, which will be in passive mode, announces its status and waits to take over
-        the live servers work</para>
+           groups where each live server can have 1 or more backup servers. A backup server is owned by
+           only one live server.  Backup servers are not operational until failover occurs, however 1
+           chosen backup, which will be in passive mode, announces its status and waits to take over
+           the live servers work</para>
 
         <para>Before failover, only the live server is serving the HornetQ clients while the backup
-        servers remain passive or awaiting to become a backup server. When a live server crashes or
-        is brought down in the correct mode, the backup server currently in passive mode will become
-        live and another backup server will become passive. If a live server restarts after a
-        failover then it will have priority and be the next server to become live when the current
-        live server goes down, if the current live server is configured to allow automatic failback
-        then it will detect the live server coming back up and automatically stop.</para>
+           servers remain passive or awaiting to become a backup server. When a live server crashes or
+           is brought down in the correct mode, the backup server currently in passive mode will become
+           live and another backup server will become passive. If a live server restarts after a
+           failover then it will have priority and be the next server to become live when the current
+           live server goes down, if the current live server is configured to allow automatic failback
+           then it will detect the live server coming back up and automatically stop.</para>
 
         <section id="ha.mode">
             <title>HA modes</title>
             <para>HornetQ supports two different strategies for backing up a server <emphasis>shared
-            store</emphasis> and <emphasis>replication</emphasis>.</para>
+               store</emphasis> and <emphasis>replication</emphasis>.</para>
             <note>
-              <para>Only persistent message data will survive failover. Any non persistent message
-              data will not be available after failover.</para>
+                <para>Only persistent message data will survive failover. Any non persistent message
+                   data will not be available after failover.</para>
             </note>
         </section>
-            <section id="ha.mode.replicated">
-                <title>Data Replication</title>
-                <para>Replication is supported since version 2.3.</para>
-                <para>When using replication, the live and the backup servers do not share the same
-                data directories, all data synchronization is done through network traffic. Therefore all (persistent)
-                   data traffic received by the live server will be duplicated to the backup.
-                </para>
-               <graphic fileref="images/ha-replicated-store.png" align="center"/>
-                <para>Notice that upon start-up the backup server will first need to synchronize all
-                existing data from the live server, before becoming capable of replacing the live
-                server should it fail. So unlike the shared store case, a replicating backup will
-                not be a fully operational backup right after start, but only after it finishes
-                synchronizing the data. The time it will take for this to happen will depend on the
-                amount of data to be synchronized and the connection speed.</para>
-               <note><para>Synchronization occurs in parallel with current network traffic so this won't cause any blocking on
-               current clients.</para></note>
 
-               <para>Replication will create a copy of the data at the backup. One issue to be aware
+        <section id="ha.mode.replicated">
+            <title>Data Replication</title>
+            <para>Support for network-based data replication was added in version 2.3.</para>
+            <para>When using replication, the live and the backup servers do not share the same
+               data directories, all data synchronization is done over the network. Therefore all (persistent)
+               data received by the live server will be duplicated to the backup.</para>
+            <graphic fileref="images/ha-replicated-store.png" align="center"/>
+            <para>Notice that upon start-up the backup server will first need to synchronize all
+               existing data from the live server before becoming capable of replacing the live
+               server should it fail. So unlike when using shared storage, a replicating backup will
+               not be a fully operational backup right after start-up, but only after it finishes
+               synchronizing the data with its live server. The time it will take for this to happen
+               will depend on the amount of data to be synchronized and the connection speed.</para>
+
+            <note>
+                <para>Synchronization occurs in parallel with current network traffic so this won't cause any
+                  blocking on current clients.</para>
+            </note>
+            <para>Replication will create a copy of the data at the backup. One issue to be aware
                of is: in case of a successful fail-over, the backup's data will be newer than
-               the one at the live's storage. If you configure your live server to perform a <xref
-               linkend="ha.allow-fail-back">'fail-back'</xref> when restarted, it will synchronize
+               the one at the live's storage. If you configure your live server to perform a
+               <xref linkend="ha.allow-fail-back">'fail-back'</xref> when restarted, it will synchronize
                its data with the backup's. If both servers are shutdown, the administrator will have
                to determine which one has the lastest data.</para>
 
-                <para>The replicating live and backup pair must be part of a cluster.  The Cluster
-                Connection also defines how backup servers will find the remote live servers to pair
-                with.  Refer to <xref linkend="clusters"/> for details on how this is done, and how
-                to configure a cluster connection. Notice that:
-<itemizedlist><listitem>Both live and backup servers must be part of the same cluster.  Notice that even a simple live/backup replicating pair will require a cluster configuration.</listitem>
-<listitem>their cluster user and password must match</listitem></itemizedlist>
-</para>
-                <para>Within a cluster, there are two ways that a backup server will locate a live server to replicate from, these are:</para>
-                <itemizedlist>
-                   <listitem>
-                      <para><literal>specifying a node group</literal>. You can specify a group of live servers that a backup
-                      server can connect to. This is done by configuring <literal>backup-group-name</literal> in the main
-                      <literal>hornetq-configuration.xml</literal>. A Backup server will only connect to a live server that
-                         shares the same node group name</para>
-                   </listitem>
-                   <listitem>
-                      <para><literal>connecting to any live</literal>. Simply put not configuring <literal>backup-group-name</literal>
+            <para>The replicating live and backup pair must be part of a cluster.  The Cluster
+               Connection also defines how backup servers will find the remote live servers to pair
+               with.  Refer to <xref linkend="clusters"/> for details on how this is done, and how
+               to configure a cluster connection. Notice that:</para>
+
+            <itemizedlist>
+                <listitem>
+                    <para>Both live and backup servers must be part of the same cluster.  Notice
+                       that even a simple live/backup replicating pair will require a cluster configuration.</para>
+                </listitem>
+                <listitem>
+                    <para>Their cluster user and password must match.</para>
+                </listitem>
+            </itemizedlist>
+
+            <para>Within a cluster, there are two ways that a backup server will locate a live server to replicate
+               from, these are:</para>
+
+            <itemizedlist>
+                <listitem>
+                    <para><literal>specifying a node group</literal>. You can specify a group of live servers that a backup
+                       server can connect to. This is done by configuring <literal>backup-group-name</literal> in the main
+                       <literal>hornetq-configuration.xml</literal>. A Backup server will only connect to a live server that
+                       shares the same node group name</para>
+                </listitem>
+                <listitem>
+                   <para><literal>connecting to any live</literal>. Simply put not configuring <literal>backup-group-name</literal>
                       will allow a backup server to connect to any live server</para>
-                   </listitem>
-                </itemizedlist>
-                <note><para>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup servers:</para>
+                </listitem>
+            </itemizedlist>
+            <note>
+                <para>A <literal>backup-group-name</literal> example: suppose you have 5 live servers and 6 backup
+                   servers:</para>
                 <itemizedlist>
-                <listitem><para><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with <literal>backup-group-name=fish</literal></para></listitem>
-    <listitem><para><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></para></listitem>
-    <listitem><para><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>, <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></para></listitem>
-    <listitem><para><literal>backup5</literal>, <literal>backup6</literal>: with <literal>backup-group-name=bird</literal></para></listitem>
-</itemizedlist>
-<para>After joining the cluster the backups with <literal>backup-group-name=fish</literal> will search for live servers with <literal>backup-group-name=fish</literal> to pair with. Since there is one backup too many, the <literal>fish</literal> will remain with one spare backup.</para>
-<para>The 2 backups with <literal>backup-group-name=bird</literal> (<literal>backup5</literal> and <literal>backup6</literal>) will pair with live servers <literal>live4</literal> and <literal>live5</literal>.
-</para>
-</note>
-                <para>The backup will search for any live server that it is configured to connect to. It then tries to
-                   replicate with each live server in turn until it finds a live server that has no current backup configured.
-                If no live server is available it will wait until the cluster topology changes and repeats the process.</para>
+                    <listitem>
+                        <para><literal>live1</literal>, <literal>live2</literal>, <literal>live3</literal>: with
+                           <literal>backup-group-name=fish</literal></para>
+                    </listitem>
+                    <listitem>
+                       <para><literal>live4</literal>, <literal>live5</literal>: with <literal>backup-group-name=bird</literal></para>
+                    </listitem>
+                    <listitem>
+                       <para><literal>backup1</literal>, <literal>backup2</literal>, <literal>backup3</literal>,
+                          <literal>backup4</literal>: with <literal>backup-group-name=fish</literal></para>
+                    </listitem>
+                    <listitem>
+                       <para><literal>backup5</literal>, <literal>backup6</literal>: with
+                          <literal>backup-group-name=bird</literal></para>
+                    </listitem>
+                </itemizedlist>
+                <para>After joining the cluster the backups with <literal>backup-group-name=fish</literal> will
+                   search for live servers with <literal>backup-group-name=fish</literal> to pair with. Since there
+                   is one backup too many, the <literal>fish</literal> will remain with one spare backup.</para>
+                <para>The 2 backups with <literal>backup-group-name=bird</literal> (<literal>backup5</literal> and
+                   <literal>backup6</literal>) will pair with live servers <literal>live4</literal> and
+                   <literal>live5</literal>.</para>
+            </note>
+            <para>The backup will search for any live server that it is configured to connect to. It then tries to
+               replicate with each live server in turn until it finds a live server that has no current backup
+               configured. If no live server is available it will wait until the cluster topology changes and
+               repeats the process.</para>
+            <note>
+               <para>This is an important distinction from a shared-store backup, as in that case if
+                  the backup starts and does not find its live server, the server will just activate
+                  and start to serve client requests. In the replication case, the backup just keeps
+                  waiting for a live server to pair with. Notice that in replication the backup server
+                  does not know whether any data it might have is up to date, so it really cannot
+                  decide to activate automatically. To activate a replicating backup server using the data
+                  it has, the administrator must change its configuration to make a live server of it,
+                  that change <literal>backup=true</literal> to <literal>backup=false</literal>.</para>
+            </note>
 
-               <note><para>This is an important distinction from a shared-store backup, as in that case if
-               the backup starts and does not find its live server, the server will just activate
-               and start to serve client requests. In the replication case, the backup just keeps
-               waiting for a live server to pair with. Notice that in replication the backup server
-               does not know whether any data it might have is up to date, so it really cannot
-               decide to activate automatically. To activate a replicating backup server using the data
-               it has, the administrator must change its configuration to make a live server of it,
-               that change <literal>backup=true</literal> to <literal>backup=false</literal>.</para></note>
+            <para>Much like in the shared-store case, when the live server stops or crashes,
+               its replicating backup will become active and take over its duties. Specifically,
+               the backup will become active when it loses connection to its live server. This can
+               be problematic because this can also happen because of a temporary network
+               problem. In order to address this issue, the backup will try to determine whether it
+               still can connect to the other servers in the cluster. If it can connect to more
+               than half the servers, it will become active, if more than half the servers also
+               disappeared with the live, the backup will wait and try reconnecting with the live.
+               This avoids a split brain situation.</para>
 
-                <para>Much like in the shared-store case, when the live server stops or crashes,
-                its replicating backup will become active and take over its duties. Specifically,
-                the backup will become active when it loses connection to its live server. This can
-                be problematic because this can also happen because of a temporary network
-                problem. In order to address this issue, the backup will try to determine whether it
-                still can connect to the other servers in the cluster. If it can connect to more
-                than half the servers, it will become active, if more than half the servers also
-                disappeared with the live, the backup will wait and try reconnecting with the live.
-                This avoids a split brain situation.
-                </para>
-                <section>
+            <section>
                 <title>Configuration</title>
 
                 <para>To configure the live and backup servers to be a replicating pair, configure
-                both servers' <literal>hornetq-configuration.xml</literal> to have:</para>
+                   both servers' <literal>hornetq-configuration.xml</literal> to have:</para>
 
                 <programlisting>
 &lt;!-- FOR BOTH LIVE AND BACKUP SERVERS' -->
@@ -151,97 +181,90 @@
       ...
    &lt;/cluster-connection>
 &lt;/cluster-connections>
-</programlisting>
+                </programlisting>
 
                 <para>The backup server must also be configured as a backup.</para>
+
                 <programlisting>
 &lt;backup>true&lt;/backup>
 </programlisting>
-                </section>
             </section>
+        </section>
 
-            <section id="ha.mode.shared">
-                <title>Shared Store</title>
-                <para>When using a shared store, both live and backup servers share the
-                        <emphasis>same</emphasis> entire data directory using a shared file system.
-                    This means the paging directory, journal directory, large messages and binding
-                    journal.</para>
-                <para>When failover occurs and a backup server takes over, it will load the
-                    persistent storage from the shared file system and clients can connect to
-                    it.</para>
-                <para>This style of high availability differs from data replication in that it
-                    requires a shared file system which is accessible by both the live and backup
-                    nodes. Typically this will be some kind of high performance Storage Area Network
-                    (SAN). We do not recommend you use Network Attached Storage (NAS), e.g. NFS
-                    mounts to store any shared journal (NFS is slow).</para>
-                <para>The advantage of shared-store high availability is that no replication occurs
-                    between the live and backup nodes, this means it does not suffer any performance
-                    penalties due to the overhead of replication during normal operation.</para>
-                <para>The disadvantage of shared store replication is that it requires a shared file
-                    system, and when the backup server activates it needs to load the journal from
-                    the shared store which can take some time depending on the amount of data in the
-                    store.</para>
-                <para>If you require the highest performance during normal operation, have access to
-                    a fast SAN, and can live with a slightly slower failover (depending on amount of
-                    data), we recommend shared store high availability</para>
-                <graphic fileref="images/ha-shared-store.png" align="center"/>
-                <section id="ha/mode.shared.configuration">
-                    <title>Configuration</title>
-                    <para>To configure the live and backup servers to share their store, configure
-                        all <literal>hornetq-configuration.xml</literal>:</para>
-                    <programlisting>
+        <section id="ha.mode.shared">
+            <title>Shared Store</title>
+            <para>When using a shared store, both live and backup servers share the
+               <emphasis>same</emphasis> entire data directory using a shared file system.
+               This means the paging directory, journal directory, large messages and binding
+               journal.</para>
+            <para>When failover occurs and a backup server takes over, it will load the
+               persistent storage from the shared file system and clients can connect to
+               it.</para>
+            <para>This style of high availability differs from data replication in that it
+               requires a shared file system which is accessible by both the live and backup
+               nodes. Typically this will be some kind of high performance Storage Area Network
+               (SAN). We do not recommend you use Network Attached Storage (NAS), e.g. NFS
+               mounts to store any shared journal (NFS is slow).</para>
+            <para>The advantage of shared-store high availability is that no replication occurs
+               between the live and backup nodes, this means it does not suffer any performance
+               penalties due to the overhead of replication during normal operation.</para>
+            <para>The disadvantage of shared store replication is that it requires a shared file
+               system, and when the backup server activates it needs to load the journal from
+               the shared store which can take some time depending on the amount of data in the
+               store.</para>
+            <para>If you require the highest performance during normal operation, have access to
+               a fast SAN, and can live with a slightly slower failover (depending on amount of
+               data), we recommend shared store high availability</para>
+            <graphic fileref="images/ha-shared-store.png" align="center"/>
+
+            <section id="ha/mode.shared.configuration">
+                <title>Configuration</title>
+                <para>To configure the live and backup servers to share their store, configure
+                   all <literal>hornetq-configuration.xml</literal>:</para>
+                <programlisting>
 &lt;shared-store>true&lt;/shared-store>
                 </programlisting>
-                    <para>Additionally, each backup server must be flagged explicitly as a
-                        backup:</para>
-                    <programlisting>
+                <para>Additionally, each backup server must be flagged explicitly as a backup:</para>
+                <programlisting>
 &lt;backup>true&lt;/backup></programlisting>
-                    <para>In order for live - backup groups to operate properly with a shared store,
-                        both servers must have configured the location of journal directory to point
-                        to the <emphasis>same shared location</emphasis> (as explained in <xref
-                            linkend="configuring.message.journal"/>)</para>
-                   <note>
-                      <para>todo write something about GFS</para>
-                   </note>
-                    <para>Also each node, live and backups, will need to have a cluster connection defined even if not
-                        part of a cluster. The Cluster Connection info defines how backup servers announce there presence
-                        to its live server or any other nodes in the cluster. Refer to <xref linkend="clusters"/> for details
-                        on how this is done.</para>
-                </section>
+                <para>In order for live - backup groups to operate properly with a shared store,
+                   both servers must have configured the location of journal directory to point
+                   to the <emphasis>same shared location</emphasis> (as explained in
+                   <xref linkend="configuring.message.journal"/>)</para>
+                <note>
+                    <para>todo write something about GFS</para>
+                </note>
+                <para>Also each node, live and backups, will need to have a cluster connection defined even if not
+                   part of a cluster. The Cluster Connection info defines how backup servers announce there presence
+                   to its live server or any other nodes in the cluster. Refer to <xref linkend="clusters"/> for details
+                   on how this is done.</para>
             </section>
-            <section id="ha.allow-fail-back">
-                <title>Failing Back to live Server</title>
-                <para>After a live server has failed and a backup taken has taken over its duties, you may want to
-                    restart the live server and have clients fail back.</para>
-<para>In case of "shared disk", simply restart the original live
-                    server and kill the new live server. You can do this by killing the process itself or just waiting for the server to crash naturally.</para>
-                    <para>In case of a replicating live server that has been replaced by a remote backup you will need to also set <link linkend="hq.check-for-live-server">check-for-live-server</link>. This option is necessary because a starting server cannot know whether there is a (remote) server running in its place, so with this option set, the server will check the cluster for another server using its node-ID and if it finds one it will try initiate a fail-back. This option only applies to live servers that are restarting, it is ignored by backup servers.</para>
-                <para>
-                    It is also possible to cause failover to occur on normal server shutdown, to enable
-                    this set the following property to true in the <literal>hornetq-configuration.xml</literal>
-                    configuration file like so:
-                </para>
-                <programlisting>
+        </section>
+        <section id="ha.allow-fail-back">
+            <title>Failing Back to live Server</title>
+            <para>After a live server has failed and a backup taken has taken over its duties, you may want to
+               restart the live server and have clients fail back.</para>
+            <para>In case of "shared disk", simply restart the original live
+               server and kill the new live server. You can do this by killing the process itself or just waiting for the server to crash naturally.</para>
+            <para>In case of a replicating live server that has been replaced by a remote backup you will need to also set <link linkend="hq.check-for-live-server">check-for-live-server</link>. This option is necessary because a starting server cannot know whether there is a (remote) server running in its place, so with this option set, the server will check the cluster for another server using its node-ID and if it finds one it will try initiate a fail-back. This option only applies to live servers that are restarting, it is ignored by backup servers.</para>
+            <para>It is also possible to cause failover to occur on normal server shutdown, to enable
+               this set the following property to true in the <literal>hornetq-configuration.xml</literal>
+               configuration file like so:</para>
+            <programlisting>
 &lt;failover-on-shutdown>true&lt;/failover-on-shutdown></programlisting>
-                <para>
-                    By default this is set to false, if by some chance you have set this to false but still
-                    want to stop the server normally and cause failover then you can do this by using the management
-                    API as explained at <xref linkend="management.core.server"/>
-                </para>
-                <para>
-                    You can also force the running live server to shutdown when the old live server comes back up allowing
-                    the original live server to take over automatically by setting the following property in the
-                <literal>hornetq-configuration.xml</literal> configuration file as follows:
-                </para>
-                <programlisting>
+            <para>By default this is set to false, if by some chance you have set this to false but still
+               want to stop the server normally and cause failover then you can do this by using the management
+               API as explained at <xref linkend="management.core.server"/></para>
+            <para>You can also force the running live server to shutdown when the old live server comes back up allowing
+               the original live server to take over automatically by setting the following property in the
+               <literal>hornetq-configuration.xml</literal> configuration file as follows:</para>
+            <programlisting>
 &lt;allow-failback>true&lt;/allow-failback></programlisting>
-                <para id="hq.check-for-live-server">
-                    In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
-                    to <literal>true</literal>. If set to true, during start-up a live server will first search the cluster for another server using its nodeID. If it finds one, it will contact this server and try to "fail-back". Since this is a remote replication scenario, the "starting live" will have to synchronize its data with the server running with its ID, once they are in sync, it will request the other server (which it assumes it is a back that has assumed its duties) to shutdown for it to take over. This is necessary because otherwise the live server has no means to know whether there was a fail-over or not, and if there was if the server that took its duties is still running or not. To configure this option at your <literal>hornetq-configuration.xml</literal> configuration file as follows:
-                </para>
-                <programlisting>
+            <para id="hq.check-for-live-server">In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
+               to <literal>true</literal>. If set to true, during start-up a live server will first search the cluster for another server using its nodeID. If it finds one, it will contact this server and try to "fail-back". Since this is a remote replication scenario, the "starting live" will have to synchronize its data with the server running with its ID, once they are in sync, it will request the other server (which it assumes it is a back that has assumed its duties) to shutdown for it to take over. This is necessary because otherwise the live server has no means to know whether there was a fail-over or not, and if there was if the server that took its duties is still running or not. To configure this option at your <literal>hornetq-configuration.xml</literal> configuration file as follows:</para>
+            <programlisting>
 &lt;check-for-live-server>true&lt;/check-for-live-server></programlisting>
-            </section>
+        </section>
         <section id="ha.colocated">
             <title>Colocated Backup Servers</title>
             <para>It is also possible when running standalone to colocate backup servers in the same
@@ -282,8 +305,8 @@
         </itemizedlist>
         <para>HornetQ also provides 100% transparent automatic reattachment of connections to the
             same server (e.g. in case of transient network problems). This is similar to failover,
-            except it is reconnecting to the same server and is discussed in <xref
-                linkend="client-reconnection"/></para>
+            except it is reconnecting to the same server and is discussed in
+            <xref linkend="client-reconnection"/></para>
         <para>During failover, if the client has consumers on any non persistent or temporary
             queues, those queues will be automatically recreated during failover on the backup node,
             since the backup node will not have any knowledge of non persistent queues.</para>
@@ -499,16 +522,15 @@
                 own failure handler. We define this as <emphasis>application-level</emphasis>
                 failover, since the failover is handled at the user application level.</para>
             <para>To implement application-level failover, if you're using JMS then you need to set
-                an <literal>ExceptionListener</literal> class on the JMS connection. The <literal
-                    >ExceptionListener</literal> will be called by HornetQ in the event that
+                an <literal>ExceptionListener</literal> class on the JMS connection. The
+                <literal>ExceptionListener</literal> will be called by HornetQ in the event that
                 connection failure is detected. In your <literal>ExceptionListener</literal>, you
                 would close your old JMS connections, potentially look up new connection factory
                 instances from JNDI and creating new connections. In this case you may well be using
-                    <ulink url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink>
-                to ensure that the new connection factory is looked up from a different
-                server.</para>
-            <para>For a working example of application-level failover, please see <xref
-                    linkend="application-level-failover"/>.</para>
+                <ulink url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink>
+                to ensure that the new connection factory is looked up from a different server.</para>
+            <para>For a working example of application-level failover, please see
+                <xref linkend="application-level-failover"/>.</para>
             <para>If you are using the core API, then the procedure is very similar: you would set a
                     <literal>FailureListener</literal> on the core <literal>ClientSession</literal>
                 instances.</para>
