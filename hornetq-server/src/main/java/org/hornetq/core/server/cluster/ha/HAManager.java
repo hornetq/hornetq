@@ -26,6 +26,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.server.ActivationParams;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
@@ -188,14 +189,14 @@ public class HAManager implements HornetQComponent
          int portOffset = haPolicy.getBackupPortOffset() * (backupServers.size() + 1);
          String name = "colocated_backup_" + backupServers.size() + 1;
          updateReplicatedConfiguration(configuration, haPolicy.getBackupStrategy(), name, portOffset, haPolicy.getRemoteConnectors());
-         backup.addActivationParam("REPLICATION_ENDPOINT", member);
+         backup.addActivationParam(ActivationParams.REPLICATION_ENDPOINT, member);
          backupServers.put(configuration.getName(), backup);
          backup.start();
       }
       catch (Exception e)
       {
          backup.stop();
-         //todo log a warning
+         HornetQServerLogger.LOGGER.activateReplicatedBackupFailed(e);
          return false;
       }
       return true;
@@ -275,7 +276,7 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setPagingDirectory(pagingDirectory);
       backupConfiguration.setSharedStore(true);
       backupConfiguration.setBackup(true);
-      updateAcceptorsAndConnectors(backupConfiguration, backupStrategy, name, portOffset, remoteConnectors);
+      updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
 
    }
 
@@ -302,11 +303,11 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + name);
       backupConfiguration.setSharedStore(false);
       backupConfiguration.setBackup(true);
-      updateAcceptorsAndConnectors(backupConfiguration, backupStrategy, name, portOffset, remoteConnectors);
+      updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
 
    }
 
-   private static void updateAcceptorsAndConnectors(Configuration backupConfiguration, BackupStrategy backupStrategy, String name, int portOffset, List<String> remoteConnectors)
+   private static void updateAcceptorsAndConnectors(Configuration backupConfiguration, int portOffset, List<String> remoteConnectors)
    {
       //we only do this if we are a full server, if scale down then our acceptors wont be needed and our connectors will
       // be the same as the parent server
@@ -315,7 +316,7 @@ public class HAManager implements HornetQComponent
          Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
          for (TransportConfiguration acceptor : acceptors)
          {
-            updatebackupParams(name, portOffset, acceptor.getParams());
+            updatebackupParams(backupConfiguration.getName(), portOffset, acceptor.getParams());
          }
          Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
          for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
@@ -323,11 +324,11 @@ public class HAManager implements HornetQComponent
             //check to make sure we aren't a remote connector as this shouldn't be changed
             if (!remoteConnectors.contains(entry.getValue().getName()))
             {
-               updatebackupParams(name, portOffset, entry.getValue().getParams());
+               updatebackupParams(backupConfiguration.getName(), portOffset, entry.getValue().getParams());
             }
          }
       }
-      else if (backupStrategy == BackupStrategy.SCALE_DOWN)
+      else if (backupConfiguration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
       {
          //if we are scaling down then we wont need any acceptors but clear anyway for belts and braces
          backupConfiguration.getAcceptorConfigurations().clear();
