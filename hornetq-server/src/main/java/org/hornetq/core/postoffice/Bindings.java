@@ -17,6 +17,7 @@ import java.util.Collection;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.UnproposalListener;
 
 /**
  * A Bindings
@@ -25,7 +26,7 @@ import org.hornetq.core.server.ServerMessage;
  *         <p/>
  *         Created 10 Dec 2008 19:10:52
  */
-public interface Bindings
+public interface Bindings extends UnproposalListener
 {
    Collection<Binding> getBindings();
 
