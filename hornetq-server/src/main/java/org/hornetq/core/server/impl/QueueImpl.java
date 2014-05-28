@@ -2000,6 +2000,7 @@ public class QueueImpl implements Queue
             ConsumerHolder holder = consumerList.get(pos);
 
             Consumer consumer = holder.consumer;
+            Consumer groupConsumer = null;
 
             if (holder.iter == null)
             {
@@ -2035,7 +2036,6 @@ public class QueueImpl implements Queue
                   continue;
                }
 
-               Consumer groupConsumer = null;
 
                if (isTrace)
                {
@@ -2113,7 +2113,11 @@ public class QueueImpl implements Queue
                noDelivery = 0;
             }
 
-            pos++;
+            // Only move onto the next position if the consumer on the current position was used.
+            if (groupConsumer == null)
+            {
+               pos++;
+            }
 
             if (pos == size)
             {
@@ -2489,7 +2493,11 @@ public class QueueImpl implements Queue
                }
             }
 
-            pos++;
+            // Only move onto the next position if the consumer on the current position was used.
+            if (groupConsumer == null)
+            {
+               pos++;
+            }
 
             if (pos == size)
             {
