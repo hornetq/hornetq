@@ -50,6 +50,11 @@ public class FakeQueue implements Queue
    {
    }
 
+   public void unproposed(SimpleString groupID)
+   {
+
+   }
+
    @Override
    public void setConsumersRefCount(HornetQServer server)
    {

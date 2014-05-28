@@ -117,7 +117,10 @@ public class DivertBinding implements Binding
       return BindingType.DIVERT;
    }
 
-
+   @Override
+   public void unproposed(SimpleString groupID)
+   {
+   }
 
    @Override
    public String toString()

@@ -29,6 +29,8 @@ public class Response
 
    private final SimpleString groupId;
 
+   private volatile long timeUsed;
+
    public Response(final SimpleString groupId, final SimpleString clusterName)
    {
       this(groupId, clusterName, null);
@@ -40,6 +42,17 @@ public class Response
       accepted = alternativeClusterName == null;
       this.clusterName = clusterName;
       this.alternativeClusterName = alternativeClusterName;
+      use();
+   }
+
+   public void use()
+   {
+      timeUsed = System.currentTimeMillis();
+   }
+
+   public long getTimeUsed()
+   {
+      return timeUsed;
    }
 
    public boolean isAccepted()

@@ -980,6 +980,11 @@ public class ScheduledDeliveryHandlerTest extends Assert
    public class FakeQueueForScheduleUnitTest implements Queue
    {
 
+      @Override
+      public void unproposed(SimpleString groupID)
+      {
+
+      }
 
       public FakeQueueForScheduleUnitTest(final int expectedElements)
       {
