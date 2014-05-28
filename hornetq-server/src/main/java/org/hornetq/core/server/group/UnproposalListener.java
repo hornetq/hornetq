@@ -10,40 +10,16 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.core.server.group.impl;
+
+package org.hornetq.core.server.group;
 
 import org.hornetq.api.core.SimpleString;
 
 /**
- * A proposal to select a group id
- *
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author Clebert Suconic
  */
-public class Proposal
+
+public interface UnproposalListener
 {
-   private final SimpleString groupId;
-
-   private final SimpleString clusterName;
-
-   public Proposal(final SimpleString groupId, final SimpleString clusterName)
-   {
-      this.clusterName = clusterName;
-      this.groupId = groupId;
-   }
-
-   public SimpleString getGroupId()
-   {
-      return groupId;
-   }
-
-   public SimpleString getClusterName()
-   {
-      return clusterName;
-   }
-
-   @Override
-   public String toString()
-   {
-      return "Proposal:" + getGroupId() + ":" + clusterName;
-   }
+   void unproposed(SimpleString groupID);
 }

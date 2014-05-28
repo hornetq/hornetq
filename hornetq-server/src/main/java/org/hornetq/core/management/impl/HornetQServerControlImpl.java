@@ -61,6 +61,7 @@ import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
@@ -1600,6 +1601,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       try
       {
          postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
+
+         GroupingHandler handler = server.getGroupingHandler();
+         if (handler != null)
+         {
+            // the group handler would miss responses if the group was requested before the reset was done
+            // on that case we ask the groupinghandler to replay its send in case it's waiting for the information
+            handler.resendPending();
+         }
       }
       finally
       {
