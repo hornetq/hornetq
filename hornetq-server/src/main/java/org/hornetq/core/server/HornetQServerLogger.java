@@ -239,7 +239,7 @@ public interface HornetQServerLogger extends BasicLogger
    void becomingLive(HornetQServer server);
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 221038, value = "Configuration option {0} is deprecated. Consult the manual for details.",
+   @Message(id = 221038, value = "Configuration option ''{0}'' is deprecated. Consult the manual for details.",
             format = Message.Format.MESSAGE_FORMAT)
    void deprecatedConfigurationOption(String deprecatedOption);
 
@@ -1321,4 +1321,7 @@ public interface HornetQServerLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void impossibleToRouteGrouped();
 
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224061, value = "Setting both <{0}> and <ha-policy> is invalid. Please use <ha-policy> exclusively as <{0}> is deprecated. Ignoring <{0}> value.", format = Message.Format.MESSAGE_FORMAT)
+   void incompatibleWithHAPolicy(String parameter);
 }

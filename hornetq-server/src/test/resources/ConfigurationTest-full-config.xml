@@ -3,62 +3,53 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="urn:hornetq ../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
       <name>SomeNameForUseOnTheApplicationServer</name>
+      <resolve-protocols>false</resolve-protocols>
+      <clustered>true</clustered>
+      <check-for-live-server>false</check-for-live-server>
+      <file-deployment-enabled>true</file-deployment-enabled>
+      <persistence-enabled>false</persistence-enabled>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>
       <thread-pool-max-size>54321</thread-pool-max-size>
-      <persistence-enabled>false</persistence-enabled>
-      <file-deployment-enabled>true</file-deployment-enabled>
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>
+      <journal-lock-acquisition-timeout>123</journal-lock-acquisition-timeout>
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
       <management-address>Giraffe</management-address>
       <management-notification-address>Whatever</management-notification-address>
       <cluster-user>Frog</cluster-user>
-      <cluster-password>Wombat</cluster-password>
+      <cluster-password>32a10275cf4ab4e9</cluster-password>
       <replication-clustername>cluster-connection1</replication-clustername>
       <scale-down-clustername>cluster-connection2</scale-down-clustername>
+      <max-saved-replicated-journals-size>5</max-saved-replicated-journals-size>
+      <password-codec>org.hornetq.utils.DefaultSensitiveStringCodec</password-codec>
+      <mask-password>true</mask-password>
+      <log-delegate-factory-class-name>com.foo</log-delegate-factory-class-name>
       <jmx-management-enabled>false</jmx-management-enabled>
       <jmx-domain>gro.qtenroh</jmx-domain>
-      <log-delegate-factory-class-name>ocelot</log-delegate-factory-class-name>
       <message-counter-enabled>true</message-counter-enabled>
-      <message-counter-max-day-history>5</message-counter-max-day-history>
       <message-counter-sample-period>123456</message-counter-sample-period>
+      <message-counter-max-day-history>5</message-counter-max-day-history>
       <connection-ttl-override>12345</connection-ttl-override>
+      <async-connection-execution-enabled>false</async-connection-execution-enabled>
       <transaction-timeout>98765</transaction-timeout>
       <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
       <message-expiry-scan-period>10111213</message-expiry-scan-period>
       <message-expiry-thread-priority>8</message-expiry-thread-priority>
       <id-cache-size>127</id-cache-size>
       <persist-id-cache>true</persist-id-cache>
-      <backup>true</backup>
-      <backup-group-name>backupGroupName</backup-group-name>
-      <scale-down-group-name>scaleDownGroupName</scale-down-group-name>
-      <shared-store>true</shared-store>
-      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
-      <paging-directory>pagingdir</paging-directory>
-      <bindings-directory>somedir</bindings-directory>
-      <create-bindings-dir>false</create-bindings-dir>
-      <journal-directory>somedir2</journal-directory>
-      <create-journal-dir>false</create-journal-dir>
-      <page-max-concurrent-io>17</page-max-concurrent-io>
-      <journal-type>NIO</journal-type>
-      <journal-compact-min-files>123</journal-compact-min-files>
-      <journal-compact-percentage>33</journal-compact-percentage>
-      <journal-buffer-timeout>1000</journal-buffer-timeout>
-      <journal-buffer-size>10000</journal-buffer-size>
-      <journal-sync-transactional>false</journal-sync-transactional>
-      <journal-sync-non-transactional>true</journal-sync-non-transactional>
-      <journal-file-size>12345678</journal-file-size>
-      <journal-min-files>100</journal-min-files>
-      <journal-max-io>56546</journal-max-io>
-      <large-messages-directory>largemessagesdir</large-messages-directory>
-      <memory-warning-threshold>95</memory-warning-threshold>
-      <memory-measure-interval>54321</memory-measure-interval>
-
       <remoting-interceptors>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
-
+      <backup>true</backup>
+      <allow-failback>true</allow-failback>
+      <backup-group-name>backupGroupName</backup-group-name>
+      <scale-down-group-name>scaleDownGroupName</scale-down-group-name>
+      <failback-delay>15000</failback-delay>
+      <failover-on-shutdown>false</failover-on-shutdown>
+      <scale-down>false</scale-down>
+      <shared-store>false</shared-store>
+      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
       <connectors>
          <connector name="connector1">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
@@ -85,7 +76,6 @@
    	        <param key="e2" value="567"/>
    	     </acceptor>
       </acceptors>
-
       <broadcast-groups>
 	     <broadcast-group name="bg1">
 	        <local-bind-port>10999</local-bind-port>
@@ -185,10 +175,19 @@
             <connector-ref>sd-connector1</connector-ref>
             <connector-ref>sd-connector2</connector-ref>
          </scale-down-connectors>
+         <backup-group-name>backupGroupName</backup-group-name>
          <remote-connectors>
             <connector-ref>remote-connector1</connector-ref>
             <connector-ref>remote-connector2</connector-ref>
          </remote-connectors>
+         <check-for-live-server>true</check-for-live-server>
+         <allow-failback>false</allow-failback>
+         <failback-delay>10000</failback-delay>
+         <failover-on-shutdown>true</failover-on-shutdown>
+         <replication-clustername>replicationClustername</replication-clustername>
+         <scale-down-clustername>scaleDownClustername</scale-down-clustername>
+         <max-saved-replicated-journals-size>3</max-saved-replicated-journals-size>
+         <scale-down>true</scale-down>
       </ha-policy>
       <cluster-connections>
          <cluster-connection name="cluster-connection1">
@@ -223,7 +222,33 @@
              <discovery-group-ref discovery-group-name="dg1"/>
          </cluster-connection>
       </cluster-connections>
-
+      <grouping-handler name="gh1">
+         <type>LOCAL</type>
+         <address>jms</address>
+      </grouping-handler>
+      <paging-directory>pagingdir</paging-directory>
+      <bindings-directory>somedir</bindings-directory>
+      <create-bindings-dir>false</create-bindings-dir>
+      <page-max-concurrent-io>17</page-max-concurrent-io>
+      <journal-directory>somedir2</journal-directory>
+      <create-journal-dir>false</create-journal-dir>
+      <journal-type>NIO</journal-type>
+      <journal-buffer-timeout>1000</journal-buffer-timeout>
+      <journal-buffer-size>10000</journal-buffer-size>
+      <journal-sync-transactional>false</journal-sync-transactional>
+      <journal-sync-non-transactional>true</journal-sync-non-transactional>
+      <log-journal-write-rate>true</log-journal-write-rate>
+      <journal-file-size>12345678</journal-file-size>
+      <journal-min-files>100</journal-min-files>
+      <journal-compact-percentage>33</journal-compact-percentage>
+      <journal-compact-min-files>123</journal-compact-min-files>
+      <journal-max-io>56546</journal-max-io>
+      <perf-blast-pages>5</perf-blast-pages>
+      <run-sync-speed-test>true</run-sync-speed-test>
+      <server-dump-interval>5000</server-dump-interval>
+      <memory-warning-threshold>95</memory-warning-threshold>
+      <memory-measure-interval>54321</memory-measure-interval>
+      <large-messages-directory>largemessagesdir</large-messages-directory>
     <security-settings>
       <security-setting match="a1">
          <permission type="createNonDurableQueue" roles="a1.1"/>
@@ -253,5 +278,9 @@
          <message-counter-history-day-limit>8</message-counter-history-day-limit>
       </address-setting>
    </address-settings>
-
+   <connector-services>
+      <connector-service>
+         <factory-class>org.foo</factory-class>
+      </connector-service>
+   </connector-services>
 </configuration>

@@ -107,7 +107,6 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.setSharedStore(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       server.start();

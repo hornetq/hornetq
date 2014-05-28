@@ -1,7 +1,6 @@
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:hornetq ../../../../../../../hornetq-core/src/main/resources/schema/hornetq-configuration.xsd">
-   
+         xsi:schemaLocation="urn:hornetq ../../../../../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
 
    <bindings-directory>${build.directory}/server1/data/messaging/bindings</bindings-directory>
 
@@ -11,19 +10,15 @@
 
    <paging-directory>${build.directory}/server1/data/messaging/paging</paging-directory>
 
-    <!--we kill the server process so don't need this set to true-->
-    <failover-on-shutdown>false</failover-on-shutdown>
+   <cluster-user>exampleUser</cluster-user>
 
-    <backup>true</backup>
+   <cluster-password>secret</cluster-password>
 
-    <cluster-user>exampleUser</cluster-user>
-    <cluster-password>secret</cluster-password>
+   <ha-policy template="BACKUP_REPLICATED">
+      <allow-failback>true</allow-failback>
+   </ha-policy>
 
-    <shared-store>false</shared-store>
-
-    <allow-failback>true</allow-failback>
-    <!-- Connectors -->
-
+   <!-- Connectors -->
    <connectors>
       <connector name="netty-live-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>

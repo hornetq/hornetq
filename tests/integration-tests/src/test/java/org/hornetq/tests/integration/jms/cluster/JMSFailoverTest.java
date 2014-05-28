@@ -43,6 +43,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -524,8 +525,12 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.setJournalType(getDefaultJournalType());
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
-      backupConf.setBackup(true);
-      backupConf.setSharedStore(sharedStore);
+
+      if (sharedStore)
+         backupConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         backupConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+
       backupConf.setBindingsDirectory(getBindingsDir());
       backupConf.setJournalMinFiles(2);
       backupConf.setJournalDirectory(getJournalDir());
@@ -550,7 +555,12 @@ public class JMSFailoverTest extends ServiceTestBase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().add(liveAcceptortc);
       basicClusterConnectionConfig(liveConf, livetc.getName());
-      liveConf.setSharedStore(sharedStore);
+
+      if (sharedStore)
+         liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      else
+         liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+
       liveConf.setJournalType(getDefaultJournalType());
       liveConf.setBindingsDirectory(getBindingsDir());
       liveConf.setJournalMinFiles(2);

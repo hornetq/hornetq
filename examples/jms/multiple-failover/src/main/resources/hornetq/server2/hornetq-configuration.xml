@@ -1,24 +1,6 @@
-<!--
-  ~ Copyright 2009 Red Hat, Inc.
-  ~  Red Hat licenses this file to you under the Apache License, version
-  ~  2.0 (the "License"); you may not use this file except in compliance
-  ~  with the License.  You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~  Unless required by applicable law or agreed to in writing, software
-  ~  distributed under the License is distributed on an "AS IS" BASIS,
-  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  ~  implied.  See the License for the specific language governing
-  ~  permissions and limitations under the License.
-  -->
-
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
-   <!-- Connectors -->
-
-    
-
-    <backup>true</backup>
+         xsi:schemaLocation="urn:hornetq ../../../../../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
 
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
@@ -28,11 +10,9 @@
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
+   <ha-policy template="BACKUP_SHARED_STORE"/>
 
-    <shared-store>true</shared-store>
-    
+   <!-- Connectors -->
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
@@ -48,7 +28,7 @@
       </acceptor>
    </acceptors>
 
-    <broadcast-groups>
+   <broadcast-groups>
 		<broadcast-group name="bg-group1">
 			<group-address>${udp-address:231.7.7.7}</group-address>
 			<group-port>9876</group-port>
@@ -72,7 +52,6 @@
 			<discovery-group-ref discovery-group-name="dg-group1"/>
 		</cluster-connection>
 	</cluster-connections>
-   <!-- Other config -->
 
    <security-settings>
       <!--security for example queue-->
@@ -85,5 +64,4 @@
          <permission type="send" roles="guest"/>
       </security-setting>
    </security-settings>
-   
 </configuration>

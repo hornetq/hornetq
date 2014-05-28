@@ -1,10 +1,6 @@
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
-
-   
-
-    <backup>true</backup>
+         xsi:schemaLocation="urn:hornetq ../../../../../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
 
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
@@ -13,14 +9,10 @@
    <large-messages-directory>${build.directory}/server0/data/messaging/largemessages</large-messages-directory>
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
-    
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
 
-   <shared-store>true</shared-store>
+   <ha-policy template="BACKUP_SHARED_STORE"/>
     
    <!-- Connectors -->
-
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
@@ -60,8 +52,6 @@
 			<discovery-group-ref discovery-group-name="dg-group1"/>
 		</cluster-connection>
 	</cluster-connections>
-    
-   <!-- Other config -->
 
    <security-settings>
       <!--security for example queue-->

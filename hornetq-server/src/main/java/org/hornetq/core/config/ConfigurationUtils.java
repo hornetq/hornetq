@@ -23,7 +23,7 @@ public final class ConfigurationUtils
 
    public static ClusterConnectionConfiguration getReplicationClusterConfiguration(Configuration conf) throws HornetQIllegalStateException
    {
-      final String replicationCluster = conf.getReplicationClustername();
+      final String replicationCluster = conf.getHAPolicy().getReplicationClustername();
       if (replicationCluster == null || replicationCluster.isEmpty())
          return conf.getClusterConfigurations().get(0);
       for (ClusterConnectionConfiguration clusterConf : conf.getClusterConfigurations())

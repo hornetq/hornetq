@@ -123,4 +123,17 @@ public class XMLConfigurationUtil
          return def;
       }
    }
+
+   public static final Boolean parameterExists(final Element e, final String name)
+   {
+      NodeList nl = e.getElementsByTagName(name);
+      if (nl.getLength() > 0)
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
 }

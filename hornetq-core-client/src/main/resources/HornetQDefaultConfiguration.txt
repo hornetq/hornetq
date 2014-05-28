@@ -110,7 +110,7 @@ public final class HornetQDefaultConfiguration
 
 
    // what kind of HA Policy should we use
-   private static String DEFAULT_HAPOLICY_TYPE = "LIVE";
+   private static String DEFAULT_HAPOLICY_TYPE = "NONE";
 
    // The backup strategy to use if we are a backup or for any colocated backups.
    private static String DEFAULT_HAPOLICY_BACKUP_STRATEGY = "FULL";

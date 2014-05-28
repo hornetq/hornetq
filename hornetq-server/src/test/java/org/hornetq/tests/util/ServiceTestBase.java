@@ -337,7 +337,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          fail("server didn't start: " + server);
       }
 
-      if (!server.getConfiguration().isBackup())
+      if (!server.getConfiguration().getHAPolicy().isBackup())
       {
          if (!server.waitForActivation(wait, TimeUnit.MILLISECONDS))
             fail("Server didn't initialize: " + server);

@@ -1,10 +1,6 @@
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
-
-   
-   <!--we need this for auto failback-->
-   <check-for-live-server>true</check-for-live-server>
+         xsi:schemaLocation="urn:hornetq ../../../../../../../../hornetq-server/src/main/resources/schema/hornetq-configuration.xsd">
 
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
@@ -14,15 +10,15 @@
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
-
    <cluster-user>exampleUser</cluster-user>
+
    <cluster-password>secret</cluster-password>
 
-   <shared-store>false</shared-store>
-
-   <allow-failback>true</allow-failback>
+   <ha-policy template="REPLICATED">
+      <!--we need this for auto failback-->
+      <check-for-live-server>true</check-for-live-server>
+      <allow-failback>true</allow-failback>
+   </ha-policy>
 
    <connectors>
       <connector name="netty-connector">

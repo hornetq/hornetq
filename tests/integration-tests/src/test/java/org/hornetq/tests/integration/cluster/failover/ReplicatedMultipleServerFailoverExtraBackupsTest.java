@@ -35,8 +35,8 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
    @Test
    public void testStartLiveFirst() throws Exception
    {
-      backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
-      backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
+      backupServers.get(2).getServer().getConfiguration().getHAPolicy().setBackupGroupName(getNodeGroupName() + "-0");
+      backupServers.get(3).getServer().getConfiguration().getHAPolicy().setBackupGroupName(getNodeGroupName() + "-1");
 
       startServers(liveServers);
       startServers(backupServers);
@@ -67,8 +67,8 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
    @Test
    public void testStartBackupFirst() throws Exception
    {
-      backupServers.get(2).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-0");
-      backupServers.get(3).getServer().getConfiguration().setBackupGroupName(getNodeGroupName() + "-1");
+      backupServers.get(2).getServer().getConfiguration().getHAPolicy().setBackupGroupName(getNodeGroupName() + "-0");
+      backupServers.get(3).getServer().getConfiguration().getHAPolicy().setBackupGroupName(getNodeGroupName() + "-1");
 
       startServers(backupServers);
       startServers(liveServers);
@@ -110,7 +110,7 @@ public class ReplicatedMultipleServerFailoverExtraBackupsTest extends Replicated
       List<TestableServer> toCrash = new ArrayList<TestableServer>();
       for (TestableServer backupServer : backupServers)
       {
-         if (!backupServer.getServer().getConfiguration().isBackup())
+         if (!backupServer.getServer().getConfiguration().getHAPolicy().isBackup())
          {
             toCrash.add(backupServer);
          }

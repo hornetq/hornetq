@@ -21,6 +21,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.tests.util.InVMNodeManagerServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
@@ -61,7 +62,7 @@ public abstract class BridgeTestBase extends UnitTestCase
    {
       Configuration serviceConf = createBasicConfig();
       serviceConf.setSecurityEnabled(false);
-      serviceConf.setSharedStore(true);
+      serviceConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       serviceConf.setJournalType(getDefaultJournalType());
       serviceConf.setBindingsDirectory(getBindingsDir(id, false));
       serviceConf.setJournalMinFiles(2);
@@ -103,8 +104,7 @@ public abstract class BridgeTestBase extends UnitTestCase
    {
       Configuration serviceConf = createBasicConfig();
       serviceConf.setSecurityEnabled(false);
-      serviceConf.setBackup(true);
-      serviceConf.setSharedStore(true);
+      serviceConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       serviceConf.setJournalType(getDefaultJournalType());
       serviceConf.setBindingsDirectory(getBindingsDir(liveId, false));
       serviceConf.setJournalMinFiles(2);

@@ -179,41 +179,185 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       NodeList haPolicyNodes = e.getElementsByTagName("ha-policy");
 
+      boolean containsHAPolicy = false;
+
       if (haPolicyNodes.getLength() > 0)
       {
          parseHAPolicyConfiguration((Element) haPolicyNodes.item(0), config);
+         containsHAPolicy = true;
+         // remove <ha-policy> from the DOM so later when we look for deprecated elements using parameterExists() we don't get false positives
+         e.removeChild(haPolicyNodes.item(0));
       }
 
       NodeList elems = e.getElementsByTagName("clustered");
       if (elems != null && elems.getLength() > 0)
       {
          HornetQServerLogger.LOGGER.deprecatedConfigurationOption("clustered");
-
       }
 
-      config.setCheckForLiveServer(getBoolean(e, "check-for-live-server", config.isClustered()));
+      if (parameterExists(e, "check-for-live-server"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("check-for-live-server");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("check-for-live-server");
 
-      config.setAllowAutoFailBack(getBoolean(e, "allow-failback", config.isClustered()));
+            config.getHAPolicy().setCheckForLiveServer(getBoolean(e, "check-for-live-server", config.getHAPolicy().isCheckForLiveServer()));
+         }
+      }
 
-      config.setBackupGroupName(getString(e, "backup-group-name", config.getBackupGroupName(),
-            Validators.NO_CHECK));
+      if (parameterExists(e, "allow-failback"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("allow-failback");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("allow-failback");
 
-      config.setFailbackDelay(getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
+            config.getHAPolicy().setAllowAutoFailBack(getBoolean(e, "allow-failback", config.getHAPolicy().isAllowAutoFailBack()));
+         }
+      }
 
-      config.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown",
-            config.isFailoverOnServerShutdown()));
-      config.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
-      config.setScaleDownClustername(getString(e, "scale-down-clustername", null, Validators.NO_CHECK));
+      if (parameterExists(e, "backup-group-name"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("backup-group-name");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("backup-group-name");
+
+            config.getHAPolicy().setBackupGroupName(getString(e, "backup-group-name", config.getHAPolicy().getBackupGroupName(), Validators.NO_CHECK));
+         }
+      }
+
+      if (parameterExists(e, "failback-delay"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("failback-delay");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("failback-delay");
+
+            config.getHAPolicy().setFailbackDelay(getLong(e, "failback-delay", config.getHAPolicy().getFailbackDelay(), Validators.GT_ZERO));
+         }
+      }
+
+      if (parameterExists(e, "failover-on-shutdown"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("failover-on-shutdown");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("failover-on-shutdown");
+
+            config.getHAPolicy().setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown", config.getHAPolicy().isFailoverOnServerShutdown()));
+         }
+      }
+
+      if (parameterExists(e, "replication-clustername"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("replication-clustername");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("replication-clustername");
+
+            config.getHAPolicy().setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
+         }
+      }
+
+      if (parameterExists(e, "scale-down-clustername"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("scale-down-clustername");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("scale-down-clustername");
+
+            config.getHAPolicy().setScaleDownClustername(getString(e, "scale-down-clustername", null, Validators.NO_CHECK));
+         }
+      }
+
+      if (parameterExists(e, "max-saved-replicated-journals-size"))
+      {
+         if (containsHAPolicy)
+         {
+            HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("max-saved-replicated-journals-size");
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.deprecatedConfigurationOption("max-saved-replicated-journals-size");
+
+            config.getHAPolicy().setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
+                                                                             config.getHAPolicy().getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
+         }
+      }
+
+      // these are combined because they are both required for setting the HAPolicy
+      if (parameterExists(e, "backup") || parameterExists(e, "shared-store"))
+      {
+         boolean backup = getBoolean(e, "backup", config.getHAPolicy().isBackup());
+         boolean sharedStore = getBoolean(e, "shared-store", config.getHAPolicy().isSharedStore());
+
+         if (containsHAPolicy)
+         {
+            if (parameterExists(e, "backup"))
+            {
+               HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("backup");
+            }
+
+            if (parameterExists(e, "shared-store"))
+            {
+               HornetQServerLogger.LOGGER.incompatibleWithHAPolicy("shared-store");
+            }
+         }
+         else
+         {
+            if (parameterExists(e, "backup"))
+            {
+               HornetQServerLogger.LOGGER.deprecatedConfigurationOption("backup");
+            }
+
+            if (parameterExists(e, "shared-store"))
+            {
+               HornetQServerLogger.LOGGER.deprecatedConfigurationOption("shared-store");
+            }
+
+            if (backup && sharedStore)
+            {
+               config.setHAPolicy(HAPolicyTemplate.BACKUP_SHARED_STORE.getHaPolicy());
+            }
+            else if (backup && !sharedStore)
+            {
+               config.setHAPolicy(HAPolicyTemplate.BACKUP_REPLICATED.getHaPolicy());
+            }
+            else if (!backup && sharedStore)
+            {
+               config.setHAPolicy(HAPolicyTemplate.SHARED_STORE.getHaPolicy());
+            }
+            else if (!backup && !sharedStore)
+            {
+               config.setHAPolicy(HAPolicyTemplate.REPLICATED.getHaPolicy());
+            }
+         }
+      }
 
       config.setResolveProtocols(getBoolean(e, "resolve-protocols", config.isResolveProtocols()));
-
-
-      config.setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
-                                                         config.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
-
-      config.setBackup(getBoolean(e, "backup", config.isBackup()));
-
-      config.setSharedStore(getBoolean(e, "shared-store", config.isSharedStore()));
 
       // Defaults to true when using FileConfiguration
       config.setFileDeploymentEnabled(getBoolean(e, "file-deployment-enabled", config instanceof FileConfiguration));
@@ -607,8 +751,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                                                        Validators.GT_ZERO));
 
       config.setServerDumpInterval(getLong(e, "server-dump-interval", config.getServerDumpInterval(),
-                                           Validators.MINUS_ONE_OR_GT_ZERO)); // in
-      // milliseconds
+                                           Validators.MINUS_ONE_OR_GT_ZERO)); // in milliseconds
 
       config.setMemoryWarningThreshold(getInteger(e,
                                                   "memory-warning-threshold",
@@ -638,81 +781,6 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
 
       config.setConnectorServiceConfigurations(configs);
-
-      NodeList bsNodes = e.getElementsByTagName("backup-server");
-
-      for (int i = 0; i < bsNodes.getLength(); i++)
-      {
-         Element bsNode = (Element) bsNodes.item(i);
-
-         parseBackupServers(bsNode, config);
-      }
-   }
-
-   private void parseBackupServers(Element e, Configuration config) throws Exception
-   {
-      String name = e.getAttribute("name");
-      String a = e.getAttribute("port-offset");
-      String backupStrategy = e.getAttribute("backup-strategy");
-      int portOffset = a != null && a.length() > 0 ? Integer.valueOf(a) : 100;
-      String inheritAttr = e.getAttribute("inherit-configuration");
-      String scaleDownConnector = e.getAttribute("scale-down-connector");
-      boolean inheritConfiguration = inheritAttr != null && inheritAttr.length() > 0 ? Boolean.valueOf(inheritAttr) : true;
-      Configuration backupConfiguration = inheritConfiguration ? config.copy() : new ConfigurationImpl();
-      if (backupStrategy != null && backupStrategy.length() > 0)
-      {
-         BackupStrategy strategy = Enum.valueOf(BackupStrategy.class, backupStrategy);
-         backupConfiguration.setBackupStrategy(strategy);
-      }
-      else
-      {
-         backupConfiguration.setBackupStrategy(BackupStrategy.FULL);
-      }
-      backupConfiguration.setName(name);
-      //we only do this if we are a full server, if recover then our connectors will be the same as the parent
-      if (backupConfiguration.getBackupStrategy() == BackupStrategy.FULL)
-      {
-         Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
-         for (TransportConfiguration acceptor : acceptors)
-         {
-            updatebackupParams(name, portOffset, acceptor.getParams());
-         }
-         Map<String, TransportConfiguration> connectorConfigurations = backupConfiguration.getConnectorConfigurations();
-         for (Map.Entry<String, TransportConfiguration> entry : connectorConfigurations.entrySet())
-         {
-            updatebackupParams(name, portOffset, entry.getValue().getParams());
-         }
-      }
-      backupConfiguration.setJournalDirectory(backupConfiguration.getJournalDirectory() + "/" + name);
-      backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + "/" + name);
-      backupConfiguration.setPagingDirectory(backupConfiguration.getPagingDirectory() + "/" + name);
-      backupConfiguration.setLargeMessagesDirectory(backupConfiguration.getLargeMessagesDirectory() + "/" + name);
-      backupConfiguration.setBackup(true);
-      NodeList confList = e.getElementsByTagName("configuration");
-      if (confList.getLength() > 0)
-      {
-         parseMainConfig((Element) confList.item(0), backupConfiguration);
-      }
-      config.getBackupServerConfigurations().add(backupConfiguration);
-   }
-
-   private void updatebackupParams(String name, int portOffset, Map<String, Object> params)
-   {
-      if (params != null)
-      {
-         Object port = params.get("port");
-         if (port != null)
-         {
-            Integer integer = Integer.valueOf(port.toString());
-            integer += portOffset;
-            params.put("port", integer.toString());
-         }
-         Object serverId = params.get("server-id");
-         if (serverId != null)
-         {
-            params.put("server-id", serverId.toString() + "(" + name + ")");
-         }
-      }
    }
 
    /**
@@ -1028,17 +1096,18 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       return new TransportConfiguration(clazz, params, name);
    }
+
    private void parseHAPolicyConfiguration(final Element e, final Configuration mainConfig)
    {
       String policyTemplate = e.getAttribute("template");
       HAPolicy policy;
-      if (policyTemplate != null)
+      if (policyTemplate.length() > 0)
       {
          policy = HAPolicyTemplate.valueOf(policyTemplate).getHaPolicy();
       }
       else
       {
-         policy = new HAPolicy();
+         policy = HAPolicyTemplate.NONE.getHaPolicy();
       }
       mainConfig.setHAPolicy(policy);
 
@@ -1111,16 +1180,28 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
+      policy.setScaleDown(getBoolean(e, "scale-down", policy.isScaleDown()));
 
+      policy.setScaleDownGroupName(getString(e, "scale-down-group-name", policy.getScaleDownGroupName(), Validators.NO_CHECK));
 
-      Boolean scaleDown = getBoolean(e, "scale-down", policy.isScaleDown());
+      policy.setCheckForLiveServer(getBoolean(e, "check-for-live-server", policy.isCheckForLiveServer()));
 
-      policy.setScaleDown(scaleDown);
+      policy.setAllowAutoFailBack(getBoolean(e, "allow-failback", policy.isCheckForLiveServer()));
 
-      String scaleDownGroupName = getString(e, "scale-down-group-name", policy.getScaleDownGroupName(), Validators.NO_CHECK);
+      policy.setFailoverOnServerShutdown(getBoolean(e, "failover-on-shutdown", policy.isFailoverOnServerShutdown()));
 
-      policy.setScaleDownGroupName(scaleDownGroupName);
+      policy.setBackupGroupName(getString(e, "backup-group-name", policy.getBackupGroupName(), Validators.NO_CHECK));
+
+      policy.setFailbackDelay(getLong(e, "failback-delay", policy.getFailbackDelay(), Validators.GT_ZERO));
+
+      policy.setReplicationClustername(getString(e, "replication-clustername", null, Validators.NO_CHECK));
+
+      policy.setScaleDownClustername(getString(e, "scale-down-clustername", null, Validators.NO_CHECK));
+
+      policy.setMaxSavedReplicatedJournalSize(getInteger(e, "max-saved-replicated-journals-size",
+                                                         policy.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));
    }
+
    private void parseBroadcastGroupConfiguration(final Element e, final Configuration mainConfig)
    {
       String name = e.getAttribute("name");

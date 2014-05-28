@@ -309,14 +309,14 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertNoMoreMessages();
 
       sendMessages(session, producer, 2 * n_msgs);
-      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
       adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
       liveServer.start();
       waitForServer(liveServer.getServer());
-      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
+      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
 
       assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
-      assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().isBackup());
+      assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
       int i = 0;
       while (backupServer.isStarted() && i++ < 100)
       {

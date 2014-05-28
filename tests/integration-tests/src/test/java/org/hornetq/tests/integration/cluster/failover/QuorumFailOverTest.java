@@ -31,12 +31,12 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
    {
       super.setupServers();
       //we need to know who is connected to who
-      servers[0].getConfiguration().setBackupGroupName("group0");
-      servers[1].getConfiguration().setBackupGroupName("group1");
-      servers[2].getConfiguration().setBackupGroupName("group2");
-      servers[3].getConfiguration().setBackupGroupName("group0");
-      servers[4].getConfiguration().setBackupGroupName("group1");
-      servers[5].getConfiguration().setBackupGroupName("group2");
+      servers[0].getConfiguration().getHAPolicy().setBackupGroupName("group0");
+      servers[1].getConfiguration().getHAPolicy().setBackupGroupName("group1");
+      servers[2].getConfiguration().getHAPolicy().setBackupGroupName("group2");
+      servers[3].getConfiguration().getHAPolicy().setBackupGroupName("group0");
+      servers[4].getConfiguration().getHAPolicy().setBackupGroupName("group1");
+      servers[5].getConfiguration().getHAPolicy().setBackupGroupName("group2");
    }
 
    @Test
@@ -75,8 +75,8 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
 
       locators[0].addClusterTopologyListener(liveTopologyListener);
 
-      assertTrue("we assume 3 is a backup", servers[3].getConfiguration().isBackup());
-      assertFalse("no shared storage", servers[3].getConfiguration().isSharedStore());
+      assertTrue("we assume 3 is a backup", servers[3].getConfiguration().getHAPolicy().isBackup());
+      assertFalse("no shared storage", servers[3].getConfiguration().getHAPolicy().isSharedStore());
 
       failNode(0);
 
@@ -86,10 +86,10 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
 
       assertTrue(servers[3].waitForActivation(2, TimeUnit.SECONDS));
-      assertFalse("3 should have failed over ", servers[3].getConfiguration().isBackup());
+      assertFalse("3 should have failed over ", servers[3].getConfiguration().getHAPolicy().isBackup());
 
       failNode(1);
-      assertFalse("4 should have failed over ", servers[4].getConfiguration().isBackup());
+      assertFalse("4 should have failed over ", servers[4].getConfiguration().getHAPolicy().isBackup());
    }
 
    @Override

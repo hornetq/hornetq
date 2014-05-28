@@ -159,7 +159,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.isBackup();
+         return configuration.getHAPolicy().isBackup();
       }
       finally
       {
@@ -174,7 +174,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.isSharedStore();
+         return configuration.getHAPolicy().isSharedStore();
       }
       finally
       {
@@ -284,7 +284,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         configuration.getHAPolicy().setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
       finally
       {
@@ -300,7 +300,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.isFailoverOnServerShutdown();
+         return configuration.getHAPolicy().isFailoverOnServerShutdown();
       }
       finally
       {

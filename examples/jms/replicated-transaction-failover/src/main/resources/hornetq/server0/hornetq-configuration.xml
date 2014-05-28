@@ -2,8 +2,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   
-
    <bindings-directory>${build.directory}/server0/data/messaging/bindings</bindings-directory>
 
    <journal-directory>${build.directory}/server0/data/messaging/journal</journal-directory>
@@ -12,11 +10,8 @@
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
+   <ha-policy template="REPLICATED"/>
 
-   <shared-store>false</shared-store>
-    
    <!-- Connectors -->
 
    <connectors>

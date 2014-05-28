@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.util;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.junit.Before;
 
 import java.util.ArrayList;
@@ -183,7 +184,12 @@ public class MultiServerTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(node);
 
       configuration.setJournalMaxIO_AIO(1000);
-      configuration.setSharedStore(sharedStorage);
+
+      if (sharedStorage)
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+
       configuration.setThreadPoolMaxSize(10);
 
       configuration.getAcceptorConfigurations().clear();
@@ -254,8 +260,10 @@ public class MultiServerTestBase extends ServiceTestBase
    {
       Configuration configuration = createBasicConfig(useSharedStorage() ? liveNode : node);
 
-      configuration.setSharedStore(useSharedStorage());
-      configuration.setBackup(true);
+      if (useSharedStorage())
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
 
       configuration.getAcceptorConfigurations().clear();
 

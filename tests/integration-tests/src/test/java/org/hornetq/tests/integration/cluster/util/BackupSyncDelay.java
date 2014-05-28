@@ -75,8 +75,8 @@ public class BackupSyncDelay implements Interceptor
     */
    public BackupSyncDelay(HornetQServer backup, HornetQServer live, byte packetCode)
    {
-      assert backup.getConfiguration().isBackup();
-      assert !live.getConfiguration().isBackup();
+      assert backup.getConfiguration().getHAPolicy().isBackup();
+      assert !live.getConfiguration().getHAPolicy().isBackup();
       this.backup = backup;
       this.live = live;
       live.getRemotingService().addIncomingInterceptor(this);

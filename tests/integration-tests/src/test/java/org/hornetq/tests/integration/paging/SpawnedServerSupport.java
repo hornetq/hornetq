@@ -27,6 +27,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -80,8 +81,12 @@ public class SpawnedServerSupport
       {
          setupClusterConn(conf, "thisServer");
       }
-      conf.setSharedStore(true);
-      conf.setBackup(isBackup);
+
+      if (isBackup)
+         conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+
       conf.setAllowAutoFailBack(false);
 
       return conf;

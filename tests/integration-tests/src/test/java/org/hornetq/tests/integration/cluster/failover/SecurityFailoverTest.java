@@ -19,6 +19,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -97,9 +98,8 @@ public class SecurityFailoverTest extends FailoverTest
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
       backupConfig.setSecurityEnabled(true);
-      backupConfig.setSharedStore(true);
-      backupConfig.setBackup(true);
-      backupConfig.setFailbackDelay(1000);
+      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      backupConfig.getHAPolicy().setFailbackDelay(1000);
 
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
@@ -116,7 +116,7 @@ public class SecurityFailoverTest extends FailoverTest
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(true);
-      liveConfig.setSharedStore(true);
+      liveConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       basicClusterConnectionConfig(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
