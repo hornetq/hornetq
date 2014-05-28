@@ -34,7 +34,7 @@
    </dependencies>
 
    <properties>
-      <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+      <hornetq.basedir>${project.basedir}/..</hornetq.basedir>
    </properties>
 
    <build>

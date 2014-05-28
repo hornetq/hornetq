@@ -16,7 +16,7 @@
 
   <properties>
 
-    <hornetq.basedir>${project.parent.basedir}</hornetq.basedir>
+    <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 

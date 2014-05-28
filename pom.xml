@@ -66,11 +66,13 @@
        Idea picks up surefire argline by default:
        if You don't want it, you can add -Didea.maven.surefire.disable.argLine=true to idea.vmoptions files, 
        see https://intellij-support.jetbrains.com/entries/23395793
+
+       Also see: http://youtrack.jetbrains.com/issue/IDEA-125696
      -->
  
       <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager
-         -Dlogging.configuration=file:${project.basedir}/tests/config/logging.properties
-         -Djava.library.path=${project.basedir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost
+         -Dlogging.configuration=file:${hornetq.basedir}/tests/config/logging.properties
+         -Djava.library.path=${hornetq.basedir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost
          -Djava.net.preferIPv4Stack=true
       </hornetq-surefire-argline>
       <hornetq.basedir>${project.basedir}</hornetq.basedir>
