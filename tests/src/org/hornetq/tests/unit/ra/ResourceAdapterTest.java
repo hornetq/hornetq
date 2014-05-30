@@ -495,6 +495,60 @@ public class ResourceAdapterTest extends ServiceTestBase
       }
    }
 
+   public void testForConnectionLeakDuringActivationWithMissingDestination() throws Exception
+   {
+      HornetQServer server = createServer(false);
+      HornetQResourceAdapter ra = null;
+      HornetQActivation activation = null;
+
+      try
+      {
+         server.start();
+
+         ra = new HornetQResourceAdapter();
+
+         ra.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+         ra.setUserName("userGlobal");
+         ra.setPassword("passwordGlobal");
+         ra.setTransactionManagerLocatorClass("");
+         ra.setTransactionManagerLocatorMethod("");
+         ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
+
+         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
+
+         conn.close();
+
+         HornetQActivationSpec spec = new HornetQActivationSpec();
+
+         spec.setResourceAdapter(ra);
+
+         spec.setUseJNDI(false);
+
+         spec.setUser("user");
+         spec.setPassword("password");
+
+         spec.setDestinationType("Topic");
+         spec.setDestination("test");
+
+         spec.setMinSession(1);
+         spec.setMaxSession(1);
+         spec.setSetupAttempts(1);
+
+         activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+
+         activation.start();
+         assertEquals(0, server.getRemotingService().getConnections().size());
+      }
+      finally
+      {
+         if (activation != null)
+            activation.stop();
+         if (ra != null)
+            ra.stop();
+         server.stop();
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
