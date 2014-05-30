@@ -12,7 +12,7 @@
    <name>HornetQ Integration Tests</name>
 
    <properties>
-      <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
+      <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
    </properties>
 
    <dependencies>
