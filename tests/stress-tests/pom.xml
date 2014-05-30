@@ -24,6 +24,10 @@
    <packaging>jar</packaging>
    <name>HornetQ stress Tests</name>
 
+   <properties>
+      <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
          <groupId>org.hornetq</groupId>

@@ -13,7 +13,11 @@
     <packaging>jar</packaging>
     <name>HornetQ Twitter Integration</name>
 
-    <dependencies>
+   <properties>
+      <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
+   </properties>
+
+   <dependencies>
       <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>

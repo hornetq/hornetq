@@ -26,6 +26,10 @@
     <packaging>jar</packaging>
     <name>HornetQ Spring Integration</name>
 
+   <properties>
+      <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
+   </properties>
+
    <dependencies>
       <dependency>
             <groupId>org.jboss.logging</groupId>

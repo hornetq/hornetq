@@ -15,6 +15,7 @@
 
     <properties>
         <hornetq.version>${project.version}</hornetq.version>
+      <hornetq.basedir>${project.basedir}/..</hornetq.basedir>
     </properties>
 
     <dependencies>

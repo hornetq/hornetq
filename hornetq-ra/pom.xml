@@ -12,7 +12,11 @@
    <artifactId>hornetq-ra</artifactId>
    <packaging>jar</packaging>
 
-    <dependencies>
+   <properties>
+      <hornetq.basedir>${project.basedir}/..</hornetq.basedir>
+   </properties>
+
+   <dependencies>
       <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
