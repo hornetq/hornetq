@@ -46,7 +46,6 @@ public class HornetQMessageHandler implements MessageHandler
     * Trace enabled
     */
    private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
-
    /**
     * The session
     */
