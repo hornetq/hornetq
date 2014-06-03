@@ -239,7 +239,7 @@
          <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
-            <version>3.2.12.Final</version>
+            <version>3.2.13.Final</version>
          </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
