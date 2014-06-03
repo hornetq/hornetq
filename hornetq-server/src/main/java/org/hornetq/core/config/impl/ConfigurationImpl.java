@@ -58,8 +58,6 @@ public class ConfigurationImpl implements Configuration
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
-//   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
-
    protected boolean fileDeploymentEnabled = HornetQDefaultConfiguration.isDefaultFileDeploymentEnabled();
 
    private boolean persistenceEnabled = HornetQDefaultConfiguration.isDefaultPersistenceEnabled();
@@ -201,8 +199,6 @@ public class ConfigurationImpl implements Configuration
    private Map<String, Set<Role>> securitySettings = new HashMap<String, Set<Role>>();
 
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
-
-//   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
 
    private boolean checkForLiveServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
 
@@ -1009,8 +1005,7 @@ public class ConfigurationImpl implements Configuration
    {
       StringBuilder sb = new StringBuilder("HornetQ Configuration (");
       sb.append("clustered=").append(isClustered()).append(",");
-      sb.append("backup=").append(haPolicy.isBackup()).append(",");
-      sb.append("sharedStore=").append(haPolicy.isSharedStore()).append(",");
+      sb.append("ha-policy-type=").append(haPolicy.getPolicyType()).append(",");
       sb.append("journalDirectory=").append(journalDirectory).append(",");
       sb.append("bindingsDirectory=").append(bindingsDirectory).append(",");
       sb.append("largeMessagesDirectory=").append(largeMessagesDirectory).append(",");
