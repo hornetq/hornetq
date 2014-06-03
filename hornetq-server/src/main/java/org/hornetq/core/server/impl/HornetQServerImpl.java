@@ -1916,7 +1916,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       JournalLoader journalLoader;
 
-      if (configuration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
+      if (configuration.getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN && configuration.getHAPolicy().isBackup())
       {
          journalLoader = new BackupRecoveryJournalLoader(postOffice,
                                                          pagingManager,

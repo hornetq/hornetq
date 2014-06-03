@@ -268,7 +268,7 @@ public class HAManager implements HornetQComponent
                                                       String largeMessagesDirectory,
                                                       String pagingDirectory)
    {
-      backupConfiguration.setBackupStrategy(backupStrategy);
+      backupConfiguration.getHAPolicy().setBackupStrategy(backupStrategy);
       backupConfiguration.setName(name);
       backupConfiguration.setJournalDirectory(journalDirectory);
       backupConfiguration.setBindingsDirectory(bindingsDirectory);
@@ -276,7 +276,6 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setPagingDirectory(pagingDirectory);
       backupConfiguration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
-
    }
 
    /**
@@ -294,7 +293,7 @@ public class HAManager implements HornetQComponent
                                                      int portOffset,
                                                      List<String> remoteConnectors)
    {
-      backupConfiguration.setBackupStrategy(backupStrategy);
+      backupConfiguration.getHAPolicy().setBackupStrategy(backupStrategy);
       backupConfiguration.setName(name);
       backupConfiguration.setJournalDirectory(backupConfiguration.getJournalDirectory() + name);
       backupConfiguration.setPagingDirectory(backupConfiguration.getPagingDirectory() + name);
@@ -302,7 +301,6 @@ public class HAManager implements HornetQComponent
       backupConfiguration.setBindingsDirectory(backupConfiguration.getBindingsDirectory() + name);
       backupConfiguration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
       updateAcceptorsAndConnectors(backupConfiguration, portOffset, remoteConnectors);
-
    }
 
    private static void updateAcceptorsAndConnectors(Configuration backupConfiguration, int portOffset, List<String> remoteConnectors)

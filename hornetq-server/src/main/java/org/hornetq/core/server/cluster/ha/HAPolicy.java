@@ -64,7 +64,6 @@ public class HAPolicy implements Serializable
          }
          return null;
       }
-
    }
 
    private POLICY_TYPE policyType = POLICY_TYPE.valueOf(HornetQDefaultConfiguration.getDefaultHapolicyType());
