@@ -27,7 +27,9 @@ import org.hornetq.core.config.BackupStrategy;
  */
 public enum HAPolicyTemplate
 {
-   LIVE(createLivePolicy()),
+   NONE(createNonePolicy()),
+   REPLICATED(createReplicatedPolicy()),
+   SHARED_STORE(createSharedStorePolicy()),
    BACKUP_REPLICATED(createBackupReplicatedPolicy()),
    BACKUP_SHARED_STORE(createBackupSharedStorePolicy()),
    COLOCATED_REPLICATED(createColocatedReplicatedPolicy()),
@@ -45,10 +47,24 @@ public enum HAPolicyTemplate
       this.haPolicy = haPolicy;
    }
 
-   private static HAPolicy createLivePolicy()
+   private static HAPolicy createNonePolicy()
    {
       HAPolicy policy = new HAPolicy();
-      policy.setPolicyType(HAPolicy.POLICY_TYPE.LIVE);
+      policy.setPolicyType(HAPolicy.POLICY_TYPE.NONE);
+      return policy;
+   }
+
+   private static HAPolicy createReplicatedPolicy()
+   {
+      HAPolicy policy = new HAPolicy();
+      policy.setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+      return policy;
+   }
+
+   private static HAPolicy createSharedStorePolicy()
+   {
+      HAPolicy policy = new HAPolicy();
+      policy.setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       return policy;
    }
 

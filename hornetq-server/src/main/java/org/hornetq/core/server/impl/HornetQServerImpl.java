@@ -136,6 +136,7 @@ import org.hornetq.core.server.cluster.ClusterControl;
 import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -436,11 +437,11 @@ public class HornetQServerImpl implements HornetQServer
          checkJournalDirectory();
 
          nodeManager =
-            createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), false);
+            createNodeManager(configuration.getJournalDirectory(), configuration.getHAPolicy().getBackupGroupName(), false);
 
          nodeManager.start();
 
-         HornetQServerLogger.LOGGER.serverStarting((configuration.isBackup() ? "backup" : "live"), configuration);
+         HornetQServerLogger.LOGGER.serverStarting((configuration.getHAPolicy().isBackup() ? "backup" : "live"), configuration);
 
          if (configuration.isRunSyncSpeedTest())
          {
@@ -449,10 +450,10 @@ public class HornetQServerImpl implements HornetQServer
             test.run();
          }
 
-         final boolean wasLive = !configuration.isBackup();
-         if (!configuration.isBackup())
+         final boolean wasLive = !configuration.getHAPolicy().isBackup();
+         if (!configuration.getHAPolicy().isBackup())
          {
-            if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
+            if (configuration.getHAPolicy().isSharedStore() && configuration.isPersistenceEnabled())
             {
                activation = new SharedStoreLiveActivation();
             }
@@ -465,9 +466,9 @@ public class HornetQServerImpl implements HornetQServer
          }
          // The activation on fail-back may change the value of isBackup, for that reason we are
          // checking again here
-         if (configuration.isBackup())
+         if (configuration.getHAPolicy().isBackup())
          {
-            if (configuration.isSharedStore())
+            if (configuration.getHAPolicy().isSharedStore())
             {
                activation = new SharedStoreBackupActivation();
             }
@@ -476,7 +477,7 @@ public class HornetQServerImpl implements HornetQServer
                assert replicationEndpoint == null;
                nodeManager.stop();
                nodeManager =
-                  createNodeManager(configuration.getJournalDirectory(), configuration.getBackupGroupName(), true);
+                  createNodeManager(configuration.getJournalDirectory(), configuration.getHAPolicy().getBackupGroupName(), true);
                backupUpToDate = false;
                backupSyncLatch.setCount(1);
                replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO, wasLive);
@@ -529,7 +530,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             try
             {
-               stop(configuration.isFailoverOnServerShutdown(), criticalIOError, false);
+               stop(configuration.getHAPolicy().isFailoverOnServerShutdown(), criticalIOError, false);
             }
             catch (Exception e)
             {
@@ -541,7 +542,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public final void stop() throws Exception
    {
-      stop(configuration.isFailoverOnServerShutdown());
+      stop(configuration.getHAPolicy().isFailoverOnServerShutdown());
    }
 
    public void addActivationParam(String key, Object val)
@@ -1227,7 +1228,7 @@ public class HornetQServerImpl implements HornetQServer
    @Override
    public boolean waitForBackupSync(long timeout, TimeUnit unit) throws InterruptedException
    {
-      if (configuration.isBackup() && !configuration.isSharedStore())
+      if (configuration.getHAPolicy().getPolicyType() == HAPolicy.POLICY_TYPE.BACKUP_REPLICATED)
       {
          return backupSyncLatch.await(timeout, unit);
       }
@@ -1716,7 +1717,7 @@ public class HornetQServerImpl implements HornetQServer
       // This can't be created until node id is set
       clusterManager =
          new ClusterManager(executorFactory, this, postOffice, scheduledPool, managementService, configuration,
-                            nodeManager, configuration.isBackup());
+                            nodeManager, configuration.getHAPolicy().isBackup());
 
       backupManager = new BackupManager(this, executorFactory, scheduledPool, nodeManager, configuration, clusterManager);
 
@@ -1735,11 +1736,11 @@ public class HornetQServerImpl implements HornetQServer
                                                                 queueFactory,
                                                                 scheduledPool,
                                                                 pagingManager,
-                                                                configuration.isBackup());
+                                                                configuration.getHAPolicy().isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
-      if (!configuration.isBackup() || (configuration.isBackup() && configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN))
+      if (!configuration.getHAPolicy().isBackup() || (configuration.getHAPolicy().isBackup() && configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN))
       {
          if (configuration.isFileDeploymentEnabled())
          {
@@ -2251,12 +2252,19 @@ public class HornetQServerImpl implements HornetQServer
                         stop(true, false, true);
                         // We need to wait some time before we start the backup again
                         // otherwise we may eventually start before the live had a chance to get it
-                        Thread.sleep(configuration.getFailbackDelay());
+                        Thread.sleep(configuration.getHAPolicy().getFailbackDelay());
                         synchronized (failbackCheckerGuard)
                         {
                            if (cancelFailBackChecker)
                               return;
-                           configuration.setBackup(true);
+                           if (configuration.getHAPolicy().isSharedStore())
+                           {
+                              configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+                           }
+                           else
+                           {
+                              configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+                           }
                            HornetQServerLogger.LOGGER.debug(HornetQServerImpl.this +
                                                                "::Starting backup node now after failback");
                            start();
@@ -2308,7 +2316,7 @@ public class HornetQServerImpl implements HornetQServer
                }
                backupManager.start();
                backupManager.announceBackup();
-               Thread.sleep(configuration.getFailbackDelay());
+               Thread.sleep(configuration.getHAPolicy().getFailbackDelay());
             }
 
             nodeManager.startLiveNode();
@@ -2366,7 +2374,7 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.awaitLiveNode();
 
-            configuration.setBackup(false);
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
 
             backupManager.activated();
 
@@ -2406,7 +2414,7 @@ public class HornetQServerImpl implements HornetQServer
 
                nodeManager.releaseBackup();
             }
-            if (configuration.isAllowAutoFailBack())
+            if (configuration.getHAPolicy().isAllowAutoFailBack())
             {
                startFailbackChecker();
             }
@@ -2438,7 +2446,7 @@ public class HornetQServerImpl implements HornetQServer
          // To avoid a NPE cause by the stop
          NodeManager nodeManagerInUse = nodeManager;
 
-         if (configuration.isBackup())
+         if (configuration.getHAPolicy().isBackup())
          {
             long timeout = 30000;
 
@@ -2561,9 +2569,9 @@ public class HornetQServerImpl implements HornetQServer
             }
             else
             {
-               nodeLocator = configuration.getBackupGroupName() == null ?
+               nodeLocator = configuration.getHAPolicy().getBackupGroupName() == null ?
                      new AnyLiveNodeLocatorForReplication(backupQuorum, HornetQServerImpl.this) :
-                     new NamedLiveNodeLocatorForReplication(configuration.getBackupGroupName(), backupQuorum);
+                     new NamedLiveNodeLocatorForReplication(configuration.getHAPolicy().getBackupGroupName(), backupQuorum);
             }
             ClusterController clusterController = clusterManager.getClusterController();
             clusterController.addClusterTopologyListenerForReplication(nodeLocator);
@@ -2688,7 +2696,7 @@ public class HornetQServerImpl implements HornetQServer
                throw HornetQMessageBundle.BUNDLE.backupServerNotInSync();
             }
 
-            configuration.setBackup(false);
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
             synchronized (HornetQServerImpl.this)
             {
                if (!isStarted())
@@ -2719,7 +2727,7 @@ public class HornetQServerImpl implements HornetQServer
             closed = true;
          }
 
-         if (configuration.isBackup())
+         if (configuration.getHAPolicy().isBackup())
          {
             long timeout = 30000;
 
@@ -2796,7 +2804,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (!isStarted())
                return null;
-            if (!configuration.isBackup())
+            if (!configuration.getHAPolicy().isBackup())
             {
                throw HornetQMessageBundle.BUNDLE.serverNotBackupServer();
             }
@@ -2826,7 +2834,7 @@ public class HornetQServerImpl implements HornetQServer
          {
             if (configuration.isClustered() && configuration.isCheckForLiveServer() && isNodeIdUsed())
             {
-               configuration.setBackup(true);
+               configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
                return;
             }
 
@@ -3031,12 +3039,12 @@ public class HornetQServerImpl implements HornetQServer
                try
                {
                   storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
-                                                  isFailBackRequest && configuration.isAllowAutoFailBack());
-                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getBackupGroupName(), clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), pair, true);
+                                                  isFailBackRequest && configuration.getHAPolicy().isAllowAutoFailBack());
+                  clusterConnection.nodeAnnounced(System.currentTimeMillis(), getNodeID().toString(), configuration.getHAPolicy().getBackupGroupName(), clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), pair, true);
 
                   backupUpToDate = false;
 
-                  if (isFailBackRequest && configuration.isAllowAutoFailBack())
+                  if (isFailBackRequest && configuration.getHAPolicy().isAllowAutoFailBack())
                   {
                      BackupTopologyListener listener1 = new BackupTopologyListener(getNodeID().toString());
                      clusterConnection.addClusterTopologyListener(listener1);
@@ -3044,7 +3052,7 @@ public class HornetQServerImpl implements HornetQServer
                      {
                         try
                         {
-                           Thread.sleep(configuration.getFailbackDelay());
+                           Thread.sleep(configuration.getHAPolicy().getFailbackDelay());
                         }
                         catch (InterruptedException e)
                         {
@@ -3060,7 +3068,7 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            stop(true);
                            HornetQServerLogger.LOGGER.restartingReplicatedBackupAfterFailback();
-                           configuration.setBackup(true);
+                           configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
                            start();
                         }
                      }
@@ -3201,7 +3209,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       HornetQServerLogger.LOGGER.trace("Remote fail-over, got message=" + finalMessage + ", backupUpToDate=" +
                                           backupUpToDate);
-      if (!configuration.isBackup() || configuration.isSharedStore())
+      if (!configuration.getHAPolicy().isBackup() || configuration.getHAPolicy().isSharedStore())
       {
          throw new HornetQInternalErrorException();
       }

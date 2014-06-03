@@ -12,12 +12,14 @@
 
    <paging-directory>${build.directory}/server0/data/messaging/paging</paging-directory>
 
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
+   <!--we kill the server process so don't need this set to true- ->
+   <failover-on-shutdown>false</failover-on-shutdown-->
 
-   <shared-store>true</shared-store>
+   <ha-policy>
+      <policy-type>SHARED_STORE</policy-type>
+   </ha-policy>
+
    <!-- Connectors -->
-
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>

@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.core.config.impl;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class ConfigurationImplTest extends UnitTestCase
    @Test
    public void testDefaults()
    {
-      Assert.assertEquals(HornetQDefaultConfiguration.isDefaultSharedStore(), conf.isSharedStore());
+      Assert.assertEquals(HornetQDefaultConfiguration.isDefaultSharedStore(), conf.getHAPolicy().isSharedStore());
       Assert.assertEquals(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize(),
                           conf.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(HornetQDefaultConfiguration.getDefaultSecurityInvalidationInterval(),
@@ -109,13 +110,9 @@ public class ConfigurationImplTest extends UnitTestCase
    {
       for (int j = 0; j < 100; j++)
       {
-         boolean b = RandomUtil.randomBoolean();
-         conf.setBackup(b);
-         Assert.assertEquals(b, conf.isBackup());
-
-         b = RandomUtil.randomBoolean();
-         conf.setSharedStore(b);
-         Assert.assertEquals(b, conf.isSharedStore());
+         HAPolicy.POLICY_TYPE p = HAPolicy.POLICY_TYPE.SHARED_STORE;
+         conf.getHAPolicy().setPolicyType(p);
+         Assert.assertEquals(p, conf.getHAPolicy().getPolicyType());
 
          int i = RandomUtil.randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
@@ -125,7 +122,7 @@ public class ConfigurationImplTest extends UnitTestCase
          conf.setSecurityInvalidationInterval(l);
          Assert.assertEquals(l, conf.getSecurityInvalidationInterval());
 
-         b = RandomUtil.randomBoolean();
+         boolean b = RandomUtil.randomBoolean();
          conf.setSecurityEnabled(b);
          Assert.assertEquals(b, conf.isSecurityEnabled());
 
@@ -326,11 +323,8 @@ public class ConfigurationImplTest extends UnitTestCase
    public void testSerialize() throws Exception
    {
       boolean b = RandomUtil.randomBoolean();
-      conf.setBackup(b);
-      Assert.assertEquals(b, conf.isBackup());
 
-      b = RandomUtil.randomBoolean();
-      conf.setSharedStore(b);
+      conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
 
       int i = RandomUtil.randomInt();
       conf.setScheduledThreadPoolMaxSize(i);

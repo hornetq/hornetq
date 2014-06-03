@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.cluster.distribution;
 
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Test;
@@ -550,11 +551,11 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
    {
       // Need to set backup, since when restarting backup after it has failed over, backup will have been set to false
 
-      getServer(5).getConfiguration().setBackup(true);
-      getServer(6).getConfiguration().setBackup(true);
-      getServer(7).getConfiguration().setBackup(true);
-      getServer(8).getConfiguration().setBackup(true);
-      getServer(9).getConfiguration().setBackup(true);
+      getServer(5).getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      getServer(6).getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      getServer(7).getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      getServer(8).getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      getServer(9).getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
 
       startServers(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    }

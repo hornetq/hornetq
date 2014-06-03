@@ -101,8 +101,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.isClustered(), serverControl.isClustered());
       Assert.assertEquals(conf.isPersistDeliveryCountBeforeDelivery(),
                           serverControl.isPersistDeliveryCountBeforeDelivery());
-      Assert.assertEquals(conf.isBackup(), serverControl.isBackup());
-      Assert.assertEquals(conf.isSharedStore(), serverControl.isSharedStore());
+      Assert.assertEquals(conf.getHAPolicy().isBackup(), serverControl.isBackup());
+      Assert.assertEquals(conf.getHAPolicy().isSharedStore(), serverControl.isSharedStore());
       Assert.assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
       Assert.assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
@@ -144,7 +144,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.getJournalCompactMinFiles(), serverControl.getJournalCompactMinFiles());
       Assert.assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
       Assert.assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
-      Assert.assertEquals(conf.isFailoverOnServerShutdown(), serverControl.isFailoverOnServerShutdown());
+      Assert.assertEquals(conf.getHAPolicy().isFailoverOnServerShutdown(), serverControl.isFailoverOnServerShutdown());
    }
 
    @Test

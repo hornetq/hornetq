@@ -68,8 +68,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(8, conf.getMessageExpiryThreadPriority());
       Assert.assertEquals(127, conf.getIDCacheSize());
       Assert.assertEquals(true, conf.isPersistIDCache());
-      Assert.assertEquals(true, conf.isBackup());
-      Assert.assertEquals(true, conf.isSharedStore());
+      Assert.assertEquals(false, conf.getHAPolicy().isBackup());
+      Assert.assertEquals(false, conf.getHAPolicy().isSharedStore());
       Assert.assertEquals(true, conf.isPersistDeliveryCountBeforeDelivery());
       Assert.assertEquals("pagingdir", conf.getPagingDirectory());
       Assert.assertEquals("somedir", conf.getBindingsDirectory());
@@ -233,16 +233,14 @@ public class FileConfigurationTest extends ConfigurationImplTest
       }
 
       Assert.assertEquals(2, conf.getClusterConfigurations().size());
-      Assert.assertEquals("replication cluster name", "cluster-connection1", conf.getReplicationClustername());
-      Assert.assertEquals("scale-down cluster name", "cluster-connection2", conf.getScaleDownClustername());
-      Assert.assertEquals("backup group name", "backupGroupName", conf.getBackupGroupName());
 
       HAPolicy haPolicy = conf.getHAPolicy();
-      assertEquals(1002, haPolicy.getBackupPortOffset());
+      assertEquals(HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED, haPolicy.getPolicyType());
+      assertEquals(true, haPolicy.isRequestBackup());
       assertEquals(33, haPolicy.getBackupRequestRetries());
       assertEquals(1234, haPolicy.getBackupRequestRetryInterval());
       assertEquals(12, haPolicy.getMaxBackups());
-      assertEquals(HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED, haPolicy.getPolicyType());
+      assertEquals(1002, haPolicy.getBackupPortOffset());
       assertEquals(BackupStrategy.SCALE_DOWN, haPolicy.getBackupStrategy());
       assertEquals("wahey!", haPolicy.getScaleDownDiscoveryGroup());
       assertEquals("boo!", haPolicy.getScaleDownGroupName());
@@ -254,7 +252,15 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(2, remoteConnectors.size());
       assertEquals("remote-connector1", remoteConnectors.get(0));
       assertEquals("remote-connector2", remoteConnectors.get(1));
-      assertEquals(true, haPolicy.isRequestBackup());
+      assertEquals(true, haPolicy.isCheckForLiveServer());
+      assertEquals(false, haPolicy.isAllowAutoFailBack());
+      assertEquals(10000, haPolicy.getFailbackDelay());
+      assertEquals(true, haPolicy.isFailoverOnServerShutdown());
+      assertEquals("replicationClustername", haPolicy.getReplicationClustername());
+      assertEquals("scaleDownClustername", haPolicy.getScaleDownClustername());
+      assertEquals(3, haPolicy.getMaxSavedReplicatedJournalsSize());
+      assertEquals(true, haPolicy.isScaleDown());
+
       for (ClusterConnectionConfiguration ccc : conf.getClusterConfigurations())
       {
          if (ccc.getName().equals("cluster-connection1"))

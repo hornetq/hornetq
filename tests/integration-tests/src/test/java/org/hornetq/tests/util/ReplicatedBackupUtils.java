@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 
 public final class ReplicatedBackupUtils
 {
@@ -47,14 +48,13 @@ public final class ReplicatedBackupUtils
 
       UnitTestCase.basicClusterConnectionConfig(backupConfig, BACKUP_NODE_NAME, LIVE_NODE_NAME);
 
-      backupConfig.setSharedStore(false);
-      backupConfig.setBackup(true);
+      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
 
       liveConfig.setName(LIVE_NODE_NAME);
       liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
       liveConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
       liveConfig.setSecurityEnabled(false);
-      liveConfig.setSharedStore(false);
+      liveConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
       UnitTestCase.basicClusterConnectionConfig(liveConfig, LIVE_NODE_NAME, BACKUP_NODE_NAME);
    }
 }

@@ -2,14 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
 
-   
-
-    <backup>true</backup>
-    
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
-
-   <shared-store>true</shared-store>
+   <ha-policy template="BACKUP_SHARED_STORE"/>
     
    <!-- Connectors -->
 

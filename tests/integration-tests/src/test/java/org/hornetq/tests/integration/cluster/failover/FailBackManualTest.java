@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.failover;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -117,21 +118,20 @@ public class FailBackManualTest extends FailoverTestBase
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
       backupConfig.setSecurityEnabled(false);
-      backupConfig.setSharedStore(true);
-      backupConfig.setBackup(true);
+      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
-      backupConfig.setAllowAutoFailBack(false);
+      backupConfig.getHAPolicy().setAllowAutoFailBack(false);
       backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(false);
-      liveConfig.setSharedStore(true);
+      liveConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       basicClusterConnectionConfig(liveConfig, liveConnector.getName(), backupConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);

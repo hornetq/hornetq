@@ -28,6 +28,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -85,7 +86,12 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          Configuration configuration = createDefaultConfig(useNetty());
          configuration.getAcceptorConfigurations().clear();
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true, i));
-         configuration.setSharedStore(isSharedStore());
+
+         if (isSharedStore())
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+         else
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+
          if (!isSharedStore())
          {
             configuration.setBindingsDirectory(getBindingsDir(i, false));
@@ -97,10 +103,10 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          {
             //todo
          }
-         configuration.setFailbackDelay(1000);
+         configuration.getHAPolicy().setFailbackDelay(1000);
          if (getNodeGroupName() != null)
          {
-            configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
+            configuration.getHAPolicy().setBackupGroupName(getNodeGroupName() + "-" + i);
          }
          createLiveClusterConfiguration(i, configuration, getLiveServerCount());
          liveConfigs.add(configuration);
@@ -114,7 +120,12 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          Configuration configuration = createDefaultConfig(useNetty());
          configuration.getAcceptorConfigurations().clear();
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false, i));
-         configuration.setSharedStore(isSharedStore());
+
+         if (isSharedStore())
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         else
+            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+
          if (!isSharedStore())
          {
             configuration.setBindingsDirectory(getBindingsDir(i, true));
@@ -126,11 +137,11 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          {
             //todo
          }
-         configuration.setBackup(true);
-         configuration.setFailbackDelay(1000);
+
+         configuration.getHAPolicy().setFailbackDelay(1000);
          if (getNodeGroupName() != null)
          {
-            configuration.setBackupGroupName(getNodeGroupName() + "-" + i);
+            configuration.getHAPolicy().setBackupGroupName(getNodeGroupName() + "-" + i);
          }
          createBackupClusterConfiguration(i, configuration, getBackupServerCount());
          backupConfigs.add(configuration);

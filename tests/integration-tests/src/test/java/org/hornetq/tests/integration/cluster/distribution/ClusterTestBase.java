@@ -59,6 +59,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -1647,7 +1648,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(node);
 
       configuration.setJournalMaxIO_AIO(1000);
-      configuration.setSharedStore(sharedStorage);
+
+      if (sharedStorage)
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+
       configuration.setThreadPoolMaxSize(10);
 
       configuration.getAcceptorConfigurations().clear();
@@ -1711,8 +1717,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
-      configuration.setSharedStore(sharedStorage);
-      configuration.setBackup(true);
+      if (sharedStorage)
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -1755,7 +1763,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(node);
 
       configuration.setJournalMaxIO_AIO(1000);
-      configuration.setBackup(false);
+
+      if (sharedStorage)
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -1827,8 +1839,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
-      configuration.setSharedStore(sharedStorage);
-      configuration.setBackup(true);
+      if (sharedStorage)
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
 
       configuration.getAcceptorConfigurations().clear();
 

@@ -19,6 +19,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -77,8 +78,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
       // A live server that will always be crashed
       Configuration confLive = createDefaultConfig(true);
       confLive.setSecurityEnabled(false);
-      confLive.setBackup(false);
-      confLive.setSharedStore(true);
+      confLive.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       confLive.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       final HornetQServer serverLive = HornetQServers.newHornetQServer(confLive);
       serverLive.start();
@@ -88,8 +88,7 @@ public class StartStopDeadlockTest extends ServiceTestBase
       // A backup that will be waiting to be activated
       Configuration conf = createDefaultConfig(true);
       conf.setSecurityEnabled(false);
-      conf.setBackup(true);
-      conf.setSharedStore(true);
+      conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       final HornetQServer server = HornetQServers.newHornetQServer(conf, true);

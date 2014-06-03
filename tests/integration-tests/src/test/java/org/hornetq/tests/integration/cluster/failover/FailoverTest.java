@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -617,7 +618,7 @@ public class FailoverTest extends FailoverTestBase
       Thread.sleep(100);
       assertFalse("backup is not running", backupServer.isStarted());
 
-      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
       adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
       beforeRestart(liveServer);
       liveServer.start();
@@ -628,7 +629,7 @@ public class FailoverTest extends FailoverTestBase
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
       ClientConsumer consumer2 = session2.createConsumer(FailoverTestBase.ADDRESS);
-      boolean replication = !liveServer.getServer().getConfiguration().isSharedStore();
+      boolean replication = !liveServer.getServer().getConfiguration().getHAPolicy().isSharedStore();
       if (replication)
          receiveMessages(consumer2, 0, NUM_MESSAGES, true);
       assertNoMoreMessages(consumer2);
@@ -722,7 +723,7 @@ public class FailoverTest extends FailoverTestBase
       assertEquals("backup must be running with the same nodeID", liveId, backupServer.getServer().getNodeID());
       if (doFailBack)
       {
-         assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+         assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
          adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
          beforeRestart(liveServer);
          liveServer.start();
@@ -2158,7 +2159,7 @@ public class FailoverTest extends FailoverTestBase
    public void testBackupServerNotRemoved() throws Exception
    {
       // HORNETQ-720 Disabling test for replicating backups.
-      if (!backupServer.getServer().getConfiguration().isSharedStore())
+      if (!backupServer.getServer().getConfiguration().getHAPolicy().isSharedStore())
       {
          waitForComponent(backupServer, 1);
          return;
@@ -2296,11 +2297,11 @@ public class FailoverTest extends FailoverTestBase
       // To reload security or other settings that are read during startup
       beforeRestart(backupServer);
 
-      if (!backupServer.getServer().getConfiguration().isSharedStore())
+      if (!backupServer.getServer().getConfiguration().getHAPolicy().isSharedStore())
       {
          // XXX
          // this test would not make sense in the remote replication use case, without the following
-         backupServer.getServer().getConfiguration().setBackup(false);
+         backupServer.getServer().getConfiguration().getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
       }
 
       backupServer.start();

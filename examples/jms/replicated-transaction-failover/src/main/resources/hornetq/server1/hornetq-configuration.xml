@@ -2,10 +2,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq ../../../../../../../hornetq-core/src/main/resources/schema/hornetq-configuration.xsd">
 
-   
-
-   <backup>true</backup>
-
    <bindings-directory>${build.directory}/server1/data/messaging/bindings</bindings-directory>
 
    <journal-directory>${build.directory}/server1/data/messaging/journal</journal-directory>
@@ -13,11 +9,8 @@
    <large-messages-directory>${build.directory}/server1/data/messaging/largemessages</large-messages-directory>
 
    <paging-directory>${build.directory}/server1/data/messaging/paging</paging-directory>
-    
-   <!--we kill the server process so don't need this set to true-->
-   <failover-on-shutdown>false</failover-on-shutdown>
 
-   <shared-store>false</shared-store>
+   <ha-policy template="BACKUP_REPLICATED"/>
     
    <!-- Connectors -->
 

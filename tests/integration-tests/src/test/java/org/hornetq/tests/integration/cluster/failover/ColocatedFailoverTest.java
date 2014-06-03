@@ -458,8 +458,8 @@ public class ColocatedFailoverTest extends ServiceTestBase
       Configuration liveConfiguration3 = super.createDefaultConfig();
       liveConfiguration3.getAcceptorConfigurations().clear();
       liveConfiguration3.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(3));
-      liveConfiguration3.setSharedStore(true);
-      liveConfiguration3.setFailbackDelay(1000);
+      liveConfiguration3.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfiguration3.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration3.setJournalDirectory(getTestDir() + "/journal3");
       liveConfiguration3.setBindingsDirectory(getTestDir() + "/bindings3");
       liveConfiguration3.setLargeMessagesDirectory(getTestDir() + "/largemessage3");
@@ -1317,8 +1317,8 @@ public class ColocatedFailoverTest extends ServiceTestBase
       Configuration liveConfiguration1 = super.createDefaultConfig();
       liveConfiguration1.getAcceptorConfigurations().clear();
       liveConfiguration1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(1));
-      liveConfiguration1.setSharedStore(true);
-      liveConfiguration1.setFailbackDelay(1000);
+      liveConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfiguration1.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration1.setJournalDirectory(getTestDir() + "/journal1");
       liveConfiguration1.setBindingsDirectory(getTestDir() + "/bindings1");
       liveConfiguration1.setLargeMessagesDirectory(getTestDir() + "/largemessage1");
@@ -1338,7 +1338,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration1.setLargeMessagesDirectory(getTestDir() + "/largemessage2");
       backupConfiguration1.setPagingDirectory(getTestDir() + "/paging2");
       backupConfiguration1.setBackupStrategy(BackupStrategy.SCALE_DOWN);
-      backupConfiguration1.setBackup(true);
+      backupConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       HAPolicy haPolicy = new HAPolicy();
       ArrayList<String> scaleDownConnectors = new ArrayList<>();
       scaleDownConnectors.add(liveConnector1.getName());
@@ -1351,8 +1351,8 @@ public class ColocatedFailoverTest extends ServiceTestBase
       Configuration liveConfiguration2 = super.createDefaultConfig();
       liveConfiguration2.getAcceptorConfigurations().clear();
       liveConfiguration2.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(2));
-      liveConfiguration2.setSharedStore(true);
-      liveConfiguration2.setFailbackDelay(1000);
+      liveConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfiguration2.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration2.setJournalDirectory(getTestDir() + "/journal2");
       liveConfiguration2.setBindingsDirectory(getTestDir() + "/bindings2");
       liveConfiguration2.setLargeMessagesDirectory(getTestDir() + "/largemessage2");
@@ -1370,7 +1370,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration2.setLargeMessagesDirectory(getTestDir() + "/largemessage1");
       backupConfiguration2.setPagingDirectory(getTestDir() + "/paging1");
       backupConfiguration2.setBackupStrategy(BackupStrategy.SCALE_DOWN);
-      backupConfiguration2.setBackup(true);
+      backupConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       HAPolicy haPolicy2 = new HAPolicy();
       ArrayList<String> scaleDownConnectors2 = new ArrayList<>();
       scaleDownConnectors2.add(liveConnector2.getName());

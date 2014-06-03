@@ -69,6 +69,7 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -119,7 +120,7 @@ public final class ReplicationTest extends ServiceTestBase
       Configuration backupConfig = createDefaultConfig();
       Configuration liveConfig = createDefaultConfig();
 
-      backupConfig.setBackup(backup);
+      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
 
       final String suffix = "_backup";
       backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);

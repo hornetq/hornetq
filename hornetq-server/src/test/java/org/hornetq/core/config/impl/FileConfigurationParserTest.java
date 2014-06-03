@@ -125,7 +125,7 @@ public class FileConfigurationParserTest extends UnitTestCase
 
       assertEquals("newpassword", config.getClusterPassword());
 
-      assertEquals("abackupgroupname", config.getBackupGroupName());
+      assertEquals("abackupgroupname", config.getHAPolicy().getBackupGroupName());
    }
 
    private static String firstPart =
@@ -195,10 +195,7 @@ public class FileConfigurationParserTest extends UnitTestCase
          + "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n"
          + "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
          "</address-setting>" + "\n" +
-         "</address-settings>" +
-         "<backup-servers>" +
-         "<backup-server name=\"myBackup\" port-offset=\"200\"/>" +
-         "</backup-servers>";
+         "</address-settings>";
 
 
    private static String lastPart = "</configuration>";

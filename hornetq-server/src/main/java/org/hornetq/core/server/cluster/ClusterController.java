@@ -98,9 +98,9 @@ public class ClusterController implements HornetQComponent
       //set the default locator that will be used to connecting to the default cluster.
       defaultLocator = locators.get(defaultClusterConnectionName);
       //create a locator for replication, either the default or the specified if not set
-      if (server.getConfiguration().getReplicationClustername() != null && !server.getConfiguration().getReplicationClustername().equals(defaultClusterConnectionName.toString()))
+      if (server.getConfiguration().getHAPolicy().getReplicationClustername() != null && !server.getConfiguration().getHAPolicy().getReplicationClustername().equals(defaultClusterConnectionName.toString()))
       {
-         replicationLocator = locators.get(server.getConfiguration().getReplicationClustername());
+         replicationLocator = locators.get(server.getConfiguration().getHAPolicy().getReplicationClustername());
          if (replicationLocator == null)
          {
             HornetQServerLogger.LOGGER.noClusterConnectionForReplicationCluster();

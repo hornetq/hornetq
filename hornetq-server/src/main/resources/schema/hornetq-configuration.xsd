@@ -9,39 +9,43 @@
       <xsd:all>
         <xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>Node name. If set, it will be used in topology
-            notifications.</xsd:documentation>
+            <xsd:documentation>
+              Node name. If set, it will be used in topology notifications.
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="resolveProtocols" type="xsd:boolean" default="true" maxOccurs="1"
+        <xsd:element name="resolve-protocols" type="xsd:boolean" default="true" maxOccurs="1"
                        minOccurs="0">
            <xsd:annotation hq:linkend="resolveProtocols" hq:field_name="DEFAULT_RESOLVE_PROTOCOLS">
-               <xsd:documentation>If true then the HornetQ Server will make use of any Protocol Managers that are in available
-                   on the classpath. If false then only the core protocol will be available, unless in Embedded mode where
-                   users can inject their own Protocol Managers.
-               </xsd:documentation>
+             <xsd:documentation>
+               If true then the HornetQ Server will make use of any Protocol Managers that
+               are in available on the classpath. If false then only the core protocol will
+               be available, unless in Embedded mode where users can inject their own
+               Protocol Managers.
+             </xsd:documentation>
            </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="clustered" type="xsd:boolean" default="false" maxOccurs="1"
                      minOccurs="0">
           <xsd:annotation hq:linkend="clusters">
-            <xsd:documentation>DEPRECATED. This option is deprecated and its value will be
-            ignored (HQ221038). A HornetQ server will be "clustered" when its configuration
-            contain a cluster-configuration.
+            <xsd:documentation>
+              DEPRECATED. This option is deprecated and its value will be ignored (HQ221038).
+              A HornetQ server will be "clustered" when its configuration contain a
+              cluster-configuration.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="check-for-live-server" type="xsd:boolean" default="false" maxOccurs="1"
-                     minOccurs="0">
-          <xsd:annotation hq:linkend="hq.check-for-live-server" hq:field_name="DEFAULT_CHECK_FOR_LIVE_SERVER">
+        <xsd:element name="check-for-live-server" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="hq.check-for-live-server">
             <xsd:documentation>
-              Whether to check the cluster for a (live) server using our own server ID when starting
-              up. This option is only necessary for performing 'fail-back' on replicating
-              servers. Strictly speaking this setting only applies to live servers and not to
-              backups.
+              DEPRECATED. This option is deprecated, but it will still be honored if
+              &lt;ha-policy&gt; is not also used. Whether to check the cluster for a (live)
+              server using our own server ID when starting up. This option is only necessary
+              for performing 'fail-back' on replicating servers. Strictly speaking this
+              setting only applies to live servers and not to backups.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -50,8 +54,8 @@
                      maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="using-server.configuration"
                           hq:field_name="DEFAULT_FILE_DEPLOYMENT_ENABLED">
-            <xsd:documentation>true means that the server will load configuration from the
-            configuration files
+            <xsd:documentation>
+              true means that the server will load configuration from the configuration files
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -59,8 +63,8 @@
         <xsd:element name="persistence-enabled" type="xsd:boolean" default="true"
                      maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="persistence.enabled" hq:field_name="DEFAULT_PERSISTENCE_ENABLED">
-            <xsd:documentation>true means that the server will use the file based journal for
-              persistence.
+            <xsd:documentation>
+              true means that the server will use the file based journal for persistence.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -88,20 +92,23 @@
         <xsd:element name="security-enabled" type="xsd:boolean" default="true"
           maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="security" hq:field_name="DEFAULT_SECURITY_ENABLED" >
-            <xsd:documentation>true means that security is enabled</xsd:documentation>
+            <xsd:documentation>
+              true means that security is enabled</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="security-invalidation-interval" type="xsd:long" default="10000" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="security" hq:field_name="DEFAULT_SECURITY_INVALIDATION_INTERVAL">
-            <xsd:documentation>how long (in ms) to wait before invalidating the security cache
+            <xsd:documentation>
+              how long (in ms) to wait before invalidating the security cache
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="journal-lock-acquisition-timeout" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="using-server.configuration" hq:field_name="DEFAULT_JOURNAL_LOCK_ACQUISITION_TIMEOUT">
-            <xsd:documentation>how long (in ms) to wait to acquire a file lock on the journal
+            <xsd:documentation>
+              how long (in ms) to wait to acquire a file lock on the journal
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -109,7 +116,8 @@
         <xsd:element name="wild-card-routing-enabled" type="xsd:boolean" default="true"
                      maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="wildcard-routing" hq:field_name="DEFAULT_WILDCARD_ROUTING_ENABLED">
-            <xsd:documentation>true means that the server supports wild card routing
+            <xsd:documentation>
+              true means that the server supports wild card routing
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -131,8 +139,8 @@
           <xsd:annotation hq:linkend="management.notifications.core.configuration"
                           hq:field_name="DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS"
                           hq:type="SimpleString">
-            <xsd:documentation>the name of the address that consumers bind to receive management
-            notifications
+            <xsd:documentation>
+              the name of the address that consumers bind to receive management notifications
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -140,15 +148,17 @@
         <xsd:element name="cluster-user" type="xsd:string" default="HORNETQ.CLUSTER.ADMIN.USER"
                      maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="clusters" hq:field_name="DEFAULT_CLUSTER_USER">
-            <xsd:documentation>Cluster username. It applies to all cluster configurations.
+            <xsd:documentation>
+              Cluster username. It applies to all cluster configurations.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xsd:string"
+        <xsd:element name="cluster-password" maxOccurs="1" minOccurs="0" type="xsd:string"
                      default="CHANGE ME!!">
           <xsd:annotation hq:linkend="clusters" hq:field_name="DEFAULT_CLUSTER_PASSWORD">
-            <xsd:documentation>Cluster password. It applies to all cluster configurations.
+            <xsd:documentation>
+              Cluster password. It applies to all cluster configurations.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -156,9 +166,11 @@
         <xsd:element name="replication-clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>
-              Name of the cluster configuration to use for replication. This setting is only
-              necessary in case you configure multiple cluster connections. It is used by a
-              replicating backups and by live servers that may attempt fail-back.
+              DEPRECATED. This option is deprecated, but it will still be honored if
+              &lt;ha-policy&gt; is not also used. Name of the cluster configuration to use for
+              replication. This setting is only necessary in case you configure multiple cluster
+              connections. It is used by a replicating backups and by live servers that may
+              attempt fail-back.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -166,18 +178,22 @@
         <xsd:element name="scale-down-clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>
-              Name of the cluster configuration to use for scaling down. This setting is only
-              necessary in case you configure multiple cluster connections.
+              DEPRECATED. This option is deprecated, but it will still be honored if
+              &lt;ha-policy&gt; is not also used. Name of the cluster configuration to use for
+              scaling down. This setting is only necessary in case you configure multiple cluster
+              connections.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="max-saved-replicated-journals-size" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:field_name="DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE">
+          <xsd:annotation>
             <xsd:documentation>
-              This specifies how many times a replicated backup server can restart after moving
-              its files on start. Once there are this number of backup journal files the server
-              will stop permanently after if fails back.
+              DEPRECATED. This option is deprecated, but it will still be honored if
+              &lt;ha-policy&gt; is not also used. This specifies how many times a replicated
+              backup server can restart after moving its files on start. Once there are this
+              number of backup journal files the server will stop permanently after if fails
+              back.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -213,34 +229,39 @@
         <xsd:element name="jmx-management-enabled" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="management.jmx.configuration"
                            hq:field_name="DEFAULT_JMX_MANAGEMENT_ENABLED">
-            <xsd:documentation>true means that the management API is available via JMX
+            <xsd:documentation>
+              true means that the management API is available via JMX
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="jmx-domain" type="xsd:string" default="org.hornetq" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="management.jmx.configuration" hq:field_name="DEFAULT_JMX_DOMAIN">
-            <xsd:documentation>the JMX domain used to registered HornetQ MBeans in the MBeanServer
+            <xsd:documentation>
+              the JMX domain used to registered HornetQ MBeans in the MBeanServer
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="message-counter-enabled" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.counters" hq:field_name="DEFAULT_MESSAGE_COUNTER_ENABLED">
-            <xsd:documentation>true means that message counters are enabled</xsd:documentation>
+            <xsd:documentation>
+              true means that message counters are enabled</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="message-counter-sample-period" type="xsd:long" default="10000" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.counters" hq:field_name="DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD">
-            <xsd:documentation>the sample period (in ms) to use for message counters
+            <xsd:documentation>
+              the sample period (in ms) to use for message counters
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="message-counter-max-day-history" type="xsd:int" default="10" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.message.counters" hq:default="(days)" hq:field_name="DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY">
-            <xsd:documentation>how many days to keep message counter history
+            <xsd:documentation>
+              how many days to keep message counter history
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -261,7 +282,7 @@
           <xsd:annotation hq:linkend="connection-ttl.async-connection-execution"
                           hq:field_name="DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED">
             <xsd:documentation>should certain incoming packets on the server be handed off to a thread from
-            the thread pool for processing or should they be handled on the remoting thread?
+              the thread pool for processing or should they be handled on the remoting thread?
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -277,37 +298,40 @@
 
         <xsd:element name="transaction-timeout-scan-period" type="xsd:long" default="1000" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="transaction-config" hq:field_name="DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD">
-            <xsd:documentation>how often (in ms) to scan for timeout transactions
+            <xsd:documentation>
+              how often (in ms) to scan for timeout transactions
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="message-expiry-scan-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="configuring.expiry.reaper"
-                          hq:field_name="DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD">
-            <xsd:documentation>how often (in ms) to scan for expired messages
+          <xsd:annotation hq:linkend="configuring.expiry.reaper" hq:field_name="DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD">
+            <xsd:documentation>
+              how often (in ms) to scan for expired messages
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="message-expiry-thread-priority" type="xsd:int" default="3"
-                     maxOccurs="1" minOccurs="0">
+        <xsd:element name="message-expiry-thread-priority" type="xsd:int" default="3" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="configuring.expiry.reaper" hq:field_name="DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY">
-            <xsd:documentation>the priority of the thread expiring messages
+            <xsd:documentation>
+              the priority of the thread expiring messages
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="id-cache-size" type="xsd:int" default="20000" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="duplicate.id.cache" hq:field_name="DEFAULT_ID_CACHE_SIZE">
-            <xsd:documentation>the size of the cache for pre-creating message ID's
+            <xsd:documentation>
+              the size of the cache for pre-creating message ID's
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="persist-id-cache" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="duplicate.id.cache" hq:field_name="DEFAULT_PERSIST_ID_CACHE">
-            <xsd:documentation>true means that ID's are persisted to the journal
+            <xsd:documentation>
+              true means that ID's are persisted to the journal
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -325,7 +349,7 @@
         <xsd:element name="remoting-incoming-interceptors" type="class-name-sequenceType" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="intercepting-operations">
             <xsd:documentation>a list of &lt;class-name/&gt; elements with the names of classes to
-            use for interceptor incoming remoting packets
+              use for interceptor incoming remoting packets
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -333,25 +357,28 @@
         <xsd:element name="remoting-outgoing-interceptors" type="class-name-sequenceType" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="intercepting-operations">
             <xsd:documentation>a list of &lt;class-name/&gt; elements with the names of classes to
-            use for interceptor outcoming remoting packets
+              use for interceptor outcoming remoting packets
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="backup" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="ha" hq:field_name="DEFAULT_BACKUP">
-            <xsd:documentation>whether this server is a backup server
+            <xsd:documentation>
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. It indicates whether this server is a backup server
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="allow-failback" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_ALLOW_AUTO_FAILBACK">
+          <xsd:annotation hq:linkend="ha.allow-fail-back">
             <xsd:documentation>
-              Whether a server will automatically stop when a another places a request to take over
-              its place.  The use case is when a regular server stops and its backup takes over its
-              duties, later the main server restarts and requests the server (the former backup) to
-              stop operating.
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. Whether a server will automatically stop when a another places a
+              request to take over its place.  The use case is when a regular server stops and its
+              backup takes over its duties, later the main server restarts and requests the server
+              (the former backup) to stop operating.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -359,8 +386,9 @@
         <xsd:element name="backup-group-name" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>
-              used for replication, if set, (remote) backup servers will only pair with live servers
-              with matching backup-group-name
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. used for replication, if set, (remote) backup servers will only pair
+              with live servers with matching backup-group-name
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -368,39 +396,46 @@
         <xsd:element name="scale-down-group-name" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
             <xsd:documentation>
-              used for scaling down, if set, a live server will only send messages to another live server
-              with matching scale-down-group-name
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. used for scaling down, if set, a live server will only send messages
+              to another live server with matching scale-down-group-name
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="failback-delay" type="xsd:long" default="5000" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)"
-                          hq:field_name="DEFAULT_FAILBACK_DELAY">
-            <xsd:documentation>delay to wait before fail-back occurs on (live's) restart</xsd:documentation>
+          <xsd:annotation hq:linkend="ha.allow-fail-back">
+            <xsd:documentation>
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. The delay to wait before fail-back occurs on (live's) restart.
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="failover-on-shutdown" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN">
+          <xsd:annotation hq:linkend="ha.allow-fail-back">
             <xsd:documentation>
-              Will this backup server come live on a normal server shutdown
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. Will this backup server come live on a normal server shutdown.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="scale-down" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
-          <xsd:annotation hq:linkend="ha.scale-down" hq:field_name="DEFAULT_SCALE_DOWN">
+          <xsd:annotation hq:linkend="ha.scale-down">
             <xsd:documentation>
-              Will this server send its messages to another live server in the cluster when shut-down cleanly.
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt;
+              is not also used. Will this server send its messages to another live server in the
+              cluster when shut-down cleanly.
             </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="shared-store" type="xsd:boolean" default="true"  maxOccurs="1" minOccurs="0">
+        <xsd:element name="shared-store" type="xsd:boolean" default="false"  maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="ha.mode.shared" hq:field_name="DEFAULT_SHARED_STORE">
             <xsd:documentation>
-              'shared-store' applies to live and backup pairs, and it indicates if the live/backup
+              DEPRECATED. This option is deprecated, but it will still be honored if &lt;ha-policy&gt; is not
+              also used. 'shared-store' applies to live and backup pairs, and it indicates if the live/backup
               pair share storage or if the data is replicated among them.
             </xsd:documentation>
           </xsd:annotation>
@@ -687,8 +722,7 @@
           </xsd:annotation>
         </xsd:element>
 
-        <xsd:element name="log-journal-write-rate" type="xsd:boolean" default="false"
-                     maxOccurs="1" minOccurs="0">
+        <xsd:element name="log-journal-write-rate" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:field_name="DEFAULT_JOURNAL_LOG_WRITE_RATE">
             <xsd:documentation>Whether to log messages about the journal write rate</xsd:documentation>
           </xsd:annotation>
@@ -835,14 +869,6 @@
           <xsd:complexType>
             <xsd:sequence>
               <xsd:element name="connector-service" type="connector-serviceType" maxOccurs="unbounded" minOccurs="0" />
-            </xsd:sequence>
-          </xsd:complexType>
-        </xsd:element>
-
-        <xsd:element name="backup-servers" maxOccurs="1" minOccurs="0">
-          <xsd:complexType>
-            <xsd:sequence>
-               <xsd:element name="backup-server" type="backup-serverType" maxOccurs="unbounded" minOccurs="0"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
@@ -1365,48 +1391,64 @@
 
   <xsd:complexType name="haPolicyType">
     <xsd:all>
-      <xsd:element name="policy-type" minOccurs="0" maxOccurs="1" default="LIVE">
-         <xsd:annotation>
-            <xsd:documentation>what kind of HA Policy should we use</xsd:documentation>
-         </xsd:annotation>
-         <xsd:simpleType>
-            <xsd:restriction base="xsd:string">
-               <xsd:enumeration value="LIVE"/>
-               <xsd:enumeration value="BACKUP_REPLICATED"/>
-               <xsd:enumeration value="BACKUP_SHARED_STORE"/>
-               <xsd:enumeration value="COLOCATED_REPLICATED"/>
-               <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
-            </xsd:restriction>
-         </xsd:simpleType>
+      <xsd:element name="policy-type" minOccurs="0" maxOccurs="1" default="NONE">
+        <xsd:annotation>
+          <xsd:documentation>
+            what kind of HA Policy should we use
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleType>
+          <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="NONE"/>
+            <xsd:enumeration value="REPLICATED"/>
+            <xsd:enumeration value="SHARED_STORE"/>
+            <xsd:enumeration value="BACKUP_REPLICATED"/>
+            <xsd:enumeration value="BACKUP_SHARED_STORE"/>
+            <xsd:enumeration value="COLOCATED_REPLICATED"/>
+            <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
+          </xsd:restriction>
+        </xsd:simpleType>
       </xsd:element>
       <xsd:element name="request-backup" type="xsd:boolean" minOccurs="0" maxOccurs="1" default="false">
         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_REQUEST_BACKUP">
-           <xsd:documentation>If true then the server will request a backup on another node</xsd:documentation>
+          <xsd:documentation>
+            If true then the server will request a backup on another node
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="backup-request-retries" type="xsd:int" minOccurs="0" maxOccurs="1" default="-1">
-         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRIES">
-            <xsd:documentation>How many times the live server will try to request a backup, -1 means for ever.</xsd:documentation>
-         </xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRIES">
+          <xsd:documentation>
+            How many times the live server will try to request a backup, -1 means for ever.
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
       <xsd:element name="backup-request-retry-interval" type="xsd:long" minOccurs="0" maxOccurs="1" default="5000">
-         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRY_INTERVAL">
-            <xsd:documentation>How long to wait for retries between attempts to request a backup server.</xsd:documentation>
-         </xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_REQUEST_RETRY_INTERVAL">
+          <xsd:documentation>
+            How long to wait for retries between attempts to request a backup server.
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
       <xsd:element name="max-backups" type="xsd:int" minOccurs="0" maxOccurs="1" default="1">
-         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_MAX_BACKUPS">
-            <xsd:documentation>Whether or not this live server will accept backup requests from other live servers.</xsd:documentation>
-         </xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_MAX_BACKUPS">
+          <xsd:documentation>
+            Whether or not this live server will accept backup requests from other live servers.
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
       <xsd:element name="backup-port-offset" type="xsd:int" minOccurs="0" maxOccurs="1" default="100">
-         <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_PORT_OFFSET">
-            <xsd:documentation>The offset to use for the Connectors and Acceptors when creating a new backup server.</xsd:documentation>
-         </xsd:annotation>
+        <xsd:annotation hq:field_name="DEFAULT_HAPOLICY_BACKUP_PORT_OFFSET">
+          <xsd:documentation>
+            The offset to use for the Connectors and Acceptors when creating a new backup server.
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
       <xsd:element name="backup-strategy" minOccurs="0" maxOccurs="1">
         <xsd:annotation>
-          <xsd:documentation>The backup strategy to use if we are a backup or for any colocated backups.</xsd:documentation>
+          <xsd:documentation>
+            The backup strategy to use if we are a backup or for any colocated backups.
+          </xsd:documentation>
         </xsd:annotation>
         <xsd:simpleType>
           <xsd:restriction base="xsd:string">
@@ -1417,49 +1459,125 @@
       </xsd:element>
       <xsd:element name="scale-down-connectors" minOccurs="0" maxOccurs="1">
         <xsd:annotation>
-          <xsd:documentation>A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or first invm connector will be used</xsd:documentation>
+          <xsd:documentation>
+            A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or first invm connector will be used
+          </xsd:documentation>
         </xsd:annotation>
-         <xsd:complexType>
-            <xsd:sequence>
-               <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
-            </xsd:sequence>
-         </xsd:complexType>
-      </xsd:element>
-      <xsd:element name="scale-down-discovery-group" type="xsd:string" minOccurs="0" maxOccurs="1">
-        <xsd:annotation>
-           <xsd:documentation>The discovery group to use for scale down, if not supplied then the scale-down-connectors or first invm connector will be used</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="scale-down-group-name" type="xsd:string" minOccurs="0" maxOccurs="1">
-         <xsd:annotation>
-            <xsd:documentation>The scale down group to scale down to, a server will only scale down to a server within the same group</xsd:documentation>
-         </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
-         <xsd:annotation>
-            <xsd:documentation>the remote connectors that shouldnt have their ports offset, typically remote connectors or the connector used in the cluster connection if scalinmg down</xsd:documentation>
-         </xsd:annotation>
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
-    </xsd:all>
-     <xsd:attribute name="template" use="optional">
+      <xsd:element name="scale-down-discovery-group" type="xsd:string" minOccurs="0" maxOccurs="1">
         <xsd:annotation>
-           <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+          <xsd:documentation>The discovery group to use for scale down, if not supplied then the scale-down-connectors or first invm connector will be used</xsd:documentation>
         </xsd:annotation>
-        <xsd:simpleType>
-           <xsd:restriction base="xsd:string">
-             <xsd:enumeration value="LIVE"/>
-             <xsd:enumeration value="BACKUP_REPLICATED"/>
-             <xsd:enumeration value="BACKUP_SHARED_STORE"/>
-             <xsd:enumeration value="COLOCATED_REPLICATED"/>
-             <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
-           </xsd:restriction>
-        </xsd:simpleType>
-     </xsd:attribute>
+      </xsd:element>
+      <xsd:element name="scale-down-group-name" type="xsd:string" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>The scale down group to scale down to, a server will only scale down to a server within the same group</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backup-group-name" type="xsd:string" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>used for replication, if set, (remote) backup servers will only pair with live servers with matching backup-group-name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>the remote connectors that shouldn't have their ports offset, typically remote connectors or the connector used in the cluster connection if scalinmg down</xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="check-for-live-server" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="hq.check-for-live-server" hq:field_name="DEFAULT_CHECK_FOR_LIVE_SERVER">
+          <xsd:documentation>
+            Whether to check the cluster for a (live) server using our own server ID when starting
+            up. This option is only necessary for performing 'fail-back' on replicating
+            servers. Strictly speaking this setting only applies to live servers and not to
+            backups.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="allow-failback" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_ALLOW_AUTO_FAILBACK">
+          <xsd:documentation>
+            Whether a server will automatically stop when a another places a request to take over
+            its place.  The use case is when a regular server stops and its backup takes over its
+            duties, later the main server restarts and requests the server (the former backup) to
+            stop operating.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="failback-delay" type="xsd:long" default="5000" maxOccurs="1" minOccurs="0">
+          <xsd:annotation hq:linkend="ha.allow-fail-back" hq:default="(in milliseconds)"
+                          hq:field_name="DEFAULT_FAILBACK_DELAY">
+          <xsd:documentation>delay to wait before fail-back occurs on (live's) restart</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="failover-on-shutdown" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="ha.allow-fail-back" hq:field_name="DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN">
+          <xsd:documentation>
+            Will this backup server come live on a normal server shutdown
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="replication-clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+            Name of the cluster configuration to use for replication. This setting is only
+            necessary in case you configure multiple cluster connections. It is used by a
+            replicating backups and by live servers that may attempt fail-back.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="scale-down-clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+            Name of the cluster configuration to use for scaling down. This setting is only
+            necessary in case you configure multiple cluster connections.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="max-saved-replicated-journals-size" type="xsd:int" default="2" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:field_name="DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE">
+          <xsd:documentation>
+            This specifies how many times a replicated backup server can restart after moving
+            its files on start. Once there are this number of backup journal files the server
+            will stop permanently after if fails back.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="scale-down" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+        <xsd:annotation hq:linkend="ha.scale-down" hq:field_name="DEFAULT_SCALE_DOWN">
+          <xsd:documentation>
+            Will this server send its messages to another live server in the cluster when
+            shut-down cleanly.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:all>
+    <xsd:attribute name="template" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
+      </xsd:annotation>
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="NONE"/>
+          <xsd:enumeration value="REPLICATED"/>
+          <xsd:enumeration value="SHARED_STORE"/>
+          <xsd:enumeration value="BACKUP_REPLICATED"/>
+          <xsd:enumeration value="BACKUP_SHARED_STORE"/>
+          <xsd:enumeration value="COLOCATED_REPLICATED"/>
+          <xsd:enumeration value="COLOCATED_SHARED_STORE"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="groupingHandlerType">
     <xsd:all>
@@ -1488,19 +1606,26 @@
       </xsd:element>
       <xsd:element name="group-timeout" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:default="(ms)">
-          <xsd:documentation>How long a group binding will be used, -1 means for ever. Bindings are removed after this wait
-             elapses. On the remote node this is used to determine how often you should re-query the main coordinator in order to update the last time used accordingly.</xsd:documentation>
+          <xsd:documentation>
+            How long a group binding will be used, -1 means for ever. Bindings are removed after this wait
+            elapses. On the remote node this is used to determine how often you should re-query the main
+            coordinator in order to update the last time used accordingly.
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="reaper-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
         <xsd:annotation hq:default="(ms)">
-          <xsd:documentation>How often the reaper will be run to check for timed out group bindings. Only valid for LOCAL handlers</xsd:documentation>
+          <xsd:documentation>
+            How often the reaper will be run to check for timed out group bindings. Only valid for LOCAL handlers
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
     </xsd:all>
     <xsd:attribute name="name" type="xsd:string" use="required">
       <xsd:annotation>
-        <xsd:documentation>A name identifying this grouping-handler</xsd:documentation>
+        <xsd:documentation>
+          A name identifying this grouping-handler
+        </xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>
@@ -1508,52 +1633,66 @@
   <xsd:element name="address-setting">
   <xsd:complexType>
     <xsd:annotation hq:linkend="queue-attributes.address-settings">
-      <xsd:documentation>Complex type element to configure an address.</xsd:documentation>
+      <xsd:documentation>
+        Complex type element to configure an address.
+      </xsd:documentation>
     </xsd:annotation>
       <xsd:all>
         <xsd:element maxOccurs="1" minOccurs="0" name="dead-letter-address" type="xsd:string">
           <xsd:annotation hq:linkend="undelivered-messages.configuring">
-            <xsd:documentation>the address to send dead messages to</xsd:documentation>
+            <xsd:documentation>
+              the address to send dead messages to
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="expiry-address" type="xsd:string" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="message-expiry.configuring">
-            <xsd:documentation>the address to send expired messages to</xsd:documentation>
+            <xsd:documentation>
+              the address to send expired messages to
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="expiry-delay" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>Overrides the expiration time for
-            messages using the default value for expiration time. "-1"
-            disables this setting.</xsd:documentation>
+            <xsd:documentation>
+              Overrides the expiration time for messages using the default value for
+              expiration time. "-1" disables this setting.
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="redelivery-delay" type="xsd:long" default="0" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="undelivered-messages.delay">
-            <xsd:documentation>the time (in ms) to wait before redelivering a cancelled
-            message.</xsd:documentation>
+            <xsd:documentation>
+              the time (in ms) to wait before redelivering a cancelled message.
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="redelivery-delay-multiplier" type="xsd:double"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>multipler to apply to the "redelivery-delay"</xsd:documentation>
+            <xsd:documentation>
+              multipler to apply to the "redelivery-delay"
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="max-redelivery-delay" type="xsd:long"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>Maximum value for the redelivery-delay</xsd:documentation>
+            <xsd:documentation>
+              Maximum value for the redelivery-delay
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="max-delivery-attempts" type="xsd:int" default="10" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="undelivered-messages.configuring">
-            <xsd:documentation>how many times to attempt to deliver a message before sending to dead
-            letter address</xsd:documentation>
+            <xsd:documentation>
+              how many times to attempt to deliver a message before sending to dead
+              letter address
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
@@ -1566,21 +1705,25 @@
 
         <xsd:element name="page-size-bytes" type="xsd:long" default="10485760" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging" hq:default="(10 * 1024 * 1024)">
-            <xsd:documentation>the page size (in bytes) to use for an address</xsd:documentation>
+            <xsd:documentation>
+              the page size (in bytes) to use for an address
+           </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element  name="page-max-cache-size" default="5" type="xsd:int"  maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="paging">
-            <xsd:documentation>Number of paging files to cache in
-            memory to avoid IO during paging navigation</xsd:documentation>
+            <xsd:documentation>
+              Number of paging files to cache in memory to avoid IO during paging navigation
+           </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="address-full-policy" maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>what happens when an address where "max-size-bytes" is specified
-            becomes full</xsd:documentation>
+            <xsd:documentation>
+              what happens when an address where "max-size-bytes" is specified becomes full
+            </xsd:documentation>
           </xsd:annotation>
           <xsd:simpleType>
             <xsd:restriction base="xsd:string">
@@ -1594,33 +1737,42 @@
 
         <xsd:element name="message-counter-history-day-limit" type="xsd:int" default="0" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:default="(days)">
-            <xsd:documentation>how many days to keep message counter history for this address</xsd:documentation>
+            <xsd:documentation>
+              how many days to keep message counter history for this address
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="last-value-queue" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="last-value-queues">
-            <xsd:documentation>whether to treat the queue as a last value queue</xsd:documentation>
+            <xsd:documentation>
+              whether to treat the queue as a last value queue
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="redistribution-delay" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
           <xsd:annotation hq:linkend="clusters">
-            <xsd:documentation>how long (in ms) to wait after the last consumer is closed on a
-            queue before redistributing messages.</xsd:documentation>
+            <xsd:documentation>
+              how long (in ms) to wait after the last consumer is closed on a queue before redistributing messages.
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
 
         <xsd:element name="send-to-dla-on-no-route" type="xsd:boolean"  maxOccurs="1" minOccurs="0">
           <xsd:annotation>
-            <xsd:documentation>if there are no queues matching this address, whether to forward message to DLA (if it exists for this address)</xsd:documentation>
+            <xsd:documentation>
+              if there are no queues matching this address, whether to forward message to DLA (if it exists for this address)
+            </xsd:documentation>
           </xsd:annotation>
         </xsd:element>
       </xsd:all>
 
       <xsd:attribute name="match" type="xsd:string" use="required">
         <xsd:annotation>
-          <xsd:documentation>XXX</xsd:documentation>
+          <xsd:documentation>
+            XXX
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
     </xsd:complexType>
@@ -1629,71 +1781,36 @@
   <xsd:element name="filter">
     <xsd:complexType>
       <xsd:annotation>
-        <xsd:documentation>optional core filter expression (set through attribute)</xsd:documentation>
+        <xsd:documentation>
+          optional core filter expression (set through attribute)
+        </xsd:documentation>
       </xsd:annotation>
       <xsd:attribute name="string" type="xsd:string" use="required">
         <xsd:annotation>
-          <xsd:documentation>optional core filter expression</xsd:documentation>
+          <xsd:documentation>
+            optional core filter expression
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
     </xsd:complexType>
-</xsd:element>
+  </xsd:element>
 
   <xsd:complexType name="connector-serviceType">
     <xsd:sequence>
       <xsd:element maxOccurs="1" minOccurs="1" name="factory-class" type="xsd:string">
         <xsd:annotation>
-          <xsd:documentation>Name of the factory class of the ConnectorService</xsd:documentation>
+          <xsd:documentation>
+            Name of the factory class of the ConnectorService
+          </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="optional">
       <xsd:annotation>
-        <xsd:documentation>name of the connector service</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-  </xsd:complexType>
-
-  <xsd:complexType name="backup-serverType">
-    <xsd:sequence>
-      <xsd:element maxOccurs="1" minOccurs="0" name="configuration" type="configurationType">
-        <xsd:annotation>
-          <xsd:documentation>The configuration to override</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-    <xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
-    </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="required">
-      <xsd:annotation>
-        <xsd:documentation>name of the backup server, this will be used to identify the backup server and also appended to
-        the journal directories if not supplied.</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-    <xsd:attribute name="port-offset" type="xsd:integer" use="optional" default="100">
-      <xsd:annotation>
-        <xsd:documentation>the port offset use to adjust the connector and acceptor ports</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-    <xsd:attribute name="inherit-configuration" type="xsd:boolean" use="optional" default="true">
-      <xsd:annotation>
-        <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-    <xsd:attribute name="backup-strategy" use="optional" default="SCALE_DOWN">
-      <xsd:annotation>
-        <xsd:documentation>if true then the backup will use the same configuration as the live server.</xsd:documentation>
-      </xsd:annotation>
-      <xsd:simpleType>
-        <xsd:restriction base="xsd:string">
-          <xsd:enumeration value="FULL" />
-          <xsd:enumeration value="SCALE_DOWN"/>
-        </xsd:restriction>
-      </xsd:simpleType>
-    </xsd:attribute>
-    <xsd:attribute name="scale-down-connector" type="xsd:string" use="optional">
-      <xsd:annotation>
-        <xsd:documentation>if the backup strategy is scale down then use this connector to connect to the parent server</xsd:documentation>
+        <xsd:documentation>
+          name of the connector service
+        </xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
   </xsd:complexType>

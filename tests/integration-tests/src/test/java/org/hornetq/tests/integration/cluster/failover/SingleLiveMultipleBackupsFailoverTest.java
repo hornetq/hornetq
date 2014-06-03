@@ -24,6 +24,7 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -131,8 +132,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
                                                                            generateParams(nodeid, isNetty())));
       config1.setSecurityEnabled(false);
-      config1.setSharedStore(sharedStore);
-      config1.setBackup(true);
+
+      if (sharedStore)
+         config1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      else
+         config1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+
       List<String> staticConnectors = new ArrayList<String>();
 
       for (int node : nodes)
@@ -164,7 +169,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
                                                                            generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
-      config0.setSharedStore(sharedStore);
+
+      if (sharedStore)
+         config0.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      else
+         config0.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+
       basicClusterConnectionConfig(config0, liveConnector.getName());
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 

@@ -18,7 +18,7 @@ public class ReplicatedFailoverUsingNodeGroupNameTest extends ReplicatedFailover
    protected void createReplicatedConfigs() throws Exception
    {
       super.createReplicatedConfigs();
-      liveConfig.setBackupGroupName("liveNodeGroup1");
-      backupConfig.setBackupGroupName("liveNodeGroup1");
+      liveConfig.getHAPolicy().setBackupGroupName("liveNodeGroup1");
+      backupConfig.getHAPolicy().setBackupGroupName("liveNodeGroup1");
    }
 }

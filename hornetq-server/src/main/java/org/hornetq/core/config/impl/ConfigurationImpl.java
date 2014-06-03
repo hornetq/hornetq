@@ -58,13 +58,7 @@ public class ConfigurationImpl implements Configuration
 
    private String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
-   private String backupGroupName = null;
-
-   protected boolean backup = HornetQDefaultConfiguration.isDefaultBackup();
-
-   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
-
-   private boolean sharedStore = HornetQDefaultConfiguration.isDefaultSharedStore();
+//   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
 
    protected boolean fileDeploymentEnabled = HornetQDefaultConfiguration.isDefaultFileDeploymentEnabled();
 
@@ -208,7 +202,7 @@ public class ConfigurationImpl implements Configuration
 
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
 
-   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
+//   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
 
    private boolean checkForLiveServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
 
@@ -216,13 +210,7 @@ public class ConfigurationImpl implements Configuration
 
    private transient String passwordCodec;
 
-   private String replicationClusterName;
-
-   private String scaleDownClusterName;
-
    private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
-
-   private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
 
    private Set<Configuration> backupServerConfigurations = new HashSet<>();
 
@@ -239,19 +227,22 @@ public class ConfigurationImpl implements Configuration
       return !getClusterConfigurations().isEmpty();
    }
 
+   @Deprecated
    public boolean isAllowAutoFailBack()
    {
-      return allowAutoFailBack;
+      return haPolicy.isAllowAutoFailBack();
    }
 
+   @Deprecated
    public void setAllowAutoFailBack(boolean allowAutoFailBack)
    {
-      this.allowAutoFailBack = allowAutoFailBack;
+      haPolicy.setAllowAutoFailBack(allowAutoFailBack);
    }
 
+   @Deprecated
    public boolean isBackup()
    {
-      return backup;
+      return haPolicy.isBackup();
    }
 
    public boolean isFileDeploymentEnabled()
@@ -297,19 +288,22 @@ public class ConfigurationImpl implements Configuration
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
    }
 
+   @Deprecated
    public void setBackup(final boolean backup)
    {
-      this.backup = backup;
+      // this is done via the haPolicy now
    }
 
+   @Deprecated
    public boolean isSharedStore()
    {
-      return sharedStore;
+      return haPolicy.isSharedStore();
    }
 
+   @Deprecated
    public void setSharedStore(final boolean sharedStore)
    {
-      this.sharedStore = sharedStore;
+      // this is done via the haPolicy now
    }
 
    public int getScheduledThreadPoolMaxSize()
@@ -959,14 +953,16 @@ public class ConfigurationImpl implements Configuration
       return this.connectorServiceConfigurations;
    }
 
+   @Deprecated
    public long getFailbackDelay()
    {
-      return failbackDelay;
+      return haPolicy.getFailbackDelay();
    }
 
+   @Deprecated
    public void setFailbackDelay(long failbackDelay)
    {
-      this.failbackDelay = failbackDelay;
+      this.haPolicy.setFailbackDelay(failbackDelay);
    }
 
    public boolean isCheckForLiveServer()
@@ -996,14 +992,16 @@ public class ConfigurationImpl implements Configuration
       this.name = name;
    }
 
+   @Deprecated
    public String getBackupGroupName()
    {
-      return backupGroupName;
+      return haPolicy.getBackupGroupName();
    }
 
+   @Deprecated
    public void setBackupGroupName(String nodeGroupName)
    {
-      this.backupGroupName = nodeGroupName;
+      haPolicy.setBackupGroupName(nodeGroupName);
    }
 
    @Override
@@ -1011,8 +1009,8 @@ public class ConfigurationImpl implements Configuration
    {
       StringBuilder sb = new StringBuilder("HornetQ Configuration (");
       sb.append("clustered=").append(isClustered()).append(",");
-      sb.append("backup=").append(backup).append(",");
-      sb.append("sharedStore=").append(sharedStore).append(",");
+      sb.append("backup=").append(haPolicy.isBackup()).append(",");
+      sb.append("sharedStore=").append(haPolicy.isSharedStore()).append(",");
       sb.append("journalDirectory=").append(journalDirectory).append(",");
       sb.append("bindingsDirectory=").append(bindingsDirectory).append(",");
       sb.append("largeMessagesDirectory=").append(largeMessagesDirectory).append(",");
@@ -1042,39 +1040,45 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
+   @Deprecated
    public void setReplicationClustername(String clusterName)
    {
-      this.replicationClusterName = clusterName;
+      this.haPolicy.setReplicationClustername(clusterName);
    }
 
    @Override
+   @Deprecated
    public String getReplicationClustername()
    {
-      return replicationClusterName;
+      return haPolicy.getReplicationClustername();
    }
 
    @Override
+   @Deprecated
    public void setScaleDownClustername(String clusterName)
    {
-      this.scaleDownClusterName = clusterName;
+      this.haPolicy.setScaleDownClustername(clusterName);
    }
 
    @Override
+   @Deprecated
    public String getScaleDownClustername()
    {
-      return scaleDownClusterName;
+      return haPolicy.getScaleDownClustername();
    }
 
    @Override
+   @Deprecated
    public void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
    {
-      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+      this.haPolicy.setMaxSavedReplicatedJournalSize(maxSavedReplicatedJournalsSize);
    }
 
    @Override
+   @Deprecated
    public int getMaxSavedReplicatedJournalsSize()
    {
-      return maxSavedReplicatedJournalsSize;
+      return haPolicy.getMaxSavedReplicatedJournalsSize();
    }
 
    @Override
@@ -1096,9 +1100,9 @@ public class ConfigurationImpl implements Configuration
       int result = 1;
       result = prime * result + ((acceptorConfigs == null) ? 0 : acceptorConfigs.hashCode());
       result = prime * result + ((addressesSettings == null) ? 0 : addressesSettings.hashCode());
-      result = prime * result + (allowAutoFailBack ? 1231 : 1237);
+      result = prime * result + (haPolicy.isAllowAutoFailBack() ? 1231 : 1237);
       result = prime * result + (asyncConnectionExecutionEnabled ? 1231 : 1237);
-      result = prime * result + (backup ? 1231 : 1237);
+      result = prime * result + (haPolicy.isBackup() ? 1231 : 1237);
       result = prime * result + ((bindingsDirectory == null) ? 0 : bindingsDirectory.hashCode());
       result = prime * result + ((bridgeConfigurations == null) ? 0 : bridgeConfigurations.hashCode());
       result = prime * result + ((broadcastGroupConfigurations == null) ? 0 : broadcastGroupConfigurations.hashCode());
@@ -1115,7 +1119,7 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (createJournalDir ? 1231 : 1237);
       result = prime * result + ((discoveryGroupConfigurations == null) ? 0 : discoveryGroupConfigurations.hashCode());
       result = prime * result + ((divertConfigurations == null) ? 0 : divertConfigurations.hashCode());
-      result = prime * result + (int)(failbackDelay ^ (failbackDelay >>> 32));
+      result = prime * result + (int)(haPolicy.getFailbackDelay() ^ (haPolicy.getFailbackDelay() >>> 32));
       result = prime * result + (failoverOnServerShutdown ? 1231 : 1237);
       result = prime * result + (fileDeploymentEnabled ? 1231 : 1237);
       result = prime * result + (int)(fileDeploymentScanPeriod ^ (fileDeploymentScanPeriod >>> 32));
@@ -1157,7 +1161,7 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (int)(messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
       result = prime * result + messageExpiryThreadPriority;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + ((backupGroupName == null) ? 0 : backupGroupName.hashCode());
+      result = prime * result + ((haPolicy.getBackupGroupName() == null) ? 0 : haPolicy.getBackupGroupName().hashCode());
       result =
                prime * result +
                         ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
@@ -1166,15 +1170,15 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (persistIDCache ? 1231 : 1237);
       result = prime * result + (persistenceEnabled ? 1231 : 1237);
       result = prime * result + ((queueConfigurations == null) ? 0 : queueConfigurations.hashCode());
-      result = prime * result + ((replicationClusterName == null) ? 0 : replicationClusterName.hashCode());
-      result = prime * result + ((scaleDownClusterName == null) ? 0 : scaleDownClusterName.hashCode());
+      result = prime * result + ((haPolicy.getReplicationClustername() == null) ? 0 : haPolicy.getReplicationClustername().hashCode());
+      result = prime * result + ((haPolicy.getScaleDownClustername() == null) ? 0 : haPolicy.getScaleDownClustername().hashCode());
       result = prime * result + (runSyncSpeedTest ? 1231 : 1237);
       result = prime * result + scheduledThreadPoolMaxSize;
       result = prime * result + (securityEnabled ? 1231 : 1237);
       result = prime * result + (int)(securityInvalidationInterval ^ (securityInvalidationInterval >>> 32));
       result = prime * result + ((securitySettings == null) ? 0 : securitySettings.hashCode());
       result = prime * result + (int)(serverDumpInterval ^ (serverDumpInterval >>> 32));
-      result = prime * result + (sharedStore ? 1231 : 1237);
+      result = prime * result + (haPolicy.isSharedStore() ? 1231 : 1237);
       result = prime * result + threadPoolMaxSize;
       result = prime * result + (int)(transactionTimeout ^ (transactionTimeout >>> 32));
       result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
@@ -1208,11 +1212,11 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!addressesSettings.equals(other.addressesSettings))
          return false;
-      if (allowAutoFailBack != other.allowAutoFailBack)
+      if (haPolicy.isAllowAutoFailBack() != other.getHAPolicy().isAllowAutoFailBack())
          return false;
       if (asyncConnectionExecutionEnabled != other.asyncConnectionExecutionEnabled)
          return false;
-      if (backup != other.backup)
+      if (haPolicy.isBackup() != other.getHAPolicy().isBackup())
          return false;
       if (bindingsDirectory == null)
       {
@@ -1292,7 +1296,7 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!divertConfigurations.equals(other.divertConfigurations))
          return false;
-      if (failbackDelay != other.failbackDelay)
+      if (haPolicy.getFailbackDelay() != other.getHAPolicy().getFailbackDelay())
          return false;
       if (failoverOnServerShutdown != other.failoverOnServerShutdown)
          return false;
@@ -1408,12 +1412,12 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!name.equals(other.name))
          return false;
-      if (backupGroupName == null)
+      if (haPolicy.getBackupGroupName() == null)
       {
-         if (other.backupGroupName != null)
+         if (other.getHAPolicy().getBackupGroupName() != null)
             return false;
       }
-      else if (!backupGroupName.equals(other.backupGroupName))
+      else if (!haPolicy.getBackupGroupName().equals(other.getHAPolicy().getBackupGroupName()))
          return false;
       if (outgoingInterceptorClassNames == null)
       {
@@ -1442,19 +1446,19 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!queueConfigurations.equals(other.queueConfigurations))
          return false;
-      if (replicationClusterName == null)
+      if (haPolicy.getReplicationClustername() == null)
       {
-         if (other.replicationClusterName != null)
+         if (other.getHAPolicy().getReplicationClustername() != null)
             return false;
       }
-      else if (!replicationClusterName.equals(other.replicationClusterName))
+      else if (!haPolicy.getReplicationClustername().equals(other.getHAPolicy().getReplicationClustername()))
          return false;
-      if (scaleDownClusterName == null)
+      if (haPolicy.getScaleDownClustername() == null)
       {
-         if (other.scaleDownClusterName != null)
+         if (other.getHAPolicy().getScaleDownClustername() != null)
             return false;
       }
-      else if (!scaleDownClusterName.equals(other.scaleDownClusterName))
+      else if (!haPolicy.getScaleDownClustername().equals(other.getHAPolicy().getScaleDownClustername()))
          return false;
       if (runSyncSpeedTest != other.runSyncSpeedTest)
          return false;
@@ -1473,7 +1477,7 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (serverDumpInterval != other.serverDumpInterval)
          return false;
-      if (sharedStore != other.sharedStore)
+      if (haPolicy.isSharedStore() != other.getHAPolicy().isSharedStore())
          return false;
       if (threadPoolMaxSize != other.threadPoolMaxSize)
          return false;

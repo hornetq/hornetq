@@ -48,14 +48,20 @@ public interface Configuration extends Serializable
     * returns the name used to group of live/backup servers
     *
     * @return the name of the group
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getBackupGroupName()}
     */
+   @Deprecated
    String getBackupGroupName();
 
    /**
     * Used to configure groups of live/backup servers.
     *
     * @param nodeGroupName the node group name
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setBackupGroupName(String)}
     */
+   @Deprecated
    void setBackupGroupName(String nodeGroupName);
 
    /**
@@ -69,20 +75,26 @@ public interface Configuration extends Serializable
     * failing back).
     *
     * @return {@code true} if the backup will stop when the live server restarts
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isAllowAutoFailBack()}
     */
+   @Deprecated
    boolean isAllowAutoFailBack();
 
    /**
     * whether a backup will automatically stop when a live server is restarting (i.e. failing back).
     *
     * @param allowAutoFailBack true if allowed
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setAllowAutoFailBack(boolean)}
     */
+   @Deprecated
    void setAllowAutoFailBack(boolean allowAutoFailBack);
 
    /**
     * Returns whether delivery count is persisted before messages are delivered to the consumers. <br>
     * Default value is
-    * {@value HornetQDefaultConfiguration#DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY}.
+    * {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY}.
     */
    boolean isPersistDeliveryCountBeforeDelivery();
 
@@ -94,29 +106,41 @@ public interface Configuration extends Serializable
    /**
     * Returns {@code true} if this server is a backup, {@code false} if it is a live server. <br>
     * If a backup server has been activated, returns {@code false}. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_BACKUP}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_BACKUP}.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isBackup()}
     */
+   @Deprecated
    boolean isBackup();
 
    /**
-    * Sets whether this server is a backup or not.
+    * Formerly set whether this server is a backup or not.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setPolicyType(org.hornetq.core.server.cluster.ha.HAPolicy.POLICY_TYPE)}
     */
+   @Deprecated
    void setBackup(boolean backup);
 
    /**
     * Returns whether this server shares its data store with a corresponding live or backup server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_SHARED_STORE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_SHARED_STORE}.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isSharedStore()}
     */
+   @Deprecated
    boolean isSharedStore();
 
    /**
-    * Sets whether this server shares its data store with a backup or live server.
+    * Formerly set whether this server shares its data store with a backup or live server.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setPolicyType(org.hornetq.core.server.cluster.ha.HAPolicy.POLICY_TYPE)}
     */
+   @Deprecated
    void setSharedStore(boolean sharedStore);
 
    /**
     * Returns whether this server will use files to configure and deploy its resources. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_FILE_DEPLOYMENT_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_FILE_DEPLOYMENT_ENABLED}.
     */
    boolean isFileDeploymentEnabled();
 
@@ -127,7 +151,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether this server is using persistence and store data. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_PERSISTENCE_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_PERSISTENCE_ENABLED}.
     */
    boolean isPersistenceEnabled();
 
@@ -138,7 +162,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the period (in milliseconds) to scan configuration files used by deployment. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_FILE_DEPLOYER_SCAN_PERIOD}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_FILE_DEPLOYER_SCAN_PERIOD}.
     */
    long getFileDeployerScanPeriod();
 
@@ -149,7 +173,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the maximum number of threads in the thread pool of this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_THREAD_POOL_MAX_SIZE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_THREAD_POOL_MAX_SIZE}.
     */
    int getThreadPoolMaxSize();
 
@@ -160,7 +184,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the maximum number of threads in the <em>scheduled</em> thread pool of this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE}.
     */
    int getScheduledThreadPoolMaxSize();
 
@@ -171,7 +195,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the interval time (in milliseconds) to invalidate security credentials. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_SECURITY_INVALIDATION_INTERVAL}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_SECURITY_INVALIDATION_INTERVAL}.
     */
    long getSecurityInvalidationInterval();
 
@@ -182,7 +206,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether security is enabled for this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_SECURITY_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_SECURITY_ENABLED}.
     */
    boolean isSecurityEnabled();
 
@@ -193,7 +217,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether this server is manageable using JMX or not. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JMX_MANAGEMENT_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JMX_MANAGEMENT_ENABLED}.
     */
    boolean isJMXManagementEnabled();
 
@@ -204,7 +228,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the domain used by JMX MBeans (provided JMX management is enabled). <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JMX_DOMAIN}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JMX_DOMAIN}.
     */
    String getJMXDomain();
 
@@ -243,7 +267,7 @@ public interface Configuration extends Serializable
     * Sets the list of interceptors classes used by this server for incoming messages (i.e. those
     * being delivered to the server from clients). Invoking this method is the same as invoking
     * <code>setIncomingInterceptorClassNames(List)</code> <br />
-    * Classes must implement {@link Interceptor}.
+    * Classes must implement {@link org.hornetq.api.core.Interceptor}.
     * <p/>
     * Deprecated but not immediately deleted, as embedded users may be using this file.
     *
@@ -258,7 +282,7 @@ public interface Configuration extends Serializable
     * Sets the list of interceptors classes used by this server for incoming messages (i.e. those being delivered to
     * the server from clients).
     * <br />
-    * Classes must implement {@link Interceptor}.
+    * Classes must implement {@link org.hornetq.api.core.Interceptor}.
     */
    void setIncomingInterceptorClassNames(List<String> interceptors);
 
@@ -266,14 +290,14 @@ public interface Configuration extends Serializable
     * Sets the list of interceptors classes used by this server for outgoing messages (i.e. those being delivered to
     * clients from the server).
     * <br />
-    * Classes must implement {@link Interceptor}.
+    * Classes must implement {@link org.hornetq.api.core.Interceptor}.
     */
    void setOutgoingInterceptorClassNames(List<String> interceptors);
 
    /**
     * Returns the connection time to live. <br>
     * This value overrides the connection time to live <em>sent by the client</em>. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_CONNECTION_TTL_OVERRIDE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_CONNECTION_TTL_OVERRIDE}.
     */
    long getConnectionTTLOverride();
 
@@ -285,7 +309,7 @@ public interface Configuration extends Serializable
    /**
     * Returns whether code coming from connection is executed asynchronously or not. <br>
     * Default value is
-    * {@value HornetQDefaultConfiguration#DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED}.
+    * {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED}.
     */
    boolean isAsyncConnectionExecutionEnabled();
 
@@ -390,7 +414,7 @@ public interface Configuration extends Serializable
    /**
     * Returns the management address of this server. <br>
     * Clients can send management messages to this address to manage this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MANAGEMENT_ADDRESS}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MANAGEMENT_ADDRESS}.
     */
    SimpleString getManagementAddress();
 
@@ -403,7 +427,7 @@ public interface Configuration extends Serializable
     * Returns the management notification address of this server. <br>
     * Clients can bind queues to this address to receive management notifications emitted by this
     * server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS}.
     */
    SimpleString getManagementNotificationAddress();
 
@@ -414,7 +438,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the cluster user for this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_CLUSTER_USER}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_CLUSTER_USER}.
     */
    String getClusterUser();
 
@@ -425,7 +449,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the cluster password for this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_CLUSTER_PASSWORD}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_CLUSTER_PASSWORD}.
     */
    String getClusterPassword();
 
@@ -434,17 +458,23 @@ public interface Configuration extends Serializable
     *
     * @return true if clients should failover
     * @see #setFailoverOnServerShutdown(boolean)
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isFailoverOnServerShutdown()}
     */
+   @Deprecated
    boolean isFailoverOnServerShutdown();
 
    /**
     * Sets whether to allow clients to failover on server shutdown.
     * <p/>
     * When a live server is restarted after failover the backup will shutdown if
-    * {@link #isAllowAutoFailBack()} is true. This is not regarded as a normal shutdown. In this
+    * {@link org.hornetq.core.server.cluster.ha.HAPolicy#isAllowAutoFailBack()} is true. This is not regarded as a normal shutdown. In this
     * case {@code failoverOnServerShutdown} is ignored, and the server will behave as if it was set
     * to {@code true}.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setFailoverOnServerShutdown(boolean)}
     */
+   @Deprecated
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
 
    /**
@@ -454,7 +484,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the size of the cache for pre-creating message IDs. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_ID_CACHE_SIZE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_ID_CACHE_SIZE}.
     */
    int getIDCacheSize();
 
@@ -465,7 +495,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether message ID cache is persisted. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_PERSIST_ID_CACHE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_PERSIST_ID_CACHE}.
     */
    boolean isPersistIDCache();
 
@@ -478,7 +508,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the file system directory used to store bindings. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_BINDINGS_DIRECTORY}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_BINDINGS_DIRECTORY}.
     */
    String getBindingsDirectory();
 
@@ -490,7 +520,7 @@ public interface Configuration extends Serializable
    /**
     * The max number of concurrent reads allowed on paging.
     * <p/>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MAX_CONCURRENT_PAGE_IO}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MAX_CONCURRENT_PAGE_IO}.
     */
    int getPageMaxConcurrentIO();
 
@@ -503,7 +533,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the file system directory used to store journal log. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_DIR}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_DIR}.
     */
    String getJournalDirectory();
 
@@ -526,7 +556,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether the journal is synchronized when receiving transactional data. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_SYNC_TRANSACTIONAL}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_SYNC_TRANSACTIONAL}.
     */
    boolean isJournalSyncTransactional();
 
@@ -537,7 +567,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether the journal is synchronized when receiving non-transactional data. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL}.
     */
    boolean isJournalSyncNonTransactional();
 
@@ -548,7 +578,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the size (in bytes) of each journal files. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_FILE_SIZE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_FILE_SIZE}.
     */
    int getJournalFileSize();
 
@@ -559,7 +589,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the minimal number of journal files before compacting. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_COMPACT_MIN_FILES}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_COMPACT_MIN_FILES}.
     */
    int getJournalCompactMinFiles();
 
@@ -570,7 +600,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the percentage of live data before compacting the journal. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_COMPACT_PERCENTAGE}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_COMPACT_PERCENTAGE}.
     */
    int getJournalCompactPercentage();
 
@@ -581,7 +611,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the number of journal files to pre-create. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_MIN_FILES}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_MIN_FILES}.
     */
    int getJournalMinFiles();
 
@@ -594,7 +624,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the maximum number of write requests that can be in the AIO queue at any given time. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_MAX_IO_AIO}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_MAX_IO_AIO}.
     */
    int getJournalMaxIO_AIO();
 
@@ -629,7 +659,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the maximum number of write requests for NIO journal. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_JOURNAL_MAX_IO_NIO}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_MAX_IO_NIO}.
     */
    int getJournalMaxIO_NIO();
 
@@ -664,7 +694,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether the bindings directory is created on this server startup. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_CREATE_BINDINGS_DIR}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_CREATE_BINDINGS_DIR}.
     */
    boolean isCreateBindingsDir();
 
@@ -675,7 +705,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether the journal directory is created on this server startup. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_CREATE_JOURNAL_DIR}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_CREATE_JOURNAL_DIR}.
     */
    boolean isCreateJournalDir();
 
@@ -714,7 +744,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the file system directory used to store paging files. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_PAGING_DIR}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_PAGING_DIR}.
     */
    String getPagingDirectory();
 
@@ -727,7 +757,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the file system directory used to store large messages. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_LARGE_MESSAGES_DIR}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_LARGE_MESSAGES_DIR}.
     */
    String getLargeMessagesDirectory();
 
@@ -740,7 +770,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether wildcard routing is supported by this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_WILDCARD_ROUTING_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_WILDCARD_ROUTING_ENABLED}.
     */
    boolean isWildcardRoutingEnabled();
 
@@ -752,7 +782,7 @@ public interface Configuration extends Serializable
    /**
     * Returns the timeout (in milliseconds) after which transactions is removed from the resource
     * manager after it was created. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_TRANSACTION_TIMEOUT}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_TRANSACTION_TIMEOUT}.
     */
    long getTransactionTimeout();
 
@@ -764,7 +794,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns whether message counter is enabled for this server. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_ENABLED}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_ENABLED}.
     */
    boolean isMessageCounterEnabled();
 
@@ -775,7 +805,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the sample period (in milliseconds) to take message counter snapshot. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD}.
     */
    long getMessageCounterSamplePeriod();
 
@@ -788,7 +818,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the maximum number of days kept in memory for message counter. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY}.
     */
    int getMessageCounterMaxDayHistory();
 
@@ -802,7 +832,7 @@ public interface Configuration extends Serializable
    /**
     * Returns the frequency (in milliseconds) to scan transactions to detect which transactions have
     * timed out. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD}.
     */
    long getTransactionTimeoutScanPeriod();
 
@@ -815,7 +845,7 @@ public interface Configuration extends Serializable
    /**
     * Returns the frequency (in milliseconds) to scan messages to detect which messages have
     * expired. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD}.
     */
    long getMessageExpiryScanPeriod();
 
@@ -827,7 +857,7 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the priority of the thread used to scan message expiration. <br>
-    * Default value is {@value HornetQDefaultConfiguration#DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY}.
+    * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY}.
     */
    int getMessageExpiryThreadPriority();
 
@@ -866,12 +896,18 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the delay to wait before fail-back occurs on restart.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getFailbackDelay()}
     */
+   @Deprecated
    long getFailbackDelay();
 
    /**
     * Sets the fail-back delay.
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setFailbackDelay(long)}
     */
+   @Deprecated
    void setFailbackDelay(long delay);
 
    /**
@@ -925,13 +961,19 @@ public interface Configuration extends Serializable
     * by replicating backups and live servers that attempt fail-back.
     *
     * @param clusterName
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setReplicationClustername(String)}
     */
+   @Deprecated
    void setReplicationClustername(String clusterName);
 
    /**
     * @return name of the cluster configuration to use
     * @see #setReplicationClustername(String)
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getReplicationClustername()}
     */
+   @Deprecated
    String getReplicationClustername();
 
    /**
@@ -940,13 +982,19 @@ public interface Configuration extends Serializable
     * Only applicable for servers with more than one cluster configuration.
     *
     * @param clusterName
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setScaleDownClustername(String)}
     */
+   @Deprecated
    void setScaleDownClustername(String clusterName);
 
    /**
     * @return name of the cluster configuration to use
     * @see #setScaleDownClustername(String)
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getScaleDownClustername()}
     */
+   @Deprecated
    String getScaleDownClustername();
 
    /*
@@ -958,7 +1006,7 @@ public interface Configuration extends Serializable
    /*
    * @see #setResolveProtocols()
    * @return whether HornetQ should resolve and use any Protocols available on the classpath
-   * Default value is {@value HornetQDefaultConfiguration#DEFAULT_RESOLVE_PROTOCOLS}.
+   * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_RESOLVE_PROTOCOLS}.
    * */
    boolean isResolveProtocols();
 
@@ -969,21 +1017,35 @@ public interface Configuration extends Serializable
     * it will copy its journals into another directory to keep.
     *
     * @param maxSavedReplicatedJournalsSize
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getMaxSavedReplicatedJournalsSize()}
     */
+   @Deprecated
    void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize);
 
    /**
     * @return the number of backup journals to keep after failback has occurred
     * @see #setMaxSavedReplicatedJournalSize(int)
+    *
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getMaxSavedReplicatedJournalsSize()}
     */
+   @Deprecated
    int getMaxSavedReplicatedJournalsSize();
 
    Set<Configuration> getBackupServerConfigurations();
 
    Configuration copy() throws Exception;
 
+   /**
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setBackupStrategy(BackupStrategy)}
+    */
+   @Deprecated
    void setBackupStrategy(BackupStrategy strategy);
 
+   /**
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getBackupStrategy()}
+    */
+   @Deprecated
    BackupStrategy getBackupStrategy();
 
    void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout);

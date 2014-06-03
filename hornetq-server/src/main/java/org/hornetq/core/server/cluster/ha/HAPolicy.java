@@ -32,11 +32,13 @@ public class HAPolicy implements Serializable
     */
    public enum POLICY_TYPE
    {
-      LIVE((byte) 0),
-      BACKUP_REPLICATED((byte) 1),
-      BACKUP_SHARED_STORE((byte) 2),
-      COLOCATED_REPLICATED((byte) 3),
-      COLOCATED_SHARED_STORE((byte) 4);
+      NONE((byte) 0),
+      REPLICATED((byte) 1),
+      SHARED_STORE((byte) 2),
+      BACKUP_REPLICATED((byte) 3),
+      BACKUP_SHARED_STORE((byte) 4),
+      COLOCATED_REPLICATED((byte) 5),
+      COLOCATED_SHARED_STORE((byte) 6);
 
       private static final Set<POLICY_TYPE> all = EnumSet.allOf(POLICY_TYPE.class);
       private final byte type;
@@ -67,16 +69,6 @@ public class HAPolicy implements Serializable
 
    private POLICY_TYPE policyType = POLICY_TYPE.valueOf(HornetQDefaultConfiguration.getDefaultHapolicyType());
 
-   private BackupStrategy backupStrategy = BackupStrategy.valueOf(HornetQDefaultConfiguration.getDefaultHapolicyBackupStrategy());
-
-   protected boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
-
-   private String scaleDownGroupName = null;
-
-   private List<String> scaleDownConnectors = new ArrayList<>();
-
-   private String scaleDownDiscoveryGroup;
-
    private boolean requestBackup = HornetQDefaultConfiguration.isDefaultHapolicyRequestBackup();
 
    private int backupRequestRetries = HornetQDefaultConfiguration.getDefaultHapolicyBackupRequestRetries();
@@ -87,7 +79,35 @@ public class HAPolicy implements Serializable
 
    private int backupPortOffset = HornetQDefaultConfiguration.getDefaultHapolicyBackupPortOffset();
 
+   private BackupStrategy backupStrategy = BackupStrategy.valueOf(HornetQDefaultConfiguration.getDefaultHapolicyBackupStrategy());
+
+   private List<String> scaleDownConnectors = new ArrayList<>();
+
+   private String scaleDownDiscoveryGroup = null;
+
+   private String scaleDownGroupName = null;
+
+   private String backupGroupName = null;
+
    private List<String> remoteConnectors = new ArrayList<>();
+
+   private boolean checkForLiverServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
+
+   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
+
+   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
+
+   private boolean failoverOnServerShutdown = HornetQDefaultConfiguration.isDefaultFailoverOnServerShutdown();
+
+   private String replicationClusterName;
+
+   private String scaleDownClusterName;
+
+   private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
+
+   private boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
+
+
 
    public POLICY_TYPE getPolicyType()
    {
@@ -146,6 +166,16 @@ public class HAPolicy implements Serializable
    public void setScaleDownGroupName(String nodeGroupName)
    {
       this.scaleDownGroupName = nodeGroupName;
+   }
+
+   public String getBackupGroupName()
+   {
+      return backupGroupName;
+   }
+
+   public void setBackupGroupName(String backupGroupName)
+   {
+      this.backupGroupName = backupGroupName;
    }
 
    public List<String> getScaleDownConnectors()
@@ -226,5 +256,91 @@ public class HAPolicy implements Serializable
    public void setRemoteConnectors(List<String> remoteConnectors)
    {
       this.remoteConnectors = remoteConnectors;
+   }
+
+   public boolean isCheckForLiveServer()
+   {
+      return checkForLiverServer;
+   }
+
+   public void setCheckForLiveServer(boolean checkForLiverServer)
+   {
+      this.checkForLiverServer = checkForLiverServer;
+   }
+
+   public boolean isAllowAutoFailBack()
+   {
+      return allowAutoFailBack;
+   }
+
+   public void setAllowAutoFailBack(boolean allowAutoFailBack)
+   {
+      this.allowAutoFailBack = allowAutoFailBack;
+   }
+
+   public long getFailbackDelay()
+   {
+      return failbackDelay;
+   }
+
+   public void setFailbackDelay(long failbackDelay)
+   {
+      this.failbackDelay = failbackDelay;
+   }
+
+   public boolean isFailoverOnServerShutdown()
+   {
+      return failoverOnServerShutdown;
+   }
+
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+   }
+
+   public void setReplicationClustername(String clusterName)
+   {
+      this.replicationClusterName = clusterName;
+   }
+
+   public String getReplicationClustername()
+   {
+      return replicationClusterName;
+   }
+
+   public void setScaleDownClustername(String clusterName)
+   {
+      this.scaleDownClusterName = clusterName;
+   }
+
+   public String getScaleDownClustername()
+   {
+      return scaleDownClusterName;
+   }
+
+   public void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
+   {
+      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+   }
+
+   public int getMaxSavedReplicatedJournalsSize()
+   {
+      return maxSavedReplicatedJournalsSize;
+   }
+
+   public boolean isSharedStore()
+   {
+      if (policyType == POLICY_TYPE.BACKUP_SHARED_STORE || policyType == POLICY_TYPE.SHARED_STORE)
+         return true;
+      else
+         return false;
+   }
+
+   public boolean isBackup()
+   {
+      if (policyType == POLICY_TYPE.BACKUP_SHARED_STORE || policyType == POLICY_TYPE.BACKUP_REPLICATED)
+         return true;
+      else
+         return false;
    }
 }

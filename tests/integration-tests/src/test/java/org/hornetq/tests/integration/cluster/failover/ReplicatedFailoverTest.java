@@ -28,7 +28,7 @@ public class ReplicatedFailoverTest extends FailoverTest
    {
       try
       {
-         backupServer.getServer().getConfiguration().setFailbackDelay(2000);
+         backupServer.getServer().getConfiguration().getHAPolicy().setFailbackDelay(2000);
          backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(2);
          createSessionFactory();
 
@@ -80,7 +80,7 @@ public class ReplicatedFailoverTest extends FailoverTest
          assertFalse(backupServer.getServer().isStarted());
 
          //the server wouldnt have reset to backup
-         assertFalse(backupServer.getServer().getConfiguration().isBackup());
+         assertFalse(backupServer.getServer().getConfiguration().getHAPolicy().isBackup());
       }
       finally
       {

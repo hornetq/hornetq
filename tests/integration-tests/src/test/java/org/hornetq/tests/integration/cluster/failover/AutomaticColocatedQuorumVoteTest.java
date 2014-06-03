@@ -290,7 +290,6 @@ public class AutomaticColocatedQuorumVoteTest extends ServiceTestBase
       configuration.getAcceptorConfigurations().clear();
       configuration.getAcceptorConfigurations().add(liveAcceptor);
       configuration.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      configuration.setSharedStore(false);
       configuration.setJournalDirectory(configuration.getJournalDirectory() + identity);
       configuration.setBindingsDirectory(configuration.getBindingsDirectory() + identity);
       configuration.setLargeMessagesDirectory(configuration.getLargeMessagesDirectory() + identity);

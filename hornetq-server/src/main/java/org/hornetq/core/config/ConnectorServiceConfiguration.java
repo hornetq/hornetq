@@ -50,4 +50,33 @@ public class ConnectorServiceConfiguration implements Serializable
    {
       return params;
    }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o)
+         return true;
+      if (o == null || getClass() != o.getClass())
+         return false;
+
+      ConnectorServiceConfiguration that = (ConnectorServiceConfiguration) o;
+
+      if (getFactoryClassName() != null ? !getFactoryClassName().equals(that.getFactoryClassName()) : that.getFactoryClassName() != null)
+         return false;
+      if (getConnectorName() != null ? !getConnectorName().equals(that.getConnectorName()) : that.getConnectorName() != null)
+         return false;
+      if (getParams() != null ? !getParams().equals(that.getParams()) : that.getParams() != null)
+         return false;
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      int result = getConnectorName() != null ? getConnectorName().hashCode() : 0;
+      result = 31 * result + (getFactoryClassName() != null ? getFactoryClassName().hashCode() : 0);
+      result = 31 * result + (getParams() != null ? getParams().hashCode() : 0);
+      return result;
+   }
 }

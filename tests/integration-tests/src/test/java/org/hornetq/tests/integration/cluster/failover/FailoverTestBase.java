@@ -35,6 +35,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -104,7 +105,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected TestableServer createTestableServer(Configuration config)
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, config, nodeManager, config.getHAPolicy().isBackup() ? 2 : 1));
    }
 
    /**
@@ -149,9 +150,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig = super.createDefaultConfig();
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      backupConfig.setSharedStore(true);
-      backupConfig.setBackup(true);
-      backupConfig.setFailbackDelay(1000);
+      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      backupConfig.getHAPolicy().setFailbackDelay(1000);
 
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
@@ -163,8 +163,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      liveConfig.setSharedStore(true);
-      liveConfig.setFailbackDelay(1000);
+      liveConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfig.getHAPolicy().setFailbackDelay(1000);
 
       basicClusterConnectionConfig(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -203,7 +203,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected final void adaptLiveConfigForReplicatedFailBack(Configuration configuration)
    {
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
-      if (configuration.isSharedStore())
+      if (configuration.getHAPolicy().isSharedStore())
       {
          ClusterConnectionConfiguration cc = configuration.getClusterConfigurations().get(0);
          assertNotNull("cluster connection configuration", cc);
@@ -277,7 +277,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
    {
       final HornetQServerImpl actualServer = (HornetQServerImpl) backupServer.getServer();
-      if (actualServer.getConfiguration().isSharedStore())
+      if (actualServer.getConfiguration().getHAPolicy().isSharedStore())
       {
          waitForServer(actualServer);
       }

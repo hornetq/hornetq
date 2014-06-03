@@ -17,6 +17,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 
 import java.util.HashMap;
@@ -39,8 +40,8 @@ public class ColocatedFailoverCheckPairingsNettyTest extends ColocatedFailoverCh
       liveConfiguration1 = super.createDefaultConfig();
       liveConfiguration1.getAcceptorConfigurations().clear();
       liveConfiguration1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(1));
-      liveConfiguration1.setSharedStore(false);
-      liveConfiguration1.setFailbackDelay(1000);
+      liveConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+      liveConfiguration1.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration1.setJournalDirectory(getTestDir() + "/live1/journal");
       liveConfiguration1.setBindingsDirectory(getTestDir() + "/live1/bindings");
       liveConfiguration1.getQueueConfigurations().add(new CoreQueueConfiguration("jms.queue.testQueue", "jms.queue.testQueue", null, true));
@@ -57,7 +58,7 @@ public class ColocatedFailoverCheckPairingsNettyTest extends ColocatedFailoverCh
 
       backupConfiguration1.setBindingsDirectory(getTestDir() + "/backup1/bindings");
       backupConfiguration1.getAcceptorConfigurations().clear();
-      backupConfiguration1.setBackup(true);
+      backupConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
       backupConfiguration1.getClusterConfigurations().clear();
       basicClusterConnectionConfig(backupConfiguration1, backupConnector1.getName(), liveConnector1.getName());
       liveConfiguration1.getBackupServerConfigurations().add(backupConfiguration1);
@@ -66,8 +67,8 @@ public class ColocatedFailoverCheckPairingsNettyTest extends ColocatedFailoverCh
       liveConfiguration2 = super.createDefaultConfig();
       liveConfiguration2.getAcceptorConfigurations().clear();
       liveConfiguration2.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(2));
-      liveConfiguration2.setSharedStore(false);
-      liveConfiguration2.setFailbackDelay(1000);
+      liveConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+      liveConfiguration2.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration2.setJournalDirectory(getTestDir() + "/live2/journal");
       liveConfiguration2.setBindingsDirectory(getTestDir() + "/live2/bindings");
       liveConfiguration2.getQueueConfigurations().add(new CoreQueueConfiguration("jms.queue.testQueue", "jms.queue.testQueue", null, true));
@@ -82,7 +83,7 @@ public class ColocatedFailoverCheckPairingsNettyTest extends ColocatedFailoverCh
       backupConfiguration2.getConnectorConfigurations().put(backupConnector2.getName(), backupConnector2);
       backupConfiguration2.setJournalDirectory(getTestDir() + "/backup2/journal");
       backupConfiguration2.setBindingsDirectory(getTestDir() + "/backup2/bindings");
-      backupConfiguration2.setBackup(true);
+      backupConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
       backupConfiguration2.getClusterConfigurations().clear();
       basicClusterConnectionConfig(backupConfiguration2, backupConnector2.getName(), liveConnector2.getName());
       liveConfiguration2.getBackupServerConfigurations().add(backupConfiguration2);

@@ -24,6 +24,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -100,8 +101,8 @@ public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
       liveConfiguration1 = super.createDefaultConfig();
       liveConfiguration1.getAcceptorConfigurations().clear();
       liveConfiguration1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(1));
-      liveConfiguration1.setSharedStore(true);
-      liveConfiguration1.setFailbackDelay(1000);
+      liveConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfiguration1.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration1.setJournalDirectory(getTestDir() + "/live1");
       liveConfiguration1.getQueueConfigurations().add(new CoreQueueConfiguration("jms.queue.testQueue", "jms.queue.testQueue", null, true));
 
@@ -112,7 +113,7 @@ public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
 
       Configuration backupConfiguration1 = liveConfiguration1.copy();
       backupConfiguration1.setJournalDirectory(getTestDir() + "/live2");
-      backupConfiguration1.setBackup(true);
+      backupConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       liveConfiguration1.getBackupServerConfigurations().add(backupConfiguration1);
 
       liveServer1 = createTestableServer(liveConfiguration1, nodeManagerLive1, nodeManagerLive2, 1);
@@ -120,8 +121,8 @@ public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
       liveConfiguration2 = super.createDefaultConfig();
       liveConfiguration2.getAcceptorConfigurations().clear();
       liveConfiguration2.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(2));
-      liveConfiguration2.setSharedStore(true);
-      liveConfiguration2.setFailbackDelay(1000);
+      liveConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConfiguration2.getHAPolicy().setFailbackDelay(1000);
       liveConfiguration2.setJournalDirectory(getTestDir() + "/live2");
       liveConfiguration2.getQueueConfigurations().add(new CoreQueueConfiguration("jms.queue.testQueue", "jms.queue.testQueue", null, true));
 
@@ -131,7 +132,7 @@ public class ColocatedFailoverCheckPairingsTest extends ServiceTestBase
 
       Configuration backupConfiguration2 = liveConfiguration2.copy();
       backupConfiguration2.setJournalDirectory(getTestDir() + "/live1");
-      backupConfiguration2.setBackup(true);
+      backupConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       liveConfiguration2.getBackupServerConfigurations().add(backupConfiguration2);
 
       liveServer2 = createTestableServer(liveConfiguration2, nodeManagerLive2, nodeManagerLive1, 2);

@@ -235,7 +235,7 @@ public final class ClusterManager implements HornetQComponent
 
    public String getBackupGroupName()
    {
-      return configuration.getBackupGroupName();
+      return configuration.getHAPolicy().getBackupGroupName();
    }
 
    public String getScaleDownGroupName()
