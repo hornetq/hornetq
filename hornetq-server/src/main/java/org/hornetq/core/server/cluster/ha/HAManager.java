@@ -36,7 +36,6 @@ import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.server.cluster.qourum.QuorumVote;
 import org.hornetq.core.server.cluster.qourum.QuorumVoteHandler;
 import org.hornetq.core.server.cluster.qourum.Vote;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 import java.lang.reflect.Array;
@@ -148,7 +147,7 @@ public class HAManager implements HornetQComponent
          return false;
       }
       Configuration configuration = server.getConfiguration().copy();
-      HornetQServer backup = new HornetQServerImpl(configuration, null, securityManager, server);
+      HornetQServer backup = server.createBackupServer(configuration);
       try
       {
          int portOffset = haPolicy.getBackupPortOffset() * (backupServers.size() + 1);
@@ -182,7 +181,7 @@ public class HAManager implements HornetQComponent
          return false;
       }
       Configuration configuration = server.getConfiguration().copy();
-      HornetQServer backup = new HornetQServerImpl(configuration, null, securityManager, server);
+      HornetQServer backup = server.createBackupServer(configuration);
       try
       {
          TopologyMember member = server.getClusterManager().getDefaultConnection(null).getTopology().getMember(nodeID.toString());
@@ -307,7 +306,7 @@ public class HAManager implements HornetQComponent
    {
       //we only do this if we are a full server, if scale down then our acceptors wont be needed and our connectors will
       // be the same as the parent server
-      if (backupConfiguration.getBackupStrategy() == BackupStrategy.FULL)
+      if (backupConfiguration.getHAPolicy().getBackupStrategy() == BackupStrategy.FULL)
       {
          Set<TransportConfiguration> acceptors = backupConfiguration.getAcceptorConfigurations();
          for (TransportConfiguration acceptor : acceptors)
@@ -324,7 +323,7 @@ public class HAManager implements HornetQComponent
             }
          }
       }
-      else if (backupConfiguration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
+      else if (backupConfiguration.getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN)
       {
          //if we are scaling down then we wont need any acceptors but clear anyway for belts and braces
          backupConfiguration.getAcceptorConfigurations().clear();
