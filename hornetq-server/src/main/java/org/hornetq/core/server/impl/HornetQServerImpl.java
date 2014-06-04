@@ -1625,9 +1625,10 @@ public class HornetQServerImpl implements HornetQServer
     * Starts everything apart from RemotingService and loading the data.
     * <p/>
     * After optional intermediary steps, Part 1 is meant to be followed by part 2
-    * {@link #initialisePart2()}.
+    * {@link #initialisePart2(boolean)}.
+    * @param scalingDown
     */
-   private synchronized boolean initialisePart1() throws Exception
+   private synchronized boolean initialisePart1(boolean scalingDown) throws Exception
    {
       if (state == SERVER_STATE.STOPPED)
          return false;
@@ -1740,7 +1741,7 @@ public class HornetQServerImpl implements HornetQServer
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
-      if (!configuration.getHAPolicy().isBackup() || (configuration.getHAPolicy().isBackup() && configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN))
+      if (!scalingDown)
       {
          if (configuration.isFileDeploymentEnabled())
          {
@@ -1793,7 +1794,7 @@ public class HornetQServerImpl implements HornetQServer
    /*
     * Load the data, and start remoting service so clients can connect
     */
-   private synchronized void initialisePart2() throws Exception
+   private synchronized void initialisePart2(boolean scalingDown) throws Exception
    {
       // Load the journal and populate queues, transactions and caches in memory
 
@@ -1804,7 +1805,7 @@ public class HornetQServerImpl implements HornetQServer
 
       pagingManager.reloadStores();
 
-      JournalLoadInformation[] journalInfo = loadJournals();
+      JournalLoadInformation[] journalInfo = loadJournals(scalingDown);
 
 
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
@@ -1841,7 +1842,7 @@ public class HornetQServerImpl implements HornetQServer
       // this needs to be done before clustering is fully activated
       callActivateCallbacks();
 
-      if (configuration.getBackupStrategy() != BackupStrategy.SCALE_DOWN)
+      if (!scalingDown)
       {
          // Deploy any pre-defined diverts
          deployDiverts();
@@ -1912,11 +1913,11 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private JournalLoadInformation[] loadJournals() throws Exception
+   private JournalLoadInformation[] loadJournals(boolean scalingDown) throws Exception
    {
       JournalLoader journalLoader;
 
-      if (configuration.getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN && configuration.getHAPolicy().isBackup())
+      if (scalingDown)
       {
          journalLoader = new BackupRecoveryJournalLoader(postOffice,
                                                          pagingManager,
@@ -2301,7 +2302,7 @@ public class HornetQServerImpl implements HornetQServer
                HornetQServerLogger.LOGGER.debug("First part initialization on " + this);
             }
 
-            if (!initialisePart1())
+            if (!initialisePart1(false))
                return;
 
             if (nodeManager.isBackupLive())
@@ -2326,7 +2327,7 @@ public class HornetQServerImpl implements HornetQServer
                return;
             }
 
-            initialisePart2();
+            initialisePart2(false);
 
             HornetQServerLogger.LOGGER.serverIsLive();
          }
@@ -2363,7 +2364,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             nodeManager.startBackup();
 
-            if (!initialisePart1())
+            boolean scalingDown = configuration.getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN;
+
+            if (!initialisePart1(scalingDown))
                return;
 
             backupManager.start();
@@ -2377,15 +2380,14 @@ public class HornetQServerImpl implements HornetQServer
             configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
 
             backupManager.activated();
-
             if (state != SERVER_STATE.STARTED)
             {
                return;
             }
 
-            initialisePart2();
+            initialisePart2(scalingDown);
 
-            if (configuration.getBackupStrategy() == BackupStrategy.SCALE_DOWN)
+            if (scalingDown)
             {
                HornetQServerLogger.LOGGER.backupServerScaledDown();
                Thread t = new Thread(new Runnable()
@@ -2549,7 +2551,9 @@ public class HornetQServerImpl implements HornetQServer
                   return;
             }
 
-            if (!initialisePart1())
+            boolean scalingDown = configuration.getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN;
+
+            if (!initialisePart1(scalingDown))
                return;
 
             synchronized (this)
@@ -2705,7 +2709,7 @@ public class HornetQServerImpl implements HornetQServer
                nodeManager.stopBackup();
                storageManager.start();
                backupManager.activated();
-               initialisePart2();
+               initialisePart2(scalingDown);
             }
          }
          catch (Exception e)
@@ -2838,9 +2842,9 @@ public class HornetQServerImpl implements HornetQServer
                return;
             }
 
-            initialisePart1();
+            initialisePart1(false);
 
-            initialisePart2();
+            initialisePart2(false);
 
             if (identity != null)
             {
