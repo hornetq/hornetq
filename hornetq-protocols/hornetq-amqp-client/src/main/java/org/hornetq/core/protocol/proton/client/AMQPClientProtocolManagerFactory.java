@@ -11,18 +11,20 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton.exceptions;
+package org.hornetq.core.protocol.proton.client;
 
-import org.apache.qpid.proton.amqp.transport.AmqpError;
+import org.hornetq.spi.core.remoting.ClientProtocolManager;
+import org.hornetq.spi.core.remoting.ClientProtocolManagerFactory;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         6/6/13
+ * @author Clebert Suconic
  */
-public class HornetQAMQPInternalErrorException extends HornetQAMQPException
+
+public class AMQPClientProtocolManagerFactory implements ClientProtocolManagerFactory
 {
-   public HornetQAMQPInternalErrorException(String message)
+   @Override
+   public ClientProtocolManager newProtocolManager()
    {
-      super(AmqpError.INTERNAL_ERROR, message);
+      return new AMQPClientProtocolManager();
    }
 }

@@ -86,12 +86,12 @@ public class ExpiryMessageTest extends JMSTestBase
 
       conn.close();
 
-      // minimal time needed
+      // minimalserver time needed
       Thread.sleep(2000);
 
       long timeout = System.currentTimeMillis() + 10000;
 
-      // We will wait some time, but we will wait as minimal as possible
+      // We will wait some time, but we will wait as minimalserver as possible
       while (control.getMessageCount() != 0 && System.currentTimeMillis() > timeout)
       {
          Thread.sleep(100);

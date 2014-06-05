@@ -11,30 +11,17 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton.exceptions;
+package org.hornetq.core.protocol.proton.util;
 
-import org.apache.qpid.proton.amqp.Symbol;
-import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.protocol.proton.utils.ProtonUtils;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         6/6/13
+ * @author Clebert Suconic
  */
-public class HornetQAMQPException extends HornetQException
+
+public class ConverterUtil
 {
+   public static final ProtonUtils<ServerMessageImpl, ServerMessageCreator> serverConverter = new ProtonUtils<>();
 
-   private static final String ERROR_PREFIX = "amqp:";
-
-   public Symbol getAmqpError()
-   {
-      return amqpError;
-   }
-
-   private final Symbol amqpError;
-
-   public HornetQAMQPException(Symbol amqpError, String message)
-   {
-      super(message);
-      this.amqpError = amqpError;
-   }
 }

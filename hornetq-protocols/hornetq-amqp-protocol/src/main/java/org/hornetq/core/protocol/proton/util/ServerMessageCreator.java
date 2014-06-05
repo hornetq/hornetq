@@ -11,18 +11,28 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton.exceptions;
+package org.hornetq.core.protocol.proton.util;
 
-import org.apache.qpid.proton.amqp.transport.AmqpError;
+import org.hornetq.core.protocol.proton.client.MessageCreator;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         6/6/13
+ * @author Clebert Suconic
  */
-public class HornetQAMQPIllegalStateException extends HornetQAMQPException
+public class  ServerMessageCreator implements MessageCreator<ServerMessageImpl>
 {
-   public HornetQAMQPIllegalStateException(String message)
+   private final HornetQServer server;
+
+   public ServerMessageCreator(HornetQServer server)
    {
-      super(AmqpError.ILLEGAL_STATE, message);
+      this.server = server;
+   }
+
+   @Override
+   public ServerMessageImpl createMessage()
+   {
+      return new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
    }
 }
+

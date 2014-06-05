@@ -11,18 +11,12 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton.exceptions;
-
-import org.apache.qpid.proton.amqp.transport.AmqpError;
+package org.hornetq.spi.core.remoting;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         6/6/13
+ * @author Clebert Suconic
  */
-public class HornetQAMQPInvalidFieldException extends HornetQAMQPException
+
+public abstract class ConsumerContext
 {
-   public HornetQAMQPInvalidFieldException(String message)
-   {
-      super(AmqpError.INVALID_FIELD, message);
-   }
 }

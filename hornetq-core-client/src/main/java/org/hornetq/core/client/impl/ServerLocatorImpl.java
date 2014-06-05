@@ -54,8 +54,11 @@ import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.protocol.ClientPacketDecoder;
+import org.hornetq.core.protocol.core.impl.HornetQClientProtocolManagerFactory;
 import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.spi.core.remoting.ClientProtocolManager;
+import org.hornetq.spi.core.remoting.ClientProtocolManagerFactory;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -80,6 +83,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    private static final long serialVersionUID = -1615857864410205260L;
+
+
+   // This is the default value
+   private ClientProtocolManagerFactory protocolManagerFactory = new HornetQClientProtocolManagerFactory();
 
    private final boolean ha;
 
@@ -212,7 +219,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    /*
    * we use the client decoder by default but there are times when we want to use the server packet decoder
    */
-   private transient PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
+   private transient PacketDecoder packetDecoder;
 
    private final Exception traceException = new Exception();
 
@@ -642,6 +649,23 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+
+   public ClientProtocolManager newProtocolManager()
+   {
+      return getProtocolManagerFactory().newProtocolManager();
+   }
+
+   public ClientProtocolManagerFactory getProtocolManagerFactory()
+   {
+      return protocolManagerFactory;
+   }
+
+   public void setProtocolManagerFactory(ClientProtocolManagerFactory protocolManagerFactory)
+   {
+      this.protocolManagerFactory = protocolManagerFactory;
+   }
+
+
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
@@ -736,8 +760,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           threadPool,
                                                                           scheduledThreadPool,
                                                                           incomingInterceptors,
-                                                                          outgoingInterceptors,
-                                                                          packetDecoder);
+                                                                          outgoingInterceptors);
 
       addToConnecting(factory);
       try
@@ -780,8 +803,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           threadPool,
                                                                           scheduledThreadPool,
                                                                           incomingInterceptors,
-                                                                          outgoingInterceptors,
-                                                                          packetDecoder);
+                                                                          outgoingInterceptors);
 
       addToConnecting(factory);
       try
@@ -873,8 +895,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                       threadPool,
                                                       scheduledThreadPool,
                                                       incomingInterceptors,
-                                                      outgoingInterceptors,
-                                                      packetDecoder);
+                                                      outgoingInterceptors);
                try
                {
                   addToConnecting(factory);
@@ -1742,12 +1763,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    @Override
-   public void setPacketDecoder(PacketDecoder packetDecoder)
-   {
-      this.packetDecoder = packetDecoder;
-   }
-
-   @Override
    public boolean isConnectable()
    {
       return getNumInitialConnectors() > 0 || getDiscoveryGroupConfiguration() != null;
@@ -1951,8 +1966,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                                    threadPool,
                                                                                    scheduledThreadPool,
                                                                                    incomingInterceptors,
-                                                                                   outgoingInterceptors,
-                                                                                   packetDecoder);
+                                                                                   outgoingInterceptors);
 
                factory.disableFinalizeCheck();
 

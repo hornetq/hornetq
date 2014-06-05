@@ -12,9 +12,11 @@
  */
 package org.hornetq.spi.core.remoting;
 
+import io.netty.channel.ChannelFutureListener;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * The connection used by a channel to write data to.
@@ -31,6 +33,11 @@ public interface Connection
     */
    HornetQBuffer createBuffer(int size);
 
+
+   RemotingConnection getProtocolConnection();
+
+   void setProtocolConnection(RemotingConnection connection);
+
    /**
     * returns the unique id of this wire.
     *
@@ -46,6 +53,15 @@ public interface Connection
     * @param batched whether the packet is allowed to batched for better performance
     */
    void write(HornetQBuffer buffer, boolean flush, boolean batched);
+
+   /**
+    * writes the buffer to the connection and if flush is true returns only when the buffer has been physically written to the connection.
+    *
+    * @param buffer the buffer to write
+    * @param flush  whether to flush the buffers onto the wire
+    * @param batched whether the packet is allowed to batched for better performance
+    */
+   void write(HornetQBuffer buffer, boolean flush, boolean batched, ChannelFutureListener futureListener);
 
    /**
     * writes the buffer to the connection with no flushing or batching

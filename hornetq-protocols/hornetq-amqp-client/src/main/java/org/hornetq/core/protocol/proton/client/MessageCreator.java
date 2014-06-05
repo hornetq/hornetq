@@ -11,18 +11,13 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton.exceptions;
-
-import org.apache.qpid.proton.amqp.transport.AmqpError;
+package org.hornetq.core.protocol.proton.client;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         6/19/13
+ * @author Clebert Suconic
  */
-public class HornetQAMQPNotImplementedException extends HornetQAMQPException
+
+public interface MessageCreator<M>
 {
-   public HornetQAMQPNotImplementedException(String message)
-   {
-      super(AmqpError.NOT_IMPLEMENTED, message);
-   }
+   M createMessage();
 }

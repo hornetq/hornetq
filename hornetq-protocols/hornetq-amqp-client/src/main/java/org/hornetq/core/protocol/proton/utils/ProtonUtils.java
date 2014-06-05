@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.protocol.proton;
+package org.hornetq.core.protocol.proton.utils;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
@@ -41,17 +41,19 @@ import org.apache.qpid.proton.message.Message;
 import org.apache.qpid.proton.message.MessageFormat;
 import org.apache.qpid.proton.message.impl.MessageImpl;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.core.message.impl.MessageInternal;
+import org.hornetq.core.protocol.proton.client.MessageCreator;
 import org.hornetq.utils.TypedProperties;
 
 import static org.hornetq.api.core.Message.TEXT_TYPE;
 
 /**
+ * M could be either ClientMessage or ServerMessage depending on where it's being used.
+ * C is either Client or Server Connector
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         4/11/13
  */
-public class ProtonUtils
+public class ProtonUtils<M extends MessageInternal, C extends MessageCreator<M>>
 {
    private static final String PREFIX = "HORNETQ_PROTON_";
    private static final String MESSAGE_ANNOTATIONS = PREFIX + "MESSAGE_ANNOTATIONS_";
@@ -110,11 +112,17 @@ public class ProtonUtils
       SPECIAL_PROPS.add(REPLY_TO_GROUP_ID);
    }
 
-   public static class INBOUND
+   private INBOUND inbound = new INBOUND();
+   public INBOUND getInbound()
    {
-      public static ServerMessageImpl transform(ProtonRemotingConnection connection, EncodedMessage encodedMessage) throws Exception
+      return inbound;
+   }
+
+   public class INBOUND
+   {
+      public M transform(C connection, EncodedMessage encodedMessage) throws Exception
       {
-         org.apache.qpid.proton.message.Message protonMessage = encodedMessage.decode();
+         Message protonMessage = encodedMessage.decode();
 
          Header header = protonMessage.getHeader();
          if (header == null)
@@ -122,8 +130,8 @@ public class ProtonUtils
             header = new Header();
          }
 
-         ServerMessageImpl message = connection.createServerMessage();
-         TypedProperties properties = message.getProperties();
+         M message = connection.createMessage();
+         TypedProperties properties = message.getTypedProperties();
 
          properties.putLongProperty(new SimpleString(MESSAGE_FORMAT), encodedMessage.getMessageFormat());
          properties.putLongProperty(new SimpleString(PROTON_MESSAGE_FORMAT), getMessageFormat(protonMessage.getMessageFormat()));
@@ -161,7 +169,7 @@ public class ProtonUtils
          return message;
       }
 
-      private static void populateSpecialProps(Header header, Message protonMessage, ServerMessageImpl message, TypedProperties properties)
+      private void populateSpecialProps(Header header, Message protonMessage, M message, TypedProperties properties)
       {
          if (header.getFirstAcquirer() != null)
          {
@@ -170,7 +178,7 @@ public class ProtonUtils
          properties.putIntProperty(new SimpleString(MESSAGE_TYPE), getMessageType(protonMessage));
       }
 
-      private static void populateHeaderProperties(Header header, TypedProperties properties, ServerMessageImpl message)
+      private void populateHeaderProperties(Header header, TypedProperties properties, M message)
       {
          if (header.getDurable() != null)
          {
@@ -188,7 +196,7 @@ public class ProtonUtils
          }
       }
 
-      private static void populateDeliveryAnnotations(DeliveryAnnotations deliveryAnnotations, TypedProperties properties)
+      private void populateDeliveryAnnotations(DeliveryAnnotations deliveryAnnotations, TypedProperties properties)
       {
          if (deliveryAnnotations != null)
          {
@@ -203,7 +211,7 @@ public class ProtonUtils
          }
       }
 
-      private static void populateFooterProperties(Footer footer, TypedProperties properties)
+      private void populateFooterProperties(Footer footer, TypedProperties properties)
       {
          if (footer != null)
          {
@@ -218,7 +226,7 @@ public class ProtonUtils
          }
       }
 
-      private static void populateProperties(Properties amqpProperties, TypedProperties properties, ServerMessageImpl message)
+      private void populateProperties(Properties amqpProperties, TypedProperties properties, M message)
       {
          if (amqpProperties == null)
          {
@@ -270,11 +278,11 @@ public class ProtonUtils
          }
          if (amqpProperties.getReplyToGroupId() != null)
          {
-            message.getProperties().putSimpleStringProperty(REPLY_TO_GROUP_ID_SS, new SimpleString(amqpProperties.getReplyToGroupId()));
+            message.getTypedProperties().putSimpleStringProperty(REPLY_TO_GROUP_ID_SS, new SimpleString(amqpProperties.getReplyToGroupId()));
          }
       }
 
-      private static void populateApplicationProperties(ApplicationProperties applicationProperties, TypedProperties properties)
+      private void populateApplicationProperties(ApplicationProperties applicationProperties, TypedProperties properties)
       {
          if (applicationProperties != null)
          {
@@ -287,7 +295,7 @@ public class ProtonUtils
          }
       }
 
-      private static void setProperty(Object key, Object val, TypedProperties properties)
+      private void setProperty(Object key, Object val, TypedProperties properties)
       {
          if (val instanceof String)
          {
@@ -315,7 +323,7 @@ public class ProtonUtils
          }
       }
 
-      public static void populateMessageAnnotations(MessageAnnotations messageAnnotations, TypedProperties properties)
+      public void populateMessageAnnotations(MessageAnnotations messageAnnotations, TypedProperties properties)
       {
          if (messageAnnotations != null)
          {
@@ -332,12 +340,34 @@ public class ProtonUtils
 
    }
 
-   public static class OUTBOUND
+   private OUTBOUND outbound = new OUTBOUND();
+
+   public OUTBOUND getOutbound()
    {
-      public static EncodedMessage transform(ServerMessage message, int deliveryCount)
+      return outbound;
+   }
+
+   public class OUTBOUND
+   {
+      public EncodedMessage transform(M message, int deliveryCount)
       {
-         long messageFormat = message.getLongProperty(MESSAGE_FORMAT);
-         Integer size = message.getIntProperty(PROTON_MESSAGE_SIZE_SS);
+         long messageFormat = 0;
+
+         if (message.containsProperty(MESSAGE_FORMAT))
+         {
+            messageFormat = message.getLongProperty(MESSAGE_FORMAT);
+         }
+         System.out.println("Message format: " + messageFormat);
+
+         Integer size;
+         if (message.containsProperty(PROTON_MESSAGE_SIZE_SS))
+         {
+            size = message.getIntProperty(PROTON_MESSAGE_SIZE_SS);
+         }
+         else
+         {
+            size = message.getEncodeSize(); // just an estimate for now
+         }
 
          Header header = populateHeader(message, deliveryCount);
          DeliveryAnnotations deliveryAnnotations = populateDeliveryAnnotations(message);
@@ -360,7 +390,7 @@ public class ProtonUtils
             }
          }
          MessageImpl protonMessage = new MessageImpl(header, deliveryAnnotations, messageAnnotations, props, applicationProperties, section, footer);
-         protonMessage.setMessageFormat(getMessageFormat(message.getLongProperty(new SimpleString(PROTON_MESSAGE_FORMAT))));
+         protonMessage.setMessageFormat(getMessageFormat(messageFormat));
          ByteBuffer buffer = ByteBuffer.wrap(new byte[size]);
          final DroppingWritableBuffer overflow = new DroppingWritableBuffer();
          int c = protonMessage.encode(new CompositeWritableBuffer(new WritableBuffer.ByteBufferWrapper(buffer), overflow));
@@ -373,7 +403,7 @@ public class ProtonUtils
          return new EncodedMessage(messageFormat, buffer.array(), 0, c);
       }
 
-      private static Header populateHeader(ServerMessage message, int deliveryCount)
+      private Header populateHeader(M message, int deliveryCount)
       {
          Header header = new Header();
          header.setDurable(message.isDurable());
@@ -383,7 +413,7 @@ public class ProtonUtils
          return header;
       }
 
-      private static DeliveryAnnotations populateDeliveryAnnotations(ServerMessage message)
+      private DeliveryAnnotations populateDeliveryAnnotations(M message)
       {
          HashMap actualValues = new HashMap();
          DeliveryAnnotations deliveryAnnotations = new DeliveryAnnotations(actualValues);
@@ -407,7 +437,7 @@ public class ProtonUtils
          return actualValues.size() > 0 ? deliveryAnnotations : null;
       }
 
-      private static MessageAnnotations populateMessageAnnotations(ServerMessage message)
+      private MessageAnnotations populateMessageAnnotations(M message)
       {
          HashMap actualValues = new HashMap();
          MessageAnnotations messageAnnotations = new MessageAnnotations(actualValues);
@@ -430,7 +460,7 @@ public class ProtonUtils
          return messageAnnotations;
       }
 
-      private static Properties populateProperties(ServerMessage message)
+      private Properties populateProperties(M message)
       {
          Calendar calendar = Calendar.getInstance();
          Properties properties = new Properties();
@@ -489,7 +519,7 @@ public class ProtonUtils
          return properties;
       }
 
-      private static ApplicationProperties populateApplicationProperties(ServerMessage message)
+      private ApplicationProperties populateApplicationProperties(M message)
       {
          HashMap<String, Object> values = new HashMap<String, Object>();
          for (SimpleString name : message.getPropertyNames())
@@ -499,7 +529,7 @@ public class ProtonUtils
          return new ApplicationProperties(values);
       }
 
-      private static void setProperty(SimpleString name, Object property, HashMap<String, Object> values)
+      private void setProperty(SimpleString name, Object property, HashMap<String, Object> values)
       {
          String s = name.toString();
          if (SPECIAL_PROPS.contains(s) ||
@@ -519,7 +549,7 @@ public class ProtonUtils
          }
       }
 
-      private static Footer populateFooter(ServerMessage message)
+      private Footer populateFooter(M message)
       {
          HashMap actualValues = new HashMap();
          Footer footer = new Footer(actualValues);
@@ -542,10 +572,19 @@ public class ProtonUtils
          return footer;
       }
 
-      private static Section populateBody(ServerMessage message)
+      private Section populateBody(M message)
       {
          // TODO: Depend on array() is most likely not a very good idea
-         Integer type = message.getIntProperty(MESSAGE_TYPE);
+         Integer type;
+
+         try
+         {
+            type = message.getIntProperty(MESSAGE_TYPE);
+         }
+         catch (NumberFormatException e)
+         {
+            type = 0;
+         }
          switch (type)
          {
             case 0:

@@ -13,8 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -22,16 +22,12 @@ import org.hornetq.utils.TypedProperties;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public interface ClientMessageInternal extends ClientMessage, MessageInternal
+public interface ClientMessageInternal extends ClientMessage
 {
 
    TypedProperties getProperties();
 
-   /** Size used for FlowControl */
-   int getFlowControlSize();
-
-   /** Size used for FlowControl */
-   void setFlowControlSize(int flowControlSize);
+   void setAddressTransient(SimpleString address);
 
    void onReceipt(ClientConsumerInternal consumer);
 
@@ -41,4 +37,12 @@ public interface ClientMessageInternal extends ClientMessage, MessageInternal
    void discardBody();
 
    boolean isCompressed();
+
+   /** Size used for FlowControl. This is used by the integration layer on the protocol */
+   int getFlowControlSize();
+
+   /** Size used for FlowControl */
+   void setFlowControlSize(int flowControlSize);
+
+
 }

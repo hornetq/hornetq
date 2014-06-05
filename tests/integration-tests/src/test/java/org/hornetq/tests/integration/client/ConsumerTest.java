@@ -62,7 +62,7 @@ public class ConsumerTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(false, isNetty());
+      server = createServer(true, isNetty());
 
       server.start();
 
@@ -96,13 +96,18 @@ public class ConsumerTest extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(QUEUE);
 
-      final int numMessages = 100;
+      final int numMessages = 10000;
 
+      long time = System.currentTimeMillis();
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
+      long endTime = System.currentTimeMillis();
+
+
+      System.out.println("Time total = " + (endTime - time));
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
       session.start();

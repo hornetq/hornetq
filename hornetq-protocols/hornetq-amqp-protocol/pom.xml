@@ -32,13 +32,26 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.apache.qpid</groupId>
-         <artifactId>proton-api</artifactId>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-amqp-client</artifactId>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.apache.qpid</groupId>
-         <artifactId>proton-jms</artifactId>
+         <groupId>org.hornetq</groupId>
+         <artifactId>proton-plug</artifactId>
+         <version>${project.version}</version>
       </dependency>
+      <dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-j</artifactId>
+       </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+
    </dependencies>
 
 

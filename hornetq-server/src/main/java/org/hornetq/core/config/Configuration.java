@@ -588,13 +588,13 @@ public interface Configuration extends Serializable
    void setJournalFileSize(int size);
 
    /**
-    * Returns the minimal number of journal files before compacting. <br>
+    * Returns the minimalserver number of journal files before compacting. <br>
     * Default value is {@value org.hornetq.api.config.HornetQDefaultConfiguration#DEFAULT_JOURNAL_COMPACT_MIN_FILES}.
     */
    int getJournalCompactMinFiles();
 
    /**
-    * Sets the minimal number of journal files before compacting.
+    * Sets the minimalserver number of journal files before compacting.
     */
    void setJournalCompactMinFiles(int minFiles);
 

@@ -13,6 +13,9 @@
 
 package org.hornetq.utils;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 /**
  * @author Clebert Suconic
  */
@@ -20,7 +23,7 @@ package org.hornetq.utils;
 public class ByteUtil
 {
 
-   protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+   private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
    public static String maxString(String value, int size)
    {
@@ -62,5 +65,11 @@ public class ByteUtil
       return groups;
    }
 
+   public static byte[] longToBytes(long x)
+   {
+      ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.heapBuffer(8, 8);
+      buffer.writeLong(x);
+      return buffer.array();
+   }
 
 }

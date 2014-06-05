@@ -96,6 +96,11 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-amqp-client</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-stomp-protocol</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -147,9 +152,13 @@
          <version>0.24</version>
       </dependency>
       <dependency>
-         <groupId>org.apache.qpid</groupId>
-         <artifactId>proton-jms</artifactId>
-      </dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-j</artifactId>
+       </dependency>
+       <dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-jms</artifactId>
+       </dependency>
       <dependency>
          <groupId>org.apache.qpid</groupId>
          <artifactId>qpid-client</artifactId>

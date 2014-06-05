@@ -391,7 +391,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    {
       log.info("#test forceGC");
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
-      // A loop that will wait GC, using the minimal time as possible
+      // A loop that will wait GC, using the minimalserver time as possible
       while (dumbReference.get() != null)
       {
          System.gc();
@@ -409,7 +409,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    public static void forceGC(final Reference<?> ref, final long timeout)
    {
       long waitUntil = System.currentTimeMillis() + timeout;
-      // A loop that will wait GC, using the minimal time as possible
+      // A loop that will wait GC, using the minimalserver time as possible
       while (ref.get() != null && System.currentTimeMillis() < waitUntil)
       {
          ArrayList<String> list = new ArrayList<String>();

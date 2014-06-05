@@ -457,7 +457,6 @@ public class NettyAcceptor implements Acceptor
                                                                             TimeUnit.MILLISECONDS);
          }
 
-         // TODO: Think about add Version back to netty
          HornetQServerLogger.LOGGER.startedNettyAcceptor(TransportConstants.NETTY_VERSION, host, port);
       }
    }

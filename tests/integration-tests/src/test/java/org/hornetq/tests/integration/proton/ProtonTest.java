@@ -21,6 +21,7 @@ import javax.jms.MessageProducer;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Random;
@@ -52,7 +53,7 @@ public class ProtonTest extends ServiceTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-      server = this.createServer(false, true);
+      server = this.createServer(true, true);
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PORT_PROP_NAME, "5672");
       params.put(TransportConstants.PROTOCOL_PROP_NAME, "AMQP");
@@ -60,28 +61,28 @@ public class ProtonTest extends ServiceTestBase
 
       server.getConfiguration().getAcceptorConfigurations().add(transportConfiguration);
       server.start();
-      server.createQueue(new SimpleString(address), new SimpleString(address), null, false, false);
-      server.createQueue(new SimpleString(address + "1"), new SimpleString(address + "1"), null, false, false);
-      server.createQueue(new SimpleString(address + "2"), new SimpleString(address + "2"), null, false, false);
-      server.createQueue(new SimpleString(address + "3"), new SimpleString(address + "3"), null, false, false);
-      server.createQueue(new SimpleString(address + "4"), new SimpleString(address + "4"), null, false, false);
-      server.createQueue(new SimpleString(address + "5"), new SimpleString(address + "5"), null, false, false);
-      server.createQueue(new SimpleString(address + "6"), new SimpleString(address + "6"), null, false, false);
-      server.createQueue(new SimpleString(address + "7"), new SimpleString(address + "7"), null, false, false);
-      server.createQueue(new SimpleString(address + "8"), new SimpleString(address + "8"), null, false, false);
-      server.createQueue(new SimpleString(address + "9"), new SimpleString(address + "9"), null, false, false);
-      server.createQueue(new SimpleString(address + "10"), new SimpleString(address + "10"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic"), new SimpleString("amqp_testtopic"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "1"), new SimpleString("amqp_testtopic" + "1"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "2"), new SimpleString("amqp_testtopic" + "2"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "3"), new SimpleString("amqp_testtopic" + "3"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "4"), new SimpleString("amqp_testtopic" + "4"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "5"), new SimpleString("amqp_testtopic" + "5"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "6"), new SimpleString("amqp_testtopic" + "6"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "7"), new SimpleString("amqp_testtopic" + "7"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "8"), new SimpleString("amqp_testtopic" + "8"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "9"), new SimpleString("amqp_testtopic" + "9"), null, false, false);
-      server.createQueue(new SimpleString("amqp_testtopic" + "10"), new SimpleString("amqp_testtopic" + "10"), null, false, false);
+      server.createQueue(new SimpleString(address), new SimpleString(address), null, true, false);
+      server.createQueue(new SimpleString(address + "1"), new SimpleString(address + "1"), null, true, false);
+      server.createQueue(new SimpleString(address + "2"), new SimpleString(address + "2"), null, true, false);
+      server.createQueue(new SimpleString(address + "3"), new SimpleString(address + "3"), null, true, false);
+      server.createQueue(new SimpleString(address + "4"), new SimpleString(address + "4"), null, true, false);
+      server.createQueue(new SimpleString(address + "5"), new SimpleString(address + "5"), null, true, false);
+      server.createQueue(new SimpleString(address + "6"), new SimpleString(address + "6"), null, true, false);
+      server.createQueue(new SimpleString(address + "7"), new SimpleString(address + "7"), null, true, false);
+      server.createQueue(new SimpleString(address + "8"), new SimpleString(address + "8"), null, true, false);
+      server.createQueue(new SimpleString(address + "9"), new SimpleString(address + "9"), null, true, false);
+      server.createQueue(new SimpleString(address + "10"), new SimpleString(address + "10"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic"), new SimpleString("amqp_testtopic"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "1"), new SimpleString("amqp_testtopic" + "1"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "2"), new SimpleString("amqp_testtopic" + "2"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "3"), new SimpleString("amqp_testtopic" + "3"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "4"), new SimpleString("amqp_testtopic" + "4"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "5"), new SimpleString("amqp_testtopic" + "5"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "6"), new SimpleString("amqp_testtopic" + "6"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "7"), new SimpleString("amqp_testtopic" + "7"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "8"), new SimpleString("amqp_testtopic" + "8"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "9"), new SimpleString("amqp_testtopic" + "9"), null, true, false);
+      server.createQueue(new SimpleString("amqp_testtopic" + "10"), new SimpleString("amqp_testtopic" + "10"), null, true, false);
       connection = createConnection();
 
    }
@@ -190,7 +191,7 @@ public class ProtonTest extends ServiceTestBase
    @Test
    public void testMessagesSentTransactionalRolledBack() throws Exception
    {
-      int numMessages = 1000;
+      int numMessages = 1;
       QueueImpl queue = new QueueImpl(address);
       Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
       MessageProducer p = session.createProducer(queue);
@@ -202,6 +203,7 @@ public class ProtonTest extends ServiceTestBase
          message.setText("msg:" + i);
          p.send(message);
       }
+      session.close();
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
       assertEquals(q.getMessageCount(), 0);
@@ -285,48 +287,88 @@ public class ProtonTest extends ServiceTestBase
    }
 
    @Test
-   public void testMessagesReceivedInParallel() throws Exception
+   public void testMessagesReceivedInParallel() throws Throwable
    {
-      final int numMessages = 1000;
+      final int numMessages = 100;
       long time = System.currentTimeMillis();
-      QueueImpl queue = new QueueImpl(address);
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      final MessageConsumer consumer = session.createConsumer(queue);
+      final QueueImpl queue = new QueueImpl(address);
+
+      final ArrayList<Throwable> exceptions = new ArrayList<>();
 
       Thread t = new Thread(new Runnable()
       {
          @Override
          public void run()
          {
-            int count = numMessages;
-            while (count > 0)
+            Connection connectionConsumer = null;
+            try
+            {
+//               connectionConsumer = createConnection();
+               connectionConsumer = connection;
+               connectionConsumer.start();
+               Session sessionConsumer = connectionConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+               final MessageConsumer consumer = sessionConsumer.createConsumer(queue);
+
+               int count = numMessages;
+               while (count > 0)
+               {
+                  try
+                  {
+                     Message m = consumer.receive(5000);
+                     assertNotNull("Could not receive message count=" + count + " on consumer", m);
+                     count--;
+                  }
+                  catch (JMSException e)
+                  {
+                     break;
+                  }
+               }
+            }
+            catch (Throwable e)
+            {
+               exceptions.add(e);
+               e.printStackTrace();
+            }
+            finally
             {
                try
                {
-                  Message m = consumer.receive(5000);
-                  assertNotNull("" + count, m);
-                  count--;
+                  // if the createconnecion wasn't commented out
+                  if (connectionConsumer != connection)
+                  {
+                     connectionConsumer.close();
+                  }
                }
-               catch (JMSException e)
+               catch (Throwable ignored)
                {
-                  break;
+                  // NO OP
                }
             }
          }
       });
-      t.start();
+
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
       MessageProducer p = session.createProducer(queue);
       for (int i = 0; i < numMessages; i++)
       {
          TextMessage message = session.createTextMessage();
          message.setText("msg:" + i);
+         message.setIntProperty("count", i);
          p.send(message);
       }
+
+      t.start();
       t.join();
+
+      for (Throwable e : exceptions)
+      {
+         throw e;
+      }
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
 
       connection.close();
-      assertEquals(0, q.getMessageCount());
+//      assertEquals(0, q.getMessageCount());
       long taken = (System.currentTimeMillis() - time) / 1000;
       System.out.println("taken = " + taken);
    }
@@ -369,6 +411,7 @@ public class ProtonTest extends ServiceTestBase
       message.setIntProperty("int", 8);
       message.setByteProperty("byte", (byte) 10);
       p.send(message);
+      p.send(message);
       connection.start();
       MessageConsumer messageConsumer = session.createConsumer(queue);
       TextMessage m = (TextMessage) messageConsumer.receive(5000);
@@ -381,12 +424,14 @@ public class ProtonTest extends ServiceTestBase
       assertEquals(m.getFloatProperty("float"), 56.789f, 0.0001);
       assertEquals(m.getIntProperty("int"), 8);
       assertEquals(m.getByteProperty("byte"), (byte) 10);
+      m = (TextMessage) messageConsumer.receive(5000);
+      assertNotNull(m);
       connection.close();
    }
 
    private javax.jms.Connection createConnection() throws JMSException
    {
-      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, "guest", "guest");
+      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, "aaaaaaaa", "aaaaaaa");
       final javax.jms.Connection connection = factory.createConnection();
       connection.setExceptionListener(new ExceptionListener()
       {
