@@ -314,7 +314,7 @@ public final class Topology implements Serializable
       return listenersCopy;
    }
 
-   boolean removeMember(final long uniqueEventID, final String nodeId)
+   boolean removeMember(final long uniqueEventID, final String nodeId, final String scaleDownTargetNodeID)
    {
       TopologyMemberImpl member;
 
@@ -363,7 +363,7 @@ public final class Topology implements Serializable
                   }
                   try
                   {
-                     listener.nodeDown(uniqueEventID, nodeId);
+                     listener.nodeDown(uniqueEventID, nodeId, scaleDownTargetNodeID);
                   }
                   catch (Exception e)
                   {

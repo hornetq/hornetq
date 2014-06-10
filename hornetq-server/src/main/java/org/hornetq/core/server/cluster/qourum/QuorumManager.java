@@ -156,7 +156,7 @@ public final class QuorumManager implements ClusterTopologyListener, HornetQComp
     * @param nodeID the id of the node leaving the cluster
     */
    @Override
-   public void nodeDown(long eventUID, String nodeID)
+   public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
    {
       for (Quorum quorum : quorums.values())
       {

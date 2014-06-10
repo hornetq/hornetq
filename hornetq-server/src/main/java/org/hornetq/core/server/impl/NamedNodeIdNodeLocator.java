@@ -63,7 +63,7 @@ public class NamedNodeIdNodeLocator extends LiveNodeLocator
    }
 
    @Override
-   public void nodeDown(long eventUID, String nodeID)
+   public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
    {
 
    }

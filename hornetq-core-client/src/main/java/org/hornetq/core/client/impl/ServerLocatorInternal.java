@@ -68,7 +68,7 @@ public interface ServerLocatorInternal extends ServerLocator
     * @param uniqueEventID 0 means get the previous ID +1
     * @param nodeID
     */
-   void notifyNodeDown(long uniqueEventID, String nodeID);
+   void notifyNodeDown(long uniqueEventID, String nodeID, String scaleDownTargetNodeID);
 
    void setClusterConnection(boolean clusterConnection);
 

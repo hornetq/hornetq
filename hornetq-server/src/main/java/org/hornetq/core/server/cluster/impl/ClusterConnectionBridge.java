@@ -337,7 +337,6 @@ public class ClusterConnectionBridge extends BridgeImpl
       {
          clusterConnection.disconnectRecord(targetNodeID);
       }
-
    }
 
    protected boolean isPlainCoreBridge()

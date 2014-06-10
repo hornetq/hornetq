@@ -40,7 +40,7 @@ final class BackupTopologyListener implements ClusterTopologyListener
    }
 
    @Override
-   public void nodeDown(long eventUID, String nodeID)
+   public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
    {
       // no-op
    }

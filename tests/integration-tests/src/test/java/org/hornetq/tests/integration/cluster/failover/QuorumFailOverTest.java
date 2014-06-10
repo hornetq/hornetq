@@ -118,7 +118,7 @@ public class QuorumFailOverTest extends StaticClusterWithBackupFailoverTest
       }
 
       @Override
-      public void nodeDown(long eventUID, String nodeID)
+      public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
       {
          nodes.remove(nodeID);
       }

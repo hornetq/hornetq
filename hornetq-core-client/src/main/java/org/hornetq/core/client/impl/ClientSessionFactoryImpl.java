@@ -1544,7 +1544,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
 
       @Override
-      public void nodeDisconnected(RemotingConnection conn, String nodeID)
+      public void nodeDisconnected(RemotingConnection conn, String nodeID, String scaleDownTargetNodeID)
       {
 
          if (HornetQClientLogger.LOGGER.isTraceEnabled())
@@ -1557,7 +1557,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                 " as down", new Exception("trace"));
          }
 
-         serverLocator.notifyNodeDown(System.currentTimeMillis(), nodeID);
+         serverLocator.notifyNodeDown(System.currentTimeMillis(), nodeID, scaleDownTargetNodeID);
 
          closeExecutor.execute(new CloseRunnable(conn));
 
@@ -1575,9 +1575,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       @Override
-      public void notifyNodeDown(long eventTime, String nodeID)
+      public void notifyNodeDown(long eventTime, String nodeID, String scaleDownTargetNodeID)
       {
-         serverLocator.notifyNodeDown(eventTime, nodeID);
+         serverLocator.notifyNodeDown(eventTime, nodeID, scaleDownTargetNodeID);
       }
    }
 

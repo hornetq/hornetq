@@ -44,6 +44,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQMessageBundle;
@@ -60,6 +61,7 @@ import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -679,12 +681,42 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    // ClusterTopologyListener implementation ------------------------------------------------------------------
 
-   public void nodeDown(final long eventUID, final String nodeID)
+   public void nodeDown(final long eventUID, final String nodeID, String scaleDownTargetNodeID)
    {
       /*
-      * we dont do anything when a node down is received. The bridges will take care themselves when they should disconnect
-      * and/or clear their bindings. This is to avoid closing a record when we don't want to.
-      * */
+      * When a node down is received we check to see if scale-down is happening. If scale-down is happening then we move
+      * messages from defunct SnF queue to the SnF queue pointing for scaleDownTargetNodeID and fail() the bridge. If
+      * scale-down isn't happening then the bridges will take care themselves when they should disconnect and/or clear
+      * their bindings. This is to avoid closing a record when we don't want to.
+      */
+
+      if (scaleDownTargetNodeID != null && !scaleDownTargetNodeID.equals(nodeManager.getNodeId().toString()))
+      {
+         synchronized (this)
+         {
+            LocalQueueBinding binding = (LocalQueueBinding) this.postOffice.getBinding(SimpleString.toSimpleString("sf." + getName() + "." + nodeID));
+            try
+            {
+               HornetQServerLogger.LOGGER.debug("Moving " + binding.getQueue().getMessageCount() + " messages from " + "sf." + getName() + "." + nodeID + " to " + "sf." + getName() + "." + scaleDownTargetNodeID);
+               ((QueueImpl) binding.getQueue()).moveReferencesBetweenSnFQueues(SimpleString.toSimpleString(scaleDownTargetNodeID));
+
+               // stop the bridge from trying to reconnect and clean up all the bindings
+               MessageFlowRecord messageFlowRecord = records.get(nodeID);
+               if (messageFlowRecord != null)
+               {
+                  ((ClusterConnectionBridge) messageFlowRecord.getBridge()).fail(true);
+               }
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            }
+         }
+      }
+      else
+      {
+         HornetQServerLogger.LOGGER.debug("Received invalid scaleDownTargetNodeID: " + scaleDownTargetNodeID);
+      }
    }
 
    @Override
@@ -1040,6 +1072,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
 
          isClosed = true;
+
          clearBindings();
 
          if (disconnected)
@@ -1667,6 +1700,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    @Override
    public void removeRecord(String targetNodeID)
    {
+      HornetQServerLogger.LOGGER.debug("Removing record for: " + targetNodeID);
       MessageFlowRecord record = records.remove(targetNodeID);
       try
       {
@@ -1679,12 +1713,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    }
 
    @Override
-   public void disconnectRecord(String targetNodeID)
+   public synchronized void disconnectRecord(String targetNodeID)
    {
+      HornetQServerLogger.LOGGER.debug("Disconnecting record for: " + targetNodeID);
       MessageFlowRecord record = records.get(targetNodeID);
       try
       {
-         record.disconnectBindings();
+         // the record may be null if scale-down occurred and removed the record before this is called by the failure listener
+         if (record != null)
+         {
+            record.disconnectBindings();
+         }
       }
       catch (Exception e)
       {

@@ -645,14 +645,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
       }
 
-
       if (message.hasInternalProperties())
       {
          // We need to perform some cleanup on internal properties,
          // but we don't do it every time, otherwise it wouldn't be optimal
          cleanupInternalPropertiesBeforeRouting(message);
       }
-
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
@@ -798,7 +796,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     */
    public Pair<RoutingContext, ServerMessage> redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
-
       // We have to copy the message and store it separately, otherwise we may lose remote bindings in case of restart before the message
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
