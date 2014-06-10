@@ -516,7 +516,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       TopologyMember localMember = getLocalMember();
       if (localMember != null)
       {
-         ClusterControl clusterControl = manager.getClusterController().connectToNodeInReplicatedCluster(sf);
+         ClusterControl clusterControl = manager.getClusterController().connectToNodeInCluster(sf);
          try
          {
             clusterControl.authorize();

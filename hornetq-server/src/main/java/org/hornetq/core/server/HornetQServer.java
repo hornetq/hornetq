@@ -265,4 +265,8 @@ public interface HornetQServer extends HornetQComponent
    void removeProtocolManagerFactory(ProtocolManagerFactory factory);
 
    HornetQServer createBackupServer(Configuration configuration);
+
+   void addScaledDownNode(SimpleString scaledDownNodeId);
+
+   boolean hasScaledDown(SimpleString scaledDownNodeId);
 }

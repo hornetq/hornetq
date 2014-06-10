@@ -33,6 +33,8 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
@@ -445,6 +447,15 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       return true;
    }
 
+   @Override
+   public boolean checkForFailover(String liveNodeID) throws HornetQException
+   {
+      CheckFailoverMessage packet = new CheckFailoverMessage(liveNodeID);
+      CheckFailoverReplyMessage message = (CheckFailoverReplyMessage) getChannel1().sendBlocking(packet,
+            PacketImpl.CHECK_FOR_FAILOVER_REPLY);
+      return message.isOkToFailover();
+   }
+
 
    public RemotingConnection connect(Connection transportConnection, long callTimeout, long callFailoverTimeout,
                                      List<Interceptor> incomingInterceptors, List<Interceptor> outgoingInterceptors,
@@ -496,6 +507,10 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          {
             ClusterTopologyChangeMessage_V3 topMessage = (ClusterTopologyChangeMessage_V3) packet;
             notifyTopologyChange(topMessage);
+         }
+         else if (type == PacketImpl.CHECK_FOR_FAILOVER_REPLY)
+         {
+            System.out.println("Channel0Handler.handlePacket");
          }
       }
 

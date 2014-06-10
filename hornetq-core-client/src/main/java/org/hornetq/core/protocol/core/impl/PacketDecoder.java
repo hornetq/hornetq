@@ -29,6 +29,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.PACKETS_CONFIRMED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.PING;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION_RESP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CHECK_FOR_FAILOVER;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
@@ -78,6 +79,8 @@ import java.io.Serializable;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V3;
@@ -182,6 +185,11 @@ public abstract class PacketDecoder implements Serializable
          case CREATESESSION:
          {
             packet = new CreateSessionMessage();
+            break;
+         }
+         case CHECK_FOR_FAILOVER:
+         {
+            packet = new CheckFailoverMessage();
             break;
          }
          case CREATESESSION_RESP:
@@ -447,6 +455,11 @@ public abstract class PacketDecoder implements Serializable
          case SESS_UNIQUE_ADD_METADATA:
          {
             packet = new SessionUniqueAddMetaDataMessage();
+            break;
+         }
+         case PacketImpl.CHECK_FOR_FAILOVER_REPLY:
+         {
+            packet = new CheckFailoverReplyMessage();
             break;
          }
          default:

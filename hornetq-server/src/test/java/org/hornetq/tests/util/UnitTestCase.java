@@ -189,6 +189,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return createDefaultConfig(false);
    }
 
+   protected Configuration createDefaultConfig(int serverId) throws Exception
+   {
+      return createDefaultConfig(false, serverId);
+   }
+
    protected Configuration createDefaultConfig(final boolean netty) throws Exception
    {
       if (netty)
@@ -198,6 +203,18 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       else
       {
          return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
+      }
+   }
+
+   protected Configuration createDefaultConfig(final boolean netty, int serverId) throws Exception
+   {
+      if (netty)
+      {
+         return createDefaultConfig(serverId, new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+      }
+      else
+      {
+         return createDefaultConfig(serverId, new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
       }
    }
 

@@ -32,6 +32,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -46,6 +47,8 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterControl;
+import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -56,12 +59,15 @@ public class ScaleDownHandler
    final PagingManager pagingManager;
    final PostOffice postOffice;
    private NodeManager nodeManager;
+   private final ClusterController clusterController;
+   private String targetNodeId;
 
-   public ScaleDownHandler(PagingManager pagingManager, PostOffice postOffice, NodeManager nodeManager)
+   public ScaleDownHandler(PagingManager pagingManager, PostOffice postOffice, NodeManager nodeManager, ClusterController clusterController)
    {
       this.pagingManager = pagingManager;
       this.postOffice = postOffice;
       this.nodeManager = nodeManager;
+      this.clusterController = clusterController;
    }
 
    public long scaleDown(ClientSessionFactory sessionFactory,
@@ -71,16 +77,19 @@ public class ScaleDownHandler
                          SimpleString managementAddress,
                          SimpleString targetNodeId) throws Exception
    {
+      ClusterControl clusterControl = clusterController.connectToNodeInCluster((ClientSessionFactoryInternal) sessionFactory);
+      clusterControl.authorize();
       long num = scaleDownMessages(sessionFactory, targetNodeId);
       scaleDownTransactions(sessionFactory, resourceManager);
       scaleDownDuplicateIDs(duplicateIDMap, sessionFactory, managementAddress);
+      clusterControl.announceScaleDown(new SimpleString(this.targetNodeId), nodeManager.getNodeId());
       return num;
    }
 
    private long scaleDownMessages(ClientSessionFactory sessionFactory, SimpleString nodeId) throws Exception
    {
       long messageCount = 0;
-      String targetNodeId = nodeId != null ? nodeId.toString() : getTargetNodeId(sessionFactory);
+      targetNodeId = nodeId != null ? nodeId.toString() : getTargetNodeId(sessionFactory);
 
       ClientSession session = sessionFactory.createSession(false, true, true);
       Map<String, Long> queueIDs = new HashMap<>();

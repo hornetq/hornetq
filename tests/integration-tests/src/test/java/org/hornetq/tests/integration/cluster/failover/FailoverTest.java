@@ -64,9 +64,9 @@ public class FailoverTest extends FailoverTestBase
 
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
-   private static final int NUM_MESSAGES = 100;
+   protected static final int NUM_MESSAGES = 100;
 
-   private ServerLocator locator;
+   protected ServerLocator locator;
    protected ClientSessionFactoryInternal sf;
 
    @Override
@@ -541,7 +541,7 @@ public class FailoverTest extends FailoverTestBase
 
    }
 
-   private void createClientSessionFactory() throws Exception
+   protected void createClientSessionFactory() throws Exception
    {
       sf = (ClientSessionFactoryInternal) createSessionFactory(locator);
    }
@@ -843,7 +843,7 @@ public class FailoverTest extends FailoverTestBase
     * @return
     * @throws Exception
     */
-   private ClientSession createSessionAndQueue() throws Exception
+   protected ClientSession createSessionAndQueue() throws Exception
    {
       ClientSession session = createSession(sf, false, false);
 
@@ -1777,7 +1777,7 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
    }
 
-   private void receiveMessages(ClientConsumer consumer) throws HornetQException
+   protected void receiveMessages(ClientConsumer consumer) throws HornetQException
    {
       receiveMessages(consumer, 0, NUM_MESSAGES, true);
    }
@@ -2356,7 +2356,7 @@ public class FailoverTest extends FailoverTestBase
       // no-op
    }
 
-   private ClientSession sendAndConsume(final ClientSessionFactory sf1, final boolean createQueue) throws Exception
+   protected ClientSession sendAndConsume(final ClientSessionFactory sf1, final boolean createQueue) throws Exception
    {
       ClientSession session = createSession(sf1, false, true, true);
 

@@ -67,4 +67,6 @@ public interface ClientProtocolManager
                                        int confirmationWindowSize) throws HornetQException;
 
    boolean cleanupBeforeFailover();
+
+   boolean checkForFailover(String liveNodeID) throws HornetQException;
 }

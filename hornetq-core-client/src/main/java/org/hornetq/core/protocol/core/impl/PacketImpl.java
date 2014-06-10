@@ -236,6 +236,12 @@ public class PacketImpl implements Packet
 
    public static final byte QUORUM_VOTE_REPLY = -3;
 
+   public static final byte CHECK_FOR_FAILOVER = -4;
+
+   public static final byte CHECK_FOR_FAILOVER_REPLY = -5;
+
+   public static final byte SCALEDOWN_ANNOUNCEMENT = -6;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

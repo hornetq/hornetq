@@ -1744,6 +1744,13 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
+         <xsd:element name="restart-backup" type="xsd:boolean" default="false" maxOccurs="1" minOccurs="0">
+            <xsd:annotation hq:linkend="ha.restart-backup" hq:field_name="DEFAULT_RESTART_BACKUP">
+               <xsd:documentation>
+                  Will this server, if a backup, restart once it has been stopped because of failback or scaling down.
+               </xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
       </xsd:all>
       <xsd:attribute name="template" use="optional">
          <xsd:annotation>

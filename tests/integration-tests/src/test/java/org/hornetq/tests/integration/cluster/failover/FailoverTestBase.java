@@ -88,24 +88,44 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       createConfigs();
 
-      liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
+      setLiveIdentity();
       liveServer.start();
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
       {
-         backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
+         setBackupIdentity();
          if (startBackupServer)
          {
             backupServer.start();
-            waitForRemoteBackupSynchronization(backupServer.getServer());
+            waitForBackup();
          }
       }
+   }
+
+   protected void waitForBackup()
+   {
+      waitForRemoteBackupSynchronization(backupServer.getServer());
+   }
+
+   protected void setBackupIdentity()
+   {
+      backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
+   }
+
+   protected void setLiveIdentity()
+   {
+      liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
    }
 
    protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(createInVMFailoverServer(true, config, nodeManager, config.getHAPolicy().isBackup() ? 2 : 1));
+   }
+
+   protected TestableServer createColocatedTestableServer(Configuration config, NodeManager liveNodeManager,NodeManager backupNodeManager, int id)
+   {
+      return new SameProcessHornetQServer(createColocatedInVMFailoverServer(true, config, liveNodeManager, backupNodeManager, id));
    }
 
    /**
@@ -253,7 +273,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected final ClientSessionFactoryInternal
+   protected ClientSessionFactoryInternal
    createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers) throws Exception
    {
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);

@@ -16,6 +16,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
@@ -23,10 +24,12 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.transaction.ResourceManager;
@@ -42,6 +45,7 @@ public class BackupRecoveryJournalLoader extends PostOfficeJournalLoader
 {
    private HornetQServer parentServer;
    private ServerLocator locator;
+   private final ClusterController clusterController;
 
    public BackupRecoveryJournalLoader(PostOffice postOffice,
                                       PagingManager pagingManager,
@@ -52,12 +56,14 @@ public class BackupRecoveryJournalLoader extends PostOfficeJournalLoader
                                       GroupingHandler groupingHandler,
                                       Configuration configuration,
                                       HornetQServer parentServer,
-                                      ServerLocatorInternal locator)
+                                      ServerLocatorInternal locator,
+                                      ClusterController clusterController)
    {
 
       super(postOffice, pagingManager, storageManager, queueFactory, nodeManager, managementService, groupingHandler, configuration);
       this.parentServer = parentServer;
       this.locator = locator;
+      this.clusterController = clusterController;
    }
 
    @Override
@@ -81,7 +87,8 @@ public class BackupRecoveryJournalLoader extends PostOfficeJournalLoader
    @Override
    public void postLoad(Journal messageJournal, ResourceManager resourceManager, Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
-      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager);
+      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager, clusterController);
+      ((ServerLocatorImpl)locator).setPacketDecoder(ServerPacketDecoder.INSTANCE);
       try (ClientSessionFactory sessionFactory = locator.createSessionFactory())
       {
          scaleDownHandler.scaleDown(sessionFactory, resourceManager, duplicateIDMap, parentServer.getConfiguration().getManagementAddress(), parentServer.getNodeID());

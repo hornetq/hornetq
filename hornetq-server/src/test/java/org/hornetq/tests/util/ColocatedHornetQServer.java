@@ -13,8 +13,6 @@
 package org.hornetq.tests.util;
 
 import javax.management.MBeanServer;
-import java.util.Map;
-import java.util.Set;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
@@ -96,29 +94,5 @@ public class ColocatedHornetQServer extends HornetQServerImpl
       backup.backup = true;
       this.backupServer = backup;
       return backup;
-   }
-
-   protected void startBackupServers(Configuration configuration, Map<String, HornetQServer> backupServers)
-   {
-      Set<Configuration> backupServerConfigurations = configuration.getBackupServerConfigurations();
-      for (Configuration backupServerConfiguration : backupServerConfigurations)
-      {
-         ColocatedHornetQServer backup = new ColocatedHornetQServer(backupServerConfiguration, this, nodeManagerBackup, nodeManagerLive);
-         backup.backup = true;
-         this.backupServer = backup;
-         backupServers.put(backupServerConfiguration.getName(), backup);
-      }
-
-      for (HornetQServer hornetQServer : backupServers.values())
-      {
-         try
-         {
-            hornetQServer.start();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
    }
 }

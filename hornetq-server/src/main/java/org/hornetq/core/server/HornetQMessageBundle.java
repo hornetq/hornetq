@@ -354,4 +354,6 @@ public interface HornetQMessageBundle
    @Message(id = 119104, value = "Server is stopping. Message grouping not allowed", format = Message.Format.MESSAGE_FORMAT)
    HornetQException groupWhileStopping();
 
+   @Message(id = 119105, value = "Server will not accept create session request since scale down has not occurred", format = Message.Format.MESSAGE_FORMAT)
+   HornetQSessionCreationException sessionNotFailedOver();
 }

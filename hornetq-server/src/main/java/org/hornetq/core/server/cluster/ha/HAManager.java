@@ -153,6 +153,8 @@ public class HAManager implements HornetQComponent
          int portOffset = haPolicy.getBackupPortOffset() * (backupServers.size() + 1);
          String name = "colocated_backup_" + backupServers.size() + 1;
          updateSharedStoreConfiguration(configuration, haPolicy.getBackupStrategy(), name, portOffset, haPolicy.getRemoteConnectors(), journalDirectory, bindingsDirectory, largeMessagesDirectory, pagingDirectory);
+         //make sure we don't restart as we are colocated
+         configuration.getHAPolicy().setRestartBackup(false);
          backupServers.put(configuration.getName(), backup);
          backup.start();
       }
