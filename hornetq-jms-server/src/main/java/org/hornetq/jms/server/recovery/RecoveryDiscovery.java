@@ -150,6 +150,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          this.config = config;
       }
 
+      @Override
       public void nodeUP(TopologyMember topologyMember, boolean last)
       {
          // There is a case where the backup announce itself,
@@ -164,6 +165,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
       }
 
+      @Override
       public void nodeDown(long eventUID, String nodeID)
       {
          // I'm not putting any node down, since it may have previous transactions hanging, however at some point we may
@@ -187,6 +189,12 @@ public class RecoveryDiscovery implements SessionFailureListener
       }
       internalStop();
       HornetQRecoveryRegistry.getInstance().failedDiscovery(this);
+   }
+
+   @Override
+   public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+   {
+      connectionFailed(me, failedOver);
    }
 
    @Override

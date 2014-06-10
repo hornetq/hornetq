@@ -86,9 +86,16 @@ public class SessionTest extends ServiceTestBase
          {
             boolean called = false;
 
+            @Override
             public void connectionFailed(final HornetQException me, boolean failedOver)
             {
                called = true;
+            }
+
+            @Override
+            public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+            {
+               connectionFailed(me, failedOver);
             }
 
             public void beforeReconnect(final HornetQException me)

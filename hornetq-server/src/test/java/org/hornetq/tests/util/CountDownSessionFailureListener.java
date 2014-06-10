@@ -41,6 +41,12 @@ public final class CountDownSessionFailureListener implements SessionFailureList
    }
 
    @Override
+   public void connectionFailed(HornetQException exception, boolean failedOver, String scaleDownTargetNodeID)
+   {
+      connectionFailed(exception, failedOver);
+   }
+
+   @Override
    public void connectionFailed(HornetQException exception, boolean failedOver)
    {
       latch.countDown();

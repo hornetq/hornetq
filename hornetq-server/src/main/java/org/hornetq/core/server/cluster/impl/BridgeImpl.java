@@ -49,6 +49,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.Transformer;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -620,6 +621,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
+      connectionFailed(me, failedOver, null);
+   }
+
+   public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+   {
       HornetQServerLogger.LOGGER.bridgeConnectionFailed(me, failedOver);
 
       synchronized (connectionGuard)
@@ -648,8 +654,31 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
       }
 
-      //we never fail permanently here, this only happens once all reconnect tries have happened
-      fail(false);
+      if (scaleDownTargetNodeID != null && !scaleDownTargetNodeID.equals(nodeUUID))
+      {
+         synchronized (this)
+         {
+            try
+            {
+               HornetQServerLogger.LOGGER.debug("Moving " + queue.getMessageCount() + " messages from " + queue.getName() + " to " + scaleDownTargetNodeID);
+               ((QueueImpl)queue).moveReferencesBetweenSnFQueues(SimpleString.toSimpleString(scaleDownTargetNodeID));
+
+               // stop the bridge from trying to reconnect and clean up all the bindings
+               fail(true);
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            }
+         }
+      }
+      else
+      {
+         HornetQServerLogger.LOGGER.debug("Received invalid scaleDownTargetNodeID: " + scaleDownTargetNodeID);
+
+         //we never fail permanently here, this only happens once all reconnect tries have happened
+         fail(false);
+      }
 
       tryScheduleRetryReconnect(me.getType());
    }
@@ -712,7 +741,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("going to send message " + message);
+         HornetQServerLogger.LOGGER.trace("going to send message: " + message + " from " + this.getQueue());
       }
 
       try
@@ -1218,7 +1247,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
 
       // ClusterListener
-
+      @Override
       public void nodeUP(TopologyMember member, boolean last)
       {
          ClientSessionInternal sessionToUse = session;
@@ -1241,6 +1270,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       }
 
+      @Override
       public void nodeDown(long eventUID, String nodeID)
       {
 

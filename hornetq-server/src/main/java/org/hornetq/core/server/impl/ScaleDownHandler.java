@@ -179,7 +179,7 @@ public class ScaleDownHandler
                            // get the ID for every queue that contains the message
                            ByteBuffer buffer = ByteBuffer.allocate(queuesWithMessage.size() * 8);
                            StringBuilder logMessage = new StringBuilder();
-                           logMessage.append("Sending message ").append(messageId).append(" to ");
+                           logMessage.append("Scaling down message ").append(messageId).append(" to ");
                            for (Queue queue : queuesWithMessage)
                            {
                               long queueID;
@@ -452,25 +452,25 @@ public class ScaleDownHandler
     */
    private long createQueueIfNecessaryAndGetID(ClientSession session, Queue queue, SimpleString addressName) throws Exception
    {
-      long queueID = getQueueID(session, queue);
+      long queueID = getQueueID(session, queue.getName());
       if (queueID == -1)
       {
          session.createQueue(addressName, queue.getName(), queue.getFilter() == null ? null : queue.getFilter().getFilterString(), queue.isDurable());
-         queueID = getQueueID(session, queue);
+         queueID = getQueueID(session, queue.getName());
       }
 
       HornetQServerLogger.LOGGER.debug("ID for " + queue + " is: " + queueID);
       return queueID;
    }
 
-   private Integer getQueueID(ClientSession session, Queue queue) throws Exception
+   private Integer getQueueID(ClientSession session, SimpleString queueName) throws Exception
    {
       Integer queueID = -1;
       ClientRequestor requestor = new ClientRequestor(session, "jms.queue.hornetq.management");
       ClientMessage managementMessage = session.createMessage(false);
-      ManagementHelper.putAttribute(managementMessage, "core.queue." + queue.getName(), "ID");
+      ManagementHelper.putAttribute(managementMessage, "core.queue." + queueName, "ID");
       session.start();
-      HornetQServerLogger.LOGGER.debug("Requesting ID for: " + queue);
+      HornetQServerLogger.LOGGER.debug("Requesting ID for: " + queueName);
       ClientMessage reply = requestor.request(managementMessage);
       Object result = ManagementHelper.getResult(reply);
       if (result != null && result instanceof Integer)

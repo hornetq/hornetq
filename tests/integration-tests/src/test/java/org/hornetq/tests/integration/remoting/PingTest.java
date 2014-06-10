@@ -80,9 +80,16 @@ public class PingTest extends ServiceTestBase
    {
       volatile HornetQException me;
 
+      @Override
       public void connectionFailed(final HornetQException me, boolean failedOver)
       {
          this.me = me;
+      }
+
+      @Override
+      public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+      {
+         connectionFailed(me, failedOver);
       }
 
       public HornetQException getException()
@@ -371,9 +378,16 @@ public class PingTest extends ServiceTestBase
       final CountDownLatch clientLatch = new CountDownLatch(1);
       SessionFailureListener clientListener = new SessionFailureListener()
       {
+         @Override
          public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             clientLatch.countDown();
+         }
+
+         @Override
+         public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+         {
+            connectionFailed(me, failedOver);
          }
 
          public void beforeReconnect(final HornetQException exception)

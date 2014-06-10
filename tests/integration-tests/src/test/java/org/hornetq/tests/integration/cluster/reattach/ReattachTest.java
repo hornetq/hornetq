@@ -327,9 +327,16 @@ public class ReattachTest extends ServiceTestBase
       {
          volatile boolean failed;
 
+         @Override
          public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             failed = true;
+         }
+
+         @Override
+         public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+         {
+            connectionFailed(me, failedOver);
          }
 
          public void beforeReconnect(final HornetQException exception)

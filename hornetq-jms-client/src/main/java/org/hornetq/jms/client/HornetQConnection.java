@@ -760,6 +760,7 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
          connectionRef = new WeakReference<HornetQConnection>(connection);
       }
 
+      @Override
       public synchronized void connectionFailed(final HornetQException me, boolean failedOver)
       {
          if (me == null)
@@ -799,6 +800,12 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
                }
             }
          }
+      }
+
+      @Override
+      public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+      {
+         connectionFailed(me, failedOver);
       }
 
       public void beforeReconnect(final HornetQException me)

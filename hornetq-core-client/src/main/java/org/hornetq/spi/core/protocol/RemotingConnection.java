@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -122,6 +121,14 @@ public interface RemotingConnection extends BufferHandler
    void fail(HornetQException me);
 
    /**
+    * called when the underlying connection fails.
+    *
+    * @param me the exception that caused the failure
+    * @param scaleDownTargetNodeID the ID of the node where scale down is targeted
+    */
+   void fail(HornetQException me, String scaleDownTargetNodeID);
+
+   /**
     * destroys this connection.
     */
    void destroy();
@@ -153,7 +160,7 @@ public interface RemotingConnection extends BufferHandler
    /**
     * Disconnect the connection, closing all channels
     */
-   void disconnect(TransportConfiguration transportConfiguration, boolean criticalError);
+   void disconnect(String scaleDownNodeID, boolean criticalError);
 
    /**
     * returns true if any data has been received since the last time this method was called.

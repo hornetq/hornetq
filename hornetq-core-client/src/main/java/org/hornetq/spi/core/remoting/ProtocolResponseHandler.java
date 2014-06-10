@@ -23,7 +23,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 public interface ProtocolResponseHandler
 {
    // This is sent when the server is telling the client the node is being disconnected
-   void nodeDisconnected(RemotingConnection conn, String nodeID);
+   void nodeDisconnected(RemotingConnection conn, String nodeID, String scaleDownTargetNodeID);
 
    void notifyNodeUp(long uniqueEventID,
                      final String backupGroupName,

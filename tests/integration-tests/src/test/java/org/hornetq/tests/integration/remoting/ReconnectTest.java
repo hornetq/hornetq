@@ -81,11 +81,17 @@ public class ReconnectTest extends ServiceTestBase
 
          session.addFailureListener(new SessionFailureListener()
          {
-
+            @Override
             public void connectionFailed(final HornetQException me, boolean failedOver)
             {
                count.incrementAndGet();
                latch.countDown();
+            }
+
+            @Override
+            public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+            {
+               connectionFailed(me, failedOver);
             }
 
             public void beforeReconnect(final HornetQException exception)
@@ -180,6 +186,12 @@ public class ReconnectTest extends ServiceTestBase
             }
 
             @Override
+            public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+            {
+               connectionFailed(me, failedOver);
+            }
+
+            @Override
             public void beforeReconnect(HornetQException exception)
             {
                latchCommit.countDown();
@@ -202,6 +214,12 @@ public class ReconnectTest extends ServiceTestBase
             {
                count.incrementAndGet();
                latch.countDown();
+            }
+
+            @Override
+            public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+            {
+               connectionFailed(me, failedOver);
             }
 
             public void beforeReconnect(final HornetQException exception)

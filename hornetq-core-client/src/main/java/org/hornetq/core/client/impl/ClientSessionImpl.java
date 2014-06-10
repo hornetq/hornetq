@@ -1595,6 +1595,11 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       }
    }
 
+   public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+   {
+      connectionFailed(me, failedOver);
+   }
+
    // Public
    // ----------------------------------------------------------------------------
 
