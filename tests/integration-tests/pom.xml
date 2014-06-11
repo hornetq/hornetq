@@ -104,10 +104,10 @@
          <artifactId>hornetq-tools</artifactId>
          <version>${project.version}</version>
       </dependency>
-      <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-jca-api</artifactId>
-      </dependency>
+       <dependency>
+           <groupId>org.jboss.spec.javax.resource</groupId>
+           <artifactId>jboss-connector-api_1.7_spec</artifactId>
+       </dependency>
       <dependency>
          <groupId>org.jboss.security</groupId>
          <artifactId>jboss-security-spi</artifactId>
