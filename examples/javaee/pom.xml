@@ -68,7 +68,7 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.spec</groupId>
-         <artifactId>jboss-javaee-6.0</artifactId>
+         <artifactId>jboss-javaee-7.0</artifactId>
          <version>1.0.0.Final</version>
          <type>pom</type>
          <scope>provided</scope>
@@ -111,10 +111,9 @@
          <artifactId>netty-all</artifactId>
          <version>${netty.version}</version>
       </dependency>
-      <dependency>
+     <dependency>
          <groupId>org.jboss.ejb3</groupId>
          <artifactId>jboss-ejb3-ext-api</artifactId>
-         <version>2.1.0</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.arquillian.protocol</groupId>
