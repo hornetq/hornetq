@@ -12,6 +12,9 @@
  */
 package org.hornetq.core.journal.impl;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
@@ -586,6 +589,53 @@ public class JournalFilesRepository
                                   final boolean init,
                                   final boolean tmpCompact,
                                   final long fileIdPreSet) throws Exception
+   {
+      if (System.getSecurityManager() == null)
+      {
+         return createFile0(keepOpened, multiAIO, init, tmpCompact, fileIdPreSet);
+      }
+      else
+      {
+         try
+         {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<JournalFile>()
+            {
+               @Override
+               public JournalFile run() throws Exception
+               {
+                  return createFile0(keepOpened, multiAIO, init, tmpCompact, fileIdPreSet);
+               }
+            });
+         }
+         catch (PrivilegedActionException e)
+         {
+            throw unwrapException(e);
+         }
+      }
+   }
+
+   private RuntimeException unwrapException(PrivilegedActionException e) throws Exception
+   {
+      Throwable c = e.getCause();
+      if (c instanceof RuntimeException)
+      {
+         throw (RuntimeException) c;
+      }
+      else if (c instanceof Error)
+      {
+         throw (Error) c;
+      }
+      else
+      {
+         throw new RuntimeException(c);
+      }
+   }
+
+   private JournalFile createFile0(final boolean keepOpened,
+                                   final boolean multiAIO,
+                                   final boolean init,
+                                   final boolean tmpCompact,
+                                   final long fileIdPreSet) throws Exception
    {
       long fileID = fileIdPreSet != -1 ? fileIdPreSet : generateFileID();
 
