@@ -33,7 +33,7 @@
    </prerequisites>
 
    <properties>
-      <netty.version>4.0.19.Final</netty.version>
+      <netty.version>4.0.20.Final</netty.version>
       <hornetq.version.versionName>Wild Hornet</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>5</hornetq.version.minorVersion>

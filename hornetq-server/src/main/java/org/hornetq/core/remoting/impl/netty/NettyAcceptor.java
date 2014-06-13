@@ -88,7 +88,7 @@ public class NettyAcceptor implements Acceptor
    static
    {
       // Disable resource leak detection for performance reasons by default
-      ResourceLeakDetector.setEnabled(false);
+      ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.DISABLED);
    }
 
    private final String name;
