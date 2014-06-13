@@ -18,6 +18,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -47,6 +50,61 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
    @Override
    protected Class resolveClass(final ObjectStreamClass desc) throws IOException, ClassNotFoundException
    {
+      if (System.getSecurityManager() == null)
+      {
+         return resolveClass0(desc);
+      }
+      else
+      {
+         try
+         {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Class>()
+            {
+               @Override
+               public Class run() throws Exception
+               {
+                  return resolveClass0(desc);
+               }
+            });
+         }
+         catch (PrivilegedActionException e)
+         {
+            throw unwrapException(e);
+         }
+      }
+   }
+
+   @Override
+   protected Class resolveProxyClass(final String[] interfaces) throws IOException, ClassNotFoundException
+   {
+      if (System.getSecurityManager() == null)
+      {
+         return resolveProxyClass0(interfaces);
+      }
+      else
+      {
+         try
+         {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Class>()
+            {
+               @Override
+               public Class run() throws Exception
+               {
+                  return resolveProxyClass0(interfaces);
+               }
+            });
+         }
+         catch (PrivilegedActionException e)
+         {
+            throw unwrapException(e);
+         }
+      }
+   }
+
+   // Private --------------------------------------------------------------------------------------
+
+   private Class resolveClass0(final ObjectStreamClass desc) throws IOException, ClassNotFoundException
+   {
       String name = desc.getName();
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       try
@@ -70,8 +128,7 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
       }
    }
 
-   @Override
-   protected Class resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException
+   private Class resolveProxyClass0(String[] interfaces) throws IOException, ClassNotFoundException
    {
       ClassLoader latestLoader = Thread.currentThread().getContextClassLoader();
       ClassLoader nonPublicLoader = null;
@@ -108,7 +165,30 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
       }
    }
 
-   // Private --------------------------------------------------------------------------------------
+   private RuntimeException unwrapException(PrivilegedActionException e) throws IOException, ClassNotFoundException
+   {
+      Throwable c = e.getCause();
+      if (c instanceof IOException)
+      {
+         throw (IOException)c;
+      }
+      else if (c instanceof ClassNotFoundException)
+      {
+         throw (ClassNotFoundException)c;
+      }
+      else if (c instanceof RuntimeException)
+      {
+         throw (RuntimeException)c;
+      }
+      else if (c instanceof Error)
+      {
+         throw (Error)c;
+      }
+      else
+      {
+         throw new RuntimeException(c);
+      }
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 
