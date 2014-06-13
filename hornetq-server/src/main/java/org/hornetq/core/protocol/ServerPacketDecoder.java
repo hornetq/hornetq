@@ -34,6 +34,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_PREPARE
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_RESPONSE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SCALEDOWN_ANNOUNCEMENT;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.Packet;
@@ -62,6 +63,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ScaleDownAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -213,6 +215,11 @@ public class ServerPacketDecoder extends ClientPacketDecoder
          case QUORUM_VOTE_REPLY:
          {
             packet = new QuorumVoteReplyMessage();
+            break;
+         }
+         case SCALEDOWN_ANNOUNCEMENT:
+         {
+            packet = new ScaleDownAnnounceMessage();
             break;
          }
          default:

@@ -32,6 +32,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteReplyMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ScaleDownAnnounceMessage;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -203,5 +204,11 @@ public class ClusterControl implements AutoCloseable
    {
       BackupRequestMessage backupRequestMessage = new BackupRequestMessage(backupSize, journalDirectory, bindingsDirectory, largeMessagesDirectory, pagingDirectory);
       return requestBackup(backupRequestMessage);
+   }
+
+   public void announceScaleDown(SimpleString targetNodeId, SimpleString scaledDownNodeId)
+   {
+      ScaleDownAnnounceMessage announceMessage = new ScaleDownAnnounceMessage(targetNodeId, scaledDownNodeId);
+      clusterChannel.send(announceMessage);
    }
 }

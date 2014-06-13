@@ -106,7 +106,7 @@ public class HAPolicy implements Serializable
 
    private boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
 
-
+   private boolean restartBackup = HornetQDefaultConfiguration.isDefaultRestartBackup();
 
    public POLICY_TYPE getPolicyType()
    {
@@ -325,6 +325,16 @@ public class HAPolicy implements Serializable
    public int getMaxSavedReplicatedJournalsSize()
    {
       return maxSavedReplicatedJournalsSize;
+   }
+
+   public boolean isRestartBackup()
+   {
+      return restartBackup;
+   }
+
+   public void setRestartBackup(boolean restartBackup)
+   {
+      this.restartBackup = restartBackup;
    }
 
    public boolean isSharedStore()

@@ -157,6 +157,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final ConfirmationWindowWarning confirmationWindowWarning;
 
+   private String liveNodeID;
+
 
    public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
@@ -1047,6 +1049,28 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             connection = establishNewConnection();
 
+            //we check if we can actually connect.
+            // we do it here as to receive the reply connection has to be not null
+            if (connection != null && liveNodeID != null)
+            {
+               try
+               {
+                  if (!clientProtocolManager.checkForFailover(liveNodeID))
+                  {
+                     connection.destroy();
+                     connection = null;
+                  }
+               }
+               catch (HornetQException e)
+               {
+                  if (connection != null)
+                  {
+                     connection.destroy();
+                     connection = null;
+                  }
+               }
+            }
+
             if (connection != null && serverLocator.getAfterConnectInternalListener() != null)
             {
                serverLocator.getAfterConnectInternalListener().onConnection(this);
@@ -1542,6 +1566,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       @Override
       public void notifyNodeUp(long uniqueEventID, String nodeID, String backupGroupName, String scaleDownGroupName, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean isLast)
       {
+         // if it is our connector then set the live id used for failover
+         if (connectorPair.getA() != null && connectorPair.getA().equals(connectorConfig))
+         {
+            liveNodeID = nodeID;
+         }
          serverLocator.notifyNodeUp(uniqueEventID, nodeID, backupGroupName, scaleDownGroupName, connectorPair, isLast);
       }
 

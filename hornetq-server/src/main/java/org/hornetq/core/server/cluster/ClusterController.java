@@ -49,6 +49,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.QuorumVoteReplyMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ScaleDownAnnounceMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -225,7 +226,7 @@ public class ClusterController implements HornetQComponent
    {
       ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal) defaultLocator.createSessionFactory(transportConfiguration, 0, false);
 
-      return connectToNodeInReplicatedCluster(sessionFactory);
+      return connectToNodeInCluster(sessionFactory);
    }
 
    /**
@@ -240,7 +241,7 @@ public class ClusterController implements HornetQComponent
    {
       ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal) replicationLocator.createSessionFactory(transportConfiguration, 0, false);
 
-      return connectToNodeInReplicatedCluster(sessionFactory);
+      return connectToNodeInCluster(sessionFactory);
    }
 
    /**
@@ -250,7 +251,7 @@ public class ClusterController implements HornetQComponent
     *
     * @return  the Cluster Control
     */
-   public ClusterControl connectToNodeInReplicatedCluster(ClientSessionFactoryInternal sf)
+   public ClusterControl connectToNodeInCluster(ClientSessionFactoryInternal sf)
    {
       ((ServerLocatorInternal)sf.getServerLocator()).setPacketDecoder(ServerPacketDecoder.INSTANCE);
       return new ClusterControl(sf, server);
@@ -436,6 +437,15 @@ public class ClusterController implements HornetQComponent
                   //todo log a warning and send false
                }
                clusterChannel.send(new BackupResponseMessage(started));
+            }
+            else if (packet.getType() == PacketImpl.SCALEDOWN_ANNOUNCEMENT)
+            {
+               ScaleDownAnnounceMessage message = (ScaleDownAnnounceMessage) packet;
+               //we don't really need to check as it should always be true
+               if (server.getNodeID().equals(message.getTargetNodeId()))
+               {
+                  server.addScaledDownNode(message.getScaledDownNodeId());
+               }
             }
          }
       }

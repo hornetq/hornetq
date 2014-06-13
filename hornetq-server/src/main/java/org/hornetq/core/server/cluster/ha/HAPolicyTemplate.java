@@ -75,6 +75,7 @@ public enum HAPolicyTemplate
       policy.setRequestBackup(false);
       policy.setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
       policy.setBackupStrategy(BackupStrategy.FULL);
+      policy.setRestartBackup(true);
       return policy;
    }
 
@@ -85,6 +86,7 @@ public enum HAPolicyTemplate
       policy.setRequestBackup(false);
       policy.setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       policy.setBackupStrategy(BackupStrategy.FULL);
+      policy.setRestartBackup(true);
       return policy;
    }
 

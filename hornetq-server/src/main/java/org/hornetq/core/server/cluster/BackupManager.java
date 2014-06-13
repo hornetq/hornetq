@@ -256,7 +256,7 @@ public class BackupManager implements HornetQComponent
                   //send the announce message
                   if (backupSessionFactory != null)
                   {
-                     ClusterControl clusterControl = clusterManager.getClusterController().connectToNodeInReplicatedCluster(backupSessionFactory);
+                     ClusterControl clusterControl = clusterManager.getClusterController().connectToNodeInCluster(backupSessionFactory);
                      clusterControl.authorize();
                      clusterControl.sendNodeAnnounce(System.currentTimeMillis(),
                                                       nodeManager.getNodeId().toString(),

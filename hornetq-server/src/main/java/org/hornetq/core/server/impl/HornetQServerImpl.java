@@ -100,6 +100,7 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
+import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
@@ -314,6 +315,8 @@ public class HornetQServerImpl implements HornetQServer
    private ClientSessionFactoryInternal scaleDownClientSessionFactory = null;
 
    private ServerLocatorInternal scaleDownServerLocator = null;
+
+   private final List<SimpleString> scaledDownNodeIDs = new ArrayList<>();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -790,6 +793,9 @@ public class HornetQServerImpl implements HornetQServer
       addressSettingsRepository.clearListeners();
 
       addressSettingsRepository.clearCache();
+
+      scaledDownNodeIDs.clear();
+
       if (identity != null)
       {
          HornetQServerLogger.LOGGER.serverStopped("identity=" + identity + ",version=" + getVersion().getFullVersion(),
@@ -803,7 +809,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public long scaleDown() throws Exception
    {
-      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager);
+      ScaleDownHandler scaleDownHandler = new ScaleDownHandler(pagingManager, postOffice, nodeManager, clusterManager.getClusterController());
       ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = ((PostOfficeImpl) postOffice).getDuplicateIDCaches();
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<>();
       for (SimpleString address : duplicateIDCaches.keySet())
@@ -820,6 +826,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          scaleDownServerLocator = clusterManager.getHAManager().getScaleDownConnector();
          //use a Node Locator to connect to the cluster
+         scaleDownServerLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
          LiveNodeLocator nodeLocator = clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName() == null ?
             new AnyLiveNodeLocatorForScaleDown(HornetQServerImpl.this) :
             new NamedLiveNodeLocatorForScaleDown(clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), HornetQServerImpl.this);
@@ -1928,7 +1935,8 @@ public class HornetQServerImpl implements HornetQServer
                                                          groupingHandler,
                                                          configuration,
                                                          parentServer,
-                                                         clusterManager.getHAManager().getScaleDownConnector());
+                                                         clusterManager.getHAManager().getScaleDownConnector(),
+                                                         clusterManager.getClusterController());
       }
       else
       {
@@ -2398,8 +2406,11 @@ public class HornetQServerImpl implements HornetQServer
                      try
                      {
                         stop();
-                        moveServerData();
-                        //start();
+                        //we are shared store but if we were started by a parent server then we shouldn't restart
+                        if (configuration.getHAPolicy().isRestartBackup())
+                        {
+                           start();
+                        }
                      }
                      catch (Exception e)
                      {
@@ -3062,8 +3073,8 @@ public class HornetQServerImpl implements HornetQServer
                         {
                            //
                         }
-                        //if we have to many backups kept just stop, other wise restart as a backup
-                        if (countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
+                        //if we have to many backups kept or arent configured to restart just stop, otherwise restart as a backup
+                        if (!configuration.getHAPolicy().isRestartBackup() && countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
                         {
                            stop(true);
                            HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
@@ -3153,6 +3164,26 @@ public class HornetQServerImpl implements HornetQServer
    {
       return new HornetQServerImpl(configuration, null, securityManager, this);
    }
+
+   @Override
+   public void addScaledDownNode(SimpleString scaledDownNodeId)
+   {
+      synchronized (scaledDownNodeIDs)
+      {
+         scaledDownNodeIDs.add(scaledDownNodeId);
+         if (scaledDownNodeIDs.size() > 10)
+         {
+            scaledDownNodeIDs.remove(10);
+         }
+      }
+   }
+
+   @Override
+   public boolean hasScaledDown(SimpleString scaledDownNodeId)
+   {
+      return scaledDownNodeIDs.contains(scaledDownNodeId);
+   }
+
 
    private int countNumberOfCopiedJournals()
    {

@@ -15,11 +15,15 @@ package org.hornetq.core.protocol.core.impl;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInternalErrorException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CheckFailoverReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
@@ -78,6 +82,14 @@ public class HornetQPacketHandler implements ChannelHandler
 
             break;
          }
+         case PacketImpl.CHECK_FOR_FAILOVER:
+         {
+            CheckFailoverMessage request = (CheckFailoverMessage) packet;
+
+            handleCheckForFailover(request);
+
+            break;
+         }
          case PacketImpl.REATTACH_SESSION:
          {
             ReattachSessionMessage request = (ReattachSessionMessage) packet;
@@ -101,6 +113,15 @@ public class HornetQPacketHandler implements ChannelHandler
             HornetQServerLogger.LOGGER.invalidPacket(packet);
          }
       }
+   }
+
+   private void handleCheckForFailover(CheckFailoverMessage failoverMessage)
+   {
+      String nodeID = failoverMessage.getNodeID();
+      boolean okToFailover = nodeID == null ||
+            !(server.getConfiguration().getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN &&
+            !server.hasScaledDown(new SimpleString(nodeID)));
+      channel1.send(new CheckFailoverReplyMessage(okToFailover));
    }
 
    private void handleCreateSession(final CreateSessionMessage request)
