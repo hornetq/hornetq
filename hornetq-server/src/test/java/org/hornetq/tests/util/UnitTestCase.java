@@ -1323,6 +1323,10 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          return true;
       }
+      else if (threadName.contains("threadDeathWatcher"))
+      {
+         return true;
+      }
       else if (threadName.contains("netty-threads"))
       {
          // This is ok as we use EventLoopGroup.shutdownGracefully() which will shutdown things with a bit of delay
