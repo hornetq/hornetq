@@ -436,6 +436,7 @@
             <activeByDefault>true</activeByDefault>
          </activation>
          <modules>
+            <module>hornetq-tools</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-core-client</module>
