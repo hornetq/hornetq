@@ -57,9 +57,9 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
          }
       }
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", forward, 1,  isNetty(), true);
+      setupClusterConnection("cluster1", 0, 1, "queues", forward, 1, 0, 500, isNetty(), true);
       // server #1 is connected to nobody
-      setupClusterConnection("clusterX", 1, -1, "queues", forward, 1,  isNetty(), true);
+      setupClusterConnection("clusterX", 1, -1, "queues", forward, 1,  0, 500, isNetty(), true);
    }
 
    protected boolean  isNetty()
@@ -144,7 +144,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       String myFilter = "bison";
 
-      createQueue(1, "queues.testaddress", "queue0", myFilter, false);
+      createQueue(1, "queues.testaddress", "queue0", myFilter, true);
       addConsumer(0, 1, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, false);
@@ -184,10 +184,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       Assert.assertTrue("Took too long to restart", end - start <= 5000);
 
       setupSessionFactory(1,  isNetty(), true);
-
-      waitForBindings(0, "queues.testaddress", 0, 0, false);
-
-      createQueue(1, "queues.testaddress", "queue0", myFilter, false);
 
       addConsumer(0, 1, "queue0", null);
 

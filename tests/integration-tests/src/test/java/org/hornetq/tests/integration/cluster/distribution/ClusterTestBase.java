@@ -495,7 +495,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local)
+         if (binding.isConnected() && (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local))
          {
             QueueBinding qBinding = (QueueBinding) binding;
 
@@ -1944,6 +1944,50 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                             1024,
                                             pairs,
                                             allowDirectConnectionsOnly);
+      config.getClusterConfigurations().add(clusterConf);
+   }
+
+   protected void setupClusterConnection(final String name,
+                                         final int nodeFrom,
+                                         final int nodeTo,
+                                         final String address,
+                                         final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
+                                         final int reconnectAttempts,
+                                         final long retryInterval,
+                                         final boolean netty,
+                                         final boolean allowDirectConnectionsOnly)
+   {
+      HornetQServer serverFrom = servers[nodeFrom];
+
+      if (serverFrom == null)
+      {
+         throw new IllegalStateException("No server at node " + nodeFrom);
+      }
+
+      TransportConfiguration connectorFrom = createTransportConfiguration(netty, false, generateParams(nodeFrom, netty));
+      serverFrom.getConfiguration().getConnectorConfigurations().put(name, connectorFrom);
+
+      List<String> pairs = null;
+
+      if (nodeTo != -1)
+      {
+         TransportConfiguration serverTotc = createTransportConfiguration(netty, false, generateParams(nodeTo, netty));
+         serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
+         pairs = new ArrayList<String>();
+         pairs.add(serverTotc.getName());
+      }
+      Configuration config = serverFrom.getConfiguration();
+      ClusterConnectionConfiguration clusterConf =
+            new ClusterConnectionConfiguration(name, address, name,
+                  retryInterval,
+                  true,
+                  forwardWhenNoConsumers,
+                  maxHops,
+                  1024,
+                  pairs,
+                  allowDirectConnectionsOnly);
+      clusterConf.setReconnectAttempts(reconnectAttempts);
       config.getClusterConfigurations().add(clusterConf);
    }
 

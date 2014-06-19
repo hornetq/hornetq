@@ -189,6 +189,12 @@ public class WildcardAddressManagerUnitTest extends UnitTestCase
       }
 
       @Override
+      public boolean isConnected()
+      {
+         return true;
+      }
+
+      @Override
       public void routeWithAck(ServerMessage message, RoutingContext context)
       {
 

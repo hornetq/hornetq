@@ -392,6 +392,12 @@ public class BindingsImplTest extends UnitTestCase
       }
 
       @Override
+      public boolean isConnected()
+      {
+         return true;
+      }
+
+      @Override
       public void routeWithAck(ServerMessage message, RoutingContext context)
       {
 

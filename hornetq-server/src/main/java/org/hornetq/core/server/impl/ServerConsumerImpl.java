@@ -323,7 +323,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             HornetQServerLogger.LOGGER.trace("Handling reference " + ref);
          }
-
          if (!browseOnly)
          {
             if (!preAcknowledge)

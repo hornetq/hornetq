@@ -63,4 +63,6 @@ public interface Binding extends UnproposalListener
     * @return
     */
    String toManagementString();
+
+   boolean isConnected();
 }

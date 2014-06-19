@@ -384,7 +384,7 @@ public final class BindingsImpl implements Bindings
          {
             // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
             // unnecessary overhead)
-            if (length == 1 || routeWhenNoConsumers || binding.isHighAcceptPriority(message))
+            if (length == 1 || (binding.isConnected() && (routeWhenNoConsumers || binding.isHighAcceptPriority(message))))
             {
                theBinding = binding;
 
@@ -642,7 +642,6 @@ public final class BindingsImpl implements Bindings
          long bindingID = buff.getLong();
 
          Binding binding = bindingsMap.get(bindingID);
-
          if (binding != null)
          {
             if (idsToAckList.contains(bindingID))

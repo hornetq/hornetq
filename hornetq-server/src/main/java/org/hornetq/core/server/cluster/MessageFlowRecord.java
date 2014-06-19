@@ -38,4 +38,6 @@ public interface MessageFlowRecord extends MessageHandler
    boolean isClosed();
 
    void reset() throws Exception;
+
+   void disconnectBindings() throws Exception;
 }

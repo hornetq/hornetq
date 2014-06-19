@@ -1115,7 +1115,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
          for (Binding binding : bindings.getBindings())
          {
-            if (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local)
+            if (binding.isConnected() && (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local))
             {
                QueueBinding qBinding = (QueueBinding) binding;
 
@@ -1183,5 +1183,21 @@ public abstract class ServiceTestBase extends UnitTestCase
    protected void validateNoFilesOnLargeDir() throws Exception
    {
       validateNoFilesOnLargeDir(0);
+   }
+
+   public void printBindings(HornetQServer server, String address) throws Exception
+   {
+      PostOffice po = server.getPostOffice();
+      Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
+
+      System.err.println("=======================================================================");
+      System.err.println("Binding information for address = " + address + " for server " + server);
+
+      for (Binding binding : bindings.getBindings())
+      {
+         QueueBinding qBinding = (QueueBinding) binding;
+         System.err.println("Binding = " + qBinding + ", queue=" + qBinding.getQueue());
+      }
+
    }
 }

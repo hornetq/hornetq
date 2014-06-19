@@ -66,6 +66,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    private final int distance;
 
+   private boolean connected = true;
+
    public RemoteQueueBindingImpl(final long id,
                                  final SimpleString address,
                                  final SimpleString uniqueName,
@@ -260,6 +262,14 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       consumerCount--;
    }
 
+   @Override
+   public void reset()
+   {
+      consumerCount = 0;
+      filterCounts.clear();
+      filters.clear();
+   }
+
    public synchronized int consumerCount()
    {
       return consumerCount;
@@ -268,7 +278,9 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    @Override
    public String toString()
    {
-      return "RemoteQueueBindingImpl [address=" + address +
+      return "RemoteQueueBindingImpl(" +
+            (connected ? "connected" : "disconnected")
+            + ")[address=" + address +
              ", consumerCount=" +
              consumerCount +
              ", distance=" +
@@ -300,6 +312,25 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
          ", remoteQueueID=" +
          remoteQueueID + "]";
    }
+
+   @Override
+   public void disconnect()
+   {
+      connected = false;
+   }
+
+   @Override
+   public boolean isConnected()
+   {
+      return connected;
+   }
+
+   @Override
+   public void connect()
+   {
+      connected = true;
+   }
+
 
    public Set<Filter> getFilters()
    {
