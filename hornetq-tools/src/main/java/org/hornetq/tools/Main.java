@@ -15,12 +15,13 @@ package org.hornetq.tools;
 
 public class Main
 {
-   private static final String USAGE = "Use: java -jar " + getJarName();
+   public static final String USAGE = "Use: java -jar " + getJarName();
    private static final String IMPORT = "import";
    private static final String EXPORT = "export";
    private static final String PRINT_DATA = "print-data";
    private static final String PRINT_PAGES = "print-pages";
-   private static final String OPTIONS =  " [" + IMPORT + "|" + EXPORT + "|" + PRINT_DATA + "|" + PRINT_PAGES + "]";
+   private static final String DATA_TOOL = "data-tool";
+   private static final String OPTIONS =  " [" + IMPORT + "|" + EXPORT + "|" + PRINT_DATA + "|" + PRINT_PAGES + "|" + DATA_TOOL + "]";
 
    public static void main(String[] arg) throws Exception
    {
@@ -30,7 +31,12 @@ public class Main
          System.exit(-1);
       }
 
-      if (EXPORT.equals(arg[0]))
+      if (DATA_TOOL.equals(arg[0]))
+      {
+         DataTool dataTool = new DataTool();
+         dataTool.process(arg);
+      }
+      else if (EXPORT.equals(arg[0]))
       {
          if (arg.length != 5)
          {
