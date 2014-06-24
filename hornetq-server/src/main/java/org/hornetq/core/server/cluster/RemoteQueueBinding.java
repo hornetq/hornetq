@@ -29,4 +29,10 @@ public interface RemoteQueueBinding extends QueueBinding
    void addConsumer(SimpleString filterString) throws Exception;
 
    void removeConsumer(SimpleString filterString) throws Exception;
+
+   void reset();
+
+   void disconnect();
+
+   void connect();
 }

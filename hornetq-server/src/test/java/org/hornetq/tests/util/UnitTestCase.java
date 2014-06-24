@@ -1333,6 +1333,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          // if the EventLoop's are still busy.
          return true;
       }
+      else if (threadName.contains("threadDeathWatcher"))
+      {
+         //another netty thread
+         return true;
+      }
       else
       {
          for (StackTraceElement element : thread.getStackTrace())

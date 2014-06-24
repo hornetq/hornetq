@@ -125,6 +125,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    private final Object recordsGuard = new Object();
    private final Map<String, MessageFlowRecord> records = new ConcurrentHashMap<String, MessageFlowRecord>();
 
+   private final Map<String, MessageFlowRecord> disconnectedRecords = new ConcurrentHashMap<String, MessageFlowRecord>();
+
    private final ScheduledExecutorService scheduledExecutor;
 
    private final int maxHops;
@@ -679,38 +681,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
    public void nodeDown(final long eventUID, final String nodeID)
    {
-      if (stopping)
-      {
-         return;
-      }
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
-      {
-         HornetQServerLogger.LOGGER.debug(this + " receiving nodeDown for nodeID=" + nodeID, new Exception("trace"));
-      }
-      if (nodeID.equals(nodeManager.getNodeId().toString()))
-      {
-         return;
-      }
-
-      // Remove the flow record for that node
-
-      MessageFlowRecord record = records.remove(nodeID);
-
-      if (record != null)
-      {
-         try
-         {
-            if (isTrace)
-            {
-               HornetQServerLogger.LOGGER.trace("Closing clustering record " + record);
-            }
-            record.close();
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorClosingFlowRecord(e);
-         }
-      }
+      /*
+      * we dont do anything when a node down is received. The bridges will take care themselves when they should disconnect
+      * and/or clear their bindings. This is to avoid closing a record when we don't want to.
+      * */
    }
 
    @Override
@@ -962,7 +936,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       private volatile boolean isClosed = false;
 
-      private volatile boolean firstReset = false;
+      private volatile boolean reset = false;
 
       public MessageFlowRecordImpl(final ServerLocatorInternal targetLocator,
                                    final long eventUID,
@@ -994,8 +968,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             queue +
             ", isClosed=" +
             isClosed +
-            ", firstReset=" +
-            firstReset +
+            ", reset=" +
+            reset +
             "]";
       }
 
@@ -1054,6 +1028,10 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          return maxHops;
       }
 
+      /*
+      * we should only ever close a record when the node itself has gone down or in the case of scale down where we know
+      * the node is being completely destroyed and in this case we will migrate to another server/Bridge.
+      * */
       public void close() throws Exception
       {
          if (isTrace)
@@ -1101,7 +1079,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       public void reset() throws Exception
       {
-         clearBindings();
+         resetBindings();
       }
 
       public void setBridge(final BridgeImpl bridge)
@@ -1125,14 +1103,17 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             // Reset the bindings
             if (message.containsProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA))
             {
-               clearBindings();
-
-               firstReset = true;
+               reset = true;
 
                return;
             }
+            else if (message.containsProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA_COMPLETE))
+            {
+               clearDisconnectedBindings();
+               return;
+            }
 
-            if (!firstReset)
+            if (!reset)
             {
                HornetQServerLogger.LOGGER.debug("Notification being ignored since first reset wasn't received yet: " + message);
                return;
@@ -1292,6 +1273,38 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
       }
 
+      private synchronized void resetBindings() throws Exception
+      {
+         HornetQServerLogger.LOGGER.debug(ClusterConnectionImpl.this + " reset bindings");
+         for (RemoteQueueBinding binding : new HashSet<>(bindings.values()))
+         {
+            resetBinding(binding.getClusterName());
+         }
+      }
+
+      private synchronized void clearDisconnectedBindings() throws Exception
+      {
+         HornetQServerLogger.LOGGER.debug(ClusterConnectionImpl.this + " reset bindings");
+         for (RemoteQueueBinding binding : new HashSet<>(bindings.values()))
+         {
+            if (!binding.isConnected())
+            {
+               removeBinding(binding.getClusterName());
+            }
+         }
+      }
+
+
+      public synchronized void disconnectBindings() throws Exception
+      {
+         HornetQServerLogger.LOGGER.debug(ClusterConnectionImpl.this + " disconnect bindings");
+         reset = false;
+         for (RemoteQueueBinding binding : new HashSet<>(bindings.values()))
+         {
+            disconnectBinding(binding.getClusterName());
+         }
+      }
+
       private synchronized void doBindingAdded(final ClientMessage message) throws Exception
       {
          if (HornetQServerLogger.LOGGER.isTraceEnabled())
@@ -1335,6 +1348,24 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          Long queueID = message.getLongProperty(ManagementHelper.HDR_BINDING_ID);
 
+         RemoteQueueBinding existingBinding = (RemoteQueueBinding) postOffice.getBinding(clusterName);
+
+         if (existingBinding != null)
+         {
+            if (!existingBinding.isConnected())
+            {
+               existingBinding.connect();
+               return;
+            }
+            // Sanity check - this means the binding has already been added via another bridge, probably max
+            // hops is too high
+            // or there are multiple cluster connections for the same address
+
+            HornetQServerLogger.LOGGER.remoteQueueAlreadyBoundOnClusterConnection(this, clusterName);
+
+            return;
+         }
+
          RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateUniqueID(),
                                                                  queueAddress,
                                                                  clusterName,
@@ -1344,17 +1375,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
                                                                  queue,
                                                                  bridge.getName(),
                                                                  distance + 1);
-
-         if (postOffice.getBinding(clusterName) != null)
-         {
-            // Sanity check - this means the binding has already been added via another bridge, probably max
-            // hops is too high
-            // or there are multiple cluster connections for the same address
-
-            HornetQServerLogger.LOGGER.remoteQueueAlreadyBoundOnClusterConnection(this, clusterName);
-
-            return;
-         }
 
          if (isTrace)
          {
@@ -1403,6 +1423,29 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
 
          postOffice.removeBinding(binding.getUniqueName(), null);
+      }
+
+      private synchronized void resetBinding(final SimpleString clusterName) throws Exception
+      {
+         RemoteQueueBinding binding = bindings.get(clusterName);
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue " + clusterName);
+         }
+         binding.reset();
+      }
+
+
+      private synchronized void disconnectBinding(final SimpleString clusterName) throws Exception
+      {
+         RemoteQueueBinding binding = bindings.get(clusterName);
+
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue " + clusterName);
+         }
+
+         binding.disconnect();
       }
 
       private synchronized void doConsumerCreated(final ClientMessage message) throws Exception
@@ -1619,6 +1662,34 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    public boolean verify(String clusterUser0, String clusterPassword0)
    {
       return clusterUser.equals(clusterUser0) && clusterPassword.equals(clusterPassword0);
+   }
+
+   @Override
+   public void removeRecord(String targetNodeID)
+   {
+      MessageFlowRecord record = records.remove(targetNodeID);
+      try
+      {
+         record.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
+   @Override
+   public void disconnectRecord(String targetNodeID)
+   {
+      MessageFlowRecord record = records.get(targetNodeID);
+      try
+      {
+         record.disconnectBindings();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
    }
 
    private final class LiveNotifier implements Runnable

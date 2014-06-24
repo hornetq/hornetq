@@ -318,9 +318,8 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       send(0, "queues.testaddress", 33, true, null);
 
-      verifyReceiveRoundRobin(33, 0, 1, 2);
-
-
+      //the last consumer to receive a message was 1 so round robin will continue from consumer 2
+      verifyReceiveRoundRobinInSomeOrder(33, 2, 0, 1);
    }
 
 

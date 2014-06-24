@@ -34,6 +34,7 @@ import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.core.client.TopologyMember;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -647,7 +648,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
       }
 
-      fail(me.getType() == HornetQExceptionType.DISCONNECTED);
+      //we never fail permanently here, this only happens once all reconnect tries have happened
+      fail(false);
 
       tryScheduleRetryReconnect(me.getType());
    }
@@ -767,6 +769,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          queue.getName() + "/" + queue.getID() + "]";
    }
 
+   public ClientSessionFactoryImpl getCSF()
+   {
+      return (ClientSessionFactoryImpl) csf;
+   }
    protected void fail(final boolean permanently)
    {
       HornetQServerLogger.LOGGER.debug(this + "\n\t::fail being called, permanently=" + permanently);

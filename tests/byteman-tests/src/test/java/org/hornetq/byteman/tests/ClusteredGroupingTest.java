@@ -67,9 +67,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
+      setupClusterConnection("cluster0", "queues", false, 1, 0, 500, isNetty(), 0, 1);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
+      setupClusterConnection("cluster1", "queues", false, 1,  0, 500, isNetty(), 1, 0);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -97,7 +97,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       crashAndWaitForFailure(getServer(1));
 
-      assertTrue(latch2.await(5000, TimeUnit.MILLISECONDS));
+      assertTrue(latch2.await(20000, TimeUnit.MILLISECONDS));
 
       try
       {
@@ -142,11 +142,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       setupServer(2, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster0", "queues", false, 1,  0, 500, isNetty(), 0, 1, 2);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster1", "queues", false, 1,  0, 500, isNetty(), 1, 0, 2);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      setupClusterConnection("cluster2", "queues", false, 1,  0, 500, isNetty(), 2, 0, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -180,7 +180,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       main = Thread.currentThread();
       crashAndWaitForFailure(getServer(2));
 
-      assertTrue(latch2.await(5000, TimeUnit.MILLISECONDS));
+      assertTrue(latch2.await(20000, TimeUnit.MILLISECONDS));
 
       try
       {
@@ -227,11 +227,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       setupServer(2, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster0", "queues", false, 1,  0, 500, isNetty(), 0, 1, 2);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster1", "queues", false, 1,  0, 500, isNetty(), 1, 0, 2);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      setupClusterConnection("cluster2", "queues", false, 1,  0, 500, isNetty(), 2, 0, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -265,7 +265,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       main = Thread.currentThread();
       crashAndWaitForFailure(getServer(2));
 
-      assertTrue(latch2.await(5000, TimeUnit.MILLISECONDS));
+      assertTrue(latch2.await(20000, TimeUnit.MILLISECONDS));
 
       try
       {
@@ -313,13 +313,13 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(2, isFileStorage(), isNetty());
       setupServer(3, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2, 3);
+      setupClusterConnection("cluster0", "queues", false, 1,  0, 500, isNetty(), 0, 1, 2, 3);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2, 3);
+      setupClusterConnection("cluster1", "queues", false, 1,  0, 500, isNetty(), 1, 0, 2, 3);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1, 3);
+      setupClusterConnection("cluster2", "queues", false, 1,  0, 500, isNetty(), 2, 0, 1, 3);
 
-      setupClusterConnection("cluster3", "queues", false, 1, isNetty(), 3, 1, 2, 3);
+      setupClusterConnection("cluster3", "queues", false, 1,  0, 500, isNetty(), 3, 1, 2, 3);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -358,7 +358,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       main = Thread.currentThread();
       crashAndWaitForFailure(getServer(2));
 
-      assertTrue(latch2.await(5000, TimeUnit.MILLISECONDS));
+      assertTrue(latch2.await(20000, TimeUnit.MILLISECONDS));
 
       try
       {

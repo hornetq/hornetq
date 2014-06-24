@@ -21,8 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -31,7 +29,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -1452,11 +1449,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       setupServer(2, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster0", "queues", false, 1, 0, 500, isNetty(), 0, 1, 2);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster1", "queues", false, 1, 0, 500, isNetty(), 1, 0, 2);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      setupClusterConnection("cluster2", "queues", false, 1, 0, 500, isNetty(), 2, 0, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -1488,50 +1485,21 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       closeAllConsumers();
 
-      final CountDownLatch latch = new CountDownLatch(4);
-      NotificationListener listener = new NotificationListener()
-      {
-         public void onNotification(final Notification notification)
-         {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-         }
-      };
-      getServer(0).getManagementService().addNotificationListener(listener);
-      getServer(2).getManagementService().addNotificationListener(listener);
-
       stopServers(1);
 
       startServers(1);
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                   TimeUnit.SECONDS));
-      getServer(0).getManagementService().removeNotificationListener(listener);
-      getServer(2).getManagementService().removeNotificationListener(listener);
-      addConsumer(1, 2, "queue0", null);
 
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 2, 1, false);
+      closeSessionFactory(1);
+
+      setupSessionFactory(1, isNetty());
+
+      addConsumer(0, 1, "queue0", null);
+
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(0, "queues.testaddress", 2, 1, false);
       sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
-      verifyReceiveAllInRange(10, 20, 1);
+      verifyReceiveAllInRange(10, 20, 0);
 
       System.out.println("*****************************************************************************");
 
@@ -1544,11 +1512,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       setupServer(2, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster0", "queues", false, 1, 0, 500, isNetty(), 0, 1, 2);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster1", "queues", false, 1, 0, 500, isNetty(), 1, 0, 2);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      setupClusterConnection("cluster2", "queues", false, 1, 0, 500, isNetty(), 2, 0, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -1581,35 +1549,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       closeAllConsumers();
 
       sendInRange(2, "queues.testaddress", 10, 20, true, Message.HDR_GROUP_ID, new SimpleString("id1"));
-      final CountDownLatch latch = new CountDownLatch(4);
-      NotificationListener listener = new NotificationListener()
-      {
-         public void onNotification(final Notification notification)
-         {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-         }
-      };
-      getServer(0).getManagementService().addNotificationListener(listener);
-      getServer(2).getManagementService().addNotificationListener(listener);
 
       stopServers(1);
 
@@ -1619,10 +1558,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       setupSessionFactory(1, isNetty());
 
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                   TimeUnit.SECONDS));
-      getServer(0).getManagementService().removeNotificationListener(listener);
-      getServer(2).getManagementService().removeNotificationListener(listener);
       addConsumer(1, 1, "queue0", null);
 
       waitForBindings(1, "queues.testaddress", 1, 1, true);
@@ -1640,11 +1575,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       setupServer(2, isFileStorage(), isNetty());
 
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster0", "queues", false, 1, 0, 500, isNetty(), 0, 1, 2);
 
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster1", "queues", false, 1, 0, 500, isNetty(), 1, 0, 2);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
+      setupClusterConnection("cluster2", "queues", false, 1, 0, 500, isNetty(), 2, 0, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
@@ -1673,44 +1608,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
       sendInRange(1, "queues.testaddress", 0, 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
       verifyReceiveAllInRange(0, 10, 0);
-      final CountDownLatch latch = new CountDownLatch(4);
-      NotificationListener listener = new NotificationListener()
-      {
-         public void onNotification(final Notification notification)
-         {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
-            {
-               if (notification.getProperties()
-                  .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
-                  .toString()
-                  .equals("queues.testaddress"))
-               {
-                  latch.countDown();
-               }
-            }
-         }
-      };
-      getServer(0).getManagementService().addNotificationListener(listener);
-      getServer(2).getManagementService().addNotificationListener(listener);
       stopServers(1);
 
       closeSessionFactory(1);
       startServers(1);
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
-                                                                                                   TimeUnit.SECONDS));
       setupSessionFactory(1, isNetty());
-      getServer(0).getManagementService().removeNotificationListener(listener);
-      getServer(2).getManagementService().removeNotificationListener(listener);
       addConsumer(1, 1, "queue0", null);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(0, "queues.testaddress", 2, 1, false);

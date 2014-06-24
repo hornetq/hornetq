@@ -319,10 +319,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    @Override
    protected void tryScheduleRetryReconnect(final HornetQExceptionType type)
    {
-      if (type != HornetQExceptionType.DISCONNECTED)
-      {
-         scheduleRetryConnect();
-      }
+      scheduleRetryConnect();
    }
 
    @Override
@@ -334,7 +331,11 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (permanently)
       {
          HornetQServerLogger.LOGGER.debug("cluster node for bridge " + this.getName() + " is permanently down");
-         discoveryLocator.notifyNodeDown(System.currentTimeMillis(), targetNodeID);
+         clusterConnection.removeRecord(targetNodeID);
+      }
+      else
+      {
+         clusterConnection.disconnectRecord(targetNodeID);
       }
 
    }

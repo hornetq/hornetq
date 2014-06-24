@@ -89,6 +89,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
+   public static final SimpleString HDR_RESET_QUEUE_DATA_COMPLETE = new SimpleString("_HQ_RESET_QUEUE_DATA_COMPLETE");
+
    public static final SimpleString BRIDGE_CACHE_STR = new SimpleString("BRIDGE.");
 
    private final AddressManager addressManager;
@@ -928,6 +930,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
             }
          }
+         ServerMessage completeMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+
+         completeMessage.setAddress(queueName);
+         completeMessage.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA_COMPLETE, true);
+         routeQueueInfo(completeMessage, queue, false);
       }
 
    }
@@ -1051,7 +1058,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             MessageReference reference = message.createReference(queue);
 
             refs.add(reference);
-
             if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
             {
                Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);

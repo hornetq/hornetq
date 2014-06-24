@@ -163,4 +163,9 @@ public class LocalQueueBinding implements QueueBinding
    {
       return this.getClass().getSimpleName() + " [address=" + address + ", queue=" + queue + "]";
    }
+   @Override
+   public boolean isConnected()
+   {
+      return true;
+   }
 }

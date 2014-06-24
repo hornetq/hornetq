@@ -68,7 +68,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
    protected InVMNamingContext context2;
 
-   private static final int MAX_HOPS = 1;
+   protected static final int MAX_HOPS = 1;
 
    // Static --------------------------------------------------------
 
@@ -100,8 +100,13 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
    protected Topic createTopic(final String name) throws Exception
    {
-      jmsServer2.createTopic(false, name, "/topic/" + name);
-      jmsServer1.createTopic(false, name, "/topic/" + name);
+      return createTopic(name, false);
+   }
+
+   protected Topic createTopic(final String name, boolean durable) throws Exception
+   {
+      jmsServer2.createTopic(durable, name, "/topic/" + name);
+      jmsServer1.createTopic(durable, name, "/topic/" + name);
 
       return (Topic) context1.lookup("/topic/" + name);
    }
@@ -143,7 +148,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
 
       mBeanServer2 = MBeanServerFactory.createMBeanServer();
-      server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, false);
+      server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, enablePersistence());
       jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
       context2 = new InVMNamingContext();
       jmsServer2.setContext(context2);
@@ -191,10 +196,15 @@ public class JMSClusteredTestBase extends ServiceTestBase
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
 
       mBeanServer1 = MBeanServerFactory.createMBeanServer();
-      server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, false);
+      server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, enablePersistence());
       jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
       context1 = new InVMNamingContext();
       jmsServer1.setContext(context1);
+   }
+
+   protected boolean enablePersistence()
+   {
+      return false;
    }
 
    /**

@@ -152,8 +152,8 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
 
-      createQueue(0, "queues", "queue0", null, false);
-      createQueue(1, "queues", "queue0", null, false);
+      createQueue(0, "queues", "queue0", null, true);
+      createQueue(1, "queues", "queue0", null, true);
 
       addConsumer(0, 0, "queue0", null);
       addConsumer(1, 1, "queue0", null);
@@ -186,7 +186,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
 
       setupSessionFactory(1, isNetty());
 
-      createQueue(1, "queues", "queue0", null, false);
+     // createQueue(1, "queues", "queue0", null, false);
 
       addConsumer(1, 1, "queue0", null);
 
