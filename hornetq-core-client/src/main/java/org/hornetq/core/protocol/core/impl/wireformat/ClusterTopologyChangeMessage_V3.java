@@ -23,6 +23,8 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
 {
    private String scaleDownGroupName;
 
+   private String scaleDownTargetNodeID;
+
    public ClusterTopologyChangeMessage_V3(final long uniqueEventID, final String nodeID, final String backupGroupName, final String scaleDownGroupName,
                                           final Pair<TransportConfiguration, TransportConfiguration> pair, final boolean last)
    {
@@ -43,7 +45,8 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
       this.scaleDownGroupName = scaleDownGroupName;
    }
 
-   public ClusterTopologyChangeMessage_V3(final long uniqueEventID, final String nodeID)
+   // this constructor is used when a node is going down
+   public ClusterTopologyChangeMessage_V3(final long uniqueEventID, final String nodeID, final String scaleDownTargetNodeID)
    {
       super(CLUSTER_TOPOLOGY_V3);
 
@@ -52,6 +55,8 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
       this.nodeID = nodeID;
 
       this.uniqueEventID = uniqueEventID;
+
+      this.scaleDownTargetNodeID = scaleDownTargetNodeID;
    }
 
    public ClusterTopologyChangeMessage_V3()
@@ -64,11 +69,17 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
       return scaleDownGroupName;
    }
 
+   public String getScaleDownTargetNodeID()
+   {
+      return scaleDownTargetNodeID;
+   }
+
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       super.encodeRest(buffer);
       buffer.writeNullableString(scaleDownGroupName);
+      buffer.writeNullableString(scaleDownTargetNodeID);
    }
 
    @Override
@@ -76,6 +87,7 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
    {
       super.decodeRest(buffer);
       scaleDownGroupName = buffer.readNullableString();
+      scaleDownTargetNodeID = buffer.readNullableString();
    }
 
    @Override
@@ -84,6 +96,7 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
       final int prime = 31;
       int result = super.hashCode();
       result = prime * result + ((scaleDownGroupName == null) ? 0 : scaleDownGroupName.hashCode());
+      result = prime * result + ((scaleDownTargetNodeID == null) ? 0 : scaleDownTargetNodeID.hashCode());
       return result;
    }
 
@@ -111,6 +124,17 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
          }
       }
       else if (!scaleDownGroupName.equals(other.scaleDownGroupName))
+      {
+         return false;
+      }
+      if (scaleDownTargetNodeID == null)
+      {
+         if (other.scaleDownTargetNodeID != null)
+         {
+            return false;
+         }
+      }
+      else if (!scaleDownTargetNodeID.equals(other.scaleDownTargetNodeID))
       {
          return false;
       }

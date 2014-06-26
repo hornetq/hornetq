@@ -263,7 +263,8 @@ class CoreProtocolManager implements ProtocolManager
 
                }
 
-               public void nodeDown(final long uniqueEventID, final String nodeID)
+               @Override
+               public void nodeDown(final long uniqueEventID, final String nodeID, final String scaleDownTargetNodeID)
                {
                   // Using an executor as most of the notifications on the Topology
                   // may come from a channel itself
@@ -274,7 +275,11 @@ class CoreProtocolManager implements ProtocolManager
                      {
                         public void run()
                         {
-                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V3))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V3(uniqueEventID, nodeID, scaleDownTargetNodeID));
+                           }
+                           else if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
                            {
                               channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
                            }

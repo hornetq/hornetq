@@ -35,4 +35,6 @@ public interface RemoteQueueBinding extends QueueBinding
    void disconnect();
 
    void connect();
+
+   long getRemoteQueueID();
 }

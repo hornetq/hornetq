@@ -1533,7 +1533,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
     * or when the node sends a disconnection.
     * Look for callers of this method!
     */
-   public void notifyNodeDown(final long eventTime, final String nodeID)
+   public void notifyNodeDown(final long eventTime, final String nodeID, String scaleDownTargetNodeID)
    {
 
       if (!ha)
@@ -1547,7 +1547,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          HornetQClientLogger.LOGGER.trace("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
 
-      topology.removeMember(eventTime, nodeID);
+      topology.removeMember(eventTime, nodeID, scaleDownTargetNodeID);
 
       if (clusterConnection)
       {

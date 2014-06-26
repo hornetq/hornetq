@@ -341,7 +341,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   public synchronized void freeze(final TransportConfiguration transportConfiguration, final CoreRemotingConnection connectionToKeepOpen)
+   public synchronized void freeze(final String scaleDownNodeID, final CoreRemotingConnection connectionToKeepOpen)
    {
       if (!started)
          return;
@@ -376,7 +376,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          if (!conn.isClient())
          {
-            conn.disconnect(transportConfiguration, false);
+            conn.disconnect(scaleDownNodeID, false);
             connections.remove(entry.getKey());
          }
       }

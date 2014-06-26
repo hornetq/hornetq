@@ -712,7 +712,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("going to send message " + message);
+         HornetQServerLogger.LOGGER.trace("going to send message: " + message + " from " + this.getQueue());
       }
 
       try
@@ -1218,7 +1218,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
 
       // ClusterListener
-
+      @Override
       public void nodeUP(TopologyMember member, boolean last)
       {
          ClientSessionInternal sessionToUse = session;
@@ -1241,7 +1241,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       }
 
-      public void nodeDown(long eventUID, String nodeID)
+      @Override
+      public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
       {
 
       }

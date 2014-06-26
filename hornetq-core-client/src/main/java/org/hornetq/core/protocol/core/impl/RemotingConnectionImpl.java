@@ -26,7 +26,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.Channel;
@@ -371,7 +370,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
       disconnect(null, criticalError);
    }
 
-   public void disconnect(TransportConfiguration transportConfiguration, final boolean criticalError)
+   public void disconnect(String scaleDownNodeID, final boolean criticalError)
    {
       Channel channel0 = getChannel(ChannelImpl.CHANNEL_ID.PING.id, -1);
 
@@ -403,9 +402,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
       }
       Packet disconnect;
 
-      if (transportConfiguration != null && channel0.supports(PacketImpl.DISCONNECT_V2))
+      if (channel0.supports(PacketImpl.DISCONNECT_V2))
       {
-         disconnect = new DisconnectMessage_V2(nodeID, transportConfiguration);
+         disconnect = new DisconnectMessage_V2(nodeID, scaleDownNodeID);
       }
       else
       {

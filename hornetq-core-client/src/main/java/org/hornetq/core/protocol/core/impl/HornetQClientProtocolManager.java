@@ -41,6 +41,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessa
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.version.Version;
@@ -487,11 +488,18 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          if (type == PacketImpl.DISCONNECT || type == PacketImpl.DISCONNECT_V2)
          {
             final DisconnectMessage msg = (DisconnectMessage) packet;
+            String scaleDownTargetNodeID = null;
 
             SimpleString nodeID = msg.getNodeID();
 
+            if (packet instanceof DisconnectMessage_V2)
+            {
+               final DisconnectMessage_V2 msg_v2 = (DisconnectMessage_V2) packet;
+               scaleDownTargetNodeID = msg_v2.getScaleDownNodeID() == null ? null :  msg_v2.getScaleDownNodeID().toString();
+            }
+
             if (callbackHandler != null)
-               callbackHandler.nodeDisconnected(conn, nodeID == null ? null : nodeID.toString());
+               callbackHandler.nodeDisconnected(conn, nodeID == null ? null : nodeID.toString(), scaleDownTargetNodeID);
          }
          else if (type == PacketImpl.CLUSTER_TOPOLOGY)
          {
@@ -522,23 +530,27 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          final long eventUID;
          final String backupGroupName;
          final String scaleDownGroupName;
+         final String scaleDownTargetNodeID;
          if (topMessage instanceof ClusterTopologyChangeMessage_V3)
          {
             eventUID = ((ClusterTopologyChangeMessage_V3) topMessage).getUniqueEventID();
             backupGroupName = ((ClusterTopologyChangeMessage_V3) topMessage).getBackupGroupName();
             scaleDownGroupName = ((ClusterTopologyChangeMessage_V3) topMessage).getScaleDownGroupName();
+            scaleDownTargetNodeID = ((ClusterTopologyChangeMessage_V3) topMessage).getScaleDownTargetNodeID();
          }
          else if (topMessage instanceof ClusterTopologyChangeMessage_V2)
          {
             eventUID = ((ClusterTopologyChangeMessage_V2) topMessage).getUniqueEventID();
             backupGroupName = ((ClusterTopologyChangeMessage_V2) topMessage).getBackupGroupName();
             scaleDownGroupName = null;
+            scaleDownTargetNodeID = null;
          }
          else
          {
             eventUID = System.currentTimeMillis();
             backupGroupName = null;
             scaleDownGroupName = null;
+            scaleDownTargetNodeID = null;
          }
 
          if (topMessage.isExit())
@@ -549,7 +561,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
             }
 
             if (callbackHandler != null)
-               callbackHandler.notifyNodeDown(eventUID, topMessage.getNodeID());
+               callbackHandler.notifyNodeDown(eventUID, topMessage.getNodeID(), scaleDownTargetNodeID);
          }
          else
          {
@@ -579,5 +591,4 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          }
       }
    }
-
 }

@@ -116,7 +116,7 @@ public class AnyLiveNodeLocatorForReplication extends LiveNodeLocator
     * TODO: there will be a better way to do this by finding which nodes backup has gone down.
     */
    @Override
-   public void nodeDown(long eventUID, String nodeID)
+   public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
    {
       try
       {

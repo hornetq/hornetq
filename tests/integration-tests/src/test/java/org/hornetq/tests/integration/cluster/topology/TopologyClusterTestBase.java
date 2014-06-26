@@ -81,7 +81,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
       }
 
-      public synchronized void nodeDown(final long uniqueEventID, String nodeID)
+      @Override
+      public synchronized void nodeDown(final long uniqueEventID, String nodeID, String scaleDownTargetNodeID)
       {
          if (nodes.contains(nodeID))
          {

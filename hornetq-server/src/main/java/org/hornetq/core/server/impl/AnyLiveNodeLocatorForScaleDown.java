@@ -122,7 +122,7 @@ public class AnyLiveNodeLocatorForScaleDown extends LiveNodeLocator
    }
 
    @Override
-   public void nodeDown(long eventUID, String nodeID)
+   public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
    {
       try
       {

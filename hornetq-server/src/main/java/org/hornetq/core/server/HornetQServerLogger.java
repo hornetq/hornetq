@@ -1086,6 +1086,12 @@ public interface HornetQServerLogger extends BasicLogger
           format = Message.Format.MESSAGE_FORMAT)
    void activateReplicatedBackupFailed(@Cause Throwable e);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222188,
+          value = "Unable to find target queue for node {0}",
+          format = Message.Format.MESSAGE_FORMAT)
+   void unableToFindTargetQueue(String targetNodeID);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
    void initializationError(@Cause Throwable e);

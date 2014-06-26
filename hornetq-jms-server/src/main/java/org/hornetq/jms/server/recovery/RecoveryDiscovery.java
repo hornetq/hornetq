@@ -150,6 +150,7 @@ public class RecoveryDiscovery implements SessionFailureListener
          this.config = config;
       }
 
+      @Override
       public void nodeUP(TopologyMember topologyMember, boolean last)
       {
          // There is a case where the backup announce itself,
@@ -164,7 +165,8 @@ public class RecoveryDiscovery implements SessionFailureListener
          }
       }
 
-      public void nodeDown(long eventUID, String nodeID)
+      @Override
+      public void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID)
       {
          // I'm not putting any node down, since it may have previous transactions hanging, however at some point we may
          //change it have some sort of timeout for removal

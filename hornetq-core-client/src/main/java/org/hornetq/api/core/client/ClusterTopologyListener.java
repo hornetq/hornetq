@@ -36,5 +36,5 @@ public interface ClusterTopologyListener
     * @param eventUID
     * @param nodeID the id of the node leaving the cluster
     */
-   void nodeDown(long eventUID, String nodeID);
+   void nodeDown(long eventUID, String nodeID, String scaleDownTargetNodeID);
 }

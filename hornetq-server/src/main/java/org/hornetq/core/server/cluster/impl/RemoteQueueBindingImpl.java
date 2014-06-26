@@ -376,4 +376,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
    }
 
+   public long getRemoteQueueID()
+   {
+      return  remoteQueueID;
+   }
 }

@@ -406,7 +406,7 @@ public class ScheduledDeliveryHandlerTest extends Assert
       }
 
       @Override
-      public ServerMessage makeCopyForExpiryOrDLA(long newID, MessageReference originalReference, boolean expiry) throws Exception
+      public ServerMessage makeCopyForExpiryOrDLA(long newID, MessageReference originalReference, boolean expiry, boolean copyOriginalHeaders) throws Exception
       {
          return null;
       }

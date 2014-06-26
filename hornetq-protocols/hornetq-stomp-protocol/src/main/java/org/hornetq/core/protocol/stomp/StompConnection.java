@@ -23,7 +23,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v12.StompFrameHandlerV12;
@@ -629,7 +628,7 @@ public final class StompConnection implements RemotingConnection
    }
 
    @Override
-   public void disconnect(final TransportConfiguration tc, final boolean criticalError)
+   public void disconnect(String scaleDownNodeID, final boolean criticalError)
    {
       destroy();
    }

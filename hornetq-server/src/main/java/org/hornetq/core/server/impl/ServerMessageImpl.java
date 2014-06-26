@@ -218,6 +218,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public ServerMessage makeCopyForExpiryOrDLA(final long newID, MessageReference originalReference,
                                                final boolean expiry) throws Exception
    {
+      return makeCopyForExpiryOrDLA(newID, originalReference, expiry, true);
+   }
+
+   public ServerMessage makeCopyForExpiryOrDLA(final long newID, MessageReference originalReference,
+                                               final boolean expiry, final boolean copyOriginalHeaders) throws Exception
+   {
       /*
        We copy the message and send that to the dla/expiry queue - this is
        because otherwise we may end up with a ref with the same message id in the
@@ -230,7 +236,10 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       ServerMessage copy = copy(newID);
       copy.finishCopy();
 
-      copy.setOriginalHeaders(this, originalReference, expiry);
+      if (copyOriginalHeaders)
+      {
+         copy.setOriginalHeaders(this, originalReference, expiry);
+      }
 
       return copy;
    }
