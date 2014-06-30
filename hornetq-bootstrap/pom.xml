@@ -18,6 +18,16 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-server</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-dto</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging-processor</artifactId>
       </dependency>
@@ -29,6 +39,11 @@
          <groupId>org.jboss.microcontainer</groupId>
          <artifactId>jboss-kernel</artifactId>
       </dependency>
+      <dependency>
+         <groupId>io.airlift</groupId>
+         <artifactId>airline</artifactId>
+      </dependency>
    </dependencies>
+
 
 </project>
