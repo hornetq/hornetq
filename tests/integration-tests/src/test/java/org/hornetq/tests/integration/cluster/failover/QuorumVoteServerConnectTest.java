@@ -23,7 +23,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
 
 @RunWith(Parameterized.class)
 public class QuorumVoteServerConnectTest extends UnitTestCase
@@ -59,8 +58,7 @@ public class QuorumVoteServerConnectTest extends UnitTestCase
    @Test
    public void testClusterSize()
    {
-      CountDownLatch latch = new CountDownLatch(1);
-      QuorumVoteServerConnect quorum = new QuorumVoteServerConnect(latch, size, new FakeStorageManager());
+      QuorumVoteServerConnect quorum = new QuorumVoteServerConnect(size, new FakeStorageManager());
       for (int i = 0; i < trueVotes - 1; i++)
       {
          quorum.vote(new BooleanVote(true));
@@ -74,8 +72,7 @@ public class QuorumVoteServerConnectTest extends UnitTestCase
       {
          assertFalse(quorum.getDecision());
       }
-      latch = new CountDownLatch(1);
-      quorum = new QuorumVoteServerConnect(latch, size, new FakeStorageManager());
+      quorum = new QuorumVoteServerConnect(size, new FakeStorageManager());
       for (int i = 0; i < trueVotes; i++)
       {
          quorum.vote(new BooleanVote(true));

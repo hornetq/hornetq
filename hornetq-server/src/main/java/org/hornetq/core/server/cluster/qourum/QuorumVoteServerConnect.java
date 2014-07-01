@@ -18,6 +18,7 @@ import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.persistence.StorageManager;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A Qourum Vote for deciding if a replicated backup should become live.
@@ -42,10 +43,9 @@ public class QuorumVoteServerConnect extends QuorumVote<BooleanVote, Boolean>
     * 5 remaining nodes would be 4/2 = 3 vote needed
     * 6 remaining nodes would be 5/2 = 3 vote needed
     * */
-   public QuorumVoteServerConnect(CountDownLatch latch, int size, StorageManager storageManager)
+   public QuorumVoteServerConnect(int size, StorageManager storageManager)
    {
       super(LIVE_FAILOVER_VOTE);
-      this.latch = latch;
       //we don't count ourself
       int actualSize = size - 1;
       if (actualSize <= 2)
@@ -57,7 +57,9 @@ public class QuorumVoteServerConnect extends QuorumVote<BooleanVote, Boolean>
          //even
          votesNeeded = actualSize / 2 + 1;
       }
-
+      //votes needed could be say 2.5 so we add 1 in this case
+      int latchSize = votesNeeded > (int) votesNeeded ? (int) votesNeeded + 1 : (int) votesNeeded;
+      latch = new CountDownLatch(latchSize);
       if (votesNeeded == 0)
       {
          decision = true;
@@ -127,5 +129,10 @@ public class QuorumVoteServerConnect extends QuorumVote<BooleanVote, Boolean>
    public SimpleString getName()
    {
       return null;
+   }
+
+   public void await(int latchTimeout, TimeUnit unit) throws InterruptedException
+   {
+      latch.await(latchTimeout, unit);
    }
 }

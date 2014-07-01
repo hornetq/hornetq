@@ -272,15 +272,13 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
       // we use 1 less than the max cluste size as we arent bothered about the replicated live node
       int size = quorumManager.getMaxClusterSize() - 1;
 
-      final CountDownLatch voteLatch = new CountDownLatch(1);
-
-      QuorumVoteServerConnect quorumVote = new QuorumVoteServerConnect(voteLatch, size, storageManager);
+      QuorumVoteServerConnect quorumVote = new QuorumVoteServerConnect(size, storageManager);
 
       quorumManager.vote(quorumVote);
 
       try
       {
-         voteLatch.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
+         quorumVote.await(LATCH_TIMEOUT, TimeUnit.SECONDS);
       }
       catch (InterruptedException interruption)
       {
