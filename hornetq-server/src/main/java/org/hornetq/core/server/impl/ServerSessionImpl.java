@@ -534,6 +534,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          run();
       }
 
+      @Override
+      public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+      {
+         connectionFailed(me, failedOver);
+      }
+
       public void connectionClosed()
       {
          run();
@@ -1558,6 +1564,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    // FailureListener implementation
    // --------------------------------------------------------------------
 
+   @Override
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
       try
@@ -1572,6 +1579,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          HornetQServerLogger.LOGGER.errorClosingConnection(this);
       }
+   }
+
+   @Override
+   public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+   {
+      connectionFailed(me, failedOver);
    }
 
    // Public

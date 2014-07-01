@@ -43,17 +43,6 @@ public class ClusterTopologyChangeMessage_V3 extends ClusterTopologyChangeMessag
       this.scaleDownGroupName = scaleDownGroupName;
    }
 
-   public ClusterTopologyChangeMessage_V3(final long uniqueEventID, final String nodeID)
-   {
-      super(CLUSTER_TOPOLOGY_V3);
-
-      this.exit = true;
-
-      this.nodeID = nodeID;
-
-      this.uniqueEventID = uniqueEventID;
-   }
-
    public ClusterTopologyChangeMessage_V3()
    {
       super(CLUSTER_TOPOLOGY_V3);

@@ -14,6 +14,7 @@ package org.hornetq.core.server.impl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,8 +25,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,11 +35,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
@@ -51,6 +56,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
@@ -206,7 +212,7 @@ public class QueueImpl implements Queue
 
    /**
     * For testing only
-    * */
+    */
    public List<SimpleString> getGroupsUsed()
    {
       final CountDownLatch flush = new CountDownLatch(1);
@@ -452,7 +458,7 @@ public class QueueImpl implements Queue
 
          // This is removing the name and a . added, giving us the original groupID used
          // this is because a groupID is stored per queue, and only this queue is expiring at this point
-         final SimpleString groupIDToRemove = (SimpleString)groupID.subSequence(0, groupID.length() - getName().length() - 1);
+         final SimpleString groupIDToRemove = (SimpleString) groupID.subSequence(0, groupID.length() - getName().length() - 1);
          // using an executor so we don't want to hold anyone just because of this
          getExecutor().execute(new Runnable()
          {
@@ -1713,7 +1719,8 @@ public class QueueImpl implements Queue
       return moveReferences(DEFAULT_FLUSH_LIMIT, filter, toAddress, false);
    }
 
-   public synchronized int moveReferences(final int flushLimit, final Filter filter,
+   public synchronized int moveReferences(final int flushLimit,
+                                          final Filter filter,
                                           final SimpleString toAddress,
                                           final boolean rejectDuplicates) throws Exception
    {
@@ -1746,6 +1753,18 @@ public class QueueImpl implements Queue
             {
                move(toAddress, tx, ref, false, rejectDuplicates);
             }
+         }
+      });
+   }
+
+   public synchronized int moveReferencesBetweenSnFQueues(final SimpleString queueSuffix) throws Exception
+   {
+      return iterQueue(DEFAULT_FLUSH_LIMIT, null, new QueueIterateAction()
+      {
+         @Override
+         public void actMessage(Transaction tx, MessageReference ref) throws Exception
+         {
+            moveBetweenSnFQueues(queueSuffix, tx, ref);
          }
       });
    }
@@ -2378,7 +2397,143 @@ public class QueueImpl implements Queue
       acknowledge(tx, ref);
    }
 
+   private void moveBetweenSnFQueues(final SimpleString queueSuffix,
+                                     final Transaction tx,
+                                     final MessageReference ref) throws Exception
+   {
+      ServerMessage copyMessage = makeCopy(ref, false, false);
+
+      byte[] oldRouteToIDs = null;
+      String targetNodeID;
+      Binding targetBinding;
+
+      // remove the old route
+      for (SimpleString propName : copyMessage.getPropertyNames())
+      {
+         if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
+         {
+            oldRouteToIDs = (byte[]) copyMessage.removeProperty(propName);
+            HornetQServerLogger.LOGGER.debug("Removed property from message: " + propName + " = " + oldRouteToIDs + " (" + ByteBuffer.wrap(oldRouteToIDs).getLong() + ")");
+
+            // there should only be one of these properties so potentially save some loop iterations
+            break;
+         }
+      }
+
+      ByteBuffer oldBuffer = ByteBuffer.wrap(oldRouteToIDs);
+
+      RoutingContext routingContext = new RoutingContextImpl(tx);
+
+      /* this algorithm will look at the old route and find the new remote queue bindings where the messages should go
+       * and route them there directly
+       */
+      while (oldBuffer.hasRemaining())
+      {
+         long oldQueueID = oldBuffer.getLong();
+
+         // look at all the bindings
+         Pair<String, Binding> result = locateTargetBinding(queueSuffix, copyMessage, oldQueueID);
+         targetBinding = result.getB();
+         targetNodeID = result.getA();
+
+         if (targetBinding == null)
+         {
+            HornetQServerLogger.LOGGER.unableToFindTargetQueue(targetNodeID);
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.debug("Routing on binding: " + targetBinding);
+            targetBinding.route(copyMessage, routingContext);
+         }
+      }
+
+      copyMessage.finishCopy();
+      postOffice.processRoute(copyMessage, routingContext, false);
+
+      ref.handled();
+
+      acknowledge(tx, ref);
+
+      storageManager.afterCompleteOperations(new IOAsyncTask()
+      {
+
+         public void onError(final int errorCode, final String errorMessage)
+         {
+            HornetQServerLogger.LOGGER.ioErrorRedistributing(errorCode, errorMessage);
+         }
+
+         public void done()
+         {
+            deliverAsync();
+         }
+      });
+   }
+
+
+   private Pair<String, Binding> locateTargetBinding(SimpleString queueSuffix, ServerMessage copyMessage, long oldQueueID)
+   {
+      String targetNodeID = null;
+      Binding targetBinding = null;
+
+      for (Map.Entry<SimpleString, Binding> entry : postOffice.getAllBindings().entrySet())
+      {
+         Binding binding = entry.getValue();
+
+         // we only care about the remote queue bindings
+         if (binding instanceof RemoteQueueBinding)
+         {
+            RemoteQueueBinding remoteQueueBinding = (RemoteQueueBinding) binding;
+
+            // does this remote queue binding point to the same queue as the message?
+            if (oldQueueID == remoteQueueBinding.getRemoteQueueID())
+            {
+               // get the name of this queue so we can find the corresponding remote queue binding pointing to the scale down target node
+               SimpleString oldQueueName = remoteQueueBinding.getRoutingName();
+
+               // parse the queue name of the remote queue binding to determine the node ID
+               String temp = remoteQueueBinding.getQueue().getName().toString();
+               targetNodeID = temp.substring(temp.lastIndexOf(".") + 1);
+               HornetQServerLogger.LOGGER.debug("Message formerly destined for " + oldQueueName + " with ID: " + oldQueueID + " on address " + copyMessage.getAddress() + " on node " + targetNodeID);
+
+               // now that we have the name of the queue we need to look through all the bindings again to find the new remote queue binding
+               for (Map.Entry<SimpleString, Binding> entry2 : postOffice.getAllBindings().entrySet())
+               {
+                  binding = entry2.getValue();
+
+                  // again, we only care about the remote queue bindings
+                  if (binding instanceof RemoteQueueBinding)
+                  {
+                     remoteQueueBinding = (RemoteQueueBinding) binding;
+                     temp = remoteQueueBinding.getQueue().getName().toString();
+                     targetNodeID = temp.substring(temp.lastIndexOf(".") + 1);
+                     if (oldQueueName.equals(remoteQueueBinding.getRoutingName()) && targetNodeID.equals(queueSuffix.toString()))
+                     {
+                        targetBinding = remoteQueueBinding;
+                        if (HornetQServerLogger.LOGGER.isDebugEnabled())
+                        {
+                           HornetQServerLogger.LOGGER.debug("Message now destined for " + remoteQueueBinding.getRoutingName() + " with ID: " + remoteQueueBinding.getRemoteQueueID() + " on address " + copyMessage.getAddress() + " on node " + targetNodeID);
+                        }
+                        break;
+                     }
+                     else
+                     {
+                        HornetQServerLogger.LOGGER.debug("Failed to match: " + remoteQueueBinding);
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return new Pair<>(targetNodeID, targetBinding);
+   }
+
+
    private ServerMessage makeCopy(final MessageReference ref, final boolean expiry) throws Exception
+   {
+      return makeCopy(ref, expiry, true);
+   }
+
+   private ServerMessage makeCopy(final MessageReference ref, final boolean expiry, final boolean copyOriginalHeaders) throws Exception
    {
       ServerMessage message = ref.getMessage();
       /*
@@ -2392,7 +2547,7 @@ public class QueueImpl implements Queue
 
       long newID = storageManager.generateUniqueID();
 
-      ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, ref, expiry);
+      ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, ref, expiry, copyOriginalHeaders);
 
       return copy;
    }

@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.server;
 import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -67,10 +66,10 @@ public interface RemotingService
     * Freezes and then disconnects all connections except the given one and tells the client where else
     * it might connect (only applicable if server is in a cluster and uses scaleDown-on-failover=true).
     *
-    * @param transportConfiguration
+    * @param scaleDownNodeID
     * @param remotingConnection
     */
-   void freeze(TransportConfiguration transportConfiguration, CoreRemotingConnection remotingConnection);
+   void freeze(String scaleDownNodeID, CoreRemotingConnection remotingConnection);
 
    /**
     * Returns the acceptor identified by its {@code name} or {@code null} if it does not exists.

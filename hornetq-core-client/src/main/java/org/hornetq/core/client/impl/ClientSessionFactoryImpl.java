@@ -566,9 +566,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
+      handleConnectionFailure(connectionID, me, null);
+   }
+
+   private void handleConnectionFailure(final Object connectionID, final HornetQException me, String scaleDownTargetNodeID)
+   {
       try
       {
-         failoverOrReconnect(connectionID, me);
+         failoverOrReconnect(connectionID, me, scaleDownTargetNodeID);
       }
       catch (HornetQInterruptedException e1)
       {
@@ -582,7 +587,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
     * @param connectionID
     * @param me
     */
-   private void failoverOrReconnect(final Object connectionID, final HornetQException me)
+   private void failoverOrReconnect(final Object connectionID, final HornetQException me, String scaleDownTargetNodeID)
    {
       Set<ClientSessionInternal> sessionsToClose = null;
       if (!clientProtocolManager.isAlive())
@@ -607,7 +612,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
          callFailoverListeners(FailoverEventType.FAILURE_DETECTED);
          // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
-         callSessionFailureListeners(me, false, false);
+         callSessionFailureListeners(me, false, false, scaleDownTargetNodeID);
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
          // There are either no threads executing in createSession, or one is blocking on a createSession
@@ -800,6 +805,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private void callSessionFailureListeners(final HornetQException me, final boolean afterReconnect,
                                             final boolean failedOver)
    {
+      callSessionFailureListeners(me, afterReconnect, failedOver, null);
+   }
+
+   private void callSessionFailureListeners(final HornetQException me, final boolean afterReconnect,
+                                            final boolean failedOver, final String scaleDownTargetNodeID)
+   {
       final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
 
       for (final SessionFailureListener listener : listenersClone)
@@ -808,7 +819,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             if (afterReconnect)
             {
-               listener.connectionFailed(me, failedOver);
+               listener.connectionFailed(me, failedOver, scaleDownTargetNodeID);
             }
             else
             {
@@ -1162,10 +1173,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public class CloseRunnable implements Runnable
    {
       private final RemotingConnection conn;
+      private final String scaleDownTargetNodeID;
 
-      public CloseRunnable(RemotingConnection conn)
+      public CloseRunnable(RemotingConnection conn, String scaleDownTargetNodeID)
       {
          this.conn = conn;
+         this.scaleDownTargetNodeID = scaleDownTargetNodeID;
       }
 
       // Must be executed on new thread since cannot block the Netty thread for a long time and fail
@@ -1175,7 +1188,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          try
          {
             CLOSE_RUNNABLES.add(this);
-            conn.fail(HornetQClientMessageBundle.BUNDLE.disconnected());
+            if (scaleDownTargetNodeID == null)
+            {
+               conn.fail(HornetQClientMessageBundle.BUNDLE.disconnected());
+            }
+            else
+            {
+               conn.fail(HornetQClientMessageBundle.BUNDLE.disconnected(), scaleDownTargetNodeID);
+            }
          }
          finally
          {
@@ -1392,9 +1412,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          this.connectionID = connectionID;
       }
 
+      @Override
       public void connectionFailed(final HornetQException me, final boolean failedOver)
       {
-         handleConnectionFailure(connectionID, me);
+         connectionFailed(me, failedOver, null);
+      }
+
+      @Override
+      public void connectionFailed(final HornetQException me, final boolean failedOver, String scaleDownTargetNodeID)
+      {
+         handleConnectionFailure(connectionID, me, scaleDownTargetNodeID);
       }
 
       @Override
@@ -1544,7 +1571,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
 
       @Override
-      public void nodeDisconnected(RemotingConnection conn, String nodeID)
+      public void nodeDisconnected(RemotingConnection conn, String nodeID, String scaleDownTargetNodeID)
       {
 
          if (HornetQClientLogger.LOGGER.isTraceEnabled())
@@ -1559,7 +1586,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
          serverLocator.notifyNodeDown(System.currentTimeMillis(), nodeID);
 
-         closeExecutor.execute(new CloseRunnable(conn));
+         closeExecutor.execute(new CloseRunnable(conn, scaleDownTargetNodeID));
 
       }
 

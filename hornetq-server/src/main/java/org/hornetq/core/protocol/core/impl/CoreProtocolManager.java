@@ -263,6 +263,7 @@ class CoreProtocolManager implements ProtocolManager
 
                }
 
+               @Override
                public void nodeDown(final long uniqueEventID, final String nodeID)
                {
                   // Using an executor as most of the notifications on the Topology

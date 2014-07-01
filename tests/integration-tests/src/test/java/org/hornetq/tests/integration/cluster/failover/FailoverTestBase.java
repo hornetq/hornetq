@@ -345,6 +345,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
+      @Override
       public void nodeUP(TopologyMember topologyMember, boolean last)
       {
          if (topologyMember.getLive() != null && !liveNode.contains(topologyMember.getLive().getName()))
@@ -359,6 +360,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          }
       }
 
+      @Override
       public void nodeDown(final long uniqueEventID, String nodeID)
       {
          //To change body of implemented methods use File | Settings | File Templates.

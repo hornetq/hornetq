@@ -896,13 +896,14 @@ public class HornetQServerImpl implements HornetQServer
    {
       ReplicationManager localReplicationManager = getReplicationManager();
       TransportConfiguration tc = scaleDownClientSessionFactory == null ? null : scaleDownClientSessionFactory.getConnectorConfiguration();
+      String nodeID = tc == null ? null : scaleDownClientSessionFactory.getServerLocator().getTopology().getMember(tc).getNodeId();
       if (remotingService != null && localReplicationManager != null)
       {
-         remotingService.freeze(tc, localReplicationManager.getBackupTransportConnection());
+         remotingService.freeze(nodeID, localReplicationManager.getBackupTransportConnection());
       }
       else if (remotingService != null)
       {
-         remotingService.freeze(tc, null);
+         remotingService.freeze(nodeID, null);
       }
 
       // after disconnecting all the clients close all the server sessions so any messages in delivery will be cancelled back to the queue
@@ -3215,6 +3216,12 @@ public class HornetQServerImpl implements HornetQServer
       public void connectionFailed(HornetQException exception, boolean failedOver)
       {
          connectionClosed();
+      }
+
+      @Override
+      public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+      {
+         connectionFailed(me, failedOver);
       }
 
       @Override

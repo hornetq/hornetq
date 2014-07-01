@@ -443,6 +443,12 @@ public class BindingsClusterTest extends JMSClusteredTestBase
             {
                latch.countDown();
             }
+
+            @Override
+            public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+            {
+               connectionFailed(me, failedOver);
+            }
          });
          forwardingConnection.fail(new HornetQNotConnectedException());
          assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));

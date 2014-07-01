@@ -63,6 +63,7 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ExecutorFactory;
+import org.omg.CORBA.portable.ResponseHandler;
 
 /**
  * Manages replication tasks on the live server (that is the live server side of a "remote backup"
@@ -416,6 +417,7 @@ public final class ReplicationManager implements HornetQComponent
 
    private final class ReplicatedSessionFailureListener implements SessionFailureListener
    {
+      @Override
       public void connectionFailed(final HornetQException me, boolean failedOver)
       {
          if (me.getType() == HornetQExceptionType.DISCONNECTED)
@@ -436,6 +438,12 @@ public final class ReplicationManager implements HornetQComponent
          {
             HornetQServerLogger.LOGGER.errorStoppingReplication(e);
          }
+      }
+
+      @Override
+      public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+      {
+         connectionFailed(me, failedOver);
       }
 
       public void beforeReconnect(final HornetQException me)

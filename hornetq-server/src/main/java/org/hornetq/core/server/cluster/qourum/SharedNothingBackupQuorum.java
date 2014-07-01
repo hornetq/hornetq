@@ -163,6 +163,12 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
    }
 
    @Override
+   public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+   {
+      connectionFailed(me, failedOver);
+   }
+
+   @Override
    public void close()
    {
       causeExit(BACKUP_ACTIVATION.STOP);

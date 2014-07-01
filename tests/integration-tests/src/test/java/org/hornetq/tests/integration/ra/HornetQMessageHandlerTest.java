@@ -112,6 +112,12 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
          }
 
          @Override
+         public void connectionFailed(HornetQException exception, boolean failedOver, String scaleDownTargetNodeID)
+         {
+            connectionFailed(exception, failedOver);
+         }
+
+         @Override
          public void beforeReconnect(HornetQException exception)
          {
             failedLatch.countDown();

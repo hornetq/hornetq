@@ -33,7 +33,6 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -48,6 +47,7 @@ import org.hornetq.utils.UUIDGenerator;
  * A bridge with extra functionality only available when the server is clustered.
  * <p>
  * Such as such adding extra properties and setting up notifications between the nodes.
+ *
  * @author tim
  * @author Clebert Suconic
  */
@@ -138,14 +138,14 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
-               new Exception("trace"));
+                                          new Exception("trace"));
       }
    }
 
    @Override
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
-      ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
+      ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal) serverLocator.createSessionFactory(targetNodeID);
       setSessionFactory(factory);
 
       if (factory == null)
@@ -154,18 +154,7 @@ public class ClusterConnectionBridge extends BridgeImpl
          return null;
       }
       factory.setReconnectAttempts(0);
-      factory.getConnection().addFailureListener(new FailureListener()
-      {
-
-         public void connectionFailed(HornetQException exception, boolean failedOver)
-         {
-            if (exception.getType() == HornetQExceptionType.DISCONNECTED)
-            {
-               flowRecord.serverDisconnected();
-               clusterManager.removeClusterLocator(serverLocator);
-            }
-         }
-      });
+      factory.getConnection().addFailureListener(this);
       return factory;
    }
 
@@ -217,12 +206,12 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
          HornetQServerLogger.LOGGER.debug("Setting up notificationConsumer between " + this.clusterConnection.getConnector() +
-                   " and " +
-                   flowRecord.getBridge().getForwardingConnection() +
-                   " clusterConnection = " +
-                   this.clusterConnection.getName() +
-                   " on server " +
-                   clusterConnection.getServer());
+                                             " and " +
+                                             flowRecord.getBridge().getForwardingConnection() +
+                                             " clusterConnection = " +
+                                             this.clusterConnection.getName() +
+                                             " on server " +
+                                             clusterConnection.getServer());
       }
       if (flowRecord != null)
       {
@@ -233,8 +222,8 @@ public class ClusterConnectionBridge extends BridgeImpl
             try
             {
                HornetQServerLogger.LOGGER.debug("Closing notification Consumer for reopening " + notifConsumer +
-                         " on bridge " +
-                         this.getName());
+                                                   " on bridge " +
+                                                   this.getName());
                notifConsumer.close();
 
                notifConsumer = null;
@@ -248,38 +237,38 @@ public class ClusterConnectionBridge extends BridgeImpl
          // Get the queue data
 
          String qName = "notif." + UUIDGenerator.getInstance().generateStringUUID() +
-                        "." +
-                        clusterConnection.getServer();
+            "." +
+            clusterConnection.getServer();
 
          SimpleString notifQueueName = new SimpleString(qName);
 
          SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                BindingType.DIVERT.toInt() +
-                                                " AND " +
-                                                ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                " IN ('" +
-                                                NotificationType.BINDING_ADDED +
-                                                "','" +
-                                                NotificationType.BINDING_REMOVED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CREATED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CLOSED +
-                                                "','" +
-                                                NotificationType.PROPOSAL +
-                                                "','" +
-                                                NotificationType.PROPOSAL_RESPONSE +
-                                                "','" +
-                                                NotificationType.UNPROPOSAL +
-                                                "') AND " +
-                                                ManagementHelper.HDR_DISTANCE +
-                                                "<" +
-                                                flowRecord.getMaxHops() +
-                                                " AND (" +
-                                                ManagementHelper.HDR_ADDRESS +
-                                                " LIKE '" +
-                                                flowRecord.getAddress() +
-                                                "%')");
+                                                   BindingType.DIVERT.toInt() +
+                                                   " AND " +
+                                                   ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                   " IN ('" +
+                                                   NotificationType.BINDING_ADDED +
+                                                   "','" +
+                                                   NotificationType.BINDING_REMOVED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CREATED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CLOSED +
+                                                   "','" +
+                                                   NotificationType.PROPOSAL +
+                                                   "','" +
+                                                   NotificationType.PROPOSAL_RESPONSE +
+                                                   "','" +
+                                                   NotificationType.UNPROPOSAL +
+                                                   "') AND " +
+                                                   ManagementHelper.HDR_DISTANCE +
+                                                   "<" +
+                                                   flowRecord.getMaxHops() +
+                                                   " AND (" +
+                                                   ManagementHelper.HDR_ADDRESS +
+                                                   " LIKE '" +
+                                                   flowRecord.getAddress() +
+                                                   "%')");
 
          session.createTemporaryQueue(managementNotificationAddress, notifQueueName, filter);
 
@@ -337,7 +326,6 @@ public class ClusterConnectionBridge extends BridgeImpl
       {
          clusterConnection.disconnectRecord(targetNodeID);
       }
-
    }
 
    protected boolean isPlainCoreBridge()

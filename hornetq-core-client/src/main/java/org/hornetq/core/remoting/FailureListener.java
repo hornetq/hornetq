@@ -29,4 +29,13 @@ public interface FailureListener
     * @param failedOver
     */
    void connectionFailed(HornetQException exception, boolean failedOver);
+
+   /**
+    * Notifies that a connection has failed due to the specified exception.
+    *
+    * @param exception exception which has caused the connection to fail
+    * @param failedOver
+    * @param scaleDownTargetNodeID the ID of the node to which messages are scaling down
+    */
+   void connectionFailed(HornetQException exception, boolean failedOver, String scaleDownTargetNodeID);
 }

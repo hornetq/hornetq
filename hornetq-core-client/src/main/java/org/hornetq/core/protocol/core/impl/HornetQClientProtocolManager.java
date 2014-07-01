@@ -41,6 +41,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessa
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.version.Version;
@@ -452,7 +453,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
    {
       CheckFailoverMessage packet = new CheckFailoverMessage(liveNodeID);
       CheckFailoverReplyMessage message = (CheckFailoverReplyMessage) getChannel1().sendBlocking(packet,
-            PacketImpl.CHECK_FOR_FAILOVER_REPLY);
+                                                                                                 PacketImpl.CHECK_FOR_FAILOVER_REPLY);
       return message.isOkToFailover();
    }
 
@@ -487,25 +488,22 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          if (type == PacketImpl.DISCONNECT || type == PacketImpl.DISCONNECT_V2)
          {
             final DisconnectMessage msg = (DisconnectMessage) packet;
+            String scaleDownTargetNodeID = null;
 
             SimpleString nodeID = msg.getNodeID();
 
+            if (packet instanceof DisconnectMessage_V2)
+            {
+               final DisconnectMessage_V2 msg_v2 = (DisconnectMessage_V2) packet;
+               scaleDownTargetNodeID = msg_v2.getScaleDownNodeID() == null ? null : msg_v2.getScaleDownNodeID().toString();
+            }
+
             if (callbackHandler != null)
-               callbackHandler.nodeDisconnected(conn, nodeID == null ? null : nodeID.toString());
+               callbackHandler.nodeDisconnected(conn, nodeID == null ? null : nodeID.toString(), scaleDownTargetNodeID);
          }
-         else if (type == PacketImpl.CLUSTER_TOPOLOGY)
+         else if (type == PacketImpl.CLUSTER_TOPOLOGY || type == PacketImpl.CLUSTER_TOPOLOGY_V2 || type == PacketImpl.CLUSTER_TOPOLOGY_V3)
          {
             ClusterTopologyChangeMessage topMessage = (ClusterTopologyChangeMessage) packet;
-            notifyTopologyChange(topMessage);
-         }
-         else if (type == PacketImpl.CLUSTER_TOPOLOGY_V2)
-         {
-            ClusterTopologyChangeMessage_V2 topMessage = (ClusterTopologyChangeMessage_V2) packet;
-            notifyTopologyChange(topMessage);
-         }
-         else if (type == PacketImpl.CLUSTER_TOPOLOGY_V3)
-         {
-            ClusterTopologyChangeMessage_V3 topMessage = (ClusterTopologyChangeMessage_V3) packet;
             notifyTopologyChange(topMessage);
          }
          else if (type == PacketImpl.CHECK_FOR_FAILOVER_REPLY)
@@ -579,5 +577,4 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          }
       }
    }
-
 }

@@ -14,19 +14,18 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 
 public class DisconnectMessage_V2 extends DisconnectMessage
 {
-   private TransportConfiguration scaleDownDestination;
+   private SimpleString scaleDownNodeID;
 
-   public DisconnectMessage_V2(final SimpleString nodeID, final TransportConfiguration scaleDownDestination)
+   public DisconnectMessage_V2(final SimpleString nodeID, final String scaleDownNodeID)
    {
       super(DISCONNECT_V2);
 
       this.nodeID = nodeID;
 
-      this.scaleDownDestination = scaleDownDestination;
+      this.scaleDownNodeID = SimpleString.toSimpleString(scaleDownNodeID);
    }
 
    public DisconnectMessage_V2()
@@ -36,24 +35,23 @@ public class DisconnectMessage_V2 extends DisconnectMessage
 
    // Public --------------------------------------------------------
 
-   public TransportConfiguration getScaleDownDestination()
+   public SimpleString getScaleDownNodeID()
    {
-      return scaleDownDestination;
+      return scaleDownNodeID;
    }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       super.encodeRest(buffer);
-      scaleDownDestination.encode(buffer);
+      buffer.writeNullableSimpleString(scaleDownNodeID);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       super.decodeRest(buffer);
-      scaleDownDestination = new TransportConfiguration();
-      scaleDownDestination.decode(buffer);
+      scaleDownNodeID = buffer.readNullableSimpleString();
    }
 
    @Override
@@ -61,7 +59,7 @@ public class DisconnectMessage_V2 extends DisconnectMessage
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", nodeID=" + nodeID);
-      buf.append(", scaleDownDestination=" + scaleDownDestination);
+      buf.append(", scaleDownNodeID=" + scaleDownNodeID);
       buf.append("]");
       return buf.toString();
    }
@@ -71,7 +69,7 @@ public class DisconnectMessage_V2 extends DisconnectMessage
    {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + ((scaleDownDestination == null) ? 0 : scaleDownDestination.hashCode());
+      result = prime * result + ((scaleDownNodeID == null) ? 0 : scaleDownNodeID.hashCode());
       return result;
    }
 
@@ -91,14 +89,14 @@ public class DisconnectMessage_V2 extends DisconnectMessage
          return false;
       }
       DisconnectMessage_V2 other = (DisconnectMessage_V2) obj;
-      if (scaleDownDestination == null)
+      if (scaleDownNodeID == null)
       {
-         if (other.scaleDownDestination != null)
+         if (other.scaleDownNodeID != null)
          {
             return false;
          }
       }
-      else if (!scaleDownDestination.equals(other.scaleDownDestination))
+      else if (!scaleDownNodeID.equals(other.scaleDownNodeID))
       {
          return false;
       }

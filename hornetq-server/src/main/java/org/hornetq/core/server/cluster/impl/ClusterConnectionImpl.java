@@ -1040,6 +1040,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          }
 
          isClosed = true;
+
          clearBindings();
 
          if (disconnected)
@@ -1667,6 +1668,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    @Override
    public void removeRecord(String targetNodeID)
    {
+      HornetQServerLogger.LOGGER.debug("Removing record for: " + targetNodeID);
       MessageFlowRecord record = records.remove(targetNodeID);
       try
       {
@@ -1681,10 +1683,14 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    @Override
    public void disconnectRecord(String targetNodeID)
    {
+      HornetQServerLogger.LOGGER.debug("Disconnecting record for: " + targetNodeID);
       MessageFlowRecord record = records.get(targetNodeID);
       try
       {
-         record.disconnectBindings();
+         if (record != null)
+         {
+            record.disconnectBindings();
+         }
       }
       catch (Exception e)
       {

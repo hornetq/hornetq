@@ -219,9 +219,16 @@ public class JMSUtil
 
       class MyListener implements SessionFailureListener
       {
+         @Override
          public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             latch.countDown();
+         }
+
+         @Override
+         public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+         {
+            connectionFailed(me, failedOver);
          }
 
          public void beforeReconnect(HornetQException exception)

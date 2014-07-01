@@ -1533,6 +1533,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
     * or when the node sends a disconnection.
     * Look for callers of this method!
     */
+   @Override
    public void notifyNodeDown(final long eventTime, final String nodeID)
    {
 
@@ -1843,6 +1844,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                      {
                         // Case the node where the cluster connection was connected is gone, we need to restart the
                         // connection
+                        @Override
                         public void connectionFailed(HornetQException exception, boolean failedOver)
                         {
                            if (clusterConnection && exception.getType() == HornetQExceptionType.DISCONNECTED)
@@ -1857,6 +1859,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                  HornetQClientLogger.LOGGER.errorStartingLocator(e);
                               }
                            }
+                        }
+
+                        @Override
+                        public void connectionFailed(final HornetQException me, boolean failedOver, String scaleDownTargetNodeID)
+                        {
+                           connectionFailed(me, failedOver);
                         }
 
                         @Override

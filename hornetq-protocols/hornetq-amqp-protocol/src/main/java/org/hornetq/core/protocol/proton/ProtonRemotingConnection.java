@@ -32,7 +32,6 @@ import org.apache.qpid.proton.engine.impl.LinkImpl;
 import org.apache.qpid.proton.engine.impl.TransportImpl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.protocol.proton.exceptions.HornetQAMQPException;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
@@ -232,6 +231,12 @@ public class ProtonRemotingConnection implements RemotingConnection
    }
 
    @Override
+   public void fail(HornetQException me, String scaleDownTargetNodeID)
+   {
+      fail(me);
+   }
+
+   @Override
    public void destroy()
    {
       destroyed = true;
@@ -269,7 +274,7 @@ public class ProtonRemotingConnection implements RemotingConnection
    }
 
    @Override
-   public void disconnect(final TransportConfiguration tc, final boolean criticalError)
+   public void disconnect(final String scaleDownNodeID, final boolean criticalError)
    {
       destroy();
    }
