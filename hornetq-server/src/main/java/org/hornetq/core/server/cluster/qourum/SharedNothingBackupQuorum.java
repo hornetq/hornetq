@@ -228,7 +228,10 @@ public class SharedNothingBackupQuorum implements Quorum, FailureListener
 
    private void removeListener()
    {
-      connection.removeFailureListener(this);
+      if (connection != null)
+      {
+         connection.removeFailureListener(this);
+      }
    }
 
    /**
