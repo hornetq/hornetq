@@ -25,6 +25,7 @@ import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.ConnectorServiceFactory;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConfigurationHelper;
 
 /**
@@ -63,15 +64,11 @@ public final class ConnectorsService implements HornetQComponent
 
    public void start() throws Exception
    {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
       List<ConnectorServiceConfiguration> configurationList = configuration.getConnectorServiceConfigurations();
 
       for (ConnectorServiceConfiguration info : configurationList)
       {
-         Class<?> clazz = loader.loadClass(info.getFactoryClassName());
-
-         ConnectorServiceFactory factory = (ConnectorServiceFactory) clazz.newInstance();
+         ConnectorServiceFactory factory = (ConnectorServiceFactory)ClassloadingUtil.newInstanceFromClassLoader(info.getFactoryClassName());
 
          if (info.getParams() != null)
          {
