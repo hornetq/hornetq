@@ -447,7 +447,7 @@ public final class HornetQDefaultConfiguration
 
    private static long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
-   private static String DEFAULT_JMX_DOMAIN = "org.hornetq";
+   private static String DEFAULT_JMX_DOMAIN = "jboss.as";
    /**
     * Used by the JBoss-AS integration code.
     */
