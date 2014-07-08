@@ -339,7 +339,7 @@ public class HAPolicy implements Serializable
 
    public boolean isSharedStore()
    {
-      if (policyType == POLICY_TYPE.BACKUP_SHARED_STORE || policyType == POLICY_TYPE.SHARED_STORE)
+      if (policyType == POLICY_TYPE.BACKUP_SHARED_STORE || policyType == POLICY_TYPE.SHARED_STORE || policyType == POLICY_TYPE.COLOCATED_SHARED_STORE)
          return true;
       else
          return false;
