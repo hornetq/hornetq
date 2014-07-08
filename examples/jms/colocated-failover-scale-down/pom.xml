@@ -8,7 +8,7 @@
       <version>2.5.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>colocated-failover-recover-only</artifactId>
+   <artifactId>colocated-failover-scale-down</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ JMS Colocated Failover Recover Only Example</name>
 
@@ -69,7 +69,7 @@
                      <goal>runClient</goal>
                   </goals>
                   <configuration>
-                     <clientClass>org.hornetq.jms.example.ColocatedFailoverRecoverOnlyExample</clientClass>
+                     <clientClass>org.hornetq.jms.example.ColocatedFailoverScaleDownExample</clientClass>
                      <args>
                         <param>jnp://localhost:1099</param>
                         <param>jnp://localhost:1199</param>
