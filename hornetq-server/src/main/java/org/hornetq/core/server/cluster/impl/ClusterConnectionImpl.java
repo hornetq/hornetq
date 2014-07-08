@@ -650,8 +650,6 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             this.serverLocator.setRetryInterval(retryInterval);
          }
 
-         addClusterTopologyListener(this);
-
          serverLocator.setAfterConnectionInternalListener(this);
 
          serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
@@ -669,7 +667,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
          HornetQServerLogger.LOGGER.debug("sending notification: " + notification);
          managementService.sendNotification(notification);
       }
-
+      //we add as a listener after we have sent the cluster start notif as the listener may start sending notifs before
+      addClusterTopologyListener(this);
    }
 
    public TransportConfiguration getConnector()
