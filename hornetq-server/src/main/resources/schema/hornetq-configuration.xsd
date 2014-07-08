@@ -224,7 +224,7 @@
             </xsd:annotation>
          </xsd:element>
 
-         <xsd:element name="jmx-domain" type="xsd:string" default="org.hornetq" maxOccurs="1" minOccurs="0">
+         <xsd:element name="jmx-domain" type="xsd:string" default="jboss.as" maxOccurs="1" minOccurs="0">
             <xsd:annotation hq:linkend="management.jmx.configuration" hq:field_name="DEFAULT_JMX_DOMAIN">
                <xsd:documentation>
                   the JMX domain used to registered HornetQ MBeans in the MBeanServer
