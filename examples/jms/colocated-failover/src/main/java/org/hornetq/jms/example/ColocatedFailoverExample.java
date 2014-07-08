@@ -24,10 +24,8 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * A simple example that demonstrates server side load-balancing of messages between the queue instances on different
- * nodes of the cluster.
+ * A simple example that demonstrates a colocated server
  *
- * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
 public class ColocatedFailoverExample extends HornetQExample
 {
@@ -94,9 +92,8 @@ public class ColocatedFailoverExample extends HornetQExample
          // Step 9.create a consumer
          MessageConsumer consumer = session1.createConsumer(queue);
 
-         // Step 10. Receive and acknowledge all of the sent messages, notice that they will be out of order, this is
-         // because they were initially round robined to both nodes then when the server failed were reloaded into the
-         // live server.
+         // Step 10. Receive and acknowledge all of the sent messages, the backup server that is colocated with server 1
+         // will have become live and is now handling messages for server 0.
          TextMessage message0 = null;
          for (int i = 0; i < numMessages; i++)
          {
@@ -107,9 +104,7 @@ public class ColocatedFailoverExample extends HornetQExample
 
          MessageConsumer consumer1 = session.createConsumer(queue);
 
-         // Step 10. Receive and acknowledge all of the sent messages, notice that they will be out of order, this is
-         // because they were initially round robined to both nodes then when the server failed were reloaded into the
-         // live server.
+         // Step 11. Receive and acknowledge the rest of the sent messages from server 1.
          for (int i = 0; i < numMessages; i++)
          {
             message0 = (TextMessage)consumer1.receive(5000);

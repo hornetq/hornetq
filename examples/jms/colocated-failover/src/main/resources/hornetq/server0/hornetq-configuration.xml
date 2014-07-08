@@ -56,6 +56,11 @@
          <discovery-group-ref discovery-group-name="my-discovery-group"/>
       </cluster-connection>
    </cluster-connections>
+
+   <!-- a colocated server that will allow shared store full backups to be requested-->
+   <ha-policy template="COLOCATED_SHARED_STORE">
+      <backup-strategy>FULL</backup-strategy>
+   </ha-policy>
    
    <!-- Other config -->
 
@@ -71,15 +76,5 @@
       </security-setting>
    </security-settings>
 
-   <backup-servers>
-       <backup-server name="backup2" port-offset="1000">
-           <configuration>
-               <bindings-directory>target/server1/data/messaging/bindings</bindings-directory>
-               <journal-directory>target/server1/data/messaging/journal</journal-directory>
-               <large-messages-directory>target/server1/data/messaging/largemessages</large-messages-directory>
-               <paging-directory>target/server1/data/messaging/paging</paging-directory>
-           </configuration>
-       </backup-server>
-   </backup-servers>
 
 </configuration>

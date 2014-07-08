@@ -1,31 +1,27 @@
 <html>
   <head>
-    <title>HornetQ JMS Colocated Failover Recover Only Example</title>
+    <title>HornetQ JMS Colocated Failover Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css" />
     <link rel="stylesheet" type="text/css" href="../common/prettify.css" />
     <script type="text/javascript" src="../common/prettify.js"></script>
   </head>
   <body onload="prettyPrint()">
-     <h1>JMS Colocated Failover Recover Only Example</h1>
+     <h1>JMS Colocated Failover Shared Store Example</h1>
 
-     <p>This example demonstrates how you can colocate live and backup servers in the same VM..
+     <p>This example demonstrates how you can colocate live and backup servers in the same VM. We do this by creating an
+     HA Policy that is colocated. colocated means that backup servers can be created and maintained by live servers on behalf
+     of other requesting live servers. In this example we create a colocated shared store server.
      <p>This example starts 2 live servers each with a backup server that backs up the other live server.</p>
      <p>The first live server will be killed and the backup in the second will become live</p>
-     <p>The following shows how to configure the backup, notice we have over ridden some of the configuration since we
-         want it to use the same journal as server1 since it is using shared store.</p>
+     <p>The following shows how to configure the live servers to request and allow backups to be deployed</p>
      <pre class="prettyprint">
-     <code>&lt;backup-servers>
-         &lt;backup-server name="backup2">
-             &lt;configuration>
-                 &lt;bindings-directory>target/server1/data/messaging/bindings&lt;/bindings-directory>
-                 &lt;journal-directory>target/server1/data/messaging/journal&lt;/journal-directory>
-                 &lt;large-messages-directory>target/server1/data/messaging/largemessages&lt;/large-messages-directory>
-                 &lt;paging-directory>target/server1/data/messaging/paging&lt;/paging-directory>
-             &lt;/configuration>
-         &lt;/backup-server>
-     &lt;/backup-servers>
+     <code>&lt;ha-policy template="COLOCATED_SHARED_STORE">
+         &ltbackup-strategy>FULL&lt/backup-strategy>
+         &lt/ha-policy>
      </code>
      </pre>
+     <p>notice that we have used a template to set some sensible defaults but overridden the backup strategy so back ups
+     are full servers</p>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>mvn verify</code> from this directory</i></p>
 
@@ -107,13 +103,12 @@
             </code>
         </pre>
 
-        <li>Receive and acknowledge all of the sent messages, notice that they will be out of order, this is
-             because they were initially round robined to both nodes then when the server failed were reloaded into the
-             live server.</li>
+        <li>Receive and acknowledge all of the sent messages, the backup server that is colocated with server 1
+            will have become live and is now handling messages for server 0.</li>
         <pre class="prettyprint">
            <code>
     TextMessage message0 = null;
-    for (int i = 0; i < numMessages * 2; i++)
+    for (int i = 0; i < numMessages; i++)
     {
        message0 = (TextMessage)consumer.receive(5000);
        System.out.println("Got message: " + message0.getText());
@@ -122,6 +117,17 @@
            </code>
         </pre>
 
+         <li>Receive and acknowledge the rest of the sent messages from server 1.</li>
+        <pre class="prettyprint">
+           <code>
+   for (int i = 0; i < numMessages; i++)
+   {
+   message0 = (TextMessage)consumer1.receive(5000);
+   System.out.println("Got message: " + message0.getText());
+   }
+   message0.acknowledge();
+           </code>
+        </pre>
 
         </pre> 
 
