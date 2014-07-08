@@ -33,7 +33,7 @@ public class ColocatedFailoverScaleDownExample extends HornetQExample
 {
    public static void main(final String[] args)
    {
-      new ColocatedFailoverRecoverOnlyExample().run(args);
+      new ColocatedFailoverScaleDownExample().run(args);
    }
 
    @Override

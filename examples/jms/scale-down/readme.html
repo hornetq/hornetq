@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>HornetQ JMS Colocated Failover Example</title>
+    <title>HornetQ JMS Scale Down Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css" />
     <link rel="stylesheet" type="text/css" href="../common/prettify.css" />
     <script type="text/javascript" src="../common/prettify.js"></script>
@@ -8,16 +8,17 @@
   <body onload="prettyPrint()">
      <h1>JMS Colocated Failover Shared Store Example</h1>
 
-     <p>This example demonstrates how you can colocate live and backup servers in the same VM. We do this by creating an
-     HA Policy that is colocated. colocated means that backup servers can be created and maintained by live servers on behalf
-     of other requesting live servers. In this example we create a colocated shared store server.
-     <p>This example starts 2 live servers each with a backup server that backs up the other live server.</p>
-     <p>The first live server will be killed and the backup in the second will become live</p>
-     <p>The following shows how to configure the live servers to request and allow backups to be deployed</p>
+     <p>This example demonstrates how you can configure a live server to scale down messages to another live server on shutdown.
+     <p>This example starts 2 live servers each one with a connector configured for the other live server.</p>
+     <p>The second live server is killed and its messages are scaled down to the first server on shutdown.</p>
+     <p>The following shows how to configure the live servers to scale down to one another.</p>
      <pre class="prettyprint">
-     <code>&lt;ha-policy template="COLOCATED_SHARED_STORE">
-         &ltbackup-strategy>FULL&lt/backup-strategy>
-         &lt/ha-policy>
+     <code>&lt;ha-policy template="NONE">
+         &lt;scale-down>true&lt;/scale-down>
+         &lt;scale-down-connectors>
+         &lt;connector-ref>server1-connector&lt;/connector-ref>
+         &lt;/scale-down-connectors>
+     </ha-policy>
      </code>
      </pre>
      <p>notice that we have used a template to set some sensible defaults but overridden the backup strategy so back ups
@@ -92,19 +93,18 @@
         <li>start the connection ready to receive messages</li>
         <pre class="prettyprint">
            <code>
-    connection1.start();
+    connection.start();
            </code>
         </pre>
         
         <li>create a consumer</li>
         <pre class="prettyprint">
            <code>
-    MessageConsumer consumer = session1.createConsumer(queue);
+    MessageConsumer consumer = session.createConsumer(queue);
             </code>
         </pre>
 
-        <li>Receive and acknowledge all of the sent messages, the backup server that is colocated with server 1
-            will have become live and is now handling messages for server 0.</li>
+        <li>Receive and acknowledge all of the sent messages, you will notice that messages from both servers are received</li>
         <pre class="prettyprint">
            <code>
     TextMessage message0 = null;
@@ -116,20 +116,6 @@
     message0.acknowledge();
            </code>
         </pre>
-
-         <li>Receive and acknowledge the rest of the sent messages from server 1.</li>
-        <pre class="prettyprint">
-           <code>
-   for (int i = 0; i < numMessages; i++)
-   {
-   message0 = (TextMessage)consumer1.receive(5000);
-   System.out.println("Got message: " + message0.getText());
-   }
-   message0.acknowledge();
-           </code>
-        </pre>
-
-        </pre> 
 
         <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 

@@ -27,11 +27,11 @@ import org.hornetq.common.example.HornetQExample;
  * A simple example that demonstrates a colocated server
  *
  */
-public class ColocatedFailoverExample extends HornetQExample
+public class ScaleDownExample extends HornetQExample
 {
    public static void main(final String[] args)
    {
-      new ColocatedFailoverExample().run(args);
+      new ScaleDownExample().run(args);
    }
 
    @Override
@@ -82,32 +82,21 @@ public class ColocatedFailoverExample extends HornetQExample
          // Step 7. Crash server #0, the live server, and wait a little while to make sure
          // it has really crashed
          Thread.sleep(2000);
-         killServer(0);
+         killServer(1);
 
 
          // Step 8. start the connection ready to receive messages
          connection.start();
-         connection1.start();
 
          // Step 9.create a consumer
-         MessageConsumer consumer = session1.createConsumer(queue);
+         MessageConsumer consumer = session.createConsumer(queue);
 
          // Step 10. Receive and acknowledge all of the sent messages, the backup server that is colocated with server 1
          // will have become live and is now handling messages for server 0.
          TextMessage message0 = null;
-         for (int i = 0; i < numMessages; i++)
+         for (int i = 0; i < numMessages * 2; i++)
          {
             message0 = (TextMessage)consumer.receive(5000);
-            System.out.println("Got message: " + message0.getText());
-         }
-         message0.acknowledge();
-
-         MessageConsumer consumer1 = session.createConsumer(queue);
-
-         // Step 11. Receive and acknowledge the rest of the sent messages from server 1.
-         for (int i = 0; i < numMessages; i++)
-         {
-            message0 = (TextMessage)consumer1.receive(5000);
             System.out.println("Got message: " + message0.getText());
          }
          message0.acknowledge();

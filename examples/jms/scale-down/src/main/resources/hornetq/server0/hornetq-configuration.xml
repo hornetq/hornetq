@@ -17,6 +17,10 @@
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="port" value="5445"/>
       </connector>
+      <connector name="server1-connector">
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+         <param key="port" value="5446"/>
+      </connector>
    </connectors>
    
    <!-- Acceptors -->
@@ -50,6 +54,7 @@
          <address>jms</address>
          <connector-ref>netty-connector</connector-ref>
          <retry-interval>500</retry-interval>
+         <reconnect-attempts>5</reconnect-attempts>
          <use-duplicate-detection>true</use-duplicate-detection>
          <forward-when-no-consumers>true</forward-when-no-consumers>
          <max-hops>1</max-hops>
@@ -57,9 +62,12 @@
       </cluster-connection>
    </cluster-connections>
 
-   <!-- a colocated server that will allow shared store full backups to be requested-->
-   <ha-policy template="COLOCATED_SHARED_STORE">
-      <backup-strategy>FULL</backup-strategy>
+   <!--a live server that will scale down on server shutdown-->
+   <ha-policy template="NONE">
+      <scale-down>true</scale-down>
+      <scale-down-connectors>
+         <connector-ref>server1-connector</connector-ref>
+      </scale-down-connectors>
    </ha-policy>
    
    <!-- Other config -->
@@ -73,6 +81,24 @@
          <permission type="deleteNonDurableQueue" roles="guest"/>
          <permission type="consume" roles="guest"/>
          <permission type="send" roles="guest"/>
+      </security-setting>
+      <security-setting match="jms.queue.hornetq.management">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createNonDurableQueue" roles="guest"/>
+         <permission type="deleteNonDurableQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+         <permission type="manage" roles="guest"/>
+      </security-setting>
+      <security-setting match="jms.queue.hornetq.management.*">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createNonDurableQueue" roles="guest"/>
+         <permission type="deleteNonDurableQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+         <permission type="manage" roles="guest"/>
       </security-setting>
    </security-settings>
 
