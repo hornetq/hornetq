@@ -17,7 +17,10 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.ObjectName;
+
 import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.Configuration;
@@ -91,6 +94,86 @@ public class JMXDomainTest extends ManagementTestBase
       checkNoResource(builder_0.getHornetQServerObjectName());
       checkNoResource(builder_1.getHornetQServerObjectName());
 
+   }
+
+   @Test
+   public void testDefaultObjectName() throws Exception
+   {
+      ObjectName objectName = ObjectNameBuilder.DEFAULT.getJMSServerObjectName();
+      ObjectName defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName("A");
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,jms-queue=\"A\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getAcceptorObjectName("netty");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,remote-acceptor=\"netty\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getAddressObjectName(new SimpleString("jms.queue.M"));
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,core-address=\"jms.queue.M\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getBridgeObjectName("mybridge");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,bridge=\"mybridge\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getBroadcastGroupObjectName("mybroadcastgroup");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,broadcast-group=\"mybroadcastgroup\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName("my-cluster-connection");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,cluster-connection=\"my-cluster-connection\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName("connectionFactory");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,connection-factory=\"connectionFactory\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getDiscoveryGroupObjectName("my-discovery-group");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,discovery-group=\"my-discovery-group\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getDivertObjectName("my-divert");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,divert=\"my-divert\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getJMSTopicObjectName("my-topic");
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,jms-topic=\"my-topic\"");
+
+      assertEquals(defaultValue, objectName);
+
+      objectName = ObjectNameBuilder.DEFAULT.getQueueObjectName(new SimpleString("some.address"), new SimpleString("some.queue"));
+      System.out.println("value: " + objectName);
+      defaultValue = new ObjectName("jboss.as:subsystem=messaging,hornetq-server=default,address=\"some.address\",runtime-queue=\"some.queue\"");
+
+      assertEquals(defaultValue, objectName);
    }
    // Package protected ---------------------------------------------
 
