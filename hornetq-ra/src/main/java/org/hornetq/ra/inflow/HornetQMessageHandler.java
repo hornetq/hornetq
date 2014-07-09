@@ -34,6 +34,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.ra.HornetQRALogger;
+import org.hornetq.utils.FutureLatch;
 
 /**
  * The message handler
@@ -214,19 +215,20 @@ public class HornetQMessageHandler implements MessageHandler
       return useXA ? session : null;
    }
 
-   public void interruptConsumer()
+   public Thread interruptConsumer(FutureLatch future)
    {
       try
       {
          if (consumer != null)
          {
-            consumer.interruptHandlers();
+            return consumer.prepareForClose(future);
          }
       }
       catch (Throwable e)
       {
          HornetQRALogger.LOGGER.warn("Error interrupting handler on endpoint " + endpoint + " handler=" + consumer);
       }
+      return null;
    }
 
    /**

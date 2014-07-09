@@ -1,14 +1,14 @@
 /*
- * Copyright 2009 Red Hat, Inc.
- *  Red Hat licenses this file to you under the Apache License, version
- *  2.0 (the "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied.  See the License for the specific language governing
- *  permissions and limitations under the License.
+ * Copyright 2005-2014 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
 
@@ -62,7 +62,7 @@ public abstract class HornetQRATestBase extends JMSTestBase
    {
       super.setUp();
       locator = createInVMNonHALocator();
-      createQueue(MDBQUEUE);
+      createQueue(true, MDBQUEUE);
       createQueue(DLQ);
       setupDLQ(1);
    }
@@ -103,7 +103,7 @@ public abstract class HornetQRATestBase extends JMSTestBase
    }
 
 
-   class DummyMessageEndpointFactory implements MessageEndpointFactory
+   protected class DummyMessageEndpointFactory implements MessageEndpointFactory
    {
       private DummyMessageEndpoint endpoint;
 
@@ -130,7 +130,7 @@ public abstract class HornetQRATestBase extends JMSTestBase
       }
    }
 
-   class DummyMessageEndpoint implements MessageEndpoint, MessageListener
+   protected class DummyMessageEndpoint implements MessageEndpoint, MessageListener
    {
       public CountDownLatch latch;
 
@@ -139,6 +139,8 @@ public abstract class HornetQRATestBase extends JMSTestBase
       public boolean released = false;
 
       public XAResource xaResource;
+
+      volatile boolean inAfterDelivery = false;
 
       public DummyMessageEndpoint(CountDownLatch latch)
       {
@@ -165,7 +167,8 @@ public abstract class HornetQRATestBase extends JMSTestBase
 
       public void onMessage(Message message)
       {
-         lastMessage = (HornetQMessage)message;
+         lastMessage = (HornetQMessage) message;
+         System.err.println(message);
       }
 
       public void reset(CountDownLatch latch)
@@ -180,7 +183,7 @@ public abstract class HornetQRATestBase extends JMSTestBase
       }
    }
 
-   class MyBootstrapContext implements BootstrapContext
+   public class MyBootstrapContext implements BootstrapContext
    {
       WorkManager workManager = new DummyWorkManager();
 
