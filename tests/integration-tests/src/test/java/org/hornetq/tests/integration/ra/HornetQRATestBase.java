@@ -166,6 +166,7 @@ public abstract class HornetQRATestBase extends JMSTestBase
       public void onMessage(Message message)
       {
          lastMessage = (HornetQMessage) message;
+         System.err.println(message);
       }
 
       public void reset(CountDownLatch latch)
