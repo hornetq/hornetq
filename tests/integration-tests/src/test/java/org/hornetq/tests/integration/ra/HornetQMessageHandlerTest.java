@@ -13,6 +13,8 @@
 package org.hornetq.tests.integration.ra;
 
 import javax.jms.Message;
+import javax.resource.ResourceException;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -77,6 +79,109 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
    }
 
+   @Test
+   public void testSimpleMessageReceivedOnQueueManyMessages() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(15);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, false);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      for (int i = 0; i < 15; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeString("teststring" + i);
+         clientProducer.send(message);
+      }
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      qResourceAdapter.stop();
+   }
+
+   @Test
+   public void testSimpleMessageReceivedOnQueueManyMessagesAndInterrupt() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(15);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      for (int i = 0; i < 15; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeString("teststring" + i);
+         clientProducer.send(message);
+      }
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      assertEquals(15, endpoint.messages);
+      assertEquals(0, endpoint.interrupted);
+
+      qResourceAdapter.stop();
+   }
+
+   @Test
+   public void testSimpleMessageReceivedOnQueueManyMessagesAndInterruptTimeout() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setCallTimeout(500L);
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(15);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = locator.createSessionFactory().createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      for (int i = 0; i < 15; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.getBodyBuffer().writeString("teststring" + i);
+         clientProducer.send(message);
+      }
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      assertEquals(15, endpoint.messages);
+      //half onmessage interrupted
+      assertEquals(8, endpoint.interrupted);
+
+      qResourceAdapter.stop();
+   }
    /**
     * @return
     */
@@ -671,6 +776,57 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
             throw new IllegalStateException("boo!");
          }
          super.onMessage(message);
+      }
+   }
+
+   class MultipleEndpoints extends DummyMessageEndpoint
+   {
+      private final CountDownLatch latch;
+      private final boolean pause;
+      int messages = 0;
+      int interrupted = 0;
+
+      public MultipleEndpoints(CountDownLatch latch, boolean pause)
+      {
+         super(latch);
+         this.latch = latch;
+         this.pause = pause;
+      }
+
+      @Override
+      public void beforeDelivery(Method method) throws NoSuchMethodException, ResourceException
+      {
+
+      }
+
+      @Override
+      public void afterDelivery() throws ResourceException
+      {
+
+      }
+
+      @Override
+      public void release()
+      {
+
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         latch.countDown();
+         if (pause && messages++ % 2 == 0)
+         {
+            try
+            {
+               System.out.println("pausing for 2 secs");
+               Thread.sleep(2000);
+            }
+            catch (InterruptedException e)
+            {
+               interrupted++;
+            }
+         }
       }
    }
 }

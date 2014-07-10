@@ -45,6 +45,7 @@ import org.hornetq.ra.HornetQRABundle;
 import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQRaUtils;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SensitiveDataCodec;
 
 /**
@@ -400,9 +401,33 @@ public class HornetQActivation
 
       handlers.clear();
 
+      FutureLatch future = new FutureLatch(handlersCopy.length);
+      List<Thread> interruptThreads = new ArrayList<Thread>();
       for (HornetQMessageHandler handler : handlersCopy)
       {
-         handler.interruptConsumer();
+         Thread thread = handler.interruptConsumer(future);
+         if (thread != null)
+         {
+            interruptThreads.add(thread);
+         }
+      }
+
+      //wait for all the consumers to complete any onmessage calls
+      boolean stuckThreads = !future.await(factory.getCallTimeout());
+      //if any are stuck then we need to interrupt them
+      if (stuckThreads)
+      {
+         for (Thread interruptThread : interruptThreads)
+         {
+            try
+            {
+               interruptThread.interrupt();
+            }
+            catch (Exception e)
+            {
+               //ok
+            }
+         }
       }
 
       Thread threadTearDown = new Thread("TearDown/HornetQActivation")
