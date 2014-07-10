@@ -672,6 +672,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
          }
       }
+      else if (scaleDownTargetNodeID != null)
+      {
+         // the disconnected node is scaling down to me, no need to reconnect to it
+         HornetQServerLogger.LOGGER.debug("Received scaleDownTargetNodeID: " + scaleDownTargetNodeID + "; cancelling reconnect.");
+         fail(true);
+      }
       else
       {
          HornetQServerLogger.LOGGER.debug("Received invalid scaleDownTargetNodeID: " + scaleDownTargetNodeID);
