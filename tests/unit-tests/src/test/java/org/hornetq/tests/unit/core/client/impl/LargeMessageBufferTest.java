@@ -40,6 +40,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.LargeMessageControllerImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.HornetQBufferInputStream;
 import org.junit.After;
 import org.junit.Assert;
@@ -926,10 +927,11 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#prepareForClose()
        */
-      public void interruptHandlers() throws HornetQException
+      public Thread prepareForClose(FutureLatch future) throws HornetQException
       {
+         return null;
       }
    }
 

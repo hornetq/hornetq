@@ -17,6 +17,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.utils.FutureLatch;
 
 /**
  * A ClientConsumerInternal
@@ -47,8 +48,9 @@ public interface ClientConsumerInternal extends ClientConsumer
     * To be called by things like MDBs during shutdown of the server
     *
     * @throws HornetQException
+    * @param future
     */
-   void interruptHandlers() throws HornetQException;
+   Thread prepareForClose(FutureLatch future) throws HornetQException;
 
    void clearAtFailover();
 

@@ -457,29 +457,28 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    }
 
    /**
-    * To be used by MDBs
+    * To be used by MDBs to stop any more handling of messages.
     *
     * @throws HornetQException
+    * @param future the future to run once the onMessage Thread has completed
     */
-   public void interruptHandlers() throws HornetQException
+   public Thread prepareForClose(final FutureLatch future) throws HornetQException
    {
       closing = true;
 
       resetLargeMessageController();
 
-      Thread onThread = onMessageThread;
-      if (onThread != null)
+      //execute the future after the last onMessage call
+      sessionExecutor.execute(new Runnable()
       {
-         try
+         @Override
+         public void run()
          {
-            // just trying to interrupt any ongoing messages
-            onThread.interrupt();
+            future.run();
          }
-         catch (Throwable ignored)
-         {
-            // security exception probably.. we just ignore it, not big deal!
-         }
-      }
+      });
+
+      return onMessageThread;
    }
 
    public void cleanUp()

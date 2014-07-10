@@ -96,6 +96,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setMaxSession(1);
+      spec.setCallTimeout(1000L);
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
@@ -175,6 +176,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setMaxSession(1);
+      spec.setCallTimeout(1000L);
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
