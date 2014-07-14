@@ -38,7 +38,7 @@ public class TransferQueue // NO_UCD (unused code)
 
    public void process(String[] arg)
    {
-      if (arg.length != 9)
+      if (arg.length != 9 && arg.length != 10)
       {
          System.out.println("Invalid number of arguments! " + arg.length);
          printUsage();
@@ -57,6 +57,8 @@ public class TransferQueue // NO_UCD (unused code)
 
       int waitTimeout;
 
+      String filter = null;
+
       try
       {
          sourceHost = arg[1];
@@ -69,6 +71,11 @@ public class TransferQueue // NO_UCD (unused code)
 
          waitTimeout = Integer.parseInt(arg[7]);
          commit = Integer.parseInt(arg[8]);
+
+         if (arg.length == 10)
+         {
+            filter = arg[9];
+         }
       }
       catch (Exception e)
       {
@@ -97,12 +104,23 @@ public class TransferQueue // NO_UCD (unused code)
 
          ClientSession sessionSource = factorySource.createSession(false, false);
 
-         ClientConsumer consumer = sessionSource.createConsumer(queue);
+         ClientConsumer consumer;
+
+         if (filter == null)
+         {
+            consumer = sessionSource.createConsumer(queue);
+         }
+         else
+         {
+            consumer = sessionSource.createConsumer(queue, filter);
+         }
 
 
          TransportConfiguration configurationTarget = new TransportConfiguration(NettyConnectorFactory.class.getName(), targetParameters);
 
-         ServerLocator locatorTarget = HornetQClient.createServerLocator(false, configurationSource);
+         ServerLocator locatorTarget = HornetQClient.createServerLocatorWithoutHA(configurationSource);
+
+
 
          ClientSessionFactory factoryTarget = locatorSource.createSessionFactory();
 
@@ -123,6 +141,11 @@ public class TransferQueue // NO_UCD (unused code)
             }
 
             message.acknowledge();
+
+            if (!message.containsProperty("_HQ_TOOL_original_address"))
+            {
+               message.putStringProperty("_HQ_TOOL_original_address", message.getAddress().toString());
+            }
 
             LinkedList<String> listToRemove = new LinkedList<String>();
 
@@ -153,6 +176,8 @@ public class TransferQueue // NO_UCD (unused code)
 
          sessionTarget.commit();
          sessionSource.commit();
+         consumer.close();
+         producer.close();
 
          sessionSource.close();
          sessionTarget.close();
@@ -182,7 +207,7 @@ public class TransferQueue // NO_UCD (unused code)
       }
       System.err.println("This method will transfer messages from one queue into another, while removing internal properties such as ROUTE_TO.");
       System.err.println();
-      System.err.println(Main.USAGE + " <source-IP> <source-port> <source-queue> <target-IP> <target-port> <target-address> <wait-timeout> <commit-size>");
+      System.err.println(Main.USAGE + " <source-IP> <source-port> <source-queue> <target-IP> <target-port> <target-address> <wait-timeout> <commit-size> [filter]");
       System.err.println();
       System.err.println("source-IP: IP for the originating server for the messages");
       System.err.println("source-port: port for the originating server for the messages");
@@ -193,7 +218,9 @@ public class TransferQueue // NO_UCD (unused code)
       System.err.println("target-address: address at the destination server");
       System.err.println();
       System.err.println("wait-timeout: time in milliseconds");
-      System.err.println("commit-size batch size for each transaction (in number of messages)");
+      System.err.println("commit-size: batch size for each transaction (in number of messages)");
+      System.err.println();
+      System.err.println("filter: You can optionally add a filter to the original queue");
       for (int i = 0; i < 10; i++)
       {
          System.err.println();

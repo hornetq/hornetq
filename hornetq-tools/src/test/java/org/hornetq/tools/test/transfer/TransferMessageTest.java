@@ -209,6 +209,257 @@ public class TransferMessageTest extends ClusterTestBase
 
    }
 
+
+   @Test
+   public void testFreezeMessagesWithFilter() throws Throwable
+   {
+      try
+      {
+         setupCluster();
+
+         startServers();
+
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
+
+         createQueue(0, "queues.testaddress", "queue0", null, true);
+         createQueue(1, "queues.testaddress", "queue0", null, true);
+         createQueue(2, "queues.testaddress", "queue0", null, true);
+         createQueue(3, "queues.testaddress", "queue0", null, true);
+         createQueue(4, "queues.testaddress", "queue0", null, true);
+
+         createQueue(0, "queues2.testaddress", "queue2", null, true);
+         createQueue(1, "queues2.testaddress", "queue2", null, true);
+         createQueue(2, "queues2.testaddress", "queue2", null, true);
+         createQueue(3, "queues2.testaddress", "queue2", null, true);
+         createQueue(4, "queues2.testaddress", "queue2", null, true);
+
+         addConsumer(0, 0, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
+
+         addConsumer(5, 0, "queue2", null);
+         addConsumer(6, 1, "queue2", null);
+         addConsumer(7, 2, "queue2", null);
+         addConsumer(8, 3, "queue2", null);
+         addConsumer(9, 4, "queue2", null);
+
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
+
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
+
+
+         waitForBindings(0, "queues2.testaddress", 1, 1, true);
+         waitForBindings(1, "queues2.testaddress", 1, 1, true);
+         waitForBindings(2, "queues2.testaddress", 1, 1, true);
+         waitForBindings(3, "queues2.testaddress", 1, 1, true);
+         waitForBindings(4, "queues2.testaddress", 1, 1, true);
+
+         waitForBindings(0, "queues2.testaddress", 4, 4, false);
+         waitForBindings(1, "queues2.testaddress", 4, 4, false);
+         waitForBindings(2, "queues2.testaddress", 4, 4, false);
+         waitForBindings(3, "queues2.testaddress", 4, 4, false);
+         waitForBindings(4, "queues2.testaddress", 4, 4, false);
+
+
+         PostOfficeImpl postOffice = (PostOfficeImpl)servers[0].getPostOffice();
+
+         ArrayList<String> queuesToTransfer = new ArrayList<String>();
+
+//         System.out.println("bindings = " + postOffice.getAddressManager().getBindings().size());
+         for (Map.Entry<SimpleString, Binding> entry: postOffice.getAddressManager().getBindings().entrySet())
+         {
+//            System.out.println("entry: " + entry + " / " + entry.getValue() + " class = " + entry.getValue().getClass());
+
+            if (entry.getValue() instanceof LocalQueueBinding)
+            {
+               LocalQueueBinding localQueueBinding = (LocalQueueBinding) entry.getValue();
+
+               if (localQueueBinding.getBindable() instanceof QueueImpl)
+               {
+                  QueueImpl queue = (QueueImpl) localQueueBinding.getBindable();
+                  for (Consumer consumer: queue.getConsumers())
+                  {
+
+                     if (consumer instanceof ClusterConnectionBridge)
+                     {
+                        queuesToTransfer.add(entry.getKey().toString());
+//                        System.out.println("Removing bridge from consumers, so messages should get stuck");
+                        queue.removeConsumer(consumer);
+                     }
+                  }
+               }
+            }
+         }
+
+         consumers[0].getConsumer().close();
+
+         send(0, "queues.testaddress", NUM_MESSAGES, true, null);
+
+         send(0, "queues2.testaddress", 1000, true, null);
+
+
+         createQueue(0, "tmp-queue", "tmp-queue", null, true);
+
+         queuesToTransfer.add("queue0");
+
+         for (String str : queuesToTransfer)
+         {
+            String[] args = new String[9];
+
+            args[0] = "transfer-queue";
+
+            args[1] = "127.0.0.1";
+            args[2] = "" + TransportConstants.DEFAULT_PORT;
+            args[3] = str;
+
+            args[4] = "127.0.0.1";
+            args[5] = "" + TransportConstants.DEFAULT_PORT;
+            args[6] = "tmp-queue";
+
+            args[7] = "500";
+            args[8] = "100";
+
+            Main.main(args);
+         }
+
+
+         createQueue(0, "output-result", "output-result", null, true);
+
+
+         System.out.println("Transferring the main output-queue now");
+
+
+         String[] args = new String[10];
+
+         args[0] = "transfer-queue";
+
+         args[1] = "127.0.0.1";
+         args[2] = "" + TransportConstants.DEFAULT_PORT;
+         args[3] = "tmp-queue";
+
+         args[4] = "127.0.0.1";
+         args[5] = "" + TransportConstants.DEFAULT_PORT;
+         args[6] = "output-result";
+
+         args[7] = "500";
+         args[8] = "100";
+         args[9] = "_HQ_TOOL_original_address='queues.testaddress'";
+
+         Main.main(args);
+
+
+
+         ClientSession session = sfs[0].createSession(false, false);
+         ClientConsumer consumer = session.createConsumer("output-result");
+
+         session.start();
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            ClientMessage msg = consumer.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+
+            if (i % 100 == 0)
+            {
+               session.commit();
+            }
+         }
+
+
+         assertNull(consumer.receiveImmediate());
+
+         session.commit();
+
+         stopServers(1, 2, 3, 4);
+
+
+         System.out.println("Last transfer!!!");
+
+
+         args[0] = "transfer-queue";
+
+         args[1] = "127.0.0.1";
+         args[2] = "" + TransportConstants.DEFAULT_PORT;
+         args[3] = "tmp-queue";
+
+         args[4] = "127.0.0.1";
+         args[5] = "" + TransportConstants.DEFAULT_PORT;
+         args[6] = "output-result";
+
+         args[7] = "500";
+         args[8] = "100";
+         args[9] = "_HQ_TOOL_original_address='queues2.testaddress'";
+
+         Main.main(args);
+
+         closeAllConsumers();
+
+         args = new String[9];
+
+         args[0] = "transfer-queue";
+
+         args[1] = "127.0.0.1";
+         args[2] = "" + TransportConstants.DEFAULT_PORT;
+         args[3] = "queue2";
+
+         args[4] = "127.0.0.1";
+         args[5] = "" + TransportConstants.DEFAULT_PORT;
+         args[6] = "output-result";
+
+         args[7] = "500";
+         args[8] = "100";
+
+         Main.main(args);
+
+         session.start();
+
+
+         for (int i = 0; i < 1000; i++)
+         {
+            ClientMessage msg = consumer.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+
+            if (i % 100 == 0)
+            {
+               session.commit();
+            }
+         }
+
+         assertNull(consumer.receiveImmediate());
+
+         session.commit();
+
+
+
+         session.close();
+
+      }
+      catch (Throwable e)
+      {
+         throw e;
+      }
+
+   }
+
+
+
+
    protected void setupCluster() throws Exception
    {
       setupCluster(false);
