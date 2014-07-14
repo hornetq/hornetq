@@ -38,7 +38,7 @@ public class TransferQueue // NO_UCD (unused code)
 
    public void process(String[] arg)
    {
-      if (arg.length != 9 && arg.length != 10)
+      if (arg.length != 13 && arg.length != 14)
       {
          System.out.println("Invalid number of arguments! " + arg.length);
          printUsage();
@@ -46,11 +46,15 @@ public class TransferQueue // NO_UCD (unused code)
       }
 
       String sourceHost;
+      String sourceUser;
+      String sourcePass;
       int sourcePort;
       String queue;
 
       String targetHost;
       int targetPort;
+      String targetUser;
+      String targetPassword;
       String producingAddress;
 
       int commit;
@@ -63,18 +67,22 @@ public class TransferQueue // NO_UCD (unused code)
       {
          sourceHost = arg[1];
          sourcePort = Integer.parseInt(arg[2]);
-         queue = arg[3];
+         sourceUser = arg[3];
+         sourcePass = arg[4];
+         queue = arg[5];
 
-         targetHost = arg[4];
-         targetPort = Integer.parseInt(arg[5]);
-         producingAddress = arg[6];
+         targetHost = arg[6];
+         targetPort = Integer.parseInt(arg[7]);
+         targetUser = arg[8];
+         targetPassword = arg[9];
+         producingAddress = arg[10];
 
-         waitTimeout = Integer.parseInt(arg[7]);
-         commit = Integer.parseInt(arg[8]);
+         waitTimeout = Integer.parseInt(arg[11]);
+         commit = Integer.parseInt(arg[12]);
 
-         if (arg.length == 10)
+         if (arg.length == 14)
          {
-            filter = arg[9];
+            filter = arg[13];
          }
       }
       catch (Exception e)
@@ -102,7 +110,7 @@ public class TransferQueue // NO_UCD (unused code)
 
          ClientSessionFactory factorySource = locatorSource.createSessionFactory();
 
-         ClientSession sessionSource = factorySource.createSession(false, false);
+         ClientSession sessionSource = factorySource.createSession(sourceUser, sourcePass, false, false, false, false, 0);
 
          ClientConsumer consumer;
 
@@ -118,13 +126,13 @@ public class TransferQueue // NO_UCD (unused code)
 
          TransportConfiguration configurationTarget = new TransportConfiguration(NettyConnectorFactory.class.getName(), targetParameters);
 
-         ServerLocator locatorTarget = HornetQClient.createServerLocatorWithoutHA(configurationSource);
+         ServerLocator locatorTarget = HornetQClient.createServerLocatorWithoutHA(configurationTarget);
 
 
 
-         ClientSessionFactory factoryTarget = locatorSource.createSessionFactory();
+         ClientSessionFactory factoryTarget = locatorTarget.createSessionFactory();
 
-         ClientSession sessionTarget = factorySource.createSession(false, false);
+         ClientSession sessionTarget = factoryTarget.createSession(targetUser, targetPassword, false, false, false, false, 0);
 
          ClientProducer producer = sessionTarget.createProducer(producingAddress);
 
@@ -207,14 +215,20 @@ public class TransferQueue // NO_UCD (unused code)
       }
       System.err.println("This method will transfer messages from one queue into another, while removing internal properties such as ROUTE_TO.");
       System.err.println();
-      System.err.println(Main.USAGE + " <source-IP> <source-port> <source-queue> <target-IP> <target-port> <target-address> <wait-timeout> <commit-size> [filter]");
+      System.err.println(Main.USAGE + " <source-IP> <source-port> <user> <password> <source-queue> <target-IP> <target-port> <user> <password> <target-address> <wait-timeout> <commit-size> [filter]");
       System.err.println();
-      System.err.println("source-IP: IP for the originating server for the messages");
+      System.err.println("source-host: IP/hostname for the originating server for the messages");
       System.err.println("source-port: port for the originating server for the messages");
+      System.err.println("user: Username used to connect to the source");
+      System.err.println("password: Password used to connect to the source");
+      System.err.println("source-port: port for the originating server for the messages");
+
       System.err.println("source-queue: originating queue for the messages");
       System.err.println();
-      System.err.println("target-IP: IP for the destination server for the messages");
+      System.err.println("target-host: IP/hostname for the destination server for the messages");
       System.err.println("target-port: port for the destination server for the messages");
+      System.err.println("user: Username used to connect to the target");
+      System.err.println("password: Password used to connect to the target");
       System.err.println("target-address: address at the destination server");
       System.err.println();
       System.err.println("wait-timeout: time in milliseconds");
