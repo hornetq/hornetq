@@ -95,6 +95,18 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
       session.start();
 
    }
+   //the core messaging proxy doesnt work when the server is stopped so we cant run these tests
+   @Override
+   public void testScaleDownWithOutConnector() throws Exception
+   {
+      super.testScaleDownWithOutConnector();
+   }
+
+   @Override
+   public void testScaleDownWithConnector() throws Exception
+   {
+      super.testScaleDownWithConnector();
+   }
 
    @Override
    protected HornetQServerControl createManagementControl() throws Exception
@@ -105,6 +117,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public void updateDuplicateIdCache(String address, Object[] ids)
          {
 
+         }
+
+         @Override
+         public void scaleDown(String connector) throws Exception
+         {
          }
 
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_SERVER);

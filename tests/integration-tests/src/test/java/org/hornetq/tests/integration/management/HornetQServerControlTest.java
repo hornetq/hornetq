@@ -948,8 +948,86 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       System.out.println("HornetQServerControlTest.testCommitPreparedTransactions");
    }
-   // Package protected ---------------------------------------------
 
+   @Test
+   public void testScaleDownWithConnector() throws Exception
+   {
+      scaleDown(new ScaleDownHandler()
+      {
+         @Override
+         public void scaleDown(HornetQServerControl control) throws Exception
+         {
+            control.scaleDown("server2-connector");
+         }
+      });
+   }
+
+   @Test
+   public void testScaleDownWithOutConnector() throws Exception
+   {
+      scaleDown(new ScaleDownHandler()
+      {
+         @Override
+         public void scaleDown(HornetQServerControl control) throws Exception
+         {
+            control.scaleDown(null);
+         }
+      });
+   }
+
+   protected void scaleDown(ScaleDownHandler handler) throws Exception
+   {
+      SimpleString address = new SimpleString("testQueue");
+      Configuration conf = createDefaultConfig(false, 2);
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      conf.getAcceptorConfigurations().clear();
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put("server-id", "2");
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));
+      HornetQServer server2 = HornetQServers.newHornetQServer(conf, null, true);
+      this.conf.getConnectorConfigurations().clear();
+      this.conf.getConnectorConfigurations().put("server2-connector", new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params));
+      try
+      {
+         server2.start();
+         server.createQueue(address, address, null, true, false);
+         server2.createQueue(address, address, null, true, false);
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+         ClientSessionFactory csf = createSessionFactory(locator);
+         ClientSession session = csf.createSession();
+         ClientProducer producer = session.createProducer(address);
+         for (int i = 0; i < 100; i++)
+         {
+            ClientMessage message = session.createMessage(true);
+            message.getBodyBuffer().writeString("m" + i);
+            producer.send(message);
+         }
+
+         HornetQServerControl managementControl = createManagementControl();
+         handler.scaleDown(managementControl);
+         locator.close();
+         locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params));
+         csf = createSessionFactory(locator);
+         session = csf.createSession();
+         session.start();
+         ClientConsumer consumer = session.createConsumer(address);
+         for (int i = 0; i < 100; i++)
+         {
+            ClientMessage m = consumer.receive(5000);
+            assertNotNull(m);
+         }
+      }
+      finally
+      {
+         server2.stop();
+      }
+   }
+   // Package protected ---------------------------------------------
+   interface ScaleDownHandler
+   {
+      void scaleDown(HornetQServerControl control) throws Exception;
+   }
    // Protected -----------------------------------------------------
 
    @Override
