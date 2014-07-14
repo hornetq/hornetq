@@ -34,6 +34,7 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -1138,6 +1139,48 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(1, queueControl.getMessageCount());
 
       // check there is a single message to consume from queue
+      ManagementTestBase.consumeMessages(1, session, queue);
+
+      session.deleteQueue(queue);
+   }
+
+   @Test
+   public void testRemoveScheduledMessage() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      ClientProducer producer = session.createProducer(address);
+
+      // send 2 messages on queue, both scheduled
+      long timeout = System.currentTimeMillis() + 5000;
+      ClientMessage m1 = session.createMessage(true);
+      m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, timeout);
+      producer.send(m1);
+      ClientMessage m2 = session.createMessage(true);
+      m2.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, timeout);
+      producer.send(m2);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(2, queueControl.getScheduledCount());
+
+      // the message IDs are set on the server
+      Map<String, Object>[] messages = queueControl.listScheduledMessages();
+      Assert.assertEquals(2, messages.length);
+      long messageID = (Long) messages[0].get("messageID");
+
+      // delete 1st message
+      boolean deleted = queueControl.removeMessage(messageID);
+      Assert.assertTrue(deleted);
+      Assert.assertEquals(1, queueControl.getScheduledCount());
+
+      // check there is a single message to consume from queue
+      while (timeout > System.currentTimeMillis() && queueControl.getScheduledCount() == 1)
+      {
+         Thread.sleep(100);
+      }
+
       ManagementTestBase.consumeMessages(1, session, queue);
 
       session.deleteQueue(queue);
