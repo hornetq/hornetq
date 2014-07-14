@@ -1467,4 +1467,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       return bindings;
    }
+
+   // For tests only
+   public AddressManager getAddressManager()
+   {
+      return addressManager;
+   }
 }
