@@ -76,7 +76,6 @@ public class TransferMessageTest extends ClusterTestBase
    }
 
 
-
    @Test
    public void testFreezeMessages() throws Throwable
    {
@@ -117,12 +116,12 @@ public class TransferMessageTest extends ClusterTestBase
          waitForBindings(4, "queues.testaddress", 4, 4, false);
 
 
-         PostOfficeImpl postOffice = (PostOfficeImpl)servers[0].getPostOffice();
+         PostOfficeImpl postOffice = (PostOfficeImpl) servers[0].getPostOffice();
 
          ArrayList<String> queuesToTransfer = new ArrayList<String>();
 
 //         System.out.println("bindings = " + postOffice.getAddressManager().getBindings().size());
-         for (Map.Entry<SimpleString, Binding> entry: postOffice.getAddressManager().getBindings().entrySet())
+         for (Map.Entry<SimpleString, Binding> entry : postOffice.getAddressManager().getBindings().entrySet())
          {
 //            System.out.println("entry: " + entry + " / " + entry.getValue() + " class = " + entry.getValue().getClass());
 
@@ -133,7 +132,7 @@ public class TransferMessageTest extends ClusterTestBase
                if (localQueueBinding.getBindable() instanceof QueueImpl)
                {
                   QueueImpl queue = (QueueImpl) localQueueBinding.getBindable();
-                  for (Consumer consumer: queue.getConsumers())
+                  for (Consumer consumer : queue.getConsumers())
                   {
 
                      if (consumer instanceof ClusterConnectionBridge)
@@ -156,26 +155,16 @@ public class TransferMessageTest extends ClusterTestBase
 
          queuesToTransfer.add("queue0");
 
+         closeAllConsumers();
+
          for (String str : queuesToTransfer)
          {
-
-            String[] args = new String[9];
-
-            args[0] = "transfer-queue";
-
-            args[1] = "127.0.0.1";
-            args[2] = "" + TransportConstants.DEFAULT_PORT;
-            args[3] = str;
-
-            args[4] = "127.0.0.1";
-            args[5] = "" + TransportConstants.DEFAULT_PORT;
-            args[6] = "output-result";
-
-            args[7] = "500";
-            args[8] = "100";
-
-            Main.main(args);
-
+            callTransfer("transfer-queue",
+                         "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                         str,
+                         "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                         "output-result",
+                         "500", "100");
          }
 
          ClientSession session = sfs[0].createSession(false, false);
@@ -207,6 +196,12 @@ public class TransferMessageTest extends ClusterTestBase
          throw e;
       }
 
+   }
+
+
+   public static void callTransfer(String... args) throws Exception
+   {
+      Main.main(args);
    }
 
 
@@ -275,12 +270,12 @@ public class TransferMessageTest extends ClusterTestBase
          waitForBindings(4, "queues2.testaddress", 4, 4, false);
 
 
-         PostOfficeImpl postOffice = (PostOfficeImpl)servers[0].getPostOffice();
+         PostOfficeImpl postOffice = (PostOfficeImpl) servers[0].getPostOffice();
 
          ArrayList<String> queuesToTransfer = new ArrayList<String>();
 
 //         System.out.println("bindings = " + postOffice.getAddressManager().getBindings().size());
-         for (Map.Entry<SimpleString, Binding> entry: postOffice.getAddressManager().getBindings().entrySet())
+         for (Map.Entry<SimpleString, Binding> entry : postOffice.getAddressManager().getBindings().entrySet())
          {
 //            System.out.println("entry: " + entry + " / " + entry.getValue() + " class = " + entry.getValue().getClass());
 
@@ -291,7 +286,7 @@ public class TransferMessageTest extends ClusterTestBase
                if (localQueueBinding.getBindable() instanceof QueueImpl)
                {
                   QueueImpl queue = (QueueImpl) localQueueBinding.getBindable();
-                  for (Consumer consumer: queue.getConsumers())
+                  for (Consumer consumer : queue.getConsumers())
                   {
 
                      if (consumer instanceof ClusterConnectionBridge)
@@ -305,7 +300,7 @@ public class TransferMessageTest extends ClusterTestBase
             }
          }
 
-         consumers[0].getConsumer().close();
+         closeAllConsumers();
 
          send(0, "queues.testaddress", NUM_MESSAGES, true, null);
 
@@ -316,24 +311,16 @@ public class TransferMessageTest extends ClusterTestBase
 
          queuesToTransfer.add("queue0");
 
+         queuesToTransfer.add("queue2");
+
          for (String str : queuesToTransfer)
          {
-            String[] args = new String[9];
-
-            args[0] = "transfer-queue";
-
-            args[1] = "127.0.0.1";
-            args[2] = "" + TransportConstants.DEFAULT_PORT;
-            args[3] = str;
-
-            args[4] = "127.0.0.1";
-            args[5] = "" + TransportConstants.DEFAULT_PORT;
-            args[6] = "tmp-queue";
-
-            args[7] = "500";
-            args[8] = "100";
-
-            Main.main(args);
+            callTransfer("transfer-queue",
+                         "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                         str,
+                         "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                         "tmp-queue",
+                         "500", "100");
          }
 
 
@@ -343,24 +330,13 @@ public class TransferMessageTest extends ClusterTestBase
          System.out.println("Transferring the main output-queue now");
 
 
-         String[] args = new String[10];
-
-         args[0] = "transfer-queue";
-
-         args[1] = "127.0.0.1";
-         args[2] = "" + TransportConstants.DEFAULT_PORT;
-         args[3] = "tmp-queue";
-
-         args[4] = "127.0.0.1";
-         args[5] = "" + TransportConstants.DEFAULT_PORT;
-         args[6] = "output-result";
-
-         args[7] = "500";
-         args[8] = "100";
-         args[9] = "_HQ_TOOL_original_address='queues.testaddress'";
-
-         Main.main(args);
-
+         callTransfer("transfer-queue",
+                      "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                      "tmp-queue",
+                      "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                      "output-result",
+                      "500", "100",
+                      "_HQ_TOOL_original_address='queues.testaddress'");
 
 
          ClientSession session = sfs[0].createSession(false, false);
@@ -390,41 +366,13 @@ public class TransferMessageTest extends ClusterTestBase
 
          System.out.println("Last transfer!!!");
 
-
-         args[0] = "transfer-queue";
-
-         args[1] = "127.0.0.1";
-         args[2] = "" + TransportConstants.DEFAULT_PORT;
-         args[3] = "tmp-queue";
-
-         args[4] = "127.0.0.1";
-         args[5] = "" + TransportConstants.DEFAULT_PORT;
-         args[6] = "output-result";
-
-         args[7] = "500";
-         args[8] = "100";
-         args[9] = "_HQ_TOOL_original_address='queues2.testaddress'";
-
-         Main.main(args);
-
-         closeAllConsumers();
-
-         args = new String[9];
-
-         args[0] = "transfer-queue";
-
-         args[1] = "127.0.0.1";
-         args[2] = "" + TransportConstants.DEFAULT_PORT;
-         args[3] = "queue2";
-
-         args[4] = "127.0.0.1";
-         args[5] = "" + TransportConstants.DEFAULT_PORT;
-         args[6] = "output-result";
-
-         args[7] = "500";
-         args[8] = "100";
-
-         Main.main(args);
+         callTransfer("transfer-queue",
+                      "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                      "tmp-queue",
+                      "127.0.0.1", "" + TransportConstants.DEFAULT_PORT, "guest", "guest",
+                      "output-result",
+                      "500", "100",
+                      "_HQ_TOOL_original_address='queues2.testaddress'");
 
          session.start();
 
@@ -445,8 +393,6 @@ public class TransferMessageTest extends ClusterTestBase
 
          session.commit();
 
-
-
          session.close();
 
       }
@@ -456,8 +402,6 @@ public class TransferMessageTest extends ClusterTestBase
       }
 
    }
-
-
 
 
    protected void setupCluster() throws Exception
