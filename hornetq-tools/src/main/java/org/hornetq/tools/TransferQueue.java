@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -35,6 +36,10 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
 public class TransferQueue // NO_UCD (unused code)
 {
+   private static final String srcUser = System.getProperty("tq.src.user", null);
+   private static final String srcPass = System.getProperty("tq.src.pass", null);
+   private static final String dstUser = System.getProperty("tq.dst.user", null);
+   private static final String dstPass = System.getProperty("tq.dst.pass", null);
 
    public void process(String[] arg)
    {
@@ -92,42 +97,31 @@ public class TransferQueue // NO_UCD (unused code)
       Map<String, Object> targetParameters = new HashMap<String, Object>();
       targetParameters.put(TransportConstants.HOST_PROP_NAME, targetHost);
       targetParameters.put(TransportConstants.PORT_PROP_NAME, targetPort);
+
+      Throwable err = null;
+      ServerLocator locatorSource = null;
+      ServerLocator locatorTarget = null;
+      ClientSession sessionSource = null;
+      ClientSession sessionTarget = null;
+      ClientConsumer consumer = null;
+      ClientProducer producer = null;
       try
       {
          TransportConfiguration configurationSource = new TransportConfiguration(NettyConnectorFactory.class.getName(), sourceParameters);
-
-         ServerLocator locatorSource = HornetQClient.createServerLocator(false, configurationSource);
-
+         locatorSource = HornetQClient.createServerLocatorWithoutHA(configurationSource);
          ClientSessionFactory factorySource = locatorSource.createSessionFactory();
+         sessionSource = factorySource.createSession(srcUser, srcPass, false, false, false, locatorSource.isPreAcknowledge(), locatorSource.getAckBatchSize());
 
-         ClientSession sessionSource = factorySource.createSession(false, false);
-
-         ClientConsumer consumer;
-
-         if (filter == null)
-         {
-            consumer = sessionSource.createConsumer(queue);
-         }
-         else
-         {
-            consumer = sessionSource.createConsumer(queue, filter);
-         }
-
+         consumer = sessionSource.createConsumer(queue, filter);
 
          TransportConfiguration configurationTarget = new TransportConfiguration(NettyConnectorFactory.class.getName(), targetParameters);
+         locatorTarget = HornetQClient.createServerLocatorWithoutHA(configurationTarget);
+         ClientSessionFactory factoryTarget = locatorTarget.createSessionFactory();
+         sessionTarget = factoryTarget.createSession(dstUser, dstPass, false, false, false, locatorTarget.isPreAcknowledge(), locatorTarget.getAckBatchSize());
 
-         ServerLocator locatorTarget = HornetQClient.createServerLocatorWithoutHA(configurationSource);
-
-
-
-         ClientSessionFactory factoryTarget = locatorSource.createSessionFactory();
-
-         ClientSession sessionTarget = factorySource.createSession(false, false);
-
-         ClientProducer producer = sessionTarget.createProducer(producingAddress);
+         producer = sessionTarget.createProducer(producingAddress);
 
          sessionSource.start();
-
          int countMessage = 0;
 
          while (true)
@@ -179,20 +173,85 @@ public class TransferQueue // NO_UCD (unused code)
          sessionSource.close();
          sessionTarget.close();
 
-         locatorSource.close();
-         locatorTarget.close();
-
-
-
-
       }
       catch (Exception e)
       {
-         e.printStackTrace();
-         printUsage();
-         System.exit(-1);
+         err = e;
       }
+      finally
+      {
+         if (null != consumer)
+         {
+            try
+            {
+               consumer.close();
+            }
+            catch (HornetQException e)
+            {
+               if (null != err)
+               {
+                  err = e;
+               }
+            }
+         }
+         if (null != producer)
+         {
+            try
+            {
+               producer.close();
+            }
+            catch (HornetQException e)
+            {
+               if (null != err)
+               {
+                  err = e;
+               }
+            }
+         }
+         if (null != sessionTarget)
+         {
+            try
+            {
+               sessionTarget.close();
+            }
+            catch (HornetQException e)
+            {
+               if (null == err)
+               {
+                  err = e;
+               }
+            }
+         }
+         if (null != sessionSource)
+         {
+            try
+            {
+               sessionSource.close();
+            }
+            catch (HornetQException e)
+            {
+               if (null != err)
+               {
+                  err = e;
+               }
+            }
+         }
+         if (null != locatorTarget)
+         {
+            locatorTarget.close();
+         }
+         if (null != locatorSource)
+         {
+            locatorSource.close();
+         }
 
+         if (null != err)
+         {
+            err.printStackTrace();
+            printUsage();
+            System.exit(-1);
+         }
+      }
    }
 
 
