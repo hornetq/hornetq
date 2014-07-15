@@ -599,5 +599,8 @@ public interface HornetQServerControl
    void forceFailover() throws Exception;
 
    void updateDuplicateIdCache(String address, Object[] ids) throws Exception;
+
+   @Operation(desc = "force the server to stop and to scale down to another server", impact = MBeanOperationInfo.UNKNOWN)
+   void scaleDown(@Parameter(name = "name", desc = "The connector to use to scale down, if not provided the first appropriate connector will be used")String connector) throws Exception;
 }
 

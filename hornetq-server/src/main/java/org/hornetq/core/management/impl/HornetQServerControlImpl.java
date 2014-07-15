@@ -1835,6 +1835,24 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
+
+   @Override
+   public void scaleDown(String connector) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      if (connector != null)
+      {
+         server.getConfiguration().getHAPolicy().getScaleDownConnectors().add(0, connector);
+      }
+
+      server.getConfiguration().getHAPolicy().setScaleDown(true);
+
+      server.stop(true);
+   }
+
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,
