@@ -164,17 +164,16 @@ public class TransferQueue // NO_UCD (unused code)
 
             producer.send(message);
 
-            if (countMessage++ % commit == 0)
+            if (++countMessage % commit == 0)
             {
-               System.out.println("Sent " + countMessage + " messages");
                sessionTarget.commit();
+               System.out.println("Sent " + countMessage + " messages");
                sessionSource.commit();
             }
-
          }
 
-
          sessionTarget.commit();
+         System.out.println("Totally sent " + countMessage + " messages");
          sessionSource.commit();
          consumer.close();
          producer.close();
