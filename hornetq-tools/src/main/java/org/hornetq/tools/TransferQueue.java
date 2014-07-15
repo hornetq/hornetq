@@ -90,10 +90,8 @@ public class TransferQueue // NO_UCD (unused code)
       sourceParameters.put(TransportConstants.PORT_PROP_NAME, sourcePort);
 
       Map<String, Object> targetParameters = new HashMap<String, Object>();
-      sourceParameters.put(TransportConstants.HOST_PROP_NAME, targetHost);
-      sourceParameters.put(TransportConstants.PORT_PROP_NAME, targetPort);
-
-
+      targetParameters.put(TransportConstants.HOST_PROP_NAME, targetHost);
+      targetParameters.put(TransportConstants.PORT_PROP_NAME, targetPort);
       try
       {
          TransportConfiguration configurationSource = new TransportConfiguration(NettyConnectorFactory.class.getName(), sourceParameters);
