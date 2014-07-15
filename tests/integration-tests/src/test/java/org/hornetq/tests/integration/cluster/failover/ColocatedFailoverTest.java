@@ -29,10 +29,12 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
@@ -40,6 +42,7 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ColocatedHornetQServer;
@@ -101,7 +104,8 @@ public class ColocatedFailoverTest extends ServiceTestBase
       params.put("server-id", "1");
       TransportConfiguration transportConfiguration1 = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
       locator = HornetQClient.createServerLocator(true, transportConfiguration1);
-      locator.setReconnectAttempts(-1);
+      locator.setReconnectAttempts(10);
+      locator.setRetryInterval(200);
       locator.setConfirmationWindowSize(0);
       factory1 = locator.createSessionFactory(transportConfiguration1);
 
@@ -141,7 +145,6 @@ public class ColocatedFailoverTest extends ServiceTestBase
          @Override
          public void sendAcknowledged(org.hornetq.api.core.Message message)
          {
-
             latch.countDown();
          }
       });
@@ -223,6 +226,8 @@ public class ColocatedFailoverTest extends ServiceTestBase
       message.getBodyBuffer().readBytes(10000);
       session1.close();
       liveServer1.crash(true, session1);
+      // ERRORs can crop up here because the consumption of the message from session2 can occur so fast that the
+      // liveServer2 will be shutdown before scale down is actually complete
       consumer = session2.createConsumer(queue);
       session2.start();
       message = consumer.receive(5000);
@@ -377,13 +382,23 @@ public class ColocatedFailoverTest extends ServiceTestBase
    @Test
    public void testSendQueueMessageStillInForwardQueue2Queues() throws Exception
    {
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setRedistributionDelay(0);
+      liveServer1.getServer().getAddressSettingsRepository().addMatch("#", addressSettings);
+      liveServer2.getServer().getAddressSettingsRepository().addMatch("#", addressSettings);
+
       int numMessages = 100;
       ClientProducer producer = session1.createProducer();
       final CountDownLatch latch = new CountDownLatch(numMessages);
-      SimpleString dur1 = new SimpleString("myDurSub1");
-      session2.createQueue(topic, dur1, true);
-      SimpleString dur2 = new SimpleString("myDurSub2");
-      session1.createQueue(topic, dur2, true);
+
+      // create "myDurSub1" on node 1
+      SimpleString myDurSub1 = new SimpleString("myDurSub1");
+      session1.createQueue(topic, myDurSub1, true);
+
+      // create "myDurSub2" on node 2
+      SimpleString myDurSub2 = new SimpleString("myDurSub2");
+      session2.createQueue(topic, myDurSub2, true);
+
       waitForBindings(liveServer1.getServer(), topic.toString(), false, 2, 0, 5000L);
       waitForBindings(liveServer2.getServer(), topic.toString(), false, 2, 0, 5000L);
       session1.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
@@ -394,20 +409,24 @@ public class ColocatedFailoverTest extends ServiceTestBase
             latch.countDown();
          }
       });
+
+      // send 100 messages to the topic (which has a subscription on node 1 and a different subscription on node 2)
+      // this will result in 100 messages on each node; 200 messages total
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session1.createMessage(true);
          message.getBodyBuffer().writeString("message:" + i);
+         IntegrationTestLogger.LOGGER.info("Sending message " + i + " to " + topic);
          producer.send(topic, message);
       }
       latch.await(10, TimeUnit.SECONDS);
-      //now disconnect the bridge but readd the binding so we can make sure some messages get marooned
+      //now disconnect the bridge but re-add the binding so we can make sure some messages get marooned
       Bindings bindingsForAddress = liveServer1.getServer().getPostOffice().getBindingsForAddress(topic);
       Collection<Binding> bindings = bindingsForAddress.getBindings();
       Binding binding = null;
       for (Binding thebinding : bindings)
       {
-         if (thebinding.getRoutingName().equals(dur1))
+         if (thebinding.getRoutingName().equals(myDurSub2))
          {
             binding = thebinding;
             break;
@@ -418,36 +437,46 @@ public class ColocatedFailoverTest extends ServiceTestBase
       Set<ClusterConnection> clusterConnections = liveServer1.getServer().getClusterManager().getClusterConnections();
       for (ClusterConnection clusterConnection : clusterConnections)
       {
+         IntegrationTestLogger.LOGGER.info("Stopping cluster connection.");
          clusterConnection.stop();
       }
       liveServer1.getServer().getPostOffice().addBinding(binding);
+
+      // send 100 messages to the topic (which has a subscription on node 1 and a different subscription on node 2)
+      // since the cluster connection is stopped then this will result in 200 messages on node 1
+      // At this point there will be 300 messages total on node 1 and 100 messages total on node 2
       for (int i = 100; i < numMessages + 100; i++)
       {
          ClientMessage message = session1.createMessage(true);
          message.getBodyBuffer().writeString("message:" + i);
+         IntegrationTestLogger.LOGGER.info("Sending message " + i + " to " + topic);
          producer.send(topic, message);
       }
       liveServer1.crash(true, session1);
-
       ColocatedHornetQServer qServer = (ColocatedHornetQServer) liveServer2.getServer();
       qServer.backupServer.waitForActivation(5, TimeUnit.SECONDS);
-      ClientConsumer consumer = session2.createConsumer(dur1);
+      ClientConsumer consumer = session2.createConsumer(myDurSub1);
       session2.start();
       for (int i = 0; i < numMessages * 2; i++)
       {
          ClientMessage cMessage = consumer.receive(5000);
          String s = cMessage.getBodyBuffer().readString();
-         System.out.println("s = " + s);
+         IntegrationTestLogger.LOGGER.info("s = " + s);
          assertNotNull(s);
       }
-      consumer = session2.createConsumer(dur2);
+      ClientMessage cMessage = consumer.receive(250);
+      assertNull(cMessage);
+
+      consumer = session2.createConsumer(myDurSub2);
       for (int i = 0; i < numMessages * 2; i++)
       {
-         ClientMessage cMessage = consumer.receive(5000);
+         cMessage = consumer.receive(5000);
          String s = cMessage.getBodyBuffer().readString();
-         System.out.println("s = " + s);
+         IntegrationTestLogger.LOGGER.info("s = " + s);
          assertNotNull(s);
       }
+      cMessage = consumer.receive(250);
+      assertNull(cMessage);
    }
 
    @Test
@@ -478,16 +507,33 @@ public class ColocatedFailoverTest extends ServiceTestBase
          server3.start();
          waitForServer(server3);
 
+         IntegrationTestLogger.LOGGER.info("===============================");
+         IntegrationTestLogger.LOGGER.info("Node 0: " + liveServer1.getServer().getClusterManager().getNodeId());
+         IntegrationTestLogger.LOGGER.info("Node 1: " + liveServer2.getServer().getClusterManager().getNodeId());
+         IntegrationTestLogger.LOGGER.info("Node 2: " + server3.getClusterManager().getNodeId());
+         IntegrationTestLogger.LOGGER.info("===============================");
+
+         AddressSettings addressSettings = new AddressSettings();
+         addressSettings.setRedistributionDelay(0);
+         liveServer1.getServer().getAddressSettingsRepository().addMatch("#", addressSettings);
+         liveServer2.getServer().getAddressSettingsRepository().addMatch("#", addressSettings);
+         server3.getAddressSettingsRepository().addMatch("#", addressSettings);
+
          ClientSessionFactory sessionFactory3 = locator.createSessionFactory(liveConnector3);
          ClientSession session3 = sessionFactory3.createSession();
-         SimpleString dursub3 = new SimpleString("dursub3");
-         session3.createQueue(topic, dursub3, true);
 
-         int numMessages = 100;
+         // create subscription on node 3
+         SimpleString myDurSub3 = new SimpleString("myDurSub3");
+         session3.createQueue(topic, myDurSub3, true);
+
+         int numMessages = 10;
          ClientProducer producer = session1.createProducer();
          final CountDownLatch latch = new CountDownLatch(numMessages);
-         SimpleString dur1 = new SimpleString("myDurSub1");
-         session2.createQueue(topic, dur1, true);
+
+         // create subscription on node 2
+         SimpleString myDurSub2 = new SimpleString("myDurSub2");
+         session2.createQueue(topic, myDurSub2, true);
+
          waitForBindings(liveServer1.getServer(), topic.toString(), false, 4, 0, 5000L);
          waitForBindings(liveServer2.getServer(), topic.toString(), false, 3, 0, 5000L);
          session1.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
@@ -498,71 +544,98 @@ public class ColocatedFailoverTest extends ServiceTestBase
                latch.countDown();
             }
          });
+
+         // send 10 messages to node 1; these go into subscriptions on node 2 and 3
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session1.createMessage(true);
             message.getBodyBuffer().writeString("message:" + i);
+            IntegrationTestLogger.LOGGER.info("Sending message " + i + " to " + topic);
             producer.send(topic, message);
          }
          latch.await(10, TimeUnit.SECONDS);
-         //now disconnect the bridge but readd the binding so we can make sure some messages get marooned
+
+         // need to wait a bit for the messages to be moved from node 1 to the others
+         Queue myDurSub2Queue = ((LocalQueueBinding) liveServer2.getServer().getPostOffice().getBinding(myDurSub2)).getQueue();
+         Queue myDurSub3Queue = ((LocalQueueBinding) server3.getPostOffice().getBinding(myDurSub3)).getQueue();
+
+         long timeout = System.currentTimeMillis() + 5000;
+
+         while (numMessages != myDurSub2Queue.getMessageCount() && timeout > System.currentTimeMillis())
+         {
+            Thread.sleep(10);
+         }
+         while (numMessages != myDurSub3Queue.getMessageCount() && timeout > System.currentTimeMillis())
+         {
+            Thread.sleep(10);
+         }
+
+         assertEquals(numMessages, myDurSub2Queue.getMessageCount());
+         assertEquals(numMessages, myDurSub3Queue.getMessageCount());
+
+         // now pause the SnF queues so messages get stranded there
          Bindings bindingsForAddress = liveServer1.getServer().getPostOffice().getBindingsForAddress(topic);
          Collection<Binding> bindings = bindingsForAddress.getBindings();
-         Binding binding = null;
-         for (Binding thebinding : bindings)
+         for (Binding binding : bindings)
          {
-            if (thebinding.getRoutingName().equals(dur1))
+            if (binding.getRoutingName().equals(myDurSub2))
             {
-               binding = thebinding;
+               ((RemoteQueueBinding)binding).getQueue().pause();
                break;
             }
          }
 
-         assertNotNull(binding);
-
-         Binding binding2 = null;
-         for (Binding thebinding : bindings)
+         for (Binding binding : bindings)
          {
-            if (thebinding.getRoutingName().equals(dursub3))
+            if (binding.getRoutingName().equals(myDurSub3))
             {
-               binding2 = thebinding;
+               ((RemoteQueueBinding)binding).getQueue().pause();
                break;
             }
          }
 
-         assertNotNull(binding2);
-
-         Set<ClusterConnection> clusterConnections = liveServer1.getServer().getClusterManager().getClusterConnections();
-         for (ClusterConnection clusterConnection : clusterConnections)
-         {
-            clusterConnection.stop();
-         }
-         liveServer1.getServer().getPostOffice().addBinding(binding);
-         liveServer1.getServer().getPostOffice().addBinding(binding2);
-         for (int i = 100; i < numMessages + 100; i++)
+         // send another 10 messages to node 1; these go into the SnF queues for nodes 2 and 3
+         // at this point there's 10 messages on node 2, 10 messages on node 3 and 20 messages on node 1 (in the SnF queues for nodes 2 and 3)
+         for (int i = numMessages; i < numMessages * 2; i++)
          {
             ClientMessage message = session1.createMessage(true);
             message.getBodyBuffer().writeString("message:" + i);
+            IntegrationTestLogger.LOGGER.info("Sending message " + i + " to " + topic);
             producer.send(topic, message);
          }
+
+         String snfAddress = "sf.cluster1." + liveServer2.getServer().getNodeID().toString();
+         assertEquals(numMessages, ((LocalQueueBinding) liveServer1.getServer().getPostOffice().getBinding(SimpleString.toSimpleString(snfAddress))).getQueue().getMessageCount());
+         snfAddress = "sf.cluster1." + server3.getNodeID().toString();
+         assertEquals(numMessages, ((LocalQueueBinding) liveServer1.getServer().getPostOffice().getBinding(SimpleString.toSimpleString(snfAddress))).getQueue().getMessageCount());
+
          liveServer1.crash(true, session1);
 
          ColocatedHornetQServer qServer = (ColocatedHornetQServer) liveServer2.getServer();
          qServer.backupServer.waitForActivation(5, TimeUnit.SECONDS);
-         ClientConsumer consumer = session2.createConsumer(dur1);
+         ClientConsumer consumer = session2.createConsumer(myDurSub2);
          session2.start();
          for (int i = 0; i < numMessages * 2; i++)
          {
             ClientMessage cMessage = consumer.receive(5000);
-            assertNotNull(cMessage.getBodyBuffer().readString());
+            String s = cMessage.getBodyBuffer().readString();
+            IntegrationTestLogger.LOGGER.info("s = " + s);
+            assertNotNull(s);
          }
-         consumer = session3.createConsumer(dursub3);
+         ClientMessage cMessage = consumer.receive(250);
+         assertNull(cMessage);
+
+         consumer = session3.createConsumer(myDurSub3);
          session3.start();
          for (int i = 0; i < numMessages * 2; i++)
          {
-            ClientMessage cMessage = consumer.receive(5000);
-            assertNotNull(cMessage.getBodyBuffer().readString());
+            cMessage = consumer.receive(5000);
+            String s = cMessage.getBodyBuffer().readString();
+            IntegrationTestLogger.LOGGER.info("s = " + s);
+            assertNotNull(s);
          }
+         cMessage = consumer.receive(250);
+         assertNull(cMessage);
       }
       finally
       {
@@ -582,12 +655,13 @@ public class ColocatedFailoverTest extends ServiceTestBase
          ClientProducer producer = session.createProducer();
          Xid xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          session.start(xid, XAResource.TMNOFLAGS);
+         IntegrationTestLogger.LOGGER.info("Sending " + numMessages + " to " + queue);
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session1.createMessage(true);
+            ClientMessage message = session.createMessage(true);
             message.getBodyBuffer().writeString("message:" + i);
             producer.send(queue, message);
-            System.out.println("i = " + i);
+//            IntegrationTestLogger.LOGGER.info("i = " + i);
          }
          session.end(xid, XAResource.TMSUCCESS);
          session.prepare(xid);
@@ -665,10 +739,12 @@ public class ColocatedFailoverTest extends ServiceTestBase
       Xid xid = new XidImpl("bq1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       session.start(xid, XAResource.TMNOFLAGS);
       session.start();
+      IntegrationTestLogger.LOGGER.info("Started transaction: " + xid);
       ClientMessage cMessage = consumer.receive(5000);
       cMessage.acknowledge();
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
+      IntegrationTestLogger.LOGGER.info("Prepared transaction: " + xid);
       session.close();
       liveServer1.crash(true, session);
       ColocatedHornetQServer qServer = (ColocatedHornetQServer) liveServer2.getServer();
@@ -679,6 +755,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       )
       {
          session2.getXAResource().commit(xid, false);
+         IntegrationTestLogger.LOGGER.info("Committed transaction: " + xid);
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(q.getMessageCount(), 0);
@@ -1224,7 +1301,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       session2.start();
       cMessage = consumer.receive(5000);
       String s = cMessage.getBodyBuffer().readString();
-      System.out.println("s = " + s);
+      IntegrationTestLogger.LOGGER.info("s = " + s);
       assertNotNull(s);
       assertEquals(3, cMessage.getDeliveryCount());
    }
@@ -1337,12 +1414,12 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration1.setBindingsDirectory(getTestDir() + "/bindings2");
       backupConfiguration1.setLargeMessagesDirectory(getTestDir() + "/largemessage2");
       backupConfiguration1.setPagingDirectory(getTestDir() + "/paging2");
-      backupConfiguration1.setBackupStrategy(BackupStrategy.SCALE_DOWN);
-      backupConfiguration1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       HAPolicy haPolicy = new HAPolicy();
       ArrayList<String> scaleDownConnectors = new ArrayList<>();
       scaleDownConnectors.add(liveConnector1.getName());
       haPolicy.setScaleDownConnectors(scaleDownConnectors);
+      haPolicy.setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      haPolicy.setBackupStrategy(BackupStrategy.SCALE_DOWN);
       backupConfiguration1.setHAPolicy(haPolicy);
       liveConfiguration1.getBackupServerConfigurations().add(backupConfiguration1);
 
@@ -1369,12 +1446,12 @@ public class ColocatedFailoverTest extends ServiceTestBase
       backupConfiguration2.setBindingsDirectory(getTestDir() + "/bindings1");
       backupConfiguration2.setLargeMessagesDirectory(getTestDir() + "/largemessage1");
       backupConfiguration2.setPagingDirectory(getTestDir() + "/paging1");
-      backupConfiguration2.setBackupStrategy(BackupStrategy.SCALE_DOWN);
-      backupConfiguration2.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
       HAPolicy haPolicy2 = new HAPolicy();
       ArrayList<String> scaleDownConnectors2 = new ArrayList<>();
       scaleDownConnectors2.add(liveConnector2.getName());
       haPolicy2.setScaleDownConnectors(scaleDownConnectors2);
+      haPolicy2.setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      haPolicy2.setBackupStrategy(BackupStrategy.SCALE_DOWN);
       backupConfiguration2.setHAPolicy(haPolicy2);
       liveConfiguration2.getBackupServerConfigurations().add(backupConfiguration2);
 
