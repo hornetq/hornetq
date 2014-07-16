@@ -234,7 +234,6 @@
                <skipTests>${skipIntegrationTests}</skipTests>
                <excludes>
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
-                  <exclude>**/Colocated*Test.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
                </excludes>
                <argLine>-Djgroups.bind_addr=::1 ${hornetq-surefire-argline}</argLine>

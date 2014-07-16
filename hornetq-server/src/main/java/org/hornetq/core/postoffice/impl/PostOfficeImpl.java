@@ -960,7 +960,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          // We use properties to establish routing context on clustering.
          // However if the client resends the message after receiving, it needs to be removed
          if ((name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS)) ||
-            name.equals(MessageImpl.HDR_ROUTE_TO_ACK_IDS))
+               (name.startsWith(MessageImpl.HDR_ROUTE_TO_ACK_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_ACK_IDS)))
          {
             if (valuesToRemove == null)
             {

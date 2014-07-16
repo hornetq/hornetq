@@ -1265,48 +1265,6 @@ public class ColocatedFailoverTest extends ServiceTestBase
    }
 
    @Test
-   public void testReceiveRedelivery() throws Exception
-   {
-      ClientSession session = factory1.createTransactedSession();
-      ClientProducer producer = session1.createProducer();
-      final CountDownLatch latch = new CountDownLatch(1);
-      session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
-      {
-         @Override
-         public void sendAcknowledged(org.hornetq.api.core.Message message)
-         {
-            latch.countDown();
-         }
-      });
-      ClientMessage message = session.createMessage(true);
-      message.getBodyBuffer().writeString("message:1");
-      producer.send(queue, message);
-      latch.await(10, TimeUnit.SECONDS);
-
-      ClientConsumer consumer1 = session.createConsumer(queue);
-      session.start();
-      ClientMessage cMessage = consumer1.receive(5000);
-      assertNotNull(cMessage.getBodyBuffer().readString());
-      cMessage.acknowledge();
-      assertEquals(1, cMessage.getDeliveryCount());
-      session.rollback();
-      cMessage = consumer1.receive(5000);
-      assertNotNull(cMessage.getBodyBuffer().readString());
-      cMessage.acknowledge();
-      assertEquals(2, cMessage.getDeliveryCount());
-      session.rollback();
-      session.close();
-      liveServer1.crash();
-      ClientConsumer consumer = session2.createConsumer(queue);
-      session2.start();
-      cMessage = consumer.receive(5000);
-      String s = cMessage.getBodyBuffer().readString();
-      IntegrationTestLogger.LOGGER.info("s = " + s);
-      assertNotNull(s);
-      assertEquals(3, cMessage.getDeliveryCount());
-   }
-
-   @Test
    public void testSendDuplicateIDs() throws Exception
    {
       int numMessages = 100;
