@@ -482,103 +482,103 @@
             </thead>
             <tbody>
                <row>
-                  <entry>policy-type</entry>
+                  <entry><literal>policy-type</literal></entry>
                   <entry>what kind of HA Policy should to use, chosen from, NONE, REPLICATED, SHARED_STORE, BACKUP_REPLICATED,
                      BACKUP_SHARED_STORE, COLOCATED_REPLICATED, COLOCATED_SHARED_STORE.</entry>
                </row>
                <row>
-                  <entry>request-backup</entry>
+                  <entry><literal>request-backup</literal></entry>
                   <entry>If true then the server will request a backup on another node</entry>
                </row>
                <row>
-                  <entry>backup-request-retries</entry>
+                  <entry><literal>backup-request-retries</literal></entry>
                   <entry>How many times the live server will try to request a backup, -1 means for ever.</entry>
                </row>
                <row>
-                  <entry>backup-request-retry-interval</entry>
+                  <entry><literal>backup-request-retry-interval</literal></entry>
                   <entry>How long to wait for retries between attempts to request a backup server.</entry>
                </row>
                <row>
-                  <entry>max-backups</entry>
+                  <entry><literal>max-backups</literal></entry>
                   <entry>Whether or not this live server will accept backup requests from other live servers.</entry>
                </row>
                <row>
-                  <entry>backup-port-offset</entry>
+                  <entry><literal>backup-port-offset</literal></entry>
                   <entry>The offset to use for the Connectors and Acceptors when creating a new backup server.</entry>
                </row>
                <row>
-                  <entry>backup-strategy</entry>
+                  <entry><literal>backup-strategy</literal></entry>
                   <entry>The backup strategy to use if we are a backup or for any colocated backups, either FULL or SCALE_DOWN</entry>
                </row>
                <row>
-                  <entry>scale-down-connectors</entry>
+                  <entry><literal>scale-down-connectors</literal></entry>
                   <entry>A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or
                      first invm connector will be used</entry>
                </row>
                <row>
-                  <entry>scale-down-discovery-group</entry>
+                  <entry><literal>scale-down-discovery-group</literal></entry>
                   <entry>The discovery group to use for scale down, if not supplied then the scale-down-connectors or first
                      invm connector will be used</entry>
                </row>
                <row>
-                  <entry>scale-down-group-name</entry>
+                  <entry><literal>scale-down-group-name</literal></entry>
                   <entry>The scale down group to scale down to, a server will only scale down to a server within the same group</entry>
                </row>
                <row>
-                  <entry>backup-group-name</entry>
+                  <entry><literal>backup-group-name</literal></entry>
                   <entry>used for replication, if set, (remote) backup servers will only pair with live servers with matching
                      backup-group-name</entry>
                </row>
                <row>
-                  <entry>remote-connectors</entry>
+                  <entry><literal>remote-connectors</literal></entry>
                   <entry>the remote connectors that shouldn't have their ports offset, typically remote connectors or the
                      connector used in the cluster connection if scalinmg down</entry>
                </row>
                <row>
-                  <entry>check-for-live-server</entry>
+                  <entry><literal>check-for-live-server</literal></entry>
                   <entry>Whether to check the cluster for a (live) server using our own server ID when starting
                      up. This option is only necessary for performing 'fail-back' on replicating
                      servers. Strictly speaking this setting only applies to live servers and not to
                      backups.</entry>
                </row>
                <row>
-                  <entry>allow-failback</entry>
+                  <entry><literal>allow-failback</literal></entry>
                   <entry>Whether a server will automatically stop when a another places a request to take over
                      its place. The use case is when a regular server stops and its backup takes over its
                      duties, later the main server restarts and requests the server (the former backup) to
                      stop operating.</entry>
                </row>
                <row>
-                  <entry>failback-delay</entry>
+                  <entry><literal>failback-delay</literal></entry>
                   <entry>delay to wait before fail-back occurs on (live's) restart</entry>
                </row>
                <row>
-                  <entry>failover-on-shutdown</entry>
+                  <entry><literal>failover-on-shutdown</literal></entry>
                   <entry>Will this backup server come live on a normal server shutdown</entry>
                </row>
                <row>
-                  <entry>replication-clustername</entry>
+                  <entry><literal>replication-clustername</literal></entry>
                   <entry>Name of the cluster configuration to use for replication. This setting is only necessary in case you
                      configure multiple cluster connections. It is used by a replicating backups and by live servers that
                      may attempt fail-back.</entry>
                </row>
                <row>
-                  <entry>scale-down-clustername</entry>
+                  <entry><literal>scale-down-clustername</literal></entry>
                   <entry>Name of the cluster configuration to use for scaling down. This setting is only necessary in case you
                      configure multiple cluster connections.</entry>
                </row>
                <row>
-                  <entry>max-saved-replicated-journals-size</entry>
+                  <entry><literal>max-saved-replicated-journals-size</literal></entry>
                   <entry>This specifies how many times a replicated backup server can restart after moving its files on start.
                      Once there are this number of backup journal files the server will stop permanently after if fails
                      back.</entry>
                </row>
                <row>
-                  <entry>scale-down</entry>
+                  <entry><literal>scale-down</literal></entry>
                   <entry>Will this server send its messages to another live server in the cluster when shut-down cleanly.</entry>
                </row>
                <row>
-                  <entry>restart-backup</entry>
+                  <entry><literal>restart-backup</literal></entry>
                   <entry>Will this server, if a backup, restart once it has been stopped because of failback or scaling down.</entry>
                </row>
             </tbody>
