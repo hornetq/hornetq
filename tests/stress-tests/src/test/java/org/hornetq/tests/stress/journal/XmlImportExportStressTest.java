@@ -20,7 +20,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.junit.Test;
 
-import org.junit.Assert;
 import org.hornetq.tools.XmlDataExporter;
 import org.hornetq.tools.XmlDataImporter;
 import org.hornetq.core.server.HornetQServer;
@@ -110,7 +109,7 @@ public class XmlImportExportStressTest extends ServiceTestBase
       for (int i = 0; i < COUNT; i++)
       {
          msg = consumer.receive(CONSUMER_TIMEOUT);
-         Assert.assertNotNull(msg);
+         assertNotNull(msg);
 
          msg.acknowledge();
          if (i % 500 == 0)
