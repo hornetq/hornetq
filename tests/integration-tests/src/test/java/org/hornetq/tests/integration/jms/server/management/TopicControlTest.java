@@ -201,6 +201,21 @@ public class TopicControlTest extends ManagementTestBase
    }
 
    @Test
+   public void testListSubscriptionsAsJSONWithHierarchicalTopics() throws Exception
+   {
+      serverManager.createTopic(false, "my.jms.#", "jms/all");
+      serverManager.createTopic(false, "my.jms.A", "jms/A");
+      HornetQTopic myTopic = (HornetQTopic) HornetQJMSClient.createTopic("my.jms.A");
+
+      TopicControl topicControl = ManagementControlHelper.createTopicControl(myTopic, mbeanServer);
+      String jsonString = topicControl.listDurableSubscriptionsAsJSON();
+      SubscriptionInfo[] infos = SubscriptionInfo.from(jsonString);
+      Assert.assertEquals(1, infos.length);
+      Assert.assertEquals("HornetQ", infos[0].getClientID());
+      Assert.assertEquals("HornetQ", infos[0].getName());
+   }
+
+   @Test
    public void testCountMessagesForSubscription() throws Exception
    {
       String key = "key";
