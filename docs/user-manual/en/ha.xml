@@ -30,7 +30,6 @@
     <para>A part of high availability is <emphasis>failover</emphasis> which we define as the
        <emphasis>ability for client connections to migrate from one server to another in event of
           server failure so client applications can continue to operate</emphasis>.</para>
-
     <section>
         <title>Live - Backup Groups</title>
 
@@ -169,12 +168,12 @@
                 <title>Configuration</title>
 
                 <para>To configure the live and backup servers to be a replicating pair, configure
-                   both servers' <literal>hornetq-configuration.xml</literal> to have:</para>
+                   the live server in ' <literal>hornetq-configuration.xml</literal> to have:</para>
 
                 <programlisting>
-&lt;!-- FOR BOTH LIVE AND BACKUP SERVERS' -->
-&lt;shared-store>false&lt;/shared-store>
-.
+&lt;ha-policy>
+   &lt;policy-type>REPLICATED&lt;/policy-type>
+&lt;/ha-policy>.
 .
 &lt;cluster-connections>
    &lt;cluster-connection name="my-cluster">
@@ -183,10 +182,12 @@
 &lt;/cluster-connections>
                 </programlisting>
 
-                <para>The backup server must also be configured as a backup.</para>
+                <para>The backup server must be similarly configured but with a different <literal>policy-type</literal></para>
 
                 <programlisting>
-&lt;backup>true&lt;/backup>
+&lt;ha-policy>
+   &lt;policy-type>BACKUP_REPLICATED&lt;/policy-type>
+&lt;/ha-policy>.
 </programlisting>
             </section>
         </section>
@@ -221,12 +222,25 @@
                 <title>Configuration</title>
                 <para>To configure the live and backup servers to share their store, configure
                    all <literal>hornetq-configuration.xml</literal>:</para>
-                <programlisting>
-&lt;shared-store>true&lt;/shared-store>
-                </programlisting>
-                <para>Additionally, each backup server must be flagged explicitly as a backup:</para>
-                <programlisting>
-&lt;backup>true&lt;/backup></programlisting>
+               <programlisting>
+&lt;ha-policy>
+   &lt;policy-type>SHARED_STORE&lt;/policy-type>
+&lt;/ha-policy>.
+.
+&lt;cluster-connections>
+   &lt;cluster-connection name="my-cluster">
+...
+   &lt;/cluster-connection>
+&lt;/cluster-connections>
+               </programlisting>
+
+               <para>The backup server must also be configured as a backup.</para>
+
+               <programlisting>
+&lt;ha-policy>
+   &lt;policy-type>BACKUP_SHARED_STORE&lt;/policy-type>
+&lt;/ha-policy>.
+               </programlisting>
                 <para>In order for live - backup groups to operate properly with a shared store,
                    both servers must have configured the location of journal directory to point
                    to the <emphasis>same shared location</emphasis> (as explained in
@@ -246,12 +260,19 @@
                restart the live server and have clients fail back.</para>
             <para>In case of "shared disk", simply restart the original live
                server and kill the new live server. You can do this by killing the process itself or just waiting for the server to crash naturally.</para>
-            <para>In case of a replicating live server that has been replaced by a remote backup you will need to also set <link linkend="hq.check-for-live-server">check-for-live-server</link>. This option is necessary because a starting server cannot know whether there is a (remote) server running in its place, so with this option set, the server will check the cluster for another server using its node-ID and if it finds one it will try initiate a fail-back. This option only applies to live servers that are restarting, it is ignored by backup servers.</para>
+           <para id="hq.check-for-live-server">In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
+              to <literal>true</literal>. If set to true, during start-up a live server will first search the cluster for another server using its nodeID. If it finds one, it will contact this server and try to "fail-back". Since this is a remote replication scenario, the "starting live" will have to synchronize its data with the server running with its ID, once they are in sync, it will request the other server (which it assumes it is a back that has assumed its duties) to shutdown for it to take over. This is necessary because otherwise the live server has no means to know whether there was a fail-over or not, and if there was if the server that took its duties is still running or not. To configure this option at your <literal>hornetq-configuration.xml</literal> configuration file as follows:</para>
+           <programlisting>
+&lt;ha-policy>
+   &lt;check-for-live-server>true&lt;/check-for-live-server>
+&lt;/ha-policy></programlisting>
             <para>It is also possible to cause failover to occur on normal server shutdown, to enable
                this set the following property to true in the <literal>hornetq-configuration.xml</literal>
                configuration file like so:</para>
             <programlisting>
-&lt;failover-on-shutdown>true&lt;/failover-on-shutdown></programlisting>
+&lt;ha-policy>
+   &lt;failover-on-shutdown>true&lt;/failover-on-shutdown>
+&lt;/ha-policy></programlisting>
             <para>By default this is set to false, if by some chance you have set this to false but still
                want to stop the server normally and cause failover then you can do this by using the management
                API as explained at <xref linkend="management.core.server"/></para>
@@ -259,39 +280,362 @@
                the original live server to take over automatically by setting the following property in the
                <literal>hornetq-configuration.xml</literal> configuration file as follows:</para>
             <programlisting>
-&lt;allow-failback>true&lt;/allow-failback></programlisting>
-            <para id="hq.check-for-live-server">In replication HA mode you need to set an extra property <literal>check-for-live-server</literal>
-               to <literal>true</literal>. If set to true, during start-up a live server will first search the cluster for another server using its nodeID. If it finds one, it will contact this server and try to "fail-back". Since this is a remote replication scenario, the "starting live" will have to synchronize its data with the server running with its ID, once they are in sync, it will request the other server (which it assumes it is a back that has assumed its duties) to shutdown for it to take over. This is necessary because otherwise the live server has no means to know whether there was a fail-over or not, and if there was if the server that took its duties is still running or not. To configure this option at your <literal>hornetq-configuration.xml</literal> configuration file as follows:</para>
-            <programlisting>
-&lt;check-for-live-server>true&lt;/check-for-live-server></programlisting>
+&lt;ha-policy>
+   &lt;allow-failback>true&lt;/allow-failback>
+&lt;/ha-policy></programlisting>
+
         </section>
         <section id="ha.colocated">
             <title>Colocated Backup Servers</title>
             <para>It is also possible when running standalone to colocate backup servers in the same
-                JVM as another live server.The colocated backup will become a backup for another live
-                server in the cluster but not the one it shares the vm with. To configure a colocated
-                backup server simply add the following to the <literal>hornetq-configuration.xml</literal> file</para>
+                JVM as another live server. Live Servers can be configured to request another live server in the cluster
+                to start a backup server in the same JVM either using shared store or replication. The new backup server
+                will inherit its configuration from the live server creating it apart from its name, which will be set to
+                <literal>colocated_backup_n</literal> where n is the number of backups the server has created, and any directories
+                 and its Connectors and Acceptors which are discussed later on in this chapter. A live server can also
+                be configured to allow requests from backups and also how many backups a live server can start. this way
+                you can evenly distribute backups around the cluster. This is configured via the <literal>ha-policy</literal>
+                element in the <literal>hornetq-configuration.xml</literal> file like so:</para>
             <programlisting>
-&lt;backup-servers>
-    &lt;backup-server name="backup2" inherit-configuration="true" port-offset="1000">
-        &lt;configuration>
-            &lt;bindings-directory>target/server1/data/messaging/bindings&lt;/bindings-directory>
-            &lt;journal-directory>target/server1/data/messaging/journal&lt;/journal-directory>
-            &lt;large-messages-directory>target/server1/data/messaging/largemessages&lt;/large-messages-directory>
-            &lt;paging-directory>target/server1/data/messaging/paging&lt;/paging-directory>
-        &lt;/configuration>
-    &lt;/backup-server>
-&lt;/backup-servers>
+&lt;ha-policy>
+   &lt;policy-type>COLOCATED_REPLICATED&lt;/policy-type>
+   &lt;backup-strategy>SCALE_DOWN&lt;/backup-strategy>
+   &lt;request-backup>true&lt;/request-backup>
+   &lt;max-backups>1&lt;/max-backups>
+   &lt;backup-request-retries>-1&lt;/backup-request-retries>
+   &lt;backup-request-retry-interval>5000&lt;/backup-request-retry-interval>
+&lt;/ha-policy>
             </programlisting>
-            <para> you will notice 3 attributes on the <literal>backup-server</literal>, <literal>name</literal>
-                which is a unique name used to identify the backup server, <literal>inherit-configuration</literal>
-            which if set to true means the server will inherit the configuration of its parent server
-            and <literal>port-offset</literal> which is what the port for any netty connectors or
-            acceptors will be increased by if the configuration is inherited.</para>
-            <para>it is also possible to configure the backup server in the normal way, in this example you will
-            notice we have changed the journal directories.</para>
+            <para>To allow colocated backups the <literal>policy-type</literal> must be set to either
+                  <literal>COLOCATED_REPLICATED</literal> or <literal>COLOCATED_SHARED_STORE</literal>. also in this case
+            <literal>backup-strategy</literal> is set to <literal>SCALE_DOWN</literal> but it could also be <literal>FULL</literal>.
+                  The following diagram shows a colocated topology that uses shared store.</para>
+
+           <graphic fileref="images/ha-colocated.png" align="center"/>
+           <section id="ha.colocated.connectorsandacceptors">
+              <title>Configuring Connectors and Acceptors</title>
+              <para>If the backup being created has a <literal>backup-strategy</literal> of <literal>FULL</literal> then
+                 the connectors and acceptors will be inherited from the live server creating it and offset depending on
+              the setting of <literal>backup-port-offset</literal> configuration element. If this is set to say 100
+              (which is the default) and a connector is using port 5445 then this will be set to 5545 for the first server
+                 created, 5645 for the second and so on.</para>
+              <note><para>for INVM connectors and Acceptors the id will have <literal>colocated_backup_n</literal> appended,
+              where n is the backup server number.</para></note>
+              <para>If the backup being created has a <literal>backup-strategy</literal> of <literal>SCALE_DOWN</literal>
+              then the Acceptors will be cleared and the Connectors will be left as is (as we assume they are all external)</para>
+              <section id="ha.colocated.connectorsandacceptors.remote">
+                 <title>Remote Connectors</title>
+                 <para>It may be that some of the Connectors configured are for external servers and hence should not be offset.
+                 for instance a Connector used by the cluster connection to do quorum voting for a replicated backup server,
+                  these can be omitted from being offset by adding them to the <literal>ha-policy</literal> configuration like so:</para>
+                 <programlisting>
+&lt;ha-policy>
+   &lt;remote-connectors>
+      &lt;connector-ref>remote-connector&lt;/connector-ref>
+   &lt;/remote-connectors>
+&lt;/ha-policy>
+                 </programlisting>
+              </section>
+           </section>
+           <section id="ha.colocated.directories">
+              <title>Configuring Directories</title>
+              <para>Directories for the Journal, PAging and Paging will be set according to what the <literal>backup-strategy</literal> is.
+              IF shared store the the requesting server will notify the target server of which directories to use. If replication
+              is configured then directories will be inherited from the creating server but have the new backups name
+              appended.</para>
+           </section>
+           <section id="ha.colocated.grouping">
+              <title>Grouping backups and live</title>
+              <para>It is also possible to group which live servers create backups for each other, to do this configure
+                 the following for each group you want:</para>
+              <programlisting>
+&lt;ha-policy>
+   &lt;backup-group-name>group1&lt;/backup-group-name>
+&lt;/ha-policy>
+              </programlisting>
+              <para>In this example only servers with the same groupname will be able to create backups for a live server.</para>
+           </section>
         </section>
     </section>
+   <section>
+      <title>HA Policy Configuration</title>
+      <para>Every Server will have its own HA Policy type, the default being <literal>NONE</literal> which is no HA at all.</para>
+      <para>A Servers HA policy is configured via the <literal>ha-policy</literal> configuration in the
+         <literal>hornetq-configuration.xml</literal> file. There are several policy types and these are configured like so:</para>
+      <programlisting>
+         &lt;ha-policy>
+         &lt;policy-type>NONE&lt;/policy-type>
+         &lt;/ha-policy>
+      </programlisting>
+      <para>templates are also provided to allow simple configuration, each template will set its own sensible defaults,
+         this would look like:</para>
+      <programlisting>
+         &lt;ha-policy template="NONE"/>
+      </programlisting>
+      <note><para>All previous HA configuration pre version 2.5 has been deprecated or removed.</para></note>
+      <para>Each policy type is explained in the following chapters, the following chart explains each type and its
+         related defaults.</para>
+      <table>
+         <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+               <row>
+                  <entry>Policy Type</entry>
+                  <entry>Description</entry>
+                  <entry>Defaults</entry>
+               </row>
+            </thead>
+            <tbody>
+               <row>
+                  <entry>NONE</entry>
+                  <entry>No HA policy</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=NONE</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>REPLICATED</entry>
+                  <entry>Live Server using replication</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=REPLICATED</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>SHARED_STORE</entry>
+                  <entry>Live Server using shared store</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=SHARED_STORE</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>BACKUP_REPLICATED</entry>
+                  <entry>Backup Server using replication</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=BACKUP_REPLICATED</listitem>
+                        <listitem>backup-strategy=FULL</listitem>
+                        <listitem>restart-backup=true</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>BACKUP_SHARED_STORE</entry>
+                  <entry>Backup Server using shared store</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=SHARED_STORE</listitem>
+                        <listitem>backup-strategy=FULL</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>COLOCATED_REPLICATED</entry>
+                  <entry>Allow live server to request and create replicated backup servers</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=COLOCATED_REPLICATED</listitem>
+                        <listitem>backup-strategy=SCALE_DOWN</listitem>
+                        <listitem>backup-request-retries=-1</listitem>
+                        <listitem>backup-request-retry-interval=5000</listitem>
+                        <listitem>max-backups=2</listitem>
+                        <listitem>request-backup=true</listitem>
+                        <listitem>backup-port-offset=1000</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+               <row>
+                  <entry>COLOCATED_SHARED_STORE</entry>
+                  <entry>Allow live server to request and create shared store backup servers</entry>
+                  <entry>
+                     <itemizedlist>
+                        <listitem>policy-type=COLOCATED_SHARED_STORE</listitem>
+                        <listitem>backup-strategy=SCALE_DOWN</listitem>
+                        <listitem>backup-request-retries=-1</listitem>
+                        <listitem>backup-request-retry-interval=5000</listitem>
+                        <listitem>max-backups=2</listitem>
+                        <listitem>request-backup=true</listitem>
+                        <listitem>backup-port-offset=1000</listitem>
+                     </itemizedlist>
+                  </entry>
+               </row>
+            </tbody>
+         </tgroup>
+      </table>
+      <para>The following table lists all the <literal>ha-policy</literal> configuration elements:</para>
+      <table>
+         <tgroup cols="2">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <thead>
+               <row>
+                  <entry>name</entry>
+                  <entry>Description</entry>
+               </row>
+            </thead>
+            <tbody>
+               <row>
+                  <entry>policy-type</entry>
+                  <entry>what kind of HA Policy should to use, chosen from, NONE, REPLICATED, SHARED_STORE, BACKUP_REPLICATED,
+                     BACKUP_SHARED_STORE, COLOCATED_REPLICATED, COLOCATED_SHARED_STORE.</entry>
+               </row>
+               <row>
+                  <entry>request-backup</entry>
+                  <entry>If true then the server will request a backup on another node</entry>
+               </row>
+               <row>
+                  <entry>backup-request-retries</entry>
+                  <entry>How many times the live server will try to request a backup, -1 means for ever.</entry>
+               </row>
+               <row>
+                  <entry>backup-request-retry-interval</entry>
+                  <entry>How long to wait for retries between attempts to request a backup server.</entry>
+               </row>
+               <row>
+                  <entry>max-backups</entry>
+                  <entry>Whether or not this live server will accept backup requests from other live servers.</entry>
+               </row>
+               <row>
+                  <entry>backup-port-offset</entry>
+                  <entry>The offset to use for the Connectors and Acceptors when creating a new backup server.</entry>
+               </row>
+               <row>
+                  <entry>backup-strategy</entry>
+                  <entry>The backup strategy to use if we are a backup or for any colocated backups, either FULL or SCALE_DOWN</entry>
+               </row>
+               <row>
+                  <entry>scale-down-connectors</entry>
+                  <entry>A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or
+                     first invm connector will be used</entry>
+               </row>
+               <row>
+                  <entry>scale-down-discovery-group</entry>
+                  <entry>The discovery group to use for scale down, if not supplied then the scale-down-connectors or first
+                     invm connector will be used</entry>
+               </row>
+               <row>
+                  <entry>scale-down-group-name</entry>
+                  <entry>The scale down group to scale down to, a server will only scale down to a server within the same group</entry>
+               </row>
+               <row>
+                  <entry>backup-group-name</entry>
+                  <entry>used for replication, if set, (remote) backup servers will only pair with live servers with matching
+                     backup-group-name</entry>
+               </row>
+               <row>
+                  <entry>remote-connectors</entry>
+                  <entry>the remote connectors that shouldn't have their ports offset, typically remote connectors or the
+                     connector used in the cluster connection if scalinmg down</entry>
+               </row>
+               <row>
+                  <entry>check-for-live-server</entry>
+                  <entry>Whether to check the cluster for a (live) server using our own server ID when starting
+                     up. This option is only necessary for performing 'fail-back' on replicating
+                     servers. Strictly speaking this setting only applies to live servers and not to
+                     backups.</entry>
+               </row>
+               <row>
+                  <entry>allow-failback</entry>
+                  <entry>Whether a server will automatically stop when a another places a request to take over
+                     its place. The use case is when a regular server stops and its backup takes over its
+                     duties, later the main server restarts and requests the server (the former backup) to
+                     stop operating.</entry>
+               </row>
+               <row>
+                  <entry>failback-delay</entry>
+                  <entry>delay to wait before fail-back occurs on (live's) restart</entry>
+               </row>
+               <row>
+                  <entry>failover-on-shutdown</entry>
+                  <entry>Will this backup server come live on a normal server shutdown</entry>
+               </row>
+               <row>
+                  <entry>replication-clustername</entry>
+                  <entry>Name of the cluster configuration to use for replication. This setting is only necessary in case you
+                     configure multiple cluster connections. It is used by a replicating backups and by live servers that
+                     may attempt fail-back.</entry>
+               </row>
+               <row>
+                  <entry>scale-down-clustername</entry>
+                  <entry>Name of the cluster configuration to use for scaling down. This setting is only necessary in case you
+                     configure multiple cluster connections.</entry>
+               </row>
+               <row>
+                  <entry>max-saved-replicated-journals-size</entry>
+                  <entry>This specifies how many times a replicated backup server can restart after moving its files on start.
+                     Once there are this number of backup journal files the server will stop permanently after if fails
+                     back.</entry>
+               </row>
+               <row>
+                  <entry>scale-down</entry>
+                  <entry>Will this server send its messages to another live server in the cluster when shut-down cleanly.</entry>
+               </row>
+               <row>
+                  <entry>restart-backup</entry>
+                  <entry>Will this server, if a backup, restart once it has been stopped because of failback or scaling down.</entry>
+               </row>
+            </tbody>
+         </tgroup>
+      </table>
+   </section>
+   <section id="ha.scaledown">
+      <title>Scaling Down</title>
+      <para>An alternative to using Live/Backup groups is to configure scaledown. when configured for scale down a server
+      can copy all its messages and transaction state to another live server. The advantage of this is that you dont need
+      full backups to provide some form of HA, however there are disadvantages with this approach the first being that it
+         only deals with a server being stopped and not a server crash. The caveat here is if you configure a backup to scale down. </para>
+      <para>Another disadvantage is that it is possible to lose message ordering. This happens in the following scenario,
+      say you have 2 live servers and messages are distributed evenly between the servers from a single producer, if one
+         of the servers scales down then the messages sent back to the other server will be in the queue after the ones
+         already there, so server 1 could have messages 1,3,5,7,9 and server 2 would have 2,4,6,8,10, if server 2 scales
+         down the order in server 1 would be 1,3,5,7,9,2,4,6,8,10.</para>
+      <graphic fileref="images/ha-scaledown.png" align="center"/>
+      <para>The configuration for a live server to scale down would be something like:</para>
+      <programlisting>
+&lt;ha-policy template="NONE">
+   &lt;scale-down>true&lt;/scale-down>
+   &lt;scale-down-connectors>
+      &lt;connector-ref>server1-connector&lt;/connector-ref>
+   &lt;/scale-down-connectors>
+&lt;/ha-policy>
+      </programlisting>
+      <para>In this instance the server is configured to use a specific connector to scale down, if a connector is not
+         specified then the first INVM connector is chosen, this is to make scale down fromm a backup server easy to configure.
+         It is also possible to use discovery to scale down, this would look like:</para>
+      <programlisting>
+&lt;ha-policy>
+   &lt;scale-down>true&lt;/scale-down>
+   &lt;scale-down-discovery-group>my-discovery-group&lt;/scale-down-discovery-group>
+&lt;/ha-policy>
+      </programlisting>
+      <section id="ha.scaledown.group">
+         <title>Scale Down with groups</title>
+         <para>It is also possible to configure servers to only scale down to servers that belong in the same group. This
+         is done by configuring the group like so:</para>
+         <programlisting>
+&lt;ha-policy>
+   ...
+   &lt;scale-down-group-name>my-group&lt;/scale-down-group-name>
+&lt;/ha-policy>
+         </programlisting>
+         <para>In this scenario only servers that belong to the group <literal>my-group</literal> will be scaled down to</para>
+      </section>
+   <section id="ha.scaledown.client">
+      <title>Scale Down and Clients</title>
+      <para>When a server is stopping and preparing to scale down it will send a message to all its clients informing them
+      which server it is scaling down to before disconnecting them. At this point the client will reconnect however this
+      will only succeed once the server has completed scaledown. This is to ensure that any state such as queues or transactions
+      are there for the client when it reconnects. The normal reconnect settings apply when the client is reconnecting so
+      these should be high enough to deal with the time needed to scale down.</para>
+      </section>
+   </section>
     <section id="failover">
         <title>Failover Modes</title>
         <para>HornetQ defines two types of client failover:</para>
