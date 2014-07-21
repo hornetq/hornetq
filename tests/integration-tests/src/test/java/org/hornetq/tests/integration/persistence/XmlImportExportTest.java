@@ -95,10 +95,14 @@ public class XmlImportExportTest extends ServiceTestBase
          msg.putIntProperty("myIntProperty", i);
          msg.putLongProperty("myLongProperty", Long.MAX_VALUE - i);
          msg.putObjectProperty("myObjectProperty", i);
+         msg.putObjectProperty("myNullObjectProperty", null);
          msg.putShortProperty("myShortProperty", new Integer(i).shortValue());
          msg.putStringProperty("myStringProperty", "myStringPropertyValue_" + i);
+         msg.putStringProperty("myNullStringProperty", null);
          msg.putStringProperty("myNonAsciiStringProperty", international.toString());
          msg.putStringProperty("mySpecialCharacters", special);
+         msg.putStringProperty(new SimpleString("mySimpleStringProperty"), new SimpleString("mySimpleStringPropertyValue_" + i));
+         msg.putStringProperty(new SimpleString("myNullSimpleStringProperty"), null);
          producer.send(msg);
       }
 
@@ -141,10 +145,14 @@ public class XmlImportExportTest extends ServiceTestBase
          assertEquals(i, msg.getIntProperty("myIntProperty").intValue());
          assertEquals(Long.MAX_VALUE - i, msg.getLongProperty("myLongProperty").longValue());
          assertEquals(i, msg.getObjectProperty("myObjectProperty"));
+         assertEquals(null, msg.getObjectProperty("myNullObjectProperty"));
          assertEquals(new Integer(i).shortValue(), msg.getShortProperty("myShortProperty").shortValue());
          assertEquals("myStringPropertyValue_" + i, msg.getStringProperty("myStringProperty"));
+         assertEquals(null, msg.getStringProperty("myNullStringProperty"));
          assertEquals(international.toString(), msg.getStringProperty("myNonAsciiStringProperty"));
          assertEquals(special, msg.getStringProperty("mySpecialCharacters"));
+         assertEquals(new SimpleString("mySimpleStringPropertyValue_" + i), msg.getSimpleStringProperty(new SimpleString("mySimpleStringProperty")));
+         assertEquals(null, msg.getSimpleStringProperty(new SimpleString("myNullSimpleStringProperty")));
       }
    }
 
