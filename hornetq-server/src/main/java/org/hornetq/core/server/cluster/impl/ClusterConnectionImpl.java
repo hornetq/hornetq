@@ -807,9 +807,9 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          return;
       }
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.debug(this + " receiving nodeDown for nodeID=" + nodeID, new Exception("trace"));
+         HornetQServerLogger.LOGGER.trace(this + " receiving nodeDown for nodeID=" + nodeID, new Exception("trace"));
       }
       if (nodeID.equals(nodeManager.getNodeId().toString()))
       {
