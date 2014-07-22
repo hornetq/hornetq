@@ -159,6 +159,10 @@ public final class JMSBridgeImpl implements JMSBridge
 
    private boolean failed;
 
+   private boolean connectedSource = false;
+
+   private boolean connectedTarget = false;
+
    private int forwardMode;
 
    private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
@@ -421,6 +425,8 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (ok)
       {
+         connectedSource = true;
+         connectedTarget = true;
          startSource();
       }
       else
@@ -510,7 +516,14 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             HornetQJMSServerLogger.LOGGER.trace("Stopping " + this);
          }
-
+         if (!connectedSource && sourceConn != null)
+         {
+            sourceConn.close();
+         }
+         if (!connectedTarget && targetConn != null)
+         {
+            targetConn.close();
+         }
          synchronized (lock)
          {
             started = false;
@@ -1076,7 +1089,8 @@ public final class JMSBridgeImpl implements JMSBridge
    private Connection createConnection(final String username, final String password,
                                        final ConnectionFactoryFactory cff,
                                        final String clientID,
-                                       final boolean isXA) throws Exception
+                                       final boolean isXA,
+                                       boolean isSource) throws Exception
    {
       Connection conn;
 
@@ -1147,12 +1161,12 @@ public final class JMSBridgeImpl implements JMSBridge
          if (ha)
          {
             HornetQConnection hornetQConn = (HornetQConnection)conn;
-            failoverListener = new BridgeFailoverListener();
+            failoverListener = new BridgeFailoverListener(isSource);
             hornetQConn.setFailoverListener(failoverListener);
          }
       }
 
-      conn.setExceptionListener(new BridgeExceptionListener(ha, failoverListener));
+      conn.setExceptionListener(new BridgeExceptionListener(ha, failoverListener, isSource));
 
       return conn;
    }
@@ -1226,7 +1240,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             // We simply use a single local transacted session for consuming and sending
 
-            sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
+            sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false, true);
             sourceSession = sourceConn.createSession(true, Session.SESSION_TRANSACTED);
          }
          else // bridging across different servers
@@ -1240,7 +1254,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   HornetQJMSServerLogger.LOGGER.trace("Creating XA source session");
                }
 
-               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true);
+               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, true, true);
                sourceSession = ((XAConnection)sourceConn).createXASession();
             }
             else // QoS = DUPLICATES_OK || AT_MOST_ONCE
@@ -1250,7 +1264,7 @@ public final class JMSBridgeImpl implements JMSBridge
                   HornetQJMSServerLogger.LOGGER.trace("Creating non XA source session");
                }
 
-               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false);
+               sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff, clientID, false, true);
                if (qualityOfServiceMode == QualityOfServiceMode.AT_MOST_ONCE && maxBatchSize == 1)
                {
                   sourceSession = sourceConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1306,7 +1320,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
                // Create an XA sesion for sending to the destination
 
-               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, true);
+               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, true, false);
 
                targetSession = ((XAConnection)targetConn).createXASession();
             }
@@ -1323,7 +1337,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
                boolean transacted = maxBatchSize > 1;
 
-               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, false);
+               targetConn = createConnection(targetUsername, targetPassword, targetCff, null, false, false);
 
                targetSession = targetConn.createSession(transacted, transacted ? Session.SESSION_TRANSACTED
                   : Session.AUTO_ACKNOWLEDGE);
@@ -1590,17 +1604,23 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       catch (Exception e)
       {
-         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+         if (!stopping)
+         {
+            HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+         }
 
          // We don't call failure otherwise failover would be broken with HornetQ
          // We let the ExceptionListener to deal with failures
 
-         try
+         if (connectedSource)
          {
-            sourceSession.recover();
-         }
-         catch (Throwable ignored)
-         {
+            try
+            {
+               sourceSession.recover();
+            }
+            catch (Throwable ignored)
+            {
+            }
          }
 
       }
@@ -1896,6 +1916,10 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          while (started)
          {
+            if (stopping)
+            {
+               return;
+            }
             synchronized (lock)
             {
                if (paused || failed)
@@ -1906,6 +1930,10 @@ public final class JMSBridgeImpl implements JMSBridge
                   }
                   catch (InterruptedException e)
                   {
+                     if (stopping)
+                     {
+                        return;
+                     }
                      throw new HornetQInterruptedException(e);
                   }
                   continue;
@@ -1942,6 +1970,10 @@ public final class JMSBridgeImpl implements JMSBridge
                      if (JMSBridgeImpl.trace)
                      {
                         HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
+                     }
+                     if (stopping)
+                     {
+                        return;
                      }
                      throw new HornetQInterruptedException(e);
                   }
@@ -2002,7 +2034,8 @@ public final class JMSBridgeImpl implements JMSBridge
       protected void succeeded()
       {
          HornetQJMSServerLogger.LOGGER.bridgeReconnected();
-
+         connectedSource = true;
+         connectedTarget = true;
          synchronized (lock)
          {
             failed = false;
@@ -2077,6 +2110,9 @@ public final class JMSBridgeImpl implements JMSBridge
 
          synchronized (lock)
          {
+
+            connectedSource = true;
+            connectedTarget = true;
             failed = false;
             started = true;
 
@@ -2159,6 +2195,10 @@ public final class JMSBridgeImpl implements JMSBridge
                      {
                         HornetQJMSServerLogger.LOGGER.trace(this + " thread was interrupted");
                      }
+                     if (stopping)
+                     {
+                        return;
+                     }
                      throw new HornetQInterruptedException(e);
                   }
 
@@ -2172,19 +2212,37 @@ public final class JMSBridgeImpl implements JMSBridge
    {
       boolean ha;
       BridgeFailoverListener failoverListener;
+      private final boolean isSource;
 
-      public BridgeExceptionListener(boolean ha, BridgeFailoverListener failoverListener)
+      public BridgeExceptionListener(boolean ha, BridgeFailoverListener failoverListener, boolean isSource)
       {
          this.ha = ha;
          this.failoverListener = failoverListener;
+         this.isSource = isSource;
       }
 
       public void onException(final JMSException e)
       {
+         if (stopping)
+         {
+            return;
+         }
          HornetQJMSServerLogger.LOGGER.bridgeFailure(e);
+         if (isSource)
+         {
+            connectedSource = false;
+         }
+         else
+         {
+            connectedTarget = false;
+         }
 
          synchronized (lock)
          {
+            if (stopping)
+            {
+               return;
+            }
             if (failed)
             {
                // The failure has already been detected and is being handled
@@ -2277,7 +2335,13 @@ public final class JMSBridgeImpl implements JMSBridge
 
    private class BridgeFailoverListener implements FailoverEventListener
    {
+      private final boolean isSource;
       volatile FailoverEventType lastEvent;
+
+      public BridgeFailoverListener(boolean isSource)
+      {
+         this.isSource = isSource;
+      }
 
       @Override
       public void failoverEvent(FailoverEventType eventType)
@@ -2285,6 +2349,17 @@ public final class JMSBridgeImpl implements JMSBridge
          synchronized (this)
          {
             lastEvent = eventType;
+            if (eventType == FailoverEventType.FAILURE_DETECTED)
+            {
+               if (isSource)
+               {
+                  connectedSource = false;
+               }
+               else
+               {
+                  connectedTarget = false;
+               }
+            }
             this.notify();
          }
       }
