@@ -407,11 +407,20 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody()
+   public void clearBody() throws JMSException
    {
       super.clearBody();
 
-      getBuffer().clear();
+      try
+      {
+         getBuffer().clear();
+      }
+      catch (RuntimeException e)
+      {
+         JMSException e2 = new JMSException(e.getMessage());
+         e2.initCause(e);
+         throw e2;
+      }
    }
 
    public long getBodyLength() throws JMSException

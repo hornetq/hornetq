@@ -583,7 +583,7 @@ public class HornetQMessage implements javax.jms.Message
       propertiesReadOnly = false;
    }
 
-   public void clearBody()
+   public void clearBody() throws JMSException
    {
       readOnly = false;
    }
