@@ -259,7 +259,79 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
       JMSBridgeReconnectionTest.log.info("Sent messages");
 
-      checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false, largeMessage);
+      jmsServer1.stop();
+
+      bridge.stop();
+
+      System.out.println("JMSBridgeReconnectionTest.performCrashAndReconnectDestBasic");
+   }
+
+   @Test
+   public void performCrashDestinationStopBridge() throws Exception
+   {
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      final JMSBridgeImpl bridge =
+            new JMSBridgeImpl(factInUse0,
+                  factInUse1,
+                  sourceQueueFactory,
+                  targetQueueFactory,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  1000,
+                  -1,
+                  QualityOfServiceMode.DUPLICATES_OK,
+                  10,
+                  -1,
+                  null,
+                  null,
+                  false);
+
+
+      addHornetQComponent(bridge);
+      bridge.setTransactionManager(newTransactionManager());
+      bridge.start();
+
+      Thread clientThread = new Thread(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            while (bridge.isStarted())
+            {
+               try
+               {
+                  sendMessages(cf0, sourceQueue, 0, 1, false, false);
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         }
+      });
+
+      clientThread.start();
+
+      checkAllMessageReceivedInOrder(cf1, targetQueue, 0, 1, false);
+
+      JMSBridgeReconnectionTest.log.info("About to crash server");
+
+      jmsServer1.stop();
+
+      // Wait a while before starting up to simulate the dest being down for a while
+      JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
+      Thread.sleep(TIME_WAIT);
+      JMSBridgeReconnectionTest.log.info("Done wait");
+
+      bridge.stop();
+
+      clientThread.join(5000);
+
+      assertTrue(!clientThread.isAlive());
    }
 
    /*
