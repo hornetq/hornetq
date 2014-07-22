@@ -562,11 +562,15 @@ public abstract class BridgeTestBase extends UnitTestCase
       }
       JMSQueueControl queueControl = (JMSQueueControl)managementService.getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
 
-      Long messageCount = queueControl.getMessageCount();
-
-      if (messageCount > 0)
+      //server may be closed
+      if (queueControl != null)
       {
-         queueControl.removeMessages(null);
+         Long messageCount = queueControl.getMessageCount();
+
+         if (messageCount > 0)
+         {
+            queueControl.removeMessages(null);
+         }
       }
       return true;
    }
