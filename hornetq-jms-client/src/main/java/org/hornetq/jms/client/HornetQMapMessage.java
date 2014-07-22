@@ -368,7 +368,7 @@ public final class HornetQMapMessage extends HornetQMessage implements MapMessag
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody()
+   public void clearBody() throws JMSException
    {
       super.clearBody();
 

@@ -555,7 +555,7 @@ public final class HornetQStreamMessage extends HornetQMessage implements Stream
    // HornetQRAMessage overrides ----------------------------------------
 
    @Override
-   public void clearBody()
+   public void clearBody() throws JMSException
    {
       super.clearBody();
 
