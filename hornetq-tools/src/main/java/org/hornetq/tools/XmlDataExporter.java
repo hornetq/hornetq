@@ -950,7 +950,7 @@ public final class XmlDataExporter
          }
          else
          {
-            xmlWriter.writeAttribute(XmlDataConstants.PROPERTY_VALUE, value.toString());
+            xmlWriter.writeAttribute(XmlDataConstants.PROPERTY_VALUE, value == null ? XmlDataConstants.NULL : value.toString());
          }
 
          if (value instanceof Boolean)

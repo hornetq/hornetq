@@ -1342,6 +1342,12 @@ public class QueueImpl implements Queue
             }
          }
 
+         if (!deleted)
+         {
+            // Look in scheduled deliveries
+            deleted = scheduledDeliveryHandler.removeReferenceWithID(messageID) != null ? true : false;
+         }
+
          tx.commit();
 
          return deleted;
