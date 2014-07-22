@@ -137,10 +137,10 @@ public class ClusterConnectionBridge extends BridgeImpl
       // we need to disable DLQ check on the clustered bridges
       queue.setInternalQueue(true);
 
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
-               new Exception("trace"));
+         HornetQServerLogger.LOGGER.trace("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
+                                          new Exception("trace"));
       }
    }
 
@@ -292,8 +292,10 @@ public class ClusterConnectionBridge extends BridgeImpl
          session.start();
 
          ClientMessage message = session.createMessage(false);
-
-         HornetQServerLogger.LOGGER.debug("Requesting sendQueueInfoToQueue through " + this, new Exception("trace"));
+         if (HornetQServerLogger.LOGGER.isTraceEnabled())
+         {
+            HornetQServerLogger.LOGGER.trace("Requesting sendQueueInfoToQueue through " + this, new Exception("trace"));
+         }
          ManagementHelper.putOperationInvocation(message,
                                                  ResourceNames.CORE_SERVER,
                                                  "sendQueueInfoToQueue",
