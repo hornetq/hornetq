@@ -352,9 +352,9 @@ public class ScaleDownHandler
                   queueIds.getA().add(queueID);
                }
             }
-            else if (operation instanceof QueueImpl.RefsOperation)
+            else if (operation instanceof RefsOperation)
             {
-               QueueImpl.RefsOperation refsOperation = (QueueImpl.RefsOperation) operation;
+               RefsOperation refsOperation = (RefsOperation) operation;
                List<MessageReference> refs = refsOperation.getReferencesToAcknowledge();
                for (MessageReference ref : refs)
                {

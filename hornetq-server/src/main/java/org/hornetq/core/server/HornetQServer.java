@@ -112,7 +112,8 @@ public interface HornetQServer extends HornetQComponent
                                boolean preAcknowledge,
                                boolean xa,
                                String defaultAddress,
-                               SessionCallback callback) throws Exception;
+                               SessionCallback callback,
+                               ServerSessionFactory sessionFactory) throws Exception;
 
    void removeSession(String name) throws Exception;
 

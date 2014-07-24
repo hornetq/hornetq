@@ -26,6 +26,7 @@ package org.hornetq.core.server.impl;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
+import org.hornetq.core.transaction.TransactionFactory;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
@@ -114,23 +116,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final int minLargeMessageSize;
 
-   private final boolean autoCommitSends;
+   protected boolean autoCommitSends;
 
-   private final boolean autoCommitAcks;
+   protected boolean autoCommitAcks;
 
-   private final boolean preAcknowledge;
+   protected final boolean preAcknowledge;
 
-   private final boolean strictUpdateDeliveryCount;
+   protected final boolean strictUpdateDeliveryCount;
 
    private final RemotingConnection remotingConnection;
 
-   private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
+   protected final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
-   private Transaction tx;
+   protected Transaction tx;
 
-   private final boolean xa;
+   protected boolean xa;
 
-   private final StorageManager storageManager;
+   protected final StorageManager storageManager;
 
    private final ResourceManager resourceManager;
 
@@ -138,9 +140,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final SecurityStore securityStore;
 
-   private final ManagementService managementService;
+   protected final ManagementService managementService;
 
-   private volatile boolean started = false;
+   protected volatile boolean started = false;
 
    private final Map<SimpleString, TempQueueCleanerUpper> tempQueueCleannerUppers = new HashMap<SimpleString, TempQueueCleanerUpper>();
 
@@ -155,7 +157,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final RoutingContext routingContext = new RoutingContextImpl(null);
 
-   private final SessionCallback callback;
+   protected final SessionCallback callback;
 
    private volatile SimpleString defaultAddress;
 
@@ -177,6 +179,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    // try to close one session from different threads
    // concurrently.
    private volatile boolean closed = false;
+
+   private final TransactionFactory transactionFactory;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -200,6 +204,36 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final SimpleString defaultAddress,
                             final SessionCallback callback,
                             final OperationContext context) throws Exception
+   {
+      this(name, username, password, minLargeMessageSize,
+         autoCommitSends, autoCommitAcks, preAcknowledge,
+         strictUpdateDeliveryCount, xa, remotingConnection,
+         storageManager, postOffice, resourceManager, securityStore,
+         managementService, server, managementAddress, defaultAddress,
+         callback, context, null);
+   }
+
+   public ServerSessionImpl(final String name,
+                            final String username,
+                            final String password,
+                            final int minLargeMessageSize,
+                            final boolean autoCommitSends,
+                            final boolean autoCommitAcks,
+                            final boolean preAcknowledge,
+                            final boolean strictUpdateDeliveryCount,
+                            final boolean xa,
+                            final RemotingConnection remotingConnection,
+                            final StorageManager storageManager,
+                            final PostOffice postOffice,
+                            final ResourceManager resourceManager,
+                            final SecurityStore securityStore,
+                            final ManagementService managementService,
+                            final HornetQServer server,
+                            final SimpleString managementAddress,
+                            final SimpleString defaultAddress,
+                            final SessionCallback callback,
+                            final OperationContext context,
+                            TransactionFactory transactionFactory) throws Exception
    {
       this.username = username;
 
@@ -242,6 +276,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       remotingConnection.addFailureListener(this);
       this.context = context;
+
+      if (transactionFactory == null)
+      {
+         this.transactionFactory = new DefaultTransactionFactory();
+      }
+      else
+      {
+         this.transactionFactory = transactionFactory;
+      }
+
       if (!xa)
       {
          tx = newTransaction();
@@ -297,7 +341,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void doClose(final boolean failed) throws Exception
+   protected void doClose(final boolean failed) throws Exception
    {
       synchronized (this)
       {
@@ -376,7 +420,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       Filter filter = FilterImpl.createFilter(filterString);
 
-      ServerConsumer consumer = new ServerConsumerImpl(consumerID,
+      ServerConsumer consumer = newConsumer(consumerID,
                                                        this,
                                                        (QueueBinding) binding,
                                                        filter,
@@ -431,6 +475,29 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          managementService.sendNotification(notification);
       }
+   }
+
+   protected ServerConsumer newConsumer(long consumerID,
+         ServerSessionImpl serverSessionImpl, QueueBinding binding,
+         Filter filter, boolean started2, boolean browseOnly,
+         StorageManager storageManager2, SessionCallback callback2,
+         boolean preAcknowledge2, boolean strictUpdateDeliveryCount2,
+         ManagementService managementService2, boolean supportLargeMessage,
+         Integer credits) throws Exception
+   {
+      return new ServerConsumerImpl(consumerID,
+            this,
+            (QueueBinding) binding,
+            filter,
+            started,
+            browseOnly,
+            storageManager,
+            callback,
+            preAcknowledge,
+            strictUpdateDeliveryCount,
+            managementService,
+            supportLargeMessage,
+            credits);
    }
 
    public void createQueue(final SimpleString address,
@@ -774,18 +841,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    /**
     * @return
     */
-   private TransactionImpl newTransaction()
+   protected Transaction newTransaction()
    {
-      return new TransactionImpl(storageManager, timeoutSeconds);
+      return transactionFactory.newTransaction(null, storageManager, timeoutSeconds);
    }
 
    /**
     * @param xid
     * @return
     */
-   private TransactionImpl newTransaction(final Xid xid)
+   private Transaction newTransaction(final Xid xid)
    {
-      return new TransactionImpl(xid, storageManager, timeoutSeconds);
+      return transactionFactory.newTransaction(xid, storageManager, timeoutSeconds);
    }
 
    public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
@@ -1735,7 +1802,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (this.tx != null)
       {
-         QueueImpl.RefsOperation oper = (QueueImpl.RefsOperation) tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+         RefsOperation oper = (RefsOperation) tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
 
          if (oper == null)
          {
@@ -1752,4 +1819,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
+   private static class DefaultTransactionFactory implements TransactionFactory
+   {
+      @Override
+      public Transaction newTransaction(Xid xid, StorageManager storageManager, int timeoutSeconds)
+      {
+         return new TransactionImpl(xid, storageManager, timeoutSeconds);
+      }
+   }
 }

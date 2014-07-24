@@ -1494,5 +1494,11 @@ public class ScheduledDeliveryHandlerTest extends Assert
       {
 
       }
+
+      @Override
+      public void postAcknowledge(MessageReference ref)
+      {
+
+      }
    }
 }

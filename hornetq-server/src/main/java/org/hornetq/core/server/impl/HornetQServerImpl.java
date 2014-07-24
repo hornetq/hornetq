@@ -13,6 +13,7 @@
 package org.hornetq.core.server.impl;
 
 import javax.management.MBeanServer;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.PrintWriter;
@@ -131,6 +132,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.ServerSessionFactory;
 import org.hornetq.core.server.cluster.BackupManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterControl;
@@ -1134,7 +1136,8 @@ public class HornetQServerImpl implements HornetQServer
                                       final boolean preAcknowledge,
                                       final boolean xa,
                                       final String defaultAddress,
-                                      final SessionCallback callback) throws Exception
+                                      final SessionCallback callback,
+                                      final ServerSessionFactory sessionFactory) throws Exception
    {
 
       if (securityStore != null)
@@ -1142,16 +1145,18 @@ public class HornetQServerImpl implements HornetQServer
          securityStore.authenticate(username, password);
       }
       final OperationContext context = storageManager.newContext(getExecutorFactory().getExecutor());
-      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context);
+      final ServerSessionImpl session = internalCreateSession(name, username, password, minLargeMessageSize, connection, autoCommitSends, autoCommitAcks, preAcknowledge, xa, defaultAddress, callback, context, sessionFactory);
 
       sessions.put(name, session);
 
       return session;
    }
 
-   protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
+   protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context, ServerSessionFactory sessionFactory) throws Exception
    {
-      return new ServerSessionImpl(name,
+      if (sessionFactory == null)
+      {
+         return new ServerSessionImpl(name,
                                    username,
                                    password,
                                    minLargeMessageSize,
@@ -1172,6 +1177,31 @@ public class HornetQServerImpl implements HornetQServer
                                       : new SimpleString(defaultAddress),
                                    callback,
                                    context);
+      }
+      else
+      {
+         return sessionFactory.createCoreSession(name,
+                                   username,
+                                   password,
+                                   minLargeMessageSize,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   preAcknowledge,
+                                   configuration.isPersistDeliveryCountBeforeDelivery(),
+                                   xa,
+                                   connection,
+                                   storageManager,
+                                   postOffice,
+                                   resourceManager,
+                                   securityStore,
+                                   managementService,
+                                   this,
+                                   configuration.getManagementAddress(),
+                                   defaultAddress == null ? null
+                                      : new SimpleString(defaultAddress),
+                                   callback,
+                                   context);
+      }
    }
 
    protected SecurityStore getSecurityStore()

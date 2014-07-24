@@ -62,7 +62,6 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
@@ -1123,7 +1122,7 @@ public class QueueImpl implements Queue
 
          if (oper == null)
          {
-            oper = new RefsOperation();
+            oper = tx.createRefsOperation(this);
 
             tx.putProperty(TransactionPropertyIndexes.REFS_OPERATION, oper);
 
@@ -2810,8 +2809,7 @@ public class QueueImpl implements Queue
       return consumerListClone;
    }
 
-   // Protected as testcases may change this behaviour
-   protected void postAcknowledge(final MessageReference ref)
+   public void postAcknowledge(final MessageReference ref)
    {
       QueueImpl queue = (QueueImpl) ref.getQueue();
 
@@ -2909,189 +2907,6 @@ public class QueueImpl implements Queue
       final Consumer consumer;
 
       LinkedListIterator<MessageReference> iter;
-
-   }
-
-   public final class RefsOperation extends TransactionOperationAbstract
-   {
-      List<MessageReference> refsToAck = new ArrayList<MessageReference>();
-
-      List<ServerMessage> pagedMessagesToPostACK = null;
-
-      /**
-       * It will ignore redelivery check, which is used during consumer.close
-       * to not perform reschedule redelivery check
-       */
-      protected boolean ignoreRedeliveryCheck = false;
-
-
-      // once turned on, we shouldn't turn it off, that's why no parameters
-      public void setIgnoreRedeliveryCheck()
-      {
-         ignoreRedeliveryCheck = true;
-      }
-
-      synchronized void addAck(final MessageReference ref)
-      {
-         refsToAck.add(ref);
-         if (ref.isPaged())
-         {
-            if (pagedMessagesToPostACK == null)
-            {
-               pagedMessagesToPostACK = new ArrayList<ServerMessage>();
-            }
-            pagedMessagesToPostACK.add(ref.getMessage());
-         }
-      }
-
-      @Override
-      public void afterRollback(final Transaction tx)
-      {
-         Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
-
-         long timeBase = System.currentTimeMillis();
-
-         //add any already acked refs, this means that they have been transferred via a producer.send() and have no
-         // previous state persisted.
-         List<MessageReference> ackedRefs = new ArrayList<>();
-
-         for (MessageReference ref : refsToAck)
-         {
-            ref.setConsumerId(null);
-
-            if (HornetQServerLogger.LOGGER.isTraceEnabled())
-            {
-               HornetQServerLogger.LOGGER.trace("rolling back " + ref);
-            }
-            try
-            {
-               if (ref.isAlreadyAcked())
-               {
-                  ackedRefs.add(ref);
-               }
-               // if ignore redelivery check, we just perform redelivery straight
-               if (ref.getQueue().checkRedelivery(ref, timeBase, ignoreRedeliveryCheck))
-               {
-                  LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
-
-                  if (toCancel == null)
-                  {
-                     toCancel = new LinkedList<MessageReference>();
-
-                     queueMap.put((QueueImpl) ref.getQueue(), toCancel);
-                  }
-
-                  toCancel.addFirst(ref);
-               }
-            }
-            catch (Exception e)
-            {
-               HornetQServerLogger.LOGGER.errorCheckingDLQ(e);
-            }
-         }
-
-         for (Map.Entry<QueueImpl, LinkedList<MessageReference>> entry : queueMap.entrySet())
-         {
-            LinkedList<MessageReference> refs = entry.getValue();
-
-            QueueImpl queue = entry.getKey();
-
-            synchronized (queue)
-            {
-               queue.postRollback(refs);
-            }
-         }
-
-         if (!ackedRefs.isEmpty())
-         {
-            //since pre acked refs have no previous state we need to actually create this by storing the message and the
-            //message references
-            try
-            {
-               Transaction ackedTX = new TransactionImpl(storageManager);
-               for (MessageReference ref : ackedRefs)
-               {
-                  ServerMessage message = ref.getMessage();
-                  if (message.isDurable())
-                  {
-                     int durableRefCount = message.incrementDurableRefCount();
-
-                     if (durableRefCount == 1)
-                     {
-                        storageManager.storeMessageTransactional(ackedTX.getID(), message);
-                     }
-                     Queue queue = ref.getQueue();
-
-                     storageManager.storeReferenceTransactional(ackedTX.getID(), queue.getID(), message.getMessageID());
-
-                     ackedTX.setContainsPersistent();
-                  }
-
-                  message.incrementRefCount();
-               }
-               ackedTX.commit(true);
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      }
-
-      @Override
-      public void afterCommit(final Transaction tx)
-      {
-         for (MessageReference ref : refsToAck)
-         {
-            synchronized (ref.getQueue())
-            {
-               postAcknowledge(ref);
-            }
-         }
-
-         if (pagedMessagesToPostACK != null)
-         {
-            for (ServerMessage msg : pagedMessagesToPostACK)
-            {
-               try
-               {
-                  msg.decrementRefCount();
-               }
-               catch (Exception e)
-               {
-                  HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-               }
-            }
-         }
-      }
-
-      @Override
-      public synchronized List<MessageReference> getRelatedMessageReferences()
-      {
-         List<MessageReference> listRet = new LinkedList<MessageReference>();
-         listRet.addAll(listRet);
-         return listRet;
-      }
-
-      @Override
-      public synchronized List<MessageReference> getListOnConsumer(long consumerID)
-      {
-         List<MessageReference> list = new LinkedList<MessageReference>();
-         for (MessageReference ref : refsToAck)
-         {
-            if (ref.getConsumerId() != null && ref.getConsumerId().equals(consumerID))
-            {
-               list.add(ref);
-            }
-         }
-
-         return list;
-      }
-
-      public List<MessageReference> getReferencesToAcknowledge()
-      {
-         return refsToAck;
-      }
 
    }
 

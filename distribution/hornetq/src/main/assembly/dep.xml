@@ -34,6 +34,8 @@
             <include>org.apache.qpid:proton-api</include>
             <include>org.apache.qpid:proton-jms</include>
             <include>org.apache.qpid:proton-j-impl</include>
+            <include>org.apache.activemq:activemq-client</include>
+            <include>org.slf4j:slf4j-api</include>
          </includes>
          <excludes>
            <exclude>*:javadoc</exclude>
