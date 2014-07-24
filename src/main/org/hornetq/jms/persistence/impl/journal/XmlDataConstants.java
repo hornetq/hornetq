@@ -116,4 +116,6 @@ final class XmlDataConstants
 
    static final String JMS_JNDI_ENTRIES = "entries";
    static final String JMS_JNDI_ENTRY = "entry";
+
+   static final String NULL = "_HQ_NULL";
 }

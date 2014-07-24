@@ -388,6 +388,7 @@ public final class XmlDataImporter
       String key = "";
       String value = "";
       String propertyType = "";
+      String realValue = null;
 
       for (int i = 0; i < reader.getAttributeCount(); i++)
       {
@@ -440,11 +441,19 @@ public final class XmlDataImporter
       }
       else if (propertyType.equals(XmlDataConstants.PROPERTY_TYPE_SIMPLE_STRING))
       {
-         message.putStringProperty(new SimpleString(key), new SimpleString(value));
+         if (!value.equals(XmlDataConstants.NULL))
+         {
+            realValue = value;
+         }
+         message.putStringProperty(new SimpleString(key), new SimpleString(realValue));
       }
       else if (propertyType.equals(XmlDataConstants.PROPERTY_TYPE_STRING))
       {
-         message.putStringProperty(key, value);
+         if (!value.equals(XmlDataConstants.NULL))
+         {
+            realValue = value;
+         }
+         message.putStringProperty(key, realValue);
       }
    }
 

@@ -136,10 +136,14 @@ public class XmlImportExportTest extends ServiceTestBase
          msg.putIntProperty("myIntProperty", i);
          msg.putLongProperty("myLongProperty", Long.MAX_VALUE - i);
          msg.putObjectProperty("myObjectProperty", i);
+         msg.putObjectProperty("myNullObjectProperty", null);
          msg.putShortProperty("myShortProperty", new Integer(i).shortValue());
          msg.putStringProperty("myStringProperty", "myStringPropertyValue_" + i);
+         msg.putStringProperty("myNullStringProperty", null);
          msg.putStringProperty("myNonAsciiStringProperty", international.toString());
          msg.putStringProperty("mySpecialCharacters", special);
+         msg.putStringProperty(new SimpleString("mySimpleStringProperty"), new SimpleString("mySimpleStringPropertyValue_" + i));
+         msg.putStringProperty(new SimpleString("myNullSimpleStringProperty"), null);
          producer.send(msg);
       }
 
@@ -182,10 +186,14 @@ public class XmlImportExportTest extends ServiceTestBase
          Assert.assertEquals(i, msg.getIntProperty("myIntProperty").intValue());
          Assert.assertEquals(Long.MAX_VALUE - i, msg.getLongProperty("myLongProperty").longValue());
          Assert.assertEquals(i, msg.getObjectProperty("myObjectProperty"));
+         Assert.assertEquals(null, msg.getObjectProperty("myNullObjectProperty"));
          Assert.assertEquals(new Integer(i).shortValue(), msg.getShortProperty("myShortProperty").shortValue());
          Assert.assertEquals("myStringPropertyValue_" + i, msg.getStringProperty("myStringProperty"));
+         Assert.assertEquals(null, msg.getStringProperty("myNullStringProperty"));
          Assert.assertEquals(international.toString(), msg.getStringProperty("myNonAsciiStringProperty"));
          Assert.assertEquals(special, msg.getStringProperty("mySpecialCharacters"));
+         Assert.assertEquals(new SimpleString("mySimpleStringPropertyValue_" + i), msg.getSimpleStringProperty(new SimpleString("mySimpleStringProperty")));
+         Assert.assertEquals(null, msg.getSimpleStringProperty(new SimpleString("myNullSimpleStringProperty")));
       }
 
       session.close();
