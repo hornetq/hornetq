@@ -258,4 +258,6 @@ public interface Queue extends Bindable
    void incrementMesssagesAdded();
 
    List<MessageReference> cancelScheduledMessages();
+
+   void postAcknowledge(MessageReference ref);
 }

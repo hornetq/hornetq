@@ -73,7 +73,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private final long id;
 
-   private final Queue messageQueue;
+   protected final Queue messageQueue;
 
    private final Filter filter;
 
@@ -109,13 +109,13 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
     */
    private final boolean browseOnly;
 
-   private BrowserDeliverer browserDeliverer;
+   protected BrowserDeliverer browserDeliverer;
 
    private final boolean strictUpdateDeliveryCount;
 
    private final StorageManager storageManager;
 
-   private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
+   protected final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
    private final SessionCallback callback;
 
@@ -1166,16 +1166,16 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
-   private class BrowserDeliverer implements Runnable
+   protected class BrowserDeliverer implements Runnable
    {
-      private MessageReference current = null;
+      protected MessageReference current = null;
 
       public BrowserDeliverer(final LinkedListIterator<MessageReference> iterator)
       {
          this.iterator = iterator;
       }
 
-      private final LinkedListIterator<MessageReference> iterator;
+      public final LinkedListIterator<MessageReference> iterator;
 
       public synchronized void close()
       {

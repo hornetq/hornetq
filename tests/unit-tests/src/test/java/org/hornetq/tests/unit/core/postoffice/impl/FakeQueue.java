@@ -619,4 +619,9 @@ public class FakeQueue implements Queue
       // TODO Auto-generated method stub
       return null;
    }
+
+   @Override
+   public void postAcknowledge(MessageReference ref)
+   {
+   }
 }

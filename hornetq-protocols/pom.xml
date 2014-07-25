@@ -19,6 +19,7 @@
    <modules>
       <module>hornetq-amqp-protocol</module>
       <module>hornetq-stomp-protocol</module>
+      <module>hornetq-openwire-protocol</module>
    </modules>
 
 </project>

@@ -14,7 +14,6 @@ package org.hornetq.tests.integration.client;
 import org.hornetq.core.server.MessageReference;
 import org.junit.Before;
 import org.junit.After;
-
 import org.junit.Test;
 
 import java.lang.management.ManagementFactory;
@@ -29,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
@@ -56,6 +54,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.ServerSessionFactory;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QueueFactoryImpl;
 import org.hornetq.core.server.impl.QueueImpl;
@@ -639,7 +638,7 @@ public class HangConsumerTest extends ServiceTestBase
       }
 
       @Override
-      protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context) throws Exception
+      protected ServerSessionImpl internalCreateSession(String name, String username, String password, int minLargeMessageSize, RemotingConnection connection, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge, boolean xa, String defaultAddress, SessionCallback callback, OperationContext context, ServerSessionFactory sessionFactory) throws Exception
       {
          return new ServerSessionImpl(name,
             username,

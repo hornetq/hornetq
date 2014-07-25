@@ -103,7 +103,7 @@ public class ProtonSession implements SessionCallback
                                                  false,
                                                  false,
                                                  null,
-                                                 this);
+                                                 this, null);
          }
          catch (Exception e)
          {

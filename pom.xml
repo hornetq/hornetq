@@ -337,6 +337,17 @@
             <artifactId>proton-jms</artifactId>
             <version>0.5</version>
          </dependency>
+         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+            <version>5.10.0</version>
+         </dependency>
+         <dependency>
+           <groupId>org.slf4j</groupId>
+           <artifactId>slf4j-api</artifactId>
+           <version>1.7.5</version>
+         </dependency>
+
          <!--needed to compile the spring support-->
          <dependency>
             <groupId>org.springframework</groupId>

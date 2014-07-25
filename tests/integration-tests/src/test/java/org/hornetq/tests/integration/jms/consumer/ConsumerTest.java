@@ -24,6 +24,7 @@ import javax.jms.MessageProducer;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,6 +85,47 @@ public class ConsumerTest extends JMSTestBase
       cf = null;
 
       super.tearDown();
+   }
+
+   @Test
+   public void testTransactionalSessionRollback() throws Exception
+   {
+      conn = cf.createConnection();
+      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+      MessageProducer prod = sess.createProducer(topic);
+      MessageConsumer cons = sess.createConsumer(topic);
+
+      conn.start();
+
+      TextMessage msg1 = sess.createTextMessage("m1");
+      TextMessage msg2 = sess.createTextMessage("m2");
+      TextMessage msg3 = sess.createTextMessage("m3");
+
+      prod.send(msg1);
+      sess.commit();
+
+      prod.send(msg2);
+      sess.rollback();
+
+      prod.send(msg3);
+      sess.commit();
+
+      TextMessage m1 = (TextMessage) cons.receive(2000);
+      assertNotNull(m1);
+      assertEquals("m1", m1.getText());
+
+      TextMessage m2 = (TextMessage) cons.receive(2000);
+      assertNotNull(m2);
+      assertEquals("m3", m2.getText());
+
+      TextMessage m3 = (TextMessage) cons.receive(2000);
+      assertNull("m3 should be null", m3);
+
+      System.out.println("received m1: " + m1.getText());
+      System.out.println("received m2: " + m2.getText());
+      System.out.println("received m3: " + m3);
+      sess.commit();
    }
 
    @Test

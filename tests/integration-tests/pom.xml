@@ -101,6 +101,11 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-openwire-protocol</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-aerogear-integration</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -203,6 +208,17 @@
          <groupId>io.vertx</groupId>
          <artifactId>testtools</artifactId>
          <version>${vertx.testtools.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.activemq</groupId>
+         <artifactId>activemq-client</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.geronimo.specs</groupId>
+         <artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
+         <version>1.0.1</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
