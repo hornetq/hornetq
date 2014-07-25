@@ -19,13 +19,14 @@ import org.hornetq.dto.CoreDTO;
 public class CoreFactory
 {
 
-   public static Configuration create(CoreDTO core)
+   public static Configuration create(CoreDTO core) throws Exception
    {
       Configuration configuration = null;
 
       if (core.configuration != null)
       {
-         configuration = new FileConfiguration(core.configuration);
+         configuration = new FileConfiguration("file:" + core.configuration);
+         ((FileConfiguration)configuration).start();
       }
 
       return configuration;

@@ -24,6 +24,11 @@
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-jms-server</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
          <artifactId>hornetq-dto</artifactId>
          <version>${project.version}</version>
       </dependency>

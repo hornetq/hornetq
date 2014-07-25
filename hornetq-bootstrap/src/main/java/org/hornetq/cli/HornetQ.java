@@ -17,6 +17,7 @@ import org.hornetq.cli.commands.Action;
 import org.hornetq.cli.commands.ActionContext;
 import org.hornetq.cli.commands.HelpAction;
 import org.hornetq.cli.commands.Run;
+import org.hornetq.cli.commands.Stop;
 
 public class HornetQ
 {
@@ -26,6 +27,7 @@ public class HornetQ
       Cli.CliBuilder<Action> builder = Cli.<Action>builder("hornet")
                .withDefaultCommand(HelpAction.class)
                .withCommand(Run.class)
+               .withCommand(Stop.class)
                .withDescription("HornetQ Command Line");
 
       Cli<Action> parser = builder.build();
