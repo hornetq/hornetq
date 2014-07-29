@@ -13,15 +13,13 @@
 
 package org.hornetq.core.security.impl;
 
-import static org.hornetq.api.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
-
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
@@ -138,7 +136,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
                props.putSimpleStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
 
-               Notification notification = new Notification(null, SECURITY_AUTHENTICATION_VIOLATION, props);
+               Notification notification = new Notification(null, CoreNotificationType.SECURITY_AUTHENTICATION_VIOLATION, props);
 
                notificationService.sendNotification(notification);
             }
@@ -184,7 +182,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                props.putSimpleStringProperty(ManagementHelper.HDR_CHECK_TYPE, new SimpleString(checkType.toString()));
                props.putSimpleStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
 
-               Notification notification = new Notification(null, NotificationType.SECURITY_PERMISSION_VIOLATION, props);
+               Notification notification = new Notification(null, CoreNotificationType.SECURITY_PERMISSION_VIOLATION, props);
 
                notificationService.sendNotification(notification);
             }

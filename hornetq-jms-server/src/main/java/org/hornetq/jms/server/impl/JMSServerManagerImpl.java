@@ -17,6 +17,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.xa.Xid;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -78,10 +80,12 @@ import org.hornetq.jms.server.config.JMSQueueConfiguration;
 import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.management.JMSManagementService;
+import org.hornetq.jms.server.management.JMSNotificationType;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
 import org.hornetq.jms.transaction.JMSTransactionDetail;
 import org.hornetq.spi.core.naming.BindingRegistry;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
+import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -630,6 +634,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       });
 
+      sendNotification(JMSNotificationType.QUEUE_CREATED, queueName);
+
       return true;
    }
 
@@ -684,6 +690,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             }
          }
       });
+
+      sendNotification(JMSNotificationType.TOPIC_CREATED, topicName);
 
       return true;
 
@@ -909,6 +917,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       storage.deleteDestination(PersistedType.Queue, name);
 
+      sendNotification(JMSNotificationType.QUEUE_DESTROYED, name);
+
       return true;
    }
 
@@ -944,6 +954,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          }
       }
       storage.deleteDestination(PersistedType.Topic, name);
+      sendNotification(JMSNotificationType.TOPIC_DESTROYED, name);
       return true;
    }
 
@@ -1197,8 +1208,24 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             }
 
             JMSServerManagerImpl.this.recoverJndiBindings(cfConfig.getName(), PersistedType.ConnectionFactory);
+            sendNotification(JMSNotificationType.CONNECTION_FACTORY_CREATED, cfConfig.getName());
          }
       });
+   }
+
+   private void sendNotification(JMSNotificationType type, String message)
+   {
+      TypedProperties prop = new TypedProperties();
+      prop.putSimpleStringProperty(JMSNotificationType.MESSAGE, SimpleString.toSimpleString(message));
+      Notification notif = new Notification(null, type, prop);
+      try
+      {
+         server.getManagementService().sendNotification(notif);
+      }
+      catch (Exception e)
+      {
+         HornetQJMSServerLogger.LOGGER.warn("Failed to send notification : " + notif);
+      }
    }
 
    public JMSStorageManager getJMSStorageManager()
@@ -1438,6 +1465,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             valueReturn.set(true);
          }
       });
+
+      if (valueReturn.get())
+      {
+         sendNotification(JMSNotificationType.CONNECTION_FACTORY_DESTROYED, name);
+      }
 
       return valueReturn.get();
    }

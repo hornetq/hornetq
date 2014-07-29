@@ -21,8 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -32,8 +30,8 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.UnproposalListener;
@@ -103,7 +101,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void onNotification(Notification notification)
          {
-            if (notification.getType() == NotificationType.UNPROPOSAL)
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (notification.getType() == CoreNotificationType.UNPROPOSAL)
             {
                latch.countDown();
             }
@@ -114,7 +113,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void onNotification(Notification notification)
          {
-            if (notification.getType() == NotificationType.UNPROPOSAL)
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (notification.getType() == CoreNotificationType.UNPROPOSAL)
             {
                latch.countDown();
             }
@@ -210,7 +210,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void onNotification(Notification notification)
          {
-            if (notification.getType() == NotificationType.UNPROPOSAL)
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (notification.getType() == CoreNotificationType.UNPROPOSAL)
             {
                latch.countDown();
             }
@@ -221,7 +222,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          @Override
          public void onNotification(Notification notification)
          {
-            if (notification.getType() == NotificationType.UNPROPOSAL)
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (notification.getType() == CoreNotificationType.UNPROPOSAL)
             {
                latch.countDown();
             }
@@ -1480,7 +1482,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
       {
          public void onNotification(final Notification notification)
          {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (CoreNotificationType.BINDING_REMOVED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1490,7 +1493,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                   latch.countDown();
                }
             }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
+            else if (CoreNotificationType.BINDING_ADDED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1508,7 +1511,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       stopServers(1);
 
       startServers(1);
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+      assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                    TimeUnit.SECONDS));
       getServer(0).getManagementService().removeNotificationListener(listener);
       getServer(2).getManagementService().removeNotificationListener(listener);
@@ -1573,7 +1576,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
       {
          public void onNotification(final Notification notification)
          {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (CoreNotificationType.BINDING_REMOVED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1583,7 +1587,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                   latch.countDown();
                }
             }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
+            else if (CoreNotificationType.BINDING_ADDED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1606,7 +1610,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       setupSessionFactory(1, isNetty());
 
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+      assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                    TimeUnit.SECONDS));
       getServer(0).getManagementService().removeNotificationListener(listener);
       getServer(2).getManagementService().removeNotificationListener(listener);
@@ -1665,7 +1669,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
       {
          public void onNotification(final Notification notification)
          {
-            if (NotificationType.BINDING_REMOVED == notification.getType())
+            if (!(notification.getType() instanceof CoreNotificationType)) return;
+            if (CoreNotificationType.BINDING_REMOVED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1675,7 +1680,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
                   latch.countDown();
                }
             }
-            else if (NotificationType.BINDING_ADDED == notification.getType())
+            else if (CoreNotificationType.BINDING_ADDED == notification.getType())
             {
                if (notification.getProperties()
                   .getSimpleStringProperty(ManagementHelper.HDR_ADDRESS)
@@ -1693,7 +1698,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
       closeSessionFactory(1);
       startServers(1);
-      Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
+      assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                    TimeUnit.SECONDS));
       setupSessionFactory(1, isNetty());
       getServer(0).getManagementService().removeNotificationListener(listener);

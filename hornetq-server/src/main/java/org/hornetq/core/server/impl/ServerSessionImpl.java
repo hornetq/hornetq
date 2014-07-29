@@ -14,6 +14,7 @@ package org.hornetq.core.server.impl;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import org.hornetq.api.core.HornetQNonExistentQueueException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.exception.HornetQXAException;
@@ -75,8 +77,6 @@ import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
-
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 /**
  * Server side Session implementation
@@ -406,7 +406,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
          }
 
-         Notification notification = new Notification(null, CONSUMER_CREATED, props);
+         Notification notification = new Notification(null, CoreNotificationType.CONSUMER_CREATED, props);
 
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
