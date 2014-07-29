@@ -26,9 +26,10 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 
 import org.junit.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -271,4 +272,21 @@ public class JMSUtil
       }
       return conn;
    }
+
+   public static class JMXListener implements NotificationListener
+   {
+      private Notification notif;
+
+      @Override
+      public void handleNotification(Notification notification, Object handback)
+      {
+         notif = notification;
+      }
+
+      public Notification getNotification()
+      {
+         return notif;
+      }
+   }
+
 }

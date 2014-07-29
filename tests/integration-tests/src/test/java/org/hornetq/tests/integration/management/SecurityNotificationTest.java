@@ -17,8 +17,8 @@ import org.junit.After;
 
 import org.junit.Test;
 
-import static org.hornetq.api.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
-import static org.hornetq.api.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
+import static org.hornetq.api.core.management.CoreNotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+import static org.hornetq.api.core.management.CoreNotificationType.SECURITY_PERMISSION_VIOLATION;
 
 import java.util.HashSet;
 import java.util.Set;
