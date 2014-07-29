@@ -791,6 +791,23 @@ public class JMSServerControlTest extends ManagementTestBase
    }
 
    @Test
+   public void testDestroyConnectionFactoryWithNullBindings() throws Exception
+   {
+      // Create Connection Factory with Null Bindings
+      JMSServerControl control = createManagementControl();
+      control.createConnectionFactory("test-cf", // Name
+                                      false,     // HA
+                                      false,     // Use Discovery?
+                                      1,         // ConnectionFactory Type
+                                      "invm",    // Connector Names
+                                      null);     // JNDI Bindings
+
+      control.destroyConnectionFactory("test-cf");
+
+      assertTrue(control.getConnectionFactoryNames().length == 0);
+   }
+
+   @Test
    public void testListPreparedTransactionDetails() throws Exception
    {
       Xid xid = newXID();

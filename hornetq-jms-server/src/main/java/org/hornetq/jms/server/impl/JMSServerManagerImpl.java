@@ -1457,10 +1457,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
       List<String> jndiBindings = connectionFactoryJNDI.get(name);
-      if (jndiBindings == null || jndiBindings.size() == 0)
-      {
-         return false;
-      }
 
       if (registry != null)
       {
