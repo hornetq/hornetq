@@ -20,7 +20,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -107,14 +107,14 @@ public class StompInternalStateTest extends ServiceTestBase
    public void verifyBindingAddRemove(Notification noti, Object obj)
    {
       Set<String> destinations = (Set<String>)obj;
-      if (noti.getType() == NotificationType.BINDING_ADDED)
+      if (noti.getType() == CoreNotificationType.BINDING_ADDED)
       {
          if (!destinations.contains(STOMP_QUEUE_NAME))
          {
             resultTestStompProtocolManagerLeak += "didn't save the queue when binding added " + destinations;
          }
       }
-      else if (noti.getType() == NotificationType.BINDING_REMOVED)
+      else if (noti.getType() == CoreNotificationType.BINDING_REMOVED)
       {
          if (destinations.contains(STOMP_QUEUE_NAME))
          {

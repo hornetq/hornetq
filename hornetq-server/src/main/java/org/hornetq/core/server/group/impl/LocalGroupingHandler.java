@@ -25,8 +25,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
@@ -193,7 +193,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
       props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance);
-      Notification notification = new Notification(null, NotificationType.PROPOSAL_RESPONSE, props);
+      Notification notification = new Notification(null, CoreNotificationType.PROPOSAL_RESPONSE, props);
       managementService.sendNotification(notification);
    }
 
@@ -307,13 +307,15 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
 
    public void onNotification(final Notification notification)
    {
-      if (notification.getType() == NotificationType.BINDING_REMOVED)
+      if (!(notification.getType() instanceof CoreNotificationType)) return;
+
+      if (notification.getType() == CoreNotificationType.BINDING_REMOVED)
       {
          SimpleString clusterName = notification.getProperties()
             .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          removeGrouping(clusterName);
       }
-      else if (notification.getType() == NotificationType.BINDING_ADDED)
+      else if (notification.getType() == CoreNotificationType.BINDING_ADDED)
       {
          SimpleString clusterName = notification.getProperties()
             .getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);

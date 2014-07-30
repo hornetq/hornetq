@@ -36,10 +36,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hornetq.api.core.management.NotificationType.BINDING_ADDED;
-import static org.hornetq.api.core.management.NotificationType.BINDING_REMOVED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
-import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
+import static org.hornetq.api.core.management.CoreNotificationType.BINDING_ADDED;
+import static org.hornetq.api.core.management.CoreNotificationType.BINDING_REMOVED;
+import static org.hornetq.api.core.management.CoreNotificationType.CONSUMER_CLOSED;
+import static org.hornetq.api.core.management.CoreNotificationType.CONSUMER_CREATED;
 
 /**
  * A NotificationTest
