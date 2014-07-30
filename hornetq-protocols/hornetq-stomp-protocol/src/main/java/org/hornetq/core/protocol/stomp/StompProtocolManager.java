@@ -28,8 +28,8 @@ import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
@@ -450,7 +450,10 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
    @Override
    public void onNotification(Notification notification)
    {
-      NotificationType type = notification.getType();
+      if (!(notification.getType() instanceof CoreNotificationType)) return;
+
+      CoreNotificationType type = (CoreNotificationType) notification.getType();
+
       TypedProperties props = notification.getProperties();
 
       switch (type)

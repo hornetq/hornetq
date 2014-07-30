@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.Notification;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -29,9 +31,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.MessageCounterInfo;
+import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -40,6 +44,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.integration.jms.server.management.JMSUtil;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
 import org.junit.After;
@@ -1894,6 +1899,44 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertEquals(0, queueControl.getMessagesAdded());
 
       session.deleteQueue(queue);
+   }
+
+   //make sure notifications are always received no matter whether
+   //a Queue is created via QueueControl or by JMSServerManager directly.
+   @Test
+   public void testCreateQueueNotification() throws Exception
+   {
+      JMSUtil.JMXListener listener = new JMSUtil.JMXListener();
+      this.mbeanServer.addNotificationListener(ObjectNameBuilder.DEFAULT.getHornetQServerObjectName(), listener, null, null);
+
+      SimpleString testQueueName = new SimpleString("newQueue");
+      String testQueueName2 = "newQueue2";
+      this.server.createQueue(testQueueName,  testQueueName,  null,  false,  false);
+
+      Notification notif = listener.getNotification();
+
+      System.out.println("got notif: " + notif);
+      assertEquals(CoreNotificationType.BINDING_ADDED.toString(), notif.getType());
+
+      this.server.destroyQueue(testQueueName);
+
+      notif = listener.getNotification();
+      System.out.println("got notif: " + notif);
+      assertEquals(CoreNotificationType.BINDING_REMOVED.toString(), notif.getType());
+
+      HornetQServerControl control = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+
+      control.createQueue(testQueueName2, testQueueName2);
+
+      notif = listener.getNotification();
+      System.out.println("got notif: " + notif);
+      assertEquals(CoreNotificationType.BINDING_ADDED.toString(), notif.getType());
+
+      control.destroyQueue(testQueueName2);
+
+      notif = listener.getNotification();
+      System.out.println("got notif: " + notif);
+      assertEquals(CoreNotificationType.BINDING_REMOVED.toString(), notif.getType());
    }
 
    // Package protected ---------------------------------------------

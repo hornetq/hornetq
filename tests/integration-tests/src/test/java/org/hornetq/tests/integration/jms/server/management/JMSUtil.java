@@ -22,6 +22,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -332,6 +335,22 @@ public class JMSUtil
 
             throw new Exception(msg);
          }
+      }
+   }
+
+   public static class JMXListener implements NotificationListener
+   {
+      private Notification notif;
+
+      @Override
+      public void handleNotification(Notification notification, Object handback)
+      {
+         notif = notification;
+      }
+
+      public Notification getNotification()
+      {
+         return notif;
       }
    }
 }

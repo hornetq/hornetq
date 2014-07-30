@@ -10,21 +10,32 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.api.core.management;
+package org.hornetq.jms.server.management;
 
-/**
- * Types of notification emitted by HornetQ servers.
- * <p>
- * These notifications can be received through:
- * <ul>
- * <li>JMX' MBeans subscriptions
- * <li>Core messages to a notification address (default value is {@code hornetq.notifications})
- * <li>JMS messages
- * </ul>
- * @see the HornetQ user manual section on "Management Notifications"
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- */
-public interface NotificationType
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.NotificationType;
+
+public enum JMSNotificationType implements NotificationType
 {
-   int getType();
+   QUEUE_CREATED(0),
+   QUEUE_DESTROYED(1),
+   TOPIC_CREATED(2),
+   TOPIC_DESTROYED(3),
+   CONNECTION_FACTORY_CREATED(4),
+   CONNECTION_FACTORY_DESTROYED(5);
+
+   public static final SimpleString MESSAGE = new SimpleString("message");
+
+   private int type;
+
+   private JMSNotificationType(int type)
+   {
+      this.type = type;
+   }
+
+   @Override
+   public int getType()
+   {
+      return type;
+   }
 }
