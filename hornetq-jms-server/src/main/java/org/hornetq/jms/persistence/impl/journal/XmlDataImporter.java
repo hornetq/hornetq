@@ -483,11 +483,23 @@ public final class XmlDataImporter
       }
       else if (propertyType.equals(XmlDataConstants.PROPERTY_TYPE_SIMPLE_STRING))
       {
-         message.putStringProperty(new SimpleString(key), new SimpleString(value));
+         String realValue = null;
+
+         if (!value.equals(XmlDataConstants.NULL))
+         {
+            realValue = value;
+         }
+         message.putStringProperty(new SimpleString(key), new SimpleString(realValue));
       }
       else if (propertyType.equals(XmlDataConstants.PROPERTY_TYPE_STRING))
       {
-         message.putStringProperty(key, value);
+         String realValue = null;
+
+         if (!value.equals(XmlDataConstants.NULL))
+         {
+            realValue = value;
+         }
+         message.putStringProperty(key, realValue);
       }
    }
 
