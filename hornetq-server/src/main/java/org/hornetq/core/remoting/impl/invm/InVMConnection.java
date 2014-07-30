@@ -96,6 +96,12 @@ public class InVMConnection implements Connection
       this.defaultHornetQPrincipal = defaultHornetQPrincipal;
    }
 
+
+   public void forceClose()
+   {
+      // no op
+   }
+
    public void close()
    {
       if (closing)

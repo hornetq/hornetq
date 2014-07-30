@@ -87,7 +87,27 @@ public class NettyConnection implements Connection
 
    // Public --------------------------------------------------------
 
+   public Channel getNettyChannel()
+   {
+      return channel;
+   }
    // Connection implementation ----------------------------
+
+
+   public void forceClose()
+   {
+      if (channel != null)
+      {
+         try
+         {
+            channel.close();
+         }
+         catch (Throwable e)
+         {
+            HornetQClientLogger.LOGGER.warn(e.getMessage(), e);
+         }
+      }
+   }
 
    public synchronized void close()
    {
